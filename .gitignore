@@ -1,0 +1,8 @@
+*.un~
+*.swp
+*.bak
+*.map
+*.bin
+JLinkLog.txt
+JLinkSettings.ini
+
