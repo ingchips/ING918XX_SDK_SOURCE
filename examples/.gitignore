@@ -1,0 +1,10 @@
+listing/
+output/
+*.uvgui.*
+*.uvguix.*
+*.dep
+
+homekit-bulb/
+mesh-sensor-light/
+peripheral_dirfinding/
+peripheral_band/
