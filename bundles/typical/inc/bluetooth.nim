@@ -1,0 +1,907 @@
+##  ----------------------------------------------------------------------------
+##  Copyright Message
+##  ----------------------------------------------------------------------------
+##
+##  INGCHIPS confidential and proprietary.
+##  COPYRIGHT (c) 2018 by INGCHIPS
+##
+##  All rights are reserved. Reproduction in whole or in part is
+##  prohibited without the written consent of the copyright owner.
+##
+##  ----------------------------------------------------------------------------
+
+const
+  BD_ADDR_LEN* = 0x00000006
+
+## *
+##  @brief hci connection handle type
+##
+
+type
+  hci_con_handle_t* = uint16
+
+## *
+##  @brief Length of a bluetooth device address.
+##
+## *
+##  @brief Bluetooth address
+##
+
+type
+  bd_addr_t* = array[BD_ADDR_LEN, uint8]
+
+## *
+##  Address types
+##  @note: BTstack uses a custom addr type to refer to classic ACL and SCO devices
+##
+
+type
+  bd_addr_type_t* {.size: sizeof(cint).} = enum
+    BD_ADDR_TYPE_LE_PUBLIC = 0, BD_ADDR_TYPE_LE_RANDOM = 0x00000001,
+    BD_ADDR_TYPE_LE_RESOVLED_PUB = 0x00000002,
+    BD_ADDR_TYPE_LE_RESOVLED_RAN = 0x00000003
+
+
+## *
+##  @brief link key
+##
+
+const
+  LINK_KEY_LEN* = 16
+  LINK_KEY_STR_LEN* = (LINK_KEY_LEN * 2)
+
+type
+  link_key_t* = array[LINK_KEY_LEN, uint8]
+
+## *
+##  @brief link key type
+##
+
+type
+  link_key_type_t* {.size: sizeof(cint).} = enum
+    COMBINATION_KEY = 0,        ##  standard pairing
+    LOCAL_UNIT_KEY,           ##  ?
+    REMOTE_UNIT_KEY           ##  ?
+
+
+## *
+##  HCI Transport
+##
+## *
+##  packet types - used in BTstack and over the H4 UART interface
+##
+
+const
+  HCI_COMMAND_DATA_PACKET* = 0x00000001
+  HCI_ACL_DATA_PACKET* = 0x00000002
+  HCI_EVENT_PACKET* = 0x00000004
+  HCI_COMPLETED_SDU_PACKET* = 0x0000000B
+  L2CAP_EVENT_PACKET* = 0x0000000A
+
+##  packet header sizes
+
+const
+  HCI_CMD_HEADER_SIZE* = 3
+  HCI_ACL_HEADER_SIZE* = 4
+  HCI_SCO_HEADER_SIZE* = 3
+  HCI_EVENT_HEADER_SIZE* = 2
+
+## *
+##  HCI Layer
+##
+##
+##  Error Codes
+##
+##  from Bluetooth Core Specification
+
+const
+  ERROR_CODE_SUCCESS* = 0x00000000
+  ERROR_CODE_UNKNOWN_HCI_COMMAND* = 0x00000001
+  ERROR_CODE_UNKNOWN_CONNECTION_IDENTIFIER* = 0x00000002
+  ERROR_CODE_HARDWARE_FAILURE* = 0x00000003
+  ERROR_CODE_PAGE_TIMEOUT* = 0x00000004
+  ERROR_CODE_AUTHENTICATION_FAILURE* = 0x00000005
+  ERROR_CODE_PIN_OR_KEY_MISSING* = 0x00000006
+  ERROR_CODE_MEMORY_CAPACITY_EXCEEDED* = 0x00000007
+  ERROR_CODE_CONNECTION_TIMEOUT* = 0x00000008
+  ERROR_CODE_CONNECTION_LIMIT_EXCEEDED* = 0x00000009
+  ERROR_CODE_SYNCHRONOUS_CONNECTION_LIMIT_TO_A_DEVICE_EXCEEDED* = 0x0000000A
+  ERROR_CODE_ACL_CONNECTION_ALREADY_EXISTS* = 0x0000000B
+  ERROR_CODE_COMMAND_DISALLOWED* = 0x0000000C
+  ERROR_CODE_CONNECTION_REJECTED_DUE_TO_LIMITED_RESOURCES* = 0x0000000D
+  ERROR_CODE_CONNECTION_REJECTED_DUE_TO_SECURITY_REASONS* = 0x0000000E
+  ERROR_CODE_CONNECTION_REJECTED_DUE_TO_UNACCEPTABLE_BD_ADDR* = 0x0000000F
+  ERROR_CODE_CONNECTION_ACCEPT_TIMEOUT_EXCEEDED* = 0x00000010
+  ERROR_CODE_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE* = 0x00000011
+  ERROR_CODE_INVALID_HCI_COMMAND_PARAMETERS* = 0x00000012
+  ERROR_CODE_REMOTE_USER_TERMINATED_CONNECTION* = 0x00000013
+  ERROR_CODE_REMOTE_DEVICE_TERMINATED_CONNECTION_DUE_TO_LOW_RESOURCES* = 0x00000014
+  ERROR_CODE_REMOTE_DEVICE_TERMINATED_CONNECTION_DUE_TO_POWER_OFF* = 0x00000015
+  ERROR_CODE_CONNECTION_TERMINATED_BY_LOCAL_HOST* = 0x00000016
+  ERROR_CODE_REPEATED_ATTEMPTS* = 0x00000017
+  ERROR_CODE_PAIRING_NOT_ALLOWED* = 0x00000018
+  ERROR_CODE_UNKNOWN_LMP_PDU* = 0x00000019
+  ERROR_CODE_UNSUPPORTED_REMOTE_FEATURE_UNSUPPORTED_LMP_FEATURE* = 0x0000001A
+  ERROR_CODE_SCO_OFFSET_REJECTED* = 0x0000001B
+  ERROR_CODE_SCO_INTERVAL_REJECTED* = 0x0000001C
+  ERROR_CODE_SCO_AIR_MODE_REJECTED* = 0x0000001D
+  ERROR_CODE_INVALID_LMP_PARAMETERS_INVALID_LL_PARAMETERS* = 0x0000001E
+  ERROR_CODE_UNSPECIFIED_ERROR* = 0x0000001F
+  ERROR_CODE_UNSUPPORTED_LMP_PARAMETER_VALUE_UNSUPPORTED_LL_PARAMETER_VALUE* = 0x00000020
+  ERROR_CODE_ROLE_CHANGE_NOT_ALLOWED* = 0x00000021
+  ERROR_CODE_LMP_RESPONSE_TIMEOUT_LL_RESPONSE_TIMEOUT* = 0x00000022
+  ERROR_CODE_LMP_ERROR_TRANSACTION_COLLISION* = 0x00000023
+  ERROR_CODE_LMP_PDU_NOT_ALLOWED* = 0x00000024
+  ERROR_CODE_ENCRYPTION_MODE_NOT_ACCEPTABLE* = 0x00000025
+  ERROR_CODE_LINK_KEY_CANNOT_BE_CHANGED* = 0x00000026
+  ERROR_CODE_REQUESTED_QOS_NOT_SUPPORTED* = 0x00000027
+  ERROR_CODE_INSTANT_PASSED* = 0x00000028
+  ERROR_CODE_PAIRING_WITH_UNIT_KEY_NOT_SUPPORTED* = 0x00000029
+  ERROR_CODE_DIFFERENT_TRANSACTION_COLLISION* = 0x0000002A
+  ERROR_CODE_RESERVED* = 0x0000002B
+  ERROR_CODE_QOS_UNACCEPTABLE_PARAMETER* = 0x0000002C
+  ERROR_CODE_QOS_REJECTED* = 0x0000002D
+  ERROR_CODE_CHANNEL_CLASSIFICATION_NOT_SUPPORTED* = 0x0000002E
+  ERROR_CODE_INSUFFICIENT_SECURITY* = 0x0000002F
+  ERROR_CODE_PARAMETER_OUT_OF_MANDATORY_RANGE* = 0x00000030
+
+##  #define ERROR_CODE_RESERVED
+
+const
+  ERROR_CODE_ROLE_SWITCH_PENDING* = 0x00000032
+
+##  #define ERROR_CODE_RESERVED
+
+const
+  ERROR_CODE_RESERVED_SLOT_VIOLATION* = 0x00000034
+  ERROR_CODE_ROLE_SWITCH_FAILED* = 0x00000035
+  ERROR_CODE_EXTENDED_INQUIRY_RESPONSE_TOO_LARGE* = 0x00000036
+  ERROR_CODE_SECURE_SIMPLE_PAIRING_NOT_SUPPORTED_BY_HOST* = 0x00000037
+  ERROR_CODE_HOST_BUSY_PAIRING* = 0x00000038
+  ERROR_CODE_CONNECTION_REJECTED_DUE_TO_NO_SUITABLE_CHANNEL_FOUND* = 0x00000039
+  ERROR_CODE_CONTROLLER_BUSY* = 0x0000003A
+  ERROR_CODE_UNACCEPTABLE_CONNECTION_PARAMETERS* = 0x0000003B
+  ERROR_CODE_DIRECTED_ADVERTISING_TIMEOUT* = 0x0000003C
+  ERROR_CODE_CONNECTION_TERMINATED_DUE_TO_MIC_FAILURE* = 0x0000003D
+  ERROR_CODE_CONNECTION_FAILED_TO_BE_ESTABLISHED* = 0x0000003E
+  ERROR_CODE_MAC_CONNECTION_FAILED* = 0x0000003F
+  ERROR_CODE_COARSE_CLOCK_ADJUSTMENT_REJECTED_BUT_WILL_TRY_TO_ADJUST_USING_CLOCK_DRAGGING* = 0x00000040
+  ERROR_CODE_UNKNOWN_ADVERTISING_IDENTIFIER* = 0x00000042
+  ERROR_CODE_LIMIT_REACHED* = 0x00000043
+
+##  HCI roles
+
+const
+  HCI_ROLE_MASTER* = 0
+  HCI_ROLE_SLAVE* = 1
+
+##  packet sizes (max payload)
+
+const
+  HCI_ACL_DM1_SIZE* = 17
+  HCI_ACL_DH1_SIZE* = 27
+  HCI_ACL_2DH1_SIZE* = 54
+  HCI_ACL_3DH1_SIZE* = 83
+  HCI_ACL_DM3_SIZE* = 121
+  HCI_ACL_DH3_SIZE* = 183
+  HCI_ACL_DM5_SIZE* = 224
+  HCI_ACL_DH5_SIZE* = 339
+  HCI_ACL_2DH3_SIZE* = 367
+  HCI_ACL_3DH3_SIZE* = 552
+  HCI_ACL_2DH5_SIZE* = 679
+  HCI_ACL_3DH5_SIZE* = 1021
+  HCI_EVENT_PAYLOAD_SIZE* = 255
+  HCI_CMD_PAYLOAD_SIZE* = 255
+  LE_ADVERTISING_DATA_SIZE* = 31
+
+## *
+##  Default INQ Mode
+##
+
+const
+  HCI_INQUIRY_LAP* = 0x009E8B33
+
+## *
+##  SSP IO Capabilities
+##
+
+const
+  SSP_IO_CAPABILITY_DISPLAY_ONLY* = 0
+  SSP_IO_CAPABILITY_DISPLAY_YES_NO* = 1
+  SSP_IO_CAPABILITY_KEYBOARD_ONLY* = 2
+  SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT* = 3
+  SSP_IO_CAPABILITY_UNKNOWN* = 0x000000FF
+
+## *
+##  SSP Authentication Requirements, see IO Capability Request Reply Commmand
+##
+##  Numeric comparison with automatic accept allowed.
+
+const
+  SSP_IO_AUTHREQ_MITM_PROTECTION_NOT_REQUIRED_NO_BONDING* = 0x00000000
+
+##  Use IO Capabilities to deter- mine authentication procedure
+
+const
+  SSP_IO_AUTHREQ_MITM_PROTECTION_REQUIRED_NO_BONDING* = 0x00000001
+
+##  Numeric compar- ison with automatic accept allowed.
+
+const
+  SSP_IO_AUTHREQ_MITM_PROTECTION_NOT_REQUIRED_DEDICATED_BONDING* = 0x00000002
+
+##  Use IO Capabilities to determine authentication procedure
+
+const
+  SSP_IO_AUTHREQ_MITM_PROTECTION_REQUIRED_DEDICATED_BONDING* = 0x00000003
+
+##  Numeric Compari- son with automatic accept allowed.
+
+const
+  SSP_IO_AUTHREQ_MITM_PROTECTION_NOT_REQUIRED_GENERAL_BONDING* = 0x00000004
+
+##  Use IO capabilities to determine authentication procedure.
+
+const
+  SSP_IO_AUTHREQ_MITM_PROTECTION_REQUIRED_GENERAL_BONDING* = 0x00000005
+
+##  OGFs
+
+const
+  OGF_LINK_CONTROL* = 0x00000001
+  OGF_LINK_POLICY* = 0x00000002
+  OGF_CONTROLLER_BASEBAND* = 0x00000003
+  OGF_INFORMATIONAL_PARAMETERS* = 0x00000004
+  OGF_STATUS_PARAMETERS* = 0x00000005
+  OGF_TESTING* = 0x00000006
+  OGF_LE_CONTROLLER* = 0x00000008
+  OGF_VENDOR* = 0x0000003F
+
+##  Events from host controller to host
+## *
+##  @format 1
+##  @param status
+##
+
+const
+  HCI_EVENT_INQUIRY_COMPLETE* = 0x00000001
+
+##  no format yet, can contain multiple results
+## *
+##  @format 1B11132
+##  @param num_responses
+##  @param bd_addr
+##  @param page_scan_repetition_mode
+##  @param reserved1
+##  @param reserved2
+##  @param class_of_device
+##  @param clock_offset
+##
+
+const
+  HCI_EVENT_INQUIRY_RESULT* = 0x00000002
+
+## *
+##  @format 12B11
+##  @param status
+##  @param connection_handle
+##  @param bd_addr
+##  @param link_type
+##  @param encryption_enabled
+##
+
+const
+  HCI_EVENT_CONNECTION_COMPLETE* = 0x00000003
+
+## *
+##  @format B31
+##  @param bd_addr
+##  @param class_of_device
+##  @param link_type
+##
+
+const
+  HCI_EVENT_CONNECTION_REQUEST* = 0x00000004
+
+## *
+##  @format 121
+##  @param status
+##  @param connection_handle
+##  @param reason
+##
+
+const
+  HCI_EVENT_DISCONNECTION_COMPLETE* = 0x00000005
+
+## *
+##  @format 12
+##  @param status
+##  @param connection_handle
+##
+
+const
+  HCI_EVENT_AUTHENTICATION_COMPLETE_EVENT* = 0x00000006
+
+## *
+##  @format 1BN
+##  @param status
+##  @param bd_addr
+##  @param remote_name
+##
+
+const
+  HCI_EVENT_REMOTE_NAME_REQUEST_COMPLETE* = 0x00000007
+
+## *
+##  @format 121
+##  @param status
+##  @param connection_handle
+##  @param encryption_enabled
+##
+
+const
+  HCI_EVENT_ENCRYPTION_CHANGE* = 0x00000008
+
+## *
+##  @format 12
+##  @param status
+##  @param connection_handle
+##
+
+const
+  HCI_EVENT_CHANGE_CONNECTION_LINK_KEY_COMPLETE* = 0x00000009
+
+## *
+##  @format 121
+##  @param status
+##  @param connection_handle
+##  @param key_flag
+##
+
+const
+  HCI_EVENT_MASTER_LINK_KEY_COMPLETE* = 0x0000000A
+  HCI_EVENT_READ_REMOTE_SUPPORTED_FEATURES_COMPLETE* = 0x0000000B
+  HCI_EVENT_READ_REMOTE_VERSION_INFORMATION_COMPLETE* = 0x0000000C
+  HCI_EVENT_QOS_SETUP_COMPLETE* = 0x0000000D
+
+## *
+##  @format 12R
+##  @param num_hci_command_packets
+##  @param command_opcode
+##  @param return_parameters
+##
+
+const
+  HCI_EVENT_COMMAND_COMPLETE* = 0x0000000E
+
+## *
+##  @format 112
+##  @param status
+##  @param num_hci_command_packets
+##  @param command_opcode
+##
+
+const
+  HCI_EVENT_COMMAND_STATUS* = 0x0000000F
+
+## *
+##  @format 121
+##  @param hardware_code
+##
+
+const
+  HCI_EVENT_HARDWARE_ERROR* = 0x00000010
+  HCI_EVENT_FLUSH_OCCURED* = 0x00000011
+
+## *
+##  @format 1B1
+##  @param status
+##  @param bd_addr
+##  @param role
+##
+
+const
+  HCI_EVENT_ROLE_CHANGE* = 0x00000012
+
+##  TODO: number_of_handles 1, connection_handle[H*i], hc_num_of_completed_packets[2*i]
+
+const
+  HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS* = 0x00000013
+
+## *
+##  @format 1H12
+##  @param status
+##  @param handle
+##  @param mode
+##  @param interval
+##
+
+const
+  HCI_EVENT_MODE_CHANGE_EVENT* = 0x00000014
+
+##  TODO: num_keys, bd_addr[B*i], link_key[16 octets * i]
+
+const
+  HCI_EVENT_RETURN_LINK_KEYS* = 0x00000015
+
+## *
+##  @format B
+##  @param bd_addr
+##
+
+const
+  HCI_EVENT_PIN_CODE_REQUEST* = 0x00000016
+
+## *
+##  @format B
+##  @param bd_addr
+##
+
+const
+  HCI_EVENT_LINK_KEY_REQUEST* = 0x00000017
+
+##  TODO: bd_addr B, link_key 16octets, key_type 1
+
+const
+  HCI_EVENT_LINK_KEY_NOTIFICATION* = 0x00000018
+
+## *
+##  @format 1
+##  @param link_type
+##
+
+const
+  HCI_EVENT_DATA_BUFFER_OVERFLOW* = 0x0000001A
+
+## *
+##  @format H1
+##  @param handle
+##  @param lmp_max_slots
+##
+
+const
+  HCI_EVENT_MAX_SLOTS_CHANGED* = 0x0000001B
+
+## *
+##  @format 1H2
+##  @param status
+##  @param handle
+##  @param clock_offset
+##
+
+const
+  HCI_EVENT_READ_CLOCK_OFFSET_COMPLETE* = 0x0000001C
+
+## *
+##  @format 1H2
+##  @param status
+##  @param handle
+##  @param packet_types
+##
+
+const
+  HCI_EVENT_CONNECTION_PACKET_TYPE_CHANGED* = 0x0000001D
+
+## *
+##  @format 1B11321
+##  @param num_responses
+##  @param bd_addr
+##  @param page_scan_repetition_mode
+##  @param reserved
+##  @param class_of_device
+##  @param clock_offset
+##  @param rssi
+##
+
+const
+  HCI_EVENT_INQUIRY_RESULT_WITH_RSSI* = 0x00000022
+
+## *
+##  @format 1HB111221
+##  @param status
+##  @param handle
+##  @param bd_addr
+##  @param link_type
+##  @param transmission_interval
+##  @param retransmission_interval
+##  @param rx_packet_length
+##  @param tx_packet_length
+##  @param air_mode
+##
+
+const
+  HCI_EVENT_SYNCHRONOUS_CONNECTION_COMPLETE* = 0x0000002C
+
+##  TODO: serialize extended_inquiry_response and provide parser
+## *
+##  @format 1B11321
+##  @param num_responses
+##  @param bd_addr
+##  @param page_scan_repetition_mode
+##  @param reserved
+##  @param class_of_device
+##  @param clock_offset
+##  @param rssi
+##
+
+const
+  HCI_EVENT_EXTENDED_INQUIRY_RESPONSE* = 0x0000002F
+
+## *
+##  @format 1H
+##  @param status
+##  @param handle
+##
+
+const
+  HCI_EVENT_ENCRYPTION_KEY_REFRESH_COMPLETE* = 0x00000030
+  HCI_EVENT_IO_CAPABILITY_REQUEST* = 0x00000031
+  HCI_EVENT_IO_CAPABILITY_RESPONSE* = 0x00000032
+  HCI_EVENT_USER_CONFIRMATION_REQUEST* = 0x00000033
+  HCI_EVENT_USER_PASSKEY_REQUEST* = 0x00000034
+  HCI_EVENT_REMOTE_OOB_DATA_REQUEST* = 0x00000035
+  HCI_EVENT_SIMPLE_PAIRING_COMPLETE* = 0x00000036
+  HCI_EVENT_LE_META* = 0x0000003E
+
+## add the event of BLE dengyiyun
+
+const
+  HCI_EVENT_AUTHENTICATED_PAYLOAD_TIMEOUT_EXPIRED* = 0x00000057
+  HCI_EVENT_VENDOR_SPECIFIC* = 0x000000FF
+
+##  add by dengyiyun for event originated in HCI to L2CAP
+
+const
+  HCI_EVENT_L2CAP_CONN_PARA_UPDATE_REQUEST* = 0x000000FB
+
+## *
+##  @format 11H11B2221
+##  @param subevent_code
+##  @param status
+##  @param connection_handle
+##  @param role
+##  @param peer_address_type
+##  @param peer_address
+##  @param conn_interval
+##  @param conn_latency
+##  @param supervision_timeout
+##  @param master_clock_accuracy
+##
+
+const
+  HCI_SUBEVENT_LE_CONNECTION_COMPLETE* = 0x00000001
+  HCI_SUBEVENT_LE_ADVERTISING_REPORT* = 0x00000002
+  HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE* = 0x00000003
+  HCI_SUBEVENT_LE_READ_REMOTE_USED_FEATURES_COMPLETE* = 0x00000004
+  HCI_SUBEVENT_LE_LONG_TERM_KEY_REQUEST* = 0x00000005
+
+## +add new subevent of LE event dengyiyun 26-Aug-2016
+
+const
+  HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_COMPLETE* = 0x00000006
+  HCI_SUBEVENT_LE_DATA_LENGTH_CHANGE_EVENT* = 0x00000007
+
+## -add new subevent of LE event dengyiyun 26-Aug-2016
+
+const
+  HCI_SUBEVENT_LE_DIRECT_ADVERTISING_REPORT* = 0x0000000B
+  HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE* = 0x0000000A
+  HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE* = 0x0000000C
+  HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT* = 0x0000000D
+  HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED* = 0x0000000E
+  HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_REPORT* = 0x0000000F
+  HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_LOST* = 0x00000010
+  HCI_SUBEVENT_LE_SCAN_TIMEOUT* = 0x00000011
+  HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED* = 0x00000012
+  HCI_SUBEVENT_LE_SCAN_REQUEST_RECEIVED* = 0x00000013
+  HCI_SUBEVENT_LE_CHANNEL_SELECTION_ALGORITHM* = 0x00000014
+
+##  last used HCI_EVENT in 2.1 is 0x3d
+##  last used HCI_EVENT in 4.1 is 0x57
+## *
+##  L2CAP Layer
+##
+
+const
+  L2CAP_HEADER_SIZE* = 4
+  L2CAP_SIG_ID_INVALID* = 0
+
+##  size of HCI ACL + L2CAP Header for regular data packets (8)
+
+const
+  COMPLETE_L2CAP_HEADER* = (HCI_ACL_HEADER_SIZE + L2CAP_HEADER_SIZE)
+
+##  minimum signaling MTU
+
+const
+  L2CAP_MINIMAL_MTU* = 48
+  L2CAP_DEFAULT_MTU* = 672
+
+##  Minimum/default MTU
+
+const
+  L2CAP_LE_DEFAULT_MTU* = 23
+
+##  L2CAP Fixed Channel IDs
+
+const
+  L2CAP_CID_ATTRIBUTE_PROTOCOL* = 0x00000004
+  L2CAP_CID_SIGNALING_LE* = 0x00000005
+  L2CAP_CID_SECURITY_MANAGER_PROTOCOL* = 0x00000006
+
+##  L2CAP Configuration Result Codes
+
+const
+  L2CAP_CONF_RESULT_UNKNOWN_OPTIONS* = 0x00000003
+
+##  L2CAP Reject Result Codes
+
+const
+  L2CAP_REJ_CMD_UNKNOWN* = 0x00000000
+
+##  Response Timeout eXpired
+
+const
+  L2CAP_RTX_TIMEOUT_MS* = 10000
+
+##  Extended Response Timeout eXpired
+
+const
+  L2CAP_ERTX_TIMEOUT_MS* = 120000
+
+##  Fixed PSM numbers
+
+const
+  PSM_SDP* = 0x00000001
+  PSM_RFCOMM* = 0x00000003
+  PSM_BNEP* = 0x0000000F
+  PSM_HID_CONTROL* = 0x00000011
+  PSM_HID_INTERRUPT* = 0x00000013
+
+## *
+##  ATT
+##
+##  Minimum/default MTU
+
+const
+  ATT_DEFAULT_MTU* = 23
+
+##  MARK: Attribute PDU Opcodes
+
+const
+  ATT_ERROR_RESPONSE* = 0x00000001
+  ATT_EXCHANGE_MTU_REQUEST* = 0x00000002
+  ATT_EXCHANGE_MTU_RESPONSE* = 0x00000003
+  ATT_FIND_INFORMATION_REQUEST* = 0x00000004
+  ATT_FIND_INFORMATION_REPLY* = 0x00000005
+  ATT_FIND_BY_TYPE_VALUE_REQUEST* = 0x00000006
+  ATT_FIND_BY_TYPE_VALUE_RESPONSE* = 0x00000007
+  ATT_READ_BY_TYPE_REQUEST* = 0x00000008
+  ATT_READ_BY_TYPE_RESPONSE* = 0x00000009
+  ATT_READ_REQUEST* = 0x0000000A
+  ATT_READ_RESPONSE* = 0x0000000B
+  ATT_READ_BLOB_REQUEST* = 0x0000000C
+  ATT_READ_BLOB_RESPONSE* = 0x0000000D
+  ATT_READ_MULTIPLE_REQUEST* = 0x0000000E
+  ATT_READ_MULTIPLE_RESPONSE* = 0x0000000F
+  ATT_READ_BY_GROUP_TYPE_REQUEST* = 0x00000010
+  ATT_READ_BY_GROUP_TYPE_RESPONSE* = 0x00000011
+  ATT_WRITE_REQUEST* = 0x00000012
+  ATT_WRITE_RESPONSE* = 0x00000013
+  ATT_PREPARE_WRITE_REQUEST* = 0x00000016
+  ATT_PREPARE_WRITE_RESPONSE* = 0x00000017
+  ATT_EXECUTE_WRITE_REQUEST* = 0x00000018
+  ATT_EXECUTE_WRITE_RESPONSE* = 0x00000019
+  ATT_HANDLE_VALUE_NOTIFICATION* = 0x0000001B
+  ATT_HANDLE_VALUE_INDICATION* = 0x0000001D
+  ATT_HANDLE_VALUE_CONFIRMATION* = 0x0000001E
+  ATT_WRITE_COMMAND* = 0x00000052
+  ATT_SIGNED_WRITE_COMMAND* = 0x000000D2
+
+##  MARK: ATT Error Codes
+
+const
+  ATT_ERROR_INVALID_HANDLE* = 0x00000001
+  ATT_ERROR_READ_NOT_PERMITTED* = 0x00000002
+  ATT_ERROR_WRITE_NOT_PERMITTED* = 0x00000003
+  ATT_ERROR_INVALID_PDU* = 0x00000004
+  ATT_ERROR_INSUFFICIENT_AUTHENTICATION* = 0x00000005
+  ATT_ERROR_REQUEST_NOT_SUPPORTED* = 0x00000006
+  ATT_ERROR_INVALID_OFFSET* = 0x00000007
+  ATT_ERROR_INSUFFICIENT_AUTHORIZATION* = 0x00000008
+  ATT_ERROR_PREPARE_QUEUE_FULL* = 0x00000009
+  ATT_ERROR_ATTRIBUTE_NOT_FOUND* = 0x0000000A
+  ATT_ERROR_ATTRIBUTE_NOT_LONG* = 0x0000000B
+  ATT_ERROR_INSUFFICIENT_ENCRYPTION_KEY_SIZE* = 0x0000000C
+  ATT_ERROR_INVALID_ATTRIBUTE_VALUE_LENGTH* = 0x0000000D
+  ATT_ERROR_UNLIKELY_ERROR* = 0x0000000E
+  ATT_ERROR_INSUFFICIENT_ENCRYPTION* = 0x0000000F
+  ATT_ERROR_UNSUPPORTED_GROUP_TYPE* = 0x00000010
+  ATT_ERROR_INSUFFICIENT_RESOURCES* = 0x00000011
+
+##  MARK: Attribute Property Flags
+
+const
+  ATT_PROPERTY_BROADCAST* = 0x00000001
+  ATT_PROPERTY_READ* = 0x00000002
+  ATT_PROPERTY_WRITE_WITHOUT_RESPONSE* = 0x00000004
+  ATT_PROPERTY_WRITE* = 0x00000008
+  ATT_PROPERTY_NOTIFY* = 0x00000010
+  ATT_PROPERTY_INDICATE* = 0x00000020
+  ATT_PROPERTY_AUTHENTICATED_SIGNED_WRITE* = 0x00000040
+  ATT_PROPERTY_EXTENDED_PROPERTIES* = 0x00000080
+
+##  MARK: Attribute Property Flag, BTstack extension
+##  value is asked from client
+
+const
+  ATT_PROPERTY_DYNAMIC* = 0x00000100
+
+##  128 bit UUID used
+
+const
+  ATT_PROPERTY_UUID128* = 0x00000200
+
+##  Authentication required
+
+const
+  ATT_PROPERTY_AUTHENTICATION_REQUIRED* = 0x00000400
+
+##  Authorization from user required
+
+const
+  ATT_PROPERTY_AUTHORIZATION_REQUIRED* = 0x00000800
+
+##  Encryption key size stored in upper 4 bits, 0 == no encryption, encryption key size - 1 otherwise
+##  ATT Transaction Timeout of 30 seconds for Command/Response or Incidationc/Confirmation
+
+const
+  ATT_TRANSACTION_TIMEOUT_MS* = 30000
+  ATT_TRANSACTION_MODE_NONE* = 0x00000000
+  ATT_TRANSACTION_MODE_ACTIVE* = 0x00000001
+  ATT_TRANSACTION_MODE_EXECUTE* = 0x00000002
+  ATT_TRANSACTION_MODE_CANCEL* = 0x00000003
+
+##  MARK: GATT UUIDs
+
+const
+  GATT_PRIMARY_SERVICE_UUID* = 0x00002800
+  GATT_SECONDARY_SERVICE_UUID* = 0x00002801
+  GATT_INCLUDE_SERVICE_UUID* = 0x00002802
+  GATT_CHARACTERISTICS_UUID* = 0x00002803
+  GATT_CHARACTERISTIC_EXTENDED_PROPERTIES* = 0x00002900
+  GATT_CHARACTERISTIC_USER_DESCRIPTION* = 0x00002901
+  GATT_CLIENT_CHARACTERISTICS_CONFIGURATION* = 0x00002902
+  GATT_SERVER_CHARACTERISTICS_CONFIGURATION* = 0x00002903
+  GATT_CHARACTERISTIC_PRESENTATION_FORMAT* = 0x00002904
+  GATT_CHARACTERISTIC_AGGREGATE_FORMAT* = 0x00002905
+  GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NONE* = 0
+  GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION* = 1
+  GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_INDICATION* = 2
+
+##  GAP Service and Characteristics
+
+const
+  GAP_SERVICE_UUID* = 0x00001800
+  GAP_DEVICE_NAME_UUID* = 0x00002A00
+  GAP_APPEARANCE_UUID* = 0x00002A01
+  GAP_PERIPHERAL_PRIVACY_FLAG* = 0x00002A02
+  GAP_RECONNECTION_ADDRESS_UUID* = 0x00002A03
+  GAP_PERIPHERAL_PREFERRED_CONNECTION_PARAMETERS_UUID* = 0x00002A04
+  GAP_SERVICE_CHANGED* = 0x00002A05
+
+## *
+##  SM - LE Security Manager
+##
+##  Bluetooth Spec definitions
+
+type
+  SECURITY_MANAGER_COMMANDS* {.size: sizeof(cint).} = enum
+    SM_CODE_PAIRING_REQUEST = 0x00000001, SM_CODE_PAIRING_RESPONSE,
+    SM_CODE_PAIRING_CONFIRM, SM_CODE_PAIRING_RANDOM, SM_CODE_PAIRING_FAILED,
+    SM_CODE_ENCRYPTION_INFORMATION, SM_CODE_MASTER_IDENTIFICATION,
+    SM_CODE_IDENTITY_INFORMATION, SM_CODE_IDENTITY_ADDRESS_INFORMATION,
+    SM_CODE_SIGNING_INFORMATION, SM_CODE_SECURITY_REQUEST
+
+
+##  IO Capability Values
+
+type
+  io_capability_t* {.size: sizeof(cint).} = enum
+    IO_CAPABILITY_UNINITIALIZED = -1, IO_CAPABILITY_DISPLAY_ONLY = 0,
+    IO_CAPABILITY_DISPLAY_YES_NO, IO_CAPABILITY_KEYBOARD_ONLY,
+    IO_CAPABILITY_NO_INPUT_NO_OUTPUT, IO_CAPABILITY_KEYBOARD_DISPLAY ##  not used by secure simple pairing
+
+
+##  Authentication requirement flags
+
+const
+  SM_AUTHREQ_NO_BONDING* = 0x00000000
+  SM_AUTHREQ_BONDING* = 0x00000001
+  SM_AUTHREQ_MITM_PROTECTION* = 0x00000004
+
+##  Key distribution flags used by spec
+
+const
+  SM_KEYDIST_ENC_KEY* = 0x00000001
+  SM_KEYDIST_ID_KEY* = 0x00000002
+  SM_KEYDIST_SIGN* = 0x00000004
+
+##  Key distribution flags used internally
+
+const
+  SM_KEYDIST_FLAG_ENCRYPTION_INFORMATION* = 0x00000001
+  SM_KEYDIST_FLAG_MASTER_IDENTIFICATION* = 0x00000002
+  SM_KEYDIST_FLAG_IDENTITY_INFORMATION* = 0x00000004
+  SM_KEYDIST_FLAG_IDENTITY_ADDRESS_INFORMATION* = 0x00000008
+  SM_KEYDIST_FLAG_SIGNING_IDENTIFICATION* = 0x00000010
+
+##  STK Generation Methods
+
+const
+  SM_STK_GENERATION_METHOD_JUST_WORKS* = 0x00000001
+  SM_STK_GENERATION_METHOD_OOB* = 0x00000002
+  SM_STK_GENERATION_METHOD_PASSKEY* = 0x00000004
+
+##  Pairing Failed Reasons
+
+const
+  SM_REASON_RESERVED* = 0x00000000
+  SM_REASON_PASSKEYT_ENTRY_FAILED* = 0x00000001
+  SM_REASON_OOB_NOT_AVAILABLE* = 0x00000002
+  SM_REASON_AUTHENTHICATION_REQUIREMENTS* = 0x00000003
+  SM_REASON_CONFIRM_VALUE_FAILED* = 0x00000004
+  SM_REASON_PAIRING_NOT_SUPPORTED* = 0x00000005
+  SM_REASON_ENCRYPTION_KEY_SIZE* = 0x00000006
+  SM_REASON_COMMAND_NOT_SUPPORTED* = 0x00000007
+  SM_REASON_UNSPECIFIED_REASON* = 0x00000008
+  SM_REASON_REPEATED_ATTEMPTS* = 0x00000009
+
+##  also, invalid parameters
+##  and reserved
+##  Company identifiers / manufacturers
+
+const
+  COMPANY_ID_INGCHIPS* = 0x000006AC
+
+## * Generic UUID type, to be used only as a pointer
+
+type
+  ble_uuid_t* {.importc: "ble_uuid_t", header: "bluetooth.h", bycopy.} = object
+    `type`* {.importc: "type".}: uint8 ## * Type of the UUID
+
+
+## * 16-bit UUID
+
+type
+  ble_uuid16_t* {.importc: "ble_uuid16_t", header: "bluetooth.h", bycopy.} = object
+    u* {.importc: "u".}: ble_uuid_t
+    value* {.importc: "value".}: uint16
+
+
+## * 32-bit UUID
+
+type
+  ble_uuid32_t* {.importc: "ble_uuid32_t", header: "bluetooth.h", bycopy.} = object
+    u* {.importc: "u".}: ble_uuid_t
+    value* {.importc: "value".}: uint32
+
+
+## * 128-bit UUID
+
+type
+  ble_uuid128_t* {.importc: "ble_uuid128_t", header: "bluetooth.h", bycopy.} = object
+    u* {.importc: "u".}: ble_uuid_t
+    value* {.importc: "value".}: array[16, uint8]
+
+
+## * Universal UUID type, to be used for any-UUID static allocation
+
+type
+  ble_uuid_any_t* {.importc: "ble_uuid_any_t", header: "bluetooth.h", bycopy.} = object {.
+      union.}
+    u* {.importc: "u".}: ble_uuid_t
+    u16* {.importc: "u16".}: ble_uuid16_t
+    u32* {.importc: "u32".}: ble_uuid32_t
+    u128* {.importc: "u128".}: ble_uuid128_t
+

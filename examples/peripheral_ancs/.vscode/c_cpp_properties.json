@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "ING918xx",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/projects/ingWizard/CMSIS/Include",
+                "../../bundles/typical/inc/os/portable/GCC/ARM_CM3",
+                "../../bundles/typical/inc",
+                "../../bundles/typical/inc/os",                
+                "../../src/BSP",
+                "../../src/FWlib",
+                "../../src/StartUP",
+                "../../src/Tools",
+                "../../src/Mesh" 
+            ],
+            "defines": [
+                "USE_STDPERIPH_DRIVER=",
+                "__packed="
+            ], 
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}
