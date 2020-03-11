@@ -161,6 +161,7 @@
         "l2cap_unregister_service", 
         "l2cap_can_send_packet_now", 
         "l2cap_request_can_send_now_event", 
+        "l2cap_request_connection_parameter_update", 
         "l2cap_send_signaling_le", 
         "l2cap_next_sig_id", 
         "l2cap_next_local_cid", 
@@ -216,8 +217,12 @@
         "xTaskCheckForTimeOut", 
         "vTaskMissedYield", 
         "xTaskGetSchedulerState", 
+        "xTaskPriorityInherit", 
+        "xTaskPriorityDisinherit", 
+        "vTaskPriorityDisinheritAfterTimeout", 
         "vTaskStepTick", 
         "eTaskConfirmSleepModeStatus", 
+        "pvTaskIncrementMutexHeldCount", 
         "vTaskInternalSetTimeOutState", 
         "xTimerCreate", 
         "xTimerCreateStatic", 
@@ -234,15 +239,15 @@
     }, 
     "ram": {
         "base": 536880208, 
-        "size": 30544
+        "size": 30560
     }, 
     "rom": {
         "base": 16384, 
-        "size": 131564
+        "size": 132508
     }, 
     "version": [
         0, 
         14, 
-        2
+        3
     ]
 }

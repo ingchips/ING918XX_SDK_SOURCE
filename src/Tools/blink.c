@@ -1,5 +1,5 @@
 #include "blink.h"
-#include "cm32gpm3_pwm.h"
+#include "peripheral_pwm.h"
 
 #define LIGHT_PERA_THRESHOLD            (PWM_CLOCK_FREQ / 1000)
 #define SINGLE_PERA_THRESHOLD           (PWM_CLOCK_FREQ / 5)

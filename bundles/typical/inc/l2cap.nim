@@ -137,6 +137,20 @@ proc l2cap_can_send_packet_now*(local_cid: uint16): cint {.
 
 proc l2cap_request_can_send_now_event*(local_cid: uint16) {.
     importc: "l2cap_request_can_send_now_event", header: "l2cap.h".}
+## *
+##  @brief Request an update of the connection parameter for a given LE connection
+##  @param handle
+##  @param conn_interval_min (unit: 1.25ms)
+##  @param conn_interval_max (unit: 1.25ms)
+##  @param conn_latency
+##  @param supervision_timeout (unit: 10ms)
+##  @returns 0 if ok
+##
+
+proc l2cap_request_connection_parameter_update*(con_handle: hci_con_handle_t;
+    conn_interval_min: uint16; conn_interval_max: uint16; conn_latency: uint16;
+    supervision_timeout: uint16): cint {.importc: "l2cap_request_connection_parameter_update",
+                                      header: "l2cap.h".}
 when defined(CONNECTION_PARAMETER_DYNAMICALLY_ADJUST):
   proc l2cap_update_MTU_on_LL_link*(channel: ptr l2cap_channel_t): uint8 {.
       importc: "l2cap_update_MTU_on_LL_link", header: "l2cap.h".}

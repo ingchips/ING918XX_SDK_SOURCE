@@ -70,7 +70,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -105,8 +105,16 @@
 #define configUSE_16_BIT_TICKS      0
 #define configIDLE_SHOULD_YIELD     1
 #define configUSE_QUEUE_SETS        1
+#define configUSE_TIMERS            1
 #define configSUPPORT_STATIC_ALLOCATION 1
 #define configUSE_MALLOC_FAILED_HOOK    1
+#define configUSE_MUTEXES               1
+#define configUSE_COUNTING_SEMAPHORES   1
+#define configUSE_RECURSIVE_MUTEXES     1
+
+#define configTIMER_TASK_PRIORITY               ( configMAX_PRIORITIES - 1 )
+#define configTIMER_QUEUE_LENGTH				10
+#define configTIMER_TASK_STACK_DEPTH			configMINIMAL_STACK_SIZE
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES           0
@@ -146,7 +154,7 @@ void platform_raise_assertion(const char *file_name, int line_no);
 
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
-#define configASSERT( x ) if( ( x ) == 0 ) { platform_raise_assertion(__FILE__, __LINE__); }
+#define configASSERT( x ) if( ( x ) == 0 ) { platform_raise_assertion(__MODULE__, __LINE__); }
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS
 standard names. */

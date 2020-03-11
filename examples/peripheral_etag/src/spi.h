@@ -1,7 +1,7 @@
 #ifndef __SPI_H__
 #define __SPI_H__
 
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 
 #ifdef PROD_VER
 

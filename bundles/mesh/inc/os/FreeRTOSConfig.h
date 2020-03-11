@@ -70,8 +70,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-#include "cm32gpm3.h"
-
+#include "ingsoc.h"
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -91,21 +90,31 @@
 #ifdef POWER_SAVING
 #define configUSE_TICKLESS_IDLE     1
 #endif
-#ifdef TARGET_FPGA_V2
 #define configSYSTICK_CLOCK_HZ      32768
-#else
-#define configSYSTICK_CLOCK_HZ      625000
-#endif
+#ifdef TARGET_FPGA
 #define configCPU_CLOCK_HZ          ( ( unsigned long ) 32000000 )
+#else
+#define configCPU_CLOCK_HZ          ( ( unsigned long ) 48000000 )
+#endif
 #define configTICK_RATE_HZ          ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES        ( 15 )
 #define configMINIMAL_STACK_SIZE    ( ( unsigned short ) 128 )
-#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 15 * 1024 ) )
+#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 20 * 1024 ) )
 #define configMAX_TASK_NAME_LEN     ( 16 )
 #define configUSE_TRACE_FACILITY    0
 #define configUSE_16_BIT_TICKS      0
 #define configIDLE_SHOULD_YIELD     1
 #define configUSE_QUEUE_SETS        1
+#define configUSE_TIMERS            1
+#define configSUPPORT_STATIC_ALLOCATION 1
+#define configUSE_MALLOC_FAILED_HOOK    1
+#define configUSE_MUTEXES               1
+#define configUSE_COUNTING_SEMAPHORES   1
+#define configUSE_RECURSIVE_MUTEXES     1
+
+#define configTIMER_TASK_PRIORITY               ( configMAX_PRIORITIES - 1 )
+#define configTIMER_QUEUE_LENGTH				10
+#define configTIMER_TASK_STACK_DEPTH			configMINIMAL_STACK_SIZE
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES           0
@@ -141,9 +150,11 @@ to all Cortex-M ports, and do not rely on any particular library functions. */
 See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY   ( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 
+void platform_raise_assertion(const char *file_name, int line_no);
+
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
-#define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
+#define configASSERT( x ) if( ( x ) == 0 ) { platform_raise_assertion(__MODULE__, __LINE__); }
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS
 standard names. */

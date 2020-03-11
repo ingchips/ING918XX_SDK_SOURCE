@@ -1,6 +1,6 @@
 #include "uart_console.h"
 
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -19,20 +19,21 @@ typedef struct
 
 void print_addr(const uint8_t *addr)
 {
-    printf("%02X:%02X:%02X:%02X:%02X:%02X\n", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+    platform_printf("%02X:%02X:%02X:%02X:%02X:%02X\n", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 }
 
 static char buffer[20] = {0};
 
 static const char help[] =  "commands:\n"
                             "h/?         show this\n"
-                            "start dir   start throughput test on dir\n"
-                            "stop  dir   stop throughput test on dir\n\n"
-                            "note: dir = s->m, or m->s\n";
+                            "start dir   start tpt test on dir\n"
+                            "stop  dir   stop tpt test on dir\n\n"
+                            "loopback start/stop"
+                            "note: dir = s->m or m->s\n";
 
 void cmd_help(const char *param)
 {
-    printf(help);
+    platform_printf(help);
 }
 
 tpt_dir_t parse_dir(const char *param)
@@ -46,6 +47,7 @@ tpt_dir_t parse_dir(const char *param)
 
 extern void start_tpt(tpt_dir_t dir);
 extern void stop_tpt(tpt_dir_t dir);
+extern void loopback_test(int start1stop0);
 
 void cmd_start(const char *param)
 {
@@ -69,6 +71,11 @@ void cmd_stop(const char *param)
     stop_tpt(dir);
 }
 
+void cmd_loopback(const char *param)
+{
+    loopback_test(strcmp(param, "start") == 0 ? 1 : 0);
+}
+
 static cmd_t cmds[] =
 {
     {
@@ -86,6 +93,10 @@ static cmd_t cmds[] =
     {
         .cmd = "stop",
         .handler = cmd_stop
+    },
+    {
+        .cmd = "loopback",
+        .handler = cmd_loopback
     },
 };
 
@@ -109,7 +120,7 @@ void handle_command(char *cmd_line)
     return;
 
 show_help:
-    printf(unknow_cmd);
+    platform_printf(unknow_cmd);
     cmd_help(NULL);
 }
 

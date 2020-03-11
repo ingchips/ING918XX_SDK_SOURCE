@@ -1,7 +1,7 @@
 ##  test spi flash £¨AT45DBXX£©
 
 import
-  cm32gpm3
+  ingsoc
 
 const
   DEF_FLASH_DEVICE_ERR* = ((s8) - 1)

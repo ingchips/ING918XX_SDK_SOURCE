@@ -297,8 +297,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>0x20009ba0</StartAddress>
-                <Size>0x6460</Size>
+                <StartAddress>0x20009bb0</StartAddress>
+                <Size>0x6450</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -425,24 +425,24 @@
           <GroupName>FWlib</GroupName>
           <Files>
             <File>
-              <FileName>cm32gpm3_i2c.c</FileName>
+              <FileName>peripheral_i2c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\cm32gpm3_i2c.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_i2c.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_uart.c</FileName>
+              <FileName>peripheral_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\cm32gpm3_uart.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_uart.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_sysctrl.c</FileName>
+              <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\cm32gpm3_sysctrl.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_sysctrl.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_pinctrl.c</FileName>
+              <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\cm32gpm3_pinctrl.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
             </File>
           </Files>
         </Group>

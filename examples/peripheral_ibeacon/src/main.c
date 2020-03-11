@@ -1,5 +1,5 @@
 #include "profile.h"
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 #include "platform_api.h"
 #include <stdio.h>
 
@@ -51,8 +51,6 @@ int app_main()
     // platform_set_rf_clk_source(0);
 
     setup_peripherals();
-
-    platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
 
     // setup putc handle
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);

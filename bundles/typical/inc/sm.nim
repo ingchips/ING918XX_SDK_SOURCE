@@ -33,6 +33,14 @@ type
     identity_addr_type* {.importc: "identity_addr_type".}: bd_addr_type_t ##  Note: only PUBLIC & RANDOM are allowed
 
 
+##  Authorization state
+
+type
+  authorization_state_t* {.size: sizeof(cint).} = enum
+    AUTHORIZATION_UNKNOWN, AUTHORIZATION_PENDING, AUTHORIZATION_DECLINED,
+    AUTHORIZATION_GRANTED
+
+
 ## *
 ##  @brief Security configurations
 ##
@@ -115,3 +123,101 @@ proc sm_just_works_confirm*(con_handle: hci_con_handle_t) {.
 
 proc sm_passkey_input*(con_handle: hci_con_handle_t; passkey: uint32) {.
     importc: "sm_passkey_input", header: "sm.h".}
+## *
+##  @brief Limit the STK generation methods. Bonding is stopped if the resulting one isn't in the list
+##  @param OR combination of SM_STK_GENERATION_METHOD_
+##
+
+proc sm_set_accepted_stk_generation_methods*(
+    accepted_stk_generation_methods: uint8) {.
+    importc: "sm_set_accepted_stk_generation_methods", header: "sm.h".}
+## *
+##  @brief Set the accepted encryption key size range. Bonding is stopped if the result isn't within the range
+##  @param min_size (default 7)
+##  @param max_size (default 16)
+##
+
+proc sm_set_encryption_key_size_range*(min_size: uint8; max_size: uint8) {.
+    importc: "sm_set_encryption_key_size_range", header: "sm.h".}
+## *
+##  @brief Sets the requested authentication requirements, bonding yes/no, MITM yes/no
+##  @param OR combination of SM_AUTHREQ_ flags
+##
+
+proc sm_set_authentication_requirements*(auth_req: uint8) {.
+    importc: "sm_set_authentication_requirements", header: "sm.h".}
+## *
+##  @brief Let Peripheral request an encrypted connection right after connecting
+##  @note Not used normally. Bonding is triggered by access to protected attributes in ATT Server
+##
+##  void sm_set_request_security(int enable);
+##  WARNING: ^^^ this API is not available in this release
+## *
+##  @brief Trigger Security Request
+##  @note Not used normally. Bonding is triggered by access to protected attributes in ATT Server
+##
+
+proc sm_send_security_request*(con_handle: hci_con_handle_t) {.
+    importc: "sm_send_security_request", header: "sm.h".}
+## *
+##
+##  @brief Get encryption key size.
+##  @param addr_type and address
+##  @return 0 if not encrypted, 7-16 otherwise
+##
+
+proc sm_encryption_key_size*(con_handle: hci_con_handle_t): cint {.
+    importc: "sm_encryption_key_size", header: "sm.h".}
+## *
+##  @brief Get authentication property.
+##  @param addr_type and address
+##  @return 1 if bonded with OOB/Passkey (AND MITM protection)
+##
+
+proc sm_authenticated*(con_handle: hci_con_handle_t): cint {.
+    importc: "sm_authenticated", header: "sm.h".}
+## *
+##  @brief Queries authorization state.
+##  @param addr_type and address
+##  @return authorization_state for the current session
+##
+
+proc sm_authorization_state*(con_handle: hci_con_handle_t): authorization_state_t {.
+    importc: "sm_authorization_state", header: "sm.h".}
+## *
+##  @brief Used by att_server.c to request user authorization.
+##  @param addr_type and address
+##
+
+proc sm_request_pairing*(con_handle: hci_con_handle_t) {.
+    importc: "sm_request_pairing", header: "sm.h".}
+## *
+##  @brief Report user authorization decline.
+##  @param addr_type and address
+##
+
+proc sm_authorization_decline*(con_handle: hci_con_handle_t) {.
+    importc: "sm_authorization_decline", header: "sm.h".}
+## *
+##  @brief Report user authorization grant.
+##  @param addr_type and address
+##
+
+proc sm_authorization_grant*(con_handle: hci_con_handle_t) {.
+    importc: "sm_authorization_grant", header: "sm.h".}
+##
+##  @brief Match address against bonded devices
+##  @return 0 if successfully added to lookup queue
+##  @note Triggers SM_IDENTITY_RESOLVING_* events
+##
+
+proc sm_address_resolution_lookup*(addr_type: uint8; `addr`: bd_addr_t): cint {.
+    importc: "sm_address_resolution_lookup", header: "sm.h".}
+## *
+##  @brief Identify device in LE Device DB.
+##  @param handle
+##  @return index from le_device_db or -1 if not found/identified
+##
+
+proc sm_le_device_key*(con_handle: hci_con_handle_t): cint {.
+    importc: "sm_le_device_key", header: "sm.h".}

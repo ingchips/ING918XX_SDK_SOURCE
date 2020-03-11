@@ -4,7 +4,7 @@ ING_BUNDLE=../../bundles/typical/inc
 
 APPNAME=peripheral_ibeacon
 
-PROJECT_FILES=src/main.c ../../examples/${APPNAME}/src/profile.c   ${ING_REL}/src/FWlib/cm32gpm3_uart.c   
+PROJECT_FILES=src/main.c ../../examples/${APPNAME}/src/profile.c   ${ING_REL}/src/FWlib/peripheral_uart.c   
 
 SYMDEFS=-Wl,--just-symbols=../../bundles/typical/symdefs.g
 

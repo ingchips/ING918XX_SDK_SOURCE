@@ -3,9 +3,15 @@
 
 #include <stdint.h>
 
+#ifdef DEV_BOARD
 // 4KB per sec
 #define VOICE_BUF_BLOCK_SIZE  150   // this is indicated in GATT voice information
-#define VOICE_BUF_BLOCK_NUM   (4100 / VOICE_BUF_BLOCK_SIZE)     // total buffer: 3KB, 0.75s
+#define VOICE_BUF_BLOCK_NUM   (4100 / VOICE_BUF_BLOCK_SIZE)     // total buffer: 4.1KB
+#else
+// 4KB per sec
+#define VOICE_BUF_BLOCK_SIZE  128   // this is indicated in GATT voice information
+#define VOICE_BUF_BLOCK_NUM   (4000 / VOICE_BUF_BLOCK_SIZE)     // total buffer: 4KB
+#endif
 
 void audio_init(void);
 uint32_t audio_sample_isr(void *user_data);

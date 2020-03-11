@@ -186,7 +186,7 @@
 
   <Group>
     <GroupName>APP</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -221,8 +221,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\anti_lost_sla\src\dev_info.c</PathWithFileName>
-      <FilenameWithoutPath>dev_info.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\io_interf.c</PathWithFileName>
+      <FilenameWithoutPath>io_interf.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -281,8 +281,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\cm32gpm3_uart.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_uart.c</FilenameWithoutPath>
+      <PathWithFileName>../..\src\FWlib\peripheral_uart.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_uart.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -293,8 +293,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\cm32gpm3_sysctrl.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_sysctrl.c</FilenameWithoutPath>
+      <PathWithFileName>../..\src\FWlib\peripheral_sysctrl.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_sysctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -305,8 +305,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\FWlib\cm32gpm3_pinctrl.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_pinctrl.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\FWlib\peripheral_pinctrl.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_pinctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -317,8 +317,32 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\FWlib\cm32gpm3_pwm.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_pwm.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\FWlib\peripheral_pwm.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_pwm.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>10</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\src\FWlib\peripheral_gpio.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_gpio.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>11</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\src\FWlib\peripheral_ssp.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_ssp.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -332,7 +356,7 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>10</FileNumber>
+      <FileNumber>12</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -344,7 +368,7 @@
     </File>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>11</FileNumber>
+      <FileNumber>13</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>

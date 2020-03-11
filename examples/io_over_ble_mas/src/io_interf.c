@@ -1,5 +1,5 @@
 #include "io_interf.h"
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 #include "platform_api.h"
 
 #include <string.h>
@@ -82,9 +82,22 @@ void io_interf_init()
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
 }
 
-#endif
+#elif (IO_TYPE == IO_TYPE_LOOPBACK)
 
-#if (IO_TYPE == IO_TYPE_L2)
+void HANDLE_FUNC(const uint8_t *data, const int len)
+{
+    send_data(data, len);
+}
+
+void io_interf_setup_peripherals()
+{
+}
+
+void io_interf_init()
+{
+}
+
+#elif (IO_TYPE == IO_TYPE_L2)
 
 #include "io_l2.c"
 

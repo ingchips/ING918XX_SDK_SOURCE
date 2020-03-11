@@ -1,6 +1,6 @@
 #define OPTIONAL_RF_CLK
 #include "profile.h"
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 #include "platform_api.h"
 #include "kv_storage.h"
 #include "FreeRTOS.h"

@@ -17,10 +17,13 @@
 #include "timers.h"
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_GENERIC_INPUT                                 6
-#define HANDLE_GENERIC_OUTPUT                                8
-
+#define HANDLE_DEVICE_NAME                                  3
+#define HANDLE_GENERIC_INPUT                                6
+#define HANDLE_GENERIC_OUTPUT                               8
+#define HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG			9
+#define HANDLE_GENERIC_INPUT_1			                    12
+#define HANDLE_GENERIC_OUTPUT_1			                    14
+#define HANDLE_GENERIC_OUTPUT_1_CLIENT_CHAR_CONFIG			15
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"
@@ -50,6 +53,7 @@ bd_addr_t rand_addr = {0xC0,0xAA,0xAA,0xAA,0xAA,0xAA};
 typedef struct
 {
     uint8_t  notify_enable;
+    uint8_t  tpt_enable;
     uint16_t conn_handle;
 } peripheral_cfg_t;
 
@@ -73,6 +77,18 @@ uint8_t conn_handle_to_peripheral_index(const uint16_t conn_handle)
         }
     }
     return 0xff;
+}
+
+void disable_timer_if_no_tpt(void)
+{
+    uint8_t index;
+    for (index = 0; index < PERIPHERAL_NUMBER; index++)
+    {
+        if ((peripheral_cfgs[index].conn_handle != INVALID_HANDLE) &&
+            (peripheral_cfgs[index].tpt_enable))
+            return;
+    }
+    TMR_Disable(APB_TMR1);
 }
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
@@ -102,7 +118,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     uint8_t index;
     switch (att_handle)
     {
-    case HANDLE_GENERIC_OUTPUT + 1:
+    case HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG:
         index = conn_handle_to_peripheral_index(connection_handle);
         if (index >= PERIPHERAL_NUMBER) return 0;
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
@@ -110,7 +126,22 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         else
             peripheral_cfgs[index].notify_enable = 0;
         return 0;
-
+    case HANDLE_GENERIC_OUTPUT_1_CLIENT_CHAR_CONFIG:
+        index = conn_handle_to_peripheral_index(connection_handle);
+        if (index >= PERIPHERAL_NUMBER) return 0;
+        if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
+        {
+            ll_hint_on_ce_len(connection_handle, 30, 30);
+            peripheral_cfgs[index].tpt_enable = 1;
+            TMR_Reload(APB_TMR1);
+            TMR_Enable(APB_TMR1);
+        }
+        else
+        {
+            peripheral_cfgs[index].tpt_enable = 0;
+            disable_timer_if_no_tpt();
+        }
+        return 0;
     default:
         return 0;
     }
@@ -357,10 +388,36 @@ void slave_connected(const le_meta_event_create_conn_complete_t *conn_complete)
 #define USER_MSG_UPDATE_ADDR        3
 #define USER_MSG_SEND_OUTPUT        4
 #define USER_MSG_INITIATE_TIMOUT    5
+#define USER_MSG_SEND_TPT           6
+
+void trigger_tpt(void)
+{
+    btstack_push_user_msg(USER_MSG_SEND_TPT, NULL, 0);
+}
 
 static void app_timer_callback(TimerHandle_t xTimer)
 {
     btstack_push_user_msg(USER_MSG_INITIATE_TIMOUT, NULL, 0);
+}
+
+void peripheral_tpt(void)
+{
+    int i;
+    for (i = 0; i < PERIPHERAL_NUMBER; i++)
+    {
+        if ((INVALID_HANDLE != peripheral_cfgs[i].conn_handle)
+            && peripheral_cfgs[i].tpt_enable)
+        {
+            int16_t size = 220000 / 1000 * 20 / 8;   // for 220kb throughput
+            uint16_t mtu = att_server_get_mtu(peripheral_cfgs[i].conn_handle) - 3;
+            while (size > 0)
+            {
+                att_server_notify(peripheral_cfgs[i].conn_handle, 
+                                  HANDLE_GENERIC_OUTPUT_1, NULL, mtu);
+                size -= mtu;
+            }
+        }
+    }
 }
 
 void start_adv_if_needed(void)
@@ -385,7 +442,8 @@ void peripheral_disc(const hci_con_handle_t conn_handle)
         if (conn_handle == peripheral_cfgs[i].conn_handle)
         {
             peripheral_cfgs[i].conn_handle = INVALID_HANDLE;
-            peripheral_cfgs[i].notify_enable = 0;            
+            peripheral_cfgs[i].notify_enable = 0;
+            peripheral_cfgs[i].tpt_enable = 0;
         }
     }
     start_adv_if_needed();
@@ -445,6 +503,9 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             gap_create_connection_cancel();
             start_scan_if_needed();
         }
+        break;
+    case USER_MSG_SEND_TPT:
+        peripheral_tpt();
         break;
     default:
         ;

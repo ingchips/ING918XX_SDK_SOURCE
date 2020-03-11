@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "cm32gpm3_i2c.h"
+#include "peripheral_i2c.h"
 
 #ifdef __cplusplus
 extern "C" {

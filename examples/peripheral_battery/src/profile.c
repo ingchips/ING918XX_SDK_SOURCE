@@ -7,8 +7,8 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#include "cm32gpm3.h"
-#include "cm32gpm3_adc.h"
+#include "ingsoc.h"
+#include "peripheral_adc.h"
 #include <stdio.h>
 #include <stdlib.h>
 

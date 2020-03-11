@@ -195,7 +195,7 @@
       <Focus>0</Focus>
       <ColumnNumber>18</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>89</TopLine>
+      <TopLine>6</TopLine>
       <CurrentLine>7</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\main.c</PathWithFileName>
@@ -211,7 +211,7 @@
       <Focus>0</Focus>
       <ColumnNumber>31</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>86</TopLine>
+      <TopLine>87</TopLine>
       <CurrentLine>97</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\profile.c</PathWithFileName>
@@ -227,7 +227,7 @@
       <Focus>0</Focus>
       <ColumnNumber>13</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>41</TopLine>
+      <TopLine>42</TopLine>
       <CurrentLine>49</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\io_over_ble_mas\src\io_interf.c</PathWithFileName>
@@ -302,8 +302,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\cm32gpm3_uart.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_uart.c</FilenameWithoutPath>
+      <PathWithFileName>../..\src\FWlib\peripheral_uart.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_uart.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -318,8 +318,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\cm32gpm3_sysctrl.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_sysctrl.c</FilenameWithoutPath>
+      <PathWithFileName>../..\src\FWlib\peripheral_sysctrl.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_sysctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -334,8 +334,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\FWlib\cm32gpm3_pinctrl.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_pinctrl.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\FWlib\peripheral_pinctrl.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_pinctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -350,8 +350,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\FWlib\cm32gpm3_pwm.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_pwm.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\FWlib\peripheral_pwm.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_pwm.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -366,8 +366,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\FWlib\cm32gpm3_gpio.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_gpio.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\FWlib\peripheral_gpio.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_gpio.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -382,8 +382,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\FWlib\cm32gpm3_ssp.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_ssp.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\FWlib\peripheral_ssp.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_ssp.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

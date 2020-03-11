@@ -101,10 +101,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         {.handle = 1, .duration = 0, .max_events = 0},
         {.handle = 2, .duration = 0, .max_events = 0},
         {.handle = 3, .duration = 0, .max_events = 0},
+        {.handle = 4, .duration = 0, .max_events = 0}
     };
-    const static bd_addr_t rand_addr1 = {1,1,1,1,1,1};    // TODO: random address generation
-    const static bd_addr_t rand_addr2 = {2,2,2,2,2,2};    // TODO: random address generation
-    const static bd_addr_t rand_addr3 = {3,3,3,3,3,3};    // TODO: random address generation
+    const static bd_addr_t rand_addr1 = {1};
+    const static bd_addr_t rand_addr2 = {2};
+    const static bd_addr_t rand_addr3 = {3};
+    const static bd_addr_t rand_addr4 = {4};
+    const static bd_addr_t rand_addr5 = {5};
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -117,9 +120,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
         gap_set_adv_set_random_addr(0, rand_addr1);
         gap_set_adv_set_random_addr(1, rand_addr2);
-        gap_set_adv_set_random_addr(2, rand_addr1);
-        gap_set_adv_set_random_addr(3, rand_addr2);
-        gap_set_adv_set_random_addr(4, rand_addr3);
+        gap_set_adv_set_random_addr(2, rand_addr3);
+        gap_set_adv_set_random_addr(3, rand_addr4);
+        gap_set_adv_set_random_addr(4, rand_addr5);
         
         setup_adv_set(0, PHY_1M, PHY_1M,
                          adv_data_1m, sizeof(adv_data_1m), 0);
@@ -130,7 +133,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         setup_adv_set(3, PHY_CODED, PHY_CODED,
                          adv_data_coded500, sizeof(adv_data_coded500), 0);
         setup_adv_set(4, PHY_1M, PHY_1M,
-                         eddystone_url, sizeof(eddystone_url), LEGACY_PDU_BIT);
+                         eddystone_url, sizeof(eddystone_url), 0);
         ll_set_adv_coded_scheme(3, BLE_CODED_S2);
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         break;

@@ -9,10 +9,14 @@
 #include "btstack_defines.h"
 #include "gatt_client.h"
 
-#include "cm32gpm3.h"
+#include "ingsoc.h"
+#include "peripheral_rtc.h"
 
 #include "ad_parser.h"
 #include "uart_console.h"
+
+#include "FreeRTOS.h"
+#include "timers.h"
 
 #define INVALID_HANDLE      (0xffff)
 const uint8_t UUID_TPT[]            = {0x24,0x45,0x31,0x4a,0xa1,0xd4,0x48,0x74,0xb4,0xd1,0xfd,0xfb,0x6f,0x50,0x14,0x85};
@@ -22,7 +26,7 @@ const uint8_t UUID_CHAR_GEN_OUT[]   = {0xbf,0x83,0xf3,0xf2,0x39,0x9a,0x41,0x4d,0
 void print_addr(const uint8_t *addr);
 
 typedef struct slave_info
-{    
+{
     uint32_t    s2m_total;
     uint32_t    m2s_total;
     gatt_client_service_t                   service_tpt;
@@ -34,10 +38,64 @@ typedef struct slave_info
     uint8_t     m2s_run;
     uint8_t     m2s_paused;
     uint8_t     s2m_run;
-    
+    uint8_t     loopback;
 } slave_info_t;
 
 slave_info_t slave = {.conn_handle = INVALID_HANDLE};
+static TimerHandle_t app_timer = 0;
+
+#define LOOPBACK_TEST_SIZE  516
+#define LOOPBACK_DATA       ((const uint8_t *)(0x4000))
+typedef struct loopback_info
+{
+    uint32_t counter;
+    uint32_t start;
+    int rx_len;
+} loopback_info_t;
+
+loopback_info_t loopback_info = {0};
+
+void loopback_send(void)
+{
+    const uint8_t *data = LOOPBACK_DATA;
+    uint16_t mtu;
+    int remain = LOOPBACK_TEST_SIZE;
+    if ((slave.conn_handle == INVALID_HANDLE) || (0 == slave.loopback))
+        return;
+
+    loopback_info.start = RTC_Current();
+    loopback_info.rx_len = 0;
+    gatt_client_get_mtu(slave.conn_handle, &mtu);
+    mtu -= 3;
+    while (remain > 0)
+    {
+        int len = remain > mtu ? mtu : remain;
+        uint8_t r = gatt_client_write_value_of_characteristic_without_response(slave.conn_handle,
+                            slave.input_char.value_handle, len, (uint8_t *)data);
+        if (r != 0)
+        {
+            platform_printf("error\n");
+            break;
+        }
+        remain -= len;
+        data += len;
+    }
+}
+
+void loopback_rx(const uint8_t *buffer, const uint16_t size)
+{
+    const uint8_t *data = LOOPBACK_DATA + loopback_info.rx_len;
+    if (memcmp(data, buffer, size) != 0)
+        platform_printf("ERR: data mismatch\n");
+    loopback_info.rx_len += size;
+    if (loopback_info.rx_len >= LOOPBACK_TEST_SIZE)
+    {
+        uint32_t duration = RTC_Current() - loopback_info.start;
+        printf("%04d: %.2f\n", loopback_info.counter, duration / 32.768);
+        xTimerStart(app_timer, portMAX_DELAY);
+        loopback_info.counter++;
+    }
+}
 
 void reset_info(void)
 {
@@ -48,16 +106,23 @@ void reset_info(void)
     slave.output_desc.handle                = INVALID_HANDLE;
     slave.m2s_run = 0;
     slave.s2m_run = 0;
+    slave.loopback = 0;
 }
 
 static void output_notification_handler(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
 {
+    const gatt_event_value_packet_t *value_packet;
     uint16_t value_size;
     switch (packet[0])
     {
     case GATT_EVENT_NOTIFICATION:
-        gatt_event_notification_parse(packet, size, &value_size);
-        slave.s2m_total += value_size;
+        value_packet = gatt_event_notification_parse(packet, size, &value_size);
+        if (0 == slave.loopback)
+        {
+            slave.s2m_total += value_size;
+        }
+        else
+            loopback_rx(value_packet->value, value_size);
         break;
     }
 }
@@ -69,7 +134,7 @@ void btstack_callback(uint8_t packet_type, uint16_t channel, const uint8_t *pack
     case GATT_EVENT_QUERY_COMPLETE:
         if (gatt_event_query_complete_get_status(packet) != 0)
             return;
-        printf("cmpl\n");
+        platform_printf("cmpl\n");
         break;
     }
 }
@@ -83,16 +148,16 @@ void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_
     {
     case GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT:
         gatt_event_all_characteristic_descriptors_query_result_get_characteristic_descriptor(packet, &slave.output_desc);
-        printf("output desc: %d\n", slave.output_desc.handle);               
+        platform_printf("output desc: %d\n", slave.output_desc.handle);
         break;
     case GATT_EVENT_QUERY_COMPLETE:
         if (gatt_event_query_complete_get_status(packet) != 0)
             break;
-        
+
         if (slave.output_desc.handle != INVALID_HANDLE)
-        {            
-            gatt_client_listen_for_characteristic_value_updates(&slave.output_notify, output_notification_handler, 
-                                                                slave.conn_handle, &slave.output_char);            
+        {
+            gatt_client_listen_for_characteristic_value_updates(&slave.output_notify, output_notification_handler,
+                                                                slave.conn_handle, &slave.output_char);
         }
         break;
     }
@@ -106,12 +171,12 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
         if (INVALID_HANDLE == slave.input_char.value_handle)
         {
             gatt_event_characteristic_query_result_get_characteristic(packet, &slave.input_char);
-            printf("input handle: %d\n", slave.input_char.value_handle);
+            platform_printf("input handle: %d\n", slave.input_char.value_handle);
         }
         else
         {
             gatt_event_characteristic_query_result_get_characteristic(packet, &slave.output_char);
-            printf("output handle: %d\n", slave.output_char.value_handle);
+            platform_printf("output handle: %d\n", slave.output_char.value_handle);
         }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
@@ -119,17 +184,17 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
             break;
         if (INVALID_HANDLE == slave.input_char.value_handle)
         {
-            printf("characteristic not found, disc\n");
+            platform_printf("characteristic not found, disc\n");
             gap_disconnect(slave.conn_handle);
         }
         else
         {
             if (INVALID_HANDLE == slave.output_char.value_handle)
-                gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, slave.conn_handle, 
+                gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, slave.conn_handle,
                                                                        &slave.service_tpt, UUID_CHAR_GEN_OUT);
             else
                 gatt_client_discover_characteristic_descriptors(descriptor_discovery_callback, slave.conn_handle, &slave.output_char);
-        }        
+        }
         break;
     }
 }
@@ -140,20 +205,20 @@ void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *
     {
     case GATT_EVENT_SERVICE_QUERY_RESULT:
         gatt_event_service_query_result_get_service(packet, &slave.service_tpt);
-        printf("service handle: %d %d\n", 
-                slave.service_tpt.start_group_handle, slave.service_tpt.end_group_handle);               
+        platform_printf("service handle: %d %d\n",
+                slave.service_tpt.start_group_handle, slave.service_tpt.end_group_handle);
         break;
     case GATT_EVENT_QUERY_COMPLETE:
         if (gatt_event_query_complete_get_status(packet) != 0)
             break;
         if (slave.service_tpt.start_group_handle != INVALID_HANDLE)
         {
-            gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, slave.conn_handle, 
+            gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, slave.conn_handle,
                                                                        &slave.service_tpt, UUID_CHAR_GEN_IN);
         }
         else
         {
-            printf("service not found, disc\n");
+            platform_printf("service not found, disc\n");
             gap_disconnect(slave.conn_handle);
         }
         break;
@@ -166,17 +231,17 @@ void send_data(void)
     uint8_t r;
     if (0 == slave.m2s_run)
         return;
-    
+
     slave.m2s_paused = 0;
-    
+
     gatt_client_get_mtu(slave.conn_handle, &len);
     len -= 3;
 
     do
     {
-        r = gatt_client_write_value_of_characteristic_without_response(slave.conn_handle, 
+        r = gatt_client_write_value_of_characteristic_without_response(slave.conn_handle,
                                                                        slave.input_char.value_handle, len, (uint8_t *)0x4000);
-        
+
         switch (r)
         {
             case 0:
@@ -196,6 +261,8 @@ void send_data(void)
 #define USER_MSG_STOP_M2S               3
 #define USER_MSG_STOP_S2M               4
 #define USER_MSG_SHOW_TPT               5
+#define USER_MSG_LOOPBACK               6
+#define USER_MSG_LOOPBACK_SEND          7
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
@@ -232,15 +299,50 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         if (slave.m2s_run)
         {
             if (slave.m2s_paused) send_data();
-            printf("M->S: %dbps\n", slave.m2s_total << 3);
+            platform_printf("M->S: %dbps\n", slave.m2s_total << 3);
         }
         if (slave.s2m_run)
-            printf("S->M: %dbps\n", slave.s2m_total << 3);
+            platform_printf("S->M: %dbps\n", slave.s2m_total << 3);
         slave.m2s_total = 0;
         slave.s2m_total = 0;
+        break;
+    case USER_MSG_LOOPBACK:
+        if (slave.m2s_run | slave.m2s_run)
+        {
+            platform_printf("ERR: tpt test is on\n");
+        }
+        if (slave.loopback == size)
+            break;
+        slave.loopback = size;
+        if (slave.loopback)
+        {
+            platform_printf("\n+=======================+\n"
+                              "| start loopback test.  |\n"
+                              "| RTT measured in ms.   |\n"
+                              "+=======================+\n");
+            loopback_info.counter = 0;
+            gatt_client_write_characteristic_descriptor(btstack_callback, slave.conn_handle, &slave.output_desc, sizeof(char_config_notification),
+                                                        (uint8_t *)&char_config_notification);
+            xTimerStart(app_timer, portMAX_DELAY);
+        }
+        else
+        {
+            gatt_client_write_characteristic_descriptor(btstack_callback, slave.conn_handle, &slave.output_desc, sizeof(char_config_none),
+                                                        (uint8_t *)&char_config_none);
+            xTimerStop(app_timer, portMAX_DELAY);
+        }
+        break;
+    case USER_MSG_LOOPBACK_SEND:
+        loopback_send();
+        break;
     default:
         ;
     }
+}
+
+static void app_timer_callback(TimerHandle_t xTimer)
+{
+    btstack_push_user_msg(USER_MSG_LOOPBACK_SEND, NULL, 0);
 }
 
 uint32_t timer_isr(void *user_data)
@@ -252,14 +354,19 @@ uint32_t timer_isr(void *user_data)
     return 0;
 }
 
+void loopback_test(int start1stop0)
+{
+    btstack_push_user_msg(USER_MSG_LOOPBACK, NULL, start1stop0);
+}
+
 void start_tpt(tpt_dir_t dir)
 {
     if (INVALID_HANDLE == slave.output_desc.handle)
     {
-        printf("ERROR: not ready\n");
+        platform_printf("ERROR: not ready\n");
         return;
     }
-    
+
     if (DIR_M_TO_S == dir)
         btstack_push_user_msg(USER_MSG_START_M2S, NULL, 0);
     else if (DIR_S_TO_M == dir)
@@ -270,10 +377,10 @@ void stop_tpt(tpt_dir_t dir)
 {
     if (INVALID_HANDLE == slave.output_desc.handle)
     {
-        printf("ERROR: not ready\n");
+        platform_printf("ERROR: not ready\n");
         return;
     }
-    
+
     if (DIR_M_TO_S == dir)
         btstack_push_user_msg(USER_MSG_STOP_M2S, NULL, 0);
     else if (DIR_S_TO_M == dir)
@@ -347,12 +454,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 {
                     gap_set_ext_scan_enable(0, 0, 0, 0);
                     reverse_bd_addr(report->address, peer_addr);
-                    printf("connecting ... ");  print_addr(peer_addr);
+                    platform_printf("connecting ... ");  print_addr(peer_addr);
 
                     if (report->evt_type & HCI_EXT_ADV_PROP_USE_LEGACY)
                         phy_configs[0].phy = PHY_1M;
                     else
-                        phy_configs[0].phy = (phy_type_t)(report->s_phy != 0 ? report->s_phy : report->p_phy); 
+                        phy_configs[0].phy = (phy_type_t)(report->s_phy != 0 ? report->s_phy : report->p_phy);
                     gap_ext_create_connection(    INITIATING_ADVERTISER_FROM_PARAM, // Initiator_Filter_Policy,
                                                   BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
                                                   report->addr_type,                // Peer_Address_Type,
@@ -363,10 +470,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
+            platform_printf("connected\n");
             conn_complete = decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t);
             slave.conn_handle = conn_complete->handle;
             gap_set_phy(slave.conn_handle, 0, PHY_2M_BIT, PHY_2M_BIT, HOST_NO_PREFERRED_CODING);
-            gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, conn_complete->handle, UUID_TPT);            
+            gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, conn_complete->handle, UUID_TPT);
             break;
         default:
             break;
@@ -382,7 +490,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case L2CAP_EVENT_CAN_SEND_NOW:
         send_data();
         break;
-    
+
     case BTSTACK_EVENT_USER_MSG:
         p_user_msg = hci_event_packet_get_user_msg(packet);
         user_msg_handler(p_user_msg->msg_id, p_user_msg->data, p_user_msg->len);
@@ -397,6 +505,11 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    app_timer = xTimerCreate("t1",
+                            pdMS_TO_TICKS(1000),
+                            pdFALSE,
+                            NULL,
+                            app_timer_callback);
     reset_info();
     hci_event_callback_registration.callback = user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

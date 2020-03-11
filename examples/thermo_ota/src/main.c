@@ -1,7 +1,7 @@
 #define OPTIONAL_RF_CLK
 #include "profilestask.h"
 
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 
 #include "bme280.h"
 #include "iic.h"
@@ -54,9 +54,6 @@ void config_uart(uint32_t freq, uint32_t baud)
 
     apUART_Initialize(APB_UART0, &UART_0, 0);
 
-    // Open UART 1 Clock
-    SYSCTRL_ClearClkGate_APB_SCI1();
-
 #if(USE_UART1)
     UART_0.BaudRate          = 115200;
     apUART_Initialize_1(APB_UART1, &UART_0, 0);
@@ -75,8 +72,11 @@ void setup_peripherals(void)
     PINCTRL_SelI2cSclIn(I2C_PORT_0, 14);
     i2c_init(I2C_PORT_0);
 
+    printf("sensor init...");
     if (bme280_init(&bme280_data)==0)
-        printf("bme failed\n");
+        printf("failed\n");
+    else
+        printf("OK\n");
 #endif
 }
 
