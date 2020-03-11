@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536910752</StartAddress>
-                <Size>25696</Size>
+                <StartAddress>536910768</StartAddress>
+                <Size>25680</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -435,24 +435,24 @@
           <GroupName>FWlib</GroupName>
           <Files>
             <File>
-              <FileName>cm32gpm3_uart.c</FileName>
+              <FileName>peripheral_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\cm32gpm3_uart.c</FilePath>
+              <FilePath>../..\src\FWlib\peripheral_uart.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_sysctrl.c</FileName>
+              <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\cm32gpm3_sysctrl.c</FilePath>
+              <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_pinctrl.c</FileName>
+              <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\cm32gpm3_pinctrl.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_gpio.c</FileName>
+              <FileName>peripheral_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\cm32gpm3_gpio.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>
             </File>
           </Files>
         </Group>

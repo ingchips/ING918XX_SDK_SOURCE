@@ -1,5 +1,5 @@
 import
-  cm32gpm3, cm32gpm3_uart,
+  ingsoc, peripheral_uart,
   FreeRTOS, platform_api, profile
 
 proc cbHardFault(info: ptr hardFaultInfoT; _: pointer): uint32 {.noconv.} =

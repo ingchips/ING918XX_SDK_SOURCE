@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 
 #include "att_db.h"
 #include "ota_service.h"

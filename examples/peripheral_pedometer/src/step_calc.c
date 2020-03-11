@@ -222,10 +222,11 @@ void pedometer_init(void)
     peak.oldmax = peak.newmax;
 
 #ifndef SIMULATION
+    printf("bma2x2_power_on...");
     if (bma2x2_power_on()==0)
-        printf("bma2x2_power_on success!!\n");
+        printf("success!!\n");
     else
-        printf("bma2x2_power_on faild!!\n");
+        printf("faild!!\n");
 #endif
 }
 

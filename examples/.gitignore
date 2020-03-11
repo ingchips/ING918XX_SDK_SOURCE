@@ -1,5 +1,6 @@
 listing/
 output/
+RTE/
 *.uvgui.*
 *.uvguix.*
 *.dep

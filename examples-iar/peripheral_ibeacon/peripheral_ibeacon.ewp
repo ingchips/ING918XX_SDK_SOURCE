@@ -2102,10 +2102,10 @@
   <group>
     <name>FWlib</name>
     <file>
-      <name>$PROJ_DIR$\..\..\src\FWlib\cm32gpm3_sysctrl.c</name>
+      <name>$PROJ_DIR$\..\..\src\FWlib\peripheral_sysctrl.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\src\FWlib\cm32gpm3_uart.c</name>
+      <name>$PROJ_DIR$\..\..\src\FWlib\peripheral_uart.c</name>
     </file>
   </group>
   <group>

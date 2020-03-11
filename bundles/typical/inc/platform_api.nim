@@ -46,7 +46,7 @@ type                          ##  platform callback for putc (for logging)
                                ##  NOTE: param (void *data) is casted from assertion_info_t *
                                ##  if this callback is not defined, CPU enters a dead loop
     PLATFORM_CB_EVT_ASSERTION, ##  when LLE is initializing
-    PLATFORM_CB_LLE_INIT, ##  when allocation on FreeRTOS heap fails (heap out of memory)
+    PLATFORM_CB_LLE_INIT, ##  when allocation on heap fails (heap out of memory)
                          ##  if this callback is not defined, CPU enters a dead loop
     PLATFORM_CB_HEAP_OOM, PLATFORM_CB_EVT_MAX
   platform_irq_callback_type_t* {.size: sizeof(cint).} = enum
@@ -105,10 +105,42 @@ proc platform_get_version*(): ptr platform_ver_t {.importc: "platform_get_versio
 
 proc platform_raise_assertion*(file_name: cstring; line_no: cint) {.
     importc: "platform_raise_assertion", header: "platform_api.h".}
-##  NOTE: for debug only
+type
+  platform_heap_status_t* {.importc: "platform_heap_status_t",
+                           header: "platform_api.h", bycopy.} = object
+    bytes_free* {.importc: "bytes_free".}: uint32 ##  total free bytes
+    bytes_minimum_ever_free* {.importc: "bytes_minimum_ever_free".}: uint32 ##  mininum of bytes_free from startup
 
-proc sysSetPublicDeviceAddr*(`addr`: ptr cuchar) {.
-    importc: "sysSetPublicDeviceAddr", header: "platform_api.h".}
+
+## *
+## ***************************************************************************************
+##  @brief Get heap status
+##
+##  @param[out]  status              heap status
+## ***************************************************************************************
+##
+
+proc platform_get_heap_status*(status: ptr platform_heap_status_t) {.
+    importc: "platform_get_heap_status", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Reset platform.
+##
+##  Note: when calling this function, the code after it will not be executed.
+## ***************************************************************************************
+##
+
+proc platform_reset*() {.importc: "platform_reset", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Switch to a secondary app.
+##
+##  @param[in] app_addr              app entry addr (i.e. ISR vector address)
+## ***************************************************************************************
+##
+
+proc platform_switch_app*(app_addr: uint32) {.importc: "platform_switch_app",
+    header: "platform_api.h".}
 type
   platform_cfg_item_t* {.size: sizeof(cint).} = enum
     PLATFORM_CFG_LOG_HCI,     ##  default: disabled
@@ -168,19 +200,10 @@ proc platform_shutdown*(duration_ms: uint32; p_retention_data: pointer;
 
 proc platform_printf*(format: cstring) {.varargs, importc: "platform_printf",
                                       header: "platform_api.h".}
-## *
-## ***************************************************************************************
-##  @brief Let platform do a self check
-##         Note: it is recommended to call this function in a *low priority background*
-##                task and reset SoC if problems are detected continously
-##                (e.g. restart watchdog only if no problem is detected).
-##
-##  @return  return non-0 if some problems is detected else 0
-## ***************************************************************************************
-##
-##  uint32_t platform_self_check(void);
-##  WARNING: ^^^ this API is not available in this release
+##  NOTE: for debug only
 
+proc sysSetPublicDeviceAddr*(`addr`: ptr cuchar) {.
+    importc: "sysSetPublicDeviceAddr", header: "platform_api.h".}
 when defined(OPTIONAL_RF_CLK):
   ##  set rf source
   ##  0: use external crystal

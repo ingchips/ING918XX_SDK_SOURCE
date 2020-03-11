@@ -136,7 +136,7 @@
             <RestoreTracepoints>1</RestoreTracepoints>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>7</TargetSelection>
+          <TargetSelection>1</TargetSelection>
           <SimDlls>
             <CpuDll/>
             <CpuDllArguments/>
@@ -150,7 +150,7 @@
             <PeripheralDll/>
             <PeripheralDllArguments/>
             <InitializationFile>.\init.ini</InitializationFile>
-            <Driver>Segger\JL2CM3.dll</Driver>
+            <Driver>BIN\UL2CM3.DLL</Driver>
           </TargetDlls>
         </DebugOption>
         <Utilities>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536910752</StartAddress>
-                <Size>25696</Size>
+                <StartAddress>536910768</StartAddress>
+                <Size>25680</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -346,7 +346,7 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,SIMULATION</Define>
+              <Define>USE_STDPERIPH_DRIVER,DEV_BOARD</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -404,6 +404,16 @@
               <FileType>1</FileType>
               <FilePath>.\src\audio_service.c</FilePath>
             </File>
+            <File>
+              <FileName>kb_scan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\kb_scan.c</FilePath>
+            </File>
+            <File>
+              <FileName>kb_service.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\kb_service.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -428,24 +438,39 @@
           <GroupName>FWlib</GroupName>
           <Files>
             <File>
-              <FileName>cm32gpm3_uart.c</FileName>
+              <FileName>peripheral_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\cm32gpm3_uart.c</FilePath>
+              <FilePath>../..\src\FWlib\peripheral_uart.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_sysctrl.c</FileName>
+              <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\cm32gpm3_sysctrl.c</FilePath>
+              <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_timer.c</FileName>
+              <FileName>peripheral_timer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\cm32gpm3_timer.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_timer.c</FilePath>
             </File>
             <File>
-              <FileName>cm32gpm3_adc.c</FileName>
+              <FileName>peripheral_adc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\cm32gpm3_adc.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pinctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pwm.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -456,6 +481,16 @@
               <FileName>audio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\audio.c</FilePath>
+            </File>
+            <File>
+              <FileName>att_db_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\att_db_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>blink.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\blink.c</FilePath>
             </File>
           </Files>
         </Group>

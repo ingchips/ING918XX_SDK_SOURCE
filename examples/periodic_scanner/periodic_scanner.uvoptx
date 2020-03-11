@@ -281,8 +281,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\cm32gpm3_uart.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_uart.c</FilenameWithoutPath>
+      <PathWithFileName>../..\src\FWlib\peripheral_uart.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_uart.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -293,8 +293,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\cm32gpm3_sysctrl.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_sysctrl.c</FilenameWithoutPath>
+      <PathWithFileName>../..\src\FWlib\peripheral_sysctrl.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_sysctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -305,8 +305,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\FWlib\cm32gpm3_pinctrl.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_pinctrl.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\FWlib\peripheral_pinctrl.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_pinctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -317,8 +317,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\FWlib\cm32gpm3_pwm.c</PathWithFileName>
-      <FilenameWithoutPath>cm32gpm3_pwm.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\FWlib\peripheral_pwm.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_pwm.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

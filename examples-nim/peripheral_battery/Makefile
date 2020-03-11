@@ -10,6 +10,6 @@ STARTUP=src/gstartup_ing91800.s
 APPDEFS=-D USE_STDPERIPH_DRIVER
 
 PROJ_C_FILES=
-PROJ_C_FILES+=${ING_REL}/src/FWlib/cm32gpm3_uart.c
+PROJ_C_FILES+=${ING_REL}/src/FWlib/peripheral_uart.c
 
 include makefile.conf

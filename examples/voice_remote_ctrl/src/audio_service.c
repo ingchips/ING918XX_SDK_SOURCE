@@ -1,6 +1,6 @@
 #include "audio_service.h"
 #include "audio.h"
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 
 #include "FreeRTOS.h"
 #include "semphr.h"
@@ -15,24 +15,40 @@ int8_t mic_dig_gain = 0;
 
 extern void audio_trigger_send(void);
 
+void write_header()
+{
+    data_buffer[block_index][0] = enc.state.predicated & 0xff;
+    data_buffer[block_index][1] = enc.state.predicated >> 8;
+    data_buffer[block_index][2] = enc.state.index;
+    data_buffer[block_index][3] = VOICE_BUF_BLOCK_SIZE - 4;
+    byte_index = 4;
+}
+
 void enc_output_cb(uint8_t output, void *param)
 {
     data_buffer[block_index][byte_index] = output;
     byte_index++;
     if (byte_index >= VOICE_BUF_BLOCK_SIZE)
     {
-        byte_index = 0;
         block_index++;
         audio_trigger_send();
         if (block_index >= VOICE_BUF_BLOCK_NUM)
             block_index = 0;
+#ifdef DEV_BOARD
+        byte_index = 0;
+#else
+        write_header();
+#endif
     }
 }
 
 #ifdef SIMULATION
 const pcm_sample_t pcm[] = 
-//#include "../data/tts_sample.m"
-#include "../data/itu_male2.m"
+#ifdef DEV_BOARD
+#include "../data/tts_sample.m"
+#else
+#include "../data/itu_female_16k.m"
+#endif
 ;
 uint16_t pcm_index = 0;
 #endif
@@ -94,7 +110,11 @@ void audio_start(void)
 {
     adpcm_enc_init(&enc, enc_output_cb, 0);
     block_index = 0;
-    byte_index = 0;    
+#ifdef DEV_BOARD
+    byte_index = 0;
+#else
+    write_header();
+#endif
     TMR_Enable(APB_TMR1);
 }
 

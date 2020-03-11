@@ -2,7 +2,6 @@
  
 struct bme280_t *p_bme280; 
 
-#include "cm32gpm3_i2c.h"
 #include "iic.h"
 
 #define DEV_ADDR        0x76

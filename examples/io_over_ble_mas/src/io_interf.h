@@ -5,6 +5,7 @@
 
 #define IO_TYPE_UART        0
 #define IO_TYPE_L2          1
+#define IO_TYPE_LOOPBACK    2
 
 typedef struct
 {

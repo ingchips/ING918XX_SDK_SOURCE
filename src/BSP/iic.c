@@ -1,13 +1,13 @@
 #include "iic.h"      
 
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 
 #define I2C_BASE(port)    ((port) == I2C_PORT_0 ? APB_I2C0 : APB_I2C1)
 
 void i2c_init(const i2c_port_t port)
 {
     I2C_CTRL0_CLR(I2C_BASE(port), I2C_CTRL0_SFTRST | I2C_CTRL0_CLKGATE);
-    SYSCTRL_SetBlockRst_APB_I2C();
+    SYSCTRL_ResetBlock(port == I2C_PORT_0 ? SYSCTRL_Reset_APB_I2C0 : SYSCTRL_Reset_APB_I2C1);
 }
 
 void i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const uint8_t *byte_data, int16_t length)

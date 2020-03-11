@@ -52,13 +52,18 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     {
     case HANDLE_GENERIC_INPUT:
         total_bytes += buffer_size;
+#ifdef LOOPBACK
+        if (notify_enable)
+            att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)buffer, buffer_size);
+#endif
         return 0;
-    case HANDLE_GENERIC_OUTPUT + 1:
-        handle_send = connection_handle;
+    case HANDLE_GENERIC_OUTPUT + 1:        
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
         {
             notify_enable = 1;
+#ifndef LOOPBACK
             att_server_request_can_send_now_event(handle_send);
+#endif
         }
         else
             notify_enable = 0;        
@@ -80,6 +85,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     }
 }
 
+#ifndef LOOPBACK
 void send_data(void)
 {    
     uint16_t len = att_server_get_mtu(handle_send) - 3;
@@ -91,6 +97,7 @@ void send_data(void)
 
     att_server_request_can_send_now_event(handle_send);
 }
+#endif
 
 bd_addr_t null_addr = {0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
 
@@ -131,9 +138,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            // add your code
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle,
-                       profile_data);
+            handle_send = decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle;
+            att_set_db(handle_send, profile_data);
             // ll_hint_on_ce_len(0, 120, 120);        
             break;
         default:
@@ -148,7 +154,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
+#ifndef LOOPBACK
         send_data();
+#endif
         break;
 
     case BTSTACK_EVENT_USER_MSG:

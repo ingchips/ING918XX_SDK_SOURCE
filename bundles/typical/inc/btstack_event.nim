@@ -50,7 +50,7 @@ proc hci_event_packet_get_user_msg*(event: ptr uint8): ptr btstack_user_msg_t =
 
 ## *
 ##  @brief post a msg to btstack task, and handle it in the context of btstack task
-##  @param msg_id
+##  @param msg_id        (Max allowed ID: 0x80000000)
 ##  @param data
 ##  @param len
 ##  @return 0 if success; else error occured
@@ -66,6 +66,14 @@ proc btstack_push_user_msg*(msg_id: uint32; data: pointer; len: uint16): uint32 
 
 proc hci_event_le_meta_get_subevent_code*(event: ptr uint8): uint8 =
   return decode_event_offset(event, uint8, 2)[]
+
+type
+  hci_encryption_change_event_t* {.importc: "hci_encryption_change_event_t",
+                                  header: "btstack_event.h", bycopy.} = object
+    status* {.importc: "status".}: uint8
+    conn_handle* {.importc: "conn_handle".}: uint16
+    enabled* {.importc: "enabled".}: uint8
+
 
 ## *
 ##  @brief Get field status from event HCI_EVENT_ENCRYPTION_CHANGE
@@ -1030,5 +1038,8 @@ template decode_hci_event_disconn_complete*(packet: untyped): untyped =
 
 template decode_hci_event_vendor_ccm_complete*(packet: untyped): untyped =
   decode_event_offset(packet, event_vendor_ccm_complete_t, 5)
+
+template decode_hci_event*(packet, T: untyped): untyped =
+  decode_event_offset(packet, T, 2)
 
 ##  API_END

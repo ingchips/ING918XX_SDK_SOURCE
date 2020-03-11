@@ -129,6 +129,17 @@ int  l2cap_can_send_packet_now(uint16_t local_cid);
  */
 void l2cap_request_can_send_now_event(uint16_t local_cid);
 
+/**
+ * @brief Request an update of the connection parameter for a given LE connection
+ * @param handle
+ * @param conn_interval_min (unit: 1.25ms)
+ * @param conn_interval_max (unit: 1.25ms)
+ * @param conn_latency
+ * @param supervision_timeout (unit: 10ms)
+ * @returns 0 if ok
+ */
+int l2cap_request_connection_parameter_update(hci_con_handle_t con_handle, uint16_t conn_interval_min,
+    uint16_t conn_interval_max, uint16_t conn_latency, uint16_t supervision_timeout);
 
 #ifdef CONNECTION_PARAMETER_DYNAMICALLY_ADJUST
 uint8_t  l2cap_update_MTU_on_LL_link(l2cap_channel_t * channel);

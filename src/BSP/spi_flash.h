@@ -4,7 +4,7 @@
 #ifndef __SPI_FLASH_H__
 #define __SPI_FLASH_H__
 
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 
 
 #define	DEF_FLASH_DEVICE_ERR				((s8)-1)

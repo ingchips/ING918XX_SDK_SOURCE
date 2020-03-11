@@ -13,7 +13,6 @@
  * compiler error.
  */
 
-#include "cm32gpm3.h"
 #include "bluetooth.h"
 
 

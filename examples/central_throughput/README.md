@@ -8,4 +8,7 @@ This example demonstrates how to:
     * Get notification when characteristics value updated;
     * Write to characteristics value.
 
-Note: This example works with `peripheral_throughput`.
+Note:
+    1. This example works with `peripheral_throughput`;
+    1. To use command `loopback`, `peripheral_throughput` should be
+       build with `LOOPBACK` defined.

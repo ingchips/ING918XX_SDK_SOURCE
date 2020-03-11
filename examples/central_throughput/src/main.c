@@ -1,6 +1,6 @@
 #define OPTIONAL_RF_CLK
 #include "profile.h"
-#include "cm32gpm3.h"
+#include "ingsoc.h"
 #include "platform_api.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -103,12 +103,13 @@ uint32_t uart_isr(void *user_data)
 }
 
 uint32_t timer_isr(void *user_data);
+void cmd_help(const char *param);
 
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
+     platform_set_rf_clk_source(0);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
@@ -122,6 +123,8 @@ int app_main()
     
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
+    
+    cmd_help(NULL);
 
     return 0;
 }
