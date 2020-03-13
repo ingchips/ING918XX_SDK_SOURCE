@@ -11,9 +11,9 @@ defineProfile([Service(SIG_UUID_SERVICE_GENERIC_ACCESS),
                Characteristic(SIG_UUID_CHARACT_GAP_DEVICE_NAME, ATT_PROPERTY_READ, "ING Smart Home"),
                Characteristic(SIG_UUID_CHARACT_GAP_APPEARANCE, ATT_PROPERTY_READ, [0u8, 0]),
                Service("{00000004-494e-4743-4849-505355554944}"),
-               Characteristic("{bf83f3f1-399a-414d-9035-ce64ceb3ff67}", 
+               Characteristic("{bf83f3f1-399a-414d-9035-ce64ceb3ff67}",
                               ATT_PROPERTY_WRITE_WITHOUT_RESPONSE + ATT_PROPERTY_DYNAMIC, [], "HANDLE_SMART_HOME_CTRL"),
-               Characteristic("{bf83f3f2-399a-414d-9035-ce64ceb3ff67}", 
+               Characteristic("{bf83f3f2-399a-414d-9035-ce64ceb3ff67}",
                               ATT_PROPERTY_NOTIFY, [], "HANDLE_SMART_HOME_STATUS")],
               "profileData")
 type
@@ -32,7 +32,7 @@ type
     notify: bool
 
   SmartHomeCmdCode = enum
-    ccDeviceStatus, # Packet format: CmdCode, DEV ID, set[StartHomeDevice]  
+    ccDeviceStatus, # Packet format: CmdCode, DEV ID, set[StartHomeDevice]
     ccTemperatureReport, # Packet format: CmdCode, Dev ID, same as temperature measurement char
     ccRGB # Packet format: CmdCode, Dev ID, R, G, B
 
@@ -45,7 +45,7 @@ const
   MASTER_NUMBER = 4
   INVALID_HANDLE = 0xffffu16
 
-let  
+let
   slaveAddreses: array[SLAVE_NUMBER, bdAddrT] = [
     [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x00],
     [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x01],
@@ -65,7 +65,7 @@ var
     Slave(id: 2, connHandle: INVALID_HANDLE),
     Slave(id: 3, connHandle: INVALID_HANDLE)]
 
-  isInitiating = false
+  slaveInitiating: ptr Slave = nil
   initiatingTimer: TimerHandle_t = nil
 
 const DBG_PRINT = 1
@@ -154,7 +154,7 @@ proc setRGB(id: uint8, rgb: ptr uint8): bool =
 
   if slave == nil: return false
   if slave.cRGBCtrl.valueHandle == INVALID_HANDLE: return false
-  discard gattClientWriteValueOfCharacteristicWithoutResponse(slave.connHandle, 
+  discard gattClientWriteValueOfCharacteristicWithoutResponse(slave.connHandle,
     slave.cRGBCtrl.valueHandle, 3, rgb)
   return true
 
@@ -169,12 +169,13 @@ proc discoverComplete(connHandle: uint16) =
 proc descWriteCallback(packetType: uint8; channel: uint16; packet: ptr uint8; size: uint16) {.noconv.} =
   case packet[]
   of GATT_EVENT_QUERY_COMPLETE:
+    iPrintf("descWrite: %d\n", gattEventQueryCompleteGetStatus(packet))
     let connHandle = gattEventQueryCompleteGetHandle(packet)
     if gattEventQueryCompleteGetStatus(packet) != 0:
       discard gapDisconnect(connHandle)
       return
     iPrintf("compl\n")
-    
+
     discoverComplete(connHandle)
   else:
     discard
@@ -184,9 +185,9 @@ let charconfigNotification = ToArray([toSeqU8(GATT_CLIENT_CHARACTERISTICS_CONFIG
 proc startNotify(connHandle: uint16) =
   let slave = slaveFromConnHandle(connHandle)
   if slave.dTemp.handle != INVALID_HANDLE:
-    gattClientListenForCharacteristicValueUpdates(addr slave.nTemp, temperatureNotificationHandler, 
+    gattClientListenForCharacteristicValueUpdates(addr slave.nTemp, temperatureNotificationHandler,
                                                   connHandle, addr slave.cTemp)
-    discard gattClientWriteCharacteristicDescriptor(descWriteCallback, connHandle, addr slave.dTemp, 
+    discard gattClientWriteCharacteristicDescriptor(descWriteCallback, connHandle, addr slave.dTemp,
                                             cast[uint16](len(charconfigNotification)),
                                             unsafeAddr charconfigNotification[0])
 
@@ -201,7 +202,7 @@ proc rgbCharDiscoveryCallback(packetType: uint8; channel: uint16; packet: ptr ui
     iPrintf("rgbCharDisc: %d\n", gattEventQueryCompleteGetStatus(packet))
     if gattEventQueryCompleteGetStatus(packet) != 0:
       discard gapDisconnect(connHandle)
-      return    
+      return
     startNotify(connHandle)
   else:
     discard
@@ -218,10 +219,10 @@ proc rgbServiceDiscoveryCallback(packetType: uint8; channel: uint16; packet: ptr
     let connHandle = gattEventQueryCompleteGetHandle(packet)
     if gattEventQueryCompleteGetStatus(packet) != 0:
       discard gapDisconnect(connHandle)
-      return    
+      return
     let slave = slaveFromConnHandle(connHandle)
     if slave.sRGB.startGroupHandle != INVALID_HANDLE:
-      discard gattClientDiscoverCharacteristicsForServiceByUuid128(rgbCharDiscoveryCallback, connHandle, 
+      discard gattClientDiscoverCharacteristicsForServiceByUuid128(rgbCharDiscoveryCallback, connHandle,
                                                           addr slave.sRGB, unsafeAddr UUID_RGB_CTRL_CHAR[0])
     else:
       startNotify(connHandle)
@@ -243,13 +244,13 @@ proc thermoDescDiscoveryCallback(packetType: uint8; channel: uint16; packet: ptr
     discard gattClientDiscoverPrimaryServicesByUuid128(rgbServiceDiscoveryCallback, connHandle,
                                                        unsafeAddr UUID_RGB_SERVICE[0])
   else:
-    discard                                      
+    discard
 
 proc thermoCharDiscoveryCallback(packetType: uint8; channel: uint16; packet: ptr uint8; size: uint16) {.noconv.} =
   case packet[]
   of GATT_EVENT_CHARACTERISTIC_QUERY_RESULT:
     let connHandle = gattEventCharacteristicQueryResultGetHandle(packet)
-    let slave = slaveFromConnHandle(connHandle)    
+    let slave = slaveFromConnHandle(connHandle)
     gattEventCharacteristicQueryResultGetCharacteristic(packet, addr slave.cTemp)
   of GATT_EVENT_QUERY_COMPLETE:
     let connHandle = gattEventQueryCompleteGetHandle(packet)
@@ -259,7 +260,7 @@ proc thermoCharDiscoveryCallback(packetType: uint8; channel: uint16; packet: ptr
       return
     let slave = slaveFromConnHandle(connHandle)
     if slave.cTemp.valueHandle != INVALID_HANDLE:
-      discard gattClientDiscoverCharacteristicDescriptors(thermoDescDiscoveryCallback, connHandle, addr slave.cTemp) 
+      discard gattClientDiscoverCharacteristicDescriptors(thermoDescDiscoveryCallback, connHandle, addr slave.cTemp)
   else:
     discard
 
@@ -276,10 +277,10 @@ proc thermoServiceDiscoveryCallback(packetType: uint8; channel: uint16; packet: 
     iPrintf("thermoServiceDisc: %d\n", gattEventQueryCompleteGetStatus(packet))
     if gattEventQueryCompleteGetStatus(packet) != 0:
       discard gapDisconnect(connHandle)
-      return    
+      return
     let slave = slaveFromConnHandle(connHandle)
     if slave.sThermo.startGroupHandle != INVALID_HANDLE:
-      discard gattClientDiscoverCharacteristicsForServiceByUUID16(thermoCharDiscoveryCallback, connHandle, 
+      discard gattClientDiscoverCharacteristicsForServiceByUUID16(thermoCharDiscoveryCallback, connHandle,
                                                           addr slave.sThermo, SIG_UUID_CHARACT_TEMPERATURE_MEASUREMENT)
     else:
       discard gattClientDiscoverPrimaryServicesByUuid128(rgbServiceDiscoveryCallback, gattEventQueryCompleteGetHandle(packet),
@@ -287,9 +288,7 @@ proc thermoServiceDiscoveryCallback(packetType: uint8; channel: uint16; packet: 
   else:
     discard
 
-proc slaveConnected(connComplete: ptr leMetaEventCreateConnCompleteT) =
-  let slave = slaveFromAddr(connComplete.peerAddr)
-  if slave == nil: return
+proc slaveConnected(connComplete: ptr leMetaEventCreateConnCompleteT, slave: ptr Slave) =
   slave.connHandle = connComplete.handle
   slave.cTemp.valueHandle = INVALID_HANDLE
   slave.cRGBCtrl.valueHandle = INVALID_HANDLE
@@ -339,7 +338,7 @@ proc attReadCallback(connHandle: hciConHandleT; attHandle: uint16;
     return 0
 
 proc attWriteCallback(connHandle: hciConHandleT; attHandle: uint16;
-                    transactionMode: uint16; 
+                    transactionMode: uint16;
                     offset: uint16;
                     buffer: ptr UncheckedArray[uint8]; bufferSize: uint16): uint16 {.noconv.} =
   case attHandle
@@ -367,13 +366,13 @@ const
 proc initiatingTimerCallback(xTimer: TimerHandle_t) {.noconv.} =
   discard btstackPushUserMsg(USER_MSG_INITIATE_TIMOUT, nil, 0)
 
-proc userMsgHandler(msgId: uint32; data: pointer; size: uint16) = 
+proc userMsgHandler(msgId: uint32; data: pointer; size: uint16) =
   # add your code
-  case msgId        
+  case msgId
   of USER_MSG_INITIATE_TIMOUT:
-    if isInitiating:
+    if slaveInitiating != nil:
       iPrintf("initiate timout\n")
-      isInitiating = false
+      slaveInitiating = nil
       discard gapCreateConnectionCancel()
       startScanIfNeeded()
   else:
@@ -387,7 +386,7 @@ let
       scanPhyConfigT(phy: PHY_1M,    `type`: SCAN_PASSIVE, interval: 200, window: 50),
       scanPhyConfigT(phy: PHY_CODED, `type`: SCAN_PASSIVE, interval: 200, window: 50)
     ]
-  
+
 var
   initPhyConfigs =
     [
@@ -404,11 +403,11 @@ var
           maxCELen: 25
         ))
     ]
-  
+
   peerAddr: bdAddrT
 
 proc setupAdv() =
-  discard gapSetExtAdvPara(0, 
+  discard gapSetExtAdvPara(0,
           cast[uint8]({ADV_CONNECTABLE, ADV_SCANNABLE, ADV_LEGACY}),
           0x500, 0x500,              # Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
           PRIMARY_ADV_ALL_CHANNELS,  # Primary_Advertising_Channel_Map
@@ -434,7 +433,7 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
     of BTSTACK_EVENT_STATE:
       if cast[HCI_STATE](btstackEventStateGetState(packet)) != HCI_STATE_WORKING:
         return
-    
+
       gapSetRandomDeviceAddress(unsafeAddr randAddr[0])
       discard gapSetAdvSetRandomAddr(0, unsafeAddr randAddr[0])
       setupAdv()
@@ -451,9 +450,12 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
     of HCI_EVENT_LE_META:
       case hciEventLEMetaGetSubEventCode(packet):
         of HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT:
+          if slaveInitiating != nil:
+            return
           let report = unsafeAddr decodeHciLEMetaEvent(packet, le_meta_event_ext_adv_report_t).reports[0]
           let slave = slaveFromAddr(report.address)
-          if slave != nil and slave.connHandle == INVALID_HANDLE and not isInitiating:
+          if slave != nil and slave.connHandle == INVALID_HANDLE:
+            slaveInitiating = slave
             discard gapSetExtScanEnable(0, 0, 0, 0)
             reverse_bd_addr(unsafeAddr report.address[0], unsafeAddr peerAddr[0])
             iPrintf("connecting... ")
@@ -468,7 +470,6 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
                                   addr peerAddr[0],                 # Peer_Address,
                                   cast [uint8](len(initPhyConfigs)),
                                   addr initPhyConfigs[0]);
-            isInitiating = true
             discard xTimerReset(initiatingTimer, portMAX_DELAY)
         of HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
           let connComplete = decodeHciLEMetaEvent(packet, leMetaEventCreateConnCompleteT)
@@ -476,12 +477,12 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
           if connComplete.role == HCI_ROLE_SLAVE:
             if connComplete.status == 0:
               attServerConnected(connComplete)
-              llHintOnCELen(connComplete.handle, 10, 15)            
-          else:
-            isInitiating = false
+              llHintOnCELen(connComplete.handle, 10, 15)
+          elif slaveInitiating != nil:
             discard xTimerStop(initiatingTimer, portMAX_DELAY)
             if connComplete.status == 0:
-              slaveConnected(connComplete)
+              slaveConnected(connComplete, slaveInitiating)
+            slaveInitiating = nil
             startScanIfNeeded()
         of HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:
           discard gapSetExtAdvEnable(1, cast[uint8](len extAdvSetEn), unsafeAddr(extAdvSetEn[0]))

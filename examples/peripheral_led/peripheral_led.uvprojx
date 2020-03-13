@@ -319,6 +319,15 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
+            <uC99>0</uC99>
+            <useXO>0</useXO>
+            <v6Lang>1</v6Lang>
+            <v6LangP>1</v6LangP>
+            <vShortEn>1</vShortEn>
+            <vShortWch>1</vShortWch>
+            <v6Lto>0</v6Lto>
+            <v6WtE>0</v6WtE>
+            <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
@@ -419,6 +428,11 @@
               <FileName>peripheral_pwm.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_pwm.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>
             </File>
           </Files>
         </Group>

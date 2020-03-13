@@ -658,6 +658,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             else
             {
+                print_addr(conn_complete->peer_addr);
                 is_initiating = 0;
                 xTimerStop(app_timer, portMAX_DELAY);
                 if (0 == conn_complete->status)
