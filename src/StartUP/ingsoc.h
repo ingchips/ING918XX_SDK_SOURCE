@@ -280,14 +280,8 @@ typedef struct{
     #include "peripheral_pwm.h"
 #endif
 
-// Clock Freq Define
-#ifndef TARGET_FPGA
-#define PLL_CLK_FREQ  48000000UL   // 30MHz, AHB Clock
-#define OSC_CLK_FREQ  24000000UL   // 20MHz, Apb Clock
-#else
-#define PLL_CLK_FREQ  32000000UL   // 30MHz, AHB Clock
-#define OSC_CLK_FREQ  16000000UL   // 20MHz, Apb Clock
-#endif
+#define PLL_CLK_FREQ  48000000UL   // 48MHz, AHB Clock
+#define OSC_CLK_FREQ  24000000UL   // 24MHz, Apb Clock
 
 #define RTC_CLK_FREQ  32768
 

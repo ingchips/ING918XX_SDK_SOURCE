@@ -251,13 +251,8 @@ when defined(USE_STDPERIPH_DRIVER):
 
 ##  Clock Freq Define
 
-when not defined(TARGET_FPGA):
-  const
-    PLL_CLK_FREQ* = 48000000
-    OSC_CLK_FREQ* = 24000000
-else:
-  const
-    PLL_CLK_FREQ* = 32000000
-    OSC_CLK_FREQ* = 16000000
 const
+  PLL_CLK_FREQ* = 48000000
+  OSC_CLK_FREQ* = 24000000
+
   RTC_CLK_FREQ* = 32768

@@ -53,6 +53,67 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#ifdef BOARD_V2
+
+#define PIN_SDI   GIO_GPIO_0
+
+// CPU clok: PLL_CLK_FREQ  48000000
+// 1 cycle = 21ns
+// 48 cycles per us
+// Tcycle = 2us --> ~100 cycles
+void delay(int cycles)
+{
+    int i;
+    for (i = 0; i < cycles; i++)
+    {
+        __nop();
+    }
+}
+
+void tlc59731_write(uint32_t value)
+{
+    int8_t i;
+
+    #define pulse()                     \
+        { GIO_WriteValue(PIN_SDI, 1);   \
+        delay(1);                       \
+        GIO_WriteValue(PIN_SDI, 0); } while (0)
+
+    for( i = 0; i < 32; i++ )
+    {
+        uint32_t bit = value & ( 0x80000000 >> i );
+        pulse();
+        
+        if (bit)
+        {
+            delay(10);
+            pulse();
+            delay(78);
+        }
+        else
+            delay(90);
+    }
+    delay(100 * 8);
+}
+
+void set_led_color(uint8_t r, uint8_t g, uint8_t b)
+{
+    uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
+    tlc59731_write(cmd);
+}
+
+void setup_led(void)
+{
+    PINCTRL_SetPadMux(PIN_SDI, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadPwmSel(PIN_SDI, 0);
+    GIO_SetDirection(PIN_SDI, GIO_DIR_OUTPUT);
+    GIO_WriteValue(PIN_SDI, 0);
+
+    set_led_color(50, 50, 50);
+}
+
+#else
+
 #define CHANNEL_RED     4
 #define CHANNEL_GREEN   0
 #define CHANNEL_BLUE    6
@@ -81,13 +142,8 @@ static void setup_channel(uint8_t channel_index)
     PWM_HaltCtrlEnable(channel_index, 0);
 }
 
-struct bme280_t bme280_data;
-
-void setup_peripherals(void)
+void setup_led(void)
 {
-    config_uart(OSC_CLK_FREQ, 115200);
-
-    // for RGB
     PINCTRL_SetPadMux(CHANNEL_RED, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(CHANNEL_RED, 1);
     PINCTRL_SetPadMux(CHANNEL_GREEN, IO_SOURCE_GENERAL);
@@ -98,13 +154,25 @@ void setup_peripherals(void)
     setup_channel(CHANNEL_GREEN >> 1);
     setup_channel(CHANNEL_BLUE  >> 1);
     set_led_color(50, 50, 50);
+}
+
+#endif
+
+struct bme280_t bme280_data;
+
+void setup_peripherals(void)
+{
+    config_uart(OSC_CLK_FREQ, 115200);
+
+    // for RGB
+    setup_led();
 
     // buzzer
     PINCTRL_SetPadMux(8, IO_SOURCE_GENERAL);
     GIO_WriteValue((GIO_Index_t)8, 0);
     
-    /*
     // for eTAG
+#ifdef HAS_ETAG    
     PINCTRL_SetPadMux(SPI_EPD_SDI, IO_SOURCE_SPI0_DO);
     PINCTRL_SetPadMux(SPI_EPD_SCK, IO_SOURCE_SPI0_CLK);
     PINCTRL_SetPadMux(SPI_EPD_DC, IO_SOURCE_GENERAL);
@@ -120,7 +188,8 @@ void setup_peripherals(void)
     gio_clr_bit(GIO_L32_OEB, SPI_EPD_BUSY);    // set Busy input
     
     SPI_Init(AHB_SSP0);
-*/
+#endif
+
 #ifndef SIMULATION
     PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(14, IO_SOURCE_I2C0_SCL_O);
@@ -129,9 +198,11 @@ void setup_peripherals(void)
     
     printf("i2c_init\n");
     i2c_init(I2C_PORT_0);
-
+    printf("bme init...");
     if (bme280_init(&bme280_data)==0)
-        printf("bme failed\n");
+        printf("failed\n");
+    else
+        printf("OK\n");
 #endif
 
     // timer 0 can be used as watchdog, so we use timer 1.
@@ -172,6 +243,7 @@ void BMA2x2_delay_msek(u32 msek)
 static void display_task(void *pdata)
 {
     queue_msg_t msg;
+#ifdef HAS_ETAG
     LCD_Init();
     pic_display(NULL,NULL);
     LCD_Sleep();
@@ -184,6 +256,12 @@ static void display_task(void *pdata)
         pic_display(msg.black_white, msg.red_white);
         LCD_Sleep();
     }
+#else
+    for (;;)
+    {
+        xQueueReceive(xQueue, &msg, portMAX_DELAY);
+    }
+#endif
 }
 
 static SemaphoreHandle_t sem_pedometer = NULL;
