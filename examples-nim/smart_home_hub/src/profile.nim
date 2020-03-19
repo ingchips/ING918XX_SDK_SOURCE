@@ -16,6 +16,12 @@ defineProfile([Service(SIG_UUID_SERVICE_GENERIC_ACCESS),
                Characteristic("{bf83f3f2-399a-414d-9035-ce64ceb3ff67}",
                               ATT_PROPERTY_NOTIFY, [], "HANDLE_SMART_HOME_STATUS")],
               "profileData")
+
+const
+  SLAVE_NUMBER = 4
+  MASTER_NUMBER = 4
+  INVALID_HANDLE = 0xffffu16
+
 type
   Slave = object
     id: uint8
@@ -27,23 +33,26 @@ type
     sRGB: gattClientServiceT
     cRGBCtrl: gattClientCharacteristicT
 
-  AttServer = object
-    connHandle: hciConHandleT
-    notify: bool
-
   SmartHomeCmdCode = enum
     ccDeviceStatus, # Packet format: CmdCode, DEV ID, set[StartHomeDevice]
     ccTemperatureReport, # Packet format: CmdCode, Dev ID, same as temperature measurement char
-    ccRGB # Packet format: CmdCode, Dev ID, R, G, B
+    ccRGB # Packet format: RGBPacket
+
+  AttServer = object
+    connHandle: hciConHandleT
+    notify: bool
+    dirty: set[SmartHomeCmdCode]
+
+  RGB = object
+    R*, G*, B*: uint8
 
   StartHomeDevice = enum
     sdThermoeter,
     sdRGBLed
 
-const
-  SLAVE_NUMBER = 4
-  MASTER_NUMBER = 4
-  INVALID_HANDLE = 0xffffu16
+  RGBPacket = object
+    code: SmartHomeCmdCode
+    RGBs: array[SLAVE_NUMBER, RGB]
 
 let
   slaveAddreses: array[SLAVE_NUMBER, bdAddrT] = [
@@ -67,6 +76,8 @@ var
 
   slaveInitiating: ptr Slave = nil
   initiatingTimer: TimerHandle_t = nil
+
+  rgbPacket: RGBPacket = RGBPacket(code: ccRGB)
 
 const DBG_PRINT = 1
 
@@ -105,14 +116,27 @@ proc slaveFromAddr(address: bdAddrT): ptr Slave =
       return addr slaves[i]
   return nil
 
-proc broadcast(data: ptr uint8; len: int; exclude: uint16 = INVALID_HANDLE) =
-  for server in attServers:
+proc broadcast(data: ptr uint8; len: int; code: SmartHomeCmdCode; exclude: uint16 = INVALID_HANDLE) =
+  for i in 0 .. high(attServers):
+    var server = addr attServers[i]
     if not server.notify: continue
     if server.connHandle == exclude: continue
-    discard attServerNotify(server.connHandle, HANDLE_SMART_HOME_STATUS, data, cast[uint16](len))
+    if code != ccTemperatureReport:
+      if attServerIndicate(server.connHandle, HANDLE_SMART_HOME_STATUS, data, cast[uint16](len)) != 0:
+        incl(server.dirty, code)
+    else:
+      discard attServerNotify(server.connHandle, HANDLE_SMART_HOME_STATUS, data, cast[uint16](len))
 
-proc broadcast(data: openArray[uint8]; exclude: uint16 = INVALID_HANDLE) =
-  broadcast(unsafeAddr data[0], len(data), exclude)
+proc attServerFromConnHandle(connHandle: uint16): ptr AttServer =
+  var env {.global.} : uint16
+  env = connHandle
+  proc predServer(slave: AttServer): bool =
+    return slave.connHandle == env
+
+  return first(attServers, predServer)
+
+proc broadcast(data: openArray[uint8]; code: SmartHomeCmdCode; exclude: uint16 = INVALID_HANDLE) =
+  broadcast(unsafeAddr data[0], len(data), code, exclude)
 
 proc status(slave: ptr Slave): uint8 =
   var t: set[StartHomeDevice] = {}
@@ -121,15 +145,33 @@ proc status(slave: ptr Slave): uint8 =
     if slave.cRGBCtrl.valueHandle != INVALID_HANDLE: incl(t, sdRGBLed)
   return cast[uint8](t)
 
-proc updateStatus(connHandle: uint16) =
+proc updateStatus(server: ptr AttServer) =
   var packet: array[1 + SLAVE_NUMBER * 2, uint8] = [cast[uint8](ccDeviceStatus), 0, 0, 1, 0, 2, 0, 3, 0]
   for i in 0 ..< slaves.len:
     packet[1 + i * 2 + 1] = status(addr slaves[i])
-  discard attServerNotify(connHandle, HANDLE_SMART_HOME_STATUS, unsafeAddr packet[0], cast[uint16](len(packet)))
+  if attServerIndicate(server.connHandle, HANDLE_SMART_HOME_STATUS, unsafeAddr packet[0], cast[uint16](len(packet))) != 0:
+    incl(server.dirty, ccDeviceStatus)
+
+proc updateStatus(connHandle: uint16) =
+  var server = attServerFromConnHandle(connHandle)
+  if server != nil:
+    updateStatus(server)
+
+proc syncStatus(connHandle: uint16) =
+  var server = attServerFromConnHandle(connHandle)
+  if server == nil:
+    return
+  if ccDeviceStatus in server.dirty:
+    excl(server.dirty, ccDeviceStatus)
+    updateStatus(connHandle)
+  if ccRGB in server.dirty:
+    if attServerIndicate(server.connHandle, HANDLE_SMART_HOME_STATUS, cast[ptr uint8](addr rgbPacket),
+                         cast[uint16](sizeOf rgbPacket)) == 0:
+      excl(server.dirty, ccRGB)
 
 proc broadcastStatus(slave: ptr Slave) =
   let packet: array[3, uint8] = [cast[uint8](ccDeviceStatus), slave.id, status(slave)]
-  broadcast(packet)
+  broadcast(packet, ccDeviceStatus)
 
 proc temperatureNotificationHandler(packetType: uint8; connHandle: uint16; packet: ptr uint8; size: uint16) {.noconv.} =
   case packet[]
@@ -140,7 +182,7 @@ proc temperatureNotificationHandler(packetType: uint8; connHandle: uint16; packe
     let value = gattEventNotificationParse(packet, size, addr valueLen)
     let packet: array[6, uint8] = [cast[uint8](ccTemperatureReport), slave.id,
                                    value.value[1], value.value[2], value.value[3], value.value[4]]
-    broadcast(packet)
+    broadcast(packet, ccTemperatureReport)
   else:
     discard
 
@@ -203,6 +245,11 @@ proc rgbCharDiscoveryCallback(packetType: uint8; channel: uint16; packet: ptr ui
     if gattEventQueryCompleteGetStatus(packet) != 0:
       discard gapDisconnect(connHandle)
       return
+    let slave = slaveFromConnHandle(connHandle)
+    # turn light to gree when connected
+    var rgb: array[3, uint8] = [0u8, 200, 0]
+    discard gattClientWriteValueOfCharacteristicWithoutResponse(connHandle,
+      slave.cRGBCtrl.valueHandle, 3, cast[ptr uint8](unsafeAddr rgb))
     startNotify(connHandle)
   else:
     discard
@@ -347,7 +394,10 @@ proc attWriteCallback(connHandle: hciConHandleT; attHandle: uint16;
     of ord(ccRGB):
       # iPrintf("RGB=%d,%d-%d-%d\n", buffer[1],buffer[2],buffer[3],buffer[4])
       if setRGB(buffer[1], addr buffer[2]):
-        broadcast(addr buffer[0], 5)
+        rgbPacket.RGBs[buffer[1]].R = buffer[2]
+        rgbPacket.RGBs[buffer[1]].G = buffer[3]
+        rgbPacket.RGBs[buffer[1]].B = buffer[4]
+        broadcast(cast[ptr uint8](addr rgbPacket), sizeOf rgbPacket, ccRGB)
       discard
     else:
       discard
@@ -383,8 +433,8 @@ let
 
   scanConfigs =
     [
-      scanPhyConfigT(phy: PHY_1M,    `type`: SCAN_PASSIVE, interval: 200, window: 50),
-      scanPhyConfigT(phy: PHY_CODED, `type`: SCAN_PASSIVE, interval: 200, window: 50)
+      scanPhyConfigT(phy: PHY_1M,    `type`: SCAN_PASSIVE, interval: 100, window: 25),
+      scanPhyConfigT(phy: PHY_CODED, `type`: SCAN_PASSIVE, interval: 100, window: 25)
     ]
 
 var
@@ -393,14 +443,14 @@ var
       initiatingPhyConfigT(
         phy: PHY_1M,
         connParam: connParaT(
-          scanInt: 200,
-          scanWin: 50,
-          intervalMin: 100,
-          intervalMax: 200,
-          latency: 2,
-          supervisionTimeout: 200,
-          minCELen: 15,
-          maxCELen: 25
+          scanInt: 100,
+          scanWin: 20,
+          intervalMin: 80,
+          intervalMax: 90,
+          latency: 0,
+          supervisionTimeout: 400,
+          minCELen: 10,
+          maxCELen: 15
         ))
     ]
 
@@ -477,7 +527,7 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
           if connComplete.role == HCI_ROLE_SLAVE:
             if connComplete.status == 0:
               attServerConnected(connComplete)
-              llHintOnCELen(connComplete.handle, 10, 15)
+              llHintOnCELen(connComplete.handle, 10, 12)
           elif slaveInitiating != nil:
             discard xTimerStop(initiatingTimer, portMAX_DELAY)
             if connComplete.status == 0:
@@ -496,6 +546,8 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
     of ATT_EVENT_CAN_SEND_NOW:
       # add your code
       discard
+    of  ATT_EVENT_HANDLE_VALUE_INDICATION_COMPLETE:
+      syncStatus(att_event_handle_value_indication_complete_get_conn_handle(packet))
     of BTSTACK_EVENT_USER_MSG:
       let userMsg = hciEventPacketGetUserMsg(packet)
       userMsgHandler(userMsg.msgId, userMsg.data, userMsg.len)

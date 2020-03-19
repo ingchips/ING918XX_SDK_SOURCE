@@ -7,6 +7,7 @@ This example demonstrates how to:
     * Scan & connect to peripheral devices;
     * Discovery SIG and user defined services & characteristics;
     * Get notification when characteristics value updated;
+* Indicate values;
 * Use multiple central & multiple periphral roles simultaneously.
 
 Note: 

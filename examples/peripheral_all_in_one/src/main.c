@@ -53,6 +53,30 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#define PIN_BUZZER 8
+
+void set_freq0(uint8_t channel_index, uint16_t freq)
+{
+    uint32_t pera = OSC_CLK_FREQ / freq;
+    PWM_HaltCtrlEnable(channel_index, 1);
+    PWM_Enable(channel_index, 0);
+    if (freq > 0)
+    {
+        PWM_SetPeraThreshold(channel_index, pera);
+        PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
+        PWM_SetHighThreshold(channel_index, 0, pera >> 1);
+        PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
+        PWM_SetMask(channel_index, 0, 0);
+        PWM_Enable(channel_index, 1); 
+        PWM_HaltCtrlEnable(channel_index, 0);
+    }
+}
+
+void set_freq(uint16_t freq)
+{
+    set_freq0(PIN_BUZZER >> 1, freq);
+}
+
 #ifdef BOARD_V2
 
 #define PIN_SDI   GIO_GPIO_0
@@ -168,8 +192,9 @@ void setup_peripherals(void)
     setup_led();
 
     // buzzer
-    PINCTRL_SetPadMux(8, IO_SOURCE_GENERAL);
-    GIO_WriteValue((GIO_Index_t)8, 0);
+    PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadPwmSel(PIN_BUZZER, 1);
+    set_freq(0);
     
     // for eTAG
 #ifdef HAS_ETAG    

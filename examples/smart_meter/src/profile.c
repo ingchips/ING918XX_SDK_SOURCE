@@ -163,12 +163,14 @@ typedef struct slave_info
                     .temp_char      = { .value_handle = INVALID_HANDLE}, \
                     .temp_desc      = { .handle = INVALID_HANDLE}
 
-slave_info_t slave_addr_lst[4] = 
+slave_info_t slave_addr_lst[] = 
 {
     {.id = 0, .addr = {0xC2, 0x12, 0x35, 0x98, 0x67, 0x00}, INIT_FIELDS},
     {.id = 1, .addr = {0xC2, 0x12, 0x35, 0x98, 0x67, 0x01}, INIT_FIELDS}, 
-    {.id = 2, .addr = {0xC2, 0x12, 0x35, 0x98, 0x67, 0x02}, INIT_FIELDS}, 
-    {.id = 3, .addr = {0xC2, 0x12, 0x35, 0x98, 0x67, 0x03}, INIT_FIELDS}  
+    {.id = 2, .addr = {0xC2, 0x12, 0x35, 0x98, 0x67, 0x02}, INIT_FIELDS},
+#ifdef THREE_SLAVE
+    {.id = 3, .addr = {0xC2, 0x12, 0x35, 0x98, 0x67, 0x03}, INIT_FIELDS}
+#endif
 };
 
 void set_slave_addr(const uint8_t index, const uint8_t *addr)
@@ -203,7 +205,6 @@ void start_scan_if_needed(void)
         {
             // start continuous scanning
             gap_set_ext_scan_enable(1, 0, 0, 0);
-                
             return;
         }
     }
