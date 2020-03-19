@@ -86,11 +86,7 @@ void setup_peripherals(void)
     PINCTRL_SelI2cSclIn(I2C_PORT_0, 14); 
 
     SPI_Init(AHB_SSP0);
-    GIO_WriteValue(SPI_LCD_CS, 1);      // set CS output
-    GIO_WriteValue(SPI_LCD_DC, 1);      // set DC output
-    GIO_WriteValue(SPI_LCD_POWER, 1);   // set output
-    GIO_WriteValue(SPI_LCD_RST, 1);     // set RST output
-    
+
     RTC_Enable(RTC_ENABLED);
     RTC_SetNextIntOffset(32768 * 10);
 }

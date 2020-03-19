@@ -95,6 +95,7 @@ static int16_t img_write_offset = -1;
 #define HANDLE_RGB_LIGHTING_CONTROL                          21
 #define HANDLE_ETAG_CONTROL                                  24
 #define HANDLE_ETAG_DATA                                     26
+#define HANDLE_KEY_INPUT                                     31
 
 #define HANDLE_BATTERY_LEVEL_OFFSET                          76
 
@@ -168,6 +169,7 @@ static void read_temperature(void)
 }
 
 void set_led_color(uint8_t r, uint8_t g, uint8_t b);
+void set_freq(uint16_t freq);
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -300,6 +302,9 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
             att_server_request_can_send_now_event(handle_send);
             break;
         }
+        return 0;
+    case HANDLE_KEY_INPUT:
+        set_freq(*(uint16_t *)buffer);
         return 0;
     default:
         return 0;

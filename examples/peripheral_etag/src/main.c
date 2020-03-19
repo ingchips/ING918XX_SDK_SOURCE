@@ -60,11 +60,11 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(SPI_EPD_POWER, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(SPI_EPD_RST, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(SPI_EPD_BUSY, IO_SOURCE_GENERAL);
-    GIO_WriteValue(SPI_EPD_CS, 1);      // set CS output
-    GIO_WriteValue(SPI_EPD_DC, 1);      // set CS output
-    GIO_WriteValue(SPI_EPD_POWER, 1);   // set output
-    GIO_WriteValue(SPI_EPD_RST, 1);     // set RST output
-    GIO_WriteValue(SPI_EPD_BUSY, 0);    // set Busy input
+    GIO_SetDirection(SPI_EPD_CS, GIO_DIR_OUTPUT);      // set CS output
+    GIO_SetDirection(SPI_EPD_DC, GIO_DIR_OUTPUT);      // set CS output
+    GIO_SetDirection(SPI_EPD_POWER, GIO_DIR_OUTPUT);   // set output
+    GIO_SetDirection(SPI_EPD_RST, GIO_DIR_OUTPUT);     // set RST output
+    GIO_SetDirection(SPI_EPD_BUSY, GIO_DIR_INPUT);     // set Busy input
     
     PINCTRL_SelUartRxdIn(UART_PORT_1, 0x3f);
     PINCTRL_SelI2cSclIn(I2C_PORT_0, 0x3f);

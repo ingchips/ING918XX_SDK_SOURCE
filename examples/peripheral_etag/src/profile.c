@@ -106,7 +106,7 @@ void refresh_display(const eink_image_t *image)
         msg.red_white = image->red_white;
     }
     else;
-    printf("refresh\n");
+    platform_printf("refresh\n");
     xQueueOverwrite(xQueue, &msg);
 }
 
