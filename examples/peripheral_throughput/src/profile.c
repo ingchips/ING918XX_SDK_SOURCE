@@ -99,7 +99,12 @@ void send_data(void)
 }
 #endif
 
-bd_addr_t null_addr = {0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
+static void hint_ce_len(uint16_t interval)
+{
+    uint16_t ce_len = interval << 1;
+    if (ce_len > 20)
+        ll_hint_on_ce_len(0, ce_len - 15, ce_len - 15);
+}
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
@@ -138,9 +143,16 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            handle_send = decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle;
-            att_set_db(handle_send, profile_data);
-            // ll_hint_on_ce_len(0, 120, 120);        
+            {
+                const le_meta_event_create_conn_complete_t *cmpl =
+                    decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t);
+                handle_send = cmpl->handle;
+                hint_ce_len(cmpl->interval);
+                att_set_db(handle_send, profile_data);
+            }
+            break;
+        case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:
+            hint_ce_len(decode_hci_le_meta_event(packet, le_meta_event_conn_update_complete_t)->interval);
             break;
         default:
             break;
