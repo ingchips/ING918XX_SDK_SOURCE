@@ -12,6 +12,8 @@
 #include "USBHID_Types.h"
 #include "USBKeyboard.h"
 
+#include "profile.h"
+
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
 #define HANDLE_APPEARANCE                                    5

@@ -15,10 +15,6 @@ static uint8_t adv_data[] = {
     #include "../data/advertising.adv"
 };
 
-const static uint8_t profile_data[] = {
-    #include "../data/gatt.profile"
-};
-
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
 {
@@ -87,6 +83,14 @@ static void setup_adv(void)
     gap_set_periodic_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
     gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
     gap_set_periodic_adv_enable(1, 0);
+#ifdef CTE
+    gap_set_connectionless_cte_tx_param(0, 2,
+                                        CTE_AOA,
+                                        1,
+                                        2,
+                                        0, NULL);
+    gap_set_connectionless_cte_tx_enable(0, 1);
+#endif
 }
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
@@ -109,8 +113,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle,
-                       profile_data);
             break;
         default:
             break;
@@ -118,8 +120,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
         break;
 
-    case HCI_EVENT_DISCONNECTION_COMPLETE:
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+    case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:
+        platform_printf("terminated\n");
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
@@ -142,6 +144,7 @@ static TimerHandle_t app_timer = 0;
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    platform_printf("setup profile\n");
     // Note: security has not been enabled.
     app_timer = xTimerCreate("t1",
                             pdMS_TO_TICKS(1000),

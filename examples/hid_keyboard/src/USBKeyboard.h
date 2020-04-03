@@ -10,13 +10,6 @@
 // typical maximum simultaneous events that can be detected and reported
 #define INPUT_REPORT_KEYS_MAX           6
 
-typedef __packed struct kb_report
-{
-    uint8_t modifier;
-    uint8_t reserved;
-    uint8_t codes[INPUT_REPORT_KEYS_MAX];
-} kb_report_t;
-
 /**
  * Modifier masks - used for the first byte in the HID report.
  * NOTE: The second byte in the report is reserved, 0x00

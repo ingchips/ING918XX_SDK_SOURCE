@@ -13,6 +13,7 @@
  * compiler error.
  */
 
+#include "ingsoc.h"
 #include "bluetooth.h"
 
 

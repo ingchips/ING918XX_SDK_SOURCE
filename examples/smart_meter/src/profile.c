@@ -558,7 +558,7 @@ static initiating_phy_config_t phy_configs[] =
         {
             .scan_int = 200,
             .scan_win = 50,
-            .interval_min = 100,
+            .interval_min = 200,
             .interval_max = 200,
             .latency = 2,
             .supervision_timeout = 200,

@@ -67,8 +67,13 @@
         "gatt_client_pts_suppress_mtu_exchange", 
         "gap_set_random_device_address", 
         "gap_disconnect", 
+        "gap_disconnect_all", 
         "gap_add_whitelist", 
         "gap_remove_whitelist", 
+        "gap_read_rssi", 
+        "gap_read_remote_used_features", 
+        "gap_read_remote_info", 
+        "gap_le_read_channel_map", 
         "gap_read_phy", 
         "gap_set_def_phy", 
         "gap_set_phy", 
@@ -243,11 +248,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 132208
+        "size": 132252
     }, 
     "version": [
         0, 
         14, 
-        5
+        7
     ]
 }

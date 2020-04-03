@@ -135,10 +135,6 @@ void att_set_read_callback(att_read_callback_t callback);
  */
 void att_set_write_callback(att_write_callback_t callback);
 
-// void att_exchange_mtu_request(uint16_t peripheral_handle);
-// WARNING: ^^^ this API is not available in this release
-
-
 #ifdef __cplusplus
 }
 #endif

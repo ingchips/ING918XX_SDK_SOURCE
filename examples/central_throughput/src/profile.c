@@ -3,6 +3,7 @@
 #include "platform_api.h"
 #include "att_db.h"
 #include "gap.h"
+#include "l2cap.h"
 #include "att_dispatch.h"
 #include "btstack_util.h"
 #include "btstack_event.h"
@@ -94,6 +95,7 @@ void loopback_rx(const uint8_t *buffer, const uint16_t size)
         printf("%04d: %.2f\n", loopback_info.counter, duration / 32.768);
         xTimerStart(app_timer, portMAX_DELAY);
         loopback_info.counter++;
+        gap_read_rssi(slave.conn_handle);
     }
 }
 
@@ -263,6 +265,8 @@ void send_data(void)
 #define USER_MSG_SHOW_TPT               5
 #define USER_MSG_LOOPBACK               6
 #define USER_MSG_LOOPBACK_SEND          7
+#define USER_MSG_SET_PHY                8
+#define USER_MSG_SET_INTERVAL           9
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
@@ -335,6 +339,37 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     case USER_MSG_LOOPBACK_SEND:
         loopback_send();
         break;
+    case USER_MSG_SET_PHY:
+        {
+            uint16_t       phy = size;
+            phy_bittypes_t phy_bit;
+            phy_option_t   phy_opt = HOST_PREFER_S8_CODING;
+            switch (phy)
+            {
+            case 0:
+                phy_bit = PHY_1M_BIT;
+                break;
+            case 1:
+                phy_bit = PHY_2M_BIT;
+                break;
+            case 2:
+                phy_opt = HOST_PREFER_S2_CODING; // fall through
+            case 3:
+                phy_bit = PHY_CODED_BIT;
+                break;
+            }
+            gap_set_phy(slave.conn_handle, 0, phy_bit, phy_bit, phy_opt);
+        }
+        break;
+    case USER_MSG_SET_INTERVAL:
+        {
+            uint16_t interval = size;
+            uint16_t ce_len = (interval << 1) - 2;
+            gap_update_connection_parameters(slave.conn_handle, interval, interval,
+                0, interval > 10 ? interval : 10, // supervisor_timeout = max(100, interval * 8)
+                ce_len, ce_len);
+        }
+        break;
     default:
         ;
     }
@@ -354,18 +389,34 @@ uint32_t timer_isr(void *user_data)
     return 0;
 }
 
+#define CHECK_STATE()   \
+    if (INVALID_HANDLE == slave.output_desc.handle) \
+    {                                               \
+        platform_printf("ERROR: not ready\n");      \
+        return;                                     \
+    }
+
 void loopback_test(int start1stop0)
 {
+    CHECK_STATE();
     btstack_push_user_msg(USER_MSG_LOOPBACK, NULL, start1stop0);
+}
+
+void set_phy(int phy)
+{
+    CHECK_STATE();
+    btstack_push_user_msg(USER_MSG_SET_PHY, NULL, phy);
+}
+
+void set_interval(int interval)
+{
+    CHECK_STATE();
+    btstack_push_user_msg(USER_MSG_SET_INTERVAL, NULL, interval);
 }
 
 void start_tpt(tpt_dir_t dir)
 {
-    if (INVALID_HANDLE == slave.output_desc.handle)
-    {
-        platform_printf("ERROR: not ready\n");
-        return;
-    }
+    CHECK_STATE();
 
     if (DIR_M_TO_S == dir)
         btstack_push_user_msg(USER_MSG_START_M2S, NULL, 0);
@@ -375,11 +426,7 @@ void start_tpt(tpt_dir_t dir)
 
 void stop_tpt(tpt_dir_t dir)
 {
-    if (INVALID_HANDLE == slave.output_desc.handle)
-    {
-        platform_printf("ERROR: not ready\n");
-        return;
-    }
+    CHECK_STATE();
 
     if (DIR_M_TO_S == dir)
         btstack_push_user_msg(USER_MSG_STOP_M2S, NULL, 0);
@@ -414,7 +461,7 @@ static initiating_phy_config_t phy_configs[] =
             .interval_min = 50,
             .interval_max = 50,
             .latency = 0,
-            .supervision_timeout = 200,
+            .supervision_timeout = 600,
             .min_ce_len = 90,
             .max_ce_len = 90
         }
@@ -423,6 +470,19 @@ static initiating_phy_config_t phy_configs[] =
 
 bd_addr_t rand_addr = {0xC0, 0x00, 0x00, 0x11, 0x11, 0x11};
 bd_addr_t peer_addr;
+
+#define OGF_STATUS_PARAMETERS       0x05
+#define OPCODE(ogf, ocf)            (ocf | ogf << 10)
+#define OPCODE_READ_RSSI            OPCODE(OGF_STATUS_PARAMETERS, 0x05)
+
+#pragma pack (push, 1)
+typedef struct read_rssi_complete
+{
+    uint8_t  status;
+    uint16_t handle;
+    int8_t   rssi;
+} read_rssi_complete_t;    
+#pragma pack (pop)
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
@@ -476,10 +536,33 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             gap_set_phy(slave.conn_handle, 0, PHY_2M_BIT, PHY_2M_BIT, HOST_NO_PREFERRED_CODING);
             gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, conn_complete->handle, UUID_TPT);
             break;
+        case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
+            {
+                const le_meta_phy_update_complete_t *cmpl = decode_hci_le_meta_event(packet, le_meta_phy_update_complete_t);
+                platform_printf("PHY updated: Rx %d, Tx %d\n", cmpl->rx_phy, cmpl->tx_phy);
+            }
+            break;
+        case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:
+            {
+                const le_meta_event_conn_update_complete_t *cmpl = decode_hci_le_meta_event(packet, le_meta_event_conn_update_complete_t);
+                platform_printf("CONN updated: interval %.2f ms\n", cmpl->interval * 1.25);
+            }
+            break;
         default:
             break;
         }
 
+        break;
+
+    case HCI_EVENT_COMMAND_COMPLETE:
+        {
+            if (hci_event_command_complete_get_command_opcode(packet) == OPCODE_READ_RSSI)
+            {
+                const read_rssi_complete_t *cmpl =
+                    (const read_rssi_complete_t *)hci_event_command_complete_get_return_parameters(packet);
+                platform_printf("RSSI: %ddBm\n", cmpl->rssi);
+            }
+        }
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:

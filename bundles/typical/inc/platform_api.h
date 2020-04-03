@@ -198,17 +198,16 @@ void platform_config(const platform_cfg_item_t item, const uint8_t flag);
 /**
  ****************************************************************************************
  * @brief Shutdown the whole system, and power on again after a duration
- *        specified by duration_ms.
+ *        specified by duration_cycles.
  *        Optionally, a portion of SYS memory can be retentioned during shutdown.
- *        Note that: this function will NOT return except that shutdown procedure fails
- *                   to initiate.
  *
- * @param[in] duration_ms           Duration before power on again (in ms)
+ * @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
+ *                                  Mininum value: 825 cycles (about 25.18ms)
  * @param[in] p_retention_data      Pointer to the start of data to be retentioned
  * @param[in] data_size             Size of the data to be retentioned
  ****************************************************************************************
  */
-void platform_shutdown(const uint32_t duration_ms, const void *p_retention_data, const uint32_t data_size);
+void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
 
 /**
  ****************************************************************************************

@@ -76,7 +76,7 @@ typedef enum
     // when LLE is initializing
     PLATFORM_CB_LLE_INIT,
     
-    // when allocation on heap fails (heap out of memory)
+    // when allocation on FreeRTOS heap fails (heap out of memory)
     // if this callback is not defined, CPU enters a dead loop 
     PLATFORM_CB_HEAP_OOM,
 
@@ -143,38 +143,8 @@ const platform_ver_t *platform_get_version(void);
  */
 void platform_raise_assertion(const char *file_name, int line_no);
 
-typedef struct
-{
-    uint32_t bytes_free;                // total free bytes
-    uint32_t bytes_minimum_ever_free;   // mininum of bytes_free from startup
-} platform_heap_status_t;
-
-/**
- ****************************************************************************************
- * @brief Get heap status
- *
- * @param[out]  status              heap status
- ****************************************************************************************
- */
-void platform_get_heap_status(platform_heap_status_t *status);
-
-/**
- ****************************************************************************************
- * @brief Reset platform.
- *
- * Note: when calling this function, the code after it will not be executed.
- ****************************************************************************************
- */
-void platform_reset(void);
-
-/**
- ****************************************************************************************
- * @brief Switch to a secondary app.
- *
- * @param[in] app_addr              app entry addr (i.e. ISR vector address)
- ****************************************************************************************
- */
-void platform_switch_app(const uint32_t app_addr);
+// NOTE: for debug only
+void sysSetPublicDeviceAddr(const unsigned char *addr);
 
 typedef enum
 {
@@ -232,8 +202,19 @@ void platform_shutdown(const uint32_t duration_ms, const void *p_retention_data,
  */
 void platform_printf(const char *format, ...);
 
-// NOTE: for debug only
-void sysSetPublicDeviceAddr(const unsigned char *addr);
+/**
+ ****************************************************************************************
+ * @brief Let platform do a self check
+ *        Note: it is recommended to call this function in a *low priority background*
+ *               task and reset SoC if problems are detected continously
+ *               (e.g. restart watchdog only if no problem is detected).
+ *
+ * @return  return non-0 if some problems is detected else 0
+ ****************************************************************************************
+ */
+// uint32_t platform_self_check(void);
+// WARNING: ^^^ this API is not available in this release
+
 
 #ifdef OPTIONAL_RF_CLK
 // set rf source

@@ -311,8 +311,6 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     }
 }
 
-static TimerHandle_t app_timer = 0;
-
 #define USER_MSG_ID_REQUEST_SEND            1
 
 void send_rsc_meas(void)
@@ -340,8 +338,6 @@ static void send_temperature(void)
 }
 
 #define USER_MSG_ID_REQUEST_SEND            1
-
-static void app_timer_callback(TimerHandle_t xTimer);
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
@@ -395,7 +391,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             printf("conn: %d\n", decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->status);
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle,
                        profile_data);
-            xTimerStart(app_timer, portMAX_DELAY);
             break;
         default:
             break;
@@ -409,7 +404,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         temperture_indicate_enable = 0;
         rsc_notify_enable = 0;
         rsc_indicate_enable = 0;
-        xTimerStop(app_timer,  portMAX_DELAY);
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         break;
 
@@ -433,7 +427,7 @@ void print_reg(uint32_t addr)
     printf("%08X = %08X\n", addr, *(uint32_t *)(addr));
 }
 
-static SemaphoreHandle_t sem_battery = NULL;
+SemaphoreHandle_t sem_battery = NULL;
 uint8_t *battery_level = NULL;
 
 static void battery_task(void *pdata)
@@ -464,7 +458,7 @@ static void battery_task(void *pdata)
     }
 }
 
-static void app_timer_callback(TimerHandle_t xTimer)
+void app_timer_callback()
 {
     //printf("t\n");    
     if (temperture_notify_enable | temperture_indicate_enable)
@@ -483,18 +477,10 @@ static void app_timer_callback(TimerHandle_t xTimer)
         rsc_meas.total_distance = pedometer->total_distance;
         btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, 0);
     }
-
-    xSemaphoreGive(sem_battery);
 }
 
 uint32_t setup_profile(void *data, void *user_data)
 {   
-    app_timer = xTimerCreate("app",
-								pdMS_TO_TICKS(300),
-								pdTRUE,
-								NULL,
-								app_timer_callback);
-
     battery_level = profile_data + HANDLE_BATTERY_LEVEL_OFFSET;
     sem_battery = xSemaphoreCreateBinary();
 

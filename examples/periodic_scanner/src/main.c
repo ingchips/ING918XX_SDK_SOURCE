@@ -54,7 +54,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 115200);
+    config_uart(OSC_CLK_FREQ, 921600);
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)

@@ -306,12 +306,31 @@ static void pedometer_task(void *pdata)
 extern uint8_t rsc_notify_enable;
 extern uint8_t rsc_indicate_enable;
 
+extern void app_timer_callback(void);
+
+uint32_t timer2_isr(void *user_data)
+{
+    extern SemaphoreHandle_t sem_battery;
+    BaseType_t xHigherPriorityTaskWoke = pdFALSE;
+    TMR_IntClr(APB_TMR2);
+    app_timer_callback();
+    xSemaphoreGiveFromISR(sem_battery, &xHigherPriorityTaskWoke);
+    return 0;
+}
+
 uint32_t timer_isr(void *user_data)
 {
+    static int cnt = 0;
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
     TMR_IntClr(APB_TMR1);
     if (rsc_notify_enable | rsc_indicate_enable)
         xSemaphoreGiveFromISR(sem_pedometer, &xHigherPriorityTaskWoke);
+    cnt++;
+    if (cnt >= ACC_SAMPLING_RATE)
+    {
+        timer2_isr(user_data);
+        cnt = 0;
+    }
     return 0;
 }
 
@@ -349,6 +368,3 @@ int app_main()
                NULL);
     return 0;
 }
-
-
-

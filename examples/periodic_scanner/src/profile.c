@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "platform_api.h"
 #include "att_db.h"
 #include "gap.h"
@@ -19,7 +20,7 @@ uint8_t prd_create_sync = 0;
 uint8_t prd_adv_data_acc[1650] = {0};
 uint8_t prd_adv_data_offset = 0;
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -32,7 +33,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -92,7 +93,7 @@ void show_adv(int8_t rssi)
     uint16_t length;
     ibeacon_adv_t *p_ibeacon;
     const temperature_service_data_adv_t *p_temperature;
-    
+
     ad_iterator_init(&context, prd_adv_data_offset, prd_adv_data_acc);
     while (ad_iterator_has_more(&context))
     {
@@ -117,7 +118,7 @@ void show_adv(int8_t rssi)
 
             last_power = rssi / 2 + last_power / 2;
             print_uuid(p_ibeacon->uuid);
-            platform_printf(" %04X,%04X, %.1fm, %ddBm\n", 
+            platform_printf(" %04X,%04X, %.1fm, %ddBm\n",
                     p_ibeacon->major, p_ibeacon->minor,
                     estimate_distance(p_ibeacon->ref_power, last_power), last_power);
             break;
@@ -125,6 +126,102 @@ void show_adv(int8_t rssi)
         ad_iterator_next(&context);
     }
 }
+
+char *base64_encode(const uint8_t *data, int data_len,
+                    char *res, int buffer_size)
+{
+    int len = (data_len + 2) / 3 * 4;
+    int i, j;
+
+    const char *base64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    if (len > buffer_size - 1)
+    {
+        res[0] = '\0';
+        return res;
+    }
+
+    res[len]='\0';
+
+    for(i = 0, j = 0; i < len - 2; j += 3, i += 4)
+    {
+        res[i + 0] = base64_table[data[j] >> 2];
+        res[i + 1] = base64_table[(data[j] & 0x3) << 4 | (data[j + 1] >> 4)];
+        res[i + 2] = base64_table[(data[j + 1] & 0xf) << 2 | (data[j + 2] >> 6)];
+        res[i + 3] = base64_table[data[j + 2] & 0x3f];
+    }
+
+    switch (data_len % 3)
+    {
+        case 1:
+            res[i - 2] = '=';
+            res[i - 1] = '=';
+            break;
+        case 2:
+            res[i - 1] = '=';
+            break;
+    }
+
+    return res;
+}
+
+void recv_iq_report(const le_meta_connless_iq_report_t *report)
+{
+    static char iq_str_buffer[100];
+    platform_printf("CTE:");
+    platform_printf(base64_encode((const uint8_t *)report,
+        sizeof(*report) + report->sample_count * sizeof(report->samples[0]),
+        iq_str_buffer, sizeof(iq_str_buffer)));
+    platform_printf("\n");
+}
+
+#ifdef SIMULATION
+
+#pragma pack (push, 1)
+typedef struct sim_iq_report
+{
+    le_meta_connless_iq_report_t report;
+    le_iq_sample_t samples[10];
+} sim_iq_report_t;
+#pragma pack (pop)
+
+static sim_iq_report_t iq_report =
+{
+    .report = {
+        .sync_handle = 0,
+        .channel_index = 1,
+        .rssi = -500,
+        .rssi_ant_id = 0,
+        .cte_type = 0,
+        .slot_durations = 1,
+        .packet_status = 0,
+        .event_counter = 0,
+        .sample_count = 10
+    },
+    .samples = {
+        127, 0, 127, 0, 127, 0, 127, 0, 127, 0, 127, 0, 127, 0, 127, 0, // ref
+        127, 0, -118, 51
+    }
+};
+
+static int8_t *iqs = (int8_t *)iq_report.samples;
+
+void simulate_cte_report()
+{
+    #define PI 3.1415926536
+    #define R  0.03
+    static float angle = 0.0;
+    float phase;
+    int8_t *sample = iqs + (8 + 1) * 2;
+    angle += PI / 30;
+    if (angle >= 2 * PI) angle -= 2 * PI;
+    phase = - 4 * PI * 2404000000.0 / (300000000) * R * cos(angle);
+    sample[0] = 127 * cos(phase);
+    sample[1] = 127 * sin(phase);
+    iq_report.report.event_counter++;
+    recv_iq_report(&iq_report.report);
+}
+#endif
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
@@ -151,12 +248,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_ext_adv_report_t *report = decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports;
 
-                printf("%02X:%02X:%02X:%02X:%02X:%02X: %dBm\n",
+                platform_printf("%02X:%02X:%02X:%02X:%02X:%02X: %dBm\n",
                         report->address[5], report->address[4], report->address[3], report->address[2], report->address[1], report->address[0],
                         report->rssi);
                 if ((0 == prd_create_sync) && (report->prd_adv_interval))
                 {
-                    printf("create sync...\n");
+                    platform_printf("create sync...\n");
                     prd_create_sync = 1;
                     gap_periodic_adv_create_sync(PERIODIC_ADVERTISER_FROM_PARAM,
                                                  report->sid,
@@ -168,14 +265,31 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED:
-            printf("established\n");
-            gap_set_ext_scan_enable(0, 0, 0, 0); 
+            platform_printf("established\n");
+            gap_set_ext_scan_enable(0, 0, 0, 0);
             prd_adv_data_offset = 0;
+#ifdef CTE
+            {
+                static const uint8_t ant_ids[] = {0, 1};
+                const le_meta_event_periodic_adv_sync_established_t *established =
+                    decode_hci_le_meta_event(packet, le_meta_event_periodic_adv_sync_established_t);
+                gap_set_connectionless_iq_sampling_enable(established->sync_handle,
+                                                          1,
+                                                          (1 << CTE_SLOT_DURATION_1US) | (1 << CTE_SLOT_DURATION_2US),
+                                                          16,
+                                                          sizeof(ant_ids), ant_ids);
+            }
+
+#endif
             break;
-        
+#ifdef CTE
+        case HCI_SUBEVENT_LE_CONNECTIONLESS_IQ_REPORT:
+            recv_iq_report(decode_hci_le_meta_event(packet, le_meta_connless_iq_report_t));
+            break;
+#endif
         case HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_REPORT:
             {
-                const le_meta_event_periodic_adv_report_t *report = 
+                const le_meta_event_periodic_adv_report_t *report =
                     decode_hci_le_meta_event(packet, le_meta_event_periodic_adv_report_t);
                 if (prd_adv_data_offset + report->data_length <= sizeof(prd_adv_data_acc))
                 {
@@ -185,6 +299,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 switch (report->data_status)
                 {
                 case HCI_PRD_ADV_DATA_STATUS_CML:
+#ifdef SIMULATION
+                    simulate_cte_report();
+#endif
                     show_adv(report->rssi);
                     prd_adv_data_offset = 0;
                     break;
@@ -193,13 +310,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 case HCI_PRD_ADV_DATA_STATUS_TRUNCED:
                     prd_adv_data_offset = 0;
                     break;
-                }                
+                }
             }
             break;
-        
+
         case HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_LOST:
             prd_create_sync = 0;
-            printf("sync lost\n");
+            platform_printf("sync lost\n");
             gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
             break;
         default:
@@ -227,7 +344,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 }
 
 uint32_t setup_profile(void *data, void *user_data)
-{   
+{
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

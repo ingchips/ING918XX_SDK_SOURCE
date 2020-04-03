@@ -106,13 +106,10 @@
         "platform_set_irq_callback", 
         "platform_get_version", 
         "platform_raise_assertion", 
-        "platform_get_heap_status", 
-        "platform_reset", 
-        "platform_switch_app", 
+        "sysSetPublicDeviceAddr", 
         "platform_config", 
         "platform_shutdown", 
         "platform_printf", 
-        "sysSetPublicDeviceAddr", 
         "platform_set_rf_clk_source", 
         "platform_set_rf_init_data", 
         "platform_set_rf_power_mapping", 
@@ -349,11 +346,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 258376
+        "size": 258236
     }, 
     "version": [
         0, 
         14, 
-        3
+        1
     ]
 }

@@ -1,6 +1,6 @@
 /*
- * FreeRTOS Kernel V10.2.1
- * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V10.1.1
+ * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -156,10 +156,6 @@ extern "C" {
 	#define INCLUDE_uxTaskGetStackHighWaterMark 0
 #endif
 
-#ifndef INCLUDE_uxTaskGetStackHighWaterMark2
-	#define INCLUDE_uxTaskGetStackHighWaterMark2 0
-#endif
-
 #ifndef INCLUDE_eTaskGetState
 	#define INCLUDE_eTaskGetState 0
 #endif
@@ -175,9 +171,9 @@ extern "C" {
 #ifndef INCLUDE_xTaskGetSchedulerState
 	#define INCLUDE_xTaskGetSchedulerState 0
 #endif
-
+//add by RAY
 #ifndef INCLUDE_xTaskGetCurrentTaskHandle
-	#define INCLUDE_xTaskGetCurrentTaskHandle 0
+	#define INCLUDE_xTaskGetCurrentTaskHandle 1
 #endif
 
 #if configUSE_CO_ROUTINES != 0
@@ -199,19 +195,19 @@ extern "C" {
 #endif
 
 #ifndef configUSE_RECURSIVE_MUTEXES
-	#define configUSE_RECURSIVE_MUTEXES 0
+	#define configUSE_RECURSIVE_MUTEXES 1
 #endif
 
 #ifndef configUSE_MUTEXES
-	#define configUSE_MUTEXES 0
+	#define configUSE_MUTEXES 1
 #endif
 
 #ifndef configUSE_TIMERS
-	#define configUSE_TIMERS 0
+	#define configUSE_TIMERS 1
 #endif
 
 #ifndef configUSE_COUNTING_SEMAPHORES
-	#define configUSE_COUNTING_SEMAPHORES 0
+	#define configUSE_COUNTING_SEMAPHORES 1
 #endif
 
 #ifndef configUSE_ALTERNATIVE_API
@@ -241,23 +237,22 @@ extern "C" {
 	#define configASSERT_DEFINED 1
 #endif
 
-#ifndef portMEMORY_BARRIER
-	#define portMEMORY_BARRIER()
-#endif
-
 /* The timers module relies on xTaskGetSchedulerState(). */
 #if configUSE_TIMERS == 1
 
 	#ifndef configTIMER_TASK_PRIORITY
-		#error If configUSE_TIMERS is set to 1 then configTIMER_TASK_PRIORITY must also be defined.
+		//#error If configUSE_TIMERS is set to 1 then configTIMER_TASK_PRIORITY must also be defined.
+		#define configTIMER_TASK_PRIORITY ( configMAX_PRIORITIES - 1 )
 	#endif /* configTIMER_TASK_PRIORITY */
 
 	#ifndef configTIMER_QUEUE_LENGTH
-		#error If configUSE_TIMERS is set to 1 then configTIMER_QUEUE_LENGTH must also be defined.
+		//#error If configUSE_TIMERS is set to 1 then configTIMER_QUEUE_LENGTH must also be defined.
+			#define configTIMER_QUEUE_LENGTH				10
 	#endif /* configTIMER_QUEUE_LENGTH */
 
 	#ifndef configTIMER_TASK_STACK_DEPTH
-		#error If configUSE_TIMERS is set to 1 then configTIMER_TASK_STACK_DEPTH must also be defined.
+		//#error If configUSE_TIMERS is set to 1 then configTIMER_TASK_STACK_DEPTH must also be defined.
+		#define configTIMER_TASK_STACK_DEPTH			configMINIMAL_STACK_SIZE
 	#endif /* configTIMER_TASK_STACK_DEPTH */
 
 #endif /* configUSE_TIMERS */
@@ -759,19 +754,15 @@ extern "C" {
 #endif
 
 #ifndef configUSE_QUEUE_SETS
-	#define configUSE_QUEUE_SETS 0
+	#define configUSE_QUEUE_SETS 1
 #endif
 
 #ifndef portTASK_USES_FLOATING_POINT
 	#define portTASK_USES_FLOATING_POINT()
 #endif
 
-#ifndef portALLOCATE_SECURE_CONTEXT
-	#define portALLOCATE_SECURE_CONTEXT( ulSecureStackSize )
-#endif
-
-#ifndef portDONT_DISCARD
-	#define portDONT_DISCARD
+#ifndef portTASK_CALLS_SECURE_FUNCTIONS
+	#define portTASK_CALLS_SECURE_FUNCTIONS()
 #endif
 
 #ifndef configUSE_TIME_SLICING
@@ -962,75 +953,6 @@ point support. */
 	#define configUSE_TASK_FPU_SUPPORT 1
 #endif
 
-/* Set configENABLE_MPU to 1 to enable MPU support and 0 to disable it. This is
-currently used in ARMv8M ports. */
-#ifndef configENABLE_MPU
-	#define configENABLE_MPU 0
-#endif
-
-/* Set configENABLE_FPU to 1 to enable FPU support and 0 to disable it. This is
-currently used in ARMv8M ports. */
-#ifndef configENABLE_FPU
-	#define configENABLE_FPU 1
-#endif
-
-/* Set configENABLE_TRUSTZONE to 1 enable TrustZone support and 0 to disable it.
-This is currently used in ARMv8M ports. */
-#ifndef configENABLE_TRUSTZONE
-	#define configENABLE_TRUSTZONE 1
-#endif
-
-/* Set configRUN_FREERTOS_SECURE_ONLY to 1 to run the FreeRTOS ARMv8M port on
-the Secure Side only. */
-#ifndef configRUN_FREERTOS_SECURE_ONLY
-	#define configRUN_FREERTOS_SECURE_ONLY 0
-#endif
-
-/* Sometimes the FreeRTOSConfig.h settings only allow a task to be created using
- * dynamically allocated RAM, in which case when any task is deleted it is known
- * that both the task's stack and TCB need to be freed.  Sometimes the
- * FreeRTOSConfig.h settings only allow a task to be created using statically
- * allocated RAM, in which case when any task is deleted it is known that neither
- * the task's stack or TCB should be freed.  Sometimes the FreeRTOSConfig.h
- * settings allow a task to be created using either statically or dynamically
- * allocated RAM, in which case a member of the TCB is used to record whether the
- * stack and/or TCB were allocated statically or dynamically, so when a task is
- * deleted the RAM that was allocated dynamically is freed again and no attempt is
- * made to free the RAM that was allocated statically.
- * tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE is only true if it is possible for a
- * task to be created using either statically or dynamically allocated RAM.  Note
- * that if portUSING_MPU_WRAPPERS is 1 then a protected task can be created with
- * a statically allocated stack and a dynamically allocated TCB.
- *
- * The following table lists various combinations of portUSING_MPU_WRAPPERS,
- * configSUPPORT_DYNAMIC_ALLOCATION and configSUPPORT_STATIC_ALLOCATION and
- * when it is possible to have both static and dynamic allocation:
- *  +-----+---------+--------+-----------------------------+-----------------------------------+------------------+-----------+
- * | MPU | Dynamic | Static |     Available Functions     |       Possible Allocations        | Both Dynamic and | Need Free |
- * |     |         |        |                             |                                   | Static Possible  |           |
- * +-----+---------+--------+-----------------------------+-----------------------------------+------------------+-----------+
- * | 0   | 0       | 1      | xTaskCreateStatic           | TCB - Static, Stack - Static      | No               | No        |
- * +-----|---------|--------|-----------------------------|-----------------------------------|------------------|-----------|
- * | 0   | 1       | 0      | xTaskCreate                 | TCB - Dynamic, Stack - Dynamic    | No               | Yes       |
- * +-----|---------|--------|-----------------------------|-----------------------------------|------------------|-----------|
- * | 0   | 1       | 1      | xTaskCreate,                | 1. TCB - Dynamic, Stack - Dynamic | Yes              | Yes       |
- * |     |         |        | xTaskCreateStatic           | 2. TCB - Static, Stack - Static   |                  |           |
- * +-----|---------|--------|-----------------------------|-----------------------------------|------------------|-----------|
- * | 1   | 0       | 1      | xTaskCreateStatic,          | TCB - Static, Stack - Static      | No               | No        |
- * |     |         |        | xTaskCreateRestrictedStatic |                                   |                  |           |
- * +-----|---------|--------|-----------------------------|-----------------------------------|------------------|-----------|
- * | 1   | 1       | 0      | xTaskCreate,                | 1. TCB - Dynamic, Stack - Dynamic | Yes              | Yes       |
- * |     |         |        | xTaskCreateRestricted       | 2. TCB - Dynamic, Stack - Static  |                  |           |
- * +-----|---------|--------|-----------------------------|-----------------------------------|------------------|-----------|
- * | 1   | 1       | 1      | xTaskCreate,                | 1. TCB - Dynamic, Stack - Dynamic | Yes              | Yes       |
- * |     |         |        | xTaskCreateStatic,          | 2. TCB - Dynamic, Stack - Static  |                  |           |
- * |     |         |        | xTaskCreateRestricted,      | 3. TCB - Static, Stack - Static   |                  |           |
- * |     |         |        | xTaskCreateRestrictedStatic |                                   |                  |           |
- * +-----+---------+--------+-----------------------------+-----------------------------------+------------------+-----------+
- */
-#define tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE	( ( ( portUSING_MPU_WRAPPERS == 0 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) && ( configSUPPORT_STATIC_ALLOCATION == 1 ) ) || \
-													  ( ( portUSING_MPU_WRAPPERS == 1 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) ) )
-
 /*
  * In line with software engineering best practice, FreeRTOS implements a strict
  * data hiding policy, so the real structures used by FreeRTOS to maintain the
@@ -1043,40 +965,25 @@ the Secure Side only. */
  */
 struct xSTATIC_LIST_ITEM
 {
-	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
-		TickType_t xDummy1;
-	#endif
-	TickType_t xDummy2;
-	void *pvDummy3[ 4 ];
-	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
-		TickType_t xDummy4;
-	#endif
+	TickType_t xDummy1;
+	void *pvDummy2[ 4 ];
 };
 typedef struct xSTATIC_LIST_ITEM StaticListItem_t;
 
 /* See the comments above the struct xSTATIC_LIST_ITEM definition. */
 struct xSTATIC_MINI_LIST_ITEM
 {
-	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
-		TickType_t xDummy1;
-	#endif
-	TickType_t xDummy2;
-	void *pvDummy3[ 2 ];
+	TickType_t xDummy1;
+	void *pvDummy2[ 2 ];
 };
 typedef struct xSTATIC_MINI_LIST_ITEM StaticMiniListItem_t;
 
 /* See the comments above the struct xSTATIC_LIST_ITEM definition. */
 typedef struct xSTATIC_LIST
 {
-	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
-		TickType_t xDummy1;
-	#endif
-	UBaseType_t uxDummy2;
-	void *pvDummy3;
-	StaticMiniListItem_t xDummy4;
-	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
-		TickType_t xDummy5;
-	#endif
+	UBaseType_t uxDummy1;
+	void *pvDummy2;
+	StaticMiniListItem_t xDummy3;
 } StaticList_t;
 
 /*
@@ -1130,7 +1037,7 @@ typedef struct xSTATIC_TCB
 		uint32_t 		ulDummy18;
 		uint8_t 		ucDummy19;
 	#endif
-	#if ( tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE != 0 )
+	#if( ( configSUPPORT_STATIC_ALLOCATION == 1 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )
 		uint8_t			uxDummy20;
 	#endif
 
@@ -1234,12 +1141,16 @@ typedef struct xSTATIC_TIMER
 	void				*pvDummy1;
 	StaticListItem_t	xDummy2;
 	TickType_t			xDummy3;
+	UBaseType_t			uxDummy4;
 	void 				*pvDummy5;
 	TaskFunction_t		pvDummy6;
 	#if( configUSE_TRACE_FACILITY == 1 )
 		UBaseType_t		uxDummy7;
 	#endif
-	uint8_t 			ucDummy8;
+
+	#if( ( configSUPPORT_STATIC_ALLOCATION == 1 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )
+		uint8_t 		ucDummy8;
+	#endif
 
 } StaticTimer_t;
 

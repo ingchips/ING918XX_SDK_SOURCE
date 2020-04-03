@@ -48,9 +48,18 @@ void gap_set_random_device_address(const uint8_t *address);
  * @param handle
  */
 uint8_t gap_disconnect(hci_con_handle_t handle);
+void gap_disconnect_all(void);
 
 uint8_t gap_add_whitelist(const uint8_t *address,bd_addr_type_t  addtype);
 uint8_t gap_remove_whitelist(const uint8_t *address,bd_addr_type_t addtype);
+// uint8_t gap_clear_white_lists(void);
+// WARNING: ^^^ this API is not available in this release
+
+
+uint8_t gap_read_rssi(hci_con_handle_t handle);
+uint8_t gap_read_remote_used_features(hci_con_handle_t handle);
+uint8_t gap_read_remote_info(hci_con_handle_t handle);
+uint8_t gap_le_read_channel_map(hci_con_handle_t handle);
 
 typedef enum phy_type
 {
@@ -129,7 +138,7 @@ typedef enum scan_filter_policy
     // Accept all advertising packets except directed advertising packets not
     // addressed to this device (default).
     SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
-    // Accept only advertising packets from devices where the advertiser¡¯s
+    // Accept only advertising packets from devices where the advertiserï¿½ï¿½s
     // address is in the White List. Directed advertising packets which are not
     // addressed to this device shall be ignored
     SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
@@ -293,7 +302,7 @@ typedef enum
  *            identified by the Advertising_Handle parameter.
  *
  * @param adv_handle            Used to identify an advertising set. Range: 0x00 to 0xEF
- * @param cte_len               Constant Tone Extension length in 8 ¦Ìs units. Range: 0x02 to 0x14
+ * @param cte_len               Constant Tone Extension length in 8 ï¿½ï¿½s units. Range: 0x02 to 0x14
  * @param cte_type              CTE Type
  * @param cte_count             The number of Constant Tone Extensions to transmit in each periodic
  *                              advertising interval.
@@ -412,7 +421,7 @@ typedef enum
  *                                  Requested interval for initiating the Constant Tone Extension Request
  *                                  procedure in number of connection events.
  * @param requested_cte_length  Minimum length of the Constant Tone Extension being requested in 8
- *                              ¦Ìs units. Range: 0x02 to 0x14.
+ *                              ï¿½ï¿½s units. Range: 0x02 to 0x14.
  * @param requested_cte_type    Requested CTE type
  * @return                      0: Message is sent out; Other: Message is not sent out
  *
