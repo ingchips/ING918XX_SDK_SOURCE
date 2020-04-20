@@ -6,28 +6,28 @@
 #
 
 ## This module implements *compile time* data builders for advertising & GATT profile.
-## 
+##
 ## Functionalities:
 ##
 ## 1. Use ``includeCBytes`` to load bytes defined in C-compatible format
 ##
-## .. code-block::  
+## .. code-block::
 ##   let advData = includeCBytes"./data/advertising.adv"
-## 
+##
 ## 2. Use ``Flags``, ``LocalName``, ``iBeacon``, etc to compose advertising data manualy
 ##
-## .. code-block::  
+## .. code-block::
 ##   let advData = concatToArray([Flags({LEGeneralDiscoverableMode, BR_EDR_NotSupported}),
 ##                                iBeacon("{E9052F1E-9D67-4A6E-B2D7-459D132D6A94}", 0, 0, -50)])
-## 
+##
 ## 3. Use ``defineProfile``, ``Service``, ``Characteristic``, and ``Descriptor`` to compose GATT profile.
 ##    Handles and value offset are defined as consts.
 ##
 ##    In below example, `profileData` contains the profile data, `HANDLE_BATTERY_LEVEL` represents its handle,
 ##    and, `HANDLE_BATTERY_LEVEL_OFFSET` represents the offset (in byte) of value (battery level, 10u8) in the profile.
-##    
+##
 ##    Use `*` suffix to make profile data or other consts public.
-##    
+##
 ##    Data of each item (Service/Characteristic/Descriptor) and generated code are all printed during compiling.
 ##
 ## .. code-block::
@@ -44,7 +44,7 @@ import
 
 proc a2B(a: string): uint8 =
     cast[uint8]((if a.toLower.startsWith("0x"): parseHexInt else: parseInt) a)
-        
+
 proc staticParse(filename: string): seq[uint8] {.compileTime.} =
     result = @[]
     for s in readFile(filename).splitLines():
@@ -146,7 +146,7 @@ func EddystoneEncodeURL(aurl: string): seq[uint8] {.compileTime.} =
                     break whileBody
             result.add(cast[uint8](ord(url[0])))
             url.delete(0, 0)
-        
+
 func EddystoneURL*(txPowerAt0: int, url: string): seq[uint8] {.compileTime.} =
     return ServiceData(EddystoneServiceID, concat(@[@[0x10u8, cast[uint8](txPowerAt0)], EddystoneEncodeURL url]))
 
@@ -176,7 +176,7 @@ type
     HandleValue = tuple
         handle: uint16
         value: seq[uint8]
-    
+
     NameHandleValue = tuple
         name: string
         handle: uint16
@@ -232,14 +232,14 @@ func makeIntDel(node: NimNode; name: string) {.compileTime.} =
 
 func makeIntDef(name: string; v: NimNode): NimNode {.compileTime.} =
     result = nnkIdentDefs.newTree
-    
+
     makeIntDel(result, name)
     result.add newEmptyNode()
-    result.add v 
+    result.add v
 
 func makeConstDef[T](name: string; v: T): NimNode {.compileTime.} =
     result = nnkConstDef.newTree
-    
+
     makeIntDel(result, name)
     result.add newEmptyNode()
     result.add newLit v
@@ -256,7 +256,7 @@ macro defineProfile*(items: static[openArray[NameHandleValue]]; dbName: static[s
 
     debugEcho "Items in profile:"
     for x in items:
-        debugEcho x.repr
+        debugEcho x # x.repr
 
     var db = nnkBracket.newTree
     db.add concat(items.mapIt(it.value)).map(newLit)
@@ -267,7 +267,7 @@ macro defineProfile*(items: static[openArray[NameHandleValue]]; dbName: static[s
     for x in items:
         if x.name != "":
             sConst.add makeConstDef(x.name, x.handle)
-            sConst.add makeConstDef(makeOffstInt(x.name), x.offset + total) 
+            sConst.add makeConstDef(makeOffstInt(x.name), x.offset + total)
         total += len(x.value)
 
     debugEcho result.repr

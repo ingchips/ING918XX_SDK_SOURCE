@@ -101,12 +101,7 @@ proc startScanIfNeeded() =
     discard gapSetExtScanEnable(1, 0, 0, 0)
 
 proc slaveFromConnHandle(connHandle: uint16): ptr Slave =
-  var env {.global.} : uint16
-  env = connHandle
-  proc predSlave(slave: Slave): bool =
-    return slave.connHandle == env
-
-  return first(slaves, predSlave)
+  return first(slaves, (slave) => slave.connHandle == connHandle)
 
 proc slaveFromAddr(address: bdAddrT): ptr Slave =
   var reversed: bdAddrT
@@ -128,12 +123,7 @@ proc broadcast(data: ptr uint8; len: int; code: SmartHomeCmdCode; exclude: uint1
       discard attServerNotify(server.connHandle, HANDLE_SMART_HOME_STATUS, data, cast[uint16](len))
 
 proc attServerFromConnHandle(connHandle: uint16): ptr AttServer =
-  var env {.global.} : uint16
-  env = connHandle
-  proc predServer(slave: AttServer): bool =
-    return slave.connHandle == env
-
-  return first(attServers, predServer)
+  return first(attServers, (slave) => slave.connHandle == connHandle)
 
 proc broadcast(data: openArray[uint8]; code: SmartHomeCmdCode; exclude: uint16 = INVALID_HANDLE) =
   broadcast(unsafeAddr data[0], len(data), code, exclude)
@@ -187,12 +177,7 @@ proc temperatureNotificationHandler(packetType: uint8; connHandle: uint16; packe
     discard
 
 proc setRGB(id: uint8, rgb: ptr uint8): bool =
-  var predSlaveEnv {.global.} : uint8
-  predSlaveEnv = id
-  proc predSlave(slave: Slave): bool =
-    return slave.connHandle != INVALID_HANDLE and slave.id == predSlaveEnv
-
-  let slave = first(slaves, predSlave)
+  let slave = first(slaves, (slave) => slave.connHandle != INVALID_HANDLE and slave.id == id)
 
   if slave == nil: return false
   if slave.cRGBCtrl.valueHandle == INVALID_HANDLE: return false
@@ -555,8 +540,9 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
       discard
 
 proc setupProfile*(unused1: pointer; unused2: pointer): uint32 {.exportc noconv.} =
+  platformPrintf("profile run\n")
   # Note: security has not been enabled.
-  initiatingTimer = xTimerCreate(cast[cstring]("a"),
+  initiatingTimer = xTimerCreate("a",
                             pdMS_TO_TICKS(5000),
                             pdFALSE,
                             nil,
