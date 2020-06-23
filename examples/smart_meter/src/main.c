@@ -77,7 +77,7 @@ uint32_t uart_isr(void *user_data)
         // rx int
         if (status & (1 << bsUART_RECEIVE_INTENAB))
         {
-            while (apUART_Check_RXFIFO_EMPRY(APB_UART0) != 1)
+            while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
             {
                 char c = APB_UART0->DataRead;
                 console_rx_data(&c, 1);
@@ -156,7 +156,7 @@ int app_main()
     setup_peripherals();
     
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
-    platform_set_evt_callback(PLATFORM_CB_LLE_INIT, cb_lle_reset, NULL);
+    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, cb_lle_reset, NULL);
 
     return 0;
 }

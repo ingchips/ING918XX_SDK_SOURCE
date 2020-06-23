@@ -1,21 +1,24 @@
-// ----------------------------------------------------------------------------
-// Copyright Message
-// ----------------------------------------------------------------------------
-//
-// INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018-2019 by INGCHIPS
-//
-// All rights are reserved. Reproduction in whole or in part is
-// prohibited without the written consent of the copyright owner.
-//
-//
-// ----------------------------------------------------------------------------
+/** @file                                                               *
+*  @brief    helper function to cache data into flash                   *
+*  @version  1.0.0.                                                     *
+*  @date     2019/10/10                                                 *
+*                                                                       *
+*  Copyright (c) 2019 IngChips corp.                                    *
+*                                                                       *
+*                                                                       *
+ *************************************************************************************************************/
 
 #ifndef _KV_STORAGE_H
 #define _KV_STORAGE_H
 
 #include <stdint.h>
 
+/**
+ * @brief Bluetooth 
+ * @defgroup Bluetooth_NVM
+ * @ingroup bluetooth_stack
+ * @{
+ */
 /**
  * @brief A simple key-value storage
  *
@@ -166,5 +169,9 @@ void kv_visit(f_kv_visitor visitor, void *user_data);
 // int kv_value_trunc(const kvkey_t key, const int16_t new_len);
 // WARNING: ^^^ this API is not available in this release
 
+
+/*
+* @}
+*/
 
 #endif

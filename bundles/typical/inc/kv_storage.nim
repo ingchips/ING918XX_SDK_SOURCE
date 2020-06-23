@@ -1,16 +1,20 @@
-##  ----------------------------------------------------------------------------
-##  Copyright Message
-##  ----------------------------------------------------------------------------
+## * @file                                                               *
+##   @brief    helper function to cache data into flash                   *
+##   @version  1.0.0.                                                     *
+##   @date     2019/10/10                                                 *
+##                                                                        *
+##   Copyright (c) 2019 IngChips corp.                                    *
+##                                                                        *
+##                                                                        *
 ##
-##  INGCHIPS confidential and proprietary.
-##  COPYRIGHT (c) 2018-2019 by INGCHIPS
-##
-##  All rights are reserved. Reproduction in whole or in part is
-##  prohibited without the written consent of the copyright owner.
-##
-##
-##  ----------------------------------------------------------------------------
+## ***********************************************************************************************************
 
+## *
+##  @brief Bluetooth
+##  @defgroup Bluetooth_NVM
+##  @ingroup bluetooth_stack
+##  @{
+##
 ## *
 ##  @brief A simple key-value storage
 ##
@@ -168,3 +172,6 @@ proc kv_visit*(visitor: f_kv_visitor; user_data: pointer) {.importc: "kv_visit",
 ##
 ##  int kv_value_trunc(const kvkey_t key, const int16_t new_len);
 ##  WARNING: ^^^ this API is not available in this release
+##
+##  @}
+##

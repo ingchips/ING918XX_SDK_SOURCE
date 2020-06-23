@@ -246,9 +246,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             {
-                const le_meta_event_create_conn_complete_t *conn_cmpl = decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t);
+                const le_meta_event_enh_create_conn_complete_t *conn_cmpl = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                 att_set_db(conn_cmpl->handle, profile_data);
                 profile_cfgs[conn_cmpl->handle].notify_enable = 0;
                 profile_cfgs[conn_cmpl->handle].to_send.size = 0;

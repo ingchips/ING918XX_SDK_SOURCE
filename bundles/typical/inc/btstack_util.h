@@ -151,7 +151,7 @@ void uuid_add_bluetooth_prefix(uint8_t * uuid128, uint32_t short_uuid);
  * @param uui128 to test
  * @return 1 if it can be expressed as UUID32
  */
-int  uuid_has_bluetooth_prefix(uint8_t * uuid128);
+int  uuid_has_bluetooth_prefix(const uint8_t * uuid128);
 
 #ifdef __cplusplus
 }

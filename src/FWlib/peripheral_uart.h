@@ -304,7 +304,7 @@ typedef struct UART_xStateStruct
 void apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t BaudRate);
 uint32_t apUART_BaudRateGet (UART_TypeDef* pBase, uint32_t ClockFrequency);
 uint8_t apUART_Check_Rece_ERROR(UART_TypeDef* pBase);
-uint8_t apUART_Check_RXFIFO_EMPRY(UART_TypeDef* pBase);
+uint8_t apUART_Check_RXFIFO_EMPTY(UART_TypeDef* pBase);
 uint8_t apUART_Check_RXFIFO_FULL(UART_TypeDef* pBase);
 uint8_t apUART_Check_TXFIFO_EMPTY(UART_TypeDef* pBase);
 uint8_t apUART_Check_TXFIFO_FULL(UART_TypeDef* pBase);

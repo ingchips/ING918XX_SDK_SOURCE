@@ -24,6 +24,7 @@ const static uint8_t profile_data[] = {
 static uint32_t total_bytes = 0;
 static hci_con_handle_t handle_send = 0;
 static uint8_t notify_enable = 0;
+uint8_t loopback_mode = 0;
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -52,18 +53,18 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     {
     case HANDLE_GENERIC_INPUT:
         total_bytes += buffer_size;
-#ifdef LOOPBACK
-        if (notify_enable)
-            att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)buffer, buffer_size);
-#endif
+        if (loopback_mode)
+        {
+            if (notify_enable)
+                att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)buffer, buffer_size);
+        }
         return 0;
     case HANDLE_GENERIC_OUTPUT + 1:        
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
         {
             notify_enable = 1;
-#ifndef LOOPBACK
-            att_server_request_can_send_now_event(handle_send);
-#endif
+            if (loopback_mode == 0)
+                att_server_request_can_send_now_event(handle_send);            
         }
         else
             notify_enable = 0;        
@@ -85,7 +86,6 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     }
 }
 
-#ifndef LOOPBACK
 void send_data(void)
 {    
     uint16_t len = att_server_get_mtu(handle_send) - 3;
@@ -97,7 +97,6 @@ void send_data(void)
 
     att_server_request_can_send_now_event(handle_send);
 }
-#endif
 
 static void hint_ce_len(uint16_t interval)
 {
@@ -142,10 +141,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             {
-                const le_meta_event_create_conn_complete_t *cmpl =
-                    decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t);
+                const le_meta_event_enh_create_conn_complete_t *cmpl =
+                    decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                 handle_send = cmpl->handle;
                 hint_ce_len(cmpl->interval);
                 att_set_db(handle_send, profile_data);
@@ -166,9 +165,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
-#ifndef LOOPBACK
-        send_data();
-#endif
+        if (loopback_mode == 0)
+            send_data();
         break;
 
     case BTSTACK_EVENT_USER_MSG:
@@ -189,4 +187,3 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(&user_packet_handler);
     return 0;
 }
-

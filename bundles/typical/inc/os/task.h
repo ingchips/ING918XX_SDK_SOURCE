@@ -2383,9 +2383,7 @@ portDONT_DISCARD void vTaskSwitchContext( void ) PRIVILEGED_FUNCTION;
 /*
  * Return the handle of the calling task.
  */
-// TaskHandle_t xTaskGetCurrentTaskHandle( void ) PRIVILEGED_FUNCTION;
-// WARNING: ^^^ this API is not available in this release
-
+TaskHandle_t xTaskGetCurrentTaskHandle( void ) PRIVILEGED_FUNCTION;
 
 /*
  * Capture the current time status for future reference.

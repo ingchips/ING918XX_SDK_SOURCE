@@ -255,8 +255,8 @@ macro defineProfile*(items: static[openArray[NameHandleValue]]; dbName: static[s
     result.add sConst
 
     debugEcho "Items in profile:"
-    for x in items:
-        debugEcho x # x.repr
+    #for x in items:
+    #    debugEcho x # x.repr
 
     var db = nnkBracket.newTree
     db.add concat(items.mapIt(it.value)).map(newLit)

@@ -88,7 +88,7 @@ int app_main()
     
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
     
-    platform_set_evt_callback(PLATFORM_CB_LLE_INIT, cfg_rf, NULL);
+    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, cfg_rf, NULL);
     return 0;
 }
 

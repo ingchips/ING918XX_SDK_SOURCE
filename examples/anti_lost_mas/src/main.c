@@ -101,7 +101,7 @@ int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
+    platform_set_rf_clk_source(0);
 
     timer = xTimerCreate("t",
                  pdMS_TO_TICKS(10 * 1000),

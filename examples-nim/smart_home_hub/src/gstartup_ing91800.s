@@ -14,7 +14,7 @@ __StackTop:
 
     .section .heap
     .align    3
-    .equ    Heap_Size, 8192
+    .equ    Heap_Size, 0
     .globl    __HeapBase
     .globl    __HeapLimit
 __HeapBase:

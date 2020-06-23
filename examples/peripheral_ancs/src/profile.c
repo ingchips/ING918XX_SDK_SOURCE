@@ -11,7 +11,7 @@ const sm_persistent_t sm_persistent =
     .er = {1, 2, 3},
     .ir = {4, 5, 6},
     .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
-    .identity_addr          = {0xC3, 25, 34, 48, 52, 65}
+    .identity_addr          = {0xC3, 25, 34, 48, 52, 66}
 };
 
 #define SECURITY_PERSISTENT_DATA    (&sm_persistent) // ((const sm_persistent_t *)0x44000)
@@ -106,7 +106,6 @@ static void setup_adv(void)
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    const le_meta_event_create_conn_complete_t *cmpl;
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -139,11 +138,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            cmpl = decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t);
-            att_set_db(cmpl->handle, profile_data);
-            sm_send_security_request(cmpl->handle);
-            conn_handle = cmpl->handle;
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            conn_handle = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle;
+            att_set_db(conn_handle, profile_data);
+            sm_send_security_request(conn_handle);
             break;
         default:
             break;

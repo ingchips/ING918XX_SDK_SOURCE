@@ -94,18 +94,20 @@ const uint16_t char_config_notification = GATT_CLIENT_CHARACTERISTICS_CONFIGURAT
 
 void descriptor_discovery_callback(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
+    const gatt_event_all_characteristic_descriptors_query_result_t *result;
     switch (packet[0])
     {
     case GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT:
-        gatt_event_all_characteristic_descriptors_query_result_get_characteristic_descriptor(packet, &slave.output_desc);
+        result = gatt_event_all_characteristic_descriptors_query_result_parse(packet);
+        slave.output_desc = result->descriptor;
         dbg_printf("output desc: %d\n", slave.output_desc.handle);               
         break;
     case GATT_EVENT_QUERY_COMPLETE:
         if (slave.output_desc.handle != INVALID_HANDLE)
         {            
             gatt_client_listen_for_characteristic_value_updates(&slave.output_notify, output_notification_handler, 
-                                                                channel, &slave.output_char);
-            gatt_client_write_characteristic_descriptor(btstack_callback, channel, &slave.output_desc, sizeof(char_config_notification),
+                                                                channel, slave.output_char.value_handle);
+            gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_callback, channel, slave.output_desc.handle, sizeof(char_config_notification),
                                                         (uint8_t *)&char_config_notification);
         }
         break;
@@ -117,16 +119,21 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t channel, co
     switch (packet[0])
     {
     case GATT_EVENT_CHARACTERISTIC_QUERY_RESULT:
-        if (INVALID_HANDLE == slave.input_char.value_handle)
-            gatt_event_characteristic_query_result_get_characteristic(packet, &slave.input_char);
-        else
-            gatt_event_characteristic_query_result_get_characteristic(packet, &slave.output_char);
+        {
+            const gatt_event_characteristic_query_result_t *result =
+                gatt_event_characteristic_query_result_parse(packet);
+            if (INVALID_HANDLE == slave.input_char.value_handle)
+                slave.input_char = result->characteristic;
+            else
+                slave.output_char = result->characteristic;
+        }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
         if (INVALID_HANDLE == slave.output_char.value_handle)
         {
-            gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, channel, 
-                                                                        &slave.service_console,
+            gatt_client_discover_characteristics_for_handle_range_by_uuid128(characteristic_discovery_callback, channel, 
+                                                                        slave.service_console.start_group_handle,
+                                                                        slave.service_console.end_group_handle,
                                                                         UUID_ING_GENERIC_OUTPUT);
             break;
         }
@@ -141,14 +148,17 @@ void service_discovery_callback(uint8_t packet_type, uint16_t channel, const uin
     switch (packet[0])
     {
     case GATT_EVENT_SERVICE_QUERY_RESULT:
-        gatt_event_service_query_result_get_service(packet, &slave.service_console);
-        dbg_printf("svc handle: %d %d\n", slave.service_console.start_group_handle, slave.service_console.end_group_handle);               
+        {
+            slave.service_console = gatt_event_service_query_result_parse(packet)->service;
+            dbg_printf("svc handle: %d %d\n", slave.service_console.start_group_handle, slave.service_console.end_group_handle);               
+        }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
         if (slave.service_console.start_group_handle != INVALID_HANDLE)
         {
-            gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, channel, 
-                                                                        &slave.service_console,
+            gatt_client_discover_characteristics_for_handle_range_by_uuid128(characteristic_discovery_callback, channel, 
+                                                                        slave.service_console.start_group_handle,
+                                                                        slave.service_console.end_group_handle,
                                                                         UUID_ING_GENERIC_INPUT);
             slave.input_char.value_handle  = INVALID_HANDLE;
             slave.output_char.value_handle = INVALID_HANDLE;
@@ -163,7 +173,7 @@ void service_discovery_callback(uint8_t packet_type, uint16_t channel, const uin
     }
 }
 
-void slave_connected(const le_meta_event_create_conn_complete_t *conn_complete)
+void slave_connected(const le_meta_event_enh_create_conn_complete_t *conn_complete)
 {
     slave.service_console.start_group_handle = INVALID_HANDLE;
     slave.conn_handle = conn_complete->handle;
@@ -211,7 +221,6 @@ bd_addr_t peer_addr;
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    const le_meta_event_create_conn_complete_t *conn_complete;
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -258,10 +267,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 }
             }
             break;
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             show_state(STATE_DISCOVERING);
-            conn_complete = decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t);
-            slave_connected(conn_complete);
+            slave_connected(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t));
             break;
         default:
             break;

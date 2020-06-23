@@ -1,12 +1,14 @@
-##  ----------------------------------------------------------------------------
-##  Copyright Message
-##  ----------------------------------------------------------------------------
+## * @file
+##    @brief basic function APIs and events  for bluetooth
+##   Copyright Message
 ##
-##  INGCHIPS confidential and proprietary.
-##  COPYRIGHT (c) 2018 by INGCHIPS
 ##
-##  All rights are reserved. Reproduction in whole or in part is
-##  prohibited without the written consent of the copyright owner.
+##   INGCHIPS confidential and proprietary.
+##   COPYRIGHT (c) 2018 by INGCHIPS
+##
+##   All rights are reserved. Reproduction in whole or in part is
+##   prohibited without the written consent of the copyright owner.
+##
 ##
 ##  ----------------------------------------------------------------------------
 
@@ -846,6 +848,22 @@ type
                                   header: "btstack_event.h", bycopy.} = object
     num_of_reports* {.importc: "num_of_reports".}: uint8
     reports* {.importc: "reports".}: array[1, le_directed_adv_report_t]
+
+  le_meta_event_enh_create_conn_complete_t* {.
+      importc: "le_meta_event_enh_create_conn_complete_t",
+      header: "btstack_event.h", bycopy.} = object
+    status* {.importc: "status".}: uint8 ## Status of received command
+    ## Connection handle
+    handle* {.importc: "handle".}: uint16 ## Device role - 0=Master/ 1=Slave
+    role* {.importc: "role".}: uint8 ## Peer address type - 0=public/1=random
+    peer_addr_type* {.importc: "peer_addr_type".}: bd_addr_type_t ## Peer address
+    peer_addr* {.importc: "peer_addr".}: bd_addr_t ## Local_Resolvable_Private_Address
+    local_resolv_priv_addr* {.importc: "local_resolv_priv_addr".}: bd_addr_type_t ## Peer_Resolvable_Private_Address
+    peer_resolv_priv_addr* {.importc: "peer_resolv_priv_addr".}: bd_addr_type_t ## Connection interval
+    interval* {.importc: "interval".}: uint16 ## Connection latency
+    latency* {.importc: "latency".}: uint16 ## Link supervision timeout
+    sup_timeout* {.importc: "sup_timeout".}: uint16 ## Master clock accuracy
+    clk_accuracy* {.importc: "clk_accuracy".}: uint8
 
 
 ##  LE PHY Update Complete Event

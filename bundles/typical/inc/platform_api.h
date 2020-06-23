@@ -74,11 +74,15 @@ typedef enum
     PLATFORM_CB_EVT_ASSERTION,
     
     // when LLE is initializing
-    PLATFORM_CB_LLE_INIT,
+    PLATFORM_CB_EVT_LLE_INIT,
     
     // when allocation on heap fails (heap out of memory)
     // if this callback is not defined, CPU enters a dead loop 
-    PLATFORM_CB_HEAP_OOM,
+    PLATFORM_CB_EVT_HEAP_OOM,
+    
+    // platform callback for output or save a trace item
+    // NOTE: param (void *data) is casted from platform_trace_evt_t *
+    PLATFORM_CB_EVT_TRACE,
 
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;
@@ -102,6 +106,28 @@ typedef enum
 
 typedef uint32_t (*f_platform_evt_cb)(void *data, void *user_data);
 typedef uint32_t (*f_platform_irq_cb)(void *user_data);
+
+// A trace item is a combination of data1 and data2. Note:
+// 1. len1 or len2 might be 0, but not both
+// 2. if callback function finds that it can't output data of size len1 + len2, then, both data1
+//    & data2 should be discarded to avoid trace item corruption.
+typedef struct
+{
+    const void *data1;
+    const void *data2;
+    uint16_t len1;
+    uint16_t len2;
+} platform_evt_trace_t;
+
+// A trace item is has an ID
+typedef enum
+{
+    PLATFORM_TRACE_ID_EVENT                 = 0,
+    PLATFORM_TRACE_ID_HCI_CMD               = 1,
+    PLATFORM_TRACE_ID_HCI_EVENT             = 2,
+    PLATFORM_TRACE_ID_HCI_ACL               = 3,
+    PLATFORM_TRACE_ID_LLCP                  = 4
+} platform_trace_item_t;
 
 /**
  ****************************************************************************************
@@ -178,8 +204,9 @@ void platform_switch_app(const uint32_t app_addr);
 
 typedef enum
 {
-    PLATFORM_CFG_LOG_HCI,       // default: disabled
-    PLATFORM_CFG_POWER_SAVING   // default: disabled
+    PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_TRACE_MASK     // flag is bitmap of platform_trace_item_t. default: 0
 } platform_cfg_item_t;
 
 #define PLATFORM_CFG_ENABLE     1
@@ -190,10 +217,10 @@ typedef enum
  * @brief platform configurations.
  *
  * @param[in] item          Configuration item
- * @param[in] flag          PLATFORM_CFG_ENABLE for enable, PLATFORM_CFG_DISABLE for disable
+ * @param[in] flag          see platform_cfg_item_t.
  ****************************************************************************************
  */
-void platform_config(const platform_cfg_item_t item, const uint8_t flag);
+void platform_config(const platform_cfg_item_t item, const uint32_t flag);
 
 /**
  ****************************************************************************************
@@ -234,7 +261,6 @@ void platform_printf(const char *format, ...);
 // NOTE: for debug only
 void sysSetPublicDeviceAddr(const unsigned char *addr);
 
-#ifdef OPTIONAL_RF_CLK
 // set rf source
 // 0: use external crystal
 // 1: use internal clock loopback
@@ -243,7 +269,6 @@ void platform_set_rf_clk_source(const uint8_t source);
 void platform_set_rf_init_data(const uint32_t *rf_init_data);
 
 void platform_set_rf_power_mapping(const int16_t *rf_power_mapping);
-#endif
 
 typedef enum coded_scheme_e
 {

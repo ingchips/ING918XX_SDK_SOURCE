@@ -118,6 +118,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             gap_disconnect(0);
             break;
         case HCI_SUBEVENT_LE_SCAN_REQUEST_RECEIVED:
@@ -129,14 +130,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                         scan_req->scanner_addr[2], scan_req->scanner_addr[1], scan_req->scanner_addr[0]);                    
             }
             break;
+        case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:
+            gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+            break;
         default:
             break;
         }
 
-        break;
-
-    case HCI_EVENT_DISCONNECTION_COMPLETE:
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:

@@ -1,13 +1,15 @@
-// ----------------------------------------------------------------------------
-// Copyright Message
-// ----------------------------------------------------------------------------
-//
-// INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018 by INGCHIPS
-//
-// All rights are reserved. Reproduction in whole or in part is
-// prohibited without the written consent of the copyright owner.
-//
+/** @file
+*   @brief basic function APIs and events  for bluetooth 
+*  Copyright Message
+*
+*
+*  INGCHIPS confidential and proprietary.
+*  COPYRIGHT (c) 2018 by INGCHIPS
+*
+*  All rights are reserved. Reproduction in whole or in part is
+*  prohibited without the written consent of the copyright owner.
+*
+*/
 // ----------------------------------------------------------------------------
 
 #ifndef __BTSTACK_EVENT_H
@@ -803,6 +805,32 @@ typedef struct le_meta_directed_adv_report
     uint8_t                  num_of_reports;
     le_directed_adv_report_t reports[1];
 } le_meta_directed_adv_report_t;
+
+typedef struct le_meta_event_enh_create_conn_complete
+{
+    //Status of received command
+    uint8_t             status;
+    //Connection handle
+    uint16_t            handle;
+    //Device role - 0=Master/ 1=Slave
+    uint8_t             role;
+    //Peer address type - 0=public/1=random
+    bd_addr_type_t      peer_addr_type;
+    //Peer address
+    bd_addr_t           peer_addr;
+    //Local_Resolvable_Private_Address
+    bd_addr_type_t      local_resolv_priv_addr;
+    //Peer_Resolvable_Private_Address
+    bd_addr_type_t      peer_resolv_priv_addr;
+    //Connection interval
+    uint16_t            interval;
+    //Connection latency
+    uint16_t            latency;
+    //Link supervision timeout
+    uint16_t            sup_timeout;
+    //Master clock accuracy
+    uint8_t             clk_accuracy;
+} le_meta_event_enh_create_conn_complete_t;
 
 // LE PHY Update Complete Event
 typedef struct le_meta_phy_update_complete

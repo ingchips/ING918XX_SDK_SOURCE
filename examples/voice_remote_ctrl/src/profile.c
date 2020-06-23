@@ -323,8 +323,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            handle_send = decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle;
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            handle_send = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle;
 #ifndef DEV_BOARD
             app_state_changed(APP_CONN);            
             att_set_db(handle_send, att_db_storage);

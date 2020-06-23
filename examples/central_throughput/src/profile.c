@@ -9,6 +9,7 @@
 #include "btstack_event.h"
 #include "btstack_defines.h"
 #include "gatt_client.h"
+#include "sig_uuid.h"
 
 #include "ingsoc.h"
 #include "peripheral_rtc.h"
@@ -111,6 +112,11 @@ void reset_info(void)
     slave.loopback = 0;
 }
 
+uint32_t get_sig_short_uuid(const uint8_t *uuid128)
+{
+    return uuid_has_bluetooth_prefix(uuid128) ? big_endian_read_32(uuid128, 0) : 0;
+}
+
 static void output_notification_handler(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
 {
     const gatt_event_value_packet_t *value_packet;
@@ -134,7 +140,7 @@ void btstack_callback(uint8_t packet_type, uint16_t channel, const uint8_t *pack
     switch (packet[0])
     {
     case GATT_EVENT_QUERY_COMPLETE:
-        if (gatt_event_query_complete_get_status(packet) != 0)
+        if (gatt_event_query_complete_parse(packet)->status != 0)
             return;
         platform_printf("cmpl\n");
         break;
@@ -149,17 +155,25 @@ void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_
     switch (packet[0])
     {
     case GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT:
-        gatt_event_all_characteristic_descriptors_query_result_get_characteristic_descriptor(packet, &slave.output_desc);
-        platform_printf("output desc: %d\n", slave.output_desc.handle);
+        {
+            const gatt_event_all_characteristic_descriptors_query_result_t *result =
+                gatt_event_all_characteristic_descriptors_query_result_parse(packet);
+            if (get_sig_short_uuid(result->descriptor.uuid128) ==
+                SIG_UUID_DESCRIP_GATT_CLIENT_CHARACTERISTIC_CONFIGURATION)
+            {
+                slave.output_desc = result->descriptor;
+                platform_printf("output desc: %d\n", slave.output_desc.handle);
+            }
+        }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
-        if (gatt_event_query_complete_get_status(packet) != 0)
+        if (gatt_event_query_complete_parse(packet)->status != 0)
             break;
 
         if (slave.output_desc.handle != INVALID_HANDLE)
         {
             gatt_client_listen_for_characteristic_value_updates(&slave.output_notify, output_notification_handler,
-                                                                slave.conn_handle, &slave.output_char);
+                                                                slave.conn_handle, slave.output_char.value_handle);
         }
         break;
     }
@@ -170,20 +184,25 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
     switch (packet[0])
     {
     case GATT_EVENT_CHARACTERISTIC_QUERY_RESULT:
-        if (INVALID_HANDLE == slave.input_char.value_handle)
         {
-            gatt_event_characteristic_query_result_get_characteristic(packet, &slave.input_char);
-            platform_printf("input handle: %d\n", slave.input_char.value_handle);
-        }
-        else
-        {
-            gatt_event_characteristic_query_result_get_characteristic(packet, &slave.output_char);
-            platform_printf("output handle: %d\n", slave.output_char.value_handle);
+            const gatt_event_characteristic_query_result_t *result =
+                gatt_event_characteristic_query_result_parse(packet);
+            if (memcmp(result->characteristic.uuid128, UUID_CHAR_GEN_IN, sizeof(UUID_CHAR_GEN_OUT)) == 0)
+            {
+                slave.input_char = result->characteristic;
+                platform_printf("input handle: %d\n", slave.input_char.value_handle);
+            }
+            else if (memcmp(result->characteristic.uuid128, UUID_CHAR_GEN_OUT, sizeof(UUID_CHAR_GEN_OUT)) == 0)
+            {
+                slave.output_char = result->characteristic;
+                platform_printf("output handle: %d\n", slave.output_char.value_handle);
+            }
         }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
-        if (gatt_event_query_complete_get_status(packet) != 0)
+        if (gatt_event_query_complete_parse(packet)->status != 0)
             break;
+
         if (INVALID_HANDLE == slave.input_char.value_handle)
         {
             platform_printf("characteristic not found, disc\n");
@@ -191,11 +210,7 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
         }
         else
         {
-            if (INVALID_HANDLE == slave.output_char.value_handle)
-                gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, slave.conn_handle,
-                                                                       &slave.service_tpt, UUID_CHAR_GEN_OUT);
-            else
-                gatt_client_discover_characteristic_descriptors(descriptor_discovery_callback, slave.conn_handle, &slave.output_char);
+            gatt_client_discover_characteristic_descriptors(descriptor_discovery_callback, slave.conn_handle, &slave.output_char);
         }
         break;
     }
@@ -206,17 +221,20 @@ void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *
     switch (packet[0])
     {
     case GATT_EVENT_SERVICE_QUERY_RESULT:
-        gatt_event_service_query_result_get_service(packet, &slave.service_tpt);
-        platform_printf("service handle: %d %d\n",
-                slave.service_tpt.start_group_handle, slave.service_tpt.end_group_handle);
+        {
+            slave.service_tpt = gatt_event_service_query_result_parse(packet)->service;
+            platform_printf("service handle: %d %d\n",
+                    slave.service_tpt.start_group_handle, slave.service_tpt.end_group_handle);
+        }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
-        if (gatt_event_query_complete_get_status(packet) != 0)
+        if (gatt_event_query_complete_parse(packet)->status != 0)
             break;
         if (slave.service_tpt.start_group_handle != INVALID_HANDLE)
         {
-            gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, slave.conn_handle,
-                                                                       &slave.service_tpt, UUID_CHAR_GEN_IN);
+            gatt_client_discover_characteristics_for_service(characteristic_discovery_callback, slave.conn_handle,
+                                                           slave.service_tpt.start_group_handle,
+                                                           slave.service_tpt.end_group_handle);
         }
         else
         {
@@ -227,27 +245,28 @@ void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *
     }
 }
 
+uint16_t send_packet_len = 0;
+
 void send_data(void)
 {
-    uint16_t len;
     uint8_t r;
     if (0 == slave.m2s_run)
         return;
 
     slave.m2s_paused = 0;
 
-    gatt_client_get_mtu(slave.conn_handle, &len);
-    len -= 3;
+    gatt_client_get_mtu(slave.conn_handle, &send_packet_len);
+    send_packet_len -= 3;
 
     do
     {
         r = gatt_client_write_value_of_characteristic_without_response(slave.conn_handle,
-                                                                       slave.input_char.value_handle, len, (uint8_t *)0x4000);
+                                                                       slave.input_char.value_handle,
+                                                                       send_packet_len, (uint8_t *)0x4000);
 
         switch (r)
         {
             case 0:
-                slave.m2s_total += len;
                 break;
             case BTSTACK_ACL_BUFFERS_FULL:
                 att_dispatch_client_request_can_send_now_event(slave.conn_handle);
@@ -282,8 +301,9 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     case USER_MSG_START_S2M:
         slave.s2m_run = 1;
         slave.s2m_total = 0;
-        gatt_client_write_characteristic_descriptor(btstack_callback, slave.conn_handle, &slave.output_desc, sizeof(char_config_notification),
-                                                        (uint8_t *)&char_config_notification);
+        gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_callback, slave.conn_handle,
+            slave.output_desc.handle, sizeof(char_config_notification),
+            (uint8_t *)&char_config_notification);
         TMR_Reload(APB_TMR1);
         TMR_Enable(APB_TMR1);
         break;
@@ -294,8 +314,9 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         break;
     case USER_MSG_STOP_S2M:
         slave.s2m_run = 0;
-        gatt_client_write_characteristic_descriptor(btstack_callback, slave.conn_handle, &slave.output_desc, sizeof(char_config_none),
-                                                        (uint8_t *)&char_config_none);
+        gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_callback, slave.conn_handle,
+            slave.output_desc.handle, sizeof(char_config_none),
+            (uint8_t *)&char_config_none);
         if ((slave.m2s_run | slave.m2s_run) == 0)
             TMR_Disable(APB_TMR1);
         break;
@@ -325,14 +346,16 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                               "| RTT measured in ms.   |\n"
                               "+=======================+\n");
             loopback_info.counter = 0;
-            gatt_client_write_characteristic_descriptor(btstack_callback, slave.conn_handle, &slave.output_desc, sizeof(char_config_notification),
-                                                        (uint8_t *)&char_config_notification);
+            gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_callback, slave.conn_handle,
+                    slave.output_desc.handle, sizeof(char_config_notification),
+                    (uint8_t *)&char_config_notification);
             xTimerStart(app_timer, portMAX_DELAY);
         }
         else
         {
-            gatt_client_write_characteristic_descriptor(btstack_callback, slave.conn_handle, &slave.output_desc, sizeof(char_config_none),
-                                                        (uint8_t *)&char_config_none);
+            gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_callback, slave.conn_handle,
+                    slave.output_desc.handle, sizeof(char_config_none),
+                    (uint8_t *)&char_config_none);
             xTimerStop(app_timer, portMAX_DELAY);
         }
         break;
@@ -481,12 +504,24 @@ typedef struct read_rssi_complete
     uint8_t  status;
     uint16_t handle;
     int8_t   rssi;
-} read_rssi_complete_t;    
+} read_rssi_complete_t;
+
+typedef struct conn_packets
+{
+    uint16_t handle;
+    uint16_t num_of_packets;
+} conn_packets_t;
+
+typedef struct event_num_of_complete_packets
+{
+    uint8_t  num_handles;
+    conn_packets_t compl_packets[0];
+} event_num_of_complete_packets_t;
+
 #pragma pack (pop)
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    const le_meta_event_create_conn_complete_t *conn_complete;
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -497,7 +532,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
         gap_set_random_device_address(rand_addr);
-        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_PUBLIC, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
+        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
                               sizeof(configs) / sizeof(configs[0]),
                               configs);
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
@@ -509,7 +544,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         case HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT:
             {
                 const le_ext_adv_report_t *report = decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports;
-
                 if (ad_data_contains_uuid128(report->data_len, report->data, UUID_TPT))
                 {
                     gap_set_ext_scan_enable(0, 0, 0, 0);
@@ -529,12 +563,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 }
             }
             break;
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            platform_printf("connected\n");
-            conn_complete = decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t);
-            slave.conn_handle = conn_complete->handle;
-            gap_set_phy(slave.conn_handle, 0, PHY_2M_BIT, PHY_2M_BIT, HOST_NO_PREFERRED_CODING);
-            gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, conn_complete->handle, UUID_TPT);
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            {
+                const le_meta_event_enh_create_conn_complete_t *conn_complete
+                     = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
+                platform_printf("connected\n");
+                slave.conn_handle = conn_complete->handle;
+                gap_set_phy(slave.conn_handle, 0, PHY_2M_BIT, PHY_2M_BIT, HOST_NO_PREFERRED_CODING);
+                gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, conn_complete->handle, UUID_TPT);
+            }
             break;
         case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
             {
@@ -562,6 +599,14 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     (const read_rssi_complete_t *)hci_event_command_complete_get_return_parameters(packet);
                 platform_printf("RSSI: %ddBm\n", cmpl->rssi);
             }
+        }
+        break;
+
+    case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
+        if (slave.m2s_run)
+        {
+            const event_num_of_complete_packets_t *report = decode_hci_event(packet, event_num_of_complete_packets_t);
+            slave.m2s_total += send_packet_len * report->compl_packets[0].num_of_packets;
         }
         break;
 

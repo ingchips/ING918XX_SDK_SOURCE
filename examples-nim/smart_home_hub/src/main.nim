@@ -24,10 +24,8 @@ proc cbPutC(c: ptr char; _: pointer): uint32 {.noconv.} =
   return 0
 
 proc write(_: int, p: ptr UncheckedArray[char], len: int): int {.exportc: "_write" noconv.} =
-  var i: int = 0
-  while i < len:
-      discard cbPutC(addr p[i], nil)
-      inc(i)
+  for i in 0..<len:
+    discard cbPutC(addr p[i], nil)
 
   return len
 

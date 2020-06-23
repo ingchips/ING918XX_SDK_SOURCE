@@ -87,11 +87,10 @@ void setup_peripherals(void)
 static void watchdog_task(void *pdata)
 {
     // Watchdog will timeout after 20sec
-    //¢TMR_WatchDogEnable(TMR_CLK_FREQ * 50);
+    TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
     for (;;)
     {
         vTaskDelay(pdMS_TO_TICKS(9000));
-        printf("w\n");
         TMR_WatchDogRestart();
     }
 }
@@ -100,12 +99,10 @@ int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
+    platform_set_rf_clk_source(0);
 
     setup_peripherals();
-    
-    // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
-    
+
     // setup putc handle
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 

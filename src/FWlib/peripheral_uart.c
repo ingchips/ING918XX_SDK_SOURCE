@@ -93,7 +93,7 @@ uint8_t apUART_Check_Rece_ERROR(UART_TypeDef* pBase)
 }
 
 // 
-uint8_t apUART_Check_RXFIFO_EMPRY(UART_TypeDef* pBase)
+uint8_t apUART_Check_RXFIFO_EMPTY(UART_TypeDef* pBase)
 {
 	return ( (pBase->Flag >> bsUART_RECEIVE_EMPTY) & BW2M(bwUART_RECEIVE_EMPTY) );
 }
@@ -199,7 +199,7 @@ void uart_reset(UART_TypeDef* pBase)
 	
 	uart_disable(pBase);
 	
-	while (apUART_Check_RXFIFO_EMPRY(pBase) != 1)
+	while (apUART_Check_RXFIFO_EMPTY(pBase) != 1)
 	{
 		trash = pBase->DataRead;
 	}

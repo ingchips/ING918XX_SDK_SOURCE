@@ -20,7 +20,7 @@
 #define EFLASH_BASE        ((uint32_t)0x00004000UL)
 #define EFLASH_SIZE        ((uint32_t)0x00080000UL)		//512k byte
 
-#include "eflash.c"
+#include "eflash.inc"
 
 uint32_t ClkFreq; //0:16M 1:24M
 

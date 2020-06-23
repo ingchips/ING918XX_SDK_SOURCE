@@ -333,7 +333,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,OPTIONAL_RF_CLK,HEIGHT=128,SIMULATION</Define>
+              <Define>USE_STDPERIPH_DRIVER,OPTIONAL_RF_CLK,HEIGHT=128,SIMULATION,BOARD_V2</Define>
               <Undefine></Undefine>
               <IncludePath>..\peripheral_etag\src;..\peripheral_pedometer\src;../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -422,7 +422,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\typical\ING9188xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>

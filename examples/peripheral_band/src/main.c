@@ -1,3 +1,4 @@
+#define OPTIONAL_RF_CLK
 #include "profile.h"
 #include "ingsoc.h"
 #include "platform_api.h"

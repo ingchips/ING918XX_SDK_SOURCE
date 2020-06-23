@@ -62,17 +62,18 @@ static const scan_phy_config_t configs[2] =
         .phy = PHY_1M,
         .type = SCAN_PASSIVE,
         .interval = 200,
-        .window = 50
+        .window = 100
     },
     {
         .phy = PHY_CODED,
         .type = SCAN_PASSIVE,
         .interval = 200,
-        .window = 50
+        .window = 100
     }
 };
 
 static const bd_addr_t target_addr = {0xC0, 0xFD, 0xDB, 0x54, 0x2A, 0xD2};
+static const bd_addr_t random_addr = {0xC0, 0xFD, 0xDB, 0x54, 0x2A, 0xD3};
 
 static int8_t last_power = -50;
 
@@ -234,8 +235,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
+        gap_set_random_device_address(random_addr);
         gap_add_whitelist(target_addr, BD_ADDR_TYPE_LE_RANDOM);
-        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_PUBLIC, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
+        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
                               sizeof(configs) / sizeof(configs[0]),
                               configs);
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
@@ -265,22 +267,23 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED:
-            platform_printf("established\n");
-            gap_set_ext_scan_enable(0, 0, 0, 0);
-            prd_adv_data_offset = 0;
-#ifdef CTE
             {
-                static const uint8_t ant_ids[] = {0, 1};
                 const le_meta_event_periodic_adv_sync_established_t *established =
                     decode_hci_le_meta_event(packet, le_meta_event_periodic_adv_sync_established_t);
-                gap_set_connectionless_iq_sampling_enable(established->sync_handle,
+                platform_printf("established, %d\n", established->status);
+                gap_set_ext_scan_enable(0, 0, 0, 0);
+                prd_adv_data_offset = 0;
+#ifdef CTE
+                {
+                    static const uint8_t ant_ids[] = {0, 1};                
+                    gap_set_connectionless_iq_sampling_enable(established->sync_handle,
                                                           1,
                                                           (1 << CTE_SLOT_DURATION_1US) | (1 << CTE_SLOT_DURATION_2US),
                                                           16,
                                                           sizeof(ant_ids), ant_ids);
-            }
-
+                }
 #endif
+            }
             break;
 #ifdef CTE
         case HCI_SUBEVENT_LE_CONNECTIONLESS_IQ_REPORT:
@@ -345,6 +348,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    platform_printf("setup profile\n");
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

@@ -292,8 +292,8 @@ proc apUART_BaudRateGet*(pBase: ptr UART_TypeDef; ClockFrequency: uint32): uint3
     importc: "apUART_BaudRateGet", header: "peripheral_uart.h".}
 proc apUART_Check_Rece_ERROR*(pBase: ptr UART_TypeDef): uint8 {.
     importc: "apUART_Check_Rece_ERROR", header: "peripheral_uart.h".}
-proc apUART_Check_RXFIFO_EMPRY*(pBase: ptr UART_TypeDef): uint8 {.
-    importc: "apUART_Check_RXFIFO_EMPRY", header: "peripheral_uart.h".}
+proc apUART_Check_RXFIFO_EMPTY*(pBase: ptr UART_TypeDef): uint8 {.
+    importc: "apUART_Check_RXFIFO_EMPTY", header: "peripheral_uart.h".}
 proc apUART_Check_RXFIFO_FULL*(pBase: ptr UART_TypeDef): uint8 {.
     importc: "apUART_Check_RXFIFO_FULL", header: "peripheral_uart.h".}
 proc apUART_Check_TXFIFO_EMPTY*(pBase: ptr UART_TypeDef): uint8 {.

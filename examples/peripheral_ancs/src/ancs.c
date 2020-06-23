@@ -376,7 +376,7 @@ void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_
     switch (packet[0])
     {
     case GATT_EVENT_QUERY_COMPLETE:
-        if (gatt_event_query_complete_get_status(packet) != 0)
+        if (gatt_event_query_complete_parse(packet)->status != 0)
             break;
         
         disc_id++;
@@ -393,7 +393,7 @@ void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_
 void config_notification(void)
 {
     gatt_client_listen_for_characteristic_value_updates(char_notif_infos[disc_id].n,
-                        notification_handler, ancs_info.conn_handle, char_notif_infos[disc_id].c);
+                        notification_handler, ancs_info.conn_handle, char_notif_infos[disc_id].c->value_handle);
     gatt_client_write_client_characteristic_configuration(descriptor_discovery_callback, ancs_info.conn_handle,
                 char_notif_infos[disc_id].c, GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION);
 }
@@ -403,10 +403,10 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
     switch (packet[0])
     {
     case GATT_EVENT_CHARACTERISTIC_QUERY_RESULT:
-        gatt_event_characteristic_query_result_get_characteristic(packet, char_disc_infos[disc_id].c);
+        *char_disc_infos[disc_id].c = gatt_event_characteristic_query_result_parse(packet)->characteristic;
         break;
     case GATT_EVENT_QUERY_COMPLETE:
-        if ((gatt_event_query_complete_get_status(packet) != 0)
+        if ((gatt_event_query_complete_parse(packet)->status != 0)
             || (char_disc_infos[disc_id].c->start_handle == 0xffff))
         {
             gap_disconnect(ancs_info.conn_handle);
@@ -415,8 +415,8 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
 
         disc_id++;
         if (disc_id < sizeof(char_disc_infos) / sizeof(char_disc_infos[0]))
-            gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, ancs_info.conn_handle, 
-                                                                       &ancs_info.service, char_disc_infos[disc_id].uuid);
+            gatt_client_discover_characteristics_for_handle_range_by_uuid128(characteristic_discovery_callback, ancs_info.conn_handle, 
+                ancs_info.service.start_group_handle, ancs_info.service.end_group_handle, char_disc_infos[disc_id].uuid);
         else
         {
             disc_id = 0;
@@ -431,10 +431,10 @@ void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *
     switch (packet[0])
     {
     case GATT_EVENT_SERVICE_QUERY_RESULT:
-        gatt_event_service_query_result_get_service(packet, &ancs_info.service);           
+        ancs_info.service = gatt_event_service_query_result_parse(packet)->service;        
         break;
     case GATT_EVENT_QUERY_COMPLETE:
-        if ((gatt_event_query_complete_get_status(packet) != 0)
+        if ((gatt_event_query_complete_parse(packet)->status != 0)
             || (ancs_info.service.start_group_handle == 0xffff))
         {
             printf("service not found, disc\n");
@@ -442,8 +442,8 @@ void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *
             break;
         }
         disc_id = 0;
-        gatt_client_discover_characteristics_for_service_by_uuid128(characteristic_discovery_callback, ancs_info.conn_handle, 
-                                                                    &ancs_info.service, char_disc_infos[0].uuid);
+        gatt_client_discover_characteristics_for_handle_range_by_uuid128(characteristic_discovery_callback, ancs_info.conn_handle, 
+            ancs_info.service.start_group_handle, ancs_info.service.end_group_handle, char_disc_infos[0].uuid);
         break;
     }
 }

@@ -15,68 +15,68 @@ uint32_t ClkFreq; //0:16M 1:24M
 
 static void init(void)
 {
-  ClkFreq = (*(uint32_t *)RTC_CHIP_STAT_ADDR >> CLK_FREQ_STAT_POS) & 0x1;
-  EflashCacheBypass();
-  EflashBaseTime();
+    ClkFreq = (*(uint32_t *)RTC_CHIP_STAT_ADDR >> CLK_FREQ_STAT_POS) & 0x1;
+    EflashCacheBypass();
+    EflashBaseTime();
 #ifdef FOR_ASIC
-  EflashRepair();
+    EflashRepair();
 #endif
 }
 
 static void uninit()
 {
-  EflashCacheEna();
-  EflashCacheFlush();
+    EflashCacheEna();
+    EflashCacheFlush();
 }
 
 int program_flash0(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size, int erase)
 {
-  uint32_t addr = dest_addr;
-  if (erase)
-  {
-    if ((addr & (PAGE_SIZE - 1)) != 0)
-      return 1;
-  }
-  else
-  {
-    if ((addr & 0x3) != 0)
-      return 1;
-  }
-  if ((size < 1) || ((size & 0x3) != 0))
-    return 1;
-
-  init();
-  EflashProgramEnable();
-
-  while (size)
-  {
-    int i;
-    uint32_t sz = size > PAGE_SIZE ? PAGE_SIZE : size;
-    uint32_t *p32 = (uint32_t *)buffer;
+    uint32_t addr = dest_addr;
     if (erase)
     {
-      uint32_t page_idx = ((addr - EFLASH_BASE) >> PAGE_SIZE_SHIFT) & 0x3f;
-      EraseEFlashPage(page_idx);
+        if ((addr & (PAGE_SIZE - 1)) != 0)
+            return 1;
     }
-    for (i = 0; i<(sz + 3)>> 2; i++)
-      EflashProgram(addr + (i << 2), *p32++);
+    else
+    {
+        if ((addr & 0x3) != 0)
+            return 1;
+    }
+    if ((size < 1) || ((size & 0x3) != 0))
+        return 1;
 
-    buffer += sz;
-    addr += sz;
-    size -= sz;
-  }
-  EflashProgramDisable();
+    init();
+    EflashProgramEnable();
 
-  uninit();
-  return 0;
+    while (size)
+    {
+        int i;
+        uint32_t sz = size > PAGE_SIZE ? PAGE_SIZE : size;
+        uint32_t *p32 = (uint32_t *)buffer;
+        if (erase)
+        {
+            uint32_t page_idx = ((addr - EFLASH_BASE) >> PAGE_SIZE_SHIFT) & 0x3f;
+            EraseEFlashPage(page_idx);
+        }
+        for (i = 0; i<(sz + 3)>> 2; i++)
+            EflashProgram(addr + (i << 2), *p32++);
+
+        buffer += sz;
+        addr += sz;
+        size -= sz;
+    }
+    EflashProgramDisable();
+
+    uninit();
+    return 0;
 }
 
 int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-  return program_flash0(dest_addr, buffer, size, 1);
+    return program_flash0(dest_addr, buffer, size, 1);
 }
 
 int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-  return program_flash0(dest_addr, buffer, size, 0);
+    return program_flash0(dest_addr, buffer, size, 0);
 }

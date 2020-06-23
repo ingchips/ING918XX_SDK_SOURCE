@@ -57,13 +57,13 @@ static const scan_phy_config_t configs[2] =
         .phy = PHY_1M,
         .type = SCAN_ACTIVE,
         .interval = 200,
-        .window = 180
+        .window = 80
     },
     {
         .phy = PHY_CODED,
         .type = SCAN_ACTIVE,
         .interval = 200,
-        .window = 180
+        .window = 80
     }
 };
 
@@ -83,7 +83,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         gap_set_random_device_address(dev_info.master);
         gap_add_whitelist(dev_info.slave, BD_ADDR_TYPE_LE_RANDOM);
         gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
-                              sizeof(configs) / sizeof(configs[0]),
+                              sizeof(configs) / sizeof(configs[0]) - 1,
                               configs);
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
         break;
