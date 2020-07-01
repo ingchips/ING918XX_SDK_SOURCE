@@ -22,6 +22,18 @@ wait:
     }
 }
 
+void trace_flush(trace_info_t *ctx)
+{
+    while (ctx->read_next != ctx->write_next)
+    {
+        while (!apUART_Check_TXFIFO_FULL(ctx->port))
+        {
+            UART_SendData(ctx->port, ctx->buffer[ctx->read_next]);
+            ctx->read_next = (ctx->read_next + 1) & TRACE_BUFF_SIZE_MASK;
+        }
+    }
+}
+
 int trace_add_buffer(trace_info_t *ctx, const uint8_t *buffer, int size, int start)
 {
     int remain = TRACE_BUFF_SIZE - start;
