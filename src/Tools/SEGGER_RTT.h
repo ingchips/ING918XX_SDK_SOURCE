@@ -49,7 +49,7 @@
 ---------------------------END-OF-HEADER------------------------------
 File    : SEGGER_RTT.h
 Purpose : Implementation of SEGGER real-time transfer which allows
-          real-time communication on targets which support debugger 
+          real-time communication on targets which support debugger
           memory accesses while the CPU is running.
 Revision: $Rev: 19464 $
 ----------------------------------------------------------------------
@@ -58,9 +58,10 @@ Revision: $Rev: 19464 $
 #ifndef SEGGER_RTT_H
 #define SEGGER_RTT_H
 
+
 #include "SEGGER_RTT_Conf.h"
 
-
+#ifndef C2NIM
 
 /*********************************************************************
 *
@@ -164,6 +165,10 @@ Revision: $Rev: 19464 $
   #endif
 #endif
 
+#else
+#assumendef RTT_USE_ASM
+#endif
+
 #ifndef SEGGER_RTT_ASM  // defined when SEGGER_RTT.h is included from assembly file
 #include <stdlib.h>
 #include <stdarg.h>
@@ -227,7 +232,12 @@ typedef struct {
 *
 **********************************************************************
 */
+
+#ifndef C2NIM
 extern SEGGER_RTT_CB _SEGGER_RTT;
+#else
+
+#endif
 
 /*********************************************************************
 *
@@ -265,6 +275,9 @@ unsigned     SEGGER_RTT_PutCharSkip             (unsigned BufferIndex, char c);
 unsigned     SEGGER_RTT_PutCharSkipNoLock       (unsigned BufferIndex, char c);
 unsigned     SEGGER_RTT_GetAvailWriteSpace      (unsigned BufferIndex);
 unsigned     SEGGER_RTT_GetBytesInBuffer        (unsigned BufferIndex);
+
+#ifndef C2NIM
+
 //
 // Function macro for performance optimization
 //
@@ -272,6 +285,8 @@ unsigned     SEGGER_RTT_GetBytesInBuffer        (unsigned BufferIndex);
 
 #if RTT_USE_ASM
   #define SEGGER_RTT_WriteSkipNoLock  SEGGER_RTT_ASM_WriteSkipNoLock
+#endif
+
 #endif
 
 /*********************************************************************
@@ -285,7 +300,9 @@ unsigned     SEGGER_RTT_ReadUpBufferNoLock      (unsigned BufferIndex, void* pDa
 unsigned     SEGGER_RTT_WriteDownBuffer         (unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
 unsigned     SEGGER_RTT_WriteDownBufferNoLock   (unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
 
+#ifndef C2NIM
 #define      SEGGER_RTT_HASDATA_UP(n)    (_SEGGER_RTT.aUp[n].WrOff - _SEGGER_RTT.aUp[n].RdOff)
+#endif
 
 /*********************************************************************
 *
@@ -303,7 +320,10 @@ int     SEGGER_RTT_TerminalOut        (unsigned char TerminalId, const char* s);
 **********************************************************************
 */
 int SEGGER_RTT_printf(unsigned BufferIndex, const char * sFormat, ...);
+
+#ifndef C2NIM
 int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pParamList);
+#endif
 
 #ifdef __cplusplus
   }
@@ -325,6 +345,10 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
 #define SEGGER_RTT_MODE_NO_BLOCK_TRIM         (1)     // Trim: Do not block, output as much as fits.
 #define SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL    (2)     // Block: Wait until there is space in the buffer.
 #define SEGGER_RTT_MODE_MASK                  (3)
+
+#ifndef   SEGGER_RTT_MODE_DEFAULT
+  #define SEGGER_RTT_MODE_DEFAULT                   SEGGER_RTT_MODE_NO_BLOCK_SKIP // Mode for pre-initialized terminal channel (buffer 0)
+#endif
 
 //
 // Control sequences, based on ANSI.

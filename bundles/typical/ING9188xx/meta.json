@@ -102,13 +102,15 @@
         "platform_get_heap_status", 
         "platform_reset", 
         "platform_switch_app", 
+        "platform_write_persistent_reg", 
+        "platform_read_persistent_reg", 
         "platform_config", 
-        "platform_shutdown", 
         "platform_printf", 
         "sysSetPublicDeviceAddr", 
         "platform_set_rf_clk_source", 
         "platform_set_rf_init_data", 
         "platform_set_rf_power_mapping", 
+        "platform_patch_rf_init_data", 
         "ll_set_adv_coded_scheme", 
         "ll_set_initiating_coded_scheme", 
         "ll_hint_on_ce_len", 
@@ -234,8 +236,6 @@
         "xTaskPriorityInherit", 
         "xTaskPriorityDisinherit", 
         "vTaskPriorityDisinheritAfterTimeout", 
-        "vTaskStepTick", 
-        "eTaskConfirmSleepModeStatus", 
         "pvTaskIncrementMutexHeldCount", 
         "vTaskInternalSetTimeOutState", 
         "xTimerCreate", 
@@ -253,11 +253,11 @@
     }, 
     "ram": {
         "base": 536880208, 
-        "size": 30608
+        "size": 30528
     }, 
     "rom": {
         "base": 16384, 
-        "size": 133936
+        "size": 131876
     }, 
     "version": [
         0, 

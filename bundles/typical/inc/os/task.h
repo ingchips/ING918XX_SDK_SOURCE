@@ -2455,7 +2455,9 @@ void vTaskPriorityDisinheritAfterTimeout( TaskHandle_t const pxMutexHolder, UBas
  * to date with the actual execution time by being skipped forward by a time
  * equal to the idle period.
  */
-void vTaskStepTick( const TickType_t xTicksToJump ) PRIVILEGED_FUNCTION;
+// void vTaskStepTick( const TickType_t xTicksToJump ) PRIVILEGED_FUNCTION;
+// WARNING: ^^^ this API is not available in this release
+
 
 /*
  * Only available when configUSE_TICKLESS_IDLE is set to 1.
@@ -2471,7 +2473,9 @@ void vTaskStepTick( const TickType_t xTicksToJump ) PRIVILEGED_FUNCTION;
  * critical section between the timer being stopped and the sleep mode being
  * entered to ensure it is ok to proceed into the sleep mode.
  */
-eSleepModeStatus eTaskConfirmSleepModeStatus( void ) PRIVILEGED_FUNCTION;
+// eSleepModeStatus eTaskConfirmSleepModeStatus( void ) PRIVILEGED_FUNCTION;
+// WARNING: ^^^ this API is not available in this release
+
 
 /*
  * For internal use only.  Increment the mutex held count when a mutex is

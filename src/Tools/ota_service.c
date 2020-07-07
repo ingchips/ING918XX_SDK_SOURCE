@@ -13,6 +13,7 @@
 #include "att_db_util.h"
 #include "ota_service.h"
 #include "platform_api.h"
+#include "rom_tools.h"
 
 #define RTC_CHIP_STAT_ADDR  (0x40050004)
 #define CLK_FREQ_STAT_POS   3
@@ -91,10 +92,6 @@ void ota_init_handles(const uint16_t handler_ver, const uint16_t handle_ctrl, co
     att_ota_data_handle = handle_data;
     att_ota_ctrl_handle = handle_ctrl;
 }
-
-typedef uint16_t (* f_crc_t)(uint8_t *buffer , uint16_t usDataLen);
-
-#define crc     ((f_crc_t)(0x000009fd))
 
 int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {

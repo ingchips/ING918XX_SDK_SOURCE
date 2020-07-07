@@ -166,6 +166,28 @@ proc platform_reset*() {.importc: "platform_reset", header: "platform_api.h".}
 
 proc platform_switch_app*(app_addr: uint32) {.importc: "platform_switch_app",
     header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Write value to the persistent register, of which the value is kept even
+##         in power saving mode.
+##
+##  @param[in] value              a FOUR bit value
+## ***************************************************************************************
+##
+
+proc platform_write_persistent_reg*(value: uint8) {.
+    importc: "platform_write_persistent_reg", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Read value from the persistent register, of which the value is kept even
+##         in power saving mode.
+##
+##  @return                       value that has been written. (Initial value: 0)
+## ***************************************************************************************
+##
+
+proc platform_read_persistent_reg*(): uint8 {.
+    importc: "platform_read_persistent_reg", header: "platform_api.h".}
 type
   platform_cfg_item_t* {.size: sizeof(cint).} = enum
     PLATFORM_CFG_LOG_HCI,     ##  flag is ENABLE or DISABLE. default: DISABLE
@@ -200,10 +222,8 @@ proc platform_config*(item: platform_cfg_item_t; flag: uint32) {.
 ##  @param[in] data_size             Size of the data to be retentioned
 ## ***************************************************************************************
 ##
-
-proc platform_shutdown*(duration_cycles: uint32; p_retention_data: pointer;
-                       data_size: uint32) {.importc: "platform_shutdown",
-    header: "platform_api.h".}
+##  void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
+##  WARNING: ^^^ this API is not available in this release
 ## *
 ## ***************************************************************************************
 ##  @brief generate random bytes by using true hardware random-number generator
@@ -239,6 +259,16 @@ proc platform_set_rf_init_data*(rf_init_data: ptr uint32) {.
     importc: "platform_set_rf_init_data", header: "platform_api.h".}
 proc platform_set_rf_power_mapping*(rf_power_mapping: ptr int16) {.
     importc: "platform_set_rf_power_mapping", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Patch RF initialization data
+##
+##  @param[in]  data             patch data
+## ***************************************************************************************
+##
+
+proc platform_patch_rf_init_data*(data: pointer) {.
+    importc: "platform_patch_rf_init_data", header: "platform_api.h".}
 type
   coded_scheme_t* {.size: sizeof(cint).} = enum
     BLE_CODED_S8, BLE_CODED_S2

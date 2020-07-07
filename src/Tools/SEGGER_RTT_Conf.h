@@ -58,8 +58,12 @@ Revision: $Rev: 18601 $
 #ifndef SEGGER_RTT_CONF_H
 #define SEGGER_RTT_CONF_H
 
+#ifndef C2NIM
+
 #ifdef __IAR_SYSTEMS_ICC__
   #include <intrinsics.h>
+#endif
+
 #endif
 
 /*********************************************************************
@@ -88,20 +92,16 @@ Revision: $Rev: 18601 $
   #define SEGGER_RTT_PRINTF_BUFFER_SIZE             (64u)    // Size of buffer for RTT printf to bulk-send chars via RTT     (Default: 64)
 #endif
 
-#ifndef   SEGGER_RTT_MODE_DEFAULT
-  #define SEGGER_RTT_MODE_DEFAULT                   SEGGER_RTT_MODE_NO_BLOCK_SKIP // Mode for pre-initialized terminal channel (buffer 0)
-#endif
-
 /*********************************************************************
 *
 *       RTT memcpy configuration
 *
-*       memcpy() is good for large amounts of data, 
+*       memcpy() is good for large amounts of data,
 *       but the overhead is big for small amounts, which are usually stored via RTT.
 *       With SEGGER_RTT_MEMCPY_USE_BYTELOOP a simple byte loop can be used instead.
 *
 *       SEGGER_RTT_MEMCPY() can be used to replace standard memcpy() in RTT functions.
-*       This is may be required with memory access restrictions, 
+*       This is may be required with memory access restrictions,
 *       such as on Cortex-A devices with MMU.
 */
 #ifndef   SEGGER_RTT_MEMCPY_USE_BYTELOOP
@@ -110,7 +110,7 @@ Revision: $Rev: 18601 $
 //
 // Example definition of SEGGER_RTT_MEMCPY to external memcpy with GCC toolchains and Cortex-A targets
 //
-//#if ((defined __SES_ARM) || (defined __CROSSWORKS_ARM) || (defined __GNUC__)) && (defined (__ARM_ARCH_7A__))  
+//#if ((defined __SES_ARM) || (defined __CROSSWORKS_ARM) || (defined __GNUC__)) && (defined (__ARM_ARCH_7A__))
 //  #define SEGGER_RTT_MEMCPY(pDest, pSrc, NumBytes)      SEGGER_memcpy((pDest), (pSrc), (NumBytes))
 //#endif
 
@@ -131,6 +131,8 @@ Revision: $Rev: 18601 $
 #ifndef   SEGGER_RTT_MAX_INTERRUPT_PRIORITY
   #define SEGGER_RTT_MAX_INTERRUPT_PRIORITY         (0x20)   // Interrupt priority to lock on SEGGER_RTT_LOCK on Cortex-M3/4 (Default: 0x20)
 #endif
+
+#ifndef C2NIM
 
 /*********************************************************************
 *
@@ -209,7 +211,7 @@ Revision: $Rev: 18601 $
                                                  :                             \
                                                  :                             \
                                                 );
-                               
+
   #define SEGGER_RTT_UNLOCK()    __asm volatile ("csrr  a1, mstatus  \n\t"     \
                                                  "or    %0, %0, a1   \n\t"     \
                                                  "csrs  mstatus, %0  \n\t"     \
@@ -350,8 +352,8 @@ Revision: $Rev: 18601 $
   #define SEGGER_RTT_LOCK()   {                                                                     \
                                 unsigned long LockState;                                            \
                                 LockState = get_psw() & 0x010000;                                   \
-                                clrpsw_i();                           
-                                    
+                                clrpsw_i();
+
   #define SEGGER_RTT_UNLOCK()   set_psw(get_psw() | LockState);                                     \
                               }
 #endif
@@ -373,6 +375,8 @@ void OS_SIM_LeaveCriticalSection(void);
                                 }
 #endif
 
+#endif
+
 /*********************************************************************
 *
 *       RTT lock configuration fallback
@@ -387,3 +391,4 @@ void OS_SIM_LeaveCriticalSection(void);
 
 #endif
 /*************************** End of file ****************************/
+

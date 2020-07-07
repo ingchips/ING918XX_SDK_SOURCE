@@ -3,9 +3,12 @@
 
 #include <stdint.h>
 #include "FreeRTOS.h"
+#ifndef C2NIM
 #include "task.h"
 #include "semphr.h"
 #include "queue.h"
+#endif
+#include "ingsoc.h"
 #include "platform_api.h"
 
 

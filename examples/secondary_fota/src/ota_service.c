@@ -12,6 +12,7 @@
 #include "att_db.h"
 #include "ota_service.h"
 #include "platform_api.h"
+#include "rom_tools.h"
 
 #define RTC_CHIP_STAT_ADDR  (0x40050004)
 #define CLK_FREQ_STAT_POS   3
@@ -45,9 +46,6 @@ uint8_t  ota_ctrl[] = {OTA_STATUS_DISABLED};
 uint8_t  ota_downloading = 0;
 uint32_t ota_addr = 0;
 uint32_t ota_start_addr = 0;
-
-typedef uint16_t (* f_crc_t)(uint8_t *buffer , uint16_t usDataLen);
-#define crc      ((f_crc_t)(0x00000a25))
 
 int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {

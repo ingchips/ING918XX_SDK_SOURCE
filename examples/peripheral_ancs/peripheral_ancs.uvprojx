@@ -297,8 +297,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>0x20009be0</StartAddress>
-                <Size>0x6420</Size>
+                <StartAddress>0x20009b90</StartAddress>
+                <Size>0x6470</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -448,6 +448,13 @@
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
+          <Files>
+            <File>
+              <FileName>SEGGER_RTT.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\SEGGER_RTT.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>

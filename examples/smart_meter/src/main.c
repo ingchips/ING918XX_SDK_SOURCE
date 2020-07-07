@@ -5,6 +5,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include <stdio.h>
+#include "SEGGER_RTT.h"
 
 #include "uart_console.h"
 
@@ -134,6 +135,17 @@ uint32_t cb_lle_reset(void *_, void * __)
     return 0;
 }
 
+uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, void *user_data)
+{
+    int free_size = SEGGER_RTT_GetAvailWriteSpace(0);
+    if (trace->len1 + trace->len2 < free_size)
+    {
+        SEGGER_RTT_Write(0, trace->data1, trace->len1);
+        SEGGER_RTT_Write(0, trace->data2, trace->len2);
+    }
+    return 0;
+}
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -157,6 +169,10 @@ int app_main()
     
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, cb_lle_reset, NULL);
+
+    SEGGER_RTT_Init();
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, NULL);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
 
     return 0;
 }

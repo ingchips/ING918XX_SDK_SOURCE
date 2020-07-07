@@ -1,7 +1,7 @@
 CMSIS_INC=${CMSIS_BASE}/Include
 ING_REL=../..
 ING_BUNDLE=../../bundles/typical/inc
-SYMDEFS=-Wl,--just-symbols=../../bundles/typical/ING9188xx/symdefs.g
+SYMDEFS=-Wl,--just-symbols=../../bundles/typical/symdefs.g
 
 APPNAME=smart_home_hub
 

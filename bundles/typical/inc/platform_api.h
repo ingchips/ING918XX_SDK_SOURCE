@@ -202,6 +202,26 @@ void platform_reset(void);
  */
 void platform_switch_app(const uint32_t app_addr);
 
+/**
+ ****************************************************************************************
+ * @brief Write value to the persistent register, of which the value is kept even
+ *        in power saving mode.
+ *
+ * @param[in] value              a FOUR bit value
+ ****************************************************************************************
+ */
+void platform_write_persistent_reg(const uint8_t value);
+
+/**
+ ****************************************************************************************
+ * @brief Read value from the persistent register, of which the value is kept even
+ *        in power saving mode.
+ *
+ * @return                       value that has been written. (Initial value: 0)
+ ****************************************************************************************
+ */
+uint8_t platform_read_persistent_reg(void);
+
 typedef enum
 {
     PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
@@ -234,7 +254,9 @@ void platform_config(const platform_cfg_item_t item, const uint32_t flag);
  * @param[in] data_size             Size of the data to be retentioned
  ****************************************************************************************
  */
-void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
+// void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
@@ -269,6 +291,15 @@ void platform_set_rf_clk_source(const uint8_t source);
 void platform_set_rf_init_data(const uint32_t *rf_init_data);
 
 void platform_set_rf_power_mapping(const int16_t *rf_power_mapping);
+
+/**
+ ****************************************************************************************
+ * @brief Patch RF initialization data
+ *
+ * @param[in]  data             patch data
+ ****************************************************************************************
+ */
+void platform_patch_rf_init_data(const void *data);
 
 typedef enum coded_scheme_e
 {

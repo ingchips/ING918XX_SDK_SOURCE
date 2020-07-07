@@ -1,5 +1,5 @@
 
-#ifdef BOARD_V2
+#ifndef PWM_LED
 
 #define PIN_SDI   GIO_GPIO_0
 

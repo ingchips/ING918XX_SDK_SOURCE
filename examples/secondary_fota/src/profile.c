@@ -139,7 +139,7 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
 
 uint32_t setup_profile(void *data, void *user_data)
 {
-    platform_printf("secondary apps...\n");
+    platform_printf("secondary fota: %d...\n", platform_read_persistent_reg());
     // Note: security has not been enabled.
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
