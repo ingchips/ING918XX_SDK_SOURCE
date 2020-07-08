@@ -120,6 +120,13 @@ when not defined(SEGGER_RTT_ASM): ##  defined when SEGGER_RTT.h is included from
   ##
   ## *********************************************************************
   ##
+  var SEGGER_RTT* {.importc: "_SEGGER_RTT", header: "SEGGER_RTT.h".}: SEGGER_RTT_CB
+  template SEGGER_RTT_HASDATA*(n: untyped): untyped =
+    (SEGGER_RTT.aDown[n].WrOff - SEGGER_RTT.aDown[n].RdOff)
+
+  template SEGGER_RTT_HASDATA_UP*(n: untyped): untyped =
+    (SEGGER_RTT.aUp[n].WrOff - SEGGER_RTT.aUp[n].RdOff)
+
   ## ********************************************************************
   ##
   ##        RTT API functions

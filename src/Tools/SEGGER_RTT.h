@@ -236,6 +236,12 @@ typedef struct {
 #ifndef C2NIM
 extern SEGGER_RTT_CB _SEGGER_RTT;
 #else
+#@
+var SEGGER_RTT* {.importc: "_SEGGER_RTT", header: "SEGGER_RTT.h".}: SEGGER_RTT_CB
+@#
+
+#define      SEGGER_RTT_HASDATA(n)       (SEGGER_RTT.aDown[n].WrOff - SEGGER_RTT.aDown[n].RdOff)
+#define      SEGGER_RTT_HASDATA_UP(n)    (SEGGER_RTT.aUp[n].WrOff - SEGGER_RTT.aUp[n].RdOff)
 
 #endif
 
