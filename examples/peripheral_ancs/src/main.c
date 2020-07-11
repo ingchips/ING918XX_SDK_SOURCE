@@ -77,6 +77,8 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
 
     // setup GPIOs for keys
     PINCTRL_DisableAllInputs();
@@ -166,7 +168,7 @@ int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
+    // platform_set_rf_clk_source(1);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
@@ -185,6 +187,8 @@ int app_main()
            "Key 1: Accept call\n"
            "Key 2: Reject call\n"
            "Key 3: Clear bonding\n");
+           
+    platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
 
     SEGGER_RTT_Init();
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, NULL);

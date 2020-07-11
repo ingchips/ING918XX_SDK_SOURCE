@@ -70,7 +70,10 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    
+
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+
     // setup GPIOs for keys
     PINCTRL_DisableAllInputs();
     PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GENERAL);
@@ -94,7 +97,7 @@ uint32_t gpio_isr(void *user_data)
 {   
     uint32_t current = ~GIO_ReadAll();
     int8_t i = 0;
-    
+
     // report which keys are pressed
     if (current & (1 << KB_KEY_1))
         report.codes[i++] = KEY_1;

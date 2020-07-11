@@ -294,8 +294,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536910736</StartAddress>
-                <Size>25712</Size>
+                <StartAddress>536910664</StartAddress>
+                <Size>25784</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -330,7 +330,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,SIMULATION</Define>
+              <Define>USE_STDPERIPH_DRIVER,CTE</Define>
               <Undefine/>
               <IncludePath>..\ibeacon_scanner\src;../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -428,6 +428,11 @@
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pinctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
             </File>
           </Files>
         </Group>

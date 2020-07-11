@@ -29,7 +29,7 @@ const
   errQUEUE_EMPTY* = (cast[BaseType_t](0))
   errQUEUE_FULL* = (cast[BaseType_t](0))
 
-  portMAX_DELAY = 0xffffffffu32
+  portMAX_DELAY* = 0xffffffffu32
 
 template pdMS_TO_TICKS*(xTimeInMs: int32): TickType_t =
     cast[TickType_t]((xTimeInMs* cast[int32](configTICK_RATE_HZ)) div 1000)
@@ -75,7 +75,7 @@ type
 ##
 
 type
-  tmrTimerControl* {.importc: "tmrTimerControl", header: "FreeRTOSNim.h", bycopy.} = object
+  tmrTimerControl* {.importc: "struct tmrTimerControl", header: "FreeRTOSNim.h", bycopy.} = object
 
 
 ##  The old naming convention is used to prevent breaking kernel aware debuggers.
@@ -90,7 +90,7 @@ type
 ##
 
 type
-  QueueDefinition* {.importc: "QueueDefinition", header: "FreeRTOSNim.h", bycopy.} = object
+  QueueDefinition* {.importc: "struct QueueDefinition", header: "FreeRTOSNim.h", bycopy.} = object
 
 
 ##  Using old naming convention so as not to break kernel aware debuggers.
@@ -309,6 +309,57 @@ proc xTimerGenericCommand*(xTimer: TimerHandle_t; xCommandID: BaseType_t;
 proc pxPortInitialiseStack*(pxTopOfStack: ptr StackType_t; pxCode: TaskFunction_t;
                            pvParameters: pointer): ptr StackType_t {.
     importc: "pxPortInitialiseStack", header: "FreeRTOSNim.h".}
+const
+  tmrCOMMAND_EXECUTE_CALLBACK_FROM_ISR* = ((BaseType_t) -2)
+  tmrCOMMAND_EXECUTE_CALLBACK* = ((BaseType_t) -1)
+  tmrCOMMAND_START_DONT_TRACE* = (cast[BaseType_t](0))
+  tmrCOMMAND_START* = (cast[BaseType_t](1))
+  tmrCOMMAND_RESET* = (cast[BaseType_t](2))
+  tmrCOMMAND_STOP* = (cast[BaseType_t](3))
+  tmrCOMMAND_CHANGE_PERIOD* = (cast[BaseType_t](4))
+  tmrCOMMAND_DELETE* = (cast[BaseType_t](5))
+  tmrFIRST_FROM_ISR_COMMAND* = (cast[BaseType_t](6))
+  tmrCOMMAND_START_FROM_ISR* = (cast[BaseType_t](6))
+  tmrCOMMAND_RESET_FROM_ISR* = (cast[BaseType_t](7))
+  tmrCOMMAND_STOP_FROM_ISR* = (cast[BaseType_t](8))
+  tmrCOMMAND_CHANGE_PERIOD_FROM_ISR* = (cast[BaseType_t](9))
+
+template xTimerStart*(xTimer, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_START, (xTaskGetTickCount()), nil,
+                       (xTicksToWait))
+
+template xTimerStop*(xTimer, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_STOP, 0, nil, (xTicksToWait))
+
+template xTimerChangePeriod*(xTimer, xNewPeriod, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_CHANGE_PERIOD, (xNewPeriod), nil,
+                       (xTicksToWait))
+
+template xTimerDelete*(xTimer, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_DELETE, 0, nil, (xTicksToWait))
+
+template xTimerReset*(xTimer, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_RESET, (xTaskGetTickCount()), nil,
+                       (xTicksToWait))
+
+template xTimerStartFromISR*(xTimer, pxHigherPriorityTaskWoken: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_START_FROM_ISR,
+                       (xTaskGetTickCountFromISR()), (pxHigherPriorityTaskWoken),
+                       0)
+
+template xTimerStopFromISR*(xTimer, pxHigherPriorityTaskWoken: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_STOP_FROM_ISR, 0,
+                       (pxHigherPriorityTaskWoken), 0)
+
+template xTimerChangePeriodFromISR*(xTimer, xNewPeriod, pxHigherPriorityTaskWoken: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_CHANGE_PERIOD_FROM_ISR, (xNewPeriod),
+                       (pxHigherPriorityTaskWoken), 0)
+
+template xTimerResetFromISR*(xTimer, pxHigherPriorityTaskWoken: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_RESET_FROM_ISR,
+                       (xTaskGetTickCountFromISR()), (pxHigherPriorityTaskWoken),
+                       0)
+
 proc pvPortMalloc*(xSize: csize): pointer {.importc: "pvPortMalloc",
                                         header: "FreeRTOSNim.h".}
 proc vPortFree*(pv: pointer) {.importc: "vPortFree", header: "FreeRTOSNim.h".}

@@ -49,8 +49,6 @@ static int PINCTRL_AntSelIndex(const uint8_t io_pin_index)
     return -1;
 }
 
-#define ANT_BITS    ((1 << 8) | (1 << 8) | (1 << 8) | (1 << 8) | (1 << 8) | (1 << 8) | (1 << 8) |
-
 void PINCTRL_SetGeneralPadMode(const uint8_t io_pin_index, const gio_mode_t mode,
     const uint8_t pwm_channel, const uint8_t pwm_neg)
 {

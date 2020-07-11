@@ -50,6 +50,8 @@ void set_led_color(uint8_t r, uint8_t g, uint8_t b)
 
 void setup_led()
 {
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PWM));
     PINCTRL_SetPadMux(PIN_SDI, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(PIN_SDI, 0);
     GIO_SetDirection(PIN_SDI, GIO_DIR_OUTPUT);
@@ -90,6 +92,8 @@ static void setup_channel(uint8_t channel_index)
 
 void setup_led()
 {
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PWM));
     PINCTRL_SetPadMux(PIN_RED, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(PIN_RED, 1);
     PINCTRL_SetPadMux(PIN_GREEN, IO_SOURCE_GENERAL);

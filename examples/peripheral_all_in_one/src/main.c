@@ -84,6 +84,12 @@ struct bme280_t bme280_data;
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                              | (1 << SYSCTRL_ClkGate_APB_PWM)
+                              | (1 << SYSCTRL_ClkGate_AHB_SPI0)
+                              | (1 << SYSCTRL_ClkGate_APB_I2C0)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
 
     // for RGB
     setup_led();

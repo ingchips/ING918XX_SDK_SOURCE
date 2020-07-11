@@ -1,14 +1,16 @@
-##  ----------------------------------------------------------------------------
-##  Copyright Message
-##  ----------------------------------------------------------------------------
+## * @file
+##     @brief basic bluetooth macro definition
 ##
-##  INGCHIPS confidential and proprietary.
-##  COPYRIGHT (c) 2018 by INGCHIPS
+##   Copyright Message
 ##
-##  All rights are reserved. Reproduction in whole or in part is
-##  prohibited without the written consent of the copyright owner.
 ##
-##  ----------------------------------------------------------------------------
+##   INGCHIPS confidential and proprietary.
+##   COPYRIGHT (c) 2018 by INGCHIPS
+##
+##   All rights are reserved. Reproduction in whole or in part is
+##   prohibited without the written consent of the copyright owner.
+##
+##
 
 const
   BD_ADDR_LEN* = 0x00000006
@@ -595,6 +597,10 @@ const
   HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED* = 0x00000012
   HCI_SUBEVENT_LE_SCAN_REQUEST_RECEIVED* = 0x00000013
   HCI_SUBEVENT_LE_CHANNEL_SELECTION_ALGORITHM* = 0x00000014
+  HCI_SUBEVENT_LE_CONNECTIONLESS_IQ_REPORT* = 0x00000015
+  HCI_SUBEVENT_LE_CONNECTION_IQ_REPORT* = 0x00000016
+  HCI_SUBEVENT_LE_CTE_REQ_FAILED* = 0x00000017
+  HCI_SUBEVENT_LE_PRD_ADV_SYNC_TRANSFER_RCVD* = 0x00000018
 
 ##  last used HCI_EVENT in 2.1 is 0x3d
 ##  last used HCI_EVENT in 4.1 is 0x57
@@ -718,6 +724,8 @@ const
   ATT_ERROR_INSUFFICIENT_ENCRYPTION* = 0x0000000F
   ATT_ERROR_UNSUPPORTED_GROUP_TYPE* = 0x00000010
   ATT_ERROR_INSUFFICIENT_RESOURCES* = 0x00000011
+  ATT_ERROR_DATABASE_OUT_OF_SYNC* = 0x00000012
+  ATT_ERROR_VALUE_NOT_ALLOWED* = 0x00000013
 
 ##  MARK: Attribute Property Flags
 

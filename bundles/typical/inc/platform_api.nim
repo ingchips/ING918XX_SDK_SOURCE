@@ -192,7 +192,12 @@ type
   platform_cfg_item_t* {.size: sizeof(cint).} = enum
     PLATFORM_CFG_LOG_HCI,     ##  flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING, ##  flag is ENABLE or DISABLE. default: DISABLE
-    PLATFORM_CFG_TRACE_MASK   ##  flag is bitmap of platform_trace_item_t. default: 0
+    PLATFORM_CFG_TRACE_MASK,  ##  flag is bitmap of platform_trace_item_t. default: 0
+    PLATFORM_CFG_32K_CLK      ##  32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+  platform_32k_clk_src_t* {.size: sizeof(cint).} = enum
+    PLATFORM_32K_OSC,         ##  external 32k crystal oscillator
+    PLATFORM_32K_RC           ##  internal RC 32k clock
+
 
 
 const
@@ -232,8 +237,9 @@ proc platform_config*(item: platform_cfg_item_t; flag: uint32) {.
 ##  @param[in]  len              byte number of random data
 ## ***************************************************************************************
 ##
-##  void platform_hrng(uint8_t *bytes, const uint32_t len);
-##  WARNING: ^^^ this API is not available in this release
+
+proc platform_hrng*(bytes: ptr uint8; len: uint32) {.importc: "platform_hrng",
+    header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief the printf function
@@ -314,3 +320,16 @@ proc ll_set_initiating_coded_scheme*(scheme: coded_scheme_t) {.
 
 proc ll_hint_on_ce_len*(conn_handle: uint16; min_ce_len: uint16; max_ce_len: uint16) {.
     importc: "ll_hint_on_ce_len", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Set default antenna ID
+##
+##           Note: This ID restored to default value (i.e. 0) when LLE is resetted.
+##
+##  @param[in]  ant_id           ID of default antenna (default: 0)
+##
+## ***************************************************************************************
+##
+
+proc ll_set_def_antenna*(ant_id: uint8) {.importc: "ll_set_def_antenna",
+                                       header: "platform_api.h".}

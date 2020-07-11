@@ -79,16 +79,15 @@ static void setup_adv(void)
                             PHY_1M,                    // Secondary_Advertising_PHY
                             0x00,                      // Advertising_SID
                             0x00);                     // Scan_Request_Notification_Enable
-    gap_set_periodic_adv_para(0, 1000, 1000, PERIODIC_ADV_BIT_INC_TX);
+    gap_set_periodic_adv_para(0, 500, 500, PERIODIC_ADV_BIT_INC_TX);
     gap_set_periodic_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
     gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
     gap_set_periodic_adv_enable(1, 0);
 #ifdef CTE
-    gap_set_connectionless_cte_tx_param(0, 2,
+    gap_set_connectionless_cte_tx_param(0, 5,
                                         CTE_AOA,
                                         1,
-                                        2,
-                                        0, NULL);
+                                        2, NULL);
     gap_set_connectionless_cte_tx_enable(0, 1);
 #endif
 }

@@ -50,6 +50,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_AHB_SPI0));
 
     // for eTAG
     PINCTRL_SetPadMux(SPI_EPD_SDI, IO_SOURCE_SPI0_DO);

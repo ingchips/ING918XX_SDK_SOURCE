@@ -54,6 +54,8 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
     
     PINCTRL_DisableAllInputs();
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
 
     // timer 0 can be used as watchdog, so we use timer 1.
     // setup timer 1 to sampling rate

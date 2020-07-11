@@ -3,17 +3,12 @@ import
 
 type
   SYSCTRL_ClkGateItem* {.size: sizeof(cint).} = enum
-    SYSCTRL_ClkGate_AHB_DMA = 0, SYSCTRL_ClkGate_AHB_LLE = 1,
-    SYSCTRL_ClkGate_AHB_IOC = 2, SYSCTRL_ClkGate_AHB_WDT = 3,
     SYSCTRL_ClkGate_APB_I2C0 = 4, SYSCTRL_ClkGate_APB_SPI1 = 5,
     SYSCTRL_ClkGate_APB_TMR0 = 6, SYSCTRL_ClkGate_APB_TMR1 = 7,
-    SYSCTRL_ClkGate_APB_TMR2 = 8, SYSCTRL_ClkGate_APB_SCI0 = 9,
-    SYSCTRL_ClkGate_APB_SCI1 = 10, SYSCTRL_ClkGate_APB_ISOL = 11,
-    SYSCTRL_ClkGate_RtcClkDect = 12, SYSCTRL_ClkGate_APB_GPIOA = 13,
-    SYSCTRL_ClkGate_APB_GPIOB = 14, SYSCTRL_ClkGate_APB_GPIOC = 15,
+    SYSCTRL_ClkGate_APB_TMR2 = 8, SYSCTRL_ClkGate_APB_UART0 = 9,
+    SYSCTRL_ClkGate_APB_UART1 = 10, SYSCTRL_ClkGate_APB_GPIO = 13,
     SYSCTRL_ClkGate_APB_PWM = 16, SYSCTRL_ClkGate_AHB_SPI0 = 17,
-    SYSCTRL_ClkGate_APB_PinCtrl = 18, SYSCTRL_ClkGate_APB_I2C1 = 19,
-    SYSCTRL_ClkGate_APB_TRNG = 20, SYSCTRL_ClkGate_SysClkOut = 21
+    SYSCTRL_ClkGate_APB_PinCtrl = 18, SYSCTRL_ClkGate_APB_I2C1 = 19
 
 
 ## *
@@ -30,6 +25,20 @@ proc SYSCTRL_SetClkGate*(item: SYSCTRL_ClkGateItem) {.
 
 proc SYSCTRL_ClearClkGate*(item: SYSCTRL_ClkGateItem) {.
     importc: "SYSCTRL_ClearClkGate", header: "peripheral_sysctrl.h".}
+## *
+##  \brief Set clock gating state of several components
+##  \param items      the bitmap of components to enable clock gating
+##
+
+proc SYSCTRL_SetClkGateMulti*(items: uint32) {.importc: "SYSCTRL_SetClkGateMulti",
+    header: "peripheral_sysctrl.h".}
+## *
+##  \brief Clear clock gating state of several components
+##  \param items      the bitmap of components to clear clock gating
+##
+
+proc SYSCTRL_ClearClkGateMulti*(items: uint32) {.
+    importc: "SYSCTRL_ClearClkGateMulti", header: "peripheral_sysctrl.h".}
 ## *
 ##  \brief Set clock gating state of all components
 ##  \param data      clock gating state of each component

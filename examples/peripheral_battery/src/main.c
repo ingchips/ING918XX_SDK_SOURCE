@@ -43,6 +43,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
     
     // setup timer 1: 1sec timer
 	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 2);

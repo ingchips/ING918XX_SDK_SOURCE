@@ -547,7 +547,7 @@ proc setupProfile*(unused1: pointer; unused2: pointer): uint32 {.exportc noconv.
   # Note: security has not been enabled.
   initiatingTimer = xTimerCreate("a",
                             pdMS_TO_TICKS(5000),
-                            pdFALSE,
+                            cast[UBaseType_t](pdFALSE),
                             nil,
                             initiatingTimerCallback);
   attServerInit(cast[attReadCallbackT](attReadCallback), cast[attWriteCallbackT](attWriteCallback))

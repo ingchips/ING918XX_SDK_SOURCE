@@ -226,8 +226,15 @@ typedef enum
 {
     PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
-    PLATFORM_CFG_TRACE_MASK     // flag is bitmap of platform_trace_item_t. default: 0
+    PLATFORM_CFG_TRACE_MASK,    // flag is bitmap of platform_trace_item_t. default: 0
+    PLATFORM_CFG_32K_CLK        // 32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
 } platform_cfg_item_t;
+
+typedef enum
+{    
+    PLATFORM_32K_OSC,           // external 32k crystal oscillator
+    PLATFORM_32K_RC             // internal RC 32k clock
+} platform_32k_clk_src_t;
 
 #define PLATFORM_CFG_ENABLE     1
 #define PLATFORM_CFG_DISABLE    0
@@ -266,9 +273,7 @@ void platform_config(const platform_cfg_item_t item, const uint32_t flag);
  * @param[in]  len              byte number of random data
  ****************************************************************************************
  */
-// void platform_hrng(uint8_t *bytes, const uint32_t len);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_hrng(uint8_t *bytes, const uint32_t len);
 
 /**
  ****************************************************************************************
@@ -343,6 +348,18 @@ void ll_set_initiating_coded_scheme(const coded_scheme_t scheme);
  ****************************************************************************************
  */
 void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, const uint16_t max_ce_len);
+
+/**
+ ****************************************************************************************
+ * @brief Set default antenna ID
+ *
+ *          Note: This ID restored to default value (i.e. 0) when LLE is resetted.
+ *
+ * @param[in]  ant_id           ID of default antenna (default: 0)
+ *
+ ****************************************************************************************
+ */
+void ll_set_def_antenna(uint8_t ant_id);
 
 #ifdef __cplusplus
 }

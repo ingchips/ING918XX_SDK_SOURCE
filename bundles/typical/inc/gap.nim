@@ -731,13 +731,11 @@ type
 ##  @param antenna_ids           List of Antenna IDs in the pattern
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_set_connectionless_cte_tx_param(const uint8_t       adv_handle,
-##                                              const uint8_t       cte_len,
-##                                              const cte_type_t    cte_type,
-##                                              const uint8_t       cte_count,
-##                                              const uint8_t       switching_pattern_len,
-##                                              const uint8_t      *antenna_ids);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_set_connectionless_cte_tx_param*(adv_handle: uint8; cte_len: uint8;
+    cte_type: cte_type_t; cte_count: uint8; switching_pattern_len: uint8;
+    antenna_ids: ptr uint8): uint8 {.importc: "gap_set_connectionless_cte_tx_param",
+                                 header: "gap.h".}
 ## *
 ##  @brief Request that the Controller enables or disables the use of Constant Tone
 ##           Extensions in any periodic advertising on the advertising set identified by
@@ -748,9 +746,9 @@ type
 ##  @param cte_enable            Disable (0x00), Enable (0x01)
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_set_connectionless_cte_tx_enable(const uint8_t       adv_handle,
-##                                               const uint8_t       cte_enable);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_set_connectionless_cte_tx_enable*(adv_handle: uint8; cte_enable: uint8): uint8 {.
+    importc: "gap_set_connectionless_cte_tx_enable", header: "gap.h".}
 ## *
 ##  @brief structure:cte_slot_duration_type_t
 ##
@@ -777,13 +775,11 @@ type
 ##
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handle,
-##                                                    const uint8_t       sampling_enable,
-##                                                    const uint8_t       slot_durations,
-##                                                    const uint8_t       max_sampled_ctes,
-##                                                    const uint8_t       switching_pattern_len,
-##                                                    const uint8_t      *antenna_ids);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_set_connectionless_iq_sampling_enable*(sync_handle: uint16;
+    sampling_enable: uint8; slot_durations: uint8; max_sampled_ctes: uint8;
+    switching_pattern_len: uint8; antenna_ids: ptr uint8): uint8 {.
+    importc: "gap_set_connectionless_iq_sampling_enable", header: "gap.h".}
 ## *
 ##  @brief Enable or disable sampling received Constant Tone Extension fields on the
 ##           connection identified by the Connection_Handle parameter and to set the
@@ -798,12 +794,13 @@ type
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
 ##
-##  uint8_t gap_set_connection_cte_rx_param(const hci_con_handle_t  conn_handle,
-##                                          const uint8_t           sampling_enable,
-##                                          const uint8_t           slot_durations,
-##                                          const uint8_t           switching_pattern_len,
-##                                          const uint8_t          *antenna_ids);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_set_connection_cte_rx_param*(conn_handle: hci_con_handle_t;
+                                     sampling_enable: uint8;
+                                     slot_durations: uint8;
+                                     switching_pattern_len: uint8;
+                                     antenna_ids: ptr uint8): uint8 {.
+    importc: "gap_set_connection_cte_rx_param", header: "gap.h".}
 ## *
 ##  @brief Set the antenna switching pattern and permitted Constant Tone Extension
 ##           types used for transmitting Constant Tone Extensions requested by the peer
@@ -816,11 +813,12 @@ type
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
 ##
-##  uint8_t gap_set_connection_cte_tx_param(const hci_con_handle_t  conn_handle,
-##                                          const uint8_t           cte_types,
-##                                          const uint8_t           switching_pattern_len,
-##                                          const uint8_t          *antenna_ids);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_set_connection_cte_tx_param*(conn_handle: hci_con_handle_t;
+                                     cte_types: uint8;
+                                     switching_pattern_len: uint8;
+                                     antenna_ids: ptr uint8): uint8 {.
+    importc: "gap_set_connection_cte_tx_param", header: "gap.h".}
 ## *
 ##  @brief Set the antenna switching pattern and permitted Constant Tone Extension
 ##           types used for transmitting Constant Tone Extensions requested by the peer
@@ -839,12 +837,11 @@ type
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
 ##
-##  uint8_t gap_set_connection_cte_request_enable(const hci_con_handle_t  conn_handle,
-##                                                const uint8_t           enable,
-##                                                const uint16_t          requested_cte_interval,
-##                                                const uint8_t           requested_cte_length,
-##                                                const cte_type_t        requested_cte_type);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_set_connection_cte_request_enable*(conn_handle: hci_con_handle_t;
+    enable: uint8; requested_cte_interval: uint16; requested_cte_length: uint8;
+    requested_cte_type: cte_type_t): uint8 {.
+    importc: "gap_set_connection_cte_request_enable", header: "gap.h".}
 ## *
 ##  @brief Request the Controller to respond to LL_CTE_REQ PDUs with LL_CTE_RSP
 ##           PDUs on the specified connection.
@@ -853,17 +850,19 @@ type
 ##  @param enable                Disable (0x00), Enable (0x01)
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_set_connection_cte_response_enable(const hci_con_handle_t  conn_handle,
-##                                                 const uint8_t           enable);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_set_connection_cte_response_enable*(conn_handle: hci_con_handle_t;
+    enable: uint8): uint8 {.importc: "gap_set_connection_cte_response_enable",
+                         header: "gap.h".}
 ## *
 ##  @brief Read the switching rates, the sampling rates, the number of antennae, and the
 ##           maximum length of a transmitted Constant Tone Extension supported by the
 ##           Controller.
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_read_antenna_info(void);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_read_antenna_info*(): uint8 {.importc: "gap_read_antenna_info",
+                                    header: "gap.h".}
 ## *
 ##  @brief Enable or disable reports for the periodic advertising train identified by the
 ##           Sync_Handle parameter.
@@ -873,9 +872,9 @@ type
 ##
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_set_periodic_adv_rx_enable(const uint16_t       sync_handle,
-##                                         const uint8_t        enable);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_set_periodic_adv_rx_enable*(sync_handle: uint16; enable: uint8): uint8 {.
+    importc: "gap_set_periodic_adv_rx_enable", header: "gap.h".}
 ## *
 ##  @brief Instruct the Controller to send synchronization information about the periodic
 ##           advertising train identified by the Sync_Handle parameter to a connected
@@ -888,10 +887,10 @@ type
 ##
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_periodic_adv_sync_transfer(const hci_con_handle_t   conn_handle,
-##                                         const uint16_t           service_data,
-##                                         const uint16_t           sync_handle);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_periodic_adv_sync_transfer*(conn_handle: hci_con_handle_t;
+                                    service_data: uint16; sync_handle: uint16): uint8 {.
+    importc: "gap_periodic_adv_sync_transfer", header: "gap.h".}
 ## *
 ##  @brief Instruct the Controller to send synchronization information about the periodic
 ##           advertising in an advertising set to a connected device.
@@ -903,11 +902,10 @@ type
 ##
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_periodic_adv_set_info_transfer(const hci_con_handle_t   conn_handle,
-##                                             const uint16_t           service_data,
-##                                             const uint8_t            adv_handle);
-##  WARNING: ^^^ this API is not available in this release
 
+proc gap_periodic_adv_set_info_transfer*(conn_handle: hci_con_handle_t;
+                                        service_data: uint16; adv_handle: uint8): uint8 {.
+    importc: "gap_periodic_adv_set_info_transfer", header: "gap.h".}
 type
   periodic_adv_sync_transfer_mode_t* {.size: sizeof(cint).} = enum
     PERIODIC_TRANS_MODE_NULL, PERIODIC_TRANS_MODE_SEND_EVT_DISABLE_REPORT,
@@ -940,12 +938,11 @@ const
 ##                               Combination of SYNC_EXCL_XXX
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_periodic_adv_sync_transfer_param(const hci_con_handle_t                     conn_handle,
-##                                               const periodic_adv_sync_transfer_mode_t    mode,
-##                                               const uint16_t                             skip,
-##                                               const uint16_t                             sync_timeout,
-##                                               const uint8_t                              cte_excl_types);
-##  WARNING: ^^^ this API is not available in this release
+
+proc gap_periodic_adv_sync_transfer_param*(conn_handle: hci_con_handle_t;
+    mode: periodic_adv_sync_transfer_mode_t; skip: uint16; sync_timeout: uint16;
+    cte_excl_types: uint8): uint8 {.importc: "gap_periodic_adv_sync_transfer_param",
+                                 header: "gap.h".}
 ## *
 ##  @brief Specify the initial value for the mode, skip, timeout, and
 ##           Constant Tone Extension type (set by the
@@ -965,13 +962,11 @@ const
 ##                               Combination of SYNC_EXCL_XXX
 ##  @return                      0: Message is sent out; Other: Message is not sent out
 ##
-##  uint8_t gap_default_periodic_adv_sync_transfer_param(
-##                                               const periodic_adv_sync_transfer_mode_t    mode,
-##                                               const uint16_t                             skip,
-##                                               const uint16_t                             sync_timeout,
-##                                               const uint8_t                              cte_excl_types);
-##  WARNING: ^^^ this API is not available in this release
 
+proc gap_default_periodic_adv_sync_transfer_param*(
+    mode: periodic_adv_sync_transfer_mode_t; skip: uint16; sync_timeout: uint16;
+    cte_excl_types: uint8): uint8 {.importc: "gap_default_periodic_adv_sync_transfer_param",
+                                 header: "gap.h".}
 proc gap_set_host_channel_classification*(channel_low: uint32; channel_high: uint8): uint8 {.
     importc: "gap_set_host_channel_classification", header: "gap.h".}
 ## *

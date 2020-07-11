@@ -1,5 +1,6 @@
 #include "peripheral_gpio.h"
 
+#define GPIO_PIN_IE0  ((__IO uint32_t *)(APB_PINC_BASE + 0x00))
 #define GPIO_PIN_PE0  ((__IO uint32_t *)(APB_PINC_BASE + 0x10))
 #define GPIO_PIN_PS0  ((__IO uint32_t *)(APB_PINC_BASE + 0x18))
 #define GPIO_PIN_DS00 ((__IO uint32_t *)(APB_PINC_BASE + 0x28))
@@ -14,6 +15,8 @@ static void GIO_MaskedWrite(__IO uint32_t *reg, const uint8_t index, const uint8
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 {
     GIO_MaskedWrite(GPIO_OEB, io_index, dir);
+    if (GIO_DIR_INPUT == dir)
+        GIO_MaskedWrite(GPIO_PIN_IE0, io_index, 0);
 }
 
 GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index)

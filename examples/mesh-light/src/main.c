@@ -46,54 +46,13 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_UART, &UART_0, 0);
 }
 
-#define CHANNEL_RED     4
-#define CHANNEL_GREEN   0
-#define CHANNEL_BLUE    6
-
-#define PERA_THRESHOLD (OSC_CLK_FREQ / 1000)
-
-void set_led_color(uint8_t r, uint8_t g, uint8_t b)
-{
-#ifndef SIMULATION      
-#define TO_PERCENT(v) (((uint32_t)(v) * 100) >> 8)
-
-    PWM_SetHighThreshold(CHANNEL_RED   >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(r));
-    PWM_SetHighThreshold(CHANNEL_GREEN >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(g >> 1));  // GREEN & BLUE led seems too bright
-    PWM_SetHighThreshold(CHANNEL_BLUE  >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(b >> 1));
-#endif    
-}
-
-static void setup_channel(uint8_t channel_index)
-{
-    PWM_HaltCtrlEnable(channel_index, 1);
-    PWM_Enable(channel_index, 0);
-    PWM_SetPeraThreshold(channel_index, PERA_THRESHOLD);
-    PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
-    PWM_SetHighThreshold(channel_index, 0, PERA_THRESHOLD / 2);
-    PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
-    PWM_SetMask(channel_index, 0, 0);
-    PWM_Enable(channel_index, 1); 
-    PWM_HaltCtrlEnable(channel_index, 0);
-}
+#include "../../peripheral_led/src/impl_led.c"
 
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     
-#ifndef SIMULATION    
-    PINCTRL_SetPadMux(CHANNEL_RED, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(CHANNEL_RED, 1);
-    PINCTRL_SetPadMux(CHANNEL_GREEN, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(CHANNEL_GREEN, 1);
-    PINCTRL_SetPadMux(CHANNEL_BLUE, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(CHANNEL_BLUE, 1);
-    
-    setup_channel(CHANNEL_RED   >> 1);
-    setup_channel(CHANNEL_GREEN >> 1);
-    setup_channel(CHANNEL_BLUE  >> 1);
-    
-    set_led_color(50, 50, 50);
-#endif
+    setup_led();
 }
 
 int app_main()

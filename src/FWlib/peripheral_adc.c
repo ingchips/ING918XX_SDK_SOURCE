@@ -13,13 +13,8 @@ uint8_t adc_get_power_state(void)
 
 void ADC_PowerCtrl(const uint8_t flag)
 {
-#ifdef TARGET_V2
 #define ADC_PON         0x3
 #define ADC_PON_STATE   ADC_PON
-#else
-#define ADC_PON         0x1
-#define ADC_PON_STATE   0x2
-#endif
 
 #define ADC_POFF              ((~ADC_PON) & ADC_POW_MASK)
 #define ADC_POFF_STATE        ((~ADC_PON_STATE) & ADC_POW_MASK)

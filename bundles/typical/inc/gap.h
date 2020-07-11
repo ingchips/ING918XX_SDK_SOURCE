@@ -1,5 +1,5 @@
-/** @file                                             
-*  @brief    function API and data structure for BLE      
+/** @file
+*  @brief    function API and data structure for BLE
 *  @version  1.0.0.                                                     *
 *  @date     2019/10/10                                                 *
 *                                                                       *
@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 /**
- * @brief Bluetooth 
+ * @brief Bluetooth
  * @defgroup Bluetooth_gap
  * @ingroup bluetooth_host
  * @{
@@ -65,7 +65,7 @@ void gap_disconnect_all(void);
 /**
  * @brief add whitelist to the controller
  *
- * @param[in] address               BLE address 
+ * @param[in] address               BLE address
  * @param[in] addtype               BLE address type
  * @return                      0: Message is sent to controller
  */
@@ -74,7 +74,7 @@ uint8_t gap_add_whitelist(const uint8_t *address,bd_addr_type_t  addtype);
 /**
  * @brief remove whitelist from controller
  *
- * @param address               BLE address 
+ * @param address               BLE address
  * @param addtype               BLE address type
  * @return                      0: Message is sent to controller
  */
@@ -186,7 +186,7 @@ uint8_t gap_read_phy(const uint16_t con_handle);
  * @brief Host to specify its preferred values for the transmitter PHY and receiver PHY
  *
  * @param all_phys              BIT(0): no preference for transmit channel
- *                              BIT(1): no preference for receive channel 
+ *                              BIT(1): no preference for receive channel
  *                              Others: reserved for future
  *
  * @param tx_phys               BIT(0): prefer LE 1M transmitter PHY
@@ -205,7 +205,7 @@ uint8_t gap_set_def_phy(const uint8_t all_phys, const phy_bittypes_t tx_phys, co
 
 /**
  * @brief enum of the PHY option
- * 
+ *
  */
 typedef enum phy_option
 {
@@ -220,7 +220,7 @@ typedef enum phy_option
  * @param con_handle            connection handl. (0x000--0x0EFF)
  *
  * @param all_phys              BIT(0): no preference for transmit channel
- *                              BIT(1): no preference for receive channel 
+ *                              BIT(1): no preference for receive channel
  *                              Others: reserved for future
  *
  * @param tx_phys               BIT(0): prefer LE 1M transmitter PHY
@@ -411,7 +411,7 @@ typedef enum adv_filter_policy
  * @param primary_adv_channel_map    see structure @link #adv_channel_bits_t @endlink
  *
  * @param own_addr_type              own BLE device address type
- * 
+ *
  * @param peer_addr_type             peer BLE device address type
  *
  * @param peer_addr                  peer BLE device address
@@ -464,10 +464,10 @@ typedef enum adv_data_frag_pref
 } adv_data_frag_pref_t_t;
 
 /**
- * @brief to set extended advertising data 
+ * @brief to set extended advertising data
  *
  * @param adv_handle           advertising set handle.
- *                             
+ *
  * @param length               advertising data length
  *
  * @param data                 pointer to advertising data
@@ -480,7 +480,7 @@ uint8_t gap_set_ext_adv_data(const uint8_t adv_handle, uint16_t length, const ui
  * @brief LE Set Periodic Advertising Data command
  *
  * @param adv_handle           advertising set handle.
- *                             
+ *
  * @param length               advertising data length
  *
  * @param data                 pointer to periodic advertising data
@@ -493,8 +493,8 @@ uint8_t gap_set_periodic_adv_data(const uint8_t adv_handle, uint16_t length, con
  * @brief LE Set Periodic Advertising Enable command
  *
  * @param enable               0x00: Periodic advertising is disabled (default)
- *                             0x01: Periodic advertising is enabled                            
- * 
+ *                             0x01: Periodic advertising is enabled
+ *
  * @param adv_handle           handle of advertising set
  *
  * @return                     0: message sent to controller
@@ -503,8 +503,8 @@ uint8_t gap_set_periodic_adv_enable(const uint8_t enable, const uint8_t adv_hand
 /**
  * @brief LE Set Periodic Advertising Parameters command
  *
- * @param adv_handle            handle of advertising set                            
- * 
+ * @param adv_handle            handle of advertising set
+ *
  * @param interval_min          0xXXXX Range: 0x0006 to 0xFFFF
  *                                     Time = N * 1.25 ms
  *                                     Time Range: 7.5ms to 81.91875 s
@@ -529,7 +529,7 @@ uint8_t gap_clr_adv_set(void);
 /**
  * @brief LE Remove Advertising Set command
  *
- * @param adv_handle            handle of advertising set to be removed                        
+ * @param adv_handle            handle of advertising set to be removed
  *
  * @return                     0: message sent to controller
  */
@@ -561,7 +561,7 @@ typedef enum periodic_adv_filter_policy
  *                             Range: 0x000A to 0x4000
  *                             Time = N*10 ms
  *                             Time Range: 100 ms to 163.84 s
- * 
+ *
  * @return                     0: message sent to controller
  */
 uint8_t gap_periodic_adv_create_sync(const periodic_adv_filter_policy_t filter_policy,
@@ -581,7 +581,7 @@ uint8_t gap_periodic_adv_create_sync_cancel(void);
 /**
  * @brief LE Periodic Advertising Terminate Sync command
  *
- * @param sync_handle          Sync_Handle identifying the periodic advertising train                        
+ * @param sync_handle          Sync_Handle identifying the periodic advertising train
  *
  * @return                     0: message sent to controller
  */
@@ -720,14 +720,12 @@ typedef enum
  * @param antenna_ids           List of Antenna IDs in the pattern
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_set_connectionless_cte_tx_param(const uint8_t       adv_handle,
-//                                             const uint8_t       cte_len,
-//                                             const cte_type_t    cte_type,
-//                                             const uint8_t       cte_count,
-//                                             const uint8_t       switching_pattern_len,
-//                                             const uint8_t      *antenna_ids);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_set_connectionless_cte_tx_param(const uint8_t       adv_handle,
+                                            const uint8_t       cte_len,
+                                            const cte_type_t    cte_type,
+                                            const uint8_t       cte_count,
+                                            const uint8_t       switching_pattern_len,
+                                            const uint8_t      *antenna_ids);
 
 /**
  * @brief Request that the Controller enables or disables the use of Constant Tone
@@ -739,18 +737,16 @@ typedef enum
  * @param cte_enable            Disable (0x00), Enable (0x01)
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_set_connectionless_cte_tx_enable(const uint8_t       adv_handle,
-//                                              const uint8_t       cte_enable);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_set_connectionless_cte_tx_enable(const uint8_t       adv_handle,
+                                             const uint8_t       cte_enable);
 /**
  * @brief structure:cte_slot_duration_type_t
  *
  */
 typedef enum
 {
-    CTE_SLOT_DURATION_1US,
-    CTE_SLOT_DURATION_2US
+    CTE_SLOT_DURATION_1US = 1,
+    CTE_SLOT_DURATION_2US = 2
 } cte_slot_duration_type_t;
 
 /**
@@ -769,14 +765,12 @@ typedef enum
  *
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handle,
-//                                                   const uint8_t       sampling_enable,
-//                                                   const uint8_t       slot_durations,
-//                                                   const uint8_t       max_sampled_ctes,
-//                                                   const uint8_t       switching_pattern_len,
-//                                                   const uint8_t      *antenna_ids);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handle,
+                                                  const uint8_t       sampling_enable,
+                                                  const uint8_t       slot_durations,
+                                                  const uint8_t       max_sampled_ctes,
+                                                  const uint8_t       switching_pattern_len,
+                                                  const uint8_t      *antenna_ids);
 
 /**
  * @brief Enable or disable sampling received Constant Tone Extension fields on the
@@ -792,13 +786,11 @@ typedef enum
  * @return                      0: Message is sent out; Other: Message is not sent out
  *
  */
-// uint8_t gap_set_connection_cte_rx_param(const hci_con_handle_t  conn_handle,
-//                                         const uint8_t           sampling_enable,
-//                                         const uint8_t           slot_durations,
-//                                         const uint8_t           switching_pattern_len,
-//                                         const uint8_t          *antenna_ids);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_set_connection_cte_rx_param(const hci_con_handle_t  conn_handle,
+                                        const uint8_t           sampling_enable,
+                                        const uint8_t           slot_durations,
+                                        const uint8_t           switching_pattern_len,
+                                        const uint8_t          *antenna_ids);
 
 /**
  * @brief Set the antenna switching pattern and permitted Constant Tone Extension
@@ -812,12 +804,10 @@ typedef enum
  * @return                      0: Message is sent out; Other: Message is not sent out
  *
  */
-// uint8_t gap_set_connection_cte_tx_param(const hci_con_handle_t  conn_handle,
-//                                         const uint8_t           cte_types,
-//                                         const uint8_t           switching_pattern_len,
-//                                         const uint8_t          *antenna_ids);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_set_connection_cte_tx_param(const hci_con_handle_t  conn_handle,
+                                        const uint8_t           cte_types,
+                                        const uint8_t           switching_pattern_len,
+                                        const uint8_t          *antenna_ids);
 
 
 /**
@@ -838,13 +828,11 @@ typedef enum
  * @return                      0: Message is sent out; Other: Message is not sent out
  *
  */
-// uint8_t gap_set_connection_cte_request_enable(const hci_con_handle_t  conn_handle,
-//                                               const uint8_t           enable,
-//                                               const uint16_t          requested_cte_interval,
-//                                               const uint8_t           requested_cte_length,
-//                                               const cte_type_t        requested_cte_type);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_set_connection_cte_request_enable(const hci_con_handle_t  conn_handle,
+                                              const uint8_t           enable,
+                                              const uint16_t          requested_cte_interval,
+                                              const uint8_t           requested_cte_length,
+                                              const cte_type_t        requested_cte_type);
 
 
 /**
@@ -855,19 +843,15 @@ typedef enum
  * @param enable                Disable (0x00), Enable (0x01)
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_set_connection_cte_response_enable(const hci_con_handle_t  conn_handle,
-//                                                const uint8_t           enable);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_set_connection_cte_response_enable(const hci_con_handle_t  conn_handle,
+                                               const uint8_t           enable);
 /**
  * @brief Read the switching rates, the sampling rates, the number of antennae, and the
  *          maximum length of a transmitted Constant Tone Extension supported by the
  *          Controller.
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_read_antenna_info(void);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_read_antenna_info(void);
 
 /**
  * @brief Enable or disable reports for the periodic advertising train identified by the
@@ -878,10 +862,8 @@ typedef enum
  *
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_set_periodic_adv_rx_enable(const uint16_t       sync_handle,
-//                                        const uint8_t        enable);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_set_periodic_adv_rx_enable(const uint16_t       sync_handle,
+                                       const uint8_t        enable);
 
 /**
  * @brief Instruct the Controller to send synchronization information about the periodic
@@ -895,11 +877,9 @@ typedef enum
  *
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_periodic_adv_sync_transfer(const hci_con_handle_t   conn_handle,
-//                                        const uint16_t           service_data,
-//                                        const uint16_t           sync_handle);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_periodic_adv_sync_transfer(const hci_con_handle_t   conn_handle,
+                                       const uint16_t           service_data,
+                                       const uint16_t           sync_handle);
 
 /**
  * @brief Instruct the Controller to send synchronization information about the periodic
@@ -912,11 +892,9 @@ typedef enum
  *
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_periodic_adv_set_info_transfer(const hci_con_handle_t   conn_handle,
-//                                            const uint16_t           service_data,
-//                                            const uint8_t            adv_handle);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_periodic_adv_set_info_transfer(const hci_con_handle_t   conn_handle,
+                                           const uint16_t           service_data,
+                                           const uint8_t            adv_handle);
 
 
 typedef enum
@@ -950,13 +928,11 @@ typedef enum
  *                              Combination of SYNC_EXCL_XXX
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_periodic_adv_sync_transfer_param(const hci_con_handle_t                     conn_handle,
-//                                              const periodic_adv_sync_transfer_mode_t    mode,
-//                                              const uint16_t                             skip,
-//                                              const uint16_t                             sync_timeout,
-//                                              const uint8_t                              cte_excl_types);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_periodic_adv_sync_transfer_param(const hci_con_handle_t                     conn_handle,
+                                             const periodic_adv_sync_transfer_mode_t    mode,
+                                             const uint16_t                             skip,
+                                             const uint16_t                             sync_timeout,
+                                             const uint8_t                              cte_excl_types);
 
 /**
  * @brief Specify the initial value for the mode, skip, timeout, and
@@ -977,13 +953,11 @@ typedef enum
  *                              Combination of SYNC_EXCL_XXX
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-// uint8_t gap_default_periodic_adv_sync_transfer_param(
-//                                              const periodic_adv_sync_transfer_mode_t    mode,
-//                                              const uint16_t                             skip,
-//                                              const uint16_t                             sync_timeout,
-//                                              const uint8_t                              cte_excl_types);
-// WARNING: ^^^ this API is not available in this release
-
+uint8_t gap_default_periodic_adv_sync_transfer_param(
+                                             const periodic_adv_sync_transfer_mode_t    mode,
+                                             const uint16_t                             skip,
+                                             const uint16_t                             sync_timeout,
+                                             const uint8_t                              cte_excl_types);
 
 uint8_t gap_set_host_channel_classification(const uint32_t channel_low, const uint8_t channel_high);
 
@@ -1093,7 +1067,7 @@ void hci_register_acl_packet_handler(btstack_packet_handler_t handler);
  * @brief Requests the change of BTstack power mode.
  *
  * @param mode                   0:HCI_POWER_OFF  ,1:HCI_POWER_ON , 2:HCI_POWER_SLEEP
- * 
+ *
  * @return                       0: succss
  */
 int  hci_power_control(HCI_POWER_MODE mode);

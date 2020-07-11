@@ -50,6 +50,8 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_I2C0)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
 
 #ifndef SIMULATION
     PINCTRL_SetPadMux(6, IO_SOURCE_GENERAL);

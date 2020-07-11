@@ -63,6 +63,8 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
     PINCTRL_DisableAllInputs();
 
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
+
     PINCTRL_SetPadMux(LED_IO, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(LED_IO, 1);

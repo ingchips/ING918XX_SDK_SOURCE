@@ -86,6 +86,19 @@
         "gap_read_periodic_adv_list_size", 
         "gap_ext_create_connection", 
         "gap_create_connection_cancel", 
+        "gap_set_connectionless_cte_tx_param", 
+        "gap_set_connectionless_cte_tx_enable", 
+        "gap_set_connectionless_iq_sampling_enable", 
+        "gap_set_connection_cte_rx_param", 
+        "gap_set_connection_cte_tx_param", 
+        "gap_set_connection_cte_request_enable", 
+        "gap_set_connection_cte_response_enable", 
+        "gap_read_antenna_info", 
+        "gap_set_periodic_adv_rx_enable", 
+        "gap_periodic_adv_sync_transfer", 
+        "gap_periodic_adv_set_info_transfer", 
+        "gap_periodic_adv_sync_transfer_param", 
+        "gap_default_periodic_adv_sync_transfer_param", 
         "gap_set_host_channel_classification", 
         "gap_update_connection_parameters", 
         "gap_get_connection_parameter_range", 
@@ -105,6 +118,7 @@
         "platform_write_persistent_reg", 
         "platform_read_persistent_reg", 
         "platform_config", 
+        "platform_hrng", 
         "platform_printf", 
         "sysSetPublicDeviceAddr", 
         "platform_set_rf_clk_source", 
@@ -114,6 +128,7 @@
         "ll_set_adv_coded_scheme", 
         "ll_set_initiating_coded_scheme", 
         "ll_hint_on_ce_len", 
+        "ll_set_def_antenna", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -252,16 +267,16 @@
         "base": 155648
     }, 
     "ram": {
-        "base": 536880208, 
-        "size": 30528
+        "base": 536880176, 
+        "size": 30488
     }, 
     "rom": {
         "base": 16384, 
-        "size": 131876
+        "size": 132756
     }, 
     "version": [
+        1, 
         0, 
-        15, 
         0
     ]
 }

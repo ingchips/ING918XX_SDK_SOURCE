@@ -176,7 +176,7 @@ void recv_iq_report(const le_meta_connless_iq_report_t *report)
     platform_printf("\n");
 }
 
-#ifdef SIMULATION
+#ifndef CTE
 
 #pragma pack (push, 1)
 typedef struct sim_iq_report
@@ -275,10 +275,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 prd_adv_data_offset = 0;
 #ifdef CTE
                 {
-                    static const uint8_t ant_ids[] = {0, 1};                
-                    gap_set_connectionless_iq_sampling_enable(established->sync_handle,
+                    static const uint8_t ant_ids[] = {1, 2};                
+                    gap_set_connectionless_iq_sampling_enable(established->handle,
                                                           1,
-                                                          (1 << CTE_SLOT_DURATION_1US) | (1 << CTE_SLOT_DURATION_2US),
+                                                          2,
                                                           16,
                                                           sizeof(ant_ids), ant_ids);
                 }
@@ -302,7 +302,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 switch (report->data_status)
                 {
                 case HCI_PRD_ADV_DATA_STATUS_CML:
-#ifdef SIMULATION
+#ifndef CTE
                     simulate_cte_report();
 #endif
                     show_adv(report->rssi);
