@@ -269,8 +269,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>278528</StartAddress>
-                <Size>262144</Size>
+                <StartAddress>155648</StartAddress>
+                <Size>385024</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -294,8 +294,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536934248</StartAddress>
-                <Size>2200</Size>
+                <StartAddress>536910664</StartAddress>
+                <Size>25784</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -316,7 +316,7 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>2</wLevel>
+            <wLevel>1</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
@@ -451,6 +451,11 @@
               <FileName>model_cli.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Mesh\model_cli.c</FilePath>
+            </File>
+            <File>
+              <FileName>Mesh.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\bundles\mesh\Mesh.lib</FilePath>
             </File>
           </Files>
         </Group>

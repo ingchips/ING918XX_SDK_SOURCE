@@ -118,6 +118,7 @@
         "platform_write_persistent_reg", 
         "platform_read_persistent_reg", 
         "platform_config", 
+        "platform_shutdown", 
         "platform_hrng", 
         "platform_printf", 
         "sysSetPublicDeviceAddr", 
@@ -198,10 +199,12 @@
         "sm_address_resolution_lookup", 
         "sm_le_device_key", 
         "kv_init", 
+        "kv_remove_all", 
         "kv_remove", 
         "kv_put", 
         "kv_get", 
         "kv_value_modified", 
+        "kv_commit", 
         "kv_visit", 
         "xQueueGenericSend", 
         "xQueuePeek", 
@@ -251,6 +254,8 @@
         "xTaskPriorityInherit", 
         "xTaskPriorityDisinherit", 
         "vTaskPriorityDisinheritAfterTimeout", 
+        "vTaskStepTick", 
+        "eTaskConfirmSleepModeStatus", 
         "pvTaskIncrementMutexHeldCount", 
         "vTaskInternalSetTimeOutState", 
         "xTimerCreate", 
@@ -267,16 +272,16 @@
         "base": 155648
     }, 
     "ram": {
-        "base": 536880176, 
+        "base": 536870912, 
         "size": 30488
     }, 
     "rom": {
         "base": 16384, 
-        "size": 132756
+        "size": 134316
     }, 
     "version": [
         1, 
         0, 
-        0
+        1
     ]
 }

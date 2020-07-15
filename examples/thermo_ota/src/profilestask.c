@@ -161,6 +161,7 @@ uint8_t *init_service(void);
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
+    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3e};    // TODO: random address generation
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -171,7 +172,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
 
-        gap_set_adv_set_random_addr(0, (uint8_t *)(0x44000));
+        gap_set_adv_set_random_addr(0, (uint8_t *)rand_addr);
         gap_set_ext_adv_para(0, 
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
@@ -236,6 +237,18 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 static uint8_t att_db_storage[800];
 
+//#define V2
+
+ota_ver_t this_version =
+{
+    .app = 
+#ifdef V2
+        { .major = 1, .minor = 2, .patch = 0 }
+#else
+        { .major = 1, .minor = 1, .patch = 0 }
+#endif
+};
+
 uint8_t *init_service()
 {
     static char dev_name[] = "Thermometer";
@@ -270,7 +283,7 @@ uint8_t *init_service()
     printf("att_temp_value_handle         = %d\n"
            "att_client_desc_value_handle  = %d\n", att_temp_value_handle, att_client_desc_value_handle);
 
-    ota_init_service();
+    ota_init_service(&this_version);
 
     return att_db_util_get_address();
 }

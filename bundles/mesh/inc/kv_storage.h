@@ -1,21 +1,24 @@
-// ----------------------------------------------------------------------------
-// Copyright Message
-// ----------------------------------------------------------------------------
-//
-// INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018-2019 by INGCHIPS
-//
-// All rights are reserved. Reproduction in whole or in part is
-// prohibited without the written consent of the copyright owner.
-//
-//
-// ----------------------------------------------------------------------------
+/** @file                                                               *
+*  @brief    helper function to cache data into flash                   *
+*  @version  1.0.0.                                                     *
+*  @date     2019/10/10                                                 *
+*                                                                       *
+*  Copyright (c) 2019 IngChips corp.                                    *
+*                                                                       *
+*                                                                       *
+ *************************************************************************************************************/
 
 #ifndef _KV_STORAGE_H
 #define _KV_STORAGE_H
 
 #include <stdint.h>
 
+/**
+ * @brief Bluetooth 
+ * @defgroup Bluetooth_NVM
+ * @ingroup bluetooth_stack
+ * @{
+ */
 /**
  * @brief A simple key-value storage
  *
@@ -149,7 +152,9 @@ void kv_visit(f_kv_visitor visitor, void *user_data);
  * @param[in]   len             data length to be appended for the key
  * @return                      KV_OK if successful else error code
  */
-int kv_value_append(const kvkey_t key, const uint8_t *more_data, const int16_t len);
+// int kv_value_append(const kvkey_t key, const uint8_t *more_data, const int16_t len);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief truncate an existing value
@@ -157,6 +162,12 @@ int kv_value_append(const kvkey_t key, const uint8_t *more_data, const int16_t l
  * @param[in]   new_len         new length of data for the key
  * @return                      KV_OK if successful else error code
  */
-int kv_value_trunc(const kvkey_t key, const int16_t new_len);
+// int kv_value_trunc(const kvkey_t key, const int16_t new_len);
+// WARNING: ^^^ this API is not available in this release
+
+
+/*
+* @}
+*/
 
 #endif

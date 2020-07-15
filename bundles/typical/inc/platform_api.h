@@ -227,7 +227,9 @@ typedef enum
     PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_TRACE_MASK,    // flag is bitmap of platform_trace_item_t. default: 0
-    PLATFORM_CFG_32K_CLK        // 32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+    PLATFORM_CFG_32K_CLK,       // 32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+    PLATFORM_CFG_PS_DBG_0,      // debugging parameter
+    PLATFORM_CFG_PS_DBG_1,      // debugging parameter
 } platform_cfg_item_t;
 
 typedef enum
@@ -261,9 +263,7 @@ void platform_config(const platform_cfg_item_t item, const uint32_t flag);
  * @param[in] data_size             Size of the data to be retentioned
  ****************************************************************************************
  */
-// void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
 
 /**
  ****************************************************************************************

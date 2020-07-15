@@ -68,10 +68,10 @@ uint32_t cb_trace(const platform_evt_trace_t *trace, trace_info_t *ctx)
     uint16_t next;
     int16_t free_size;
     uint8_t use_mutex = !IS_IN_INTERRUPT();
-    
+
     if (use_mutex)
         xSemaphoreTake(ctx->mutex, portMAX_DELAY);
-    
+
     next = ctx->write_next;
     free_size = ctx->read_next - ctx->write_next;
     if (free_size <= 0) free_size += TRACE_BUFF_SIZE;
@@ -84,12 +84,12 @@ uint32_t cb_trace(const platform_evt_trace_t *trace, trace_info_t *ctx)
         trace_trigger_output(ctx);
         return 0;
     }
-    
+
     next = trace_add_buffer(ctx, (const uint8_t *)trace->data1, trace->len1, next) & TRACE_BUFF_SIZE_MASK;
     next = trace_add_buffer(ctx, (const uint8_t *)trace->data2, trace->len2, next) & TRACE_BUFF_SIZE_MASK;
-    
+
     ctx->write_next = next;
-    
+
     if (use_mutex) xSemaphoreGive(ctx->mutex);
 
     trace_trigger_output(ctx);

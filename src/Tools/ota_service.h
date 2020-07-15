@@ -55,12 +55,13 @@ typedef struct ota_ver
 #define OTA_STATUS_DISABLED         0
 #define OTA_STATUS_OK               1
 #define OTA_STATUS_ERROR            2
+#define OTA_STATUS_WAIT_DATA        3
 
 #ifndef C2NIM
 /**
  *@brief initialize FOTA related GATT service by code
  */
-void ota_init_service(void);
+void ota_init_service(ota_ver_t *this_version);
 #endif
 
 /**

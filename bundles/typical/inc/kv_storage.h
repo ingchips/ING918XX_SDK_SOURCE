@@ -97,9 +97,7 @@ void kv_init(f_kv_write_to_nvm f_write,
 /**
  * @brief remove all k-v parirs
  */
-// void kv_remove_all(void);
-// WARNING: ^^^ this API is not available in this release
-
+void kv_remove_all(void);
 
 /**
  * @brief remove a k-v pair
@@ -136,9 +134,7 @@ void kv_value_modified(void);
 /**
  * @brief commited whole db to nvm immediately
  */
-// void kv_commit(void);
-// WARNING: ^^^ this API is not available in this release
-
+void kv_commit(void);
 
 /**
  * @brief traverse each k-v pair

@@ -159,7 +159,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 }
 
 uint32_t setup_profile(void *data, void *user_data)
-{   
+{
+    platform_printf("setup profile\n");
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
