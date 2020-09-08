@@ -243,16 +243,18 @@ const
   AHB_SSP0* = (cast[ptr SSP_TypeDef](AHB_SPI0_BASE)) ##  Actually, APB_SPI0 site in AHB Bus.
   APB_SSP1* = (cast[ptr SSP_TypeDef](APB_SPI1_BASE))
 
+##  Test if in interrupt mode
+
+template IS_IN_INTERRUPT*(): untyped =
+  ((SCB.ICSR and SCB_ICSR_VECTACTIVE_Msk) != 0)
+
 when defined(USE_STDPERIPH_DRIVER):
   import
     peripheral_uart, peripheral_gpio, peripheral_sysctrl, peripheral_i2c,
     peripheral_pinctrl, peripheral_rtc, peripheral_ssp, peripheral_timer,
     peripheral_adc, peripheral_pwm
 
-##  Clock Freq Define
-
 const
   PLL_CLK_FREQ* = 48000000
   OSC_CLK_FREQ* = 24000000
-
   RTC_CLK_FREQ* = 32768

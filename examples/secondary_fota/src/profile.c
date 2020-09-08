@@ -107,8 +107,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle,
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             break;
         default:
@@ -139,7 +139,7 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
 
 uint32_t setup_profile(void *data, void *user_data)
 {
-    platform_printf("secondary apps...\n");
+    platform_printf("secondary fota: %d...\n", platform_read_persistent_reg());
     // Note: security has not been enabled.
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;

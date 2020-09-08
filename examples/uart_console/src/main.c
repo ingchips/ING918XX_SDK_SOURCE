@@ -61,7 +61,7 @@ uint32_t uart_isr(void *user_data)
         // rx int
         if (status & (1 << bsUART_RECEIVE_INTENAB))
         {
-            while (apUART_Check_RXFIFO_EMPRY(APB_UART0) != 1)
+            while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
             {
                 char c = APB_UART0->DataRead;
                 console_rx_data(&c, 1);

@@ -4,6 +4,7 @@
 #include "platform_api.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "trace.h"
 #include <stdio.h>
 
 #include "uart_console.h"
@@ -77,7 +78,7 @@ uint32_t uart_isr(void *user_data)
         // rx int
         if (status & (1 << bsUART_RECEIVE_INTENAB))
         {
-            while (apUART_Check_RXFIFO_EMPRY(APB_UART0) != 1)
+            while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
             {
                 char c = APB_UART0->DataRead;
                 console_rx_data(&c, 1);
@@ -90,10 +91,11 @@ uint32_t uart_isr(void *user_data)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 921600);
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
     // timer 0 can be used as watchdog, so we use timer 1.
     // setup timer 1 to sampling rate
-	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 50);
-	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
+    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 50);
+    TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR1);
     TMR_IntEnable(APB_TMR1);
 }
@@ -125,20 +127,13 @@ uint32_t timer_isr(void *user_data)
     return 0;
 }
 
-uint32_t cb_lle_reset(void *_, void * __)
-{
-#define reg(x)      ((volatile uint32_t *)(x))
-    *reg(0x40070048) = 0xffffffff;
-    *reg(0x4007005c) = 0x82;
-    *reg(0x40090064) = (1 << 10) | 0; // 0x400;
-    return 0;
-}
+trace_rtt_t trace_ctx = {0};
 
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
-     platform_set_rf_clk_source(0);
+    // platform_set_rf_clk_source(0);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
@@ -156,7 +151,10 @@ int app_main()
     setup_peripherals();
     
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
-    platform_set_evt_callback(PLATFORM_CB_LLE_INIT, cb_lle_reset, NULL);
+
+    trace_rtt_init(&trace_ctx);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
 
     return 0;
 }

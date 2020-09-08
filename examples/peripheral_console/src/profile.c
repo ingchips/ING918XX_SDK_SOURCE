@@ -83,7 +83,6 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 bd_addr_t null_addr = {0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
 
 extern int adv_tx_power;
-int kkk = 0;
 
 static void setup_adv()
 {
@@ -124,8 +123,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle,
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             break;
         default:
@@ -159,7 +158,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 }
 
 uint32_t setup_profile(void *data, void *user_data)
-{   
+{
+    platform_printf("setup profile\n");
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

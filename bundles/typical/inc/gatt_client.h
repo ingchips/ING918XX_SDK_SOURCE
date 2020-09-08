@@ -1,14 +1,15 @@
-// ----------------------------------------------------------------------------
-// Copyright Message
-// ----------------------------------------------------------------------------
-//
-// INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018 by INGCHIPS
-//
-// All rights are reserved. Reproduction in whole or in part is
-// prohibited without the written consent of the copyright owner.
-//
-//
+/** @file
+ *  @brief generic access profile 
+ * Copyright Message
+ * 
+ *  INGCHIPS confidential and proprietary.
+ *  COPYRIGHT (c) 2018 by INGCHIPS
+ *
+ *  All rights are reserved. Reproduction in whole or in part is
+ *  prohibited without the written consent of the copyright owner.
+ *
+ *
+*/
 // ----------------------------------------------------------------------------
 
 #ifndef _GATT_CLIENT_H
@@ -25,27 +26,87 @@
 extern "C" {
 #endif
 
-typedef struct {
+/**
+ * @brief Bluetooth 
+ * @defgroup Bluetooth_gatt_client
+ * @ingroup bluetooth_stack
+ * @{
+ */
+
+#define UUID128_LEN     (16)
+
+#pragma pack(push, 1)
+
+typedef struct
+{
+    uint16_t handle;
+    uint8_t  value[0];          // length is given in `value_size`
+} gatt_event_value_packet_t;
+
+typedef struct
+{
+    uint16_t handle;
+    uint16_t offset;
+    uint8_t  value[0];          // length is given in `value_size`
+} gatt_event_long_value_packet_t;
+
+typedef struct
+{
+    hci_con_handle_t handle;
+    uint8_t status;
+} gatt_event_query_complete_t;
+
+typedef struct
+{
     uint16_t start_group_handle;
     uint16_t end_group_handle;
-    uint16_t uuid16;
-    uint8_t  uuid128[16];
+    uint8_t  uuid128[UUID128_LEN];
 } gatt_client_service_t;
+
+typedef struct
+{
+    hci_con_handle_t     handle;
+    gatt_client_service_t service;
+} gatt_event_service_query_result_t;
 
 typedef struct {
     uint16_t start_handle;
     uint16_t value_handle;
     uint16_t end_handle;
     uint16_t properties;
-    uint16_t uuid16;
-    uint8_t  uuid128[16];
+    uint8_t  uuid128[UUID128_LEN];
 } gatt_client_characteristic_t;
+
+typedef struct
+{
+    hci_con_handle_t             handle;
+    gatt_client_characteristic_t characteristic;
+} gatt_event_characteristic_query_result_t;
 
 typedef struct {
     uint16_t handle;
-    uint16_t uuid16;
-    uint8_t  uuid128[16];
+    uint8_t  uuid128[UUID128_LEN];
 } gatt_client_characteristic_descriptor_t;
+
+typedef struct
+{
+    hci_con_handle_t                        handle;
+    gatt_client_characteristic_descriptor_t descriptor;
+} gatt_event_characteristic_descriptor_query_result_t;
+
+typedef struct
+{
+    hci_con_handle_t      handle;
+    uint16_t              include_handle;
+    gatt_client_service_t service;
+} gatt_event_included_service_query_result_t;
+
+typedef struct {
+    hci_con_handle_t                        handle;
+    gatt_client_characteristic_descriptor_t descriptor;
+} gatt_event_all_characteristic_descriptors_query_result_t;
+
+#pragma pack(pop)
 
 /**
  * @brief Discovers all primary services. For each found service, an le_service_event_t with type set to GATT_EVENT_SERVICE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t, with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
@@ -57,27 +118,29 @@ uint8_t gatt_client_discover_primary_services(user_packet_handler_t callback, hc
  */
 uint8_t gatt_client_discover_primary_services_by_uuid16(user_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t uuid16);
 uint8_t gatt_client_discover_primary_services_by_uuid128(user_packet_handler_t callback, hci_con_handle_t con_handle, const uint8_t * uuid128);
-uint8_t gatt_client_discover_characteristics_for_service(user_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_service_t *service);
+
 
 /**
  * @brief Finds included services within the specified service. For each found included service, an le_service_event_t with type set to GATT_EVENT_INCLUDED_SERVICE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery. Information about included service type (primary/secondary) can be retrieved either by sending an ATT find information request for the returned start group handle (returning the handle and the UUID for primary or secondary service) or by comparing the service to the list of all primary services.
  */
-uint8_t gatt_client_find_included_services_for_service(user_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_service_t *service);
+uint8_t gatt_client_find_included_services_for_service(user_packet_handler_t callback, hci_con_handle_t con_handle,
+                const uint16_t start_group_handle, const uint16_t end_group_handle);
 
 
 /**
- * @brief The following four functions are used to discover all characteristics within the specified service or handle range, and return those that match the given UUID. For each found characteristic, an le_characteristic_event_t with type set to GATT_EVENT_CHARACTERISTIC_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
+ * @brief The following function are used to discover all characteristics within the specified service or handle range
+ */
+uint8_t gatt_client_discover_characteristics_for_service(user_packet_handler_t callback, hci_con_handle_t con_handle,
+                const uint16_t start_group_handle, const uint16_t end_group_handle);
+
+/**
+ * @brief The following two functions are used to discover all characteristics within the specified service or handle range, and return those that match the given UUID. For each found characteristic, an le_characteristic_event_t with type set to GATT_EVENT_CHARACTERISTIC_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
  */
 uint8_t gatt_client_discover_characteristics_for_handle_range_by_uuid16(btstack_packet_handler_t callback,
                 const hci_con_handle_t con_handle, const uint16_t start_handle, const uint16_t end_handle, const uint16_t uuid16);
 uint8_t gatt_client_discover_characteristics_for_handle_range_by_uuid128(btstack_packet_handler_t callback,
                 const hci_con_handle_t con_handle, const uint16_t start_handle, const uint16_t end_handle,
                 const uint8_t * uuid128);
-uint8_t gatt_client_discover_characteristics_for_service_by_uuid16 (btstack_packet_handler_t callback,
-                const hci_con_handle_t con_handle, gatt_client_service_t  *service,
-                const uint16_t  uuid16);
-uint8_t gatt_client_discover_characteristics_for_service_by_uuid128(btstack_packet_handler_t callback,
-                const hci_con_handle_t con_handle, gatt_client_service_t  *service, const uint8_t  * uuid128);
 
 /**
  * @brief Discovers attribute handle and UUID of a characteristic descriptor within the specified characteristic. For each found descriptor, an le_characteristic_descriptor_event_t with type set to GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
@@ -87,7 +150,6 @@ uint8_t gatt_client_discover_characteristic_descriptors(btstack_packet_handler_t
 /**
  * @brief Reads the characteristic value using the characteristic's value handle. If the characteristic value is found, an le_characteristic_value_event_t with type set to GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
  */
-uint8_t gatt_client_read_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_characteristic_t  *characteristic);
 uint8_t gatt_client_read_value_of_characteristic_using_value_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle);
 
 /**
@@ -99,7 +161,6 @@ uint8_t gatt_client_read_value_of_characteristics_by_uuid128(btstack_packet_hand
 /**
  * @brief Reads the long characteristic value using the characteristic's value handle. The value will be returned in several blobs. For each blob, an le_characteristic_value_event_t with type set to GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT and updated value offset will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, mark the end of read.
  */
-uint8_t gatt_client_read_long_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_characteristic_t  *characteristic);
 uint8_t gatt_client_read_long_value_of_characteristic_using_value_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle);
 uint8_t gatt_client_read_long_value_of_characteristic_using_value_handle_with_offset(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t offset);
 
@@ -135,22 +196,18 @@ uint8_t gatt_client_reliable_write_long_value_of_characteristic(btstack_packet_h
 /**
  * @brief Reads the characteristic descriptor using its handle. If the characteristic descriptor is found, an le_characteristic_descriptor_event_t with type set to GATT_EVENT_CHARACTERISTIC_DESCRIPTOR_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
  */
-uint8_t gatt_client_read_characteristic_descriptor(btstack_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_characteristic_descriptor_t  * descriptor);
 uint8_t gatt_client_read_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle);
 
 /**
  * @brief Reads the long characteristic descriptor using its handle. It will be returned in several blobs. For each blob, an le_characteristic_descriptor_event_t with type set to GATT_EVENT_CHARACTERISTIC_DESCRIPTOR_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
  */
-uint8_t gatt_client_read_long_characteristic_descriptor(btstack_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_characteristic_descriptor_t  * descriptor);
 uint8_t gatt_client_read_long_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle);
 uint8_t gatt_client_read_long_characteristic_descriptor_using_descriptor_handle_with_offset(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle, uint16_t offset);
 
 /**
  * @brief Writes the characteristic descriptor using its handle. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of write. The write is successfully performed, if the event's status field is set to 0.
  */
-uint8_t gatt_client_write_characteristic_descriptor(btstack_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_characteristic_descriptor_t  * descriptor, uint16_t length, uint8_t  * data);
 uint8_t gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle, uint16_t length, uint8_t  * data);
-uint8_t gatt_client_write_long_characteristic_descriptor(btstack_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_characteristic_descriptor_t  * descriptor, uint16_t length, uint8_t  * data);
 uint8_t gatt_client_write_long_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle, uint16_t length, uint8_t  * data);
 uint8_t gatt_client_write_long_characteristic_descriptor_using_descriptor_handle_with_offset(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle, uint16_t offset, uint16_t length, uint8_t  * data);
 
@@ -174,12 +231,6 @@ uint8_t gatt_client_execute_write(btstack_packet_handler_t callback, hci_con_han
  * @brief -> gatt complete event
  */
 uint8_t gatt_client_cancel_write(btstack_packet_handler_t callback, hci_con_handle_t con_handle);
-void gatt_client_deserialize_service(const uint8_t *packet, int offset, gatt_client_service_t *service);
-void gatt_client_deserialize_characteristic(const uint8_t * packet, int offset, gatt_client_characteristic_t * characteristic);
-void gatt_client_deserialize_characteristic_descriptor(const uint8_t * packet, int offset, gatt_client_characteristic_descriptor_t * descriptor);
-
-int ble_gatts_find_svc(const ble_uuid_t *uuid, uint16_t *out_handle);
-int ble_gatts_find_chr(uint16_t srv_handle, const ble_uuid_t *uuid,uint16_t *out_att_chr);
 
 typedef struct gatt_client_notification {
     btstack_linked_item_t    item;
@@ -204,7 +255,7 @@ int gatt_client_is_ready(hci_con_handle_t con_handle);
  * @param con_handle
  * @param characteristic
  */
-void gatt_client_listen_for_characteristic_value_updates(gatt_client_notification_t * notification, btstack_packet_handler_t packet_handler, hci_con_handle_t con_handle, gatt_client_characteristic_t * characteristic);
+void gatt_client_listen_for_characteristic_value_updates(gatt_client_notification_t * notification, btstack_packet_handler_t packet_handler, hci_con_handle_t con_handle, uint16_t value_handle);
 
 /**
  * @brief Register for general events
@@ -215,125 +266,52 @@ void gatt_client_register_handler(btstack_packet_handler_t handler);
 // only used for testing
 void gatt_client_pts_suppress_mtu_exchange(void);
 
-#pragma pack(push, 1)
-
-typedef struct
-{
-    uint16_t handle;
-    uint8_t  value[0];          // length is given in `value_size`
-} gatt_event_value_packet_t;
-
-typedef struct
-{
-    uint16_t handle;
-    uint16_t offset;
-    uint8_t  value[0];          // length is given in `value_size`
-} gatt_event_long_value_packet_t;
-
-#pragma pack(pop)
+/**
+ * @brief Parse event GATT_EVENT_QUERY_COMPLETE
+ * @param event packet
+ * @return parsed result
+ */
+static __INLINE const gatt_event_query_complete_t * gatt_event_query_complete_parse(const uint8_t * event){
+    return decode_event_offset(event, gatt_event_query_complete_t, 2);
+}
 
 /**
- * @brief Get field handle from event GATT_EVENT_QUERY_COMPLETE
+ * @brief Parse event GATT_EVENT_SERVICE_QUERY_RESULT
+ * @param event packet
+ * @return parsed result
+ */
+static __INLINE const gatt_event_service_query_result_t * gatt_event_service_query_result_parse(const uint8_t * event){
+    return decode_event_offset(event, gatt_event_service_query_result_t, 2);
+}
+
+/**
+ * @brief Parse event GATT_EVENT_CHARACTERISTIC_QUERY_RESULT
  * @param event packet
  * @return handle
- * @note: btstack_type H
+ * @note: parsed result
  */
-static __INLINE hci_con_handle_t gatt_event_query_complete_get_handle(const uint8_t * event){
-    return little_endian_read_16(event, 2);
-}
-/**
- * @brief Get field status from event GATT_EVENT_QUERY_COMPLETE
- * @param event packet
- * @return status
- * @note: btstack_type 1
- */
-static __INLINE uint8_t gatt_event_query_complete_get_status(const uint8_t * event){
-    return *decode_event_offset(event, uint8_t, 4);
+static __INLINE const gatt_event_characteristic_query_result_t * gatt_event_characteristic_query_result_parse(const uint8_t * event){
+    return decode_event_offset(event, gatt_event_characteristic_query_result_t, 2);
 }
 
 /**
- * @brief Get field handle from event GATT_EVENT_SERVICE_QUERY_RESULT
+ * @brief Parse event GATT_EVENT_INCLUDED_SERVICE_QUERY_RESULT
  * @param event packet
  * @return handle
- * @note: btstack_type H
+ * @note: parsed result
  */
-static __INLINE hci_con_handle_t gatt_event_service_query_result_get_handle(const uint8_t * event){
-    return little_endian_read_16(event, 2);
-}
-/**
- * @brief Get field service from event GATT_EVENT_SERVICE_QUERY_RESULT
- * @param event packet
- * @param Pointer to storage for service
- * @note: btstack_type X
- */
-static __INLINE void gatt_event_service_query_result_get_service(const uint8_t * event, gatt_client_service_t * service){
-    gatt_client_deserialize_service(event, 4, service);
+static __INLINE const gatt_event_included_service_query_result_t * gatt_event_included_service_query_result_parse(const uint8_t * event){
+    return decode_event_offset(event, gatt_event_included_service_query_result_t, 2);
 }
 
 /**
- * @brief Get field handle from event GATT_EVENT_CHARACTERISTIC_QUERY_RESULT
+ * @brief Parse event GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT
  * @param event packet
  * @return handle
- * @note: btstack_type H
+ * @note: parsed result
  */
-static __INLINE hci_con_handle_t gatt_event_characteristic_query_result_get_handle(const uint8_t * event){
-    return little_endian_read_16(event, 2);
-}
-/**
- * @brief Get field characteristic from event GATT_EVENT_CHARACTERISTIC_QUERY_RESULT
- * @param event packet
- * @param Pointer to storage for characteristic
- * @note: btstack_type Y
- */
-static __INLINE void gatt_event_characteristic_query_result_get_characteristic(const uint8_t * event, gatt_client_characteristic_t * characteristic){
-    gatt_client_deserialize_characteristic(event, 4, characteristic);
-}
-
-/**
- * @brief Get field handle from event GATT_EVENT_INCLUDED_SERVICE_QUERY_RESULT
- * @param event packet
- * @return handle
- * @note: btstack_type H
- */
-static __INLINE hci_con_handle_t gatt_event_included_service_query_result_get_handle(const uint8_t * event){
-    return little_endian_read_16(event, 2);
-}
-/**
- * @brief Get field include_handle from event GATT_EVENT_INCLUDED_SERVICE_QUERY_RESULT
- * @param event packet
- * @return include_handle
- * @note: btstack_type 2
- */
-static __INLINE uint16_t gatt_event_included_service_query_result_get_include_handle(const uint8_t * event){
-    return little_endian_read_16(event, 4);
-}
-/**
- * @brief Get field service from event GATT_EVENT_INCLUDED_SERVICE_QUERY_RESULT
- * @param event packet
- * @param Pointer to storage for service
- * @note: btstack_type X
- */
-static __INLINE void gatt_event_included_service_query_result_get_service(const uint8_t * event, gatt_client_service_t * service){
-    gatt_client_deserialize_service(event, 6, service);
-}
-
-/**
- * @brief Get field handle from event GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT
- * @param event packet
- * @return handle
- * @note: btstack_type H
- */
-static __INLINE hci_con_handle_t gatt_event_all_characteristic_descriptors_query_result_get_handle(const uint8_t * event){
-    return little_endian_read_16(event, 2);
-}
-/**
- * @brief Get field characteristic_descriptor from event GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT
- * @param event packet
- * @param Pointer to storage for characteristic_descriptor
- * @note: btstack_type Z
- */
-static __INLINE void gatt_event_all_characteristic_descriptors_query_result_get_characteristic_descriptor(const uint8_t * event, gatt_client_characteristic_descriptor_t * characteristic_descriptor){
-    gatt_client_deserialize_characteristic_descriptor(event, 4, characteristic_descriptor);
+static __INLINE const gatt_event_all_characteristic_descriptors_query_result_t * gatt_event_all_characteristic_descriptors_query_result_parse(const uint8_t * event){
+    return decode_event_offset(event, gatt_event_all_characteristic_descriptors_query_result_t, 2);
 }
 
 /**
@@ -433,6 +411,9 @@ static __INLINE uint16_t gatt_event_mtu_get_mtu(const uint8_t * event){
     return little_endian_read_16(event, 4);
 }
 
+/**
+ * @}
+*/
 #ifdef __cplusplus
 }
 #endif

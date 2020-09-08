@@ -40,9 +40,17 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#define KB_KEY_1        GIO_GPIO_1
+extern uint8_t loopback_mode;
+
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 921600);
+    config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GENERAL);
+    GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
+    loopback_mode = GIO_ReadValue(KB_KEY_1) ? 0 : 1;
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -61,11 +69,18 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 0;
 }
 
+const uint32_t rf_data[] = {
+#include "../../central_throughput/src/rf_powerboost.dat"
+};
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
+
+    // RF power boost
+    platform_set_rf_init_data(rf_data);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
@@ -78,6 +93,10 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     setup_peripherals();
+
+    platform_printf("Press Key1 & Reset to enter LOOPBACK mode.\n");
+    platform_printf("Current mode: %s\n", loopback_mode ? "LOOPBACK" : "Throughput");
+
     return 0;
 }
 

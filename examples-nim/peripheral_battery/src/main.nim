@@ -6,7 +6,7 @@ proc cbHardFault(info: ptr hard_fault_info_t; _: pointer): uint32 {.noconv.} =
   platformPrintf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n" &
                   "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n" &
                   "R12: 0x%08X\n",
-                  info.pc, info.lr, info.psr, 
+                  info.pc, info.lr, info.psr,
                   info.r0, info.r1, info.r2, info.r3, info.r12)
   while true: discard
 
@@ -30,13 +30,13 @@ proc flockfile*(_: File) {.exportc noconv.}= discard
 
 proc funlockfile*(_: File) {.exportc noconv.}= discard
 
-proc configUart(freq: uint32; baud: uint32) =  
+proc configUart(freq: uint32; baud: uint32) =
   var config = UART_sStateStruct(
     UART_en           : 1,
     word_length       : UART_WLEN_8_BITS,
     parity            : UART_PARITY_NOT_CHECK,
     fifo_enable       : 1, two_stop_bits     : 0,
-    receive_en        : 1, transmit_en       : 1,    
+    receive_en        : 1, transmit_en       : 1,
     cts_en            : 0, rts_en            : 0,
     rxfifo_waterlevel : 1, txfifo_waterlevel : 1,
     ClockFrequency    : freq,
@@ -65,7 +65,7 @@ proc appMain*(): int {.exportc noconv.} =
   platformSetEvtCallback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, onDeepSleepWakeup, nil)
   platformSetEvtCallback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, queryDeepSleepAllowed, nil)
   platformSetEvtCallback(PLATFORM_CB_EVT_PUTC, cast[fPlatformEvtCB](cbPutc), nil)
-  
+
   setupPeripherals()
 
   return 0

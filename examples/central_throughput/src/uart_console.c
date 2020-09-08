@@ -27,8 +27,10 @@ static char buffer[20] = {0};
 static const char help[] =  "commands:\n"
                             "h/?         show this\n"
                             "start dir   start tpt test on dir\n"
-                            "stop  dir   stop tpt test on dir\n\n"
-                            "loopback start/stop"
+                            "stop  dir   stop tpt test on dir\n"
+                            "loopback    start/stop\n"
+                            "phy         1m/2m/s2/s8\n"
+                            "interval    x (in 1.25 ms)\n"
                             "note: dir = s->m or m->s\n";
 
 void cmd_help(const char *param)
@@ -76,6 +78,28 @@ void cmd_loopback(const char *param)
     loopback_test(strcmp(param, "start") == 0 ? 1 : 0);
 }
 
+void set_phy(int phy);
+
+void cmd_phy(const char *param)
+{
+    int phy;
+    if (strcmp(param, "1m") == 0) phy = 0;
+    else if (strcmp(param, "2m") == 0) phy = 1;
+    else if (strcmp(param, "s2") == 0) phy = 2;
+    else if (strcmp(param, "s8") == 0) phy = 3;
+    else return;
+    set_phy(phy);
+}
+
+void set_interval(int interval);
+
+void cmd_interval(const char *param)
+{
+    int interval = 0;
+    if (sscanf(param, "%d", &interval) != 1) return;
+    set_interval(interval);
+}
+
 static cmd_t cmds[] =
 {
     {
@@ -97,6 +121,14 @@ static cmd_t cmds[] =
     {
         .cmd = "loopback",
         .handler = cmd_loopback
+    },
+    {
+        .cmd = "phy",
+        .handler = cmd_phy
+    },
+    {
+        .cmd = "interval",
+        .handler = cmd_interval
     },
 };
 

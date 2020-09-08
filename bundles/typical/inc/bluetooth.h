@@ -1,14 +1,16 @@
-// ----------------------------------------------------------------------------
-// Copyright Message
-// ----------------------------------------------------------------------------
-//
-// INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018 by INGCHIPS
-//
-// All rights are reserved. Reproduction in whole or in part is
-// prohibited without the written consent of the copyright owner.
-//
-// ----------------------------------------------------------------------------
+/** @file
+*    @brief basic bluetooth macro definition
+*
+*  Copyright Message
+*
+*
+*  INGCHIPS confidential and proprietary.
+*  COPYRIGHT (c) 2018 by INGCHIPS
+*
+*  All rights are reserved. Reproduction in whole or in part is
+*  prohibited without the written consent of the copyright owner.
+*
+*/
 
 #ifndef __BLUETOOTH_H
 #define __BLUETOOTH_H
@@ -494,7 +496,10 @@ typedef enum {
 #define HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED         0X12
 #define HCI_SUBEVENT_LE_SCAN_REQUEST_RECEIVED              0X13
 #define HCI_SUBEVENT_LE_CHANNEL_SELECTION_ALGORITHM        0X14
-
+#define HCI_SUBEVENT_LE_CONNECTIONLESS_IQ_REPORT           0x15
+#define HCI_SUBEVENT_LE_CONNECTION_IQ_REPORT               0x16
+#define HCI_SUBEVENT_LE_CTE_REQ_FAILED                     0x17
+#define HCI_SUBEVENT_LE_PRD_ADV_SYNC_TRANSFER_RCVD         0x18
 
 // last used HCI_EVENT in 2.1 is 0x3d
 // last used HCI_EVENT in 4.1 is 0x57
@@ -606,7 +611,8 @@ typedef enum {
 #define ATT_ERROR_INSUFFICIENT_ENCRYPTION          0x0f
 #define ATT_ERROR_UNSUPPORTED_GROUP_TYPE           0x10
 #define ATT_ERROR_INSUFFICIENT_RESOURCES           0x11
-
+#define ATT_ERROR_DATABASE_OUT_OF_SYNC             0x12
+#define ATT_ERROR_VALUE_NOT_ALLOWED                0x13
 // MARK: Attribute Property Flags
 #define ATT_PROPERTY_BROADCAST           0x01
 #define ATT_PROPERTY_READ                0x02

@@ -10,4 +10,4 @@ This example demonstrates how to:
 Note: 
     * Use Key1/Key2/Key3 to input `1`, `2` and '3'.
     * Windows & Android: Works;
-    * MacOS: Not work.
+    * MacOS/iOS: Not work.

@@ -12,10 +12,19 @@
 #include "USBHID_Types.h"
 #include "USBKeyboard.h"
 
+#include "profile.h"
+
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
 #define HANDLE_APPEARANCE                                    5
 
+const sm_persistent_t sm_persistent =
+{
+    .er = {1, 2, 3},
+    .ir = {4, 5, 6},
+    .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
+    .identity_addr          = {0xC3, 0x82, 0x63, 0xc4, 0x35, 0x6a}
+};
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"
@@ -155,7 +164,6 @@ uint8_t *init_service(void);
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    const static bd_addr_t rand_addr = {1,2,3,1,2,3};    // TODO: random address generation
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
@@ -167,12 +175,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
 
-        gap_set_adv_set_random_addr(0, rand_addr);
+        gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
         gap_set_ext_adv_para(0, 
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
-                                BD_ADDR_TYPE_LE_PUBLIC,    // Own_Address_Type
+                                BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
                                 BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
                                 NULL,                      // Peer_Address      (ignore)
                                 ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
@@ -190,8 +198,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
-        case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle, init_service());
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle, init_service());
             break;
         default:
             break;
@@ -343,14 +351,6 @@ uint8_t *init_service()
 
     return att_db_util_get_address();
 }
-
-const sm_persistent_t sm_persistent =
-{
-    .er = {1, 2, 3},
-    .ir = {4, 5, 6},
-    .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
-    .identity_addr          = {0xC3, 2, 3, 4, 5, 6}
-};
 
 static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {

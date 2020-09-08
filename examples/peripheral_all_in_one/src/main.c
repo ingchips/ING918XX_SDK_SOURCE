@@ -77,116 +77,19 @@ void set_freq(uint16_t freq)
     set_freq0(PIN_BUZZER >> 1, freq);
 }
 
-#ifdef BOARD_V2
-
-#define PIN_SDI   GIO_GPIO_0
-
-// CPU clok: PLL_CLK_FREQ  48000000
-// 1 cycle = 21ns
-// 48 cycles per us
-// Tcycle = 2us --> ~100 cycles
-void delay(int cycles)
-{
-    int i;
-    for (i = 0; i < cycles; i++)
-    {
-        __nop();
-    }
-}
-
-void tlc59731_write(uint32_t value)
-{
-    int8_t i;
-
-    #define pulse()                     \
-        { GIO_WriteValue(PIN_SDI, 1);   \
-        delay(1);                       \
-        GIO_WriteValue(PIN_SDI, 0); } while (0)
-
-    for( i = 0; i < 32; i++ )
-    {
-        uint32_t bit = value & ( 0x80000000 >> i );
-        pulse();
-        
-        if (bit)
-        {
-            delay(10);
-            pulse();
-            delay(78);
-        }
-        else
-            delay(90);
-    }
-    delay(100 * 8);
-}
-
-void set_led_color(uint8_t r, uint8_t g, uint8_t b)
-{
-    uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
-    tlc59731_write(cmd);
-}
-
-void setup_led(void)
-{
-    PINCTRL_SetPadMux(PIN_SDI, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(PIN_SDI, 0);
-    GIO_SetDirection(PIN_SDI, GIO_DIR_OUTPUT);
-    GIO_WriteValue(PIN_SDI, 0);
-
-    set_led_color(50, 50, 50);
-}
-
-#else
-
-#define CHANNEL_RED     4
-#define CHANNEL_GREEN   0
-#define CHANNEL_BLUE    6
-
-#define PERA_THRESHOLD (OSC_CLK_FREQ / 1000)
-
-void set_led_color(uint8_t r, uint8_t g, uint8_t b)
-{
-#define TO_PERCENT(v) (((uint32_t)(v) * 100) >> 8)
-
-    PWM_SetHighThreshold(CHANNEL_RED   >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(r));
-    PWM_SetHighThreshold(CHANNEL_GREEN >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(g >> 1));  // GREEN & BLUE led seems too bright
-    PWM_SetHighThreshold(CHANNEL_BLUE  >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(b >> 1));
-}
-
-static void setup_channel(uint8_t channel_index)
-{
-    PWM_HaltCtrlEnable(channel_index, 1);
-    PWM_Enable(channel_index, 0);
-    PWM_SetPeraThreshold(channel_index, PERA_THRESHOLD);
-    PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
-    PWM_SetHighThreshold(channel_index, 0, PERA_THRESHOLD / 2);
-    PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
-    PWM_SetMask(channel_index, 0, 0);
-    PWM_Enable(channel_index, 1); 
-    PWM_HaltCtrlEnable(channel_index, 0);
-}
-
-void setup_led(void)
-{
-    PINCTRL_SetPadMux(CHANNEL_RED, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(CHANNEL_RED, 1);
-    PINCTRL_SetPadMux(CHANNEL_GREEN, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(CHANNEL_GREEN, 1);
-    PINCTRL_SetPadMux(CHANNEL_BLUE, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(CHANNEL_BLUE, 1);
-    setup_channel(CHANNEL_RED   >> 1);
-    setup_channel(CHANNEL_GREEN >> 1);
-    setup_channel(CHANNEL_BLUE  >> 1);
-    set_led_color(50, 50, 50);
-}
-
-#endif
+#include "../../peripheral_led/src/impl_led.c"
 
 struct bme280_t bme280_data;
 
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                              | (1 << SYSCTRL_ClkGate_APB_PWM)
+                              | (1 << SYSCTRL_ClkGate_AHB_SPI0)
+                              | (1 << SYSCTRL_ClkGate_APB_I2C0)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
 
     // for RGB
     setup_led();
@@ -306,12 +209,31 @@ static void pedometer_task(void *pdata)
 extern uint8_t rsc_notify_enable;
 extern uint8_t rsc_indicate_enable;
 
+extern void app_timer_callback(void);
+
+uint32_t timer2_isr(void *user_data)
+{
+    extern SemaphoreHandle_t sem_battery;
+    BaseType_t xHigherPriorityTaskWoke = pdFALSE;
+    TMR_IntClr(APB_TMR2);
+    app_timer_callback();
+    xSemaphoreGiveFromISR(sem_battery, &xHigherPriorityTaskWoke);
+    return 0;
+}
+
 uint32_t timer_isr(void *user_data)
 {
+    static int cnt = 0;
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
     TMR_IntClr(APB_TMR1);
     if (rsc_notify_enable | rsc_indicate_enable)
         xSemaphoreGiveFromISR(sem_pedometer, &xHigherPriorityTaskWoke);
+    cnt++;
+    if (cnt >= ACC_SAMPLING_RATE)
+    {
+        timer2_isr(user_data);
+        cnt = 0;
+    }
     return 0;
 }
 
@@ -349,6 +271,3 @@ int app_main()
                NULL);
     return 0;
 }
-
-
-

@@ -34,8 +34,8 @@ type
     IO_SOURCE_SPI0_CLK, IO_SOURCE_SPI0_DO, IO_SOURCE_SPI0_SSN, IO_SOURCE_UART0_TXD,
     IO_SOURCE_I2C0_SCL_O, IO_SOURCE_I2C0_SDO, IO_SOURCE_SPI1_CLK,
     IO_SOURCE_SPI1_DO, IO_SOURCE_SPI1_SSN, IO_SOURCE_UART1_TXD,
-    IO_SOURCE_I2C1_SCL_O, IO_SOURCE_I2C1_SDO, IO_SOURCE_UART0_RST,
-    IO_SOURCE_UART1_RST, IO_SOURCE_DEBUG_BUS
+    IO_SOURCE_I2C1_SCL_O, IO_SOURCE_I2C1_SDO, IO_SOURCE_UART0_RTS,
+    IO_SOURCE_UART1_RTS, IO_SOURCE_DEBUG_BUS
 
 
 const
@@ -78,7 +78,27 @@ proc PINCTRL_SelI2cSclIn*(port: i2c_port_t; io_pin_index: uint8) {.
 
 proc PINCTRL_DisableAllInputs*() {.importc: "PINCTRL_DisableAllInputs",
                                  header: "peripheral_pinctrl.h".}
-##  io_pin_index: 0~11
+type
+  gio_mode_t* {.size: sizeof(cint).} = enum
+    IO_MODE_GPIO, IO_MODE_PWM, IO_MODE_ANT_SEL
+
+
+## *
+##  @brief Set working mode of a pad which has been mux-ed as IO_SOURCE_GENERAL
+##
+##  @param io_pin_index      The io pad to be configured. Valid range:
+##                           For IO_MODE_GPIO    : [0..32]
+##                           For IO_MODE_PWM     : [0..11]
+##                           For IO_MODE_ANT_SEL : {7, 8, 10, 11, 16, 17, 18, 19}
+##  @param mode              The mode to be configured
+##  @param pwm_channel       0..6. (Ignored when mode != IO_MODE_PWM)
+##  @param pwm_neg           If use the negated PWM signal. (Ignored when mode != IO_MODE_PWM)
+##
+
+proc PINCTRL_SetGeneralPadMode*(io_pin_index: uint8; mode: gio_mode_t;
+                               pwm_channel: uint8; pwm_neg: uint8) {.
+    importc: "PINCTRL_SetGeneralPadMode", header: "peripheral_pinctrl.h".}
+##  io_pin_index: 0~11 (obsoleted, use PINCTRL_SetGeneralPadMode instead)
 
 proc PINCTRL_SetPadPwmSel*(io_pin_index: uint8; pwm1_gpio0: uint8) {.
     importc: "PINCTRL_SetPadPwmSel", header: "peripheral_pinctrl.h".}

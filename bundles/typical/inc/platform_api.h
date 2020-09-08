@@ -74,11 +74,15 @@ typedef enum
     PLATFORM_CB_EVT_ASSERTION,
     
     // when LLE is initializing
-    PLATFORM_CB_LLE_INIT,
+    PLATFORM_CB_EVT_LLE_INIT,
     
     // when allocation on heap fails (heap out of memory)
     // if this callback is not defined, CPU enters a dead loop 
-    PLATFORM_CB_HEAP_OOM,
+    PLATFORM_CB_EVT_HEAP_OOM,
+    
+    // platform callback for output or save a trace item
+    // NOTE: param (void *data) is casted from platform_trace_evt_t *
+    PLATFORM_CB_EVT_TRACE,
 
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;
@@ -102,6 +106,40 @@ typedef enum
 
 typedef uint32_t (*f_platform_evt_cb)(void *data, void *user_data);
 typedef uint32_t (*f_platform_irq_cb)(void *user_data);
+
+// A trace item is a combination of data1 and data2. Note:
+// 1. len1 or len2 might be 0, but not both
+// 2. if callback function finds that it can't output data of size len1 + len2, then, both data1
+//    & data2 should be discarded to avoid trace item corruption.
+typedef struct
+{
+    const void *data1;
+    const void *data2;
+    uint16_t len1;
+    uint16_t len2;
+} platform_evt_trace_t;
+
+// A trace item is has an ID
+typedef enum
+{
+    PLATFORM_TRACE_ID_EVENT                 = 0,
+    PLATFORM_TRACE_ID_HCI_CMD               = 1,
+    PLATFORM_TRACE_ID_HCI_EVENT             = 2,
+    PLATFORM_TRACE_ID_HCI_ACL               = 3,
+    PLATFORM_TRACE_ID_LLCP                  = 4,
+    PLATFORM_TRACE_ID_RAW                   = 5,
+    PLATFORM_TRACE_ID_EVENT_ERROR           = 6,
+} platform_trace_item_t;
+
+/**
+ ****************************************************************************************
+ * @brief Output a block of raw data to TRACE. ID is PLATFORM_TRACE_ID_RAW
+ *
+ * @param[in] buffer        data buffer
+ * @param[in] byte_len      length of data buffer in bytes
+ ****************************************************************************************
+ */
+void platform_trace_raw(const void *buffer, const int byte_len);
 
 /**
  ****************************************************************************************
@@ -176,11 +214,64 @@ void platform_reset(void);
  */
 void platform_switch_app(const uint32_t app_addr);
 
+/**
+ ****************************************************************************************
+ * @brief Write value to the persistent register, of which the value is kept even
+ *        in power saving mode.
+ *
+ * @param[in] value              a FOUR bit value
+ ****************************************************************************************
+ */
+void platform_write_persistent_reg(const uint8_t value);
+
+/**
+ ****************************************************************************************
+ * @brief Read value from the persistent register, of which the value is kept even
+ *        in power saving mode.
+ *
+ * @return                       value that has been written. (Initial value: 0)
+ ****************************************************************************************
+ */
+uint8_t platform_read_persistent_reg(void);
+
+/**
+ ****************************************************************************************
+ * @brief Shutdown the whole system, and power on again after a duration
+ *        specified by duration_cycles.
+ *        Optionally, a portion of SYS memory can be retentioned during shutdown.
+ *
+ * @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
+ *                                  Mininum value: 825 cycles (about 25.18ms)
+ * @param[in] p_retention_data      Pointer to the start of data to be retentioned
+ * @param[in] data_size             Size of the data to be retentioned
+ ****************************************************************************************
+ */
+void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
+
 typedef enum
 {
-    PLATFORM_CFG_LOG_HCI,       // default: disabled
-    PLATFORM_CFG_POWER_SAVING   // default: disabled
+    PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_TRACE_MASK,    // flag is bitmap of platform_trace_item_t. default: 0
+    PLATFORM_CFG_RC32K_EN,      // Enable/Disable RC 32k clock. Default: Enable
+    PLATFORM_CFG_OSC32K_EN,     // Enable/Disable 32k crystal oscillator. Default: Enable
+    PLATFORM_CFG_32K_CLK,       // 32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+                                // Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED and *run*.
+                                //       For OSC32K, wait until status of OSC32K is OK;
+                                //       For RC32K, wait 100us after enabled.
+                                // Note: Wait another 100us before disabling the unused clock.
+    PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accurary in ppm.
+    PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2    
+    PLATFORM_CFG_PS_DBG_0,      // debugging parameter
+    PLATFORM_CFG_PS_DBG_1,      // debugging parameter
+    PLATFORM_CFG_CTE_IQ_DBG,    // debugging parameter
 } platform_cfg_item_t;
+
+typedef enum
+{    
+    PLATFORM_32K_OSC,           // external 32k crystal oscillator
+    PLATFORM_32K_RC             // internal RC 32k clock
+} platform_32k_clk_src_t;
 
 #define PLATFORM_CFG_ENABLE     1
 #define PLATFORM_CFG_DISABLE    0
@@ -190,25 +281,35 @@ typedef enum
  * @brief platform configurations.
  *
  * @param[in] item          Configuration item
- * @param[in] flag          PLATFORM_CFG_ENABLE for enable, PLATFORM_CFG_DISABLE for disable
+ * @param[in] flag          see platform_cfg_item_t.
  ****************************************************************************************
  */
-void platform_config(const platform_cfg_item_t item, const uint8_t flag);
+void platform_config(const platform_cfg_item_t item, const uint32_t flag);
+
+typedef enum
+{
+    PLATFORM_INFO_OSC32K_STATUS,        // Read status of 32k crystal oscillator. (0: not OK; Non-0: OK)
+    PLATFORM_INFO_32K_CALI_VALUE,       // Read current 32k clock calibaration result.
+} platform_info_item_t;
 
 /**
  ****************************************************************************************
- * @brief Shutdown the whole system, and power on again after a duration
- *        specified by duration_ms.
- *        Optionally, a portion of SYS memory can be retentioned during shutdown.
- *        Note that: this function will NOT return except that shutdown procedure fails
- *                   to initiate.
+ * @brief read platform information.
  *
- * @param[in] duration_ms           Duration before power on again (in ms)
- * @param[in] p_retention_data      Pointer to the start of data to be retentioned
- * @param[in] data_size             Size of the data to be retentioned
+ * @param[in] item          Information item
+ * @return                  Information.
  ****************************************************************************************
  */
-void platform_shutdown(const uint32_t duration_ms, const void *p_retention_data, const uint32_t data_size);
+uint32_t platform_read_info(const platform_info_item_t item);
+
+/**
+ ****************************************************************************************
+ * @brief Do 32k clock calibration and get the calibration valie.
+ *
+ * @return                  Calibration value.
+ ****************************************************************************************
+ */
+uint32_t platform_calibrate_32k(void);
 
 /**
  ****************************************************************************************
@@ -218,9 +319,27 @@ void platform_shutdown(const uint32_t duration_ms, const void *p_retention_data,
  * @param[in]  len              byte number of random data
  ****************************************************************************************
  */
-// void platform_hrng(uint8_t *bytes, const uint32_t len);
-// WARNING: ^^^ this API is not available in this release
+void platform_hrng(uint8_t *bytes, const uint32_t len);
 
+/**
+ ****************************************************************************************
+ * @brief generate a pseudo random integer by internal PRNG whose seed initialized by HRNG
+ *        at startup.
+ *
+ * @return                     a pseudo random integer in range of 0 to RAND_MAX
+ ****************************************************************************************
+ */
+int platform_rand(void);
+
+/**
+ ****************************************************************************************
+ * @brief Read the internal timer counting from initialization.
+ *        Note: This timer restarts after shutdown, while RTC timer does not.
+ *
+ * @return                     internal timer counting at 1us.
+ ****************************************************************************************
+ */
+int64_t platform_get_us_time(void);
 
 /**
  ****************************************************************************************
@@ -235,7 +354,6 @@ void platform_printf(const char *format, ...);
 // NOTE: for debug only
 void sysSetPublicDeviceAddr(const unsigned char *addr);
 
-#ifdef OPTIONAL_RF_CLK
 // set rf source
 // 0: use external crystal
 // 1: use internal clock loopback
@@ -244,7 +362,15 @@ void platform_set_rf_clk_source(const uint8_t source);
 void platform_set_rf_init_data(const uint32_t *rf_init_data);
 
 void platform_set_rf_power_mapping(const int16_t *rf_power_mapping);
-#endif
+
+/**
+ ****************************************************************************************
+ * @brief Patch RF initialization data
+ *
+ * @param[in]  data             patch data
+ ****************************************************************************************
+ */
+void platform_patch_rf_init_data(const void *data);
 
 typedef enum coded_scheme_e
 {
@@ -288,6 +414,18 @@ void ll_set_initiating_coded_scheme(const coded_scheme_t scheme);
  ****************************************************************************************
  */
 void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, const uint16_t max_ce_len);
+
+/**
+ ****************************************************************************************
+ * @brief Set default antenna ID
+ *
+ *          Note: This ID restored to default value (i.e. 0) when LLE is resetted.
+ *
+ * @param[in]  ant_id           ID of default antenna (default: 0)
+ *
+ ****************************************************************************************
+ */
+void ll_set_def_antenna(uint8_t ant_id);
 
 #ifdef __cplusplus
 }

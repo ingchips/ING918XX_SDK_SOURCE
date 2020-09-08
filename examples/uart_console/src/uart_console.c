@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "platform_api.h"
+#include "bluetooth.h"
 
 typedef void (*f_cmd_handler)(const char *param);
 
@@ -32,7 +33,10 @@ static const char help[] =  "commands:\n"
                             "name   name                set dev name\n"
                             "addr   01:02:03:04:05:06   set dev address\n"
                             "start                      start advertising\n"
-                            "stop                       stop advertising\n";
+                            "stop                       stop advertising\n"
+                            "pat    0/1                 peer address type\n"   
+                            "conn   xx:xx:xx:xx:xx:xx   connect to dev and discover services\n"
+                            "cancel                     cancel create connection\n";
 
 void cmd_help(const char *param)
 {
@@ -101,19 +105,51 @@ void cmd_name(const char *param)
 }
 
 extern uint8_t rand_addr[];
+extern uint8_t slave_addr[];
+extern bd_addr_type_t slave_addr_type;
+
 void update_addr(void);
+void conn_to_slave(void);
+
+int parse_addr(uint8_t *output, const char *param)
+{
+    int addr[6];
+    int i;
+    if (sscanf(param, "%2x:%2x:%2x:%2x:%2x:%2x", &addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]) != 6)
+    {
+        tx_data(error, strlen(error) + 1);
+        return -1;
+    }
+    for (i = 0; i < 6; i++) output[i] = addr[i];
+    return 0;
+}
 
 void cmd_addr(const char *param)
 {
-    int addr[6];
-    if (sscanf(param, "%2x:%2x:%2x:%2x:%2x:%2x", &addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]) != 6)
+    if (0 == parse_addr(rand_addr, param))
+        update_addr();
+}
+
+void cmd_conn(const char *param)
+{
+    if (0 == parse_addr(slave_addr, param))
+        conn_to_slave();
+}
+
+void cmd_conn_cancel(const char *param)
+{
+    cancel_create_conn();
+}
+
+void cmd_pat(const char *param)
+{
+    int t = 0;
+    if (sscanf(param, "%d", &t) != 1)
     {
-        int i;
-        for (i = 0; i < 6; i++) rand_addr[i] = addr[i];
         tx_data(error, strlen(error) + 1);
         return;
     }
-    update_addr();
+    slave_addr_type = (bd_addr_type_t)t;
 }
 
 extern void start_adv(void);
@@ -175,6 +211,18 @@ static cmd_t cmds[] =
         .cmd = "stop",
         .handler = cmd_stop
     },
+    {
+        .cmd = "conn",
+        .handler = cmd_conn
+    },
+    {
+        .cmd = "pat",
+        .handler = cmd_pat
+    },
+    {
+        .cmd = "cancel",
+        .handler = cmd_conn_cancel
+    },
 };
 
 void handle_command(char *cmd_line)
@@ -191,7 +239,7 @@ void handle_command(char *cmd_line)
             break;
     }
     if (i >= sizeof(cmds) / sizeof(cmds[0]))
-        goto show_help;   
+        goto show_help;
     
     cmds[i].handler(param);
     return;
@@ -204,7 +252,7 @@ show_help:
 typedef struct
 {
     uint16_t size;
-    char buf[512];
+    char buf[712];
 } str_buf_t;
 
 str_buf_t input = {0};

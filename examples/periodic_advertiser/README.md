@@ -2,6 +2,6 @@
 
 This example demonstrates how to:
 
-* Send periodic advertising PDUs;
+* Send periodic advertising PDUs with CTE;
 * Update advertising data periodically.
 

@@ -1,8 +1,8 @@
 #include <stdio.h>
 
 #include "syscfg.h"
-#include "glue.h"
-#include "main.h"
+//#include "glue.h"
+//#include "main.h"
 
 #include "mesh_api.h"
 

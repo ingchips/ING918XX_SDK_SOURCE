@@ -67,6 +67,7 @@ static const scan_phy_config_t configs[2] =
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
+    const static bd_addr_t rand_addr1 = {1,2,3,4,5,6};
     uint8_t event = hci_event_packet_get_type(packet);
     uint16_t length;
     ibeacon_adv_t *p_ibeacon;
@@ -79,8 +80,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
+        
+        gap_set_random_device_address(rand_addr1);
 
-        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_PUBLIC, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
+        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
                               sizeof(configs) / sizeof(configs[0]),
                               configs);
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning

@@ -1,3 +1,4 @@
+#define OPTIONAL_RF_CLK
 #include "profile.h"
 #include "ingsoc.h"
 #include "platform_api.h"
@@ -49,6 +50,18 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_I2C0)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
+
+#ifndef SIMULATION
+    PINCTRL_SetPadMux(6, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(14, IO_SOURCE_I2C0_SCL_O);
+    PINCTRL_SetPadMux(15, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SelI2cSclIn(I2C_PORT_0, 14);
+    printf("init");
+    i2c_init(I2C_PORT_0);
+#endif
 
     // timer 0 can be used as watchdog, so we use timer 1.
     // setup timer 1: 50Hz
@@ -103,12 +116,6 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
-    // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
-    
-#ifndef SIMULATION
-    printf("init");
-    i2c_init(I2C_PORT_0);
-#endif
     
     xTaskCreate(pedometer_task,
                "b",

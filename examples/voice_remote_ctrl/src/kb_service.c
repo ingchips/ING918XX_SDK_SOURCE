@@ -35,10 +35,32 @@ enum
     HID_CTRL_EXIT_SUSPEND
 };
 
+#if (APP_TYPE == APP_ANDROID)
+
+my_kb_report_t report = 
+{ 
+    .k_map = 0
+};
+
+#elif (APP_TYPE == APP_CUSTOMER)
+
 my_kb_report_t report = 
 { 
     .flags = 1
 };
+
+#elif (APP_TYPE == APP_MIBOXS)
+
+my_kb_report_t report = 
+{ 
+    .flags = 1
+};
+
+#else
+
+my_kb_report_t report;
+
+#endif
 
 void kb_send_report(void)
 {
@@ -49,6 +71,20 @@ void kb_send_report(void)
     if (kb_notify_enable)
     {
         att_server_notify(handle_send, att_handle_kb_notify, (uint8_t*)&report, sizeof(report));
+    }
+}
+
+__weak void set_led_state(const uint8_t state)
+{
+    const static char names[][7] =
+    {
+        "NUM", "CAPS", "SCROLL"
+    };
+    int i;
+    for (i = 0; i < sizeof(names) / sizeof(names[0]); i++)
+    {
+        platform_printf(names[i]); 
+        platform_printf(state & (1 << i) ? ": ON\n" : ": OFF\n");
     }
 }
 
@@ -70,12 +106,21 @@ int kb_att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handl
         }
         return 0;
     }
+    else if (att_handle == att_handle_boot_kb_input_report + 1)
+    {
+        return 0;
+    }
     else if (att_handle == att_handle_hid_ctrl_point)        
     {
         if (*buffer == HID_CTRL_SUSPEND)
             suspended = 1;
         else if (*buffer == HID_CTRL_EXIT_SUSPEND)
             suspended = 0;
+        return 0;
+    }
+    else if ((att_handle == att_handle_boot_kb_output_report) || (att_handle == att_handle_report))
+    {
+        set_led_state(*buffer);
         return 0;
     }
     else
@@ -95,6 +140,7 @@ uint16_t kb_att_read_callback(hci_con_handle_t connection_handle, uint16_t att_h
         return 0xffff;
 }
 
+#if (APP_TYPE == APP_CUSTOMER)
 const static uint8_t KB_REPORT_MAP[] = {
 
     USAGE_PAGE(1),      0x01,         // Generic Desktop
@@ -112,6 +158,38 @@ const static uint8_t KB_REPORT_MAP[] = {
         INPUT(1),           0x00,         //  Input (Data, Array) Key array(3 bytes)
     END_COLLECTION(0),
 };
+#else
+const static uint8_t KB_REPORT_MAP[] = {
+
+        0x05, 0x0C,                     // Usage Page (Consumer)
+        0x09, 0x01,                     // Usage (Consumer Control)
+        0xA1, 0x01,                     // Collection (Application)
+        0x85, 0x01,                     //     Report Id (1)
+        0x15, 0x00,                     //     Logical minimum (0)
+        0x25, 0x01,                     //     Logical maximum (1)
+        0x75, 0x01,                     //     Report Size (1)
+        0x95, 0x01,                     //     Report Count (1)
+
+        0x09, 0xCD,                     //     Usage (Play/Pause)
+        0x81, 0x02,                     //     Input (Data,Value,Relative,Bit Field)
+        0x09, 0xEA,                     //     Usage (Volume Down)
+        0x81, 0x02,                     //     Input (Data,Value,Relative,Bit Field)
+        0x09, 0xE9,                     //     Usage (Volume Up)
+        0x81, 0x02,                     //     Input (Data,Value,Relative,Bit Field)
+        0x0A, 0x21, 0x02,               //     Usage (AC Search)
+        0x81, 0x02,                     //     Input (Data,Value,Relative,Bit Field)
+    
+        0x0A, 0x25, 0x02,               //     Usage (AC Forward)
+        0x81, 0x02,                     //     Input (Data,Value,Relative,Bit Field)
+        0x0A, 0x24, 0x02,               //     Usage (AC Back)
+        0x81, 0x02,                     //     Input (Data,Value,Relative,Bit Field)
+        0x09, 0xB5,                     //     Usage (Scan Next Track)
+        0x81, 0x02,                     //     Input (Data,Value,Relative,Bit Field)
+        0x09, 0xB6,                     //     Usage (Scan Previous Track)
+        0x81, 0x02,                     //     Input (Data,Value,Relative,Bit Field)
+    END_COLLECTION(0),
+};
+#endif
 
 #pragma pack (push, 1)
 

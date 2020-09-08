@@ -43,6 +43,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
     
     // setup timer 1: 1sec timer
 	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 2);
@@ -88,7 +89,7 @@ int app_main()
     
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
     
-    platform_set_evt_callback(PLATFORM_CB_LLE_INIT, cfg_rf, NULL);
+    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, cfg_rf, NULL);
     return 0;
 }
 

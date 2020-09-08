@@ -294,8 +294,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536910768</StartAddress>
-                <Size>25680</Size>
+                <StartAddress>536903448</StartAddress>
+                <Size>33000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -409,7 +409,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\typical\ING9188xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -450,6 +450,11 @@
               <FileName>peripheral_timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pinctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
             </File>
           </Files>
         </Group>

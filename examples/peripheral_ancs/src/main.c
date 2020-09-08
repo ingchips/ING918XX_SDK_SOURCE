@@ -10,12 +10,13 @@
 #include "eflash.h"
 #include <string.h>
 
+
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
                     "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
                     "R12: 0x%08X\n",
-                    info->pc, info->lr, info->psr, 
+                    info->pc, info->lr, info->psr,
                     info->r0, info->r1, info->r2, info->r3, info->r12);
     for (;;);
 }
@@ -75,7 +76,9 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+
     // setup GPIOs for keys
     PINCTRL_DisableAllInputs();
     PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GENERAL);
@@ -95,10 +98,10 @@ void setup_peripherals(void)
 extern void key_pressed(uint32_t keys_mask);
 
 uint32_t gpio_isr(void *user_data)
-{   
+{
     uint32_t current = ~GIO_ReadAll();
     uint32_t mask = 0;
-    
+
     // report which keys are pressed
     if (current & (1 << KB_KEY_1))
         mask |= 1;
@@ -113,7 +116,7 @@ uint32_t gpio_isr(void *user_data)
         NVIC_SystemReset();
         while (1) ;
     }
-    
+
     if (mask)
       key_pressed(mask);
 
@@ -153,7 +156,7 @@ int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
+    // platform_set_rf_clk_source(1);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
@@ -161,18 +164,20 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
+    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
 
     setup_peripherals();
     kv_init(db_write_to_flash, db_read_from_flash);
-    
+
     printf("Usage:\n"
            "Key 1: Accept call\n"
            "Key 2: Reject call\n"
            "Key 3: Clear bonding\n");
-    
+           
+    platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
+
     return 0;
 }
 

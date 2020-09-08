@@ -1,3 +1,4 @@
+#define OPTIONAL_RF_CLK
 #include "profile.h"
 #include "ingsoc.h"
 #include "platform_api.h"
@@ -56,6 +57,12 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                              | (1 << SYSCTRL_ClkGate_APB_PWM)
+                              | (1 << SYSCTRL_ClkGate_APB_I2C0)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR2));
 
     // setup timer 1: 50Hz
 	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / ACC_SAMPLING_RATE);

@@ -294,8 +294,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536910768</StartAddress>
-                <Size>25680</Size>
+                <StartAddress>536903448</StartAddress>
+                <Size>33000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -319,9 +319,18 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
+            <uC99>0</uC99>
+            <useXO>0</useXO>
+            <v6Lang>1</v6Lang>
+            <v6LangP>1</v6LangP>
+            <vShortEn>1</vShortEn>
+            <vShortWch>1</vShortWch>
+            <v6Lto>0</v6Lto>
+            <v6WtE>0</v6WtE>
+            <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,CTE</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -390,7 +399,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\typical\ING9188xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -409,6 +418,11 @@
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_timer.c</FilePath>
             </File>
           </Files>
         </Group>

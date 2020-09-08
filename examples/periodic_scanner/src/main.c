@@ -54,7 +54,15 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 115200);
+    config_uart(OSC_CLK_FREQ, 921600);
+    
+    PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(8, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(10, IO_SOURCE_GENERAL);
+    
+    PINCTRL_SetGeneralPadMode(7, IO_MODE_ANT_SEL, 0, 0);
+    PINCTRL_SetGeneralPadMode(8, IO_MODE_ANT_SEL, 0, 0);
+    PINCTRL_SetGeneralPadMode(10, IO_MODE_ANT_SEL, 0, 0);
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -62,6 +70,14 @@ uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
     (void)(dummy);
     (void)(user_data);
     setup_peripherals();
+    return 0;
+}
+
+uint32_t cb_lle_init(char *c, void *dummy)
+{
+    volatile uint32_t *reg = (volatile uint32_t *)0x40090200;
+    ll_set_def_antenna(0);
+    *reg = (*reg & ~(0x1f << 15)) | (0 << 15);
     return 0;
 }
 
@@ -77,9 +93,9 @@ int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
+    // platform_set_rf_clk_source(1);
     
-    //platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
+    // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
@@ -88,8 +104,10 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
+    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, (f_platform_evt_cb)cb_lle_init, NULL);
 
     setup_peripherals();
+
     return 0;
 }
 

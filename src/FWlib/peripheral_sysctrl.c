@@ -10,6 +10,16 @@ void SYSCTRL_ClearClkGate(SYSCTRL_ClkGateItem item)
 	AHB_SYSCTRL->SYSCTRL_ClkGate |= (1 << item);
 }
 
+void SYSCTRL_SetClkGateMulti(uint32_t items)
+{
+    AHB_SYSCTRL->SYSCTRL_ClkGate &= ~items;
+}
+
+void SYSCTRL_ClearClkGateMulti(uint32_t items)
+{
+    AHB_SYSCTRL->SYSCTRL_ClkGate |= items;
+}
+
 void SYSCTRL_WriteClkGate(uint32_t data)
 {
 	AHB_SYSCTRL->SYSCTRL_ClkGate = data;

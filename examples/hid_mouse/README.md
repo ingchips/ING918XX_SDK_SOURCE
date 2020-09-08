@@ -8,4 +8,4 @@ This example demonstrates how to:
 
 Note: 
     * Windows & Android: Works;
-    * MacOS: Not work.
+    * MacOS/iOS: Not work.

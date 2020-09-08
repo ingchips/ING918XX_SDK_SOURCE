@@ -46,9 +46,11 @@ type                          ##  platform callback for putc (for logging)
                                ##  NOTE: param (void *data) is casted from assertion_info_t *
                                ##  if this callback is not defined, CPU enters a dead loop
     PLATFORM_CB_EVT_ASSERTION, ##  when LLE is initializing
-    PLATFORM_CB_LLE_INIT, ##  when allocation on heap fails (heap out of memory)
-                         ##  if this callback is not defined, CPU enters a dead loop
-    PLATFORM_CB_HEAP_OOM, PLATFORM_CB_EVT_MAX
+    PLATFORM_CB_EVT_LLE_INIT, ##  when allocation on heap fails (heap out of memory)
+                             ##  if this callback is not defined, CPU enters a dead loop
+    PLATFORM_CB_EVT_HEAP_OOM, ##  platform callback for output or save a trace item
+                             ##  NOTE: param (void *data) is casted from platform_trace_evt_t *
+    PLATFORM_CB_EVT_TRACE, PLATFORM_CB_EVT_MAX
   platform_irq_callback_type_t* {.size: sizeof(cint).} = enum
     PLATFORM_CB_IRQ_RTC, PLATFORM_CB_IRQ_TIMER0, PLATFORM_CB_IRQ_TIMER1,
     PLATFORM_CB_IRQ_TIMER2, PLATFORM_CB_IRQ_GPIO, PLATFORM_CB_IRQ_SPI0,
@@ -57,6 +59,29 @@ type                          ##  platform callback for putc (for logging)
   f_platform_evt_cb* = proc (data: pointer; user_data: pointer): uint32 {.noconv.}
   f_platform_irq_cb* = proc (user_data: pointer): uint32 {.noconv.}
 
+
+
+##  A trace item is a combination of data1 and data2. Note:
+##  1. len1 or len2 might be 0, but not both
+##  2. if callback function finds that it can't output data of size len1 + len2, then, both data1
+##     & data2 should be discarded to avoid trace item corruption.
+
+type
+  platform_evt_trace_t* {.importc: "platform_evt_trace_t",
+                         header: "platform_api.h", bycopy.} = object
+    data1* {.importc: "data1".}: pointer
+    data2* {.importc: "data2".}: pointer
+    len1* {.importc: "len1".}: uint16
+    len2* {.importc: "len2".}: uint16
+
+
+##  A trace item is has an ID
+
+type
+  platform_trace_item_t* {.size: sizeof(cint).} = enum
+    PLATFORM_TRACE_ID_EVENT = 0, PLATFORM_TRACE_ID_HCI_CMD = 1,
+    PLATFORM_TRACE_ID_HCI_EVENT = 2, PLATFORM_TRACE_ID_HCI_ACL = 3,
+    PLATFORM_TRACE_ID_LLCP = 4
 
 
 ## *
@@ -141,10 +166,38 @@ proc platform_reset*() {.importc: "platform_reset", header: "platform_api.h".}
 
 proc platform_switch_app*(app_addr: uint32) {.importc: "platform_switch_app",
     header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Write value to the persistent register, of which the value is kept even
+##         in power saving mode.
+##
+##  @param[in] value              a FOUR bit value
+## ***************************************************************************************
+##
+
+proc platform_write_persistent_reg*(value: uint8) {.
+    importc: "platform_write_persistent_reg", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Read value from the persistent register, of which the value is kept even
+##         in power saving mode.
+##
+##  @return                       value that has been written. (Initial value: 0)
+## ***************************************************************************************
+##
+
+proc platform_read_persistent_reg*(): uint8 {.
+    importc: "platform_read_persistent_reg", header: "platform_api.h".}
 type
   platform_cfg_item_t* {.size: sizeof(cint).} = enum
-    PLATFORM_CFG_LOG_HCI,     ##  default: disabled
-    PLATFORM_CFG_POWER_SAVING ##  default: disabled
+    PLATFORM_CFG_LOG_HCI,     ##  flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_POWER_SAVING, ##  flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_TRACE_MASK,  ##  flag is bitmap of platform_trace_item_t. default: 0
+    PLATFORM_CFG_32K_CLK      ##  32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+  platform_32k_clk_src_t* {.size: sizeof(cint).} = enum
+    PLATFORM_32K_OSC,         ##  external 32k crystal oscillator
+    PLATFORM_32K_RC           ##  internal RC 32k clock
+
 
 
 const
@@ -156,29 +209,26 @@ const
 ##  @brief platform configurations.
 ##
 ##  @param[in] item          Configuration item
-##  @param[in] flag          PLATFORM_CFG_ENABLE for enable, PLATFORM_CFG_DISABLE for disable
+##  @param[in] flag          see platform_cfg_item_t.
 ## ***************************************************************************************
 ##
 
-proc platform_config*(item: platform_cfg_item_t; flag: uint8) {.
+proc platform_config*(item: platform_cfg_item_t; flag: uint32) {.
     importc: "platform_config", header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief Shutdown the whole system, and power on again after a duration
-##         specified by duration_ms.
+##         specified by duration_cycles.
 ##         Optionally, a portion of SYS memory can be retentioned during shutdown.
-##         Note that: this function will NOT return except that shutdown procedure fails
-##                    to initiate.
 ##
-##  @param[in] duration_ms           Duration before power on again (in ms)
+##  @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
+##                                   Mininum value: 825 cycles (about 25.18ms)
 ##  @param[in] p_retention_data      Pointer to the start of data to be retentioned
 ##  @param[in] data_size             Size of the data to be retentioned
 ## ***************************************************************************************
 ##
-
-proc platform_shutdown*(duration_ms: uint32; p_retention_data: pointer;
-                       data_size: uint32) {.importc: "platform_shutdown",
-    header: "platform_api.h".}
+##  void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
+##  WARNING: ^^^ this API is not available in this release
 ## *
 ## ***************************************************************************************
 ##  @brief generate random bytes by using true hardware random-number generator
@@ -187,8 +237,9 @@ proc platform_shutdown*(duration_ms: uint32; p_retention_data: pointer;
 ##  @param[in]  len              byte number of random data
 ## ***************************************************************************************
 ##
-##  void platform_hrng(uint8_t *bytes, const uint32_t len);
-##  WARNING: ^^^ this API is not available in this release
+
+proc platform_hrng*(bytes: ptr uint8; len: uint32) {.importc: "platform_hrng",
+    header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief the printf function
@@ -204,16 +255,26 @@ proc platform_printf*(format: cstring) {.varargs, importc: "platform_printf",
 
 proc sysSetPublicDeviceAddr*(`addr`: ptr cuchar) {.
     importc: "sysSetPublicDeviceAddr", header: "platform_api.h".}
-when defined(OPTIONAL_RF_CLK):
-  ##  set rf source
-  ##  0: use external crystal
-  ##  1: use internal clock loopback
-  proc platform_set_rf_clk_source*(source: uint8) {.
-      importc: "platform_set_rf_clk_source", header: "platform_api.h".}
-  proc platform_set_rf_init_data*(rf_init_data: ptr uint32) {.
-      importc: "platform_set_rf_init_data", header: "platform_api.h".}
-  proc platform_set_rf_power_mapping*(rf_power_mapping: ptr int16) {.
-      importc: "platform_set_rf_power_mapping", header: "platform_api.h".}
+##  set rf source
+##  0: use external crystal
+##  1: use internal clock loopback
+
+proc platform_set_rf_clk_source*(source: uint8) {.
+    importc: "platform_set_rf_clk_source", header: "platform_api.h".}
+proc platform_set_rf_init_data*(rf_init_data: ptr uint32) {.
+    importc: "platform_set_rf_init_data", header: "platform_api.h".}
+proc platform_set_rf_power_mapping*(rf_power_mapping: ptr int16) {.
+    importc: "platform_set_rf_power_mapping", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Patch RF initialization data
+##
+##  @param[in]  data             patch data
+## ***************************************************************************************
+##
+
+proc platform_patch_rf_init_data*(data: pointer) {.
+    importc: "platform_patch_rf_init_data", header: "platform_api.h".}
 type
   coded_scheme_t* {.size: sizeof(cint).} = enum
     BLE_CODED_S8, BLE_CODED_S2
@@ -259,3 +320,16 @@ proc ll_set_initiating_coded_scheme*(scheme: coded_scheme_t) {.
 
 proc ll_hint_on_ce_len*(conn_handle: uint16; min_ce_len: uint16; max_ce_len: uint16) {.
     importc: "ll_hint_on_ce_len", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Set default antenna ID
+##
+##           Note: This ID restored to default value (i.e. 0) when LLE is resetted.
+##
+##  @param[in]  ant_id           ID of default antenna (default: 0)
+##
+## ***************************************************************************************
+##
+
+proc ll_set_def_antenna*(ant_id: uint8) {.importc: "ll_set_def_antenna",
+                                       header: "platform_api.h".}

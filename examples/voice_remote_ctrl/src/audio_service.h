@@ -3,11 +3,22 @@
 
 #include <stdint.h>
 
-#ifdef DEV_BOARD
+#include "app_cfg.h"
+
+#define OVER_SAMPLING        2                      // must be 2^n
+#define OVER_SAMPLING_MASK   (OVER_SAMPLING - 1)
+
+#if (APP_TYPE == APP_ING)
 // 4KB per sec
 #define VOICE_BUF_BLOCK_SIZE  150   // this is indicated in GATT voice information
 #define VOICE_BUF_BLOCK_NUM   (4100 / VOICE_BUF_BLOCK_SIZE)     // total buffer: 4.1KB
-#else
+#elif (APP_TYPE == APP_ANDROID)
+#define VOICE_BUF_BLOCK_SIZE  (128 + 6)
+#define VOICE_BUF_BLOCK_NUM   (4000 / VOICE_BUF_BLOCK_SIZE)
+#elif (APP_TYPE == APP_MIBOXS)
+#define VOICE_BUF_BLOCK_SIZE  60
+#define VOICE_BUF_BLOCK_NUM   (4000 / VOICE_BUF_BLOCK_SIZE)
+#elif (APP_TYPE == APP_CUSTOMER)
 // 4KB per sec
 #define VOICE_BUF_BLOCK_SIZE  128   // this is indicated in GATT voice information
 #define VOICE_BUF_BLOCK_NUM   (4000 / VOICE_BUF_BLOCK_SIZE)     // total buffer: 4KB

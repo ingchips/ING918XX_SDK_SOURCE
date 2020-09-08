@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536910768</StartAddress>
-                <Size>25680</Size>
+                <StartAddress>536903448</StartAddress>
+                <Size>33000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -346,7 +346,7 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,CTE</Define>
               <Undefine/>
               <IncludePath>..\ibeacon_scanner\src;../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -422,7 +422,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\typical\ING9188xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -441,6 +441,11 @@
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pinctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
             </File>
           </Files>
         </Group>

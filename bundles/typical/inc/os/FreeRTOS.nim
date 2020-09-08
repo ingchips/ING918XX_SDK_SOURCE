@@ -22,8 +22,8 @@ const
 
 
 const
-  pdFALSE* = (cast[UBaseType_t](0))
-  pdTRUE* = (cast[UBaseType_t](1))
+  pdFALSE* = (cast[BaseType_t](0))
+  pdTRUE* = (cast[BaseType_t](1))
   pdPASS* = (pdTRUE)
   pdFAIL* = (pdFALSE)
   errQUEUE_EMPTY* = (cast[BaseType_t](0))
@@ -32,7 +32,7 @@ const
   portMAX_DELAY* = 0xffffffffu32
 
 template pdMS_TO_TICKS*(xTimeInMs: int32): TickType_t =
-    cast[TickType_t]((cast[uint32](xTimeInMs) * cast[uint32](configTICK_RATE_HZ)) div 1000)
+    cast[TickType_t]((xTimeInMs* cast[int32](configTICK_RATE_HZ)) div 1000)
 
 type
   List_t* {.importc: "List_t", header: "FreeRTOSNim.h", bycopy.} = object
@@ -90,13 +90,14 @@ type
 ##
 
 type
-  QueueDefinition* {.importc: "QueueDefinition", header: "FreeRTOSNim.h", bycopy.} = object
+  QueueDefinition* {.importc: "struct QueueDefinition", header: "FreeRTOSNim.h", bycopy.} = object
 
 
 ##  Using old naming convention so as not to break kernel aware debuggers.
 
 type
   QueueHandle_t* = ptr QueueDefinition
+  SemaphoreHandle_t* = QueueHandle_t
 
 ## *
 ##  Type by which queue sets are referenced.  For example, a call to
@@ -165,9 +166,19 @@ type
 proc xQueueGenericSend*(xQueue: QueueHandle_t; pvItemToQueue: pointer;
                        xTicksToWait: TickType_t; xCopyPosition: BaseType_t): BaseType_t {.
     importc: "xQueueGenericSend", header: "FreeRTOSNim.h".}
+proc xQueuePeek*(xQueue: QueueHandle_t; pvBuffer: pointer; xTicksToWait: TickType_t): BaseType_t {.
+    importc: "xQueuePeek", header: "FreeRTOSNim.h".}
+proc xQueuePeekFromISR*(xQueue: QueueHandle_t; pvBuffer: pointer): BaseType_t {.
+    importc: "xQueuePeekFromISR", header: "FreeRTOSNim.h".}
 proc xQueueReceive*(xQueue: QueueHandle_t; pvBuffer: pointer;
                    xTicksToWait: TickType_t): BaseType_t {.
     importc: "xQueueReceive", header: "FreeRTOSNim.h".}
+proc uxQueueMessagesWaiting*(xQueue: QueueHandle_t): UBaseType_t {.
+    importc: "uxQueueMessagesWaiting", header: "FreeRTOSNim.h".}
+proc uxQueueSpacesAvailable*(xQueue: QueueHandle_t): UBaseType_t {.
+    importc: "uxQueueSpacesAvailable", header: "FreeRTOSNim.h".}
+proc vQueueDelete*(xQueue: QueueHandle_t) {.importc: "vQueueDelete",
+    header: "FreeRTOSNim.h".}
 proc xQueueGenericSendFromISR*(xQueue: QueueHandle_t; pvItemToQueue: pointer;
                               pxHigherPriorityTaskWoken: ptr BaseType_t;
                               xCopyPosition: BaseType_t): BaseType_t {.
@@ -175,8 +186,31 @@ proc xQueueGenericSendFromISR*(xQueue: QueueHandle_t; pvItemToQueue: pointer;
 proc xQueueGiveFromISR*(xQueue: QueueHandle_t;
                        pxHigherPriorityTaskWoken: ptr BaseType_t): BaseType_t {.
     importc: "xQueueGiveFromISR", header: "FreeRTOSNim.h".}
+proc xQueueReceiveFromISR*(xQueue: QueueHandle_t; pvBuffer: pointer;
+                          pxHigherPriorityTaskWoken: ptr BaseType_t): BaseType_t {.
+    importc: "xQueueReceiveFromISR", header: "FreeRTOSNim.h".}
+proc xQueueIsQueueEmptyFromISR*(xQueue: QueueHandle_t): BaseType_t {.
+    importc: "xQueueIsQueueEmptyFromISR", header: "FreeRTOSNim.h".}
+proc xQueueIsQueueFullFromISR*(xQueue: QueueHandle_t): BaseType_t {.
+    importc: "xQueueIsQueueFullFromISR", header: "FreeRTOSNim.h".}
+proc uxQueueMessagesWaitingFromISR*(xQueue: QueueHandle_t): UBaseType_t {.
+    importc: "uxQueueMessagesWaitingFromISR", header: "FreeRTOSNim.h".}
+proc xQueueCreateMutex*(ucQueueType: uint8): QueueHandle_t {.
+    importc: "xQueueCreateMutex", header: "FreeRTOSNim.h".}
+proc xQueueCreateMutexStatic*(ucQueueType: uint8; pxStaticQueue: ptr StaticQueue_t): QueueHandle_t {.
+    importc: "xQueueCreateMutexStatic", header: "FreeRTOSNim.h".}
+proc xQueueCreateCountingSemaphore*(uxMaxCount: UBaseType_t;
+                                   uxInitialCount: UBaseType_t): QueueHandle_t {.
+    importc: "xQueueCreateCountingSemaphore", header: "FreeRTOSNim.h".}
+proc xQueueCreateCountingSemaphoreStatic*(uxMaxCount: UBaseType_t;
+    uxInitialCount: UBaseType_t; pxStaticQueue: ptr StaticQueue_t): QueueHandle_t {.
+    importc: "xQueueCreateCountingSemaphoreStatic", header: "FreeRTOSNim.h".}
 proc xQueueSemaphoreTake*(xQueue: QueueHandle_t; xTicksToWait: TickType_t): BaseType_t {.
     importc: "xQueueSemaphoreTake", header: "FreeRTOSNim.h".}
+proc xQueueTakeMutexRecursive*(xMutex: QueueHandle_t; xTicksToWait: TickType_t): BaseType_t {.
+    importc: "xQueueTakeMutexRecursive", header: "FreeRTOSNim.h".}
+proc xQueueGiveMutexRecursive*(xMutex: QueueHandle_t): BaseType_t {.
+    importc: "xQueueGiveMutexRecursive", header: "FreeRTOSNim.h".}
 proc xQueueGenericCreate*(uxQueueLength: UBaseType_t; uxItemSize: UBaseType_t;
                          ucQueueType: uint8): QueueHandle_t {.
     importc: "xQueueGenericCreate", header: "FreeRTOSNim.h".}
@@ -185,6 +219,18 @@ proc xQueueGenericCreateStatic*(uxQueueLength: UBaseType_t;
                                pucQueueStorage: ptr uint8;
                                pxStaticQueue: ptr StaticQueue_t; ucQueueType: uint8): QueueHandle_t {.
     importc: "xQueueGenericCreateStatic", header: "FreeRTOSNim.h".}
+proc xQueueCreateSet*(uxEventQueueLength: UBaseType_t): QueueSetHandle_t {.
+    importc: "xQueueCreateSet", header: "FreeRTOSNim.h".}
+proc xQueueAddToSet*(xQueueOrSemaphore: QueueSetMemberHandle_t;
+                    xQueueSet: QueueSetHandle_t): BaseType_t {.
+    importc: "xQueueAddToSet", header: "FreeRTOSNim.h".}
+proc xQueueRemoveFromSet*(xQueueOrSemaphore: QueueSetMemberHandle_t;
+                         xQueueSet: QueueSetHandle_t): BaseType_t {.
+    importc: "xQueueRemoveFromSet", header: "FreeRTOSNim.h".}
+proc xQueueSelectFromSet*(xQueueSet: QueueSetHandle_t; xTicksToWait: TickType_t): QueueSetMemberHandle_t {.
+    importc: "xQueueSelectFromSet", header: "FreeRTOSNim.h".}
+proc xQueueSelectFromSetFromISR*(xQueueSet: QueueSetHandle_t): QueueSetMemberHandle_t {.
+    importc: "xQueueSelectFromSetFromISR", header: "FreeRTOSNim.h".}
 proc vQueueWaitForMessageRestricted*(xQueue: QueueHandle_t;
                                     xTicksToWait: TickType_t;
                                     xWaitIndefinitely: BaseType_t) {.
@@ -222,6 +268,8 @@ proc vTaskPlaceOnEventListRestricted*(pxEventList: ptr List_t;
 proc xTaskRemoveFromEventList*(pxEventList: ptr List_t): BaseType_t {.
     importc: "xTaskRemoveFromEventList", header: "FreeRTOSNim.h".}
 proc vTaskSwitchContext*() {.importc: "vTaskSwitchContext", header: "FreeRTOSNim.h".}
+proc xTaskGetCurrentTaskHandle*(): TaskHandle_t {.
+    importc: "xTaskGetCurrentTaskHandle", header: "FreeRTOSNim.h".}
 proc xTaskCheckForTimeOut*(pxTimeOut: ptr TimeOut_t; pxTicksToWait: ptr TickType_t): BaseType_t {.
     importc: "xTaskCheckForTimeOut", header: "FreeRTOSNim.h".}
 proc vTaskMissedYield*() {.importc: "vTaskMissedYield", header: "FreeRTOSNim.h".}
@@ -234,10 +282,6 @@ proc xTaskPriorityDisinherit*(pxMutexHolder: TaskHandle_t): BaseType_t {.
 proc vTaskPriorityDisinheritAfterTimeout*(pxMutexHolder: TaskHandle_t;
     uxHighestPriorityWaitingTask: UBaseType_t) {.
     importc: "vTaskPriorityDisinheritAfterTimeout", header: "FreeRTOSNim.h".}
-proc vTaskStepTick*(xTicksToJump: TickType_t) {.importc: "vTaskStepTick",
-    header: "FreeRTOSNim.h".}
-proc eTaskConfirmSleepModeStatus*(): eSleepModeStatus {.
-    importc: "eTaskConfirmSleepModeStatus", header: "FreeRTOSNim.h".}
 proc pvTaskIncrementMutexHeldCount*(): TaskHandle_t {.
     importc: "pvTaskIncrementMutexHeldCount", header: "FreeRTOSNim.h".}
 proc vTaskInternalSetTimeOutState*(pxTimeOut: ptr TimeOut_t) {.
@@ -265,18 +309,59 @@ proc xTimerGenericCommand*(xTimer: TimerHandle_t; xCommandID: BaseType_t;
 proc pxPortInitialiseStack*(pxTopOfStack: ptr StackType_t; pxCode: TaskFunction_t;
                            pvParameters: pointer): ptr StackType_t {.
     importc: "pxPortInitialiseStack", header: "FreeRTOSNim.h".}
+const
+  tmrCOMMAND_EXECUTE_CALLBACK_FROM_ISR* = ((BaseType_t) -2)
+  tmrCOMMAND_EXECUTE_CALLBACK* = ((BaseType_t) -1)
+  tmrCOMMAND_START_DONT_TRACE* = (cast[BaseType_t](0))
+  tmrCOMMAND_START* = (cast[BaseType_t](1))
+  tmrCOMMAND_RESET* = (cast[BaseType_t](2))
+  tmrCOMMAND_STOP* = (cast[BaseType_t](3))
+  tmrCOMMAND_CHANGE_PERIOD* = (cast[BaseType_t](4))
+  tmrCOMMAND_DELETE* = (cast[BaseType_t](5))
+  tmrFIRST_FROM_ISR_COMMAND* = (cast[BaseType_t](6))
+  tmrCOMMAND_START_FROM_ISR* = (cast[BaseType_t](6))
+  tmrCOMMAND_RESET_FROM_ISR* = (cast[BaseType_t](7))
+  tmrCOMMAND_STOP_FROM_ISR* = (cast[BaseType_t](8))
+  tmrCOMMAND_CHANGE_PERIOD_FROM_ISR* = (cast[BaseType_t](9))
+
+template xTimerStart*(xTimer, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_START, (xTaskGetTickCount()), nil,
+                       (xTicksToWait))
+
+template xTimerStop*(xTimer, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_STOP, 0, nil, (xTicksToWait))
+
+template xTimerChangePeriod*(xTimer, xNewPeriod, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_CHANGE_PERIOD, (xNewPeriod), nil,
+                       (xTicksToWait))
+
+template xTimerDelete*(xTimer, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_DELETE, 0, nil, (xTicksToWait))
+
+template xTimerReset*(xTimer, xTicksToWait: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_RESET, (xTaskGetTickCount()), nil,
+                       (xTicksToWait))
+
+template xTimerStartFromISR*(xTimer, pxHigherPriorityTaskWoken: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_START_FROM_ISR,
+                       (xTaskGetTickCountFromISR()), (pxHigherPriorityTaskWoken),
+                       0)
+
+template xTimerStopFromISR*(xTimer, pxHigherPriorityTaskWoken: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_STOP_FROM_ISR, 0,
+                       (pxHigherPriorityTaskWoken), 0)
+
+template xTimerChangePeriodFromISR*(xTimer, xNewPeriod, pxHigherPriorityTaskWoken: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_CHANGE_PERIOD_FROM_ISR, (xNewPeriod),
+                       (pxHigherPriorityTaskWoken), 0)
+
+template xTimerResetFromISR*(xTimer, pxHigherPriorityTaskWoken: untyped): untyped =
+  xTimerGenericCommand((xTimer), tmrCOMMAND_RESET_FROM_ISR,
+                       (xTaskGetTickCountFromISR()), (pxHigherPriorityTaskWoken),
+                       0)
+
 proc pvPortMalloc*(xSize: csize): pointer {.importc: "pvPortMalloc",
                                         header: "FreeRTOSNim.h".}
 proc vPortFree*(pv: pointer) {.importc: "vPortFree", header: "FreeRTOSNim.h".}
 proc xPortStartScheduler*(): BaseType_t {.importc: "xPortStartScheduler",
                                        header: "FreeRTOSNim.h".}
-
-const tmrCOMMAND_START = cast[BaseType_t](1)
-const tmrCOMMAND_RESET = cast[BaseType_t](2)
-const tmrCOMMAND_STOP = cast[BaseType_t](3)
-
-template xTimerReset*(xTimer: TimerHandle_t, xTicksToWait: uint32): BaseType_t =
-  xTimerGenericCommand(xTimer, tmrCOMMAND_RESET, xTaskGetTickCount(), nil, xTicksToWait)
-
-template xTimerStop*(xTimer: TimerHandle_t, xTicksToWait: uint32): BaseType_t =
-  xTimerGenericCommand(xTimer, tmrCOMMAND_STOP, 0, nil, xTicksToWait)

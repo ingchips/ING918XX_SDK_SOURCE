@@ -4,6 +4,7 @@
 #include "platform_api.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "trace.h"
 #include <stdio.h>
 #include "uart_console.h"
 
@@ -18,6 +19,9 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 }
 
 #define PRINT_PORT    APB_UART0
+#define TRACE_PORT    APB_UART1
+
+trace_uart_t trace_ctx = {.port = TRACE_PORT};
 
 uint32_t cb_putc(char *c, void *dummy)
 {
@@ -51,14 +55,22 @@ void config_uart(uint32_t freq, uint32_t baud)
     config.BaudRate          = baud;
 
     apUART_Initialize(PRINT_PORT, &config, 1 << bsUART_RECEIVE_INTENAB);
+    config.BaudRate          = 921600;
+    apUART_Initialize(TRACE_PORT, &config, 1 << bsUART_TRANSMIT_INTENAB);
 }
 
 void setup_peripherals(void)
-{
+{    
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1) | (1 << SYSCTRL_ClkGate_APB_UART1) | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
     config_uart(OSC_CLK_FREQ, 115200);
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ);
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
 	TMR_IntEnable(APB_TMR1);
+    
+    // uart1: 4, 5
+    PINCTRL_SetPadMux(5, IO_SOURCE_GENERAL);
+    PINCTRL_SelUartRxdIn(UART_PORT_1, 5);
+    PINCTRL_SetPadMux(4, IO_SOURCE_UART1_TXD);
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -77,6 +89,13 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 0;
 }
 
+uint32_t cb_lle_init(void *dummy, void *user_data)
+{
+    (void)(dummy);
+    (void)(user_data);
+    return 0;
+}
+
 uint32_t uart_isr(void *user_data)
 {
     uint32_t status;
@@ -92,7 +111,7 @@ uint32_t uart_isr(void *user_data)
         // rx int
         if (status & (1 << bsUART_RECEIVE_INTENAB))
         {
-            while (apUART_Check_RXFIFO_EMPRY(APB_UART0) != 1)
+            while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
             {
                 char c = APB_UART0->DataRead;
                 console_rx_data(&c, 1);
@@ -105,11 +124,18 @@ uint32_t uart_isr(void *user_data)
 uint32_t timer_isr(void *user_data);
 void cmd_help(const char *param);
 
+const uint32_t rf_data[] = {
+#include "rf_powerboost.dat"
+};
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
+
+    // RF power boost
+    //platform_set_rf_init_data(rf_data);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
@@ -118,13 +144,21 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
+    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, cb_lle_init, NULL);
 
     setup_peripherals();
-    
+
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
     
     cmd_help(NULL);
+    
+    trace_uart_init(&trace_ctx);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_uart, &trace_ctx);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_UART1, (f_platform_irq_cb)trace_uart_isr, &trace_ctx);
+    trace_uart_isr(&trace_ctx);
+    
+    // platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
 
     return 0;
 }

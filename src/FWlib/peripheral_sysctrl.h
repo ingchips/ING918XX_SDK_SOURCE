@@ -9,28 +9,18 @@ extern "C" {	/* allow C++ to use these headers */
 
 typedef enum
 {
-    SYSCTRL_ClkGate_AHB_DMA                 =  0,
-    SYSCTRL_ClkGate_AHB_LLE                 =  1,
-    SYSCTRL_ClkGate_AHB_IOC                 =  2,
-    SYSCTRL_ClkGate_AHB_WDT                 =  3,
     SYSCTRL_ClkGate_APB_I2C0                =  4,
     SYSCTRL_ClkGate_APB_SPI1                =  5,
     SYSCTRL_ClkGate_APB_TMR0                =  6,
     SYSCTRL_ClkGate_APB_TMR1                =  7,
     SYSCTRL_ClkGate_APB_TMR2                =  8,
-    SYSCTRL_ClkGate_APB_SCI0                =  9,
-    SYSCTRL_ClkGate_APB_SCI1                = 10,
-    SYSCTRL_ClkGate_APB_ISOL                = 11,
-    SYSCTRL_ClkGate_RtcClkDect              = 12,
-    SYSCTRL_ClkGate_APB_GPIOA               = 13,
-    SYSCTRL_ClkGate_APB_GPIOB               = 14,
-    SYSCTRL_ClkGate_APB_GPIOC               = 15,
+    SYSCTRL_ClkGate_APB_UART0               =  9,
+    SYSCTRL_ClkGate_APB_UART1               = 10,
+    SYSCTRL_ClkGate_APB_GPIO                = 13,
     SYSCTRL_ClkGate_APB_PWM                 = 16,
     SYSCTRL_ClkGate_AHB_SPI0                = 17,
     SYSCTRL_ClkGate_APB_PinCtrl             = 18,
-    SYSCTRL_ClkGate_APB_I2C1                = 19,
-    SYSCTRL_ClkGate_APB_TRNG                = 20,
-    SYSCTRL_ClkGate_SysClkOut               = 21
+    SYSCTRL_ClkGate_APB_I2C1                = 19
 } SYSCTRL_ClkGateItem;
 
 /**
@@ -44,6 +34,18 @@ void SYSCTRL_SetClkGate(SYSCTRL_ClkGateItem item);
  * \param item      the component to clear clock gating
  */
 void SYSCTRL_ClearClkGate(SYSCTRL_ClkGateItem item);
+
+/**
+ * \brief Set clock gating state of several components
+ * \param items      the bitmap of components to enable clock gating
+ */
+void SYSCTRL_SetClkGateMulti(uint32_t items);
+
+/**
+ * \brief Clear clock gating state of several components
+ * \param items      the bitmap of components to clear clock gating
+ */
+void SYSCTRL_ClearClkGateMulti(uint32_t items);
 
 /**
  * \brief Set clock gating state of all components

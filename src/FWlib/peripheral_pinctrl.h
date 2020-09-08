@@ -54,8 +54,8 @@ typedef enum
     IO_SOURCE_UART1_TXD,
     IO_SOURCE_I2C1_SCL_O,
     IO_SOURCE_I2C1_SDO,
-    IO_SOURCE_UART0_RST,
-    IO_SOURCE_UART1_RST,
+    IO_SOURCE_UART0_RTS,
+    IO_SOURCE_UART1_RTS,
     IO_SOURCE_DEBUG_BUS
 } io_source_t;
 
@@ -97,7 +97,27 @@ void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index);
 // Disable all input io_pins for UART/SPI/I2C
 void PINCTRL_DisableAllInputs(void);
 
-// io_pin_index: 0~11
+typedef enum
+{
+    IO_MODE_GPIO,
+    IO_MODE_PWM,
+    IO_MODE_ANT_SEL
+} gio_mode_t;
+
+/**
+ * @brief Set working mode of a pad which has been mux-ed as IO_SOURCE_GENERAL
+ *
+ * @param io_pin_index      The io pad to be configured. Valid range:
+ *                          For IO_MODE_GPIO    : [0..32]
+ *                          For IO_MODE_PWM     : [0..11]
+ *                          For IO_MODE_ANT_SEL : {7, 8, 10, 11, 16, 17, 18, 19}
+ * @param mode              The mode to be configured
+ * @param pwm_channel       0..6. (Ignored when mode != IO_MODE_PWM)
+ * @param pwm_neg           If use the negated PWM signal. (Ignored when mode != IO_MODE_PWM)
+ */
+void PINCTRL_SetGeneralPadMode(const uint8_t io_pin_index, const gio_mode_t mode, const uint8_t pwm_channel, const uint8_t pwm_neg);
+
+// io_pin_index: 0~11 (obsoleted, use PINCTRL_SetGeneralPadMode instead)
 void PINCTRL_SetPadPwmSel(const uint8_t io_pin_index, const uint8_t pwm1_gpio0);
 
 #ifdef __cplusplus
