@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536910664</StartAddress>
-                <Size>25784</Size>
+                <StartAddress>536903448</StartAddress>
+                <Size>33000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -348,7 +348,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine/>
-              <IncludePath>../../bundles/mesh/inc;../../bundles/mesh/inc/os;../../bundles/mesh/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src;../../src/Mesh</IncludePath>
+              <IncludePath>../../bundles/mesh/inc;../../bundles/mesh/inc/os;../../bundles/mesh/inc/os/portable/RVDS/ARM_CM3;../../src/Mesh;../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

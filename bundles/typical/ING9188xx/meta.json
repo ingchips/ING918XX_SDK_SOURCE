@@ -108,6 +108,7 @@
         "hci_add_event_handler", 
         "hci_register_acl_packet_handler", 
         "hci_power_control", 
+        "platform_trace_raw", 
         "platform_set_evt_callback", 
         "platform_set_irq_callback", 
         "platform_get_version", 
@@ -117,9 +118,13 @@
         "platform_switch_app", 
         "platform_write_persistent_reg", 
         "platform_read_persistent_reg", 
-        "platform_config", 
         "platform_shutdown", 
+        "platform_config", 
+        "platform_read_info", 
+        "platform_calibrate_32k", 
         "platform_hrng", 
+        "platform_rand", 
+        "platform_get_us_time", 
         "platform_printf", 
         "sysSetPublicDeviceAddr", 
         "platform_set_rf_clk_source", 
@@ -206,6 +211,9 @@
         "kv_value_modified", 
         "kv_commit", 
         "kv_visit", 
+        "btstack_memory_pool_create", 
+        "btstack_memory_pool_get", 
+        "btstack_memory_pool_free", 
         "xQueueGenericSend", 
         "xQueuePeek", 
         "xQueuePeekFromISR", 
@@ -242,6 +250,7 @@
         "vTaskSuspendAll", 
         "xTaskResumeAll", 
         "xTaskGetTickCount", 
+        "xTaskGetTickCountFromISR", 
         "xTaskIncrementTick", 
         "vTaskPlaceOnEventList", 
         "vTaskPlaceOnEventListRestricted", 
@@ -261,27 +270,32 @@
         "xTimerCreate", 
         "xTimerCreateStatic", 
         "pvTimerGetTimerID", 
+        "xTimerGetExpiryTime", 
         "xTimerCreateTimerTask", 
         "xTimerGenericCommand", 
         "pxPortInitialiseStack", 
         "pvPortMalloc", 
         "vPortFree", 
-        "xPortStartScheduler"
+        "xPortStartScheduler", 
+        "vPortEnterCritical", 
+        "vPortExitCritical", 
+        "vPortSuppressTicksAndSleep", 
+        "vPortValidateInterruptPriority"
     ], 
     "app": {
         "base": 155648
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 30488
+        "size": 32536
     }, 
     "rom": {
         "base": 16384, 
-        "size": 134316
+        "size": 135904
     }, 
     "version": [
         1, 
         0, 
-        1
+        8
     ]
 }

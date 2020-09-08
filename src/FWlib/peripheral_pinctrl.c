@@ -87,12 +87,12 @@ void PINCTRL_SetGeneralPadMode(const uint8_t io_pin_index, const gio_mode_t mode
             }
 
             *reg &= ~(0xf << shift);
-            *reg |= (pwm_channel * 2 + pwm_neg);
+            *reg |= (pwm_channel * 2 + pwm_neg) << shift;
         }
         break;
     case IO_MODE_ANT_SEL:
         index = PINCTRL_AntSelIndex(io_pin_index);
-        if (index < 0) break;
+        if (index >= 0)
         {
             volatile uint32_t * reg = (volatile uint32_t *)(SYSCTRL_BASE + OFFSET_ANT_SEL);
             *reg |= 1 << index;

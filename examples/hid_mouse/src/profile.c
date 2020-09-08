@@ -182,7 +182,7 @@ const sm_persistent_t sm_persistent =
     .er = {1, 2, 3},
     .ir = {4, 5, 6},
     .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
-    .identity_addr          = {0xC3, 2, 3, 4, 5, 6}
+    .identity_addr          = {0xC3, 0x32, 0x33, 0x4e, 0x5d, 0x7c}
 };
 
 uint8_t *init_service(void);
@@ -198,9 +198,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        sm_private_random_address_generation_set_mode(GAP_RANDOM_ADDRESS_RESOLVABLE);
-        //gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
-        //setup_adv();
+        //sm_private_random_address_generation_set_mode(GAP_RANDOM_ADDRESS_RESOLVABLE);
+        gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
+        setup_adv();
         break;
 
     case HCI_EVENT_LE_META:

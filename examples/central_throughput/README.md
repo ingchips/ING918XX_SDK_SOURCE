@@ -13,4 +13,4 @@ This example demonstrates how to:
 Note:
     1. This example works with `peripheral_throughput`;
     1. To use command `loopback`, `peripheral_throughput` should be
-       build with `LOOPBACK` defined.
+       running in `LOOPBACK` mode.

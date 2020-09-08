@@ -20,7 +20,9 @@
 #define EFLASH_BASE        ((uint32_t)0x00004000UL)
 #define EFLASH_SIZE        ((uint32_t)0x00080000UL)		//512k byte
 
-#include "eflash.c"
+#define EFLASH_END         (EFLASH_BASE + EFLASH_SIZE)
+
+#include "eflash.inc"
 
 uint32_t ClkFreq; //0:16M 1:24M
 
@@ -86,7 +88,16 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
             else
                 ota_ctrl[0] = OTA_STATUS_OK;
             EflashProgramEnable();
-            EraseEFlashPage(((ota_addr - EFLASH_BASE) >> 13) & 0x3f);
+            if (ota_addr >= EFLASH_END)
+            {
+                *(volatile uint32_t *)(0xc40a0) = 0x4;
+                EraseEFlashPage(ota_addr >= EFLASH_END + PAGE_SIZE ? 1 : 0);
+                *(volatile uint32_t *)(0xc40a0) = 0x0;
+            }
+            else
+            {
+                EraseEFlashPage(((ota_addr - EFLASH_BASE) >> 13) & 0x3f);
+            }
             ota_downloading = 1;
             ota_start_addr = ota_addr;
             break;
@@ -94,8 +105,20 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
             EflashProgramDisable();
             ota_downloading = 0;
             ota_addr = 0;
-            if (crc((uint8_t *)ota_start_addr, *(uint16_t *)(buffer + 1)) != *(uint16_t *)(buffer + 3))
-                ota_ctrl[0] = OTA_STATUS_ERROR;
+            {
+                uint16_t len = *(uint16_t *)(buffer + 1);
+                uint16_t crc_value = *(uint16_t *)(buffer + 3);
+                if (ota_addr - ota_start_addr < len)
+                {
+                    ota_ctrl[0] = OTA_STATUS_WAIT_DATA;
+                    break;
+                }
+                    
+                if (crc((uint8_t *)ota_start_addr, len) != crc_value)
+                    ota_ctrl[0] = OTA_STATUS_ERROR;
+                else
+                    ota_ctrl[0] = OTA_STATUS_OK;
+            }
             break;
         case OTA_CTRL_READ_PAGE:
             if (ota_downloading)

@@ -275,7 +275,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 prd_adv_data_offset = 0;
 #ifdef CTE
                 {
-                    static const uint8_t ant_ids[] = {1, 2};                
+                    static const uint8_t ant_ids[] = {0, 1};                
                     gap_set_connectionless_iq_sampling_enable(established->handle,
                                                           1,
                                                           2,

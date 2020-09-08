@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536901400</StartAddress>
-                <Size>35048</Size>
+                <StartAddress>536903448</StartAddress>
+                <Size>33000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -431,6 +431,16 @@
               <FileName>peripheral_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pinctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_sysctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_sysctrl.c</FilePath>
             </File>
           </Files>
         </Group>

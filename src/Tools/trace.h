@@ -31,44 +31,68 @@ typedef struct
     SemaphoreHandle_t tx_sem; 
     SemaphoreHandle_t mutex;
     UART_TypeDef     *port;
-} trace_info_t;
+} trace_uart_t;
+
+typedef struct
+{
+    SemaphoreHandle_t mutex;
+} trace_rtt_t;
 
 /**
  ****************************************************************************************
  * @brief Initialize UART trace
  *
- * @param[in] trace_info_t  trace context
+ * @param[in] trace_uart_t  trace context
  ****************************************************************************************
  */
-void trace_init(trace_info_t *ctx);
+void trace_uart_init(trace_uart_t *ctx);
+
+/**
+ ****************************************************************************************
+ * @brief Initialize RTT trace
+ *
+ * @param[in] trace_rtt_t  trace context
+ ****************************************************************************************
+ */
+void trace_rtt_init(trace_rtt_t *ctx);
 
 /**
  ****************************************************************************************
  * @brief UART ISR callback
  *
- * @param[in] trace_info_t  trace context
+ * @param[in] trace_uart_t  trace context
  ****************************************************************************************
  */
-uint32_t trace_uart_isr(trace_info_t *ctx);
+uint32_t trace_uart_isr(trace_uart_t *ctx);
 
 /**
  ****************************************************************************************
  * @brief Trace event callback
  *
  * @param[in] trace         trace event 
- * @param[in] trace_info_t  trace context
+ * @param[in] trace_uart_t  trace context
  ****************************************************************************************
  */
-uint32_t cb_trace(const platform_evt_trace_t *trace, trace_info_t *ctx);
+uint32_t cb_trace_uart(const platform_evt_trace_t *trace, trace_uart_t *ctx);
+
+/**
+ ****************************************************************************************
+ * @brief Trace event callback
+ *
+ * @param[in] trace         trace event 
+ * @param[in] trace_rtt_t  trace context
+ ****************************************************************************************
+ */
+uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx);
 
 /**
  ****************************************************************************************
  * @brief Flush saved trace data to UART
  *
- * @param[in] trace_info_t  trace context
+ * @param[in] trace_uart_t  trace context
  ****************************************************************************************
  */
-void trace_flush(trace_info_t *ctx);
+void trace_flush(trace_uart_t *ctx);
 
 #ifdef __cplusplus
 }

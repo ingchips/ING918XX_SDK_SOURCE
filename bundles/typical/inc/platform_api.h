@@ -126,8 +126,20 @@ typedef enum
     PLATFORM_TRACE_ID_HCI_CMD               = 1,
     PLATFORM_TRACE_ID_HCI_EVENT             = 2,
     PLATFORM_TRACE_ID_HCI_ACL               = 3,
-    PLATFORM_TRACE_ID_LLCP                  = 4
+    PLATFORM_TRACE_ID_LLCP                  = 4,
+    PLATFORM_TRACE_ID_RAW                   = 5,
+    PLATFORM_TRACE_ID_EVENT_ERROR           = 6,
 } platform_trace_item_t;
+
+/**
+ ****************************************************************************************
+ * @brief Output a block of raw data to TRACE. ID is PLATFORM_TRACE_ID_RAW
+ *
+ * @param[in] buffer        data buffer
+ * @param[in] byte_len      length of data buffer in bytes
+ ****************************************************************************************
+ */
+void platform_trace_raw(const void *buffer, const int byte_len);
 
 /**
  ****************************************************************************************
@@ -222,14 +234,37 @@ void platform_write_persistent_reg(const uint8_t value);
  */
 uint8_t platform_read_persistent_reg(void);
 
+/**
+ ****************************************************************************************
+ * @brief Shutdown the whole system, and power on again after a duration
+ *        specified by duration_cycles.
+ *        Optionally, a portion of SYS memory can be retentioned during shutdown.
+ *
+ * @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
+ *                                  Mininum value: 825 cycles (about 25.18ms)
+ * @param[in] p_retention_data      Pointer to the start of data to be retentioned
+ * @param[in] data_size             Size of the data to be retentioned
+ ****************************************************************************************
+ */
+void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
+
 typedef enum
 {
     PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_TRACE_MASK,    // flag is bitmap of platform_trace_item_t. default: 0
+    PLATFORM_CFG_RC32K_EN,      // Enable/Disable RC 32k clock. Default: Enable
+    PLATFORM_CFG_OSC32K_EN,     // Enable/Disable 32k crystal oscillator. Default: Enable
     PLATFORM_CFG_32K_CLK,       // 32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+                                // Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED and *run*.
+                                //       For OSC32K, wait until status of OSC32K is OK;
+                                //       For RC32K, wait 100us after enabled.
+                                // Note: Wait another 100us before disabling the unused clock.
+    PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accurary in ppm.
+    PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2    
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
     PLATFORM_CFG_PS_DBG_1,      // debugging parameter
+    PLATFORM_CFG_CTE_IQ_DBG,    // debugging parameter
 } platform_cfg_item_t;
 
 typedef enum
@@ -251,19 +286,30 @@ typedef enum
  */
 void platform_config(const platform_cfg_item_t item, const uint32_t flag);
 
+typedef enum
+{
+    PLATFORM_INFO_OSC32K_STATUS,        // Read status of 32k crystal oscillator. (0: not OK; Non-0: OK)
+    PLATFORM_INFO_32K_CALI_VALUE,       // Read current 32k clock calibaration result.
+} platform_info_item_t;
+
 /**
  ****************************************************************************************
- * @brief Shutdown the whole system, and power on again after a duration
- *        specified by duration_cycles.
- *        Optionally, a portion of SYS memory can be retentioned during shutdown.
+ * @brief read platform information.
  *
- * @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
- *                                  Mininum value: 825 cycles (about 25.18ms)
- * @param[in] p_retention_data      Pointer to the start of data to be retentioned
- * @param[in] data_size             Size of the data to be retentioned
+ * @param[in] item          Information item
+ * @return                  Information.
  ****************************************************************************************
  */
-void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
+uint32_t platform_read_info(const platform_info_item_t item);
+
+/**
+ ****************************************************************************************
+ * @brief Do 32k clock calibration and get the calibration valie.
+ *
+ * @return                  Calibration value.
+ ****************************************************************************************
+ */
+uint32_t platform_calibrate_32k(void);
 
 /**
  ****************************************************************************************
@@ -274,6 +320,26 @@ void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_d
  ****************************************************************************************
  */
 void platform_hrng(uint8_t *bytes, const uint32_t len);
+
+/**
+ ****************************************************************************************
+ * @brief generate a pseudo random integer by internal PRNG whose seed initialized by HRNG
+ *        at startup.
+ *
+ * @return                     a pseudo random integer in range of 0 to RAND_MAX
+ ****************************************************************************************
+ */
+int platform_rand(void);
+
+/**
+ ****************************************************************************************
+ * @brief Read the internal timer counting from initialization.
+ *        Note: This timer restarts after shutdown, while RTC timer does not.
+ *
+ * @return                     internal timer counting at 1us.
+ ****************************************************************************************
+ */
+int64_t platform_get_us_time(void);
 
 /**
  ****************************************************************************************

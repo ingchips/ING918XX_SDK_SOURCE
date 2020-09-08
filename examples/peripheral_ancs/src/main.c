@@ -10,7 +10,6 @@
 #include "eflash.h"
 #include <string.h>
 
-#include "SEGGER_RTT.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -153,17 +152,6 @@ int db_read_from_flash(void *db, const int max_size)
     return KV_OK;
 }
 
-uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, void *user_data)
-{
-    int free_size = SEGGER_RTT_GetAvailWriteSpace(0);
-    if (trace->len1 + trace->len2 < free_size)
-    {
-        SEGGER_RTT_Write(0, trace->data1, trace->len1);
-        SEGGER_RTT_Write(0, trace->data2, trace->len2);
-    }
-    return 0;
-}
-
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -189,10 +177,6 @@ int app_main()
            "Key 3: Clear bonding\n");
            
     platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
-
-    SEGGER_RTT_Init();
-    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, NULL);
-    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
 
     return 0;
 }

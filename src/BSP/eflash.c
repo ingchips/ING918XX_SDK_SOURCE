@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-uint32_t ClkFreq; //0:16M 1:24M
+static uint32_t ClkFreq; //0:16M 1:24M
 
 #define PAGE_SIZE (8192)
 #define PAGE_SIZE_SHIFT 13
@@ -80,3 +80,4 @@ int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
     return program_flash0(dest_addr, buffer, size, 0);
 }
+

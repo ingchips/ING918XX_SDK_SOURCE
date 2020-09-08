@@ -2,7 +2,10 @@
 #include "att_db.h"
 #include "gap.h"
 #include "btstack_event.h"
-
+#include "btstack_util.h"
+#include "btstack_defines.h"
+#include "gatt_client.h"
+#include "sig_uuid.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -20,6 +23,9 @@ const static uint8_t scan_data[] = {
 const static uint8_t profile_data[] = {
     #include "../data/gatt.profile"
 };
+
+#define INVALID_HANDLE  0xffff
+uint16_t conn_handle = INVALID_HANDLE;
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -46,6 +52,9 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
 }
 
 uint8_t rand_addr[] = {1,2,3,4,5,6};
+uint8_t slave_addr[] = {0,0,0,0,0,0};
+bd_addr_type_t slave_addr_type = BD_ADDR_TYPE_LE_RANDOM;
+
 extern int8_t adv_tx_power;
 
 void do_set_data()
@@ -53,12 +62,65 @@ void do_set_data()
     gap_set_ext_adv_data(0, adv_data[0] + 1, (uint8_t *)(adv_data));
 }
 
+void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
+{
+    switch (packet[0])
+    {
+    case GATT_EVENT_SERVICE_QUERY_RESULT:
+        {
+            int i;
+            const gatt_event_service_query_result_t *result = gatt_event_service_query_result_parse(packet);
+            platform_printf("\nFind Service:\nUUID: ");
+            for (i = 0; i < 16; i++)
+            {
+                platform_printf(":%02X", result->service.uuid128[i]);
+            }
+            platform_printf("\nHandles: %d - %d\n========================\n",
+                            result->service.start_group_handle, result->service.end_group_handle);
+        }
+        break;
+    case GATT_EVENT_QUERY_COMPLETE:
+        platform_printf("discovery done, disconnect...\n");
+        gap_disconnect(conn_handle);
+        break;
+    }
+}
+
 #define USER_MSG_START_ADV          0
 #define USER_MSG_STOP_ADV           1
 #define USER_MSG_UPDATE_ADV_DATA    2
 #define USER_MSG_UPDATE_ADDR        3
+#define USER_MSG_CONN_TO_SLAVE      4
+#define USER_MSG_CONN_CANCEL        5
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
+
+#define CONN_PARAM  {                   \
+            .scan_int = 200,            \
+            .scan_win = 60,             \
+            .interval_min = 50,         \
+            .interval_max = 50,         \
+            .latency = 0,               \
+            .supervision_timeout = 600, \
+            .min_ce_len = 90,           \
+            .max_ce_len = 90            \
+    }
+
+static initiating_phy_config_t phy_configs[] =
+{
+    {
+        .phy = PHY_1M,
+        .conn_param = CONN_PARAM
+    },
+    {
+        .phy = PHY_2M,
+        .conn_param = CONN_PARAM
+    },
+    {
+        .phy = PHY_CODED,
+        .conn_param = CONN_PARAM
+    }
+};
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {    
@@ -79,6 +141,19 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     case USER_MSG_UPDATE_ADDR:
         gap_set_adv_set_random_addr(0, rand_addr);
         printf("addr changed: %02X:%02X:%02X:%02X:%02X:%02X\n", rand_addr[0], rand_addr[1], rand_addr[2], rand_addr[3], rand_addr[4], rand_addr[5]);
+        break;
+    case USER_MSG_CONN_TO_SLAVE:
+        printf("create connection...\n");
+        gap_ext_create_connection(INITIATING_ADVERTISER_FROM_PARAM,
+                                                  BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
+                                                  slave_addr_type,                  // Peer_Address_Type,
+                                                  slave_addr,                       // Peer_Address,
+                                                  sizeof(phy_configs) / sizeof(phy_configs[0]),
+                                                  phy_configs);
+        break;
+    case USER_MSG_CONN_CANCEL:
+        printf("create connection cancelled.\n");
+        gap_create_connection_cancel();
         break;
     default:
         ;
@@ -108,6 +183,16 @@ void update_addr()
     btstack_push_user_msg(USER_MSG_UPDATE_ADDR, NULL, 0);
 }
 
+void conn_to_slave()
+{
+    btstack_push_user_msg(USER_MSG_CONN_TO_SLAVE, NULL, 0);
+}
+
+void cancel_create_conn()
+{
+    btstack_push_user_msg(USER_MSG_CONN_CANCEL, NULL, 0);
+}
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -119,6 +204,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
+        gap_set_random_device_address(rand_addr);
+        gap_set_adv_set_random_addr(0, rand_addr);
         gap_set_ext_adv_para(0, 
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
@@ -141,8 +228,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
-                       profile_data);
+            {
+                const le_meta_event_enh_create_conn_complete_t * complete = 
+                    decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
+                conn_handle = complete->handle;
+                if (HCI_ROLE_SLAVE == complete->role)
+                    att_set_db(conn_handle, profile_data);
+                else
+                    gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
+            }
             break;
         default:
             break;
@@ -151,9 +245,25 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+        conn_handle = INVALID_HANDLE;
         break;
-
+    
+    case HCI_EVENT_COMMAND_COMPLETE:
+        {
+            const uint8_t *returns = hci_event_command_complete_get_return_parameters(packet);
+            if (*returns != 0)
+                platform_printf("COMMAND_COMPLETE: 0x%02x for OPCODE %04X\n",
+                    *returns, hci_event_command_complete_get_command_opcode(packet));
+        }
+        break;
+    case HCI_EVENT_COMMAND_STATUS:
+        {
+            const uint8_t status = hci_event_command_status_get_status(packet);
+            if (status != 0)
+                platform_printf("COMMAND_STATUS: 0x%02x for OPCODE %04X\n",
+                    status, hci_event_command_status_get_command_opcode(packet));
+        }
+        break;
     case ATT_EVENT_CAN_SEND_NOW:
         // add your code
         break;

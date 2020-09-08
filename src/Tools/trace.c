@@ -2,7 +2,9 @@
 #include "trace.h"
 #include "peripheral_uart.h"
 
-void trace_task(trace_info_t *ctx)
+#include "SEGGER_RTT.c"
+
+void trace_task(trace_uart_t *ctx)
 {
     for (;;)
     {
@@ -22,7 +24,7 @@ wait:
     }
 }
 
-void trace_flush(trace_info_t *ctx)
+void trace_flush(trace_uart_t *ctx)
 {
     while (ctx->read_next != ctx->write_next)
     {
@@ -34,7 +36,7 @@ void trace_flush(trace_info_t *ctx)
     }
 }
 
-int trace_add_buffer(trace_info_t *ctx, const uint8_t *buffer, int size, int start)
+int trace_add_buffer(trace_uart_t *ctx, const uint8_t *buffer, int size, int start)
 {
     int remain = TRACE_BUFF_SIZE - start;
     if (remain >= size)
@@ -51,7 +53,7 @@ int trace_add_buffer(trace_info_t *ctx, const uint8_t *buffer, int size, int sta
     }
 }
 
-void trace_trigger_output(trace_info_t *ctx)
+void trace_trigger_output(trace_uart_t *ctx)
 {
     if (IS_IN_INTERRUPT())
     {
@@ -63,7 +65,7 @@ void trace_trigger_output(trace_info_t *ctx)
         xSemaphoreGive(ctx->tx_sem);
 }
 
-uint32_t cb_trace(const platform_evt_trace_t *trace, trace_info_t *ctx)
+uint32_t cb_trace_uart(const platform_evt_trace_t *trace, trace_uart_t *ctx)
 {
     uint16_t next;
     int16_t free_size;
@@ -96,7 +98,26 @@ uint32_t cb_trace(const platform_evt_trace_t *trace, trace_info_t *ctx)
     return 0;
 }
 
-void trace_init(trace_info_t *ctx)
+uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx)
+{
+    int free_size;
+    uint8_t use_mutex = !IS_IN_INTERRUPT();
+
+    if (use_mutex) xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+    
+    free_size = SEGGER_RTT_GetAvailWriteSpace(0);
+    if (trace->len1 + trace->len2 < free_size)
+    {
+        SEGGER_RTT_Write(0, trace->data1, trace->len1);
+        SEGGER_RTT_Write(0, trace->data2, trace->len2);
+    }
+    
+    if (use_mutex) xSemaphoreGive(ctx->mutex);
+    
+    return 0;
+}
+
+void trace_uart_init(trace_uart_t *ctx)
 {
     ctx->tx_sem = xSemaphoreCreateBinary();
     ctx->mutex = xSemaphoreCreateMutex();
@@ -108,10 +129,15 @@ void trace_init(trace_info_t *ctx)
                &ctx->handle);
 }
 
-uint32_t trace_uart_isr(trace_info_t *ctx)
+void trace_rtt_init(trace_rtt_t *ctx)
+{
+    SEGGER_RTT_Init();
+    ctx->mutex = xSemaphoreCreateMutex();
+}
+
+uint32_t trace_uart_isr(trace_uart_t *ctx)
 {
     ctx->port->IntClear = ctx->port->Interrupt;
     trace_trigger_output(ctx);
     return 0;
 }
-

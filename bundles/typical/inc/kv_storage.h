@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 /**
- * @brief Bluetooth 
+ * @brief Bluetooth
  * @defgroup Bluetooth_NVM
  * @ingroup bluetooth_stack
  * @{
@@ -133,8 +133,10 @@ void kv_value_modified(void);
 
 /**
  * @brief commited whole db to nvm immediately
+ * @param[in]   flag_always     if signaled, always write to nvm no matter if modified or not.
+ *                              Otherwise, do not write to nvm if not modified.
  */
-void kv_commit(void);
+void kv_commit(int flag_always_write);
 
 /**
  * @brief traverse each k-v pair

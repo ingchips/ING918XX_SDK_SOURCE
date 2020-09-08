@@ -69,7 +69,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 115200);
+    config_uart(OSC_CLK_FREQ, 921600);
 
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
@@ -139,7 +139,6 @@ int app_main()
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
     setup_peripherals();
 
-    sysSetPublicDeviceAddr((uint8_t *)0x2a100);
     // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
     
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);    

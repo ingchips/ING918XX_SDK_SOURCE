@@ -12,6 +12,7 @@
 
 #include "../../hid_keyboard/src/USBKeyboard.h"
 #include "kb_service.h"
+#include "app_cfg.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -49,21 +50,27 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#define KB_KEY_1        GIO_GPIO_1
+#define KB_KEY_2        GIO_GPIO_5
+#define KB_KEY_3        GIO_GPIO_7
+#define KB_KEY_4        GIO_GPIO_4
+
+const uint8_t key_ids[4] = {KB_KEY_1, KB_KEY_2, KB_KEY_3, KB_KEY_4};
+
+#define KEY_MASK        ((1 << KB_KEY_1) | (1 << KB_KEY_2) | (1 << KB_KEY_3) | (1 << KB_KEY_4))
+
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    
-    PINCTRL_DisableAllInputs();
+
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
-                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1) | (1 << SYSCTRL_ClkGate_APB_TMR2)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+    PINCTRL_DisableAllInputs();
 
     // timer 0 can be used as watchdog, so we use timer 1.
     // setup timer 1 to sampling rate
-#ifdef DEV_BOARD
-	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 8000);
-#else
-    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 16000);
-#endif
+    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / (16000 * OVER_SAMPLING));
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR1);
     TMR_IntEnable(APB_TMR1);
@@ -72,27 +79,38 @@ void setup_peripherals(void)
     ADC_Reset();
     ADC_SetClkSel(ADC_CLK_EN | ADC_CLK_16);
     ADC_SetMode(ADC_MODE_LOOP);
-    ADC_EnableChannel(0, 1);
+    ADC_EnableChannel(ADC_CHANNEL_ID, 1);
     ADC_Enable(1);
 
-#ifndef DEV_BOARD
+#if (BOARD == BOARD_REM)
     kb_init();
     // setup timer 2: 20Hz
 	TMR_SetCMP(APB_TMR2, TMR_CLK_FREQ / 20);
 	TMR_SetOpMode(APB_TMR2, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR2);
     TMR_IntEnable(APB_TMR2);
-    
+
     // gpio 1
     PINCTRL_SetPadMux(GIO_GPIO_1, IO_SOURCE_GENERAL);
     GIO_SetDirection(GIO_GPIO_1, GIO_DIR_OUTPUT);
     PINCTRL_SetPadPwmSel(GIO_GPIO_1, 1);
+#elif (APP_TYPE != APP_ING)
+    // setup GPIOs for keys
+    #define SET_UP_KEY(key)     \
+        PINCTRL_SetPadMux(key, IO_SOURCE_GENERAL);  \
+        GIO_SetDirection(key, GIO_DIR_INPUT);       \
+        GIO_ConfigIntSource(key, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE)
+
+    SET_UP_KEY(KB_KEY_1);
+    SET_UP_KEY(KB_KEY_2);
+    SET_UP_KEY(KB_KEY_3);
+    SET_UP_KEY(KB_KEY_4);
 #endif
 }
 
 void app_state_changed(const app_state_t state)
 {
-#ifndef DEV_BOARD
+#if (BOARD == BOARD_REM)
     switch (state)
     {
     case APP_PAIRING:
@@ -133,31 +151,28 @@ uint32_t dbg_audio_sample_isr(void *user_data)
     TMR_IntClr(APB_TMR1);
 
     buffer[index++] = ADC_ReadChannelData(0) - 512;
-    
+
     if (index >= sizeof(buffer) / sizeof(buffer[0]))
         for (;;);
-    
+
     return 0;
 }
 #endif
 
-#ifndef DEV_BOARD
+#if (BOARD == BOARD_REM)
 uint32_t kb_scan_isr(void *user_data)
 {
     TMR_IntClr(APB_TMR2);
     kb_update();
     return 0;
 }
-#endif
 
-#ifndef DEV_BOARD
-
-extern my_kb_report_t report;
 extern kb_report_trigger_send(void);
+extern my_kb_report_t report;
 
 #include "keycodes.h"
 
-const uint8_t key_map[] = 
+const uint8_t key_map[] =
 {
     AKEYCODE_RIGHT_BRACKET, // 0x48, //	0 (J2)
     AKEYCODE_BUTTON_R2,     // 0x69, //	1 (J6)
@@ -177,27 +192,6 @@ const uint8_t key_map[] =
     AKEYCODE_CTRL_RIGHT     // 0x72, // 15(J17)
 };
 
-/* HID key codes
-{
-    KEY_MEDIA_BACK, //	0 (J2)
-    KEY_LEFT, //	1 (J6)
-    KEY_VOLUMEUP, //	2 (J10)
-    KEY_UP, //	3 (J14)
-    KEY_MEDIA_PREVIOUSSONG, //	4 (J3)
-    KEY_RIGHT, //	5 (J7)
-    KEY_PROPS, //	6 (J11)
-    KEY_MEDIA_NEXTSONG, //	7 (J15)
-    KEY_MEDIA_FORWARD, //	8 (J4)
-    KEY_ESC, //	9 (J8)
-    KEY_MEDIA_PLAYPAUSE, //	10(J12)
-    KEY_MEDIA_MUTE, //	11(J16)
-    KEY_ENTER, //	12(J5)
-    KEY_DOWN, //	13(J9)
-    KEY_HOME, //	14(J13)
-    KEY_VOLUMEDOWN, //   15(J17)
-};
-*/
-
 void kb_state_changed(const uint32_t old_state, const uint32_t new_state)
 {
     int i;
@@ -215,7 +209,7 @@ void kb_state_changed(const uint32_t old_state, const uint32_t new_state)
             }
         }
     }
-    
+
     kb_report_trigger_send();
 }
 
@@ -236,13 +230,37 @@ void kb_keep_pressed(const uint32_t keys)
         start_talking();
     }
 }
+
 #else
-void kb_state_changed(const uint32_t old_state, const uint32_t new_state)
+
+void kb_state_changed(const uint32_t old_state, const uint32_t new_state) {}
+
+void kb_keep_pressed(const uint32_t keys) {}
+
+#ifdef HAS_KB
+extern void kb_report_trigger_send(void);
+extern my_kb_report_t report;
+
+uint32_t gpio_isr(void *user_data)
 {
-}
-void kb_keep_pressed(const uint32_t keys)
-{
-}
+    uint32_t current = ~GIO_ReadAll();
+    int8_t i = 0;
+    report.k_map = 0;
+
+    // report which keys are pressed
+    for (i = 0; i < sizeof(key_ids) / sizeof(key_ids[0]); i++)
+    {
+        if (current & (1 << key_ids[i]))
+            report.k_map |= (1 << i);
+    }
+
+    kb_report_trigger_send();
+
+    GIO_ClearAllIntStatus();
+    return 0;
+};
+
+#endif
 #endif
 
 int app_main()
@@ -251,6 +269,13 @@ int app_main()
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
 
+#if (APP_TYPE == APP_MIBOXS)
+    {
+        const static uint8_t pub_addr[] = {0x14, 0xAB, 0x56, 0x90, 0xA8, 0x8A};
+        sysSetPublicDeviceAddr(pub_addr);
+    }
+#endif
+    
     setup_peripherals();
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
@@ -260,14 +285,16 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     // setup putc handle
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-    
+
     audio_init();
-    
+
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, audio_sample_isr, NULL);
-#ifndef DEV_BOARD
+#if (BOARD == BOARD_REM)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER2, kb_scan_isr, NULL);
     TMR_Enable(APB_TMR2);
+#elif (defined HAS_KB)
+    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
 #endif
-    
+
     return 0;
 }

@@ -41,11 +41,25 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+uint32_t on_lle_reset(void *dummy, void *user_data)
+{
+    (void)(dummy);
+    (void)(user_data);
+    *(uint32_t *)(0x40090064) = 0x400;
+    *(uint32_t *)(0x4007005c) = 0x80;
+
+    return 0;
+}
+
 void setup_peripherals(void)
 {
+    int i;
+    SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
     config_uart(OSC_CLK_FREQ, 115200);
- //   *(uint32_t*)(0x4007005c) = 0x81;
- //   *(uint32_t*)(0x40090064) = 0x400;
+    
+    for (i = 8; i <= 15; i++)
+        PINCTRL_SetPadMux(i, IO_SOURCE_DEBUG_BUS);
+    on_lle_reset(NULL, NULL);
 }
 
 #define w32(a,b) *(volatile uint32_t*)(a) = (uint32_t)(b)
@@ -55,30 +69,6 @@ uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
-/*
-    w32(0x40004000,0x0);//ie0
-    w32(0x40004004,0x0);//ie1
-    w32(0x40004008,0x0);//is0
-    w32(0x4000400c,0x0);//is1
-    w32(0x40004010,0x0);//pe0
-    w32(0x40004014,0x0);//pe1
-    w32(0x40004018,0x0);//ps0
-    w32(0x4000401c,0x0);//ps1
-    w32(0x40004030,0x0);//ds0
-    w32(0x40004034,0x0);//ds1
-
-    w32(0x40070058,0xffffffff);//peri input select
-    w32(0x40070048,0x0);//gpio output enable
-    w32(0x4007004c,0x0);//gpio output enable
-    w32(0x40070050,0x0);//gpio output enable
-
-    w32(0x40070054,0xffffffc3);//peri input select
-    w32(0x40070044,0x400);//gpio output enable
-
-    w32(0x40070050,0x0);//gpio output enable
-
-    w32(0x40040094,r32(0x40040094) | 0x1);        //gpio output enable
-*/
     setup_peripherals();
 
     return 0;
@@ -101,11 +91,21 @@ const int16_t power_mapping[] = {
     4600, 4700, 4800, 4900, 5000, 5100, 5200, 5300, 5400, 5500, 5600,
     5700, 5800, 5900, 6000, 6100, 6200, 6300};
 
+//#define USE_OSC32K
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
+    
+#ifdef USE_OSC32K
+    platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
+#else
+    platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
+    platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
+    platform_config(PLATFORM_CFG_32K_CALI_PERIOD, 4);
+#endif
 
     setup_peripherals();
     sysSetPublicDeviceAddr((const unsigned char *)(0x2a010));
@@ -118,14 +118,15 @@ int app_main()
     // setup deep sleep handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
-
+    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, on_lle_reset, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
     // setup putc handle
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
-    platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
+    
+    w32(0x40040014,(r32(0x40040014) & (~(0x1f << 8))) | (0xc << 8));
 
     return 0;
 }

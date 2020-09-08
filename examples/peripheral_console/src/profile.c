@@ -83,7 +83,6 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 bd_addr_t null_addr = {0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
 
 extern int adv_tx_power;
-int kkk = 0;
 
 static void setup_adv()
 {

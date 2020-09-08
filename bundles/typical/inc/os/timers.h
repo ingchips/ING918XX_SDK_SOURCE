@@ -1288,9 +1288,7 @@ void *pvTimerGetTimerID( const TimerHandle_t xTimer ) PRIVILEGED_FUNCTION;
 * will next expire is returned.  If the timer is not running then the return
 * value is undefined.
 */
-// TickType_t xTimerGetExpiryTime( TimerHandle_t xTimer ) PRIVILEGED_FUNCTION;
-// WARNING: ^^^ this API is not available in this release
-
+TickType_t xTimerGetExpiryTime( TimerHandle_t xTimer ) PRIVILEGED_FUNCTION;
 
 /*
  * Functions beyond this part are not part of the public API and are intended

@@ -1390,9 +1390,7 @@ TickType_t xTaskGetTickCount( void ) PRIVILEGED_FUNCTION;
  * \defgroup xTaskGetTickCountFromISR xTaskGetTickCountFromISR
  * \ingroup TaskUtils
  */
-// TickType_t xTaskGetTickCountFromISR( void ) PRIVILEGED_FUNCTION;
-// WARNING: ^^^ this API is not available in this release
-
+TickType_t xTaskGetTickCountFromISR( void ) PRIVILEGED_FUNCTION;
 
 /**
  * task. h

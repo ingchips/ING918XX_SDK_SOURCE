@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536901400</StartAddress>
-                <Size>35048</Size>
+                <StartAddress>536903448</StartAddress>
+                <Size>33000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -458,13 +458,6 @@
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
-          <Files>
-            <File>
-              <FileName>SEGGER_RTT.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\SEGGER_RTT.c</FilePath>
-            </File>
-          </Files>
         </Group>
       </Groups>
     </Target>
