@@ -123,6 +123,12 @@ void cmd_advpwr(const char *param)
     }
 }
 
+void cmd_calib(const char *param)
+{
+    sprintf(buffer, "adv tx power: %ddBm", adv_tx_power);
+    tx_data(buffer, strlen(buffer) + 1);
+}
+
 static cmd_t cmds[] =
 {
     {
@@ -160,6 +166,10 @@ static cmd_t cmds[] =
     {
         .cmd = "advpwr",
         .handler = cmd_advpwr
+    },
+    {
+        .cmd = "c",
+        .handler = cmd_calib
     },
 };
 

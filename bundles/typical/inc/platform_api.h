@@ -264,6 +264,7 @@ typedef enum
     PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2    
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
     PLATFORM_CFG_PS_DBG_1,      // debugging parameter
+    PLATFORM_CFG_PS_DBG_2,      // debugging parameter
     PLATFORM_CFG_CTE_IQ_DBG,    // debugging parameter
 } platform_cfg_item_t;
 
@@ -304,12 +305,33 @@ uint32_t platform_read_info(const platform_info_item_t item);
 
 /**
  ****************************************************************************************
- * @brief Do 32k clock calibration and get the calibration valie.
+ * @brief Do 32k clock calibration and get the calibration value.
  *
  * @return                  Calibration value.
  ****************************************************************************************
  */
 uint32_t platform_calibrate_32k(void);
+
+/**
+ ****************************************************************************************
+ * @brief Tune internal the 32k RC clock with `value`.
+ *
+ * @param[in] value          Value used to tune the clock (returned by `platform_32k_rc_auto_tune`)
+ ****************************************************************************************
+ */
+void platform_32k_rc_tune(uint16_t value);
+
+/**
+ ****************************************************************************************
+ * @brief Automatically tune the internal 32k RC clock, and get the tuning value.
+ *
+ * Note: This operation costs ~250ms. It is recommended to call this once and store the 
+ *       returned value into NVM for later usage.
+ *
+ * @return                  Value used to tune the clock
+ ****************************************************************************************
+ */
+uint16_t platform_32k_rc_auto_tune(void);
 
 /**
  ****************************************************************************************

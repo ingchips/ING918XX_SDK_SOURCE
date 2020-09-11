@@ -70,8 +70,8 @@ void setup_peripherals(void)
 
     // timer 0 can be used as watchdog, so we use timer 1.
     // setup timer 1 to sampling rate
-    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / (16000 * OVER_SAMPLING));
-	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
+    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / (32000 * OVER_SAMPLING));
+    TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR1);
     TMR_IntEnable(APB_TMR1);
 
@@ -85,8 +85,8 @@ void setup_peripherals(void)
 #if (BOARD == BOARD_REM)
     kb_init();
     // setup timer 2: 20Hz
-	TMR_SetCMP(APB_TMR2, TMR_CLK_FREQ / 20);
-	TMR_SetOpMode(APB_TMR2, TMR_CTL_OP_MODE_WRAPPING);
+    TMR_SetCMP(APB_TMR2, TMR_CLK_FREQ / 20);
+    TMR_SetOpMode(APB_TMR2, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR2);
     TMR_IntEnable(APB_TMR2);
 
@@ -275,7 +275,7 @@ int app_main()
         sysSetPublicDeviceAddr(pub_addr);
     }
 #endif
-    
+
     setup_peripherals();
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);

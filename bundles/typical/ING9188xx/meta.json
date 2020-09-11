@@ -122,6 +122,8 @@
         "platform_config", 
         "platform_read_info", 
         "platform_calibrate_32k", 
+        "platform_32k_rc_tune", 
+        "platform_32k_rc_auto_tune", 
         "platform_hrng", 
         "platform_rand", 
         "platform_get_us_time", 
@@ -287,15 +289,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 32536
+        "size": 32544
     }, 
     "rom": {
         "base": 16384, 
-        "size": 135904
+        "size": 136180
     }, 
     "version": [
         1, 
         0, 
-        8
+        9
     ]
 }

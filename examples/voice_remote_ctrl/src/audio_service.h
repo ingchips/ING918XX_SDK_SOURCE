@@ -5,7 +5,7 @@
 
 #include "app_cfg.h"
 
-#define OVER_SAMPLING        2                      // must be 2^n
+#define OVER_SAMPLING        1                      // must be 2^n
 #define OVER_SAMPLING_MASK   (OVER_SAMPLING - 1)
 
 #if (APP_TYPE == APP_ING)

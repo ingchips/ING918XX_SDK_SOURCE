@@ -151,7 +151,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
         if (OTA_STATUS_OK == ota_ctrl[0])
         {
             int i;
-            uint32_t *p32 = (uint32_t *)buffer;
+            __packed uint32_t *p32 = (__packed uint32_t *)buffer;
             if ((buffer_size & 0x3) || (0 == ota_addr))
             {
                 ota_ctrl[0] = OTA_STATUS_ERROR;

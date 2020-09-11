@@ -88,7 +88,7 @@ static void setup_adv()
 {
     gap_set_ext_adv_para(0, 
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
-                            0x0320, 0x0320,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
+                            800, 800,                  // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
                             BD_ADDR_TYPE_LE_PUBLIC,    // Own_Address_Type
                             BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)

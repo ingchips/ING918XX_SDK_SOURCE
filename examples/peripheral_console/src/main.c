@@ -45,7 +45,7 @@ uint32_t on_lle_reset(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
-    *(uint32_t *)(0x40090064) = 0x400;
+    *(uint32_t *)(0x40090064) = 0x400 | (0x01 << 8);
     *(uint32_t *)(0x4007005c) = 0x80;
 
     return 0;
@@ -71,14 +71,14 @@ uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
     (void)(user_data);
     setup_peripherals();
 
-    return 0;
+    return 1;
 }
 
 uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
-    return 0;
+    return 1;
 }
 
 // To calibration Tx power preciously, we can use a "fake" power mapping table,
@@ -104,7 +104,6 @@ int app_main()
 #else
     platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
     platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
-    platform_config(PLATFORM_CFG_32K_CALI_PERIOD, 4);
 #endif
 
     setup_peripherals();
@@ -125,8 +124,6 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
-    
-    w32(0x40040014,(r32(0x40040014) & (~(0x1f << 8))) | (0xc << 8));
 
     return 0;
 }

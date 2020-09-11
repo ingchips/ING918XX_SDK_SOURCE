@@ -91,7 +91,6 @@ const uint8_t adv_data[]={
 
     // Name
     0x10, 0x09, 'I', 'N', 'G', ' ', 'T', 'h', 'e', 'r', 'm', 'o', 'm', 'e', 't', 'e', 'r',
-    //0x0b, 0x09, 'L', 'E', ' ', 'T','E','M','P','E','R','A',
 
     //slave connection Interval range
     0x05, 0x12, 0x12,0x00,0x20,0x00,

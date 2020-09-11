@@ -11,7 +11,7 @@
 
 void PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 {
-	volatile uint32_t * reg = (volatile uint32_t *)(SYSCTRL_BASE + OFFSET_MUX_CTRL0) + (io_pin_index >> 3);
+    volatile uint32_t * reg = (volatile uint32_t *)(SYSCTRL_BASE + OFFSET_MUX_CTRL0) + (io_pin_index >> 3);
     uint8_t offset = (io_pin_index & 0x7) << 2;
     *reg = (*reg & ~(IO_SOURCE_MASK << offset)) | (source << offset);
 }
