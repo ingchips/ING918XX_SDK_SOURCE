@@ -429,7 +429,7 @@ void ll_set_initiating_coded_scheme(const coded_scheme_t scheme);
  * @param[in]  conn_handle      handle of an existing connection
  * @param[in]  min_ce_len       information parameter about the minimum length of connection
  *                              event needed for this LE connection.
- *                              Range: 0x0000 – 0xFFFF
+ *                              Range: 0x0000 ? 0xFFFF
  *                              Time = N * 0.625 ms.
  * @param[in]  max_ce_len       information parameter about the maximum length of connection
  *                              event needed for this LE connection.

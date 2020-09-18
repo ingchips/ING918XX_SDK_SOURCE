@@ -89,8 +89,7 @@ void mesh_setup(const struct bt_mesh_prov *a_prov,
  *  @return  void
  *
  */
-// void mesh_set_dev_name(const char *name);
-// WARNING: ^^^ this API is not available in this release
+ void mesh_set_dev_name(const char *name);
 
 
 /** @brief platform configure

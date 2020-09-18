@@ -1,5 +1,5 @@
 /** @file
-*   @brief basic function APIs and events  for bluetooth 
+*   @brief basic function APIs and events  for bluetooth
 *  Copyright Message
 *
 *
@@ -819,9 +819,9 @@ typedef struct le_meta_event_enh_create_conn_complete
     //Peer address
     bd_addr_t           peer_addr;
     //Local_Resolvable_Private_Address
-    bd_addr_type_t      local_resolv_priv_addr;
+    bd_addr_t           local_resolv_priv_addr;
     //Peer_Resolvable_Private_Address
-    bd_addr_type_t      peer_resolv_priv_addr;
+    bd_addr_t           peer_resolv_priv_addr;
     //Connection interval
     uint16_t            interval;
     //Connection latency

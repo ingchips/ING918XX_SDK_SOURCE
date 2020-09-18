@@ -106,5 +106,5 @@ void TMR0_LOCK() // timer 0 only
 
 void TMR0_UNLOCK() // timer 0 only
 {
-	APB_TMR0->LOCK = 0;
+	APB_TMR0->LOCK = 0xDEADFACE;
 }

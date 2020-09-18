@@ -1,18 +1,17 @@
 #include <stdio.h>
-
-#include "syscfg.h"
-//#include "glue.h"
-//#include "main.h"
+#include "modlog.h"
+#include "ble_hs_log.h"
+#include "mesh_def.h"
 
 #include "mesh_api.h"
 
-#include "cfg_srv.h"
 #include "cfg_cli.h"
-
 #include "model_srv.h"
 #include "model_cli.h"
 
-#define BT_INFO_ENABLED 1
+#define BT_DBG_ENABLED (1)
+#define BT_WARN_ENABLED (1)
+#define BT_INFO_ENABLED (1)
 
 #define INGCHIPS_COMP_ID                           0x06AC
 
@@ -80,48 +79,50 @@ void init_pub(void)
 
 #define LED_1 1
 
-struct light_state {
+typedef struct light_state {
     u8_t onoff[2];
     s16_t level[2];
     u16_t lightness[2];
     u16_t hue[2];
     u16_t saturation[2];
     u8_t led_gpio_pin;
-} a_light_state = 
+} light_state_t;
+
+light_state_t a_light_state = 
 {
     .led_gpio_pin = LED_1
 };
 
-int light_model_gen_onoff_get(struct bt_mesh_model *model, u8_t *state, void *user_data);
-int light_model_gen_onoff_set(struct bt_mesh_model *model, u8_t  state, void *user_data);
-int light_model_gen_level_get(struct bt_mesh_model *model, s16_t *level, void *user_data);
-int light_model_gen_level_set(struct bt_mesh_model *model, s16_t  level, void *user_data);
-int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness, void *user_data);
-int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t  lightness, void *user_data);
-int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *hue, u16_t *saturation, void *user_data);
-int light_model_light_hsl_set(struct bt_mesh_model *model, u16_t  lightness, u16_t  hue, u16_t  saturation, void *user_data);
+int light_model_gen_onoff_get(struct bt_mesh_model *model, u8_t *state);
+int light_model_gen_onoff_set(struct bt_mesh_model *model, u8_t  state);
+int light_model_gen_level_get(struct bt_mesh_model *model, s16_t *level);
+int light_model_gen_level_set(struct bt_mesh_model *model, s16_t  level);
+int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness);
+int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t  lightness);
+int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *hue, u16_t *saturation);
+int light_model_light_hsl_set(struct bt_mesh_model *model, u16_t  lightness, u16_t  hue, u16_t  saturation);
 
 static struct bt_mesh_gen_onoff_srv_cb gen_onoff_srv_cb = {
-	.get = light_model_gen_onoff_get,
-	.set = light_model_gen_onoff_set,
+    .get = light_model_gen_onoff_get,
+    .set = light_model_gen_onoff_set,
     .user_data = &a_light_state
 };
 
 static struct bt_mesh_gen_level_srv_cb gen_level_srv_cb = {
-	.get = light_model_gen_level_get,
-	.set = light_model_gen_level_set,
+    .get = light_model_gen_level_get,
+    .set = light_model_gen_level_set,
     .user_data = &a_light_state
 };
 
 static struct bt_mesh_light_lightness_srv_cb light_lightness_srv_cb = {
-	.get = light_model_light_lightness_get,
-	.set = light_model_light_lightness_set,
+    .get = light_model_light_lightness_get,
+    .set = light_model_light_lightness_set,
     .user_data = &a_light_state
 };
 
 static struct bt_mesh_light_hsl_srv_cb light_hsl_srv_cb = {
-	.get = light_model_light_hsl_get,
-	.set = light_model_light_hsl_set,
+    .get = light_model_light_hsl_get,
+    .set = light_model_light_hsl_set,
     .user_data = &a_light_state
 };
 
@@ -135,9 +136,9 @@ static struct bt_mesh_model root_models[] = {
     BT_MESH_MODEL_CFG_CLI(&cfg_cli),
     BT_MESH_MODEL_GEN_ONOFF_SRV(&gen_onoff_srv_cb, &gen_onoff_pub),
     BT_MESH_MODEL_GEN_ONOFF_CLI(),
-	BT_MESH_MODEL_GEN_LEVEL_SRV(&gen_level_srv_cb, &gen_level_pub),
+    BT_MESH_MODEL_GEN_LEVEL_SRV(&gen_level_srv_cb, &gen_level_pub),
     BT_MESH_MODEL_GEN_LEVEL_CLI(),
-	BT_MESH_MODEL_LIGHT_LIGHTNESS_SRV(&light_lightness_srv_cb, &light_lightness_pub),
+    BT_MESH_MODEL_LIGHT_LIGHTNESS_SRV(&light_lightness_srv_cb, &light_lightness_pub),
     BT_MESH_MODEL_LIGHT_HSL_SRV(&light_hsl_srv_cb, &light_hsl_pub),
 };
 
@@ -160,16 +161,20 @@ void light_update(struct light_state *a_light);
 volatile static u16_t primary_addr;
 volatile static u16_t primary_net_idx;
 
-int light_model_gen_onoff_get(struct bt_mesh_model *model, u8_t *state, void *user_data)
+
+#define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->user_data
+    
+
+int light_model_gen_onoff_get(struct bt_mesh_model *model, u8_t *state)
 {
-    struct light_state *a_light = (struct light_state *)user_data;
+    light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
     *state = a_light->onoff[0];
     return 0;
 }
 
-int light_model_gen_onoff_set(struct bt_mesh_model *model, u8_t state, void *user_data)
+int light_model_gen_onoff_set(struct bt_mesh_model *model, u8_t state)
 {
-    struct light_state *a_light = (struct light_state *)user_data;
+    struct light_state *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
     a_light->onoff[1] = a_light->onoff[0];
     a_light->onoff[0] = state;
     a_light->lightness[1] = a_light->lightness[0];
@@ -178,44 +183,45 @@ int light_model_gen_onoff_set(struct bt_mesh_model *model, u8_t state, void *use
     return 0;
 }
 
-int light_model_gen_level_get(struct bt_mesh_model *model, s16_t *level, void *user_data)
+int light_model_gen_level_get(struct bt_mesh_model *model, s16_t *level)
 {
-    struct light_state *a_light = (struct light_state *)user_data;
+    struct light_state *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
     *level = a_light->level[0];
     return 0;
 }
 
-int light_model_gen_level_set(struct bt_mesh_model *model, s16_t  level, void *user_data)
+int light_model_gen_level_set(struct bt_mesh_model *model, s16_t  level)
 {
-    struct light_state *a_light = (struct light_state *)user_data;
-    uint32_t temp = level + 32768;
+    struct light_state *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
     a_light->level[1] = a_light->level[0];
     a_light->level[0] = level;
     a_light->lightness[1] = a_light->lightness[0];
-    a_light->lightness[0] = (255 * temp) >> 16;
+    a_light->lightness[0] = level + 32768;
+    printf("======= lightness -> %d, %04x\n", level, a_light->lightness[0]);
     light_update(a_light);
     return 0;
 }
 
-int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness, void *user_data)
+int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness)
 {
-    struct light_state *a_light = (struct light_state *)user_data;
+    struct light_state *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
     *lightness = a_light->lightness[0];
     return 0;
 }
 
-int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t lightness, void *user_data)
+int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t lightness)
 {
-    struct light_state *a_light = (struct light_state *)user_data;
+    struct light_state *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
     a_light->lightness[1] = a_light->lightness[0];
     a_light->lightness[0] = lightness;
+    
     light_update(a_light);
     return 0;
 }
 
-int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *hue, u16_t *saturation, void *user_data)
+int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *hue, u16_t *saturation)
 {
-    struct light_state *a_light = (struct light_state *)user_data;
+    struct light_state *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
     *lightness  = a_light->lightness[0];
     *hue        = a_light->hue[0];
     *saturation = a_light->saturation[0];
@@ -268,19 +274,22 @@ void hsl_to_rgb(u16_t H, u16_t S, u16_t L,
 void light_update(struct light_state *a_light)
 {
     u8_t r, g, b;
+    printf("HSL = %d,%d,%d\n", a_light->hue[0], a_light->saturation[0], a_light->lightness[0]);
     hsl_to_rgb(a_light->hue[0], a_light->saturation[0], a_light->lightness[0], &r, &g, &b);
 #ifdef SIMULATION
     printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n", 
                a_light->led_gpio_pin, r, g, b);
 #else
+    printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n", 
+               a_light->led_gpio_pin, r, g, b);
     extern void set_led_color(uint8_t r, uint8_t g, uint8_t b);
     set_led_color(r, g, b);
 #endif
 }
 
-int light_model_light_hsl_set(struct bt_mesh_model *model, u16_t  lightness, u16_t  hue, u16_t  saturation, void *user_data)
+int light_model_light_hsl_set(struct bt_mesh_model *model, u16_t  lightness, u16_t  hue, u16_t  saturation)
 {
-    struct light_state *a_light = (struct light_state *)user_data;
+    struct light_state *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
 
     a_light->lightness[1]     = a_light->lightness[0];
     a_light->hue[1]           = a_light->hue[0];
@@ -320,6 +329,8 @@ static void prov_reset(void)
     bt_mesh_prov_enable((bt_mesh_prov_bearer_t)(BT_MESH_PROV_ADV | BT_MESH_PROV_GATT));
 }
 
+#define MYNEWT_VAL_BLE_MESH_DEV_UUID ((uint8_t[16]){0xA8, 0x01, 0x61,0x00,0x04,0x20,0x30,0x75,0x9a,0x00,0x09,0xda,0x78,0x00,0x00,0x00})
+
 #ifdef V2
 static u8_t dev_uuid[16] = {0x22, 0};
 const unsigned char addr[6] = {2,0,0,0,0,0};
@@ -350,16 +361,18 @@ static const struct bt_mesh_prov prov = {
 #ifdef TIANMAO
 static uint8_t param[32] =
 {
-    0x92, 0x04, 0x00, 0x00, // product ID
+    0xf0, 0x0c, 0x00, 0x00, // product ID
     0x36, 0x00, 0x00, 0x00, // authentation length
-    0xd7,0xf5,0x99,0x06,0xaa,0xf2,0x81,0xe6,0xe1,0x9e,0xb3,0x1f,0xa6,0xe3,0x7b,0x6d, // security (TEST DATA)
+    0x7d,0xdf,0xff,0xdb,0xa6,0xe1,0x55,0x1d,0x21,0x05,0xc6,0xbf,0xd4,0xa4,0xf7,0xee, // security (TEST DATA)
 };
 #else
 static uint8_t param[32] = {0};
 #endif
 
+#define MESH_PLT_PB_ADV  (1)
+#define MESH_PLT_PB_GATT (2)
 
-static void model_init()
+void mesh_platform_setup()
 {
     const static bd_addr_t addr_pb_adv  = {0x73, 0x2a, 0x4e, 0x19, 0x28, 0xC0};
     const static bd_addr_t addr_pb_gatt = {0x77, 0x33, 0xa3, 0x17, 0x2f, 0xC0};
@@ -373,14 +386,28 @@ static void model_init()
 #else
     mesh_platform_config(MESH_PLT_PB_ADV, addr_pb_adv, NULL);
 #endif
-    mesh_platform_config(MESH_PLT_PB_GATT, addr_pb_gatt, NULL);
-
-    init_pub();
-    mesh_setup(0, &prov, &comp);
+    mesh_platform_config(MESH_PLT_PB_GATT, addr_pb_gatt, NULL); 
 }
+
+extern int mesh_env_init(void);
+extern void create_mesh_task (void);
 
 uint32_t setup_profile(void *data, void *user_data)
 {
-    model_init();
+    mesh_env_init(); 
+
+    create_mesh_task();
     return 0;
+}
+
+void model_init()
+{
+    nimble_port_init();  //initialze the memory.   
+    init_pub();
+    mesh_setup(&prov, &comp);       
+}
+
+struct bt_mesh_elem * get_element_of_node()
+{
+    return elements;
 }

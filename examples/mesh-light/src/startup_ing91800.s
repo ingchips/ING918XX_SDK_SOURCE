@@ -32,6 +32,16 @@ Stack_Mem       SPACE   Stack_Size
 __initial_sp
                 EXPORT  __initial_sp
 
+                EXPORT  __heap_base
+                EXPORT  __heap_limit
+                
+Heap_Size       EQU     0x5000
+
+                AREA    HEAP, NOINIT, READWRITE, ALIGN=3
+__heap_base
+Heap_Mem        SPACE   Heap_Size
+__heap_limit
+
                 PRESERVE8
                 THUMB
 

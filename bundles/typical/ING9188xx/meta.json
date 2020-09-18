@@ -216,6 +216,7 @@
         "btstack_memory_pool_create", 
         "btstack_memory_pool_get", 
         "btstack_memory_pool_free", 
+        "ll_query_timing_info", 
         "xQueueGenericSend", 
         "xQueuePeek", 
         "xQueuePeekFromISR", 
@@ -293,11 +294,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 136180
+        "size": 136328
     }, 
     "version": [
         1, 
-        0, 
-        9
+        1, 
+        0
     ]
 }
