@@ -8,35 +8,6 @@ extern "C" {	/* allow C++ to use these headers */
 #include "ingsoc.h"
 #include "peripheral_i2c.h"
 
-#define bsPINCTRL_PULL_UP               0
-#define bwPINCTRL_PULL_UP                     1
-#define bsPINCTRL_PULL_DOWN             1
-#define bwPINCTRL_PULL_DOWN                   1
-#define bsPINCTRL_SCHMITT_TRIGGER       2
-#define bwPINCTRL_SCHMITT_TRIGGER             1
-#define bsPINCTRL_SLEW_RATE             3
-#define bwPINCTRL_SLEW_RATE                   1
-#define bsPINCTRL_DRIVER_STRENGTH       4
-#define bwPINCTRL_DRIVER_STRENGTH             3
-
-#define bsPINCTRL_FUNC_MUX              8
-#define bwPINCTRL_FUNC_MUX                    2
-
-#define PINCTRL_PULL_UP                 (1<<bsPINCTRL_PULL_UP)
-#define PINCTRL_PULL_DOWN               (1<<bsPINCTRL_PULL_DOWN)
-#define PINCTRL_SCHMITT_TRIGGER         (1<<bsPINCTRL_SCHMITT_TRIGGER)
-#define PINCTRL_SLEW_RATE               (1<<bsPINCTRL_SLEW_RATE)
-
-#define PINCTRL_DS_0                   0
-#define PINCTRL_DS_1                   1
-#define PINCTRL_DS_2                   2
-#define PINCTRL_DS_4                   4
-
-#define PINCTRL_FUNC_0                 0
-#define PINCTRL_FUNC_1                 1
-#define PINCTRL_FUNC_2                 2
-#define PINCTRL_FUNC_3                 3
-
 #define IO_PIN_NUMBER                  32
 
 typedef enum
@@ -96,6 +67,51 @@ void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index);
 
 // Disable all input io_pins for UART/SPI/I2C
 void PINCTRL_DisableAllInputs(void);
+
+typedef enum
+{
+    PINCTRL_PULL_DISABLE,
+    PINCTRL_PULL_UP,
+    PINCTRL_PULL_DOWN
+} pinctrl_pull_mode_t;
+
+/**
+ * @brief Set pull mode of a GPIO
+ *
+ * @param io_pin_index      The io pad to be configured.
+ * @param mode              The mode to be configured
+ */
+void PINCTRL_Pull(const uint8_t io_pin_index, const pinctrl_pull_mode_t mode);
+
+typedef enum
+{
+    PINCTRL_SLEW_RATE_FAST,
+    PINCTRL_SLEW_RATE_SLOW
+} pinctrl_slew_rate_t;
+
+/**
+ * @brief Set slew rate of a GPIO
+ *
+ * @param io_pin_index      The io pad to be configured.
+ * @param rate              The rate to be configured (default: SLOW)
+ */
+void PINCTRL_SetSlewRate(const uint8_t io_pin_index, const pinctrl_slew_rate_t rate);
+
+typedef enum
+{
+    PINCTRL_DRIVE_2mA,
+    PINCTRL_DRIVE_4mA,
+    PINCTRL_DRIVE_8mA,
+    PINCTRL_DRIVE_12mA,
+} pinctrl_drive_strenght_t;
+
+/**
+ * @brief Set slew rate of a GPIO
+ *
+ * @param io_pin_index      The io pad to be configured.
+ * @param strenght          The strenght to be configured (default: 8mA)
+ */
+void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_strenght_t strenght);
 
 typedef enum
 {
