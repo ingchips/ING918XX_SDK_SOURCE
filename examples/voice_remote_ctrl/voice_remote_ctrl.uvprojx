@@ -396,11 +396,6 @@
               <FileType>1</FileType>
               <FilePath>.\src\kb_scan.c</FilePath>
             </File>
-            <File>
-              <FileName>kb_service.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\kb_service.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

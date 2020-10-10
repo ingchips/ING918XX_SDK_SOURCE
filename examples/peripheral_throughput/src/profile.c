@@ -119,6 +119,23 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
         gap_set_adv_set_random_addr(0, rand_addr);
+
+#ifdef LONG_RANGE
+        gap_set_ext_adv_para(0, 
+                                CONNECTABLE_ADV_BIT,
+                                0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
+                                PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
+                                BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
+                                BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
+                                NULL,                      // Peer_Address      (ignore)
+                                ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
+                                127,                       // Advertising_Tx_Power
+                                PHY_CODED,                 // Primary_Advertising_PHY
+                                0,                         // Secondary_Advertising_Max_Skip
+                                PHY_CODED,                 // Secondary_Advertising_PHY
+                                0x00,                      // Advertising_SID
+                                0x00);                     // Scan_Request_Notification_Enable
+#else
         gap_set_ext_adv_para(0, 
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
@@ -133,6 +150,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 PHY_1M,                    // Secondary_Advertising_PHY
                                 0x00,                      // Advertising_SID
                                 0x00);                     // Scan_Request_Notification_Enable
+#endif
         gap_set_ext_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
         gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);

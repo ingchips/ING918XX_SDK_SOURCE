@@ -3039,9 +3039,11 @@ bool get_group_addr_by_id(uint16_t id,uint16_t* group)
     uint8_t i = CONFIG_BT_MESH_MODEL_GROUP_COUNT;
     for (i =0; i<CONFIG_BT_MESH_MODEL_GROUP_COUNT;i++)
     {
-        pmod->groups[i] != BT_MESH_ADDR_UNASSIGNED;
-        *group = pmod->groups[i];
-        return true;
+        if(pmod->groups[i] != BT_MESH_ADDR_UNASSIGNED)
+        {
+            *group = pmod->groups[i];
+            return true;
+        }
     }
     return false;
 }

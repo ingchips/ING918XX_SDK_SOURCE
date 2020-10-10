@@ -145,16 +145,6 @@ void write_control_word2mirror(uint32_t word);
 
 void flash_write(void);
 
-/** @brief  write the data into NVM immediately
- *
- *     Normally NVM writeback would take some seconds delay to aovid frequently flash writing.
- *     However under some case that the cached data must be written into NVM without delay,so it  API does
- *     this work.
- *
- *
- */
-void kv_commit(void);
-
 /** @brief   transfer uart data to mesh stack
  *
  *     If application support uart input operation, then this API will transfer uart data from application 

@@ -82,23 +82,6 @@ typedef enum
  * @param[in] dir               I/O direction
  */
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir);
-
-/**
- * @brief Set pull state of a GPIO
- *
- * @param[in] io_index          the GPIO
- * @param[in] enable            enabled or not
- * @param[in] type              pull up or down
- */
-void GIO_SetPull(const GIO_Index_t io_index, const uint8_t enable, const GIO_PullType_t type);
-
-/**
- * @brief Set driven capacity of a GPIO
- *
- * @param[in] io_index          the GPIO
- * @param[in] index             index of driven capacity (0: weakest; 2: strongest)
- */
-void GIO_SetDrivenCapacity(const GIO_Index_t io_index, const uint8_t index);
     
 /**
  * @brief Get current I/O direction of a GPIO
