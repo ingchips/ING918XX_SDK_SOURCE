@@ -136,7 +136,15 @@
         "ll_set_adv_coded_scheme", 
         "ll_set_initiating_coded_scheme", 
         "ll_hint_on_ce_len", 
+        "ll_set_conn_tx_power", 
         "ll_set_def_antenna", 
+        "ll_raw_packet_free", 
+        "ll_raw_packet_alloc", 
+        "ll_raw_packet_set_param", 
+        "ll_raw_packet_set_tx_data", 
+        "ll_raw_packet_send", 
+        "ll_raw_packet_get_rx_data", 
+        "ll_raw_packet_recv", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -290,15 +298,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 32544
+        "size": 32552
     }, 
     "rom": {
         "base": 16384, 
-        "size": 136400
+        "size": 137300
     }, 
     "version": [
         1, 
         1, 
-        2
+        3
     ]
 }
