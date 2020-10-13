@@ -1,8 +1,8 @@
-# I/O Over BLE (Master)
+# I/O Over BLE (Central)
 
 This example demonstrates how to:
 
-* Build a generic I/O service over BLE (master part):
+* Build a generic I/O service over BLE (central part):
     * Scanning for devices;
     * Scan & connect to peripheral devices;
     * Discovery services & characteristics;
@@ -16,4 +16,4 @@ Note:
        For UART data, this example also works with
        `peripheral_console`;
     2. addresses are stored in flash, check `pair_config_t`.
-       Master & slave use the same configure data.
+       Central & peripheral use the same configure data.

@@ -6,12 +6,16 @@
 #include "btstack_defines.h"
 
 #include "sm.h"
+
+#include "FreeRTOS.h"
+#include "timers.h"
+
 const sm_persistent_t sm_persistent =
 {
     .er = {1, 2, 3},
     .ir = {4, 5, 6},
     .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
-    .identity_addr          = {0xC3, 25, 34, 48, 52, 66}
+    .identity_addr          = {0xC3, 25, 34, 48, 52, 67}
 };
 
 #define SECURITY_PERSISTENT_DATA    (&sm_persistent) // ((const sm_persistent_t *)0x44000)
@@ -35,6 +39,8 @@ const static uint8_t profile_data[] = {
 };
 
 uint16_t conn_handle = 0xffff;
+int paring = 0;
+static TimerHandle_t app_timer = 0;
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -59,6 +65,12 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
 }
 
 #define USER_MSG_KEY_PRESSED        0x00000001
+#define USER_MSG_RSSI_TIMER         0x00000002
+
+static void app_timer_callback(TimerHandle_t xTimer)
+{
+    btstack_push_user_msg(USER_MSG_RSSI_TIMER, NULL, 0);
+}
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {    
@@ -70,6 +82,9 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             if (mask & 1) ancs_user_action(ANCS_ACTION_ID_POSITIVE);
             if (mask & 2) ancs_user_action(ANCS_ACTION_ID_NEGATIVE);
         }
+        break;
+    case USER_MSG_RSSI_TIMER:
+        gap_read_rssi(conn_handle);
         break;
     default:
         ;
@@ -104,6 +119,22 @@ static void setup_adv(void)
     gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
 }
 
+extern void connection_changed(int connected);
+
+#define OGF_STATUS_PARAMETERS       0x05
+#define OPCODE(ogf, ocf)            (ocf | ogf << 10)
+#define OPCODE_READ_RSSI            OPCODE(OGF_STATUS_PARAMETERS, 0x05)
+
+#pragma pack (push, 1)
+typedef struct read_rssi_complete
+{
+    uint8_t  status;
+    uint16_t handle;
+    int8_t   rssi;
+} read_rssi_complete_t;
+
+#pragma pack (pop)
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -127,9 +158,17 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_COMMAND_COMPLETE:
         switch (hci_event_command_complete_get_command_opcode(packet))
         {
-        // add your code to check command complete response
-        // case :
-        //     break;
+        case OPCODE_READ_RSSI:
+            {
+                const read_rssi_complete_t *cmpl =
+                    (const read_rssi_complete_t *)hci_event_command_complete_get_return_parameters(packet);
+                if (cmpl->rssi > -50)
+                {
+                    connection_changed(1);
+                    xTimerStop(app_timer, portMAX_DELAY);
+                }
+            }
+            break;
         default:
             break;
         }
@@ -152,10 +191,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         {
             const hci_encryption_change_event_t *evt = decode_hci_event(packet, hci_encryption_change_event_t);
             if (!evt->enabled) break;
-            ancs_discover(conn_handle);
+            if (paring)
+                ancs_discover(conn_handle);
         }
         break;
     case HCI_EVENT_DISCONNECTION_COMPLETE:
+        conn_handle = 0xffff;
+        connection_changed(0);
+        xTimerStop(app_timer, portMAX_DELAY);
+        platform_printf("HCI_EVENT_DISCONNECTION_COMPLETE\n");
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         break;
 
@@ -183,6 +227,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
 #endif
 
     if (packet_type != HCI_EVENT_PACKET) return;
+
     switch (event)
     {
     case SM_EVENT_PRIVATE_RANDOM_ADDR_UPDATE:
@@ -196,6 +241,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
 #endif
         break;
     case SM_EVENT_JUST_WORKS_REQUEST:
+        paring = 1;
         sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
         break;
     case SM_EVENT_PASSKEY_DISPLAY_NUMBER:
@@ -212,6 +258,14 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
     case SM_EVENT_PASSKEY_INPUT_CANCEL:
         platform_printf("TODO: INPUT_CANCEL\n");
         break;
+    case SM_EVENT_IDENTITY_RESOLVING_FAILED:
+        platform_printf("not authourized\n");
+        gap_disconnect(conn_handle);  
+        break;
+    case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:        
+        xTimerReset(app_timer, portMAX_DELAY);
+        ancs_discover(conn_handle);  
+        break;
     default:
         break;
     }
@@ -221,6 +275,11 @@ static btstack_packet_callback_registration_t sm_event_callback_registration  = 
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    app_timer = xTimerCreate("t1",
+                            pdMS_TO_TICKS(200),
+                            pdTRUE,
+                            NULL,
+                            app_timer_callback);
     sm_add_event_handler(&sm_event_callback_registration);
     sm_config(IO_CAPABILITY_DISPLAY_ONLY,
               0,

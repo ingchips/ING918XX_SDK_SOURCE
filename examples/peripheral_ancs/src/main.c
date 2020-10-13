@@ -73,6 +73,13 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 #define KEY_MASK        ((1 << KB_KEY_1) | (1 << KB_KEY_2) | (1 << KB_KEY_3))
 
+#define LED_PIN         GIO_GPIO_9
+
+void connection_changed(int connected)
+{
+    GIO_WriteValue(LED_PIN, connected ? 0 : 1);
+}
+
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
@@ -93,6 +100,11 @@ void setup_peripherals(void)
                         GIO_INT_EDGE);
     GIO_ConfigIntSource(KB_KEY_3, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
                         GIO_INT_EDGE);
+    
+    // LED
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GENERAL);
+    GIO_SetDirection(LED_PIN, GIO_DIR_OUTPUT);
+    connection_changed(0);
 }
 
 extern void key_pressed(uint32_t keys_mask);
@@ -165,7 +177,6 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
 
     setup_peripherals();
@@ -175,8 +186,6 @@ int app_main()
            "Key 1: Accept call\n"
            "Key 2: Reject call\n"
            "Key 3: Clear bonding\n");
-           
-    platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
 
     return 0;
 }

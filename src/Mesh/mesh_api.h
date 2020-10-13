@@ -89,8 +89,7 @@ void mesh_setup(const struct bt_mesh_prov *a_prov,
  *  @return  void
  *
  */
-// void mesh_set_dev_name(const char *name);
-// WARNING: ^^^ this API is not available in this release
+ void mesh_set_dev_name(const char *name);
 
 
 /** @brief platform configure
@@ -145,16 +144,6 @@ void mesh_service_trigger(uint8_t* msg, uint8_t len);
 void write_control_word2mirror(uint32_t word);
 
 void flash_write(void);
-
-/** @brief  write the data into NVM immediately
- *
- *     Normally NVM writeback would take some seconds delay to aovid frequently flash writing.
- *     However under some case that the cached data must be written into NVM without delay,so it  API does
- *     this work.
- *
- *
- */
-void kv_commit(void);
 
 /** @brief   transfer uart data to mesh stack
  *

@@ -42,7 +42,7 @@ void kb_init(void)
     {
         PINCTRL_SetPadMux(scan_cols[i], IO_SOURCE_GENERAL);
         GIO_SetDirection(scan_cols[i], GIO_DIR_INPUT);
-        GIO_SetPull(scan_cols[i], 1, GIO_PULL_DOWN);
+        PINCTRL_Pull(scan_cols[i], PINCTRL_PULL_DOWN);
     }
     memset(down_counter, 0, sizeof(down_counter));
 }

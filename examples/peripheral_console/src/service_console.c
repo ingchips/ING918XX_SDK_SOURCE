@@ -28,14 +28,15 @@ static void tx_data(const char *d, const uint8_t len);
 void cmd_help(const char *param)
 {
     static const char help[] =  "commands:\n"
-                                "h/?          help\n"
-                                "r 0x..       read\n"
-                                "w 0x.. 0x..  write\n"
-                                "m            heap\n"
-                                "reboot       reboot\n"
-                                "ps 1/0       power saving\n"
-                                "ver          ver\n"
-                                "advpwr power adv power"
+                                "h/?        help\n"
+                                "r 0x..     read\n"
+                                "w 0x.. ..  write\n"
+                                "m          heap\n"
+                                "reboot     reboot\n"
+                                "ps 1/0     pow saving\n"
+                                "ver        ver\n"
+                                "f          32k freq\n"
+                                "advpwr ..  adv power"
                                 ;
     tx_data(help, strlen(help) + 1);
 }
@@ -109,6 +110,14 @@ void cmd_mem(const char *param)
     tx_data(buffer, strlen(buffer) + 1);
 }
 
+void cmd_freq(const char *param)
+{
+    uint32_t cali = platform_read_info(PLATFORM_INFO_32K_CALI_VALUE);
+    float f = 1000000. / (cali / 65536.);
+    sprintf(buffer, "32k @ %.1f Hz", f);
+    tx_data(buffer, strlen(buffer) + 1);
+}
+
 void cmd_advpwr(const char *param)
 {
     if (sscanf(param, "%d", &adv_tx_power) != 1)
@@ -121,6 +130,12 @@ void cmd_advpwr(const char *param)
         sprintf(buffer, "adv tx power: %ddBm", adv_tx_power);
         tx_data(buffer, strlen(buffer) + 1);
     }
+}
+
+void cmd_calib(const char *param)
+{
+    sprintf(buffer, "adv tx power: %ddBm", adv_tx_power);
+    tx_data(buffer, strlen(buffer) + 1);
 }
 
 static cmd_t cmds[] =
@@ -160,6 +175,14 @@ static cmd_t cmds[] =
     {
         .cmd = "advpwr",
         .handler = cmd_advpwr
+    },
+    {
+        .cmd = "f",
+        .handler = cmd_freq
+    },
+    {
+        .cmd = "c",
+        .handler = cmd_calib
     },
 };
 

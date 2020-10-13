@@ -28,25 +28,6 @@ pcm_sample_t sample_buf[2][SAMPLE_BUF_LEN];
 
 extern void audio_trigger_send(void);
 
-void write_header()
-{
-#if (APP_TYPE == APP_ANDROID)
-    data_buffer[block_index][0] = seq_cnt & 0xff;
-    data_buffer[block_index][1] = seq_cnt >> 8;
-    data_buffer[block_index][2] = 0;
-    data_buffer[block_index][3] = enc.state.predicated & 0xff;
-    data_buffer[block_index][4] = enc.state.predicated >> 8;
-    data_buffer[block_index][5] = enc.state.index;
-    byte_index = 6;
-#else   
-    data_buffer[block_index][0] = enc.state.predicated & 0xff;
-    data_buffer[block_index][1] = enc.state.predicated >> 8;
-    data_buffer[block_index][2] = enc.state.index;
-    data_buffer[block_index][3] = VOICE_BUF_BLOCK_SIZE - 4;
-    byte_index = 4;
-#endif
-}
-
 void enc_output_cb(uint8_t output, void *param)
 {
     data_buffer[block_index][byte_index] = output;
@@ -57,11 +38,7 @@ void enc_output_cb(uint8_t output, void *param)
         audio_trigger_send();
         if (block_index >= VOICE_BUF_BLOCK_NUM)
             block_index = 0;
-#if (APP_TYPE == APP_ING)
         byte_index = 0;
-#else
-        write_header();
-#endif
     }
 }
 
@@ -184,12 +161,8 @@ void audio_start(void)
     oversample_cnt = 0;
 #endif
     adpcm_enc_init(&enc, enc_output_cb, 0);
-    block_index = 0;    
-#if (APP_TYPE == APP_ING)
+    block_index = 0;
     byte_index = 0;
-#else
-    write_header();
-#endif
     TMR_Enable(APB_TMR1);
 }
 

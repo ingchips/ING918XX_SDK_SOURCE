@@ -474,6 +474,19 @@ int os_mbuf_free_chain(struct os_mbuf *om);
 #define BIT(n)  (1UL << (n))
 #endif
 
+#define BT_DBG(fmt, ...)    \
+    if (BT_DBG_ENABLED) { \
+        BLE_HS_LOG(DEBUG, "%s: " fmt "\n", __func__, ## __VA_ARGS__); \
+    }
+#define BT_INFO(fmt, ...)    \
+    if (BT_INFO_ENABLED) { \
+        BLE_HS_LOG(INFO, "%s: " fmt "\n", __func__, ## __VA_ARGS__); \
+    }
+#define BT_WARN(fmt, ...)   \
+    if (BT_WARN_ENABLED) {   \
+        BLE_HS_LOG(WARN, "%s: " fmt "\n", __func__, ## __VA_ARGS__);  \
+    }
+    
 #define BT_ERR(fmt, ...)  BLE_HS_LOG(ERROR, "%s: " fmt "\n", __func__, ## __VA_ARGS__);
 
 

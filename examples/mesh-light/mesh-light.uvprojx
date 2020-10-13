@@ -294,8 +294,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536903448</StartAddress>
-                <Size>33000</Size>
+                <StartAddress>536903456</StartAddress>
+                <Size>32992</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -330,9 +330,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,HCI_ACL_PAYLOAD_SIZE=120</Define>
               <Undefine/>
-              <IncludePath>../../src/Mesh;../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../src/Mesh;../../src/Mesh/os;../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -386,6 +386,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\profile.c</FilePath>
             </File>
+            <File>
+              <FileName>model_cli.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\model_cli.c</FilePath>
+            </File>
+            <File>
+              <FileName>model_srv.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\model_srv.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_profile.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -438,19 +453,21 @@
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
+          <Files>
+            <File>
+              <FileName>ad_parser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\ad_parser.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Mesh</GroupName>
           <Files>
             <File>
-              <FileName>model_srv.c</FileName>
+              <FileName>mesh_stack.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\Mesh\model_srv.c</FilePath>
-            </File>
-            <File>
-              <FileName>model_cli.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Mesh\model_cli.c</FilePath>
+              <FilePath>..\..\src\Mesh\mesh_stack.c</FilePath>
             </File>
             <File>
               <FileName>Mesh.lib</FileName>

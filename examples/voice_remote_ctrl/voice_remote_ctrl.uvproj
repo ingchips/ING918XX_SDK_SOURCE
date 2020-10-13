@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536903448</StartAddress>
-                <Size>33000</Size>
+                <StartAddress>536903456</StartAddress>
+                <Size>32992</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -346,7 +346,7 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,DEV_BOARD</Define>
+              <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -408,11 +408,6 @@
               <FileName>kb_scan.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\kb_scan.c</FilePath>
-            </File>
-            <File>
-              <FileName>kb_service.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\kb_service.c</FilePath>
             </File>
           </Files>
         </Group>

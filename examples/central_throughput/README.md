@@ -2,7 +2,7 @@
 
 This example demonstrates how to:
 
-* Use central (master) role to:
+* Use central role to:
     * Scan & connect to peripheral devices;
     * Discovery services & characteristics defined by 128bit UUID;
     * Get notification when characteristics value updated;

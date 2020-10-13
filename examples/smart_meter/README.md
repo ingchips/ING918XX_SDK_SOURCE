@@ -13,5 +13,5 @@ Note:
 1. This demo has a command line interface on UART0 (see also 
 `uart_console`), and output temperature information over the 
 air (see also `peripheral_console`);
-1. This demo searches for slaves with specific addresses;
-1. Slaves should support SIG Health Thermometer service.
+1. This demo searches for peripherals with specific addresses;
+1. Peripherals should support SIG Health Thermometer service.

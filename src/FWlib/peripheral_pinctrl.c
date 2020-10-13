@@ -1,5 +1,34 @@
 #include "peripheral_pinctrl.h"
 
+#define bsPINCTRL_PULL_UP               0
+#define bwPINCTRL_PULL_UP                     1
+#define bsPINCTRL_PULL_DOWN             1
+#define bwPINCTRL_PULL_DOWN                   1
+#define bsPINCTRL_SCHMITT_TRIGGER       2
+#define bwPINCTRL_SCHMITT_TRIGGER             1
+#define bsPINCTRL_SLEW_RATE             3
+#define bwPINCTRL_SLEW_RATE                   1
+#define bsPINCTRL_DRIVER_STRENGTH       4
+#define bwPINCTRL_DRIVER_STRENGTH             3
+
+#define bsPINCTRL_FUNC_MUX              8
+#define bwPINCTRL_FUNC_MUX                    2
+
+#define PINCTRL_PULL_UP                 (1<<bsPINCTRL_PULL_UP)
+#define PINCTRL_PULL_DOWN               (1<<bsPINCTRL_PULL_DOWN)
+#define PINCTRL_SCHMITT_TRIGGER         (1<<bsPINCTRL_SCHMITT_TRIGGER)
+#define PINCTRL_SLEW_RATE               (1<<bsPINCTRL_SLEW_RATE)
+
+#define PINCTRL_DS_0                   0
+#define PINCTRL_DS_1                   1
+#define PINCTRL_DS_2                   2
+#define PINCTRL_DS_4                   4
+
+#define PINCTRL_FUNC_0                 0
+#define PINCTRL_FUNC_1                 1
+#define PINCTRL_FUNC_2                 2
+#define PINCTRL_FUNC_3                 3
+
 #define OFFSET_MUX_CTRL0        (0x44)
 #define IO_MUX_CTRL5            (0x54)
 #define IO_MUX_CTRL6            (0x58)
@@ -11,7 +40,7 @@
 
 void PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 {
-	volatile uint32_t * reg = (volatile uint32_t *)(SYSCTRL_BASE + OFFSET_MUX_CTRL0) + (io_pin_index >> 3);
+    volatile uint32_t * reg = (volatile uint32_t *)(SYSCTRL_BASE + OFFSET_MUX_CTRL0) + (io_pin_index >> 3);
     uint8_t offset = (io_pin_index & 0x7) << 2;
     *reg = (*reg & ~(IO_SOURCE_MASK << offset)) | (source << offset);
 }
@@ -149,3 +178,57 @@ void PINCTRL_DisableAllInputs(void)
     *(volatile uint32_t *)(SYSCTRL_BASE + IO_MUX_CTRL6) = 0x3fffffff;
 }
 
+void PINCTRL_Pull(const uint8_t io_pin_index, const pinctrl_pull_mode_t mode)
+{
+    volatile uint32_t *pe = (volatile uint32_t *)(APB_PINC_BASE + 0x10);
+    volatile uint32_t *ps = (volatile uint32_t *)(APB_PINC_BASE + 0x18);
+    if (PINCTRL_PULL_DISABLE == mode)
+    {
+        *pe = *pe & ~(1 << io_pin_index);
+    }
+    else
+    {
+        if (PINCTRL_PULL_UP == mode)
+            *ps = *ps | (1 << io_pin_index);
+        else
+            *ps = *ps & ~(1 << io_pin_index);
+
+        *pe = *pe | (1 << io_pin_index);
+    }
+}
+
+void PINCTRL_SetSlewRate(const uint8_t io_pin_index, const pinctrl_slew_rate_t rate)
+{
+    volatile uint32_t *sr = (volatile uint32_t *)(APB_PINC_BASE + 0x20);
+    if (rate)
+    {
+        *sr = *sr | (1 << io_pin_index);
+    }
+    else
+    {
+        *sr = *sr & ~(1 << io_pin_index);
+    }
+}
+
+void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_strenght_t strenght)
+{
+    volatile uint32_t *ds0= (volatile uint32_t *)(APB_PINC_BASE + 0x28);
+    volatile uint32_t *ds1= (volatile uint32_t *)(APB_PINC_BASE + 0x30);
+    if (((int)strenght) & 1)
+    {
+        *ds0 = *ds0 | (1 << io_pin_index);
+    }
+    else
+    {
+        *ds0 = *ds0 & ~(1 << io_pin_index);
+    }
+    
+    if (((int)strenght) & 2)
+    {
+        *ds1 = *ds1 | (1 << io_pin_index);
+    }
+    else
+    {
+        *ds1 = *ds1 & ~(1 << io_pin_index);
+    }
+}

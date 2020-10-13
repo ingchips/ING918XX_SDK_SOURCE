@@ -66,7 +66,7 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty)
 {
     uint32_t pera = OSC_CLK_FREQ / frequency;
-    uint32_t high = pera / 100 * (100 - on_duty);               // warning: frequecy can't be too high
+    uint32_t high = pera > 1000 ? pera / 100 * (100 - on_duty) : pera * (100 - on_duty) / 100;
     PWM_HaltCtrlEnable(channel_index, 1);
     PWM_Enable(channel_index, 0);
     PWM_SetPeraThreshold(channel_index, pera);

@@ -264,6 +264,7 @@ typedef enum
     PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2    
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
     PLATFORM_CFG_PS_DBG_1,      // debugging parameter
+    PLATFORM_CFG_PS_DBG_2,      // debugging parameter
     PLATFORM_CFG_CTE_IQ_DBG,    // debugging parameter
 } platform_cfg_item_t;
 
@@ -304,12 +305,33 @@ uint32_t platform_read_info(const platform_info_item_t item);
 
 /**
  ****************************************************************************************
- * @brief Do 32k clock calibration and get the calibration valie.
+ * @brief Do 32k clock calibration and get the calibration value.
  *
  * @return                  Calibration value.
  ****************************************************************************************
  */
 uint32_t platform_calibrate_32k(void);
+
+/**
+ ****************************************************************************************
+ * @brief Tune internal the 32k RC clock with `value`.
+ *
+ * @param[in] value          Value used to tune the clock (returned by `platform_32k_rc_auto_tune`)
+ ****************************************************************************************
+ */
+void platform_32k_rc_tune(uint16_t value);
+
+/**
+ ****************************************************************************************
+ * @brief Automatically tune the internal 32k RC clock, and get the tuning value.
+ *
+ * Note: This operation costs ~250ms. It is recommended to call this once and store the 
+ *       returned value into NVM for later usage.
+ *
+ * @return                  Value used to tune the clock
+ ****************************************************************************************
+ */
+uint16_t platform_32k_rc_auto_tune(void);
 
 /**
  ****************************************************************************************
@@ -339,7 +361,7 @@ int platform_rand(void);
  * @return                     internal timer counting at 1us.
  ****************************************************************************************
  */
-int64_t platform_get_us_time(void);
+uint64_t platform_get_us_time(void);
 
 /**
  ****************************************************************************************
@@ -407,13 +429,23 @@ void ll_set_initiating_coded_scheme(const coded_scheme_t scheme);
  * @param[in]  conn_handle      handle of an existing connection
  * @param[in]  min_ce_len       information parameter about the minimum length of connection
  *                              event needed for this LE connection.
- *                              Range: 0x0000 – 0xFFFF
+ *                              Range: 0x0000 ? 0xFFFF
  *                              Time = N * 0.625 ms.
  * @param[in]  max_ce_len       information parameter about the maximum length of connection
  *                              event needed for this LE connection.
  ****************************************************************************************
  */
 void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, const uint16_t max_ce_len);
+
+/**
+ ****************************************************************************************
+ * @brief Set tx power of a connection
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[in]  tx_power         tx power in dBm
+ ****************************************************************************************
+ */
+void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
 
 /**
  ****************************************************************************************
@@ -426,6 +458,124 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
  ****************************************************************************************
  */
 void ll_set_def_antenna(uint8_t ant_id);
+
+struct ll_raw_packet;
+
+typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief Free a raw packet object
+ *
+ * @param[in]  packet      the packet
+ ****************************************************************************************
+ */
+// void ll_raw_packet_free(struct ll_raw_packet *packet);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Create a raw packet object
+ *
+ * @param[in]   for_tx      1 if this packet is for Tx else 0
+ * @param[in]   on_done     callback function when packet Rx/Tx is done
+ * @param[in]   user_data   extra user defined data passed to on_done callback
+ * @return                  the new packet object (NULL if out of memory)
+ ****************************************************************************************
+ */
+// struct ll_raw_packet *ll_raw_packet_alloc(uint8_t for_tx, f_ll_raw_packet_done on_done, void *user_data);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Set parameters of a raw packet object
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   tx_power            tx power in dBm (ignored in Rx)
+ * @param[in]   phy_channel_id      physical channel ID (0: 2402MHz, 1: 2404MHz, ...)
+ * @param[in]   access_addr         access address
+ * @param[in]   crc_init            CRC initialization value
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_set_param(struct ll_raw_packet *packet,
+//                           int8_t tx_power,
+//                           int8_t phy_channel_id,
+//                           uint8_t phy,
+//                           uint32_t access_addr,
+//                           uint32_t crc_init);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Set Tx data of a raw packet object
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   header              extra header data (only the lowest 7bits are transmitted)
+ * @param[in]   data                point to the data
+ * @param[in]   size                data size (<= 255)
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_set_tx_data(struct ll_raw_packet *packet,
+//                                uint8_t header,
+//                                const void *data,
+//                                int size);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Send a raw packet object
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   when                start time of the packet (in us)
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_send(struct ll_raw_packet *packet,
+//                        uint64_t when);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Get received data of a raw packet object
+ *
+ * @param[in]   packet              the packet object
+ * @param[out]  air_time            start time of the received packet (in us)
+ * @param[out]  header              extra header data (only the lowest 7bits are transmitted)
+ * @param[out]  data                point to the data
+ * @param[out]  size                data size
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
+//                                uint64_t *air_time,
+//                                uint8_t *header,
+//                                void *data,
+//                                int *size);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Receive a packet using a raw packet object
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   when                start time of receiving (in us)
+ * @param[in]   rx_window           Rx window length to scanning for a packet (in us)
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_recv(struct ll_raw_packet *packet,
+//                         uint64_t when,
+//                         uint32_t rx_window);
+// WARNING: ^^^ this API is not available in this release
+
 
 #ifdef __cplusplus
 }

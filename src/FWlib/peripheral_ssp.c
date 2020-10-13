@@ -187,5 +187,12 @@ uint8_t apSSP_TxFifoEmpty(SSP_TypeDef * SSP_Ptr)
 	return (uint8_t) ((SSP_Ptr->StatusRegister >> bsSSP_STATUS_TXEMPTY) & bwSSP_STATUS_TXEMPTY);
 }
 
+void apSSP_ClearInt(SSP_TypeDef * SSP_Ptr, uint32_t bits)
+{
+    SSP_Ptr->IntClearRegister = bits;
+}
 
-
+uint32_t apSSP_GetIntRawStatus(SSP_TypeDef * SSP_Ptr)
+{
+    return SSP_Ptr->IntRawStatus;
+}
