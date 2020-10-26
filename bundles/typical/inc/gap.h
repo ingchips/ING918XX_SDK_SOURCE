@@ -756,7 +756,7 @@ typedef enum
  *
  * @param sync_handle           identifying the periodic advertising train.
  * @param sampling_enable       Disable (0x00), Enable (0x01)
- * @param slot_durations        combination of bits representing cte_slot_duration_type_t
+ * @param slot_durations        Slot durations
  * @param max_sampled_ctes      The maximum number of Constant Tone Extensions to sample and
  *                              report in each periodic advertising interval.
  *                              Range: 0x01 to 0x10. 0x00: sample and report all CTEs.
@@ -767,7 +767,7 @@ typedef enum
  */
 uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handle,
                                                   const uint8_t       sampling_enable,
-                                                  const uint8_t       slot_durations,
+                                                  const cte_slot_duration_type_t slot_durations,
                                                   const uint8_t       max_sampled_ctes,
                                                   const uint8_t       switching_pattern_len,
                                                   const uint8_t      *antenna_ids);
@@ -780,7 +780,7 @@ uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handl
  *
  * @param conn_handle           Connection handle
  * @param sampling_enable       Disable (0x00), Enable (0x01)
- * @param slot_durations        combination of bits representing cte_slot_duration_type_t
+ * @param slot_durations        Slot durations
  * @param switching_pattern_len The number of Antenna IDs in the pattern. Range: 0x02 to 0x4B.
  * @param antenna_ids           List of Antenna IDs in the pattern
  * @return                      0: Message is sent out; Other: Message is not sent out
@@ -788,7 +788,7 @@ uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handl
  */
 uint8_t gap_set_connection_cte_rx_param(const hci_con_handle_t  conn_handle,
                                         const uint8_t           sampling_enable,
-                                        const uint8_t           slot_durations,
+                                        const cte_slot_duration_type_t slot_durations,
                                         const uint8_t           switching_pattern_len,
                                         const uint8_t          *antenna_ids);
 

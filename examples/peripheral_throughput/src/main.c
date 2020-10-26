@@ -3,6 +3,7 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include <stdio.h>
+#include "rf_util.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -69,18 +70,10 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 0;
 }
 
-const uint32_t rf_data[] = {
-#include "../../central_throughput/src/rf_powerboost.dat"
-};
-
 int app_main()
 {
-    // If there are *three* crystals on board, *uncomment* below line.
-    // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
-
-    // RF power boost
-    platform_set_rf_init_data(rf_data);
+    /// RF power boost
+    rf_enable_powerboost();
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 

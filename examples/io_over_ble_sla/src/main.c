@@ -6,6 +6,7 @@
 #include "task.h"
 #include <stdio.h>
 #include "io_interf.h"
+#include "rf_util.h"
 
 #include "blink.h"
 
@@ -59,7 +60,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 #endif
 }
 
-#define LED_PIN         1
+#define LED_PIN         6 
 
 void show_state(const io_state_t state)
 {
@@ -80,7 +81,7 @@ void show_state(const io_state_t state)
 
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 921600);
+    config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
 
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GENERAL);
@@ -107,9 +108,8 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 
 int app_main()
 {
-    // If there are *three* crystals on board, *uncomment* below line.
-    // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
+    // RF power boost
+    rf_enable_powerboost();
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     
@@ -118,7 +118,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-
+    //platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
     setup_peripherals();
 
     io_interf_init();

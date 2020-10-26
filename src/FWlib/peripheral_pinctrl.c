@@ -112,7 +112,7 @@ void PINCTRL_SetGeneralPadMode(const uint8_t io_pin_index, const gio_mode_t mode
             else
             {
                 reg = (volatile uint32_t *)(SYSCTRL_BASE + OFFSET_PWM_OUT_IO_SEL1);
-                shift = (io_pin_index - 7) * 4;
+                shift = (io_pin_index - 8) * 4;
             }
 
             *reg &= ~(0xf << shift);

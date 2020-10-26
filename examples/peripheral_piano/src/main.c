@@ -96,7 +96,6 @@ int app_main()
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
 
-    sysSetPublicDeviceAddr((uint8_t *)(0x2a008));
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
     // setup deep sleep handlers

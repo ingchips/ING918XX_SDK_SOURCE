@@ -124,6 +124,7 @@
         "ll_set_initiating_coded_scheme", 
         "ll_hint_on_ce_len", 
         "ll_set_conn_tx_power", 
+        "ll_set_conn_coded_scheme", 
         "ll_set_def_antenna", 
         "big_endian_read_16", 
         "big_endian_read_32", 
@@ -282,11 +283,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 130456
+        "size": 130504
     }, 
     "version": [
         1, 
         1, 
-        3
+        4
     ]
 }

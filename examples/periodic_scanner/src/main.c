@@ -76,7 +76,7 @@ uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
 uint32_t cb_lle_init(char *c, void *dummy)
 {
     volatile uint32_t *reg = (volatile uint32_t *)0x40090200;
-    ll_set_def_antenna(0);
+    ll_set_def_antenna(4);
     *reg = (*reg & ~(0x1f << 15)) | (0 << 15);
     return 0;
 }
@@ -105,6 +105,8 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, (f_platform_evt_cb)cb_lle_init, NULL);
+    
+    platform_config(PLATFORM_CFG_CTE_IQ_DBG, 1);
 
     setup_peripherals();
 
