@@ -449,6 +449,16 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
 
 /**
  ****************************************************************************************
+ * @brief Set coded scheme of a connection when CODED is used
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[in]  ci               0: S8, 1: S2 (default)
+ ****************************************************************************************
+ */
+void ll_set_conn_coded_scheme(uint16_t conn_handle, int ci);
+
+/**
+ ****************************************************************************************
  * @brief Set default antenna ID
  *
  *          Note: This ID restored to default value (i.e. 0) when LLE is resetted.

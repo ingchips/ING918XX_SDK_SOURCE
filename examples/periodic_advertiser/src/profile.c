@@ -73,18 +73,18 @@ static void setup_adv(void)
                             BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
                             NULL,                      // Peer_Address      (ignore)
                             ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
-                            0x00,                      // Advertising_Tx_Power
+                            0x30,                      // Advertising_Tx_Power
                             PHY_1M,                    // Primary_Advertising_PHY
                             0,                         // Secondary_Advertising_Max_Skip
                             PHY_1M,                    // Secondary_Advertising_PHY
                             0x00,                      // Advertising_SID
                             0x00);                     // Scan_Request_Notification_Enable
-    gap_set_periodic_adv_para(0, 500, 500, PERIODIC_ADV_BIT_INC_TX);
+    gap_set_periodic_adv_para(0, 200, 200, PERIODIC_ADV_BIT_INC_TX);
     gap_set_periodic_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
     gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
     gap_set_periodic_adv_enable(1, 0);
 #ifdef CTE
-    gap_set_connectionless_cte_tx_param(0, 5,
+    gap_set_connectionless_cte_tx_param(0, 20,
                                         CTE_AOA,
                                         1,
                                         2, NULL);
@@ -119,6 +119,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:
         platform_printf("terminated\n");
+        setup_adv();
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:

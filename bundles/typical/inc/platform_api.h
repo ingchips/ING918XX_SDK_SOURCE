@@ -449,6 +449,16 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
 
 /**
  ****************************************************************************************
+ * @brief Set coded scheme of a connection when CODED is used
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[in]  ci               0: S8, 1: S2 (default)
+ ****************************************************************************************
+ */
+void ll_set_conn_coded_scheme(uint16_t conn_handle, int ci);
+
+/**
+ ****************************************************************************************
  * @brief Set default antenna ID
  *
  *          Note: This ID restored to default value (i.e. 0) when LLE is resetted.
@@ -495,6 +505,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @param[in]   packet              the packet object
  * @param[in]   tx_power            tx power in dBm (ignored in Rx)
  * @param[in]   phy_channel_id      physical channel ID (0: 2402MHz, 1: 2404MHz, ...)
+ * @param[in]   phy                 PHY
+ *                                  For Tx: 1: 1M, 2: 2M, 3: S8, 4: S2.
+ *                                  For Rx, 1: 1M, 2: 2M, 3: Coded.
  * @param[in]   access_addr         access address
  * @param[in]   crc_init            CRC initialization value
  * @return                          0 if successful else error code
@@ -514,7 +527,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @brief Set Tx data of a raw packet object
  *
  * @param[in]   packet              the packet object
- * @param[in]   header              extra header data (only the lowest 7bits are transmitted)
+ * @param[in]   header              extra header data (only the lowest 2bits are transmitted)
  * @param[in]   data                point to the data
  * @param[in]   size                data size (<= 255)
  * @return                          0 if successful else error code
@@ -547,7 +560,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *
  * @param[in]   packet              the packet object
  * @param[out]  air_time            start time of the received packet (in us)
- * @param[out]  header              extra header data (only the lowest 7bits are transmitted)
+ * @param[out]  header              extra header data
  * @param[out]  data                point to the data
  * @param[out]  size                data size
  * @return                          0 if successful else error code

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "io_interf.h"
 #include "blink.h"
+#include "rf_util.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -58,7 +59,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 #endif
 }
 
-#define LED_PIN         1
+#define LED_PIN         6
 
 void show_state(const io_state_t state)
 {
@@ -85,7 +86,7 @@ void show_state(const io_state_t state)
 
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 912600);
+    config_uart(OSC_CLK_FREQ, 115200);
 
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
 
@@ -113,9 +114,8 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 
 int app_main()
 {
-    // If there are *three* crystals on board, *uncomment* below line.
-    // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
+    /// RF power boost
+    rf_enable_powerboost();
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 

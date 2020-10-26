@@ -129,100 +129,17 @@ void show_adv(int8_t rssi)
 }
 
 char *base64_encode(const uint8_t *data, int data_len,
-                    char *res, int buffer_size)
-{
-    int len = (data_len + 2) / 3 * 4;
-    int i, j;
-
-    const char *base64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    if (len > buffer_size - 1)
-    {
-        res[0] = '\0';
-        return res;
-    }
-
-    res[len]='\0';
-
-    for(i = 0, j = 0; i < len - 2; j += 3, i += 4)
-    {
-        res[i + 0] = base64_table[data[j] >> 2];
-        res[i + 1] = base64_table[(data[j] & 0x3) << 4 | (data[j + 1] >> 4)];
-        res[i + 2] = base64_table[(data[j + 1] & 0xf) << 2 | (data[j + 2] >> 6)];
-        res[i + 3] = base64_table[data[j + 2] & 0x3f];
-    }
-
-    switch (data_len % 3)
-    {
-        case 1:
-            res[i - 2] = '=';
-            res[i - 1] = '=';
-            break;
-        case 2:
-            res[i - 1] = '=';
-            break;
-    }
-
-    return res;
-}
+                    char *res, int buffer_size);
 
 void recv_iq_report(const le_meta_connless_iq_report_t *report)
 {
-    static char iq_str_buffer[100];
+    static char iq_str_buffer[300];
     platform_printf("CTE:");
     platform_printf(base64_encode((const uint8_t *)report,
         sizeof(*report) + report->sample_count * sizeof(report->samples[0]),
         iq_str_buffer, sizeof(iq_str_buffer)));
     platform_printf("\n");
 }
-
-#ifndef CTE
-
-#pragma pack (push, 1)
-typedef struct sim_iq_report
-{
-    le_meta_connless_iq_report_t report;
-    le_iq_sample_t samples[10];
-} sim_iq_report_t;
-#pragma pack (pop)
-
-static sim_iq_report_t iq_report =
-{
-    .report = {
-        .sync_handle = 0,
-        .channel_index = 1,
-        .rssi = -500,
-        .rssi_ant_id = 0,
-        .cte_type = 0,
-        .slot_durations = 1,
-        .packet_status = 0,
-        .event_counter = 0,
-        .sample_count = 10
-    },
-    .samples = {
-        127, 0, 127, 0, 127, 0, 127, 0, 127, 0, 127, 0, 127, 0, 127, 0, // ref
-        127, 0, -118, 51
-    }
-};
-
-static int8_t *iqs = (int8_t *)iq_report.samples;
-
-void simulate_cte_report()
-{
-    #define PI 3.1415926536
-    #define R  0.03
-    static float angle = 0.0;
-    float phase;
-    int8_t *sample = iqs + (8 + 1) * 2;
-    angle += PI / 30;
-    if (angle >= 2 * PI) angle -= 2 * PI;
-    phase = - 4 * PI * 2404000000.0 / (300000000) * R * cos(angle);
-    sample[0] = 127 * cos(phase);
-    sample[1] = 127 * sin(phase);
-    iq_report.report.event_counter++;
-    recv_iq_report(&iq_report.report);
-}
-#endif
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
@@ -273,23 +190,21 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 platform_printf("established, %d\n", established->status);
                 gap_set_ext_scan_enable(0, 0, 0, 0);
                 prd_adv_data_offset = 0;
-#ifdef CTE
                 {
-                    static const uint8_t ant_ids[] = {0, 1};                
+                    static const uint8_t ant_ids[] = {4, 5};                
                     gap_set_connectionless_iq_sampling_enable(established->handle,
                                                           1,
-                                                          2,
+                                                          CTE_SLOT_DURATION_2US,
                                                           16,
                                                           sizeof(ant_ids), ant_ids);
                 }
-#endif
             }
             break;
-#ifdef CTE
+
         case HCI_SUBEVENT_LE_CONNECTIONLESS_IQ_REPORT:
             recv_iq_report(decode_hci_le_meta_event(packet, le_meta_connless_iq_report_t));
             break;
-#endif
+
         case HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_REPORT:
             {
                 const le_meta_event_periodic_adv_report_t *report =
@@ -302,9 +217,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 switch (report->data_status)
                 {
                 case HCI_PRD_ADV_DATA_STATUS_CML:
-#ifndef CTE
-                    simulate_cte_report();
-#endif
                     show_adv(report->rssi);
                     prd_adv_data_offset = 0;
                     break;

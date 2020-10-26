@@ -330,7 +330,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,CTE</Define>
+              <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine/>
               <IncludePath>..\ibeacon_scanner\src;../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -395,6 +395,11 @@
               <FileName>service_ibeacon.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ibeacon_scanner\src\service_ibeacon.c</FilePath>
+            </File>
+            <File>
+              <FileName>str_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\str_utils.c</FilePath>
             </File>
           </Files>
         </Group>

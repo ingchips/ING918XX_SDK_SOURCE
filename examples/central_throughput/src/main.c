@@ -7,6 +7,7 @@
 #include "trace.h"
 #include <stdio.h>
 #include "uart_console.h"
+#include "rf_util.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -124,18 +125,10 @@ uint32_t uart_isr(void *user_data)
 uint32_t timer_isr(void *user_data);
 void cmd_help(const char *param);
 
-const uint32_t rf_data[] = {
-#include "rf_powerboost.dat"
-};
-
 int app_main()
 {
-    // If there are *three* crystals on board, *uncomment* below line.
-    // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
-
-    // RF power boost
-    //platform_set_rf_init_data(rf_data);
+    /// RF power boost
+    rf_enable_powerboost();
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 

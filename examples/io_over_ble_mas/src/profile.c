@@ -47,7 +47,7 @@ slave_info_t slave =
     .output_desc = { .handle = INVALID_HANDLE}
 };
 
-static const scan_phy_config_t configs[2] =
+static const scan_phy_config_t configs[] =
 {
     {
         .phy = PHY_1M,
@@ -59,7 +59,7 @@ static const scan_phy_config_t configs[2] =
         .phy = PHY_CODED,
         .type = SCAN_PASSIVE,
         .interval = 200,
-        .window = 50
+        .window = 150
     }
 };
 
@@ -191,6 +191,20 @@ static initiating_phy_config_t phy_configs[] =
             .scan_win = 50,
             .interval_min = 6,
             .interval_max = 6,
+            .latency = 2,
+            .supervision_timeout = 800,
+            .min_ce_len = 10,
+            .max_ce_len = 10
+        }
+    },
+    {
+        .phy = PHY_CODED,
+        .conn_param =
+        {
+            .scan_int = 200,
+            .scan_win = 150,
+            .interval_min = 20,
+            .interval_max = 20,
             .latency = 2,
             .supervision_timeout = 800,
             .min_ce_len = 10,
