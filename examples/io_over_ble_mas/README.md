@@ -12,8 +12,8 @@ This example demonstrates how to:
     * Support UART and others
 
 Note: 
-    1. this example can work with `io_over_ble_sla`.
+    1. this example can work with "I/O Over BLE (Peripheral)".
        For UART data, this example also works with
-       `peripheral_console`;
+       "Peripheral Console";
     2. addresses are stored in flash, check `pair_config_t`.
        Central & peripheral use the same configure data.
