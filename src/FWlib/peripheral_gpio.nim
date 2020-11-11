@@ -43,25 +43,6 @@ const
 proc GIO_SetDirection*(io_index: GIO_Index_t; dir: GIO_Direction_t) {.
     importc: "GIO_SetDirection", header: "peripheral_gpio.h".}
 ## *
-##  @brief Set pull state of a GPIO
-##
-##  @param[in] io_index          the GPIO
-##  @param[in] enable            enabled or not
-##  @param[in] type              pull up or down
-##
-
-proc GIO_SetPull*(io_index: GIO_Index_t; enable: uint8; `type`: GIO_PullType_t) {.
-    importc: "GIO_SetPull", header: "peripheral_gpio.h".}
-## *
-##  @brief Set driven capacity of a GPIO
-##
-##  @param[in] io_index          the GPIO
-##  @param[in] index             index of driven capacity (0: weakest; 2: strongest)
-##
-
-proc GIO_SetDrivenCapacity*(io_index: GIO_Index_t; index: uint8) {.
-    importc: "GIO_SetDrivenCapacity", header: "peripheral_gpio.h".}
-## *
 ##  @brief Get current I/O direction of a GPIO
 ##
 ##  @param[in] io_index          the GPIO

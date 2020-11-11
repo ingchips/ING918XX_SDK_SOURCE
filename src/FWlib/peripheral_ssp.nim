@@ -243,6 +243,10 @@ proc apSSP_DeviceParametersGet*(SSP_Ptr: ptr SSP_TypeDef;
     importc: "apSSP_DeviceParametersGet", header: "peripheral_ssp.h".}
 proc apSSP_DeviceEnable*(SSP_Ptr: ptr SSP_TypeDef) {.importc: "apSSP_DeviceEnable",
     header: "peripheral_ssp.h".}
+proc apSSP_GetIntRawStatus*(SSP_Ptr: ptr SSP_TypeDef): uint32 {.
+    importc: "apSSP_GetIntRawStatus", header: "peripheral_ssp.h".}
+proc apSSP_ClearInt*(SSP_Ptr: ptr SSP_TypeDef; bits: uint32) {.
+    importc: "apSSP_ClearInt", header: "peripheral_ssp.h".}
 ##  void apSSP_DMAModeSet(SSP_TypeDef * SSP_Ptr, apSSP_eDMAMode DMAMode);
 ##  uint32_t apSSP_DMAAddressGet(uint32_t BaseAddr); // AHB_SPI0_BASE or APB_SPI1_BASE
 

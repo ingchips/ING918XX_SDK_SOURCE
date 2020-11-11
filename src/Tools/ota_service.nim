@@ -26,6 +26,7 @@ const
   OTA_STATUS_DISABLED* = 0
   OTA_STATUS_OK* = 1
   OTA_STATUS_ERROR* = 2
+  OTA_STATUS_WAIT_DATA* = 3
 
 ## *
 ## @brief Tell this module handles used by FOTA service

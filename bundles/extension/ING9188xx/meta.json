@@ -138,6 +138,7 @@
         "ll_hint_on_ce_len", 
         "ll_set_conn_tx_power", 
         "ll_set_conn_coded_scheme", 
+        "ll_set_conn_latency", 
         "ll_set_def_antenna", 
         "ll_raw_packet_free", 
         "ll_raw_packet_alloc", 
@@ -303,11 +304,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 137348
+        "size": 137844
     }, 
     "version": [
         1, 
         1, 
-        4
+        5
     ]
 }

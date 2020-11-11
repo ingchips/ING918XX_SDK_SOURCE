@@ -38,11 +38,13 @@ void show_rx(struct ll_raw_packet *packet)
     uint64_t air_time;
     uint8_t header;
     int len;
+    int rssi;
     
-    if (ll_raw_packet_get_rx_data(packet, &air_time, &header, data, &len) == 0)
+    if (ll_raw_packet_get_rx_data(packet, &air_time, &header, data, &len, &rssi) == 0)
     {
         platform_printf("T: %llu\n", air_time);
         platform_printf("H: 0x%02x\n", header);
+        platform_printf("RSSI: %ddBm\n", rssi);
         data[len] = '\0';
         platform_printf("Rx: ");
         platform_printf(data);

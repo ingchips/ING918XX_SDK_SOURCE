@@ -756,7 +756,7 @@ proc gap_set_connectionless_cte_tx_enable*(adv_handle: uint8; cte_enable: uint8)
 
 type
   cte_slot_duration_type_t* {.size: sizeof(cint).} = enum
-    CTE_SLOT_DURATION_1US, CTE_SLOT_DURATION_2US
+    CTE_SLOT_DURATION_1US = 1, CTE_SLOT_DURATION_2US = 2
 
 
 ## *
@@ -766,7 +766,7 @@ type
 ##
 ##  @param sync_handle           identifying the periodic advertising train.
 ##  @param sampling_enable       Disable (0x00), Enable (0x01)
-##  @param slot_durations        combination of bits representing cte_slot_duration_type_t
+##  @param slot_durations        Slot durations
 ##  @param max_sampled_ctes      The maximum number of Constant Tone Extensions to sample and
 ##                               report in each periodic advertising interval.
 ##                               Range: 0x01 to 0x10. 0x00: sample and report all CTEs.
@@ -777,8 +777,8 @@ type
 ##
 
 proc gap_set_connectionless_iq_sampling_enable*(sync_handle: uint16;
-    sampling_enable: uint8; slot_durations: uint8; max_sampled_ctes: uint8;
-    switching_pattern_len: uint8; antenna_ids: ptr uint8): uint8 {.
+    sampling_enable: uint8; slot_durations: cte_slot_duration_type_t;
+    max_sampled_ctes: uint8; switching_pattern_len: uint8; antenna_ids: ptr uint8): uint8 {.
     importc: "gap_set_connectionless_iq_sampling_enable", header: "gap.h".}
 ## *
 ##  @brief Enable or disable sampling received Constant Tone Extension fields on the
@@ -788,7 +788,7 @@ proc gap_set_connectionless_iq_sampling_enable*(sync_handle: uint16;
 ##
 ##  @param conn_handle           Connection handle
 ##  @param sampling_enable       Disable (0x00), Enable (0x01)
-##  @param slot_durations        combination of bits representing cte_slot_duration_type_t
+##  @param slot_durations        Slot durations
 ##  @param switching_pattern_len The number of Antenna IDs in the pattern. Range: 0x02 to 0x4B.
 ##  @param antenna_ids           List of Antenna IDs in the pattern
 ##  @return                      0: Message is sent out; Other: Message is not sent out
@@ -797,7 +797,7 @@ proc gap_set_connectionless_iq_sampling_enable*(sync_handle: uint16;
 
 proc gap_set_connection_cte_rx_param*(conn_handle: hci_con_handle_t;
                                      sampling_enable: uint8;
-                                     slot_durations: uint8;
+                                     slot_durations: cte_slot_duration_type_t;
                                      switching_pattern_len: uint8;
                                      antenna_ids: ptr uint8): uint8 {.
     importc: "gap_set_connection_cte_rx_param", header: "gap.h".}

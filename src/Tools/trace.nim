@@ -11,7 +11,7 @@ const
   TRACE_BUFF_SIZE_MASK* = (TRACE_BUFF_SIZE - 1)
 
 type
-  trace_info_t* {.importc: "trace_info_t", header: "trace.h", bycopy.} = object
+  trace_uart_t* {.importc: "trace_uart_t", header: "trace.h", bycopy.} = object
     buffer* {.importc: "buffer".}: array[TRACE_BUFF_SIZE, uint8]
     write_next* {.importc: "write_next".}: uint16
     read_next* {.importc: "read_next".}: uint16
@@ -20,43 +20,68 @@ type
     mutex* {.importc: "mutex".}: SemaphoreHandle_t
     port* {.importc: "port".}: ptr UART_TypeDef
 
+  trace_rtt_t* {.importc: "trace_rtt_t", header: "trace.h", bycopy.} = object
+    mutex* {.importc: "mutex".}: SemaphoreHandle_t
+
 
 ## *
 ## ***************************************************************************************
 ##  @brief Initialize UART trace
 ##
-##  @param[in] trace_info_t  trace context
+##  @param[in] trace_uart_t  trace context
 ## ***************************************************************************************
 ##
 
-proc trace_init*(ctx: ptr trace_info_t) {.importc: "trace_init", header: "trace.h".}
+proc trace_uart_init*(ctx: ptr trace_uart_t) {.importc: "trace_uart_init",
+    header: "trace.h".}
+## *
+## ***************************************************************************************
+##  @brief Initialize RTT trace
+##
+##  @param[in] trace_rtt_t  trace context
+## ***************************************************************************************
+##
+
+proc trace_rtt_init*(ctx: ptr trace_rtt_t) {.importc: "trace_rtt_init",
+    header: "trace.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief UART ISR callback
 ##
-##  @param[in] trace_info_t  trace context
+##  @param[in] trace_uart_t  trace context
 ## ***************************************************************************************
 ##
 
-proc trace_uart_isr*(ctx: ptr trace_info_t): uint32 {.importc: "trace_uart_isr",
+proc trace_uart_isr*(ctx: ptr trace_uart_t): uint32 {.importc: "trace_uart_isr",
     header: "trace.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief Trace event callback
 ##
 ##  @param[in] trace         trace event
-##  @param[in] trace_info_t  trace context
+##  @param[in] trace_uart_t  trace context
 ## ***************************************************************************************
 ##
 
-proc cb_trace*(trace: ptr platform_evt_trace_t; ctx: ptr trace_info_t): uint32 {.
-    importc: "cb_trace", header: "trace.h".}
+proc cb_trace_uart*(trace: ptr platform_evt_trace_t; ctx: ptr trace_uart_t): uint32 {.
+    importc: "cb_trace_uart", header: "trace.h".}
+## *
+## ***************************************************************************************
+##  @brief Trace event callback
+##
+##  @param[in] trace         trace event
+##  @param[in] trace_rtt_t  trace context
+## ***************************************************************************************
+##
+
+proc cb_trace_rtt*(trace: ptr platform_evt_trace_t; ctx: ptr trace_rtt_t): uint32 {.
+    importc: "cb_trace_rtt", header: "trace.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief Flush saved trace data to UART
 ##
-##  @param[in] trace_info_t  trace context
+##  @param[in] trace_uart_t  trace context
 ## ***************************************************************************************
 ##
 
-proc trace_flush*(ctx: ptr trace_info_t) {.importc: "trace_flush", header: "trace.h".}
+proc trace_flush*(ctx: ptr trace_uart_t) {.importc: "trace_flush", header: "trace.h".}

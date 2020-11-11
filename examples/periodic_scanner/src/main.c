@@ -106,7 +106,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, (f_platform_evt_cb)cb_lle_init, NULL);
     
-    platform_config(PLATFORM_CFG_CTE_IQ_DBG, 1);
+    platform_config(PLATFORM_CFG_LL_DBG_FLAGS, 1);
 
     setup_peripherals();
 

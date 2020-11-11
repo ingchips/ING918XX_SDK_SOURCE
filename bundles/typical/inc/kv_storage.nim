@@ -104,8 +104,8 @@ proc kv_init*(f_write: f_kv_write_to_nvm; f_read: f_kv_read_from_nvm) {.
 ## *
 ##  @brief remove all k-v parirs
 ##
-##  void kv_remove_all(void);
-##  WARNING: ^^^ this API is not available in this release
+
+proc kv_remove_all*() {.importc: "kv_remove_all", header: "kv_storage.h".}
 ## *
 ##  @brief remove a k-v pair
 ##
@@ -142,9 +142,12 @@ proc kv_get*(key: kvkey_t; len: ptr int16): ptr uint8 {.importc: "kv_get",
 proc kv_value_modified*() {.importc: "kv_value_modified", header: "kv_storage.h".}
 ## *
 ##  @brief commited whole db to nvm immediately
+##  @param[in]   flag_always     if signaled, always write to nvm no matter if modified or not.
+##                               Otherwise, do not write to nvm if not modified.
 ##
-##  void kv_commit(void);
-##  WARNING: ^^^ this API is not available in this release
+
+proc kv_commit*(flag_always_write: cint) {.importc: "kv_commit",
+                                        header: "kv_storage.h".}
 ## *
 ##  @brief traverse each k-v pair
 ##  @param[in]   visitor         visitor function
