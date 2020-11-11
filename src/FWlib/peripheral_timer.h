@@ -45,7 +45,7 @@ void TMR_SetCMP(TMR_TypeDef *pTMR, uint32_t value);
  * @param[in] value         comparison value
  ****************************************************************************************
  */
-uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint32_t value);
+uint32_t TMR_GetCMP(TMR_TypeDef *pTMR);
 
 /**
  ****************************************************************************************

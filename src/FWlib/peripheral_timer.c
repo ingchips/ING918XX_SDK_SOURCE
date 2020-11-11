@@ -38,7 +38,7 @@ void TMR_SetCMP(TMR_TypeDef *pTMR, uint32_t value)
 	pTMR->CMP = value;
 }
 
-uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint32_t value)
+uint32_t TMR_GetCMP(TMR_TypeDef *pTMR)
 {
 	return pTMR->CMP;
 }

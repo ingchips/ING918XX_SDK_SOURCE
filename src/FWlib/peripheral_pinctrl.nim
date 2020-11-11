@@ -2,30 +2,6 @@ import
   ingsoc, peripheral_i2c
 
 const
-  bsPINCTRL_PULL_UP* = 0
-  bwPINCTRL_PULL_UP* = 1
-  bsPINCTRL_PULL_DOWN* = 1
-  bwPINCTRL_PULL_DOWN* = 1
-  bsPINCTRL_SCHMITT_TRIGGER* = 2
-  bwPINCTRL_SCHMITT_TRIGGER* = 1
-  bsPINCTRL_SLEW_RATE* = 3
-  bwPINCTRL_SLEW_RATE* = 1
-  bsPINCTRL_DRIVER_STRENGTH* = 4
-  bwPINCTRL_DRIVER_STRENGTH* = 3
-  bsPINCTRL_FUNC_MUX* = 8
-  bwPINCTRL_FUNC_MUX* = 2
-  PINCTRL_PULL_UP* = (1 shl bsPINCTRL_PULL_UP)
-  PINCTRL_PULL_DOWN* = (1 shl bsPINCTRL_PULL_DOWN)
-  PINCTRL_SCHMITT_TRIGGER* = (1 shl bsPINCTRL_SCHMITT_TRIGGER)
-  PINCTRL_SLEW_RATE* = (1 shl bsPINCTRL_SLEW_RATE)
-  PINCTRL_DS_0* = 0
-  PINCTRL_DS_1* = 1
-  PINCTRL_DS_2* = 2
-  PINCTRL_DS_4* = 4
-  PINCTRL_FUNC_0* = 0
-  PINCTRL_FUNC_1* = 1
-  PINCTRL_FUNC_2* = 2
-  PINCTRL_FUNC_3* = 3
   IO_PIN_NUMBER* = 32
 
 type
@@ -78,6 +54,49 @@ proc PINCTRL_SelI2cSclIn*(port: i2c_port_t; io_pin_index: uint8) {.
 
 proc PINCTRL_DisableAllInputs*() {.importc: "PINCTRL_DisableAllInputs",
                                  header: "peripheral_pinctrl.h".}
+type
+  pinctrl_pull_mode_t* {.size: sizeof(cint).} = enum
+    PINCTRL_PULL_DISABLE, PINCTRL_PULL_UP, PINCTRL_PULL_DOWN
+
+
+## *
+##  @brief Set pull mode of a GPIO
+##
+##  @param io_pin_index      The io pad to be configured.
+##  @param mode              The mode to be configured
+##
+
+proc PINCTRL_Pull*(io_pin_index: uint8; mode: pinctrl_pull_mode_t) {.
+    importc: "PINCTRL_Pull", header: "peripheral_pinctrl.h".}
+type
+  pinctrl_slew_rate_t* {.size: sizeof(cint).} = enum
+    PINCTRL_SLEW_RATE_FAST, PINCTRL_SLEW_RATE_SLOW
+
+
+## *
+##  @brief Set slew rate of a GPIO
+##
+##  @param io_pin_index      The io pad to be configured.
+##  @param rate              The rate to be configured (default: SLOW)
+##
+
+proc PINCTRL_SetSlewRate*(io_pin_index: uint8; rate: pinctrl_slew_rate_t) {.
+    importc: "PINCTRL_SetSlewRate", header: "peripheral_pinctrl.h".}
+type
+  pinctrl_drive_strenght_t* {.size: sizeof(cint).} = enum
+    PINCTRL_DRIVE_2mA, PINCTRL_DRIVE_4mA, PINCTRL_DRIVE_8mA, PINCTRL_DRIVE_12mA
+
+
+## *
+##  @brief Set slew rate of a GPIO
+##
+##  @param io_pin_index      The io pad to be configured.
+##  @param strenght          The strenght to be configured (default: 8mA)
+##
+
+proc PINCTRL_SetDriveStrength*(io_pin_index: uint8;
+                              strenght: pinctrl_drive_strenght_t) {.
+    importc: "PINCTRL_SetDriveStrength", header: "peripheral_pinctrl.h".}
 type
   gio_mode_t* {.size: sizeof(cint).} = enum
     IO_MODE_GPIO, IO_MODE_PWM, IO_MODE_ANT_SEL

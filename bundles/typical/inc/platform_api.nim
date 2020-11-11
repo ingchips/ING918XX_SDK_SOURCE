@@ -81,9 +81,21 @@ type
   platform_trace_item_t* {.size: sizeof(cint).} = enum
     PLATFORM_TRACE_ID_EVENT = 0, PLATFORM_TRACE_ID_HCI_CMD = 1,
     PLATFORM_TRACE_ID_HCI_EVENT = 2, PLATFORM_TRACE_ID_HCI_ACL = 3,
-    PLATFORM_TRACE_ID_LLCP = 4
+    PLATFORM_TRACE_ID_LLCP = 4, PLATFORM_TRACE_ID_RAW = 5,
+    PLATFORM_TRACE_ID_EVENT_ERROR = 6
 
 
+## *
+## ***************************************************************************************
+##  @brief Output a block of raw data to TRACE. ID is PLATFORM_TRACE_ID_RAW
+##
+##  @param[in] buffer        data buffer
+##  @param[in] byte_len      length of data buffer in bytes
+## ***************************************************************************************
+##
+
+proc platform_trace_raw*(buffer: pointer; byte_len: cint) {.
+    importc: "platform_trace_raw", header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief register callback function for platform events
@@ -188,12 +200,40 @@ proc platform_write_persistent_reg*(value: uint8) {.
 
 proc platform_read_persistent_reg*(): uint8 {.
     importc: "platform_read_persistent_reg", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Shutdown the whole system, and power on again after a duration
+##         specified by duration_cycles.
+##         Optionally, a portion of SYS memory can be retentioned during shutdown.
+##
+##  @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
+##                                   Mininum value: 825 cycles (about 25.18ms)
+##  @param[in] p_retention_data      Pointer to the start of data to be retentioned
+##  @param[in] data_size             Size of the data to be retentioned
+## ***************************************************************************************
+##
+
+proc platform_shutdown*(duration_cycles: uint32; p_retention_data: pointer;
+                       data_size: uint32) {.importc: "platform_shutdown",
+    header: "platform_api.h".}
 type
   platform_cfg_item_t* {.size: sizeof(cint).} = enum
     PLATFORM_CFG_LOG_HCI,     ##  flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING, ##  flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_TRACE_MASK,  ##  flag is bitmap of platform_trace_item_t. default: 0
-    PLATFORM_CFG_32K_CLK      ##  32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+    PLATFORM_CFG_RC32K_EN,    ##  Enable/Disable RC 32k clock. Default: Enable
+    PLATFORM_CFG_OSC32K_EN,   ##  Enable/Disable 32k crystal oscillator. Default: Enable
+    PLATFORM_CFG_32K_CLK, ##  32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+                         ##  Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED and *run*.
+                         ##        For OSC32K, wait until status of OSC32K is OK;
+                         ##        For RC32K, wait 100us after enabled.
+                         ##  Note: Wait another 100us before disabling the unused clock.
+    PLATFORM_CFG_32K_CLK_ACC, ##  Configure 32k clock accurary in ppm.
+    PLATFORM_CFG_32K_CALI_PERIOD, ##  32K clock auto-calibartion period in seconds. Default: 3600 * 2
+    PLATFORM_CFG_PS_DBG_0,    ##  debugging parameter
+    PLATFORM_CFG_PS_DBG_1,    ##  debugging parameter
+    PLATFORM_CFG_PS_DBG_2,    ##  debugging parameter
+    PLATFORM_CFG_LL_DBG_FLAGS ##  debugging parameter
   platform_32k_clk_src_t* {.size: sizeof(cint).} = enum
     PLATFORM_32K_OSC,         ##  external 32k crystal oscillator
     PLATFORM_32K_RC           ##  internal RC 32k clock
@@ -215,20 +255,56 @@ const
 
 proc platform_config*(item: platform_cfg_item_t; flag: uint32) {.
     importc: "platform_config", header: "platform_api.h".}
+type
+  platform_info_item_t* {.size: sizeof(cint).} = enum
+    PLATFORM_INFO_OSC32K_STATUS, ##  Read status of 32k crystal oscillator. (0: not OK; Non-0: OK)
+    PLATFORM_INFO_32K_CALI_VALUE ##  Read current 32k clock calibaration result.
+
+
 ## *
 ## ***************************************************************************************
-##  @brief Shutdown the whole system, and power on again after a duration
-##         specified by duration_cycles.
-##         Optionally, a portion of SYS memory can be retentioned during shutdown.
+##  @brief read platform information.
 ##
-##  @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
-##                                   Mininum value: 825 cycles (about 25.18ms)
-##  @param[in] p_retention_data      Pointer to the start of data to be retentioned
-##  @param[in] data_size             Size of the data to be retentioned
+##  @param[in] item          Information item
+##  @return                  Information.
 ## ***************************************************************************************
 ##
-##  void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
-##  WARNING: ^^^ this API is not available in this release
+
+proc platform_read_info*(item: platform_info_item_t): uint32 {.
+    importc: "platform_read_info", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Do 32k clock calibration and get the calibration value.
+##
+##  @return                  Calibration value.
+## ***************************************************************************************
+##
+
+proc platform_calibrate_32k*(): uint32 {.importc: "platform_calibrate_32k",
+                                      header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Tune internal the 32k RC clock with `value`.
+##
+##  @param[in] value          Value used to tune the clock (returned by `platform_32k_rc_auto_tune`)
+## ***************************************************************************************
+##
+
+proc platform_32k_rc_tune*(value: uint16) {.importc: "platform_32k_rc_tune",
+    header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Automatically tune the internal 32k RC clock, and get the tuning value.
+##
+##  Note: This operation costs ~250ms. It is recommended to call this once and store the
+##        returned value into NVM for later usage.
+##
+##  @return                  Value used to tune the clock
+## ***************************************************************************************
+##
+
+proc platform_32k_rc_auto_tune*(): uint16 {.importc: "platform_32k_rc_auto_tune",
+    header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief generate random bytes by using true hardware random-number generator
@@ -240,6 +316,27 @@ proc platform_config*(item: platform_cfg_item_t; flag: uint32) {.
 
 proc platform_hrng*(bytes: ptr uint8; len: uint32) {.importc: "platform_hrng",
     header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief generate a pseudo random integer by internal PRNG whose seed initialized by HRNG
+##         at startup.
+##
+##  @return                     a pseudo random integer in range of 0 to RAND_MAX
+## ***************************************************************************************
+##
+
+proc platform_rand*(): cint {.importc: "platform_rand", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Read the internal timer counting from initialization.
+##         Note: This timer restarts after shutdown, while RTC timer does not.
+##
+##  @return                     internal timer counting at 1us.
+## ***************************************************************************************
+##
+
+proc platform_get_us_time*(): uint64 {.importc: "platform_get_us_time",
+                                      header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief the printf function
@@ -311,7 +408,7 @@ proc ll_set_initiating_coded_scheme*(scheme: coded_scheme_t) {.
 ##  @param[in]  conn_handle      handle of an existing connection
 ##  @param[in]  min_ce_len       information parameter about the minimum length of connection
 ##                               event needed for this LE connection.
-##                               Range: 0x0000 – 0xFFFF
+##                               Range: 0x0000 ? 0xFFFF
 ##                               Time = N * 0.625 ms.
 ##  @param[in]  max_ce_len       information parameter about the maximum length of connection
 ##                               event needed for this LE connection.
@@ -320,6 +417,39 @@ proc ll_set_initiating_coded_scheme*(scheme: coded_scheme_t) {.
 
 proc ll_hint_on_ce_len*(conn_handle: uint16; min_ce_len: uint16; max_ce_len: uint16) {.
     importc: "ll_hint_on_ce_len", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Set tx power of a connection
+##
+##  @param[in]  conn_handle      handle of an existing connection
+##  @param[in]  tx_power         tx power in dBm
+## ***************************************************************************************
+##
+
+proc ll_set_conn_tx_power*(conn_handle: uint16; tx_power: int16) {.
+    importc: "ll_set_conn_tx_power", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Set coded scheme of a connection when CODED is used
+##
+##  @param[in]  conn_handle      handle of an existing connection
+##  @param[in]  ci               0: S8, 1: S2 (default)
+## ***************************************************************************************
+##
+
+proc ll_set_conn_coded_scheme*(conn_handle: uint16; ci: cint) {.
+    importc: "ll_set_conn_coded_scheme", header: "platform_api.h".}
+## *
+## ***************************************************************************************
+##  @brief Force latency parameter of a connection (slave role)
+##
+##  @param[in]  conn_handle      handle of an existing connection
+##  @param[in]  latency          latency
+## ***************************************************************************************
+##
+
+proc ll_set_conn_latency*(conn_handle: uint16; latency: cint) {.
+    importc: "ll_set_conn_latency", header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief Set default antenna ID
@@ -333,3 +463,113 @@ proc ll_hint_on_ce_len*(conn_handle: uint16; min_ce_len: uint16; max_ce_len: uin
 
 proc ll_set_def_antenna*(ant_id: uint8) {.importc: "ll_set_def_antenna",
                                        header: "platform_api.h".}
+type
+  ll_raw_packet* {.importc: "ll_raw_packet", header: "platform_api.h", bycopy.} = object
+
+  f_ll_raw_packet_done* = proc (packet: ptr ll_raw_packet; user_data: pointer) {.noconv.}
+
+## *
+## ***************************************************************************************
+##  @brief Free a raw packet object
+##
+##  @param[in]  packet      the packet
+## ***************************************************************************************
+##
+##  void ll_raw_packet_free(struct ll_raw_packet *packet);
+##  WARNING: ^^^ this API is not available in this release
+## *
+## ***************************************************************************************
+##  @brief Create a raw packet object
+##
+##  @param[in]   for_tx      1 if this packet is for Tx else 0
+##  @param[in]   on_done     callback function when packet Rx/Tx is done
+##  @param[in]   user_data   extra user defined data passed to on_done callback
+##  @return                  the new packet object (NULL if out of memory)
+## ***************************************************************************************
+##
+##  struct ll_raw_packet *ll_raw_packet_alloc(uint8_t for_tx, f_ll_raw_packet_done on_done, void *user_data);
+##  WARNING: ^^^ this API is not available in this release
+## *
+## ***************************************************************************************
+##  @brief Set parameters of a raw packet object
+##
+##  @param[in]   packet              the packet object
+##  @param[in]   tx_power            tx power in dBm (ignored in Rx)
+##  @param[in]   phy_channel_id      physical channel ID (0: 2402MHz, 1: 2404MHz, ...)
+##  @param[in]   phy                 PHY
+##                                   For Tx: 1: 1M, 2: 2M, 3: S8, 4: S2.
+##                                   For Rx, 1: 1M, 2: 2M, 3: Coded.
+##  @param[in]   access_addr         access address
+##  @param[in]   crc_init            CRC initialization value
+##  @return                          0 if successful else error code
+## ***************************************************************************************
+##
+##  int ll_raw_packet_set_param(struct ll_raw_packet *packet,
+##                            int8_t tx_power,
+##                            int8_t phy_channel_id,
+##                            uint8_t phy,
+##                            uint32_t access_addr,
+##                            uint32_t crc_init);
+##  WARNING: ^^^ this API is not available in this release
+## *
+## ***************************************************************************************
+##  @brief Set Tx data of a raw packet object
+##
+##  @param[in]   packet              the packet object
+##  @param[in]   header              extra header data (only the lowest 2bits are transmitted)
+##  @param[in]   data                point to the data
+##  @param[in]   size                data size (<= 255)
+##  @return                          0 if successful else error code
+## ***************************************************************************************
+##
+##  int ll_raw_packet_set_tx_data(struct ll_raw_packet *packet,
+##                                 uint8_t header,
+##                                 const void *data,
+##                                 int size);
+##  WARNING: ^^^ this API is not available in this release
+## *
+## ***************************************************************************************
+##  @brief Send a raw packet object
+##
+##  @param[in]   packet              the packet object
+##  @param[in]   when                start time of the packet (in us)
+##  @return                          0 if successful else error code
+## ***************************************************************************************
+##
+##  int ll_raw_packet_send(struct ll_raw_packet *packet,
+##                         uint64_t when);
+##  WARNING: ^^^ this API is not available in this release
+## *
+## ***************************************************************************************
+##  @brief Get received data of a raw packet object
+##
+##  @param[in]   packet              the packet object
+##  @param[out]  air_time            start time of the received packet (in us)
+##  @param[out]  header              extra header data
+##  @param[out]  data                point to the data
+##  @param[out]  size                data size
+##  @param[out]  rssi                RSSI in dBm
+##  @return                          0 if successful else error code
+## ***************************************************************************************
+##
+##  int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
+##                                 uint64_t *air_time,
+##                                 uint8_t *header,
+##                                 void *data,
+##                                 int *size,
+##                                 int *rssi);
+##  WARNING: ^^^ this API is not available in this release
+## *
+## ***************************************************************************************
+##  @brief Receive a packet using a raw packet object
+##
+##  @param[in]   packet              the packet object
+##  @param[in]   when                start time of receiving (in us)
+##  @param[in]   rx_window           Rx window length to scanning for a packet (in us)
+##  @return                          0 if successful else error code
+## ***************************************************************************************
+##
+##  int ll_raw_packet_recv(struct ll_raw_packet *packet,
+##                          uint64_t when,
+##                          uint32_t rx_window);
+##  WARNING: ^^^ this API is not available in this release

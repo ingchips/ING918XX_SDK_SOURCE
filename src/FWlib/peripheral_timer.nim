@@ -43,7 +43,7 @@ proc TMR_SetCMP*(pTMR: ptr TMR_TypeDef; value: uint32) {.importc: "TMR_SetCMP",
 ## ***************************************************************************************
 ##
 
-proc TMR_GetCMP*(pTMR: ptr TMR_TypeDef; value: uint32): uint32 {.importc: "TMR_GetCMP",
+proc TMR_GetCMP*(pTMR: ptr TMR_TypeDef): uint32 {.importc: "TMR_GetCMP",
     header: "peripheral_timer.h".}
 ## *
 ## ***************************************************************************************

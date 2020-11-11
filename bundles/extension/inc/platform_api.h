@@ -265,7 +265,7 @@ typedef enum
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
     PLATFORM_CFG_PS_DBG_1,      // debugging parameter
     PLATFORM_CFG_PS_DBG_2,      // debugging parameter
-    PLATFORM_CFG_CTE_IQ_DBG,    // debugging parameter
+    PLATFORM_CFG_LL_DBG_FLAGS,  // debugging parameter
 } platform_cfg_item_t;
 
 typedef enum
@@ -459,6 +459,16 @@ void ll_set_conn_coded_scheme(uint16_t conn_handle, int ci);
 
 /**
  ****************************************************************************************
+ * @brief Force latency parameter of a connection (slave role)
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[in]  latency          latency
+ ****************************************************************************************
+ */
+void ll_set_conn_latency(uint16_t conn_handle, int latency);
+ 
+/**
+ ****************************************************************************************
  * @brief Set default antenna ID
  *
  *          Note: This ID restored to default value (i.e. 0) when LLE is resetted.
@@ -553,6 +563,7 @@ int ll_raw_packet_send(struct ll_raw_packet *packet,
  * @param[out]  header              extra header data
  * @param[out]  data                point to the data
  * @param[out]  size                data size
+ * @param[out]  rssi                RSSI in dBm
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
@@ -560,7 +571,8 @@ int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
                                uint64_t *air_time,
                                uint8_t *header,
                                void *data,
-                               int *size);
+                               int *size,
+                               int *rssi);
 
 /**
  ****************************************************************************************

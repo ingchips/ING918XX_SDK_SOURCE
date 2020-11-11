@@ -8,16 +8,7 @@ type                          ##  -------------------  Cortex-M3 Processor Excep
     SVCall_IRQn = -5,           ## !< 11 SV Call Interrupt
     DebugMonitor_IRQn = -4,     ## !< 12 Debug Monitor Interrupt
     PendSV_IRQn = -2,           ## !< 14 Pend SV Interrupt
-    SysTick_IRQn = -1,          ## !< 15 System Tick Interrupt
-                    ## *****  CM32GPM3 specific Interrupt Numbers ********************************************************
-    n00_BB0_IRQn = 0, n01_BB1_IRQn = 1, n02_RTC_M0_IRQn = 2, n03_RTC_M1_IRQn = 3,
-    n04_TMR0_IRQn = 4, n05_TMR1_IRQn = 5, n06_TMR2_IRQn = 6, n07_DMA_IRQn = 7,
-    n08_EXINT_IRQn = 8, n09_GPIO_IRQn = 9, n10_BB0_IRQn = 10, n11_BB1_IRQn = 11,
-    n12_DMA_IRQn = 12, n13_TMR1_IRQn = 13, n14_SPI0_IRQn = 14, n15_SPI1_IRQn = 15,
-    n16_URT0_IRQn = 16, n17_URT1_IRQn = 17, n18_I2C_IRQn = 18, n19_DMA_IRQn = 19,
-    n20_BB0_IRQn = 20, n21_BB1_IRQn = 21, n22_TMR2_IRQn = 22, n23_SPI1_IRQn = 23,
-    n24_EXINT_IRQn = 24, n25_GPIO_IRQn = 25, n26_I2C_IRQn = 26, n27_URT0_IRQn = 27,
-    n28_URT1_IRQn = 28
+    SysTick_IRQn = -1           ## !< 15 System Tick Interrupt
 
 
 ##  ================================================================================
@@ -254,7 +245,15 @@ when defined(USE_STDPERIPH_DRIVER):
     peripheral_pinctrl, peripheral_rtc, peripheral_ssp, peripheral_timer,
     peripheral_adc, peripheral_pwm
 
+##  Clock Freq Define
+
+when not defined(TARGET_FPGA):
+  const
+    PLL_CLK_FREQ* = 48000000
+    OSC_CLK_FREQ* = 24000000
+else:
+  const
+    PLL_CLK_FREQ* = 32000000
+    OSC_CLK_FREQ* = 16000000
 const
-  PLL_CLK_FREQ* = 48000000
-  OSC_CLK_FREQ* = 24000000
   RTC_CLK_FREQ* = 32768

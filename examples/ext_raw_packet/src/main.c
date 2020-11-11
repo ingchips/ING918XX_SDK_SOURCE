@@ -81,17 +81,6 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 0;
 }
 
-static void watchdog_task(void *pdata)
-{
-    // Watchdog will timeout after 20sec
-    TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
-    for (;;)
-    {
-        vTaskDelay(pdMS_TO_TICKS(9000));
-        TMR_WatchDogRestart();
-    }
-}
-
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -108,12 +97,6 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     setup_peripherals();
-    xTaskCreate(watchdog_task,
-           "w",
-           configMINIMAL_STACK_SIZE,
-           NULL,
-           (configMAX_PRIORITIES - 1),
-           NULL);
 
     return 0;
 }

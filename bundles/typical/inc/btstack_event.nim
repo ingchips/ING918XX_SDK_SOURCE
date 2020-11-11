@@ -858,8 +858,8 @@ type
     role* {.importc: "role".}: uint8 ## Peer address type - 0=public/1=random
     peer_addr_type* {.importc: "peer_addr_type".}: bd_addr_type_t ## Peer address
     peer_addr* {.importc: "peer_addr".}: bd_addr_t ## Local_Resolvable_Private_Address
-    local_resolv_priv_addr* {.importc: "local_resolv_priv_addr".}: bd_addr_type_t ## Peer_Resolvable_Private_Address
-    peer_resolv_priv_addr* {.importc: "peer_resolv_priv_addr".}: bd_addr_type_t ## Connection interval
+    local_resolv_priv_addr* {.importc: "local_resolv_priv_addr".}: bd_addr_t ## Peer_Resolvable_Private_Address
+    peer_resolv_priv_addr* {.importc: "peer_resolv_priv_addr".}: bd_addr_t ## Connection interval
     interval* {.importc: "interval".}: uint16 ## Connection latency
     latency* {.importc: "latency".}: uint16 ## Link supervision timeout
     sup_timeout* {.importc: "sup_timeout".}: uint16 ## Master clock accuracy
