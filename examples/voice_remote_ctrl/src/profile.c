@@ -42,8 +42,6 @@ static uint8_t profile_data[] = {
 
 #define INVALID_HANDLE 0xffff
 
-uint8_t is_paring_mode = 0;
-
 static hci_con_handle_t handle_send = INVALID_HANDLE;
 
 static uint16_t next_block = 0;
@@ -70,6 +68,12 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 }
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
+
+void update_conn_interval(hci_con_handle_t conn_handle, uint16_t interval)
+{
+    l2cap_request_connection_parameter_update(conn_handle,
+        interval, interval, 0, interval > 10 ? interval : 10);
+}
 
 static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
@@ -98,6 +102,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
         {
             audio_notify_enable = 1;
+            update_conn_interval(handle_send, 12); // 15ms
         }
         else
         {

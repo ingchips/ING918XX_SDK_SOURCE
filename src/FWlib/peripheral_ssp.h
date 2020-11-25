@@ -239,9 +239,6 @@ void apSSP_DeviceEnable(SSP_TypeDef * SSP_Ptr);
 uint32_t apSSP_GetIntRawStatus(SSP_TypeDef * SSP_Ptr);
 void apSSP_ClearInt(SSP_TypeDef * SSP_Ptr, uint32_t bits);
 
-// void apSSP_DMAModeSet(SSP_TypeDef * SSP_Ptr, apSSP_eDMAMode DMAMode);
-// uint32_t apSSP_DMAAddressGet(uint32_t BaseAddr); // AHB_SPI0_BASE or APB_SPI1_BASE
-
 void apSSP_DeviceDisable(SSP_TypeDef * SSP_Ptr);
 
 void apSSP_DeviceReceiveEnable(SSP_TypeDef * SSP_Ptr);

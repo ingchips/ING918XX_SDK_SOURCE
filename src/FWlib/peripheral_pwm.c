@@ -12,6 +12,15 @@ void PWM_Enable(const uint8_t channel_index, const uint8_t enable)
     PWM_SetRegBit(0x0C, channel_index, enable, 1);
 }
 
+void PWM_EnableMulti(uint32_t channel_mask, const uint8_t enable)
+{
+    volatile uint32_t *reg = (volatile uint32_t *)(PWM_REG_BASE + 0x0C);
+    if (enable)
+        *reg |= channel_mask;
+    else
+        *reg &= ~channel_mask;
+}
+
 // Note: when mask = 1, output is masked as 0.
 void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_t mask_b)
 {

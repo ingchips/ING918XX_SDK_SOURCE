@@ -8,6 +8,10 @@
 
 #include "platform_api.h"
 
+extern void audio_input_setup(void);
+extern void audio_input_start(void);
+extern void audio_input_stop(void);
+
 static adpcm_enc_t enc;
 
 uint8_t data_buffer[VOICE_BUF_BLOCK_NUM][VOICE_BUF_BLOCK_SIZE] = {0};
@@ -15,10 +19,6 @@ uint16_t block_index;
 uint16_t byte_index;
 uint16_t seq_cnt;
 int8_t mic_dig_gain = 0;
-
-#ifdef SIMULATION
-uint8_t oversample_cnt = 0;
-#endif
 
 #define SAMPLE_BUF_LEN  20
 
@@ -41,13 +41,6 @@ void enc_output_cb(uint8_t output, void *param)
         byte_index = 0;
     }
 }
-
-#ifdef SIMULATION
-const pcm_sample_t pcm[] = 
-#include "../data/itu_female_16k.m"
-;
-uint16_t pcm_index = 0;
-#endif
 
 #define QUEUE_LENGTH    30
 #define ITEM_SIZE       sizeof(int16_t) 
@@ -112,69 +105,27 @@ pcm_sample_t fir_push_run(fir_t *fir, pcm_sample_t x)
     return r >> 7;
 }
 
-uint32_t audio_sample_isr(void *user_data)
-{    
-    pcm_sample_t sample;
-    BaseType_t xHigherPriorityTaskWoke = pdFALSE;    
-
-    TMR_IntClr(APB_TMR1);
-
-#ifdef SIMULATION
-    oversample_cnt = (oversample_cnt + 1) & OVER_SAMPLING_MASK;
-    if (oversample_cnt != 0) return 0;
-    if (pcm_index < sizeof(pcm) / sizeof(pcm[0]))
-    {
-        sample = pcm[pcm_index++];
-    }
-    else
-        sample = 0;
-#else
-    sample = ADC_ReadChannelData(ADC_CHANNEL_ID) - 512;
-#endif
-    
-    // digital gain
-    if (mic_dig_gain > 0)
-        sample <<= mic_dig_gain;
-    else if (mic_dig_gain < 0)
-        sample >>= -mic_dig_gain;
-    
-    sample_buf[sample_buf_index][sample_index] = sample;
-    sample_index++;
-    if (sample_index >= SAMPLE_BUF_LEN)
-    {
-        xQueueSendFromISR(xSampleQueue, &sample_buf_index, &xHigherPriorityTaskWoke);
-        sample_buf_index++;
-        if (sample_buf_index >= 2)
-            sample_buf_index = 0;
-        sample_index = 0;
-    }
-
-    return 0;
-}
-
 void audio_start(void)
 {
     sample_buf_index = 0;
     sample_index = 0;
-#ifdef SIMULATION
-    pcm_index = 0;
-    oversample_cnt = 0;
-#endif
     adpcm_enc_init(&enc, enc_output_cb, 0);
     block_index = 0;
     byte_index = 0;
-    TMR_Enable(APB_TMR1);
+    audio_input_start();
 }
 
 void audio_stop(void)
 {
-    TMR_Disable(APB_TMR1);
     xQueueReset(xSampleQueue);
+    audio_input_stop();
 }
 
 static void audio_task(void *pdata)
 {
+#if (OVER_SAMPLING_MASK != 0)
     int oversample_cnt = 0;
+#endif
     pcm_sample_t *buf;
     for (;;)
     {
@@ -189,7 +140,7 @@ static void audio_task(void *pdata)
         for (i = 0; i < SAMPLE_BUF_LEN; i++)
         {
             pcm_sample_t sample = buf[i];
-#ifndef SIMULATION
+#if (OVER_SAMPLING_MASK != 0)
             oversample_cnt = (oversample_cnt + 1) & OVER_SAMPLING_MASK;
             if (oversample_cnt != 0)
             {
@@ -216,7 +167,9 @@ void audio_init(void)
                150,
                NULL,
                (configMAX_PRIORITIES - 1),
-               NULL);    
+               NULL);
+    
+    audio_input_setup();
 }
 
 uint16_t audio_get_curr_block(void)
@@ -227,4 +180,25 @@ uint16_t audio_get_curr_block(void)
 uint8_t *audio_get_block_buff(uint16_t index)
 {
     return data_buffer[index];
+}
+
+void audio_rx_sample(pcm_sample_t sample)
+{
+    BaseType_t xHigherPriorityTaskWoke = pdFALSE;
+    // digital gain
+    if (mic_dig_gain > 0)
+        sample <<= mic_dig_gain;
+    else if (mic_dig_gain < 0)
+        sample >>= -mic_dig_gain;
+    
+    sample_buf[sample_buf_index][sample_index] = sample;
+    sample_index++;
+    if (sample_index >= SAMPLE_BUF_LEN)
+    {
+        xQueueSendFromISR(xSampleQueue, &sample_buf_index, &xHigherPriorityTaskWoke);
+        sample_buf_index++;
+        if (sample_buf_index >= 2)
+            sample_buf_index = 0;
+        sample_index = 0;
+    }
 }

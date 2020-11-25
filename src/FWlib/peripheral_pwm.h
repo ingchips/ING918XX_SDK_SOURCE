@@ -1,6 +1,8 @@
 #ifndef __PERIPHERAL_PWM_H__
 #define __PERIPHERAL_PWM_H__
 
+#include <stdint.h>
+
 #ifdef	__cplusplus
 extern "C" {	/* allow C++ to use these headers */
 #endif	/* __cplusplus */
@@ -23,6 +25,7 @@ typedef enum
 } PWM_WordMode_t;
 
 void PWM_Enable(const uint8_t channel_index, const uint8_t enable);
+void PWM_EnableMulti(uint32_t channel_mask, const uint8_t enable);
 
 void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_t mask_b);
 
