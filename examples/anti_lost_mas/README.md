@@ -1,4 +1,4 @@
-# Anti-Lost (Master)
+# Anti-Lost (Central)
 
 This example demonstrates how to:
 

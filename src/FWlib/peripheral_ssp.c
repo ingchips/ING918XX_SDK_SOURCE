@@ -62,33 +62,6 @@ void apSSP_DeviceEnable(SSP_TypeDef * SSP_Ptr)
 }
 
 /*====================================================================*/
-void apSSP_DMAModeSet(SSP_TypeDef * SSP_Ptr, apSSP_eDMAMode DMAMode)
-{
-    /* Set DMA enable bit */
-    switch (DMAMode)
-    {
-        case apSSP_DMA_TX_ON:
-        	  SSP_Ptr->DMAControlReg |= 1 << bsSSP_DMA_TRANSMIT_ENABLE;
-            break;
-        case apSSP_DMA_TX_OFF:
-        	  SSP_Ptr->DMAControlReg &= ~(1 << bsSSP_DMA_TRANSMIT_ENABLE);
-            break;
-        case apSSP_DMA_RX_ON:
-        	  SSP_Ptr->DMAControlReg |= 1 << bsSSP_DMA_RECEIVE_ENABLE;
-            break;
-        case apSSP_DMA_RX_OFF:
-        	  SSP_Ptr->DMAControlReg &= ~(1 << bsSSP_DMA_RECEIVE_ENABLE);
-            break;
-    }
-}
-
-/*====================================================================*/
-uint32_t apSSP_DMAAddressGet(uint32_t BaseAddr) // AHB_SPI0_BASE or APB_SPI1_BASE
-{
-    return BaseAddr + 0x8;
-}
-
-/*====================================================================*/
 void apSSP_DeviceDisable(SSP_TypeDef * SSP_Ptr)
 {
     /* Clear SSP enable bit (SSE) */

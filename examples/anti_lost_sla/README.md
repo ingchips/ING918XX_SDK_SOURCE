@@ -1,4 +1,4 @@
-# Anti-Lost (Slave)
+# Anti-Lost (Peripheral)
 
 This example demonstrates how to:
 

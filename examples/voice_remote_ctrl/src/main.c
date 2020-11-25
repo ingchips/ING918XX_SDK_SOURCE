@@ -51,23 +51,9 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
 
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
-                              | (1 << SYSCTRL_ClkGate_APB_TMR1) | (1 << SYSCTRL_ClkGate_APB_TMR2)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR2)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
     PINCTRL_DisableAllInputs();
-
-    // timer 0 can be used as watchdog, so we use timer 1.
-    // setup timer 1 to sampling rate
-    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / (32000 * OVER_SAMPLING));
-    TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
-    TMR_Reload(APB_TMR1);
-    TMR_IntEnable(APB_TMR1);
-
-    ADC_PowerCtrl(1);
-    ADC_Reset();
-    ADC_SetClkSel(ADC_CLK_EN | ADC_CLK_16);
-    ADC_SetMode(ADC_MODE_LOOP);
-    ADC_EnableChannel(ADC_CHANNEL_ID, 1);
-    ADC_Enable(1);
 
 #if (BOARD == BOARD_REM)
     kb_init();
@@ -174,7 +160,6 @@ int app_main()
 
     audio_init();
 
-    platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, audio_sample_isr, NULL);
 #if (BOARD == BOARD_REM)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER2, kb_scan_isr, NULL);
     TMR_Enable(APB_TMR2);

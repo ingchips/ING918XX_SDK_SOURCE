@@ -5,9 +5,6 @@
 
 #include "app_cfg.h"
 
-#define OVER_SAMPLING        1                      // must be 2^n
-#define OVER_SAMPLING_MASK   (OVER_SAMPLING - 1)
-
 #if (APP_TYPE == APP_ING)
 // 4KB per sec
 #define VOICE_BUF_BLOCK_SIZE  150   // this is indicated in GATT voice information
