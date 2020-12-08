@@ -53,21 +53,6 @@ void setup_peripherals(void)
 	TMR_Enable(APB_TMR1);
 }
 
-uint32_t cfg_rf(void *_, void * __)
-{
-#define reg(x)      ((volatile uint32_t *)(x))
-#define ADDR 0x96
-    uint16_t v;
-    *reg(0x40090408) = (1 << 8) | ADDR;
-    while (*reg(0x40090408) & (1 << 8)) ;
-    v = *reg(0x4009040c) & 0xfffe;
-    v = 0x200;
-    *reg(0x4009040c) = v << 16;
-    *reg(0x40090408) = (1 << 9) | ADDR;
-    while (*reg(0x40090408) & (1 << 9)) ;
-    return 0;
-}
-
 uint32_t timer_isr(void *user_data);
 
 int app_main()
@@ -77,9 +62,7 @@ int app_main()
     // platform_set_rf_clk_source(0);
 
     setup_peripherals();
-    
-    sysSetPublicDeviceAddr((uint8_t *)(0x44000));
-    
+
     //platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
 
     // setup putc handle
@@ -88,8 +71,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
-    
-    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, cfg_rf, NULL);
+
     return 0;
 }
 
