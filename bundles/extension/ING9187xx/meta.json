@@ -86,19 +86,6 @@
         "gap_read_periodic_adv_list_size", 
         "gap_ext_create_connection", 
         "gap_create_connection_cancel", 
-        "gap_set_connectionless_cte_tx_param", 
-        "gap_set_connectionless_cte_tx_enable", 
-        "gap_set_connectionless_iq_sampling_enable", 
-        "gap_set_connection_cte_rx_param", 
-        "gap_set_connection_cte_tx_param", 
-        "gap_set_connection_cte_request_enable", 
-        "gap_set_connection_cte_response_enable", 
-        "gap_read_antenna_info", 
-        "gap_set_periodic_adv_rx_enable", 
-        "gap_periodic_adv_sync_transfer", 
-        "gap_periodic_adv_set_info_transfer", 
-        "gap_periodic_adv_sync_transfer_param", 
-        "gap_default_periodic_adv_sync_transfer_param", 
         "gap_set_host_channel_classification", 
         "gap_update_connection_parameters", 
         "gap_get_connection_parameter_range", 
@@ -147,9 +134,6 @@
         "ll_raw_packet_send", 
         "ll_raw_packet_get_rx_data", 
         "ll_raw_packet_recv", 
-        "ll_raw_packet_set_tx_cte", 
-        "ll_raw_packet_set_rx_cte", 
-        "ll_raw_packet_get_iq_samples", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -307,7 +291,7 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 138136
+        "size": 131868
     }, 
     "version": [
         1, 
