@@ -129,6 +129,27 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 ota_ctrl[0] = OTA_STATUS_OK;
             }
             break;
+        case OTA_CTRL_METADATA:
+            if (OTA_STATUS_OK != ota_ctrl[0])
+                break;
+            if ((0 == ota_downloading) || (buffer_size < 1 + sizeof(ota_meta_t)))
+            {
+                const ota_meta_t *meta = (const ota_meta_t *)(buffer + 1);
+                int s = buffer_size - 1;
+                if (crc((uint8_t *)&meta->entry, s - sizeof(meta->crc_value)) != meta->crc_value)
+                {
+                    ota_ctrl[0] = OTA_STATUS_ERROR;
+                    break;
+                }
+                program_fota_metadata(meta->entry, 
+                                      (s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
+                                      meta->blocks);
+            }
+            else
+            {
+                ota_ctrl[0] = OTA_STATUS_ERROR;
+            }
+            break;
         case OTA_CTRL_REBOOT:
             if (OTA_STATUS_OK == ota_ctrl[0])
             {

@@ -28,6 +28,23 @@ int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size
  */
 int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
 
+typedef struct fota_update_block
+{
+    uint32_t src;
+    uint32_t dest;
+    uint32_t size;
+} fota_update_block_t;
+
+/**
+ * @brief Program FOTA metadata.
+ *
+ * @param[in] entry             new entry address (0 if use old entry address)
+ * @param[in] block_num         number of blocks
+ * @param[in] blocks            an array of `fota_update_block_t`
+ * @return                      0 if successful else non-0
+ */
+int program_fota_metadata(const uint32_t entry, const int block_num, const fota_update_block_t *blocks);
+
 #ifdef __cplusplus
 }
 #endif
