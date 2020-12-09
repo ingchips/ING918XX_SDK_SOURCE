@@ -116,7 +116,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
         {
         case OTA_CTRL_PAGE_BEGIN:
             ota_addr = *(uint32_t *)(buffer + 1);
-            if (ota_addr & 0x3)
+            if ((ota_addr & 0x3) || (ota_addr >= EFLASH_END))
             {
                 ota_ctrl[0] = OTA_STATUS_ERROR;
                 return 0;
@@ -124,16 +124,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
             else
                 ota_ctrl[0] = OTA_STATUS_OK;
             EflashProgramEnable();
-            if (ota_addr >= EFLASH_END)
-            {
-                *(volatile uint32_t *)(0xc40a0) = 0x4;
-                EraseEFlashPage(ota_addr >= EFLASH_END + PAGE_SIZE ? 1 : 0);
-                *(volatile uint32_t *)(0xc40a0) = 0x0;
-            }
-            else
-            {
-                EraseEFlashPage(((ota_addr - EFLASH_BASE) >> 13) & 0x3f);
-            }
+            EraseEFlashPage(((ota_addr - EFLASH_BASE) >> 13) & 0x3f);
             ota_downloading = 1;
             ota_start_addr = ota_addr;
             break;
@@ -168,6 +159,27 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
             break;
         case OTA_CTRL_SWITCH_APP:
             platform_switch_app(SEC_FOTA_APP_ADDR);        
+            break;
+        case OTA_CTRL_METADATA:
+            if (OTA_STATUS_OK != ota_ctrl[0])
+                break;
+            if ((0 == ota_downloading) || (buffer_size < 1 + sizeof(ota_meta_t)))
+            {
+                const ota_meta_t *meta = (const ota_meta_t *)(buffer + 1);
+                int s = buffer_size - 1;
+                if (crc((uint8_t *)&meta->entry, s - sizeof(meta->crc_value)) != meta->crc_value)
+                {
+                    ota_ctrl[0] = OTA_STATUS_ERROR;
+                    break;
+                }
+                program_fota_metadata(meta->entry, 
+                                      (s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
+                                      meta->blocks);
+            }
+            else
+            {
+                ota_ctrl[0] = OTA_STATUS_ERROR;
+            }
             break;
         case OTA_CTRL_REBOOT:
             if (OTA_STATUS_OK == ota_ctrl[0])

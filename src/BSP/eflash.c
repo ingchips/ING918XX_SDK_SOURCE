@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 
 static uint32_t ClkFreq; //0:16M 1:24M
 
@@ -79,5 +80,51 @@ int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size
 int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
     return program_flash0(dest_addr, buffer, size, 0);
+}
+
+int program_fota_metadata(const uint32_t entry, const int block_num, const fota_update_block_t *blocks)
+{
+#define START               (EFLASH_BASE + EFLASH_SIZE + 2 * PAGE_SIZE)
+#define	DEF_UPDATE_FLAG     (0x5A5A5A5A)
+
+    uint32_t backup[4];
+    uint32_t addr = START - 4;
+    int i;
+
+    init();
+    memcpy(backup, (void *)(START - sizeof(backup)), sizeof(backup));
+    if (entry)
+    {
+        backup[1] = entry;
+        backup[2] = DEF_UPDATE_FLAG;
+    }
+
+    EflashProgramEnable();
+
+    *(volatile uint32_t *)(0xc40a0) = 0x4;
+    EraseEFlashPage(1);
+    *(volatile uint32_t *)(0xc40a0) = 0x0;
+
+    for (i = sizeof(backup) / sizeof(backup[0]) - 1; i >= 0;  i--)
+    {
+        EflashProgram(addr, backup[i]);
+        addr -= 4;
+    }
+
+    for (i = 0; i < block_num; i++)
+    {
+        EflashProgram(addr, DEF_UPDATE_FLAG);
+        addr -= 4;
+        EflashProgram(addr, blocks[i].src);
+        addr -= 4;
+        EflashProgram(addr, blocks[i].dest);
+        addr -= 4;
+        EflashProgram(addr, blocks[i].size);
+        addr -= 4;
+    }
+    
+    EflashProgramDisable();
+    uninit();
+    return 0;
 }
 
