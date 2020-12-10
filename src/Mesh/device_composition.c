@@ -73,7 +73,7 @@
 #define hal_gpio_write(a,b)
 
 static struct bt_mesh_cfg_srv cfg_srv = {
-	.relay = BT_MESH_RELAY_ENABLED,
+	.relay = BT_MESH_RELAY_DISABLED,
 	.beacon = BT_MESH_BEACON_ENABLED,
 
 #if defined(CONFIG_BT_MESH_FRIEND)
@@ -81,12 +81,7 @@ static struct bt_mesh_cfg_srv cfg_srv = {
 #else
 	.frnd = BT_MESH_FRIEND_NOT_SUPPORTED,
 #endif
-
-#if defined(CONFIG_BT_MESH_GATT_PROXY)
 	.gatt_proxy = BT_MESH_GATT_PROXY_ENABLED,
-#else
-	.gatt_proxy = BT_MESH_GATT_PROXY_NOT_SUPPORTED,
-#endif
 
 	.default_ttl = 7,
 
@@ -113,7 +108,6 @@ static struct bt_mesh_model_pub gen_power_onoff_cli_pub;
 static struct bt_mesh_model_pub light_lightness_srv_pub;
 static struct bt_mesh_model_pub light_lightness_cli_pub;
 static struct bt_mesh_model_pub light_ctl_srv_pub;
-//static struct bt_mesh_model_pub light_ctl_cli_pub;
 static struct bt_mesh_model_pub vnd_pub;
 static struct bt_mesh_model_pub gen_level_srv_pub_s0;
 static struct bt_mesh_model_pub gen_level_cli_pub_s0;
@@ -121,58 +115,33 @@ static struct bt_mesh_model_pub gen_level_cli_pub_s0;
 
 static struct os_mbuf *bt_mesh_pub_msg_health_pub;
 static struct os_mbuf *bt_mesh_pub_msg_gen_onoff_srv_pub_root;
-//static struct os_mbuf *bt_mesh_pub_msg_gen_onoff_cli_pub_root;
 static struct os_mbuf *bt_mesh_pub_msg_gen_level_srv_pub_root;
-//static struct os_mbuf *bt_mesh_pub_msg_gen_level_cli_pub_root;
 static struct os_mbuf *bt_mesh_pub_msg_gen_def_trans_time_srv_pub;
-//static struct os_mbuf *bt_mesh_pub_msg_gen_def_trans_time_cli_pub;
 static struct os_mbuf *bt_mesh_pub_msg_gen_power_onoff_srv_pub;
-//static struct os_mbuf *bt_mesh_pub_msg_gen_power_onoff_cli_pub;
 static struct os_mbuf *bt_mesh_pub_msg_light_lightness_srv_pub;
-//static struct os_mbuf *bt_mesh_pub_msg_light_lightness_cli_pub;
 static struct os_mbuf *bt_mesh_pub_msg_light_ctl_srv_pub;
-//static struct os_mbuf *bt_mesh_pub_msg_light_ctl_cli_pub;
 static struct os_mbuf *bt_mesh_pub_msg_vnd_pub;
-//static struct os_mbuf *bt_mesh_pub_msg_gen_level_srv_pub_s0;
-//static struct os_mbuf *bt_mesh_pub_msg_gen_level_cli_pub_s0;
 
 
 void init_pub(void)
 {
 	bt_mesh_pub_msg_health_pub			= NET_BUF_SIMPLE(1 + 3 + 0);
 	bt_mesh_pub_msg_gen_onoff_srv_pub_root		= NET_BUF_SIMPLE(2 + 3);
-//	bt_mesh_pub_msg_gen_onoff_cli_pub_root		= NET_BUF_SIMPLE(2 + 4);
 	bt_mesh_pub_msg_gen_level_srv_pub_root		= NET_BUF_SIMPLE(2 + 5);
-//	bt_mesh_pub_msg_gen_level_cli_pub_root		= NET_BUF_SIMPLE(2 + 7);
 	bt_mesh_pub_msg_gen_power_onoff_srv_pub		= NET_BUF_SIMPLE(2 + 1);
-//	bt_mesh_pub_msg_gen_power_onoff_cli_pub		= NET_BUF_SIMPLE(2 + 1);
 	bt_mesh_pub_msg_gen_def_trans_time_srv_pub	= NET_BUF_SIMPLE(2 + 1);
-//	bt_mesh_pub_msg_gen_def_trans_time_cli_pub	= NET_BUF_SIMPLE(2 + 1);
 	bt_mesh_pub_msg_light_lightness_srv_pub		= NET_BUF_SIMPLE(2 + 5);
-//	bt_mesh_pub_msg_light_lightness_cli_pub		= NET_BUF_SIMPLE(2 + 5);
 	bt_mesh_pub_msg_light_ctl_srv_pub		= NET_BUF_SIMPLE(2 + 9);
-//	bt_mesh_pub_msg_light_ctl_cli_pub		= NET_BUF_SIMPLE(2 + 9);
-//	bt_mesh_pub_msg_vnd_pub				= NET_BUF_SIMPLE(3 + 6);
-//	bt_mesh_pub_msg_gen_level_srv_pub_s0		= NET_BUF_SIMPLE(2 + 5);
-//	bt_mesh_pub_msg_gen_level_cli_pub_s0		= NET_BUF_SIMPLE(2 + 7);
 
 
 	health_pub.msg				= bt_mesh_pub_msg_health_pub;
 	gen_onoff_srv_pub_root.msg		= bt_mesh_pub_msg_gen_onoff_srv_pub_root;
-//	gen_onoff_cli_pub_root.msg		= bt_mesh_pub_msg_gen_onoff_cli_pub_root;
 	gen_level_srv_pub_root.msg		= bt_mesh_pub_msg_gen_level_srv_pub_root;
-//	gen_level_cli_pub_root.msg		= bt_mesh_pub_msg_gen_level_cli_pub_root;
 	gen_power_onoff_srv_pub.msg		= bt_mesh_pub_msg_gen_power_onoff_srv_pub;
-//	gen_power_onoff_cli_pub.msg		= bt_mesh_pub_msg_gen_power_onoff_cli_pub;
 	gen_def_trans_time_srv_pub.msg		= bt_mesh_pub_msg_gen_def_trans_time_srv_pub;
-//	gen_def_trans_time_cli_pub.msg		= bt_mesh_pub_msg_gen_def_trans_time_cli_pub;
 	light_lightness_srv_pub.msg		= bt_mesh_pub_msg_light_lightness_srv_pub;
-//	light_lightness_cli_pub.msg		= bt_mesh_pub_msg_light_lightness_cli_pub;
 	light_ctl_srv_pub.msg			= bt_mesh_pub_msg_light_ctl_srv_pub;
-//	light_ctl_cli_pub.msg			= bt_mesh_pub_msg_light_ctl_cli_pub;
 	vnd_pub.msg				=  bt_mesh_pub_msg_vnd_pub;
-//	gen_level_srv_pub_s0.msg		= bt_mesh_pub_msg_gen_level_srv_pub_s0;
-//	gen_level_cli_pub_s0.msg		= bt_mesh_pub_msg_gen_level_cli_pub_s0;
 }
 
 /* Definitions of models user data (Start) */
@@ -2706,6 +2675,7 @@ const struct bt_mesh_model_op gen_onoff_srv_op[] = {
 	{ BT_MESH_MODEL_OP_2(0x82, 0x01), 0, gen_onoff_get },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x02), 2, gen_onoff_set },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x03), 2, gen_onoff_set_unack },
+    { BT_MESH_MODEL_OP_2(0x82, 0x04), 1, gen_onoff_status },
 	BT_MESH_MODEL_OP_END,
 };
 
@@ -2773,8 +2743,7 @@ const struct bt_mesh_model_op light_lightness_srv_op[] = {
 	{ BT_MESH_MODEL_OP_2(0x82, 0x4D), 3, light_lightness_set_unack },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x4F), 0, light_lightness_linear_get },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x50), 3, light_lightness_linear_set },
-	{ BT_MESH_MODEL_OP_2(0x82, 0x51), 3,
-	  light_lightness_linear_set_unack },
+	{ BT_MESH_MODEL_OP_2(0x82, 0x51), 3, light_lightness_linear_set_unack },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x53), 0, light_lightness_last_get },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x55), 0, light_lightness_default_get },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x57), 0, light_lightness_range_get },
@@ -2784,8 +2753,7 @@ const struct bt_mesh_model_op light_lightness_srv_op[] = {
 /* Mapping of message handlers for Light Lightness Setup Server (0x1301) */
 const struct bt_mesh_model_op light_lightness_setup_srv_op[] = {
 	{ BT_MESH_MODEL_OP_2(0x82, 0x59), 2, light_lightness_default_set },
-	{ BT_MESH_MODEL_OP_2(0x82, 0x5A), 2,
-	  light_lightness_default_set_unack },
+	{ BT_MESH_MODEL_OP_2(0x82, 0x5A), 2, light_lightness_default_set_unack },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x5B), 4, light_lightness_range_set },
 	{ BT_MESH_MODEL_OP_2(0x82, 0x5C), 4, light_lightness_range_set_unack },
 	BT_MESH_MODEL_OP_END,
@@ -2892,7 +2860,7 @@ extern struct bt_mesh_health_cli health_cli2;
 struct bt_mesh_model root_models[] = {
 	BT_MESH_MODEL_CFG_SRV(&cfg_srv),
 	BT_MESH_MODEL_CFG_CLI(&cfg_cli),    
-#if 1   
+
 	BT_MESH_MODEL_HEALTH_SRV1(&health_srv, &health_pub),
 
 	BT_MESH_MODEL(BT_MESH_MODEL_ID_GEN_ONOFF_SRV,
@@ -2946,14 +2914,7 @@ struct bt_mesh_model root_models[] = {
 	BT_MESH_MODEL(BT_MESH_MODEL_ID_LIGHT_CTL_SETUP_SRV,
 		      light_ctl_setup_srv_op, &light_ctl_srv_pub,
 		      &light_ctl_srv_user_data),
-//	BT_MESH_MODEL(BT_MESH_MODEL_ID_LIGHT_CTL_CLI,
-//		      light_ctl_cli_op, &light_ctl_cli_pub,
-//		      NULL),
-#endif              
 
-//#if MYNEWT_VAL(BLE_MESH_HEALTH_CLI)
-//	BT_MESH_MODEL_HEALTH_CLI(&health_cli2),
-//#endif
 };
 
 struct bt_mesh_model vnd_models[] = {
@@ -3031,22 +2992,6 @@ struct bt_mesh_model * get_model_by_id(uint16_t id)
     return NULL;
 }
 
-bool get_group_addr_by_id(uint16_t id,uint16_t* group)
-{
-    struct bt_mesh_model *pmod = get_model_by_id(id);
-    if(pmod==NULL)
-        return false;
-    uint8_t i = CONFIG_BT_MESH_MODEL_GROUP_COUNT;
-    for (i =0; i<CONFIG_BT_MESH_MODEL_GROUP_COUNT;i++)
-    {
-        if(pmod->groups[i] != BT_MESH_ADDR_UNASSIGNED)
-        {
-            *group = pmod->groups[i];
-            return true;
-        }
-    }
-    return false;
-}
 #endif
 
 

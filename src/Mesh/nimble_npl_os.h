@@ -31,6 +31,7 @@
 #include "task.h"
 #include "timers.h"
 
+extern BaseType_t xTimerIsTimerActive( TimerHandle_t xTimer );
 #ifdef __cplusplus
 extern "C" {
 #endif

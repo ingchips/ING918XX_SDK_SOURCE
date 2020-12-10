@@ -281,8 +281,7 @@ int bt_mesh_scan_disable(void);
  *
  *  @note this API must be only used in mesh task
  */
-// void bt_mesh_set_white_list(uint8_t* addr, uint8_t type);
-// WARNING: ^^^ this API is not available in this release
+ void bt_mesh_set_white_list(uint8_t* addr, uint8_t type);
 
 
 /** @brief   stop the advertising in mesh task. There are 2 advertising sets in mesh, and advertising handle are specified internally. 
@@ -322,6 +321,24 @@ int8_t set_mesh_sleep_duration(uint32_t ms);
  *           if this group address is same and not changed, so local device could be internally added into this group quickly.
  */
 int8_t mesh_add_local_group_addr(uint16_t elem_addr, uint16_t sub_addr, uint32_t id,uint32_t company);
+
+/** @brief   delete a group address to a node bound to a special model. This provide a simple way to bind a group address locally not
+ *           through BLE mesh standard message echanges between server and client.
+ *
+ *  @param elem_addr   the element address that would bound to group address
+ *
+ *  @param sub_addr    the group address that would be deleted to.
+ *
+ *  @param id          model is vendor specified. so it is the id of vendor model.
+ *
+ *  @param company     the commpay id that specifies the vendor model id.
+ * 
+ *  @return            0: success   others: failed
+ *
+ *  @note    typical scenario for this API is that many light models are groupped, so they will be light on/off simultaneously.
+ *           if this group address is same and not changed, so local device could be internally deleted this group quickly.
+ */
+int8_t mesh_delete_local_group_addr(uint16_t elem_addr, uint16_t sub_addr, uint32_t id,uint32_t company);
 
 /** @brief   to mark a flag that application would set current node as a provisioner.
  *
@@ -374,13 +391,11 @@ void uuid_filter_set(const uint8_t * uuid,uint8_t len);
  *
  *  @note   this func must be called in host task.
  */
-// void gap_mesh_gatt_restart(void);
-// WARNING: ^^^ this API is not available in this release
+void gap_mesh_gatt_restart(void);
 
 
 
-// void conf_feature_from_app(uint8_t role);
-// WARNING: ^^^ this API is not available in this release
+void conf_feature_from_app(uint8_t role);
 
 
 /** @brief this API used to judge mesh task is running or not
@@ -491,6 +506,20 @@ void bt_mesh_gatt_config(svc_role role) PRIVATE_FUNCTION;
  *
  */
 void mesh_start_advertising(void) PRIVATE_FUNCTION;
+
+/**@brief get current node relay status
+ *
+ * @return  0: BT_MESH_RELAY_DISABLED
+            1: BT_MESH_RELAY_ENABLED
+            2: BT_MESH_RELAY_NOT_SUPPORTED
+ */
+u8_t bt_mesh_relay_get(void);
+
+/**@brief get the platform, currently check whether it is genie platform
+ *
+ * @return  1: genie platform.
+ */
+uint8_t get_prov_platform(void);
 /*
 * @}
 */

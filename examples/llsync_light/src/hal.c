@@ -74,8 +74,8 @@ int ble_get_mac(char *mac)
  */
 int ble_write_flash(uint32_t flash_addr, const char *write_buf, uint16_t write_len)
 {
-    write_len = (write_len + 3) & ~0x3;
-    program_flash(flash_addr, (const uint8_t *)write_buf, write_len);
+    uint16_t new_len = (write_len + 3) & ~0x3;
+    program_flash(flash_addr, (const uint8_t *)write_buf, new_len);
     return write_len;
 }
 

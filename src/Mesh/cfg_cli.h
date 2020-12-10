@@ -191,6 +191,7 @@ void bt_mesh_cfg_cli_timeout_set(s32_t timeout);
 int find_dev_key(uint8_t devkey[16]);
 int insert_node_info(uint8_t devkey[16],node_basic_info node);
 void node_reset_status(struct bt_mesh_model *model,struct bt_mesh_msg_ctx *ctx,struct os_mbuf *buf);
+int bt_mesh_node_reset(uint16_t idx, uint8_t *status);
 /**
  * @}
  */

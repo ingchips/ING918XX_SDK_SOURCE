@@ -602,6 +602,62 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
 // WARNING: ^^^ this API is not available in this release
 
 
+/**
+ ****************************************************************************************
+ * @brief Set parameters for CTE transmission of a raw packet object
+ *
+ * @param[in]   packet                  the packet object
+ * @param[in]   cte_type                cte_type (0: AoA; 1: AoD 1us; 2: AoD 2us)
+ * @param[in]   cte_len                 CTE length in 8us
+ * @param[in]   switching_pattern_len   switching pattern len
+ * @param[in]   switching_pattern       switching pattern
+ * @return                              0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
+//                           uint8_t cte_type,
+//                           uint8_t cte_len,
+//                           uint8_t switching_pattern_len,
+//                           const uint8_t *switching_pattern);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Set parameters for CTE reception of a raw packet object
+ *
+ * @param[in]   packet                  the packet object
+ * @param[in]   cte_type                cte_type (0: AoA; 1: AoD 1us; 2: AoD 2us)
+ * @param[in]   slot_len                slot length for AoA
+ * @param[in]   switching_pattern_len   switching pattern len
+ * @param[in]   switching_pattern       switching pattern
+ * @return                              0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_set_rx_cte(struct ll_raw_packet *packet,
+//                           uint8_t cte_type,
+//                           uint8_t slot_len,
+//                           uint8_t switching_pattern_len,
+//                           const uint8_t *swiching_pattern);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Get IQ samples of a raw packet object
+ *
+ * @param[in]   packet              the packet object
+ * @param[out]  iq_samples          buffer to store IQ samples (must be large enough)
+ * @param[out]  iq_sample_cnt       number of IQ pairs
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_get_iq_samples(struct ll_raw_packet *packet,
+//                                int8_t *iq_samples,
+//                                int *iq_sample_cnt);
+// WARNING: ^^^ this API is not available in this release
+
+
 #ifdef __cplusplus
 }
 #endif

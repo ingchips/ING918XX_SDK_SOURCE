@@ -28,15 +28,21 @@ static const char help[] =  "commands:\n"
                             "r 0x..                     read data\n"
                             "w 0x.. 0x..                write data\n"
                             "reboot                     reboot\n"
-                            "ver                        version\n"                            
+                            "ver                        version\n"
                             "advpwr power               set adv power in dBm\n"
                             "name   name                set dev name\n"
                             "addr   01:02:03:04:05:06   set dev address\n"
                             "start                      start advertising\n"
                             "stop                       stop advertising\n"
-                            "pat    0/1                 peer address type\n"   
+                            "pat    0/1                 peer address type\n"
                             "conn   xx:xx:xx:xx:xx:xx   connect to dev and discover services\n"
-                            "cancel                     cancel create connection\n";
+                            "cancel                     cancel create connection\n"
+                            "read   value_handle        read value of a characteristic\n"
+                            "write  handle XX XX ...    write value to a characteristic\n"
+                            "w/or   handle XX XX ...    write without response to a char.\n"
+                            "sub    handle              subscribe to a characteristic\n"
+                            "unsub  handle              unsubscribe\n"
+                            ;
 
 void cmd_help(const char *param)
 {
@@ -110,6 +116,12 @@ extern bd_addr_type_t slave_addr_type;
 
 void update_addr(void);
 void conn_to_slave(void);
+void cancel_create_conn(void);
+void read_value_of_char(int handle);
+void write_value_of_char(int handle, block_value_t *value);
+void wor_value_of_char(int handle, block_value_t *value);
+void sub_to_char(int handle);
+void unsub_to_char(int handle);
 
 int parse_addr(uint8_t *output, const char *param)
 {
@@ -151,6 +163,86 @@ void cmd_pat(const char *param)
     }
     slave_addr_type = (bd_addr_type_t)t;
 }
+
+void cmd_read_char(const char *param)
+{
+    int t = 0;
+    if (sscanf(param, "%d", &t) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    read_value_of_char(t);
+}
+
+block_value_t char_value;
+
+int parse_handle_value(int *handle, const char *param)
+{
+    const char *c = param;
+    char *t;
+    while (*c == ' ') c++;
+    char_value.len = 0;
+    strcpy(buffer, c);
+    t = strtok(buffer, " ");
+    if (sscanf(t, "%d", handle) != 1)
+        return 1;
+    while ((t = strtok(NULL, " ")) != NULL)
+    {
+        if (char_value.len >= sizeof(char_value.value)) break;
+        if (sscanf(t, "%x", (int *)(char_value.value + char_value.len)) != 1)
+            break;
+        char_value.len++;
+    }
+    return 0;
+}
+
+void cmd_write_char(const char *param)
+{
+    int handle;
+
+    if (parse_handle_value(&handle, param) != 0)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    write_value_of_char(handle, &char_value);
+}
+
+void cmd_wor_char(const char *param)
+{
+    int handle;
+
+    if (parse_handle_value(&handle, param) != 0)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    wor_value_of_char(handle, &char_value);
+}
+
+void cmd_sub_char(const char *param)
+{
+    int t = 0;
+    if (sscanf(param, "%d", &t) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    sub_to_char(t);
+}
+
+void cmd_unsub_char(const char *param)
+{
+    int t = 0;
+    if (sscanf(param, "%d", &t) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    unsub_to_char(t);
+}
+
 
 extern void start_adv(void);
 extern void stop_adv(void);
@@ -223,6 +315,26 @@ static cmd_t cmds[] =
         .cmd = "cancel",
         .handler = cmd_conn_cancel
     },
+    {
+        .cmd = "read",
+        .handler = cmd_read_char
+    },
+    {
+        .cmd = "write",
+        .handler = cmd_write_char
+    },
+    {
+        .cmd = "w/or",
+        .handler = cmd_wor_char
+    },
+    {
+        .cmd = "sub",
+        .handler = cmd_sub_char
+    },
+    {
+        .cmd = "unsub",
+        .handler = cmd_unsub_char
+    },
 };
 
 void handle_command(char *cmd_line)
@@ -232,7 +344,7 @@ void handle_command(char *cmd_line)
     int i;
     while ((*param != ' ') && (*param != '\0')) param++;
     *param = '\0'; param++;
-    
+
     for (i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
     {
         if (strcasecmp(cmds[i].cmd, cmd_line) == 0)
@@ -240,12 +352,12 @@ void handle_command(char *cmd_line)
     }
     if (i >= sizeof(cmds) / sizeof(cmds[0]))
         goto show_help;
-    
+
     cmds[i].handler(param);
     return;
 
 show_help:
-    tx_data(unknow_cmd, strlen(unknow_cmd));
+    tx_data(unknow_cmd, strlen(unknow_cmd) + 1);
     cmd_help(NULL);
 }
 
@@ -270,7 +382,7 @@ static void append_data(str_buf_t *buf, const char *d, const uint16_t len)
 {
     if (buf->size + len > sizeof(buf->buf))
         buf->size = 0;
-    
+
     if (buf->size + len <= sizeof(buf->buf))
     {
         memcpy(buf->buf + buf->size, d, len);
@@ -289,10 +401,10 @@ void console_rx_data(const char *d, uint8_t len)
         }
     }
     if (len == 0) return;
-    
+
     append_data(&input, d, len);
 
-    if ((input.size > 0) && 
+    if ((input.size > 0) &&
         ((input.buf[input.size - 1] == '\r') || (input.buf[input.size - 1] == '\r')))
     {
         int16_t t = input.size - 2;
@@ -307,11 +419,17 @@ extern void stack_notify_tx_data(void);
 
 static void tx_data(const char *d, const uint16_t len)
 {
+    if ((output.size == 0) && (d[len - 1] == '\0'))
+    {
+        puts(d);
+        return;
+    }
+
     append_data(&output, d, len);
 
     if ((output.size > 0) && (output.buf[output.size - 1] == '\0'))
     {
-        printf((const char *)output.buf);
+        puts(output.buf);
         output.size = 0;
     }
 }

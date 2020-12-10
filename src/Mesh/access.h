@@ -13,7 +13,7 @@
 /**
  * @brief Bluetooth Mesh Access Layer
  * @defgroup bt_mesh_access Bluetooth Mesh Access Layer
- * @ingroup bt_mesh
+ * @ingroup bluetooth_mesh
  * @{
  */
 

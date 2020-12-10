@@ -2,6 +2,7 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include <stdio.h>
+#include "trace.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -71,6 +72,8 @@ uint32_t uart_isr(void *user_data)
     return 0;
 }
 
+trace_rtt_t trace_ctx = {0};
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -79,13 +82,15 @@ int app_main()
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
-    
+
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     setup_peripherals();
     printf("system started, type ? for help\n");
+
+    trace_rtt_init(&trace_ctx);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0x3f);
     return 0;
 }
-
-
 

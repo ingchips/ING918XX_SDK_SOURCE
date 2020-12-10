@@ -50,6 +50,4 @@
 #define OP_LIGHT_CTL_SET_UNACK           BT_MESH_MODEL_OP_2(0x82, 0x5f)
 #define OP_LIGHT_CTL_STATUS              BT_MESH_MODEL_OP_2(0x82, 0x60)
 
-//bool bt_mesh_is_provisioned(void);
-
 #endif
