@@ -1,4 +1,6 @@
-/*
+/** @file nimble_npl.h
+ *  @brief basic APIs for MESH stack
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -64,11 +66,24 @@ void *ble_npl_get_current_task_id(void);
  * Event queue
  */
 
+/**
+ * @brief initial a event queue
+ *
+ * @param evq   item in the queue, see structure @ref #ble_npl_eventq
+ *
+ */
 void ble_npl_eventq_init(struct ble_npl_eventq *evq);
 
 struct ble_npl_event *ble_npl_eventq_get(struct ble_npl_eventq *evq,
                                          ble_npl_time_t tmo);
 
+/**
+ * @brief put an item into queue
+ *
+ * @param evq   event queue to be updated
+ *
+ * @param ev    the item to put into queue
+ */
 void ble_npl_eventq_put(struct ble_npl_eventq *evq, struct ble_npl_event *ev);
 
 void ble_npl_eventq_remove(struct ble_npl_eventq *evq,

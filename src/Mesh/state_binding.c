@@ -165,13 +165,6 @@ void state_binding(u8_t light, u8_t temp)
 		if (gen_onoff_srv_root_user_data.onoff == STATE_OFF) {
 			lightness = 0U;
 		} else if (gen_onoff_srv_root_user_data.onoff == STATE_ON) {
-//			if (light_lightness_srv_user_data.def == 0) {
-//                printf("onoff--1 0x%x\n",light_lightness_srv_user_data.last);
-//				lightness = light_lightness_srv_user_data.last;
-//			} else {
-//                printf("onoff--2 0x%x\n",light_lightness_srv_user_data.def);
-//				lightness = light_lightness_srv_user_data.def;
-//			}
             lightness = last_lightness;
 		}
 		break;
@@ -227,14 +220,7 @@ void calculate_lightness_target_values(u8_t type)
 		if (gen_onoff_srv_root_user_data.target_onoff == 0) {
 			tmp = 0U;
 		} else {
-//			if (light_lightness_srv_user_data.def == 0) {
-////                printf("def ==0,0x%x",light_lightness_srv_user_data.last);
-////				tmp = light_lightness_srv_user_data.last;
-////			} else {
-////                printf("def 0x%x\n",light_lightness_srv_user_data.def);
-////				tmp = light_lightness_srv_user_data.def;
                 tmp = last_lightness;
-//			}
 		}
 		break;
 	case LEVEL:

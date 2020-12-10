@@ -752,7 +752,7 @@ struct bt_mesh_prov {
 	 *  This callback notifies the application
 	 * 
      */    
-    void       (*status_report)(u8_t  status_code);
+    void       (*status_report)(u8_t  status_code,u8_t* param);
 };
 						 
 /** @brief Enable specific provisioning bearers

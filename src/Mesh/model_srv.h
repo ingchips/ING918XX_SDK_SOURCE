@@ -7,7 +7,7 @@
 #ifndef __MODEL_SRV_H__
 #define __MODEL_SRV_H__
 #include <stdint.h>
-//#include "light_model.h"
+
 typedef struct HSL_VAL
 {
     uint16_t lightness;

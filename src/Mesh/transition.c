@@ -24,8 +24,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-//#include "ble_mesh.h"
-//#include "common.h"
 #include <stdio.h>
 #include "device_composition.h"
 #include "state_binding.h"
@@ -310,7 +308,6 @@ void light_ctl_temp_tt_values(struct light_ctl_state *state,
 static void onoff_work_handler(struct ble_npl_event *work)
 {
 	struct generic_onoff_state *state = &gen_onoff_srv_root_user_data;
-//    printf("just started 0x%x\n",state->transition->just_started);
     printf("counter 0x%d timer 0x%p\n",state->transition->counter,ptr_timer);
 	if (state->transition->just_started) {
 		state->transition->just_started = false;
@@ -326,8 +323,7 @@ static void onoff_work_handler(struct ble_npl_event *work)
 			if (state->target_onoff == STATE_ON) {
 				state->onoff = STATE_ON;
 			}
-		}
-
+		} 
 		return;
 	}
 
@@ -628,11 +624,6 @@ static void onoff_tt_handler(struct ble_npl_event *ev)
 
 	assert(state != NULL);
     //avoid to repeatly call the transition timer once counter is 0
-//    if((state->transition->counter == 0) && (state->target_onoff == state->onoff))
-//    {
-//        printf("tt stopped\n");        
-//        return;
-//    }
 	ble_npl_callout_reset(&onoff_work, 0);
     printf("quo_tt 0x%p 0x%p 0x%x\n",state,state->transition,(state->transition->quo_tt));
     if(K_MSEC(state->transition->quo_tt)>0)
