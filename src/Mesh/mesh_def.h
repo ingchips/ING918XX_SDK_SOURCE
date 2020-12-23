@@ -41,7 +41,6 @@
 #define ADV_DATA_SET       0x28
 #define DISCONNECT         0x29
 #define WHITELST_RMV       0x2A
-#define NODE_RESET         0x2B
 
 /**
  * @brief CCM and AES structure declaration
@@ -753,6 +752,13 @@ struct bt_mesh_prov {
 	 * 
      */    
     void       (*status_report)(u8_t  status_code,u8_t* param);
+    
+    /**@brief add for proxy_service.
+	 *
+	 *  proxy_uuid for pb_gatt or gatt_proxy service.
+	 * 
+     */ 
+    const u8_t *proxy_uuid;
 };
 						 
 /** @brief Enable specific provisioning bearers
@@ -1335,15 +1341,30 @@ extern const struct bt_mesh_model_op bt_mesh_health_srv_op[];
  * @}
  */
 
+/**
+ * @brief customer application used
+ * @defgroup application
+ * @ingroup bt_mesh
+ * @{
+ */
+
+ /**
+* @struct app_request
+*
+* @brief this struct is used to trigger a mesh service request.
+*
+*/
+#define MSG_LEN   (20)
 typedef struct app_request
 {
-    struct bt_mesh_model *model;
-    uint16_t app_idx;
-    uint16_t dst;
-    u32_t opcode;
-    uint8_t msg[20];
-    uint8_t len; 
-    uint8_t bear;
+    struct bt_mesh_model *model;  /*the model that this app request should refer to */
+    uint16_t app_idx;             /*the app id of mesh network that binded to this model*/
+    uint16_t dst;                 /*the peer mesh node that this reuqest sent to*/
+    u32_t opcode;                 /*the opcode that the refered model has already defined*/
+    uint8_t msg[MSG_LEN];         /*the message body that should refer to the model opcod definition*/
+    uint8_t len;                  /*the message body lenth*/
+    uint8_t bear;                 /*1: means that send message over advertising bearer */
+                                  /*0: means that send message over gatt bearer */
 }app_request_t;
 
 /**
@@ -1387,7 +1408,9 @@ enum TRACE_CLA{
     INFO_CLA  = BIT(1),
     WARN_CLA  = BIT(2),
 };
-
+/**
+ * @}
+ */
 #define k_sem ble_npl_sem
 
 static inline void k_sem_init(struct k_sem *sem, unsigned int initial_count,
