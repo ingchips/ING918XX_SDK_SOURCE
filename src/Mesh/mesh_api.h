@@ -128,6 +128,8 @@ bool is_provisioned_poweron(void);
  *
  *  @return  void
  *
+ *  @note  if this function is invoked inside mesh task ,it would do nothing. @link is_mesh_task() @endlink
+           this message would deliver the service reuqest over advertising bearer.
  */
 void mesh_service_trigger(uint8_t* msg, uint8_t len);
 
@@ -515,11 +517,29 @@ void mesh_start_advertising(void) PRIVATE_FUNCTION;
  */
 u8_t bt_mesh_relay_get(void);
 
+/**@brief get current node proxy status
+ *
+ * @return  0: BT_MESH_GATT_PROXY_DISABLED
+            1: BT_MESH_GATT_PROXY_ENABLED
+            2: BT_MESH_GATT_PROXY_NOT_SUPPORTED
+ */
+u8_t bt_mesh_gatt_proxy_get(void);
+
 /**@brief get the platform, currently check whether it is genie platform
  *
  * @return  1: genie platform.
  */
 uint8_t get_prov_platform(void);
+
+/**@brief configure the beacon periodical timer parameters and advertising interval for unconnected advertising packets
+ *
+ * @param[in] unprov_inter  the periodical timer length to start unprov beacons sending
+ *
+ * @param[in] prov_inter    the periodical timer length to start secure beacon sending
+ *
+ * @param[in] adv_inter     the expected advertsing parameter interval for unconnected advertising.
+ */
+void beacon_param_config(uint32_t unprov_inter, uint32_t prov_inter, uint32_t adv_inter);
 /*
 * @}
 */

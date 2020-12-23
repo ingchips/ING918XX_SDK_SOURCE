@@ -49,3 +49,9 @@ uint32_t SYSCTRL_ReadBlockRst(void)
 {
 	return AHB_SYSCTRL->RstSet;
 }
+
+void SYSCTRL_SetLDOOutput(int level)
+{
+    *(volatile uint32_t*)(0x40040060) =  ((*(volatile uint32_t*)(0x40040060)) & 0xffffff03)|(level<<2);
+}
+
