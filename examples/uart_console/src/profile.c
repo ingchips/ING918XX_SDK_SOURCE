@@ -11,12 +11,21 @@
 #include <stdlib.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "sm.h"
 
 #include "uart_console.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
+
+sm_persistent_t sm_persistent =
+{
+    .er = {1, 2, 3},
+    .ir = {4, 5, 6},
+    .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
+    .identity_addr          = {0xC6, 0xFA, 0x5C, 0x20, 0x87, 0xA7}
+};
 
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
@@ -35,6 +44,7 @@ const static uint8_t profile_data[] = {
 
 #define INVALID_HANDLE  0xffff
 uint16_t conn_handle = INVALID_HANDLE;
+static int bonding_flag = 0;
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -60,7 +70,6 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     }
 }
 
-uint8_t rand_addr[] = {0xC6, 0xFA, 0x5C, 0x20, 0x87, 0xA7};
 uint8_t slave_addr[] = {0,0,0,0,0,0};
 bd_addr_type_t slave_addr_type = BD_ADDR_TYPE_LE_RANDOM;
 
@@ -524,12 +533,13 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
 #define USER_MSG_WOR_CHAR           8
 #define USER_MSG_SUB_TO_CHAR        9
 #define USER_MSG_UNSUB_TO_CHAR      10
+#define USER_MSG_SET_BONDING        11
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
 #define CONN_PARAM  {                   \
             .scan_int = 200,            \
-            .scan_win = 60,             \
+            .scan_win = 100,            \
             .interval_min = 50,         \
             .interval_max = 50,         \
             .latency = 0,               \
@@ -571,8 +581,11 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         printf("adv updated\n");
         break;
     case USER_MSG_UPDATE_ADDR:
-        gap_set_adv_set_random_addr(0, rand_addr);
-        printf("addr changed: %02X:%02X:%02X:%02X:%02X:%02X\n", rand_addr[0], rand_addr[1], rand_addr[2], rand_addr[3], rand_addr[4], rand_addr[5]);
+        gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
+        printf("addr changed: %02X:%02X:%02X:%02X:%02X:%02X\n", 
+                sm_persistent.identity_addr[0], sm_persistent.identity_addr[1],
+                sm_persistent.identity_addr[2], sm_persistent.identity_addr[3],
+                sm_persistent.identity_addr[4], sm_persistent.identity_addr[5]);
         break;
     case USER_MSG_CONN_TO_SLAVE:
         printf("create connection...\n");
@@ -683,6 +696,18 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                 (uint8_t *)&config);
         }
         break;
+    case USER_MSG_SET_BONDING:
+        bonding_flag = size;
+        if (bonding_flag)
+        {
+            //sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
+            
+        }
+        else
+        {
+            //sm_set_authentication_requirements(SM_AUTHREQ_NO_BONDING);
+        }
+        break;
     default:
         ;
     }
@@ -694,6 +719,11 @@ void set_adv_local_name(const char *name, int16_t len)
     adv_data[1] = 0x9;              // Complete Local Name
     memcpy(adv_data + 2, name, len);
     btstack_push_user_msg(USER_MSG_UPDATE_ADV_DATA, NULL, 0);
+}
+
+void set_bonding(int flag)
+{
+    btstack_push_user_msg(USER_MSG_SET_BONDING, NULL, flag);
 }
 
 void start_adv()
@@ -768,8 +798,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        gap_set_random_device_address(rand_addr);
-        gap_set_adv_set_random_addr(0, rand_addr);
+        gap_set_random_device_address(sm_persistent.identity_addr);
+        gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
         gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
@@ -803,14 +833,23 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_READ_REMOTE_USED_FEATURES_COMPLETE:
-            //gatt_client_is_ready(conn_handle);
-            iprintf("discovering...\n");
-            gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
+            if (0 == bonding_flag)
+            {
+                iprintf("discovering...\n");
+                gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
+            }
             break;
         default:
             break;
         }
 
+        break;
+
+    case HCI_EVENT_ENCRYPTION_CHANGE:
+        {
+            iprintf("discovering...\n");
+            gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
+        }
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
@@ -866,6 +905,47 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     }
 }
 
+static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
+{
+    uint8_t event = hci_event_packet_get_type(packet);
+
+    if (packet_type != HCI_EVENT_PACKET) return;
+    platform_printf("SM: %d\n", event);
+    switch (event)
+    {
+    case SM_EVENT_JUST_WORKS_REQUEST:
+        iprintf("JUST_WORKS confirmed\n");
+        sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
+        break;
+    case SM_EVENT_PASSKEY_DISPLAY_NUMBER:
+        platform_printf("===================\npasskey: %06d\n===================\n",
+            sm_event_passkey_display_number_get_passkey(packet));
+        break;
+    case SM_EVENT_PASSKEY_DISPLAY_CANCEL:
+        platform_printf("TODO: DISPLAY_CANCEL\n");
+        break;
+    case SM_EVENT_PASSKEY_INPUT_NUMBER:
+        // TODO: intput number
+        platform_printf("===================\ninput number:\n");
+        break;
+    case SM_EVENT_PASSKEY_INPUT_CANCEL:
+        platform_printf("TODO: INPUT_CANCEL\n");
+        break;
+    case SM_EVENT_IDENTITY_RESOLVING_FAILED:
+        platform_printf("not authourized\n");
+        iprintf("paring...\n");
+        sm_request_pairing(conn_handle == INVALID_HANDLE ? 0 : conn_handle); 
+        break;
+    case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:        
+        gatt_client_discover_primary_services(service_discovery_callback, conn_handle);  
+        break;
+    default:
+        break;
+    }
+}
+
+static btstack_packet_callback_registration_t sm_event_callback_registration  = {.callback = &sm_packet_handler};
+
 uint32_t setup_profile(void *data, void *user_data)
 {
     att_server_init(att_read_callback, att_write_callback);
@@ -873,6 +953,11 @@ uint32_t setup_profile(void *data, void *user_data)
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
     gatt_client_register_handler(&user_packet_handler);
+    sm_add_event_handler(&sm_event_callback_registration);
+    sm_config(IO_CAPABILITY_NO_INPUT_NO_OUTPUT,
+              0,
+              &sm_persistent);
+    sm_add_event_handler(&sm_event_callback_registration);
     return 0;
 }
 

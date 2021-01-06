@@ -134,6 +134,8 @@
         "ll_raw_packet_send", 
         "ll_raw_packet_get_rx_data", 
         "ll_raw_packet_recv", 
+        "ll_malloc", 
+        "ll_free", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -291,11 +293,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 131956
+        "size": 132012
     }, 
     "version": [
         1, 
         2, 
-        4
+        5
     ]
 }

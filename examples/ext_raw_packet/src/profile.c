@@ -34,22 +34,38 @@ struct ll_raw_packet *raw_packet;
 char data[300];
 
 #ifdef CTE_ON
-void show_iq(struct ll_raw_packet *packet)
+
+typedef struct
 {
-    static int8_t samples[(8 + 74) * 2];
+    int len;
+    const uint8_t ant_ids[8];
+} pattern_info_t;
+
+static pattern_info_t patterns[] = {
+    {2, {0, 0}},
+    {2, {0, 0}},
+};
+
+static int pattern_index = 0;
+
+static int16_t samples[(8 + 74) * 2 * 24] = {0};
+
+void show_iq(struct ll_raw_packet *packet)
+{    
     int count = 0;
     int i;
-    if ((0 != ll_raw_packet_get_iq_samples(packet, samples, &count)) || (count < 1))
+    if ((0 != ll_raw_packet_get_iq_samples(packet, samples, &count, 0)) || (count < 1))
     {
         platform_printf("No IQ samples\n");
         return;
     }
     
+    platform_printf("Pattern Index: %d\n", pattern_index);
     platform_printf("IQ samples:");
     for (i = 0; i < count; i++)
     {
         if (0 == (i & 0x3)) platform_printf("\n");
-        platform_printf("%5d + %5d i, ", samples[i * 2 + 0], samples[i * 2 + 1]);
+        platform_printf("%5d %+5d I, ", samples[i * 2 + 0], samples[i * 2 + 1]);
     }
 }
 #endif
@@ -95,12 +111,13 @@ void packet_action(void)
     
 #ifdef CTE_ON
     {
-        static const uint8_t pattern[] = {0, 0};
+        pattern_index = pattern_index >= sizeof(patterns) / sizeof(patterns[0]) - 1 ? 0 : pattern_index + 1;
         ll_raw_packet_set_rx_cte(raw_packet,
                               0, // uint8_t cte_type,
                               1, // uint8_t slot_len,
-                              sizeof(pattern), // uint8_t switching_pattern_len,
-                              pattern);
+                              patterns[pattern_index].len,
+                              patterns[pattern_index].ant_ids,
+                              10, 5);        
     }
 #endif
     ll_raw_packet_recv(raw_packet, platform_get_us_time() + 300, 1000 * 1000);

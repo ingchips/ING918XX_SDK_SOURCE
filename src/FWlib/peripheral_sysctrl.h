@@ -112,9 +112,8 @@ uint32_t SYSCTRL_ReadBlockRst(void) ;
 enum 
 {
     SYSCTRL_LDO_OUPUT_1V60 = 0x13,  // Recommended for Vbat = 1.8V
-    SYSCTRL_LDO_OUPUT_2V00 = 0x18,  // Recommended for Vbat = 3.3V
-    SYSCTRL_LDO_OUPUT_2V35 = 0x19,  // Recommended for Vbat = 2.5V
-    SYSCTRL_LDO_OUPUT_2V50 = 0x1f,  // Recommended for Vbat = 3.0V
+    SYSCTRL_LDO_OUPUT_1V80 = 0x16,  // Recommended for Vbat = 2.5V
+    SYSCTRL_LDO_OUPUT_2V50 = 0x1f,  // Recommended for Vbat = 3.3V
 };
 
 void SYSCTRL_SetLDOOutput(int level);
