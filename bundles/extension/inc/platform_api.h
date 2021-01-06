@@ -615,14 +615,22 @@ int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
  * @param[in]   slot_len                slot length for AoA
  * @param[in]   switching_pattern_len   switching pattern len
  * @param[in]   switching_pattern       switching pattern
+ * @param[in]   slot_sampling_offset    sampling offset (0..23) in a slot
+ * @param[in]   slot_sample_count       sample count within a slot (1..5)
  * @return                              0 if successful else error code
+ *
+ * Note:
+ * Recommended value: slot_sampling_offset = 12, slot_sample_count = 1
+ * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
 int ll_raw_packet_set_rx_cte(struct ll_raw_packet *packet,
                           uint8_t cte_type,
                           uint8_t slot_len,
                           uint8_t switching_pattern_len,
-                          const uint8_t *swiching_pattern);
+                          const uint8_t *swiching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
 
 /**
  ****************************************************************************************
@@ -631,12 +639,38 @@ int ll_raw_packet_set_rx_cte(struct ll_raw_packet *packet,
  * @param[in]   packet              the packet object
  * @param[out]  iq_samples          buffer to store IQ samples (must be large enough)
  * @param[out]  iq_sample_cnt       number of IQ pairs
+ * @param[in]   preprocess          do preprocessing (non-0) or don't (0) do preprocessing
+ *                                  Note: 1) Preprocessing is only available when
+ *                                           `slot_sample_count` = 1
+ *                                        2) IQ samples format of each component:
+ *                                           * When preprocessing is on: `int8_t`
+ *                                           * When preprocessing is off: `int16_t`
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
 int ll_raw_packet_get_iq_samples(struct ll_raw_packet *packet,
-                               int8_t *iq_samples,
-                               int *iq_sample_cnt);
+                               void *iq_samples,
+                               int *iq_sample_cnt,
+                               int preprocess);
+
+/**
+ ****************************************************************************************
+ * @brief Allocate memory from LL internal heap
+ *
+ * @param[in]   size                memory size in bytes
+ * @return                          memory pointer if successful else NULL
+ ****************************************************************************************
+ */
+void *ll_malloc(uint16_t size);
+
+/**
+ ****************************************************************************************
+ * @brief Free memory allocated from LL internal heap
+ *
+ * @param[in]   buffer              memory pointer
+ ****************************************************************************************
+ */
+void ll_free(void *buffer);
 
 #ifdef __cplusplus
 }

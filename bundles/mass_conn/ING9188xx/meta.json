@@ -140,6 +140,8 @@
         "ll_set_conn_coded_scheme", 
         "ll_set_conn_latency", 
         "ll_set_def_antenna", 
+        "ll_malloc", 
+        "ll_free", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -297,11 +299,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 137724
+        "size": 137780
     }, 
     "version": [
         1, 
         2, 
-        3
+        5
     ]
 }

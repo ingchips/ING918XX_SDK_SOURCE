@@ -7,6 +7,8 @@
 #include "btstack_defines.h"
 
 // GATT characteristic handles
+#define HANDLE_DATE_RECEPTION       3
+#define HANDLE_DATE_NOTIFICATION    5
 
 #define MAX_CONN_NUMBER     24
 
@@ -53,7 +55,9 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
 {
     switch (att_handle)
     {
-
+    case HANDLE_DATE_RECEPTION:
+        att_server_notify(connection_handle, HANDLE_DATE_NOTIFICATION, (uint8_t *)buffer, buffer_size);
+        return 0;
     default:
         return 0;
     }
@@ -96,7 +100,7 @@ static void setup_adv(void)
     rand_addr[BD_ADDR_LEN - 1] = i;
     gap_set_adv_set_random_addr(0, rand_addr);
     gap_set_ext_adv_para(0, 
-                            CONNECTABLE_ADV_BIT,// | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
+                            CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             0x01a0, 0x01a0,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
                             BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type

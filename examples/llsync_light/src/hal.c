@@ -14,7 +14,7 @@ static uint8_t adv_data[31] = {
     #include "../data/advertising.adv"
 };
 
-const static uint8_t scan_data[] = {
+static uint8_t scan_data[31] = {
     #include "../data/scan_response.adv"
 };
 
@@ -153,6 +153,9 @@ ble_qiot_ret_status_t ble_advertising_start(adv_info_s *adv)
     index += 2;
     memcpy(adv_data + index, adv->manufacturer_info.adv_data, adv->manufacturer_info.adv_data_len);
     index += adv->manufacturer_info.adv_data_len;
+    
+    scan_data[0] = strlen(DEVICE_NAME) + 1;
+    memcpy(scan_data + 2, DEVICE_NAME, strlen(DEVICE_NAME));
 
     gap_set_ext_adv_para(0, 
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
@@ -169,7 +172,7 @@ ble_qiot_ret_status_t ble_advertising_start(adv_info_s *adv)
                             0x00,                      // Advertising_SID
                             0x00);                     // Scan_Request_Notification_Enable
     gap_set_ext_adv_data(0, index, (uint8_t*)adv_data);
-    gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
+    gap_set_ext_scan_response_data(0, scan_data[0] + 1, (uint8_t*)scan_data);
     gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
 
     return BLE_QIOT_RS_OK;

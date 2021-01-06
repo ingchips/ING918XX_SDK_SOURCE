@@ -7,6 +7,7 @@
 
 #include "platform_api.h"
 #include "bluetooth.h"
+#include "sm.h"
 
 typedef void (*f_cmd_handler)(const char *param);
 
@@ -42,6 +43,7 @@ static const char help[] =  "commands:\n"
                             "w/or   handle XX XX ...    write without response to a char.\n"
                             "sub    handle              subscribe to a characteristic\n"
                             "unsub  handle              unsubscribe\n"
+                            "bond   0/1                 bonding\n"
                             ;
 
 void cmd_help(const char *param)
@@ -78,7 +80,7 @@ void cmd_write(const char *param)
 void cmd_reboot(const char *param)
 {
     NVIC_SystemReset();
-	while(1);
+    while(1);
 }
 
 void cmd_version(const char *param)
@@ -110,7 +112,7 @@ void cmd_name(const char *param)
     set_adv_local_name(param, strlen(param));
 }
 
-extern uint8_t rand_addr[];
+extern sm_persistent_t sm_persistent;
 extern uint8_t slave_addr[];
 extern bd_addr_type_t slave_addr_type;
 
@@ -138,7 +140,7 @@ int parse_addr(uint8_t *output, const char *param)
 
 void cmd_addr(const char *param)
 {
-    if (0 == parse_addr(rand_addr, param))
+    if (0 == parse_addr(sm_persistent.identity_addr, param))
         update_addr();
 }
 
@@ -173,6 +175,18 @@ void cmd_read_char(const char *param)
         return;
     }
     read_value_of_char(t);
+}
+
+void cmd_bond(const char *param)
+{
+    extern void set_bonding(int f);
+    int flag;
+    if (sscanf(param, "%d", &flag) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    set_bonding(flag);
 }
 
 block_value_t char_value;
@@ -334,6 +348,10 @@ static cmd_t cmds[] =
     {
         .cmd = "unsub",
         .handler = cmd_unsub_char
+    },
+    {
+        .cmd = "bond",
+        .handler = cmd_bond
     },
 };
 

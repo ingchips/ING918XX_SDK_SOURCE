@@ -658,6 +658,25 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
 // WARNING: ^^^ this API is not available in this release
 
 
+/**
+ ****************************************************************************************
+ * @brief Allocate memory from LL internal heap
+ *
+ * @param[in]   size                memory size in bytes
+ * @return                          memory pointer if successful else NULL
+ ****************************************************************************************
+ */
+void *ll_malloc(uint16_t size);
+
+/**
+ ****************************************************************************************
+ * @brief Free memory allocated from LL internal heap
+ *
+ * @param[in]   buffer              memory pointer
+ ****************************************************************************************
+ */
+void ll_free(void *buffer);
+
 #ifdef __cplusplus
 }
 #endif

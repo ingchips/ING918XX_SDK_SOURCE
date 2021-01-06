@@ -150,6 +150,8 @@
         "ll_raw_packet_set_tx_cte", 
         "ll_raw_packet_set_rx_cte", 
         "ll_raw_packet_get_iq_samples", 
+        "ll_malloc", 
+        "ll_free", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -307,11 +309,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 138224
+        "size": 138384
     }, 
     "version": [
         1, 
         2, 
-        4
+        5
     ]
 }
