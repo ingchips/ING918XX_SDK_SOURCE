@@ -183,8 +183,8 @@ void platform_raise_assertion(const char *file_name, int line_no);
 
 typedef struct
 {
-    uint32_t bytes_free;                // total free bytes
-    uint32_t bytes_minimum_ever_free;   // mininum of bytes_free from startup
+    int bytes_free;                // total free bytes at present
+    int bytes_minimum_ever_free;   // mininum of bytes_free from startup
 } platform_heap_status_t;
 
 /**
@@ -195,6 +195,22 @@ typedef struct
  ****************************************************************************************
  */
 void platform_get_heap_status(platform_heap_status_t *status);
+
+/**
+ ****************************************************************************************
+ * @brief Install a new stack for ISR
+ *
+ * In case apps need a much larger stack than the default one in ISR, a new stack can be
+ * installed to repleace the default one.
+ * 
+ * This function is only allowed to be called in `app_main`. The new stack is put into 
+ * use after `app_main` returns.
+ *                 
+ *
+ * @param[in]  top                  stack top (must be 4-bytes aligned)
+ ****************************************************************************************
+ */
+void platform_install_isr_stack(void *top);
 
 /**
  ****************************************************************************************
@@ -631,14 +647,22 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @param[in]   slot_len                slot length for AoA
  * @param[in]   switching_pattern_len   switching pattern len
  * @param[in]   switching_pattern       switching pattern
+ * @param[in]   slot_sampling_offset    sampling offset (0..23) in a slot
+ * @param[in]   slot_sample_count       sample count within a slot (1..5)
  * @return                              0 if successful else error code
+ *
+ * Note:
+ * Recommended value: slot_sampling_offset = 12, slot_sample_count = 1
+ * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
 // int ll_raw_packet_set_rx_cte(struct ll_raw_packet *packet,
 //                           uint8_t cte_type,
 //                           uint8_t slot_len,
 //                           uint8_t switching_pattern_len,
-//                           const uint8_t *swiching_pattern);
+//                           const uint8_t *swiching_pattern,
+//                           uint8_t slot_sampling_offset,
+//                           uint8_t slot_sample_count);
 // WARNING: ^^^ this API is not available in this release
 
 
@@ -649,12 +673,19 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @param[in]   packet              the packet object
  * @param[out]  iq_samples          buffer to store IQ samples (must be large enough)
  * @param[out]  iq_sample_cnt       number of IQ pairs
+ * @param[in]   preprocess          do preprocessing (non-0) or don't (0) do preprocessing
+ *                                  Note: 1) Preprocessing is only available when
+ *                                           `slot_sample_count` = 1
+ *                                        2) IQ samples format of each component:
+ *                                           * When preprocessing is on: `int8_t`
+ *                                           * When preprocessing is off: `int16_t`
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
 // int ll_raw_packet_get_iq_samples(struct ll_raw_packet *packet,
-//                                int8_t *iq_samples,
-//                                int *iq_sample_cnt);
+//                                void *iq_samples,
+//                                int *iq_sample_cnt,
+//                                int preprocess);
 // WARNING: ^^^ this API is not available in this release
 
 

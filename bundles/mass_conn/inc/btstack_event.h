@@ -28,9 +28,9 @@ extern "C" {
 /* API_START */
 
 #ifdef C2NIM
-#define decode_event_offset(packet, T, offset)     ((const T *)((const int32_t)(packet) + offset))
+#define decode_event_offset(packet, T, offset)     ((const T *)((const uint32_t)(packet) + offset))
 #else
-#define decode_event_offset(packet, T, offset)     ((const T *)((int32_t)(packet) + offset))
+#define decode_event_offset(packet, T, offset)     ((const T *)((uint32_t)(packet) + offset))
 #endif
 
 /**

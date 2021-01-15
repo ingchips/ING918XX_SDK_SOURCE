@@ -101,6 +101,7 @@
         "platform_get_version", 
         "platform_raise_assertion", 
         "platform_get_heap_status", 
+        "platform_install_isr_stack", 
         "platform_reset", 
         "platform_switch_app", 
         "platform_write_persistent_reg", 
@@ -246,6 +247,7 @@
         "xTaskResumeAll", 
         "xTaskGetTickCount", 
         "xTaskGetTickCountFromISR", 
+        "uxTaskGetStackHighWaterMark", 
         "xTaskIncrementTick", 
         "vTaskPlaceOnEventList", 
         "vTaskPlaceOnEventListRestricted", 
@@ -278,19 +280,19 @@
         "vPortValidateInterruptPriority"
     ], 
     "app": {
-        "base": 147456
+        "base": 155648
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 31360
+        "size": 31336
     }, 
     "rom": {
         "base": 16384, 
-        "size": 130980
+        "size": 131104
     }, 
     "version": [
         1, 
         2, 
-        5
+        6
     ]
 }

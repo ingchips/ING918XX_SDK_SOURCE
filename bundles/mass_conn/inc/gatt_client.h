@@ -1,7 +1,7 @@
 /** @file
- *  @brief generic access profile 
+ *  @brief generic access profile
  * Copyright Message
- * 
+ *
  *  INGCHIPS confidential and proprietary.
  *  COPYRIGHT (c) 2018 by INGCHIPS
  *
@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 /**
- * @brief Bluetooth 
+ * @brief Bluetooth
  * @defgroup Bluetooth_gatt_client
  * @ingroup bluetooth_stack
  * @{
@@ -174,19 +174,19 @@ uint8_t gatt_client_read_multiple_characteristic_values(btstack_packet_handler_t
 /**
  * @brief Writes the characteristic value using the characteristic's value handle without an acknowledgment that the write was successfully performed.
  */
-uint8_t gatt_client_write_value_of_characteristic_without_response(hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, uint8_t  * data);
+uint8_t gatt_client_write_value_of_characteristic_without_response(hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, const uint8_t  * data);
 
 /**
  * @brief Writes the authenticated characteristic value using the characteristic's value handle without an acknowledgment that the write was successfully performed.
  */
-uint8_t gatt_client_signed_write_without_response(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t handle, uint16_t message_len, uint8_t  * message);
+uint8_t gatt_client_signed_write_without_response(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t handle, uint16_t message_len, const uint8_t  * message);
 
 /**
  * @brief Writes the characteristic value using the characteristic's value handle. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of write. The write is successfully performed, if the event's status field is set to 0.
  */
-uint8_t gatt_client_write_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, uint8_t  * data);
-uint8_t gatt_client_write_long_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, uint8_t  * data);
-uint8_t gatt_client_write_long_value_of_characteristic_with_offset(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t offset, uint16_t length, uint8_t  * data);
+uint8_t gatt_client_write_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, const uint8_t  * data);
+uint8_t gatt_client_write_long_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, const uint8_t  * data);
+uint8_t gatt_client_write_long_value_of_characteristic_with_offset(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t offset, uint16_t length, const uint8_t  * data);
 
 /**
  * @brief Writes of the long characteristic value using the characteristic's value handle. It uses server response to validate that the write was correctly received. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE marks the end of write. The write is successfully performed, if the event's status field is set to 0.
@@ -373,7 +373,7 @@ static __INLINE const gatt_event_value_packet_t * gatt_event_characteristic_valu
  * @param[out]          value_size
  * @return gatt_event_notification_t *
  */
-static __INLINE const gatt_event_value_packet_t * gatt_event_characteristic_descriptor_query_result_parse(const uint8_t *event_packet, uint16_t event_size, uint16_t *value_size)
+static __INLINE const gatt_event_value_packet_t * gatt_event_characteristic_descriptor_value_query_result_parse(const uint8_t *event_packet, uint16_t event_size, uint16_t *value_size)
 {
     *value_size = event_size - 1 - (uint16_t)sizeof(gatt_event_value_packet_t);
     return decode_event_offset(event_packet, gatt_event_value_packet_t, 1);
