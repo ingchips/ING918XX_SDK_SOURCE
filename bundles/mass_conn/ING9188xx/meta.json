@@ -114,6 +114,7 @@
         "platform_get_version", 
         "platform_raise_assertion", 
         "platform_get_heap_status", 
+        "platform_install_isr_stack", 
         "platform_reset", 
         "platform_switch_app", 
         "platform_write_persistent_reg", 
@@ -259,6 +260,7 @@
         "xTaskResumeAll", 
         "xTaskGetTickCount", 
         "xTaskGetTickCountFromISR", 
+        "uxTaskGetStackHighWaterMark", 
         "xTaskIncrementTick", 
         "vTaskPlaceOnEventList", 
         "vTaskPlaceOnEventListRestricted", 
@@ -295,15 +297,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 35472
+        "size": 34456
     }, 
     "rom": {
         "base": 16384, 
-        "size": 137780
+        "size": 137908
     }, 
     "version": [
         1, 
         2, 
-        5
+        6
     ]
 }

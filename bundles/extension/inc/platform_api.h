@@ -183,8 +183,8 @@ void platform_raise_assertion(const char *file_name, int line_no);
 
 typedef struct
 {
-    uint32_t bytes_free;                // total free bytes
-    uint32_t bytes_minimum_ever_free;   // mininum of bytes_free from startup
+    int bytes_free;                // total free bytes at present
+    int bytes_minimum_ever_free;   // mininum of bytes_free from startup
 } platform_heap_status_t;
 
 /**
@@ -195,6 +195,22 @@ typedef struct
  ****************************************************************************************
  */
 void platform_get_heap_status(platform_heap_status_t *status);
+
+/**
+ ****************************************************************************************
+ * @brief Install a new stack for ISR
+ *
+ * In case apps need a much larger stack than the default one in ISR, a new stack can be
+ * installed to repleace the default one.
+ * 
+ * This function is only allowed to be called in `app_main`. The new stack is put into 
+ * use after `app_main` returns.
+ *                 
+ *
+ * @param[in]  top                  stack top (must be 4-bytes aligned)
+ ****************************************************************************************
+ */
+void platform_install_isr_stack(void *top);
 
 /**
  ****************************************************************************************

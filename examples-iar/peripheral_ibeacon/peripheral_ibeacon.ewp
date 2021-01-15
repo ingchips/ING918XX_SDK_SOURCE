@@ -812,7 +812,7 @@
         </option>
         <option>
           <name>IlinkExtraOptions</name>
-          <state>-f ../../bundles/typical/ING9185xx/symdefs.i</state>
+          <state>-f ../../bundles/typical/ING9187xx/symdefs.i</state>
         </option>
         <option>
           <name>IlinkLowLevelInterfaceSlave</name>

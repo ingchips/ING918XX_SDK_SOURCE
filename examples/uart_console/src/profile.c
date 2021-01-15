@@ -582,7 +582,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         break;
     case USER_MSG_UPDATE_ADDR:
         gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
-        printf("addr changed: %02X:%02X:%02X:%02X:%02X:%02X\n", 
+        printf("addr changed: %02X:%02X:%02X:%02X:%02X:%02X\n",
                 sm_persistent.identity_addr[0], sm_persistent.identity_addr[1],
                 sm_persistent.identity_addr[2], sm_persistent.identity_addr[3],
                 sm_persistent.identity_addr[4], sm_persistent.identity_addr[5]);
@@ -701,7 +701,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         if (bonding_flag)
         {
             //sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
-            
+
         }
         else
         {
@@ -910,6 +910,8 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
     uint8_t event = hci_event_packet_get_type(packet);
 
     if (packet_type != HCI_EVENT_PACKET) return;
+    if (0 == bonding_flag) return;
+
     platform_printf("SM: %d\n", event);
     switch (event)
     {
@@ -933,11 +935,14 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         break;
     case SM_EVENT_IDENTITY_RESOLVING_FAILED:
         platform_printf("not authourized\n");
-        iprintf("paring...\n");
-        sm_request_pairing(conn_handle == INVALID_HANDLE ? 0 : conn_handle); 
+        if (bonding_flag)
+        {
+            iprintf("paring...\n");
+            sm_request_pairing(conn_handle == INVALID_HANDLE ? 0 : conn_handle);
+        }
         break;
-    case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:        
-        gatt_client_discover_primary_services(service_discovery_callback, conn_handle);  
+    case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
+        gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
         break;
     default:
         break;

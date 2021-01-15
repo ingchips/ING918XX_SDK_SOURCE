@@ -39,6 +39,9 @@
 #define KV_USER_KEY_START              201
 #define KV_USER_KEY_END                255
 
+#ifndef DB_CAPACITY_SIZE
+    #define DB_CAPACITY_SIZE 1024
+#endif
 
 /**
  * @brief The whole data.

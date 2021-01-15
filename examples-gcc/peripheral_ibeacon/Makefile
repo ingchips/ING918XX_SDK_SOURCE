@@ -6,6 +6,6 @@ APPNAME=peripheral_ibeacon
 
 PROJECT_FILES=src/main.c ../../examples/${APPNAME}/src/profile.c   ${ING_REL}/src/FWlib/peripheral_uart.c
 
-SYMDEFS=-Wl,--just-symbols=../../bundles/typical/ING9185xx/symdefs.g
+SYMDEFS=-Wl,--just-symbols=../../bundles/typical/ING9187xx/symdefs.g
 
 include makefile.conf

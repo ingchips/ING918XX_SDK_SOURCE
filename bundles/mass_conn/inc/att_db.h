@@ -35,6 +35,7 @@ extern "C" {
 #define ATT_ERROR_DATA_MISMATCH                    0x7e
 #define ATT_ERROR_TIMEOUT                          0x7F
 
+#define ATT_ERROR_CMD_UNSUPPORTED                  0x06    
 /**@brief ATT Client Read Callback for Dynamic Data
 // - if buffer == NULL, don't copy data, just return size of value
 // - if buffer != NULL, copy data and return number bytes copied
