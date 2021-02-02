@@ -88,9 +88,9 @@ void setup_peripherals(void)
     GIO_SetDirection(SPI_LCD_CS, GIO_DIR_OUTPUT);
     GIO_SetDirection(SPI_LCD_DC, GIO_DIR_OUTPUT);
 
-    PINCTRL_SetPadMux(14, IO_SOURCE_I2C0_SCL_O);
-    PINCTRL_SetPadMux(15, IO_SOURCE_I2C0_SDO);
-    PINCTRL_SelI2cSclIn(I2C_PORT_0, 14); 
+    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
+    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10); 
 
     SPI_Init(AHB_SSP0);
 

@@ -68,9 +68,9 @@ void setup_peripherals(void)
 #ifndef SIMULATION   
     PINCTRL_SetPadMux(6, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(14, IO_SOURCE_I2C0_SCL_O);
-    PINCTRL_SetPadMux(15, IO_SOURCE_I2C0_SDO);
-    PINCTRL_SelI2cSclIn(I2C_PORT_0, 14);
+    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
+    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10);
     i2c_init(I2C_PORT_0);
 
     printf("sensor init...");

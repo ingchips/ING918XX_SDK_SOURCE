@@ -330,7 +330,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,CTE_ON,FOR_TX=0</Define>
+              <Define>USE_STDPERIPH_DRIVER,CTE_ON,FOR_TX=1</Define>
               <Undefine/>
               <IncludePath>../../bundles/extension/inc;../../bundles/extension/inc/os;../../bundles/extension/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -428,6 +428,13 @@
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
+          <Files>
+            <File>
+              <FileName>rf_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\rf_util.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>

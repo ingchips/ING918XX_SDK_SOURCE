@@ -131,7 +131,6 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
         case OTA_CTRL_PAGE_END:
             EflashProgramDisable();
             ota_downloading = 0;
-            ota_addr = 0;
             {
                 uint16_t len = *(uint16_t *)(buffer + 1);
                 uint16_t crc_value = *(uint16_t *)(buffer + 3);
@@ -140,7 +139,6 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                     ota_ctrl[0] = OTA_STATUS_WAIT_DATA;
                     break;
                 }
-                    
                 if (crc((uint8_t *)ota_start_addr, len) != crc_value)
                     ota_ctrl[0] = OTA_STATUS_ERROR;
                 else
