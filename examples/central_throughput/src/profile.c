@@ -10,6 +10,7 @@
 #include "btstack_defines.h"
 #include "gatt_client.h"
 #include "sig_uuid.h"
+#include "profile.h"
 
 #include "ingsoc.h"
 #include "peripheral_rtc.h"
@@ -328,6 +329,13 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         }
         if (slave.s2m_run)
             platform_printf("S->M: %dbps\n", slave.s2m_total << 3);
+
+#ifdef USE_DISPLAY
+        app_status.m2s_bps = slave.m2s_run ? (int)slave.m2s_total << 3 : -1;
+        app_status.s2m_bps = slave.s2m_run ? (int)slave.s2m_total << 3 : -1;
+        app_state_updated();
+#endif
+
         slave.m2s_total = 0;
         slave.s2m_total = 0;
         break;
@@ -549,6 +557,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     gap_set_ext_scan_enable(0, 0, 0, 0);
                     reverse_bd_addr(report->address, peer_addr);
                     platform_printf("connecting ... ");  print_addr(peer_addr);
+#ifdef USE_DISPLAY
+                    memcpy(app_status.peer, peer_addr, sizeof(app_status.peer));
+#endif
 
                     if (report->evt_type & HCI_EXT_ADV_PROP_USE_LEGACY)
                         phy_configs[0].phy = PHY_1M;
@@ -567,10 +578,16 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_meta_event_enh_create_conn_complete_t *conn_complete
                      = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
+                if (conn_complete->status)
+                    platform_reset();
                 platform_printf("connected\n");
                 slave.conn_handle = conn_complete->handle;
                 gap_set_phy(slave.conn_handle, 0, PHY_2M_BIT, PHY_2M_BIT, HOST_NO_PREFERRED_CODING);
                 gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, conn_complete->handle, UUID_TPT);
+#ifdef USE_DISPLAY
+                app_status.connected = 1;
+                app_state_updated();
+#endif
             }
             break;
         case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
@@ -613,6 +630,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         reset_info();
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+#ifdef USE_DISPLAY
+        app_status.connected = 0;
+        app_state_updated();
+#endif
         break;
 
     case L2CAP_EVENT_CAN_SEND_NOW:

@@ -509,7 +509,7 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
                                   cast [uint8](len(initPhyConfigs)),
                                   addr initPhyConfigs[0]);
             discard xTimerReset(initiatingTimer, portMAX_DELAY)
-        of HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
+        of HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
           let connComplete = decodeHciLEMetaEvent(packet, leMetaEventCreateConnCompleteT)
           iPrintf("role = %d, handle = %d\n", connComplete.role, connComplete.handle)
           if connComplete.role == HCI_ROLE_SLAVE:
