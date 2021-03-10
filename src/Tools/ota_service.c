@@ -97,6 +97,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
     {
         if (OTA_CTRL_START == buffer[0])
         {
+            platform_config(PLATFORM_CFG_POWER_SAVING, 0);
             if (OTA_STATUS_DISABLED != ota_ctrl[0])
             {
                 if (ota_downloading)

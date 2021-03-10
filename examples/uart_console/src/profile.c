@@ -534,6 +534,8 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
 #define USER_MSG_SUB_TO_CHAR        9
 #define USER_MSG_UNSUB_TO_CHAR      10
 #define USER_MSG_SET_BONDING        11
+#define USER_MSG_START_SCAN_ADDR    12
+#define USER_MSG_START_SCAN_ALL     13
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
@@ -561,6 +563,22 @@ static initiating_phy_config_t phy_configs[] =
     {
         .phy = PHY_CODED,
         .conn_param = CONN_PARAM
+    }
+};
+
+static const scan_phy_config_t scan_configs[2] =
+{
+    {
+        .phy = PHY_1M,
+        .type = SCAN_PASSIVE,
+        .interval = 200,
+        .window = 50
+    },
+    {
+        .phy = PHY_CODED,
+        .type = SCAN_PASSIVE,
+        .interval = 200,
+        .window = 50
     }
 };
 
@@ -699,14 +717,23 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     case USER_MSG_SET_BONDING:
         bonding_flag = size;
         if (bonding_flag)
-        {
-            //sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
-
-        }
+            sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
         else
-        {
-            //sm_set_authentication_requirements(SM_AUTHREQ_NO_BONDING);
-        }
+            sm_set_authentication_requirements(SM_AUTHREQ_NO_BONDING);
+        break;
+    case USER_MSG_START_SCAN_ALL:
+        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
+                              sizeof(scan_configs) / sizeof(scan_configs[0]),
+                              scan_configs);
+        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+        break;
+    case USER_MSG_START_SCAN_ADDR:
+        gap_clear_white_lists();
+        gap_add_whitelist(slave_addr, slave_addr_type);
+        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
+                              sizeof(scan_configs) / sizeof(scan_configs[0]),
+                              scan_configs);
+        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
         break;
     default:
         ;
@@ -744,6 +771,11 @@ void update_addr()
 void conn_to_slave()
 {
     btstack_push_user_msg(USER_MSG_CONN_TO_SLAVE, NULL, 0);
+}
+
+void start_scan(int targeted)
+{
+    btstack_push_user_msg(targeted ? USER_MSG_START_SCAN_ADDR : USER_MSG_START_SCAN_ALL, NULL, 0);
 }
 
 void cancel_create_conn()
@@ -821,6 +853,18 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
+        case HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT:
+            {
+                const le_ext_adv_report_t *report = decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports;
+                platform_printf("ADV %02X:%02X:%02X:%02X:%02X:%02X %ddBm\n"
+                                "Type: 0x%02x\n",
+                                report->address[5], report->address[4], report->address[3],
+                                report->address[2], report->address[1], report->address[0],
+                                report->rssi, report->evt_type);
+                print_hex_table(report->data, report->data_len);
+                platform_printf("\n");
+            }
+            break;
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             {
                 const le_meta_event_enh_create_conn_complete_t * complete =

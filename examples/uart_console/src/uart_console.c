@@ -38,6 +38,8 @@ static const char help[] =  "commands:\n"
                             "pat    0/1                 peer address type\n"
                             "conn   xx:xx:xx:xx:xx:xx   connect to dev and discover services\n"
                             "cancel                     cancel create connection\n"
+                            "scan                       scan for all adv\n"
+                            "scan   xx:xx:xx:xx:xx:xx   scan for adv from a device\n"
                             "read   value_handle        read value of a characteristic\n"
                             "write  handle XX XX ...    write value to a characteristic\n"
                             "w/or   handle XX XX ...    write without response to a char.\n"
@@ -148,6 +150,12 @@ void cmd_conn(const char *param)
 {
     if (0 == parse_addr(slave_addr, param))
         conn_to_slave();
+}
+
+void cmd_scan(const char *param)
+{
+    extern void start_scan(int targeted);
+    start_scan(0 == parse_addr(slave_addr, param) ? 1 : 0);
 }
 
 void cmd_conn_cancel(const char *param)
@@ -328,6 +336,10 @@ static cmd_t cmds[] =
     {
         .cmd = "cancel",
         .handler = cmd_conn_cancel
+    },
+    {
+        .cmd = "scan",
+        .handler = cmd_scan
     },
     {
         .cmd = "read",
