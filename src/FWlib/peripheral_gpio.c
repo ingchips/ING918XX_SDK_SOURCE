@@ -14,9 +14,16 @@ static void GIO_MaskedWrite(__IO uint32_t *reg, const uint8_t index, const uint8
 
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 {
-    GIO_MaskedWrite(GPIO_OEB, io_index, dir);
-    if (GIO_DIR_INPUT == dir)
-        GIO_MaskedWrite(GPIO_PIN_IE0, io_index, 0);
+    if (dir != GIO_DIR_NONE)
+    {
+        GIO_MaskedWrite(GPIO_OEB, io_index, dir == GIO_DIR_INPUT ? 0 : 1);
+        GIO_MaskedWrite(GPIO_PIN_IE0, io_index, dir == GIO_DIR_OUTPUT ? 1 : 0);
+    }
+    else
+    {
+        GIO_MaskedWrite(GPIO_OEB, io_index, 0);
+        GIO_MaskedWrite(GPIO_PIN_IE0, io_index, 1);
+    }
 }
 
 GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index)

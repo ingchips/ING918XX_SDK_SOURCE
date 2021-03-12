@@ -46,7 +46,9 @@ typedef enum
 typedef enum
 {
     GIO_DIR_INPUT,
-    GIO_DIR_OUTPUT
+    GIO_DIR_OUTPUT,
+    GIO_DIR_BOTH,
+    GIO_DIR_NONE    // set to tri-state
 } GIO_Direction_t;
 
 typedef enum

@@ -1007,6 +1007,90 @@ void gap_set_connection_parameter_range(le_connection_parameter_range_t * range)
  */
 uint8_t gap_aes_encrypt(const uint8_t *key, const uint8_t *plaintext);
 
+/**
+ * @brief Start a test where the DUT receives test reference
+ *          packets at a fixed interval.
+ * @param rx_channel            N = (F-2402) / 2
+ *                              Range: 0x00 to 0x27.
+ *                              Frequency Range: 2402 MHz to 2480 MHz
+ * @param phy                   0x01: LE 1M PHY; 0x02: LE 2M PHY; 0x03: LE Coded PHY
+ * @param modulation_index      Only 0x00 is supported (standard modulation index)
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_rx_test_v2(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index);
+
+/**
+ * @brief Start a test where the DUT receives test reference packets at a fixed interval.
+ * @param rx_channel            N = (F-2402) / 2
+ *                              Range: 0x00 to 0x27.
+ *                              Frequency Range: 2402 MHz to 2480 MHz
+ * @param phy                   0x01: LE 1M PHY; 0x02: LE 2M PHY; 0x03: LE Coded PHY
+ * @param modulation_index      Only 0x00 is supported (standard modulation index)
+ * @param expected_cte_length   0x00: No Constant Tone Extension expected
+ *                              0x02 to 0x14: Expected length of the Constant Tone Extension in 8 µs units
+ * @param expected_cte_type     0x00: AoA; 0x01: AoD (1 µs); 0x02: AoD (2 µs)
+ * @param slot_durations        0x01: Switching and sampling slots are 1 µs each
+ *                              0x02: ................................ 2 .......
+ * @param switching_pattern_length   0x02 to 0x4B The number of Antenna IDs in the pattern
+ * @param antenna_ids           List of Antenna IDs in the patter
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_rx_test_v3(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index,
+                            uint8_t expected_cte_length, uint8_t expected_cte_type,
+                            uint8_t slot_durations,
+                            uint8_t switching_pattern_length, uint8_t antenna_ids);
+
+/**
+ * @brief  Start a test where the DUT generates test reference packets at a fixed interval.
+ * @param tx_channel            N = (F-2402) / 2
+ *                              Range: 0x00 to 0x27.
+ *                              Frequency Range: 2402 MHz to 2480 MHz
+ * @param tx_data_length        0x00 to 0xFF: Length in bytes of payload data in each packet
+ * @param packet_payload        0x00~0x07. (Ref to Core Spec)
+ * @param phy                   0x01: LE 1M PHY; 0x02: LE 2M PHY; 0x03: LE Coded PHY (S8); 0x04: LE Coded PHY (S2)
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_tx_test_v2(uint8_t tx_channel, uint8_t test_data_length,
+                            uint8_t packet_payload, uint8_t phy);
+
+/**
+ * @brief  Start a test where the DUT generates test reference packets at a fixed interval.
+ * @param tx_channel            N = (F-2402) / 2
+ *                              Range: 0x00 to 0x27.
+ *                              Frequency Range: 2402 MHz to 2480 MHz
+ * @param tx_data_length        0x00 to 0xFF: Length in bytes of payload data in each packet
+ * @param packet_payload        0x00~0x07. (Ref to Core Spec)
+ * @param phy                   0x01: LE 1M PHY; 0x02: LE 2M PHY; 0x03: LE Coded PHY (S8); 0x04: LE Coded PHY (S2)
+ * @param cte_length            0x00: No Constant Tone Extension expected
+ *                              0x02 to 0x14: Expected length of the Constant Tone Extension in 8 µs units
+ * @param cte_type              0x00: AoA; 0x01: AoD (1 µs); 0x02: AoD (2 µs)
+ * @param switching_pattern_length   0x02 to 0x4B The number of Antenna IDs in the pattern
+ * @param antenna_ids           List of Antenna IDs in the patter
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_tx_test_v3(uint8_t tx_channel, uint8_t test_data_length,
+                            uint8_t packet_payload, uint8_t phy,
+                            uint8_t cte_length, uint8_t cte_type,
+                            uint8_t switching_pattern_length, uint8_t antenna_ids);
+
+/**
+ * @brief  Stop any test which is in progress
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_test_end(void);
+
+/**
+ * @brief  Start/Stop transmission of continuouswave.
+ *
+ * @param enable                0: stop transmission
+ *                              1: start transmission
+ * @param power_level_index     transmission power level index (0~63)
+ * @param freq                  frequency in MHz (2402 ~ 2480)
+ *                              Note: only BLE channels are supported.
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_vendor_tx_continuous_wave(uint8_t enable, uint8_t power_level_index, uint16_t freq);
+
 #define HCI_VENDOR_CCM  0xFC01
 
 /**

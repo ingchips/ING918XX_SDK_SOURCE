@@ -52,17 +52,18 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+const int ant_pins[] = {7, 8, 10, 11, 16, 17, 18, 19};
+
 void setup_peripherals(void)
 {
+    int i;
     config_uart(OSC_CLK_FREQ, 921600);
     
-    PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(8, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(10, IO_SOURCE_GENERAL);
-    
-    PINCTRL_SetGeneralPadMode(7, IO_MODE_ANT_SEL, 0, 0);
-    PINCTRL_SetGeneralPadMode(8, IO_MODE_ANT_SEL, 0, 0);
-    PINCTRL_SetGeneralPadMode(10, IO_MODE_ANT_SEL, 0, 0);
+    for (i = 0; i < sizeof(ant_pins) / sizeof(ant_pins[0]); i++)
+    {
+        PINCTRL_SetPadMux(ant_pins[i], IO_SOURCE_GENERAL);
+        PINCTRL_SetGeneralPadMode(ant_pins[i], IO_MODE_ANT_SEL, 0, 0);
+    }
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
