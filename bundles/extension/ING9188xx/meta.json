@@ -104,6 +104,12 @@
         "gap_get_connection_parameter_range", 
         "gap_set_connection_parameter_range", 
         "gap_aes_encrypt", 
+        "gap_rx_test_v2", 
+        "gap_rx_test_v3", 
+        "gap_tx_test_v2", 
+        "gap_tx_test_v3", 
+        "gap_test_end", 
+        "gap_vendor_tx_continuous_wave", 
         "gap_start_ccm", 
         "hci_add_event_handler", 
         "hci_register_acl_packet_handler", 
@@ -307,7 +313,7 @@
         "vPortValidateInterruptPriority"
     ], 
     "app": {
-        "base": 155648
+        "base": 163840
     }, 
     "ram": {
         "base": 536870912, 
@@ -315,11 +321,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 139192
+        "size": 139440
     }, 
     "version": [
         1, 
-        2, 
-        9
+        3, 
+        0
     ]
 }
