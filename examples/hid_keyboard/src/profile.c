@@ -34,9 +34,10 @@ const static uint8_t scan_data[] = {
     #include "../data/scan_response.adv"
 };
 
-static int notify_enable = 0;
+#define INVALID_HANDLE  (0xffff)
+int notify_enable = 0;
 uint16_t att_handle_notify = 0;
-hci_con_handle_t handle_send;
+hci_con_handle_t handle_send = INVALID_HANDLE;
 
 uint16_t att_handle_protocol_mode;
 uint16_t att_handle_hid_ctrl_point;
@@ -57,7 +58,7 @@ enum
 };
 uint8_t suspended = 0;
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     if (att_handle == att_handle_protocol_mode)
@@ -79,14 +80,14 @@ static void set_led_state(const uint8_t state)
     int i;
     for (i = 0; i < sizeof(names) / sizeof(names[0]); i++)
     {
-        platform_printf(names[i]); 
+        platform_printf(names[i]);
         platform_printf(state & (1 << i) ? ": ON\n" : ": OFF\n");
     }
 }
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     handle_send = connection_handle;
@@ -103,7 +104,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         }
         return 0;
     }
-    else if (att_handle == att_handle_hid_ctrl_point)        
+    else if (att_handle == att_handle_hid_ctrl_point)
     {
         if (*buffer == HID_CTRL_SUSPEND)
             suspended = 1;
@@ -120,10 +121,10 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     return 0;
 }
 
-kb_report_t report = 
-{ 
+kb_report_t report =
+{
     .modifier = 0,
-    .reserved = 0,    
+    .reserved = 0,
     .codes = {0}
 };
 
@@ -131,7 +132,7 @@ kb_report_t report =
 
 void kb_state_changed(void)
 {
-    if (notify_enable)
+    if(handle_send != INVALID_HANDLE)
         btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, 0);
 }
 
@@ -141,10 +142,8 @@ void kb_send_report(void)
         return;
     if (protocol_mode != HID_PROTO_REPORT)
         return;
-    if (notify_enable)
-    {
-        att_server_notify(handle_send, att_handle_notify, (uint8_t*)&report, sizeof(report));
-    }
+
+    att_server_notify(handle_send, att_handle_notify, (uint8_t*)&report, sizeof(report));
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
@@ -153,7 +152,9 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     {
     case USER_MSG_ID_REQUEST_SEND:
         if (att_server_can_send_packet_now(handle_send))
+        {
             kb_send_report();
+        }
         else
             att_server_request_can_send_now_event(handle_send);
         break;
@@ -176,7 +177,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             break;
 
         gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
-        gap_set_ext_adv_para(0, 
+        gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -199,7 +200,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle, init_service());
+            handle_send = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle;
+            att_set_db(handle_send, init_service());
             break;
         default:
             break;
@@ -210,6 +212,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
      case HCI_EVENT_DISCONNECTION_COMPLETE:
         notify_enable = 0;
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+        handle_send = INVALID_HANDLE;
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
@@ -230,20 +233,20 @@ const static uint8_t KB_REPORT_MAP[] = {
     USAGE_PAGE(1),      0x01,         // Generic Desktop
     USAGE(1),           0x06,         // Keyboard
     COLLECTION(1),      0x01,         // Application
-        REPORT_ID(1),       0x01,         //  Report Id 1    
+        REPORT_ID(1),       0x01,         //  Report Id 1
         USAGE_PAGE(1),      0x07,         //  Key Codes
         USAGE_MINIMUM(1),   0xe0,
         USAGE_MAXIMUM(1),   0xe7,
         LOGICAL_MINIMUM(1), 0x00,
         LOGICAL_MAXIMUM(1), 0x01,
         REPORT_SIZE(1),     0x01,
-        REPORT_COUNT(1),    0x08,         //   8 bits for MODIFIER        
+        REPORT_COUNT(1),    0x08,         //   8 bits for MODIFIER
         INPUT(1),           0x02,         //   Data, Variable, Absolute
-    
+
         REPORT_COUNT(1),    0x01,         //   Reserved byte
         REPORT_SIZE(1),     0x08,
         INPUT(1),           0x01,         //   Data, Variable, Constant
-    
+
         REPORT_COUNT(1),    0x05,         //   5 bits (Padding)
         REPORT_SIZE(1),     0x01,
         USAGE_PAGE(1),      0x08,         //   LEDs  (same as boot)
@@ -253,7 +256,7 @@ const static uint8_t KB_REPORT_MAP[] = {
         REPORT_COUNT(1),    0x01,         //   5 bits (Padding)
         REPORT_SIZE(1),     0x03,
         OUTPUT(1),          0x01,         //   Padding
-        
+
         REPORT_COUNT(1),    0x06,         //   Max. 6 key codes
         REPORT_SIZE(1),     0x08,
         LOGICAL_MINIMUM(1), 0x00,
@@ -272,7 +275,7 @@ typedef __packed struct
     uint8_t  flags;
 } hid_info_t;
 
-hid_info_t hid_info = 
+hid_info_t hid_info =
 {
     .bcd_hid = 0x0101,
     .b_country_code = 0,
@@ -291,13 +294,13 @@ typedef __packed struct
     uint8_t report_type;
 } report_ref_t;
 
-const static report_ref_t kb_desc_input_report = 
+const static report_ref_t kb_desc_input_report =
 {
     .report_id      = 1,
     .report_type    = REPORT_TYPE_INPUT
 };
 
-const static report_ref_t kb_desc_output_report = 
+const static report_ref_t kb_desc_output_report =
 {
     .report_id      = 1,
     .report_type    = REPORT_TYPE_OUTPUT
@@ -311,16 +314,16 @@ uint8_t *init_service()
     const uint16_t appearance = 0x03C1;
 
     att_db_util_init(att_db_storage, sizeof(att_db_storage));
-    
+
     att_db_util_add_service_uuid16(GAP_SERVICE_UUID);
     att_db_util_add_characteristic_uuid16(GAP_DEVICE_NAME_UUID, ATT_PROPERTY_READ, (uint8_t *)dev_name, sizeof(dev_name) - 1);
-    // Characteristic Appearance: 2A01 
+    // Characteristic Appearance: 2A01
     att_db_util_add_characteristic_uuid16(0x2A01, ATT_PROPERTY_READ, (uint8_t *)&appearance, 2);
-    
-    // Service Human Interface Device: 1812      
+
+    // Service Human Interface Device: 1812
     att_db_util_add_service_uuid16(0x1812);
 
-    // Characteristic Protocol Mode: 2A4E    
+    // Characteristic Protocol Mode: 2A4E
     att_handle_protocol_mode = att_db_util_add_characteristic_uuid16(0x2A4E,
         ATT_PROPERTY_READ | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_DYNAMIC,
         &protocol_mode, sizeof(protocol_mode));
@@ -328,25 +331,25 @@ uint8_t *init_service()
     att_handle_report = att_db_util_add_characteristic_uuid16(0x2A4D,
         ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
         (uint8_t *)&report, sizeof(report));
-    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ, 
+    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ,
         (uint8_t *)&kb_desc_input_report, sizeof(kb_desc_input_report));
-    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ, 
+    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ,
         (uint8_t *)&kb_desc_output_report, sizeof(kb_desc_output_report));
 
     // Characteristic Report Map: 2A4B
-    att_db_util_add_characteristic_uuid16(0x2A4B, ATT_PROPERTY_READ, (uint8_t *)KB_REPORT_MAP, sizeof(KB_REPORT_MAP));    
+    att_db_util_add_characteristic_uuid16(0x2A4B, ATT_PROPERTY_READ, (uint8_t *)KB_REPORT_MAP, sizeof(KB_REPORT_MAP));
 
     // Characteristic Boot Keyboard Input Report: 2A22
     att_handle_boot_kb_input_report = att_db_util_add_characteristic_uuid16(0x2A22, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY, (uint8_t *)&report, sizeof(report));
     // Characteristic Boot Keyboard Output Report: 2A32
-    att_handle_boot_kb_output_report = att_db_util_add_characteristic_uuid16(0x2A32, 
+    att_handle_boot_kb_output_report = att_db_util_add_characteristic_uuid16(0x2A32,
         ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE,
         (uint8_t *)&report, sizeof(report));
 
     // Characteristic HID Information: 2A4A
     att_db_util_add_characteristic_uuid16(0x2A4A, ATT_PROPERTY_READ, (uint8_t *)&hid_info, sizeof(hid_info));
-    // Characteristic HID Control Point: 2A4C 
-    att_handle_hid_ctrl_point = att_handle_protocol_mode = att_db_util_add_characteristic_uuid16(0x2A4C, 
+    // Characteristic HID Control Point: 2A4C
+    att_handle_hid_ctrl_point = att_handle_protocol_mode = att_db_util_add_characteristic_uuid16(0x2A4C,
         ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, NULL, 0);
 
     return att_db_util_get_address();
@@ -379,5 +382,6 @@ uint32_t setup_profile(void *data, void *user_data)
     sm_config(IO_CAPABILITY_NO_INPUT_NO_OUTPUT,
               0,
               &sm_persistent);
+    sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
     return 0;
 }
