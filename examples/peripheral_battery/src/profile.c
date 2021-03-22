@@ -189,7 +189,6 @@ uint32_t setup_profile(void *data, void *user_data)
     ADC_SetClkSel(ADC_CLK_EN | ADC_CLK_128);
     ADC_SetMode(ADC_MODE_SINGLE);
     ADC_EnableChannel(ADC_CHANNEL, 1);
-    ADC_EnableChannel(5, 1);
 
     xTaskCreate(battery_task,
                "b",
