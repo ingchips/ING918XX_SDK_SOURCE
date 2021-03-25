@@ -294,8 +294,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>147456</StartAddress>
-                <Size>131072</Size>
+                <StartAddress>155648</StartAddress>
+                <Size>122880</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893732</StartAddress>
-                <Size>9948</Size>
+                <StartAddress>536893736</StartAddress>
+                <Size>9944</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -458,6 +458,11 @@
               <FileName>att_db_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\Tools\att_db_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>trace.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\trace.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -126,6 +126,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
+            platform_calibrate_32k();
             break;
         default:
             break;

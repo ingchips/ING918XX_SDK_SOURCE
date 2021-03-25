@@ -109,6 +109,9 @@ uint16_t att_db_util_add_characteristic_uuid16(uint16_t uuid16, uint16_t propert
     att_db_util_add_attribute_uuid16(uuid16, properties, data, data_len);
     if (properties & (ATT_PROPERTY_NOTIFY | ATT_PROPERTY_INDICATE)){
         flags = ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_DYNAMIC;
+        if (properties & ATT_PROPERTY_AUTHENTICATION_REQUIRED) {
+            flags = flags | ATT_PROPERTY_AUTHENTICATION_REQUIRED;
+        }
         little_endian_store_16(buffer, 0, 0);
         att_db_util_add_attribute_uuid16(GATT_CLIENT_CHARACTERISTICS_CONFIGURATION, flags, buffer, 2);
     }
@@ -127,6 +130,9 @@ uint16_t att_db_util_add_characteristic_uuid128(uint8_t * uuid128, uint16_t prop
     att_db_util_add_attribute_uuid128(uuid128, properties, data, data_len);
     if (properties & (ATT_PROPERTY_NOTIFY | ATT_PROPERTY_INDICATE)){
         flags = ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_DYNAMIC;
+        if (properties & ATT_PROPERTY_AUTHENTICATION_REQUIRED) {
+            flags = flags | ATT_PROPERTY_AUTHENTICATION_REQUIRED;
+        }
         little_endian_store_16(buffer, 0, 0);
         att_db_util_add_attribute_uuid16(GATT_CLIENT_CHARACTERISTICS_CONFIGURATION, flags, buffer, 2);
     }
