@@ -281,8 +281,10 @@ typedef enum
     PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accurary in ppm.
     PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2    
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
-    PLATFORM_CFG_PS_DBG_1,      // debugging parameter
-    PLATFORM_CFG_PS_DBG_2,      // debugging parameter
+    PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (deep sleep mode) in us. (default: ~550us)
+    PLATFORM_CFG_PS_DBG_1 = PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // obsoleted
+    PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // sleep time reduction (other sleep mode) in us. (default: ~450us)
+    PLATFORM_CFG_PS_DBG_2 = PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // obsoleted
     PLATFORM_CFG_LL_DBG_FLAGS,  // debugging parameter
 } platform_cfg_item_t;
 

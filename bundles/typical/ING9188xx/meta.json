@@ -228,6 +228,7 @@
         "ll_set_def_antenna", 
         "ll_malloc", 
         "ll_free", 
+        "ll_set_max_conn_number", 
         "ll_query_timing_info", 
         "xQueueGenericSend", 
         "xQueuePeek", 
@@ -303,15 +304,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 31320
+        "size": 31324
     }, 
     "rom": {
         "base": 16384, 
-        "size": 137448
+        "size": 137292
     }, 
     "version": [
         1, 
         3, 
-        1
+        3
     ]
 }

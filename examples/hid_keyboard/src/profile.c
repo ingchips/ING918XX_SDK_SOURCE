@@ -329,7 +329,8 @@ uint8_t *init_service()
         &protocol_mode, sizeof(protocol_mode));
     // Characteristic Report: 2A4D
     att_handle_report = att_db_util_add_characteristic_uuid16(0x2A4D,
-        ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
+        ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_DYNAMIC |
+        ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
         (uint8_t *)&report, sizeof(report));
     att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ,
         (uint8_t *)&kb_desc_input_report, sizeof(kb_desc_input_report));
@@ -349,7 +350,7 @@ uint8_t *init_service()
     // Characteristic HID Information: 2A4A
     att_db_util_add_characteristic_uuid16(0x2A4A, ATT_PROPERTY_READ, (uint8_t *)&hid_info, sizeof(hid_info));
     // Characteristic HID Control Point: 2A4C
-    att_handle_hid_ctrl_point = att_handle_protocol_mode = att_db_util_add_characteristic_uuid16(0x2A4C,
+    att_handle_hid_ctrl_point = att_db_util_add_characteristic_uuid16(0x2A4C,
         ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, NULL, 0);
 
     return att_db_util_get_address();

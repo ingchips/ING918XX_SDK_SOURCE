@@ -388,6 +388,16 @@ void *ll_malloc(uint16_t size);
  */
 void ll_free(void *buffer);
 
+/**
+ ****************************************************************************************
+ * @brief Set the max possbible number of connections
+ *
+ * @param[in]  max_number       max number of connections
+ * @return                      max number of connections (which is <= max_number)
+ ****************************************************************************************
+ */
+int ll_set_max_conn_number(int max_number);
+
 #ifdef __cplusplus
 }
 #endif

@@ -4,6 +4,7 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include <stdio.h>
+#include "power_ctrl.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -62,15 +63,12 @@ void setup_peripherals(void)
     on_lle_reset(NULL, NULL);
 }
 
-#define w32(a,b) *(volatile uint32_t*)(a) = (uint32_t)(b)
-#define r32(a)   (*(volatile uint32_t*)(a))
-
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
+    power_ctrl_deep_sleep_wakeup();
     setup_peripherals();
-
     return 1;
 }
 
@@ -78,6 +76,7 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
+    power_ctrl_before_deep_sleep();
     return 1;
 }
 
@@ -95,10 +94,8 @@ const int16_t power_mapping[] = {
 
 int app_main()
 {
-    // If there are *three* crystals on board, *uncomment* below line.
-    // Otherwise, below line should be kept commented out.
-    // platform_set_rf_clk_source(0);
-    
+    power_ctrl_init();
+
 #ifdef USE_OSC32K
     platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
 #else
@@ -107,12 +104,9 @@ int app_main()
 #endif
 
     setup_peripherals();
-    sysSetPublicDeviceAddr((const unsigned char *)(0x2a010));
+    sysSetPublicDeviceAddr((const unsigned char *)(0x24010));
 
     platform_set_rf_power_mapping(power_mapping);
-
-    //platform_config(PLATFORM_CFG_POWER_SAVING, 0);
-    //platform_config(PLATFORM_CFG_LOG_HCI, 1);
 
     // setup deep sleep handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);

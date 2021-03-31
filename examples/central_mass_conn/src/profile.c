@@ -34,7 +34,7 @@ void show_heap(void)
     platform_printf(buffer, strlen(buffer) + 1);
 }
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -47,7 +47,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -66,7 +66,7 @@ void print_conn_state(void)
     {
         if ((i & 7) == 0)
             platform_printf("\n%2d: ", i);
-        platform_printf(conn_handles[i] == INVALID_HANDLE ? "." : "*");        
+        platform_printf(conn_handles[i] == INVALID_HANDLE ? "." : "*");
     }
     platform_printf("\n");
 }
@@ -87,7 +87,7 @@ int total_conn_num(void)
 void start_scan_if_needed0(void)
 {
     int i;
-    
+
     print_conn_state();
 
     if (is_initiating) return;
@@ -97,14 +97,14 @@ void start_scan_if_needed0(void)
         if (conn_handles[i] == INVALID_HANDLE)
             break;
     }
-    
+
     if (i >= MAX_CONN_NUMBER)
     {
         platform_printf("ALL Connected\n");
         gap_set_ext_scan_enable(0, 0, 0, 0);
         return;
     }
-    
+
     gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
 }
 
@@ -117,12 +117,12 @@ static initiating_phy_config_t phy_configs[] =
         .phy = PHY_1M,
         .conn_param =
         {
-            .scan_int = 190,
-            .scan_win = 150,
-            .interval_min = 410,
-            .interval_max = 410,
+            .scan_int = 150,
+            .scan_win = 100,
+            .interval_min = 350,
+            .interval_max = 350,
             .latency = 0,
-            .supervision_timeout = 600,
+            .supervision_timeout = 800,
             .min_ce_len = 7,
             .max_ce_len = 7
         }
@@ -133,11 +133,11 @@ void initiate_if_needed(void)
 {
     int i;
     int c = 0;
-    
+
     print_conn_state();
 
     if (is_initiating) return;
-    
+
     gap_clear_white_lists();
 
     for (i = 0; i < MAX_CONN_NUMBER; i++)
@@ -149,16 +149,16 @@ void initiate_if_needed(void)
             gap_add_whitelist(peer_addr, BD_ADDR_TYPE_LE_RANDOM);
         }
     }
-    
+
     if (0 == c)
     {
         platform_printf("ALL Connected\n");
         gap_set_ext_scan_enable(0, 0, 0, 0);
         return;
     }
-    
+
     platform_printf("connecting...\n");
-    
+
     gap_ext_create_connection(INITIATING_ADVERTISER_FROM_LIST, // Initiator_Filter_Policy,
                               BD_ADDR_TYPE_LE_RANDOM,          // Own_Address_Type,
                               BD_ADDR_TYPE_LE_RANDOM,          // Peer_Address_Type,
@@ -218,7 +218,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 int id;
                 is_initiating = 0;
-                xTimerStop(app_timer, portMAX_DELAY);                
+                xTimerStop(app_timer, portMAX_DELAY);
                 conn_complete = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                 id = conn_complete->peer_addr[0];
                 if (conn_complete->status == 0)
@@ -226,6 +226,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     conn_handles[id] = conn_complete->handle;
                     platform_printf("Connected to #%d. Total = %d\n", id, total_conn_num());
                     gatt_client_is_ready(conn_complete->handle);
+                    gap_update_connection_parameters(conn_complete->handle,
+                             350, 350, 0, 800, 5, 5);
                 }
                 else
                     platform_printf("fails\n");

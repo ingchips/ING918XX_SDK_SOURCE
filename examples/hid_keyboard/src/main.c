@@ -6,6 +6,7 @@
 #include "eflash.h"
 #include <string.h>
 #include <stdio.h>
+#include "trace.h"
 
 #include "USBKeyboard.h"
 
@@ -69,7 +70,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 921600);
+    config_uart(OSC_CLK_FREQ, 115200);
 
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
@@ -94,7 +95,7 @@ extern kb_report_t report;
 extern void kb_state_changed(void);
 
 uint32_t gpio_isr(void *user_data)
-{   
+{
     uint32_t current = ~GIO_ReadAll();
     int8_t i = 0;
 
@@ -106,9 +107,9 @@ uint32_t gpio_isr(void *user_data)
     if (current & (1 << KB_KEY_3))
         report.codes[i++] = KEY_3;
     while (i < sizeof(report.codes))
-        report.codes[i++] = 0;        
+        report.codes[i++] = 0;
     kb_state_changed();
-    
+
     printf("%02X-%02X-%02X\n", report.codes[0], report.codes[1], report.codes[2]);
 
     GIO_ClearAllIntStatus();
@@ -130,6 +131,8 @@ int read_from_flash(void *db, const int max_size)
     return KV_OK;
 }
 
+trace_rtt_t trace_ctx = {0};
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -140,13 +143,17 @@ int app_main()
     setup_peripherals();
 
     // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
-    
-    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);    
+
+    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-    
+
     kv_init(db_write_to_flash, read_from_flash);
+    trace_rtt_init(&trace_ctx);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
+
     return 0;
 }
 
