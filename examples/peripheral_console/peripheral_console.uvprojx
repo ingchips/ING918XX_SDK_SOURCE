@@ -269,8 +269,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>155648</StartAddress>
-                <Size>122880</Size>
+                <StartAddress>147456</StartAddress>
+                <Size>131072</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -390,6 +390,11 @@
               <FileName>service_console.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\service_console.c</FilePath>
+            </File>
+            <File>
+              <FileName>power_ctrl.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\src\Tools\power_ctrl.lib</FilePath>
             </File>
           </Files>
         </Group>
