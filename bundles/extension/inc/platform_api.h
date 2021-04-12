@@ -268,6 +268,12 @@ void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_d
 
 typedef enum
 {
+    LL_FLAG_DISABLE_CTE_PREPROSSING = 1,
+    LL_FLAG_LEGACY_ONLY_INITIATING = 4
+} ll_cfg_flag_t;
+
+typedef enum
+{
     PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_TRACE_MASK,    // flag is bitmap of platform_trace_item_t. default: 0
@@ -285,7 +291,7 @@ typedef enum
     PLATFORM_CFG_PS_DBG_1 = PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // obsoleted
     PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // sleep time reduction (other sleep mode) in us. (default: ~450us)
     PLATFORM_CFG_PS_DBG_2 = PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // obsoleted
-    PLATFORM_CFG_LL_DBG_FLAGS,  // debugging parameter
+    PLATFORM_CFG_LL_DBG_FLAGS,  // Link layer flags (combination of `ll_cfg_flag_t`)
 } platform_cfg_item_t;
 
 typedef enum

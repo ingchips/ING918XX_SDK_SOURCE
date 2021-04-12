@@ -70,10 +70,20 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
     uint32_t *p_data = (uint32_t *)(read_data);
     I2C_TypeDef *BASE = I2C_BASE(port);
 
-    // STEP 1: send write command
-    i2c_do_write(port, I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION,
-                 addr, write_data, write_len);
+    if (write_len)
+    {
+        // STEP 1: send write command
+        i2c_do_write(port, I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION,
+                     addr, write_data, write_len);
+    }
+    else
+    {
+        I2C_CTRL0_CLR(BASE, I2C_CTRL0_SFTRST | I2C_CTRL0_CLKGATE);
 
+        // ONLY SUPPORT PIO QUEUE MODE, SET HW_I2C_QUEUECTRL_PIO_QUEUE_MODE AT FRIST
+        I2C_QUEUECTRL_SET(BASE, I2C_QUEUECTRL_PIO_QUEUE_MODE);
+    }
+    
     // STEP 2 : transmit (control byte + Read command), need hold SCL (I2C_QUEUECMD_RETAIN_CLOCK)
     BASE->I2C_QUEUECMD.NRM = (I2C_QUEUECMD_RETAIN_CLOCK | I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION | 
           1);

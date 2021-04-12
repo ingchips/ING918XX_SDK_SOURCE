@@ -7,17 +7,25 @@ void RTC_Enable(const uint8_t flag)
     *reg = flag == 0 ? *reg & ~mask : *reg | mask;
 }
 
+static uint32_t RTC_ReadStable(volatile uint32_t * reg)
+{
+    uint32_t r = *reg;
+    while ((r != *reg) || (r != *reg))
+        r = *reg;
+    return r;
+}
+
 uint32_t RTC_CurrentHigh(void)
 {
     volatile uint32_t * reg = (volatile uint32_t *)(APB_RTC_BASE + 0x130);
-    uint32_t r = *reg;
+    uint32_t r = RTC_ReadStable(reg);
     return (r >> 7) & 0xffff;
 }
 
 uint32_t RTC_Current(void)
 {
     volatile uint32_t * reg = (volatile uint32_t *)(APB_RTC_BASE + 0x168);
-    return *reg;
+    return RTC_ReadStable(reg);
 }
 
 uint64_t RTC_CurrentFull(void)
