@@ -13,6 +13,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Bluetooth
  * @defgroup Bluetooth_NVM
@@ -174,5 +178,9 @@ void kv_visit(f_kv_visitor visitor, void *user_data);
 /*
 * @}
 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

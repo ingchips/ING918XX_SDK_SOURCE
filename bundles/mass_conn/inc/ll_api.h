@@ -398,6 +398,15 @@ void ll_free(void *buffer);
  */
 int ll_set_max_conn_number(int max_number);
 
+/**
+ ****************************************************************************************
+ * @brief Fix on one single channel or all channels
+ *
+ * @param[in]  channel_index    channel index (37/38/39, or 0x0 for all channels)
+ ****************************************************************************************
+ */
+void ll_scan_set_fixed_channel(int channel_index);
+
 #ifdef __cplusplus
 }
 #endif
