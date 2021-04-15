@@ -73,24 +73,29 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     switch (msg_id)
     {
     case USER_MSG_ID_REQUEST_SEND:
-        att_server_request_can_send_now_event(handle_send);
+        if (notify_enable)
+        {
+            uint16_t len;
+            uint8_t *data = console_get_clear_tx_data(&len);
+            att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, data, len);
+        }
         break;
     default:
         ;
     }
 }
 
-bd_addr_t null_addr = {0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
-
 extern int adv_tx_power;
 
 static void setup_adv()
 {
+    const static bd_addr_t rand_addr = {0xFB, 0x89, 0x67, 0x45, 0x23, 0x01};
+    gap_set_adv_set_random_addr(0, rand_addr);
     gap_set_ext_adv_para(0, 
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             800, 800,                  // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
-                            BD_ADDR_TYPE_LE_PUBLIC,    // Own_Address_Type
+                            BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
                             BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
                             NULL,                      // Peer_Address      (ignore)
                             ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
@@ -140,12 +145,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
-        if (notify_enable)
-        {
-            uint16_t len;
-            uint8_t *data = console_get_clear_tx_data(&len);
-            att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, data, len);
-        }
         break;
 
     case BTSTACK_EVENT_USER_MSG:

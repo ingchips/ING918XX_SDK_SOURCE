@@ -56,8 +56,6 @@ int app_main()
 
     setup_peripherals();
 
-    sysSetPublicDeviceAddr((uint8_t *)0x2a100);
-
     // setup putc handle
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 

@@ -149,22 +149,6 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>829</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>157764</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\src\profile.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\uart_console\src/profile.c\829</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
           <LineNumber>942</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>156392</Address>
@@ -179,7 +163,7 @@
           <Expression>\\uart_console\src/profile.c\942</Expression>
         </Bp>
         <Bp>
-          <Number>2</Number>
+          <Number>1</Number>
           <Type>0</Type>
           <LineNumber>361</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -195,7 +179,7 @@
           <Expression>\\uart_console\src/uart_console.c\361</Expression>
         </Bp>
         <Bp>
-          <Number>3</Number>
+          <Number>2</Number>
           <Type>0</Type>
           <LineNumber>204</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -211,7 +195,7 @@
           <Expression>\\uart_console\src/uart_console.c\204</Expression>
         </Bp>
         <Bp>
-          <Number>4</Number>
+          <Number>3</Number>
           <Type>0</Type>
           <LineNumber>607</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -227,7 +211,7 @@
           <Expression>\\uart_console\src/profile.c\607</Expression>
         </Bp>
         <Bp>
-          <Number>5</Number>
+          <Number>4</Number>
           <Type>0</Type>
           <LineNumber>621</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -243,7 +227,7 @@
           <Expression>\\uart_console\src/profile.c\621</Expression>
         </Bp>
         <Bp>
-          <Number>6</Number>
+          <Number>5</Number>
           <Type>0</Type>
           <LineNumber>218</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -259,7 +243,7 @@
           <Expression>\\uart_console\src/uart_console.c\218</Expression>
         </Bp>
         <Bp>
-          <Number>7</Number>
+          <Number>6</Number>
           <Type>0</Type>
           <LineNumber>230</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -275,7 +259,7 @@
           <Expression>\\uart_console\src/uart_console.c\230</Expression>
         </Bp>
         <Bp>
-          <Number>8</Number>
+          <Number>7</Number>
           <Type>0</Type>
           <LineNumber>378</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -291,7 +275,7 @@
           <Expression>\\uart_console\src/uart_console.c\378</Expression>
         </Bp>
         <Bp>
-          <Number>9</Number>
+          <Number>8</Number>
           <Type>0</Type>
           <LineNumber>379</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -307,7 +291,7 @@
           <Expression>\\uart_console\src/uart_console.c\379</Expression>
         </Bp>
         <Bp>
-          <Number>10</Number>
+          <Number>9</Number>
           <Type>0</Type>
           <LineNumber>606</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -323,7 +307,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>11</Number>
+          <Number>10</Number>
           <Type>0</Type>
           <LineNumber>620</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -339,23 +323,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>12</Number>
-          <Type>0</Type>
-          <LineNumber>828</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\src\profile.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>13</Number>
+          <Number>11</Number>
           <Type>0</Type>
           <LineNumber>939</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -371,7 +339,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>14</Number>
+          <Number>12</Number>
           <Type>0</Type>
           <LineNumber>624</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -387,7 +355,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>15</Number>
+          <Number>13</Number>
           <Type>0</Type>
           <LineNumber>625</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -403,7 +371,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>16</Number>
+          <Number>14</Number>
           <Type>0</Type>
           <LineNumber>638</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -419,7 +387,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>17</Number>
+          <Number>15</Number>
           <Type>0</Type>
           <LineNumber>639</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -435,7 +403,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>18</Number>
+          <Number>16</Number>
           <Type>0</Type>
           <LineNumber>871</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -451,7 +419,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>19</Number>
+          <Number>17</Number>
           <Type>0</Type>
           <LineNumber>872</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -467,7 +435,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>20</Number>
+          <Number>18</Number>
           <Type>0</Type>
           <LineNumber>982</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -483,7 +451,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>21</Number>
+          <Number>19</Number>
           <Type>0</Type>
           <LineNumber>985</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -499,7 +467,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>22</Number>
+          <Number>20</Number>
           <Type>0</Type>
           <LineNumber>212</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -515,7 +483,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>23</Number>
+          <Number>21</Number>
           <Type>0</Type>
           <LineNumber>226</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -531,7 +499,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>24</Number>
+          <Number>22</Number>
           <Type>0</Type>
           <LineNumber>238</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -547,7 +515,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>25</Number>
+          <Number>23</Number>
           <Type>0</Type>
           <LineNumber>373</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -563,7 +531,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>26</Number>
+          <Number>24</Number>
           <Type>0</Type>
           <LineNumber>390</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -579,7 +547,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>27</Number>
+          <Number>25</Number>
           <Type>0</Type>
           <LineNumber>391</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -595,7 +563,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>28</Number>
+          <Number>26</Number>
           <Type>0</Type>
           <LineNumber>873</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -611,7 +579,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>29</Number>
+          <Number>27</Number>
           <Type>0</Type>
           <LineNumber>940</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -627,7 +595,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>30</Number>
+          <Number>28</Number>
           <Type>0</Type>
           <LineNumber>943</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -643,7 +611,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>31</Number>
+          <Number>29</Number>
           <Type>0</Type>
           <LineNumber>983</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -659,7 +627,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>32</Number>
+          <Number>30</Number>
           <Type>0</Type>
           <LineNumber>986</LineNumber>
           <EnabledFlag>1</EnabledFlag>
