@@ -146,10 +146,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     switch (msg_id)
     {
     case USER_MSG_ID_REQUEST_SEND:
-        if (att_server_can_send_packet_now(handle_send))
-            mouse_report_movement();
-        else
-            att_server_request_can_send_now_event(handle_send);
+        mouse_report_movement();
         break;
     }
 }
@@ -221,7 +218,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
-        mouse_report_movement();
         break;
 
     case BTSTACK_EVENT_USER_MSG:

@@ -104,7 +104,6 @@ int app_main()
 #endif
 
     setup_peripherals();
-    sysSetPublicDeviceAddr((const unsigned char *)(0x24010));
 
     platform_set_rf_power_mapping(power_mapping);
 

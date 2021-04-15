@@ -67,12 +67,10 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         if (*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_INDICATION)
         {
             rsc_indicate_enable = 1;
-            att_server_request_can_send_now_event(handle_send);
         }
         else if (*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
         {
             rsc_notify_enable = 1;
-            att_server_request_can_send_now_event(handle_send);
         }
         return 0;
     default:
@@ -112,15 +110,14 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     switch (msg_id)
     {
     case USER_MSG_ID_REQUEST_SEND:
-        att_server_request_can_send_now_event(handle_send);
+        send_rsc_meas();
         break;
     }
 }
 
-bd_addr_t null_addr = {0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
-
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
+    const static bd_addr_t rand_addr = {0xEB, 0x89, 0x67, 0x4B, 0x26, 0x11};
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
@@ -131,12 +128,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-
+        gap_set_adv_set_random_addr(0, rand_addr);
         gap_set_ext_adv_para(0, 
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
-                                BD_ADDR_TYPE_LE_PUBLIC,    // Own_Address_Type
+                                BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
                                 BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
                                 NULL,                      // Peer_Address      (ignore)
                                 ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
@@ -173,7 +170,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
-        send_rsc_meas();
         break;
 
     case BTSTACK_EVENT_USER_MSG:

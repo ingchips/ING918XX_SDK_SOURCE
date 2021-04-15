@@ -110,7 +110,6 @@ int app_main()
     setup_peripherals();
 
     sem_pedometer = xSemaphoreCreateBinary();
-    sysSetPublicDeviceAddr((const unsigned char *)(0x26130));
 
     // setup putc handle
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);

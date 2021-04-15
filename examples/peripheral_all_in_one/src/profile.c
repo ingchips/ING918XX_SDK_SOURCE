@@ -279,11 +279,9 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         {
         case GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_INDICATION:
             temperture_indicate_enable = 1;
-            att_server_request_can_send_now_event(handle_send);
             break;
         case GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION:
             temperture_notify_enable = 1;
-            att_server_request_can_send_now_event(handle_send);
             break;
         }
         return 0;
@@ -295,11 +293,9 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         {
         case GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_INDICATION:
             rsc_indicate_enable = 1;
-            att_server_request_can_send_now_event(handle_send);
             break;
         case GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION:
             rsc_notify_enable = 1;
-            att_server_request_can_send_now_event(handle_send);
             break;
         }
         return 0;
@@ -344,7 +340,8 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     switch (msg_id)
     {
     case USER_MSG_ID_REQUEST_SEND:
-        att_server_request_can_send_now_event(handle_send);
+        send_temperature();
+        send_rsc_meas();
         break;
     }
 }
@@ -408,8 +405,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
-        send_temperature();
-        send_rsc_meas();
         break;
 
     case BTSTACK_EVENT_USER_MSG:
