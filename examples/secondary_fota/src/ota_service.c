@@ -14,29 +14,7 @@
 #include "platform_api.h"
 #include "rom_tools.h"
 
-#define RTC_CHIP_STAT_ADDR  (0x40050004)
-#define CLK_FREQ_STAT_POS   3
-
-#define EFLASH_BASE        ((uint32_t)0x00004000UL)
-#define EFLASH_SIZE        ((uint32_t)0x00080000UL)		//512k byte
-
-#define EFLASH_END         (EFLASH_BASE + EFLASH_SIZE)
-
-#include "eflash.inc"
-
-uint32_t ClkFreq; //0:16M 1:24M
-
 #define PAGE_SIZE (8192)
-
-void start_eflash_prog(void)
-{
-		ClkFreq = (*(uint32_t *)RTC_CHIP_STAT_ADDR>>CLK_FREQ_STAT_POS)&0x1;
-		EflashCacheBypass();
-		EflashBaseTime();
-#ifdef FOR_ASIC
-		EflashRepair();
-#endif
-}
 
 extern ota_ver_t this_version;
 
@@ -44,10 +22,11 @@ extern ota_ver_t this_version;
 #define ATT_OTA_HANDLE_DATA         10
 #define ATT_OTA_HANDLE_CTRL         8
 
-uint8_t  ota_ctrl[] = {OTA_STATUS_DISABLED};
-uint8_t  ota_downloading = 0;
-uint32_t ota_addr = 0;
-uint32_t ota_start_addr = 0;
+static uint8_t  ota_ctrl[] = {OTA_STATUS_DISABLED};
+static uint8_t  ota_downloading = 0;
+static uint32_t ota_start_addr = 0;
+static uint32_t ota_page_offset = 0;
+static uint8_t  page_buffer[PAGE_SIZE];
 
 int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
@@ -61,18 +40,8 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
     {
         if (OTA_CTRL_START == buffer[0])
         {
-            platform_config(PLATFORM_CFG_POWER_SAVING, 0);
-            if (OTA_STATUS_DISABLED != ota_ctrl[0])
-            {
-                if (ota_downloading)
-                    EflashProgramDisable();
-                EflashCacheEna();
-                EflashCacheFlush();
-            }
-
-            start_eflash_prog();
             ota_ctrl[0] = OTA_STATUS_OK;
-            ota_addr = 0;
+            ota_start_addr = 0;
             ota_downloading = 0;
             return 0;
         }
@@ -80,36 +49,25 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
         switch (buffer[0])
         {
         case OTA_CTRL_PAGE_BEGIN:
-            ota_addr = *(uint32_t *)(buffer + 1);
-            if (ota_addr & 0x3)
+            ota_start_addr = *(uint32_t *)(buffer + 1);
+            if (ota_start_addr & 0x3)
             {
                 ota_ctrl[0] = OTA_STATUS_ERROR;
                 return 0;
             }
             else
                 ota_ctrl[0] = OTA_STATUS_OK;
-            EflashProgramEnable();
-            if (ota_addr >= EFLASH_END)
-            {
-                *(volatile uint32_t *)(0xc40a0) = 0x4;
-                EraseEFlashPage(ota_addr >= EFLASH_END + PAGE_SIZE ? 1 : 0);
-                *(volatile uint32_t *)(0xc40a0) = 0x0;
-            }
-            else
-            {
-                EraseEFlashPage(((ota_addr - EFLASH_BASE) >> 13) & 0x3f);
-            }
             ota_downloading = 1;
-            ota_start_addr = ota_addr;
+            ota_page_offset = 0;
             break;
         case OTA_CTRL_PAGE_END:
-            EflashProgramDisable();
+            program_flash(ota_start_addr, page_buffer, ota_page_offset);
+
             ota_downloading = 0;
-            ota_addr = 0;
             {
                 uint16_t len = *(uint16_t *)(buffer + 1);
                 uint16_t crc_value = *(uint16_t *)(buffer + 3);
-                if (ota_addr - ota_start_addr < len)
+                if (ota_page_offset < len)
                 {
                     ota_ctrl[0] = OTA_STATUS_WAIT_DATA;
                     break;
@@ -126,7 +84,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 ota_ctrl[0] = OTA_STATUS_ERROR;
             else
             {
-                ota_addr = *(uint32_t *)(buffer + 1);
+                ota_start_addr = *(uint32_t *)(buffer + 1);
                 ota_ctrl[0] = OTA_STATUS_OK;
             }
             break;
@@ -135,7 +93,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 break;
             if ((0 == ota_downloading) || (buffer_size < 1 + sizeof(ota_meta_t)))
             {
-                const ota_meta_t *meta = (const ota_meta_t *)(buffer + 1);
+                const ota_meta_t  *meta = (const ota_meta_t *)(buffer + 1);
                 int s = buffer_size - 1;
                 if (crc((uint8_t *)&meta->entry, s - sizeof(meta->crc_value)) != meta->crc_value)
                 {
@@ -157,11 +115,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 if (ota_downloading)
                     ota_ctrl[0] = OTA_STATUS_ERROR;
                 else
-                {
-                    EflashCacheEna();
-                    EflashCacheFlush();
                     platform_reset();
-                }
             }
             break;
         default:
@@ -172,20 +126,16 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
     {
         if (OTA_STATUS_OK == ota_ctrl[0])
         {
-            int i;
-            __packed uint32_t *p32 = (__packed uint32_t *)buffer;
-            if ((buffer_size & 0x3) || (0 == ota_addr))
+            if (   (buffer_size & 0x3) || (0 == ota_downloading)
+                || (ota_page_offset + buffer_size > PAGE_SIZE))
             {
                 ota_ctrl[0] = OTA_STATUS_ERROR;
                 return 0;
             }
-
-            for (i = 0; i < buffer_size >> 2; i++)
-            {
-                EflashProgram(ota_addr, *p32);
-                p32++;
-                ota_addr += 4;
-            }
+            
+            memcpy(page_buffer + ota_page_offset,
+                   buffer, buffer_size);
+            ota_page_offset += buffer_size;
         }
     }
     else;

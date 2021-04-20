@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "platform_api.h"
+#include "ing918_uecc.h"
 
 struct bme280_t bme280_data;
 
@@ -83,6 +84,12 @@ void setup_peripherals(void)
 
 uint32_t setup_profile(void *, void *);
 
+int ecc_rng(uint8_t *dest, unsigned size)
+{
+    platform_hrng(dest, size);
+    return 1;
+}
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -90,6 +97,10 @@ int app_main()
     // platform_set_rf_clk_source(0);
 
     setup_peripherals();
+
+#ifdef SECURE_FOTA
+    uECC_set_rng(ecc_rng);
+#endif
 
     // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);

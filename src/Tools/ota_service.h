@@ -72,7 +72,7 @@ typedef struct ota_meta
 /**
  *@brief initialize FOTA related GATT service by code
  */
-void ota_init_service(ota_ver_t *this_version);
+void ota_init_service(void);
 #endif
 
 /**

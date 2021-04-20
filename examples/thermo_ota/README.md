@@ -7,4 +7,6 @@ This example demonstrates how to:
 * Notify values;
 * Use Firmware Over-The-Air update.
 
-Note: Sensor is connected to I2C0 (SCL => PIN5,  SDA => PIN6 as default).
+Note:
+    1. Sensor is connected to I2C0;
+    1. Define `SECURE_FOTA` to enable secure FOTA.

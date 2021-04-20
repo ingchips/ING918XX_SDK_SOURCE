@@ -46,6 +46,8 @@ static const char help[] =  "commands:\n"
                             "sub    handle              subscribe to a characteristic\n"
                             "unsub  handle              unsubscribe\n"
                             "bond   0/1                 bonding\n"
+                            "phy    1m/2m/s2/s8\n       central only\n"
+                            "interval x                 central only(in 1.25 ms)\n"
                             ;
 
 void cmd_help(const char *param)
@@ -279,6 +281,27 @@ void cmd_stop(const char *param)
     stop_adv();
 }
 
+void set_phy(int phy);
+void set_interval(int interval);
+
+void cmd_phy(const char *param)
+{
+    int phy;
+    if (strcmp(param, "1m") == 0) phy = 0;
+    else if (strcmp(param, "2m") == 0) phy = 1;
+    else if (strcmp(param, "s2") == 0) phy = 2;
+    else if (strcmp(param, "s8") == 0) phy = 3;
+    else return;
+    set_phy(phy);
+}
+
+void cmd_interval(const char *param)
+{
+    int interval = 0;
+    if (sscanf(param, "%d", &interval) != 1) return;
+    set_interval(interval);
+}
+
 static cmd_t cmds[] =
 {
     {
@@ -364,6 +387,14 @@ static cmd_t cmds[] =
     {
         .cmd = "bond",
         .handler = cmd_bond
+    },
+    {
+        .cmd = "phy",
+        .handler = cmd_phy
+    },
+    {
+        .cmd = "interval",
+        .handler = cmd_interval
     },
 };
 
