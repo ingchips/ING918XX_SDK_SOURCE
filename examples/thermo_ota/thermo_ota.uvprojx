@@ -269,8 +269,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>147456</StartAddress>
-                <Size>131072</Size>
+                <StartAddress>155648</StartAddress>
+                <Size>385024</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -294,8 +294,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893744</StartAddress>
-                <Size>9936</Size>
+                <StartAddress>536902244</StartAddress>
+                <Size>34204</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -386,6 +386,16 @@
               <FileType>1</FileType>
               <FilePath>.\src\profilestask.c</FilePath>
             </File>
+            <File>
+              <FileName>fota.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\fota.c</FilePath>
+            </File>
+            <File>
+              <FileName>ing918_uecc.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\src\Tools\ing918_uecc.lib</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -399,7 +409,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\ING9185xx\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\typical\ING9187xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -455,11 +465,6 @@
               <FileName>att_db_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\att_db_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>ota_service.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\ota_service.c</FilePath>
             </File>
           </Files>
         </Group>

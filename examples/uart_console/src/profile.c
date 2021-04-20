@@ -27,6 +27,10 @@ sm_persistent_t sm_persistent =
     .identity_addr          = {0xC6, 0xFA, 0x5C, 0x20, 0x87, 0xA7}
 };
 
+#define MAX_ADVERTISERS     50
+bd_addr_t scaned_advertisers[MAX_ADVERTISERS] = {0};
+int advertiser_num = 0;
+
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
 
@@ -536,6 +540,8 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
 #define USER_MSG_SET_BONDING        11
 #define USER_MSG_START_SCAN_ADDR    12
 #define USER_MSG_START_SCAN_ALL     13
+#define USER_MSG_SET_PHY            14
+#define USER_MSG_SET_INTERVAL       15
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
@@ -722,18 +728,51 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             sm_set_authentication_requirements(SM_AUTHREQ_NO_BONDING);
         break;
     case USER_MSG_START_SCAN_ALL:
+        advertiser_num = 0;
         gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
                               sizeof(scan_configs) / sizeof(scan_configs[0]),
                               scan_configs);
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
         break;
     case USER_MSG_START_SCAN_ADDR:
+        advertiser_num = 0;
         gap_clear_white_lists();
         gap_add_whitelist(slave_addr, slave_addr_type);
         gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
                               sizeof(scan_configs) / sizeof(scan_configs[0]),
                               scan_configs);
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+        break;
+    case USER_MSG_SET_PHY:
+        {
+            uint16_t       phy = size;
+            phy_bittypes_t phy_bit;
+            phy_option_t   phy_opt = HOST_PREFER_S8_CODING;
+            switch (phy)
+            {
+            case 0:
+                phy_bit = PHY_1M_BIT;
+                break;
+            case 1:
+                phy_bit = PHY_2M_BIT;
+                break;
+            case 2:
+                phy_opt = HOST_PREFER_S2_CODING; // fall through
+            case 3:
+                phy_bit = PHY_CODED_BIT;
+                break;
+            }
+            gap_set_phy(conn_handle, 0, phy_bit, phy_bit, phy_opt);
+        }
+        break;
+    case USER_MSG_SET_INTERVAL:
+        {
+            uint16_t interval = size;
+            uint16_t ce_len = (interval << 1) - 2;
+            gap_update_connection_parameters(conn_handle, interval, interval,
+                0, interval > 10 ? interval : 10, // supervisor_timeout = max(100, interval * 8)
+                ce_len, ce_len);
+        }
         break;
     default:
         ;
@@ -808,6 +847,30 @@ void unsub_to_char(int handle)
     btstack_push_user_msg(USER_MSG_UNSUB_TO_CHAR, NULL, (uint16_t)handle);
 }
 
+void set_phy(int phy)
+{
+    btstack_push_user_msg(USER_MSG_SET_PHY, NULL, phy);
+}
+
+void set_interval(int interval)
+{
+    btstack_push_user_msg(USER_MSG_SET_INTERVAL, NULL, interval);
+}
+
+int is_new_advertiser(const uint8_t *addr)
+{
+    int i;
+    for (i = 0; i < advertiser_num; i++)
+    {
+        if (memcmp(scaned_advertisers[i], addr, BD_ADDR_LEN) == 0)
+            return 0;
+    }
+    if (i >= MAX_ADVERTISERS) return 0;
+    memcpy(scaned_advertisers[i], addr, BD_ADDR_LEN);
+    advertiser_num++;
+    return 1;
+}
+
 #pragma pack (push, 1)
 typedef struct read_remote_version
 {
@@ -856,8 +919,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         case HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT:
             {
                 const le_ext_adv_report_t *report = decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports;
-                platform_printf("ADV %02X:%02X:%02X:%02X:%02X:%02X %ddBm\n"
+                if (!is_new_advertiser(report->address)) break;
+                    
+                platform_printf("No. %d:\n"
+                                "ADV %02X:%02X:%02X:%02X:%02X:%02X %ddBm\n"
                                 "Type: 0x%02x\n",
+                                advertiser_num,
                                 report->address[5], report->address[4], report->address[3],
                                 report->address[2], report->address[1], report->address[0],
                                 report->rssi, report->evt_type);
@@ -881,6 +948,18 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 iprintf("discovering...\n");
                 gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
+            }
+            break;
+        case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
+            {
+                const le_meta_phy_update_complete_t *cmpl = decode_hci_le_meta_event(packet, le_meta_phy_update_complete_t);
+                platform_printf("PHY updated: Rx %d, Tx %d\n", cmpl->rx_phy, cmpl->tx_phy);
+            }
+            break;
+        case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:
+            {
+                const le_meta_event_conn_update_complete_t *cmpl = decode_hci_le_meta_event(packet, le_meta_event_conn_update_complete_t);
+                platform_printf("CONN updated: interval %.2f ms\n", cmpl->interval * 1.25);
             }
             break;
         default:

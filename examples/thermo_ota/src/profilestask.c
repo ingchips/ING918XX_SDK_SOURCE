@@ -235,15 +235,13 @@ static uint8_t att_db_storage[800];
 
 //#define V2
 
-ota_ver_t this_version =
-{
-    .app = 
+prog_ver_t prog_ver = 
 #ifdef V2
-        { .major = 1, .minor = 2, .patch = 0 }
+    { .major = 1, .minor = 2, .patch = 0 }
 #else
-        { .major = 1, .minor = 1, .patch = 0 }
+    { .major = 1, .minor = 1, .patch = 0 }
 #endif
-};
+;
 
 uint8_t *init_service()
 {
@@ -278,7 +276,7 @@ uint8_t *init_service()
     printf("att_temp_value_handle         = %d\n"
            "att_client_desc_value_handle  = %d\n", att_temp_value_handle, att_client_desc_value_handle);
 
-    ota_init_service(&this_version);
+    ota_init_service();
 
     return att_db_util_get_address();
 }
