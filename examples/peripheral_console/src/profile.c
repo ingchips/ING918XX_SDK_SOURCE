@@ -1,10 +1,13 @@
 #include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 #include "platform_api.h"
 #include "att_db.h"
 #include "gap.h"
 #include "btstack_event.h"
 
 #include "service_console.h"
+#include "key_detector.h"
 
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
@@ -61,11 +64,17 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
 }
 
 #define USER_MSG_ID_REQUEST_SEND            1
+#define USER_MSG_ID_KEY_EVENT               2
 
 void stack_notify_tx_data()
 {
     if (notify_enable)
         btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, 0);
+}
+
+void on_key_event(key_press_event_t evt)
+{
+    btstack_push_user_msg(USER_MSG_ID_KEY_EVENT, NULL, evt);
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
@@ -78,6 +87,19 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             uint16_t len;
             uint8_t *data = console_get_clear_tx_data(&len);
             att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, data, len);
+        }
+        break;
+    case USER_MSG_ID_KEY_EVENT:
+        {
+            static char str[50];
+            key_press_event_t evt = (key_press_event_t)size;
+            if (evt == KEY_LONG_PRESSED)
+                strcpy(str, "key long pressed\n");
+            else
+                sprintf(str, "key pressed %d times\n", evt);
+                        
+            if (notify_enable)
+                att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)str, strlen(str) + 1);    
         }
         break;
     default:

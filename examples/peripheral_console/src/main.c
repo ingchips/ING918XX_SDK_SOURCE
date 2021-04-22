@@ -5,6 +5,7 @@
 #include "platform_api.h"
 #include <stdio.h>
 #include "power_ctrl.h"
+#include "key_detector.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -52,14 +53,32 @@ uint32_t on_lle_reset(void *dummy, void *user_data)
     return 0;
 }
 
+uint32_t gpio_isr(void *user_data)
+{
+    GIO_ClearAllIntStatus();
+    key_detector_start_on_demand();
+    return 0;
+}
+
 void setup_peripherals(void)
 {
     int i;
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
     config_uart(OSC_CLK_FREQ, 115200);
     
+    PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GENERAL);
+    GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
+    PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_DOWN);
+    GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
+    
     for (i = 8; i <= 15; i++)
-        PINCTRL_SetPadMux(i, IO_SOURCE_DEBUG_BUS);
+    {
+        if (i != KEY_PIN)
+            PINCTRL_SetPadMux(i, IO_SOURCE_DEBUG_BUS);
+    }
     on_lle_reset(NULL, NULL);
 }
 
@@ -69,6 +88,7 @@ uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
     (void)(user_data);
     power_ctrl_deep_sleep_wakeup();
     setup_peripherals();
+    key_detector_start_on_demand();
     return 1;
 }
 
@@ -90,7 +110,7 @@ const int16_t power_mapping[] = {
     4600, 4700, 4800, 4900, 5000, 5100, 5200, 5300, 5400, 5500, 5600,
     5700, 5800, 5900, 6000, 6100, 6200, 6300};
 
-//#define USE_OSC32K
+extern void on_key_event(key_press_event_t evt);
 
 int app_main()
 {
@@ -103,6 +123,7 @@ int app_main()
     platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
 #endif
 
+    key_detect_init(on_key_event);
     setup_peripherals();
 
     platform_set_rf_power_mapping(power_mapping);
