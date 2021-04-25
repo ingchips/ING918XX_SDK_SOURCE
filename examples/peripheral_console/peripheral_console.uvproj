@@ -409,6 +409,11 @@
               <FileType>4</FileType>
               <FilePath>..\..\src\Tools\power_ctrl.lib</FilePath>
             </File>
+            <File>
+              <FileName>key_detector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\key_detector.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -446,6 +451,11 @@
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>
             </File>
           </Files>
         </Group>
