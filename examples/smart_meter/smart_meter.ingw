@@ -2,7 +2,7 @@
  "watchdog": false,
  "bundle_meta": {
   "rom": {
-   "size": 137660,
+   "size": 137704,
    "base": 16384
   },
   "ram": {

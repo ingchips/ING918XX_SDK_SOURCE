@@ -434,6 +434,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\trace.c</FilePath>
             </File>
+            <File>
+              <FileName>str_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\str_util.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

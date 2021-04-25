@@ -9,8 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include "str_util.h"
 #include "sm.h"
 
 #include "uart_console.h"
@@ -409,39 +408,9 @@ void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *
     }
 }
 
-char nibble_to_char(int v)
+void print_fun(const char *s)
 {
-    return v <= 9 ? v - 0 + '0' : v - 10 + 'A';
-}
-
-void print_hex_table(const uint8_t *value, int len)
-{
-    int i;
-    static char line[16 * 3 + 16 + 5] = {0};
-
-    line[sizeof(line) - 1] = '\0';
-
-    iprintf(" 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15\n");
-    iprintf("===============================================\n");
-
-    for (i = 0; i < (len + 15) / 16; i++)
-    {
-        int s = i * 16;
-        int n = s + 16 > len ? len - s : 16;
-        int j;
-        memset(line, ' ', sizeof(line) - 1);
-
-        line[16 * 3 + 1] = '|';
-
-        for (j = 0; j < n; j++)
-        {
-            uint8_t v = value[s + j];
-            line[3 * j + 0] = nibble_to_char(v >> 4);
-            line[3 * j + 1] = nibble_to_char(v & 0xf);
-            line[16 * 3 + 3 + j] = (v <= 127) && isprint(v) ? v : '.';
-        }
-        iprintf("%s\n", line);
-    }
+    printf("%s\n", s);
 }
 
 void read_characteristic_value_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
@@ -456,7 +425,7 @@ void read_characteristic_value_callback(uint8_t packet_type, uint16_t _, const u
             if (value_size)
             {
                 iprintf("VALUE of %d:\n", value->handle);
-                print_hex_table(value->value, value_size);
+                print_hex_table(value->value, value_size, print_fun);
             }
         }
         break;
@@ -512,7 +481,7 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
         if (value_size)
         {
             iprintf("NOTIFACATION of %d:\n", value->handle);
-            print_hex_table(value->value, value_size);
+            print_hex_table(value->value, value_size, print_fun);
         }
         break;
     case GATT_EVENT_INDICATION:
@@ -520,7 +489,7 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
         if (value_size)
         {
             iprintf("INDICATION of %d:\n", value->handle);
-            print_hex_table(value->value, value_size);
+            print_hex_table(value->value, value_size, print_fun);
         }
         break;
     }
@@ -928,7 +897,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 report->address[5], report->address[4], report->address[3],
                                 report->address[2], report->address[1], report->address[0],
                                 report->rssi, report->evt_type);
-                print_hex_table(report->data, report->data_len);
+                print_hex_table(report->data, report->data_len, print_fun);
                 platform_printf("\n");
             }
             break;

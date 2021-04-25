@@ -396,11 +396,6 @@
               <FileType>1</FileType>
               <FilePath>..\ibeacon_scanner\src\service_ibeacon.c</FilePath>
             </File>
-            <File>
-              <FileName>str_utils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\str_utils.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -448,6 +443,11 @@
               <FileName>ad_parser.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\Tools\ad_parser.c</FilePath>
+            </File>
+            <File>
+              <FileName>str_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\str_util.c</FilePath>
             </File>
           </Files>
         </Group>
