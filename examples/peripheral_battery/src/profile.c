@@ -134,6 +134,38 @@ void print_reg(uint32_t addr)
 {
     printf("%08X = %08X\n", addr, *(uint32_t *)(addr));
 }
+   
+uint16_t read_adc(uint8_t channel)
+{
+    int i;
+    #define r32(a)   (*(volatile uint32_t*)(a))
+
+    while ((r32(0x40040088) & (0x7 << 14)) != (0x7 << 14)) ;
+
+    ADC_PowerCtrl(1);
+    ADC_Reset();
+    ADC_SetClkSel(ADC_CLK_EN | ADC_CLK_128);
+    ADC_SetMode(ADC_MODE_SINGLE);
+    ADC_EnableChannel(channel == 0 ? 1 : 0, 1);
+    ADC_EnableChannel(channel, 1);
+    for (i = 0; i < 100; i++) __nop();  // delay 100us before Enable
+
+    ADC_Enable(1);
+    while (ADC_IsChannelDataValid(channel) == 0) ;
+    uint16_t voltage = ADC_ReadChannelData(channel);
+    ADC_Enable(0);
+    for (i = 0; i < 100; i++) __nop();  // delay 100us before Enable
+    ADC_Enable(1);
+    while (ADC_IsChannelDataValid(channel) == 0) ;
+    for (i = 0; i < 1000; i++) __nop();  // delay 100us before Enable
+
+    voltage = ADC_ReadChannelData(channel);
+
+    ADC_Enable(0);
+    ADC_PowerCtrl(0);
+    
+    return voltage;
+}
 
 static SemaphoreHandle_t sem_battery = NULL;
 uint8_t *battery_level = NULL;
@@ -150,12 +182,7 @@ static void battery_task(void *pdata)
             continue;
 
 #ifndef SIMULATION        
-        ADC_Enable(1);
-        while (ADC_IsChannelDataValid(ADC_CHANNEL) == 0) ;
-        voltage = ADC_ReadChannelData(ADC_CHANNEL);
-        printf("U = %d\n", voltage);
-        ADC_ClearChannelDataValid(ADC_CHANNEL);
-        ADC_Enable(0);
+        printf("U = %d\n", read_adc(ADC_CHANNEL));
 #else
         voltage = 800 + rand() % 200;
 #endif
@@ -182,13 +209,6 @@ uint32_t setup_profile(void *data, void *user_data)
 {
     battery_level = profile_data + 97;
     sem_battery = xSemaphoreCreateBinary();
-    
-    printf("powter_ctrl\n");
-    ADC_PowerCtrl(1);
-    ADC_Reset();
-    ADC_SetClkSel(ADC_CLK_EN | ADC_CLK_128);
-    ADC_SetMode(ADC_MODE_SINGLE);
-    ADC_EnableChannel(ADC_CHANNEL, 1);
 
     xTaskCreate(battery_task,
                "b",

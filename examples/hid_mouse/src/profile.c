@@ -6,6 +6,7 @@
 #include "btstack_util.h"
 #include "btstack_event.h"
 #include "btstack_defines.h"
+#include "sig_uuid.h"
 
 #include "att_db_util.h"
 
@@ -179,7 +180,7 @@ const sm_persistent_t sm_persistent =
     .er = {1, 2, 3},
     .ir = {4, 5, 6},
     .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
-    .identity_addr          = {0xC3, 0x32, 0x33, 0x4e, 0x5d, 0x7c}
+    .identity_addr          = {0xC3, 0x32, 0x33, 0x4e, 0x5d, 0x7d}
 };
 
 uint8_t *init_service(void);
@@ -195,7 +196,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        //sm_private_random_address_generation_set_mode(GAP_RANDOM_ADDRESS_RESOLVABLE);
+        sm_private_random_address_generation_set_mode(GAP_RANDOM_ADDRESS_OFF);
         gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
         setup_adv();
         break;
@@ -204,7 +205,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle, init_service());
+            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle, att_db_util_get_address());
             break;
         default:
             break;
@@ -235,6 +236,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
     static uint8_t addr_ready = 0;
 
     if (packet_type != HCI_EVENT_PACKET) return;
+
     switch (event)
     {
     case SM_EVENT_PRIVATE_RANDOM_ADDR_UPDATE:
@@ -261,6 +263,10 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         break;
     case SM_EVENT_PASSKEY_INPUT_CANCEL:
         platform_printf("TODO: INPUT_CANCEL\n");
+        break;
+    case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
+        notify_enable = 1;
+        att_handle_notify = att_handle_report;
         break;
     default:
         break;
@@ -314,8 +320,6 @@ hid_info_t hid_info =
 
 static uint8_t att_db_storage[800];
 
-#define GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF     0x2908
-
 #define REPORT_TYPE_INPUT               1
 #define REPORT_TYPE_OUTPUT              2
 #define REPORT_TYPE_FEATURE             3
@@ -332,6 +336,12 @@ const static report_ref_t mouse_report =
     .report_type    = REPORT_TYPE_INPUT
 };
 
+const static report_ref_t desc_feature_report =
+{
+    .report_id      = 2,
+    .report_type    = REPORT_TYPE_FEATURE
+};
+
 uint8_t *init_service()
 {
     const char dev_name[] = "ING Mouse";
@@ -346,24 +356,37 @@ uint8_t *init_service()
     
     // Service Human Interface Device: 1812      
     att_db_util_add_service_uuid16(0x1812);
-    // Characteristic Protocol Mode: 2A4E    
-    att_handle_protocol_mode = att_db_util_add_characteristic_uuid16(0x2A4E,
-        ATT_PROPERTY_READ | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_DYNAMIC,
-        &protocol_mode, sizeof(protocol_mode));
+
+    // Characteristic HID Information: 2A4A
+    att_db_util_add_characteristic_uuid16(0x2A4A, ATT_PROPERTY_READ, (uint8_t *)&hid_info, sizeof(hid_info));
+    // Characteristic Report Map: 2A4B
+    att_db_util_add_characteristic_uuid16(0x2A4B, ATT_PROPERTY_READ, (uint8_t *)MOUSE_REPORT_MAP, sizeof(MOUSE_REPORT_MAP));    
+    // Characteristic HID Control Point: 2A4C 
+    att_handle_hid_ctrl_point = att_db_util_add_characteristic_uuid16(0x2A4C, 
+        ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_DYNAMIC, NULL, 0);
+
     // Characteristic Report: 2A4D
     att_handle_report = att_db_util_add_characteristic_uuid16(0x2A4D,
         ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
         (uint8_t *)&report, sizeof(report));
-    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ, (uint8_t *)&mouse_report, sizeof(mouse_report));
-    // Characteristic Report Map: 2A4B
-    att_db_util_add_characteristic_uuid16(0x2A4B, ATT_PROPERTY_READ, (uint8_t *)MOUSE_REPORT_MAP, sizeof(MOUSE_REPORT_MAP));    
+    att_db_util_add_descriptor_uuid16(SIG_UUID_DESCRIP_REPORT_REFERENCE, ATT_PROPERTY_READ,
+        (uint8_t *)&mouse_report, sizeof(mouse_report));
+    att_db_util_add_characteristic_uuid16(0x2A4D,
+        ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
+        (uint8_t *)&report, sizeof(report));
+    att_db_util_add_descriptor_uuid16(SIG_UUID_DESCRIP_REPORT_REFERENCE, ATT_PROPERTY_READ,
+        (uint8_t *)&desc_feature_report, sizeof(desc_feature_report));
+        
+    // Characteristic Protocol Mode: 2A4E    
+    att_handle_protocol_mode = att_db_util_add_characteristic_uuid16(0x2A4E,
+        ATT_PROPERTY_READ | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_DYNAMIC,
+        &protocol_mode, sizeof(protocol_mode));
+
     // Characteristic Boot Mouse Input Report: 2A33
-    att_handle_boot_mouse_input_report = att_db_util_add_characteristic_uuid16(0x2A33, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY, (uint8_t *)&report, sizeof(report));
-    // Characteristic HID Information: 2A4A
-    att_db_util_add_characteristic_uuid16(0x2A4A, ATT_PROPERTY_READ, (uint8_t *)&hid_info, sizeof(hid_info));
-    // Characteristic HID Control Point: 2A4C 
-    att_handle_hid_ctrl_point = att_db_util_add_characteristic_uuid16(0x2A4C, 
-        ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_DYNAMIC, NULL, 0);
+    att_handle_boot_mouse_input_report = att_db_util_add_characteristic_uuid16(0x2A33, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY, 
+        (uint8_t *)&report, sizeof(report));
+    att_db_util_add_descriptor_uuid16(SIG_UUID_DESCRIP_REPORT_REFERENCE, ATT_PROPERTY_READ,
+        (uint8_t *)&mouse_report, sizeof(mouse_report));
 
     return att_db_util_get_address();
 }
@@ -372,7 +395,9 @@ static btstack_packet_callback_registration_t hci_event_callback_registration = 
 static btstack_packet_callback_registration_t sm_event_callback_registration  = {.callback = &sm_packet_handler};
 
 uint32_t setup_profile(void *data, void *user_data)
-{   
+{
+    platform_printf("setup profile\n");
+    init_service();
     att_server_init(att_read_callback, att_write_callback);
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
@@ -380,5 +405,6 @@ uint32_t setup_profile(void *data, void *user_data)
     sm_config(IO_CAPABILITY_NO_INPUT_NO_OUTPUT,
               0,
               &sm_persistent);
+    sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
     return 0;
 }

@@ -226,6 +226,7 @@
         "ll_set_conn_coded_scheme", 
         "ll_set_conn_latency", 
         "ll_set_def_antenna", 
+        "ll_legacy_adv_set_interval", 
         "ll_malloc", 
         "ll_free", 
         "ll_set_max_conn_number", 
@@ -305,15 +306,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 31332
+        "size": 31324
     }, 
     "rom": {
         "base": 16384, 
-        "size": 137704
+        "size": 137760
     }, 
     "version": [
         1, 
-        3, 
-        9
+        4, 
+        0
     ]
 }

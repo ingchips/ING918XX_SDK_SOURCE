@@ -23,7 +23,7 @@ const sm_persistent_t sm_persistent =
     .er = {1, 2, 3},
     .ir = {4, 5, 6},
     .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
-    .identity_addr          = {0xC3, 0x82, 0x63, 0xc4, 0x35, 0x6a}
+    .identity_addr          = {0xC3, 0x82, 0x63, 0xc4, 0x35, 0x6b}
 };
 
 const static uint8_t adv_data[] = {
@@ -35,7 +35,6 @@ const static uint8_t scan_data[] = {
 };
 
 #define INVALID_HANDLE  (0xffff)
-int notify_enable = 0;
 uint16_t att_handle_notify = 0;
 hci_con_handle_t handle_send = INVALID_HANDLE;
 
@@ -99,7 +98,6 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     {
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
         {
-            notify_enable = 1;
             att_handle_notify = att_handle_report;
         }
         return 0;
@@ -138,9 +136,12 @@ void kb_state_changed(void)
 
 void kb_send_report(void)
 {
-    if (suspended)
-        return;
     if (protocol_mode != HID_PROTO_REPORT)
+        return;
+
+    if(handle_send == INVALID_HANDLE)
+        return;
+    if (0 == att_handle_notify)
         return;
 
     att_server_notify(handle_send, att_handle_notify, (uint8_t*)&report, sizeof(report));
@@ -151,7 +152,12 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     switch (msg_id)
     {
     case USER_MSG_ID_REQUEST_SEND:
-        kb_send_report();
+        if (att_server_can_send_packet_now(handle_send))
+        {
+            kb_send_report();
+        }
+        else
+            att_server_request_can_send_now_event(handle_send);
         break;
     }
 }
@@ -195,8 +201,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle, att_db_util_get_address());
             handle_send = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle;
-            att_set_db(handle_send, init_service());
             break;
         default:
             break;
@@ -205,12 +211,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
      case HCI_EVENT_DISCONNECTION_COMPLETE:
-        notify_enable = 0;
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         handle_send = INVALID_HANDLE;
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
+        kb_send_report();
         break;
 
     case BTSTACK_EVENT_USER_MSG:
@@ -300,6 +306,11 @@ const static report_ref_t kb_desc_output_report =
     .report_type    = REPORT_TYPE_OUTPUT
 };
 
+const static report_ref_t kb_desc_feature_report =
+{
+    .report_id      = 2,
+    .report_type    = REPORT_TYPE_FEATURE
+};
 static uint8_t att_db_storage[800];
 
 uint8_t *init_service()
@@ -317,35 +328,41 @@ uint8_t *init_service()
     // Service Human Interface Device: 1812
     att_db_util_add_service_uuid16(0x1812);
 
+    // Characteristic HID Information: 2A4A
+    att_db_util_add_characteristic_uuid16(0x2A4A, ATT_PROPERTY_READ, (uint8_t *)&hid_info, sizeof(hid_info));
+
     // Characteristic Protocol Mode: 2A4E
     att_handle_protocol_mode = att_db_util_add_characteristic_uuid16(0x2A4E,
         ATT_PROPERTY_READ | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_DYNAMIC,
         &protocol_mode, sizeof(protocol_mode));
-    // Characteristic Report: 2A4D
-    att_handle_report = att_db_util_add_characteristic_uuid16(0x2A4D,
-        ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_DYNAMIC |
-        ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
-        (uint8_t *)&report, sizeof(report));
-    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ,
-        (uint8_t *)&kb_desc_input_report, sizeof(kb_desc_input_report));
-    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ,
-        (uint8_t *)&kb_desc_output_report, sizeof(kb_desc_output_report));
+
+    // Characteristic HID Control Point: 2A4C
+    att_handle_hid_ctrl_point = att_handle_protocol_mode = att_db_util_add_characteristic_uuid16(0x2A4C, ATT_PROPERTY_WRITE_WITHOUT_RESPONSE,
+        NULL, 0);
 
     // Characteristic Report Map: 2A4B
     att_db_util_add_characteristic_uuid16(0x2A4B, ATT_PROPERTY_READ, (uint8_t *)KB_REPORT_MAP, sizeof(KB_REPORT_MAP));
 
-    // Characteristic Boot Keyboard Input Report: 2A22
-    att_handle_boot_kb_input_report = att_db_util_add_characteristic_uuid16(0x2A22, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY, (uint8_t *)&report, sizeof(report));
-    // Characteristic Boot Keyboard Output Report: 2A32
-    att_handle_boot_kb_output_report = att_db_util_add_characteristic_uuid16(0x2A32,
-        ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE,
+    // Characteristic Report: 2A4D
+    att_handle_report = att_db_util_add_characteristic_uuid16(0x2A4D, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
         (uint8_t *)&report, sizeof(report));
+    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ ,
+        (uint8_t *)&kb_desc_input_report, sizeof(kb_desc_input_report));
+    att_db_util_add_characteristic_uuid16(0x2A4D, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
+        (uint8_t *)&report, sizeof(report));
+    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ ,
+        (uint8_t *)&kb_desc_output_report, sizeof(kb_desc_output_report));
+    att_db_util_add_characteristic_uuid16(0x2A4D, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
+        (uint8_t *)&report, sizeof(report));
+    att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ,
+        (uint8_t *)&kb_desc_feature_report, sizeof(kb_desc_feature_report));
 
-    // Characteristic HID Information: 2A4A
-    att_db_util_add_characteristic_uuid16(0x2A4A, ATT_PROPERTY_READ, (uint8_t *)&hid_info, sizeof(hid_info));
-    // Characteristic HID Control Point: 2A4C
-    att_handle_hid_ctrl_point = att_db_util_add_characteristic_uuid16(0x2A4C,
-        ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, NULL, 0);
+    // Characteristic Boot Keyboard Input Report: 2A22
+    att_handle_boot_kb_input_report = att_db_util_add_characteristic_uuid16(0x2A22, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY,
+        (uint8_t *)&report, sizeof(report));
+    // Characteristic Boot Keyboard Output Report: 2A32
+    att_handle_boot_kb_output_report = att_db_util_add_characteristic_uuid16(0x2A32, ATT_PROPERTY_READ | ATT_PROPERTY_WRITE
+        | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE, (uint8_t *)&report, sizeof(report));
 
     return att_db_util_get_address();
 }
@@ -355,10 +372,14 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
     uint8_t event = hci_event_packet_get_type(packet);
 
     if (packet_type != HCI_EVENT_PACKET) return;
+
     switch (event)
     {
     case SM_EVENT_JUST_WORKS_REQUEST:
         sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
+        break;
+    case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
+        att_handle_notify =  att_handle_report;
         break;
     default:
         break;
@@ -369,6 +390,7 @@ static btstack_packet_callback_registration_t sm_event_callback_registration  = 
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    init_service();
     sm_add_event_handler(&sm_event_callback_registration);
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;

@@ -226,6 +226,7 @@
         "ll_set_conn_coded_scheme", 
         "ll_set_conn_latency", 
         "ll_set_def_antenna", 
+        "ll_legacy_adv_set_interval", 
         "ll_raw_packet_free", 
         "ll_raw_packet_alloc", 
         "ll_raw_packet_set_param", 
@@ -319,15 +320,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 31340
+        "size": 31332
     }, 
     "rom": {
         "base": 16384, 
-        "size": 139712
+        "size": 139768
     }, 
     "version": [
         1, 
-        3, 
-        9
+        4, 
+        0
     ]
 }
