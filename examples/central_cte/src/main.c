@@ -3,11 +3,10 @@
 #include "profile.h"
 #include "ingsoc.h"
 #include "platform_api.h"
+#include "kv_storage.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "trace.h"
-
-#include "ti_array.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -93,11 +92,16 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 0;
 }
 
-uint32_t cb_lle_init(char *c, void *dummy)
+void set_sample_offset(int n)
 {
     volatile uint32_t *reg = (volatile uint32_t *)0x40090200;
-    ll_set_def_antenna(AOA_A1_2);
-    *reg = (*reg & ~(0x1f << 15)) | (0 << 15);
+    *reg = (*reg & ~(0x1f << 15)) | ((n & 0x1f) << 15);
+}
+
+uint32_t cb_lle_init(char *c, void *dummy)
+{
+    ll_set_def_antenna(0);
+    set_sample_offset(0);
     return 0;
 }
 
@@ -114,7 +118,6 @@ static void watchdog_task(void *pdata)
 
 trace_rtt_t trace_ctx = {0};
 
-
 int app_main()
 {
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
@@ -126,7 +129,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, (f_platform_evt_cb)cb_lle_init, NULL);
-    
+
     //platform_config(PLATFORM_CFG_LOG_HCI, 1);
     platform_config(PLATFORM_CFG_LL_DBG_FLAGS, 1);
 
@@ -140,7 +143,8 @@ int app_main()
 
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
-    platform_config(PLATFORM_CFG_TRACE_MASK, (1 << PLATFORM_TRACE_ID_EVENT) | (1 << PLATFORM_TRACE_ID_HCI_CMD) | (1 << PLATFORM_TRACE_ID_HCI_EVENT) | (1 << PLATFORM_TRACE_ID_HCI_ACL) | (1 << PLATFORM_TRACE_ID_LLCP) | (1 << PLATFORM_TRACE_ID_RAW));
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
+
     return 0;
 }
 

@@ -4,6 +4,7 @@
 #include "kv_storage.h"
 #include "btstack_util.h"
 #include "eflash.h"
+#include "trace.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -61,7 +62,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 921600);
+    config_uart(OSC_CLK_FREQ, 115200);
 
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
     // setup timer 1: 1Hz
@@ -94,6 +95,8 @@ int read_from_flash(void *db, const int max_size)
     return KV_OK;
 }
 
+trace_rtt_t trace_ctx = {0};
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -111,6 +114,11 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     
     kv_init(db_write_to_flash, read_from_flash);
+
+    trace_rtt_init(&trace_ctx);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
+
     return 0;
 }
 

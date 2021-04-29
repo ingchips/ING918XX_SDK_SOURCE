@@ -92,7 +92,7 @@ void ll_set_conn_coded_scheme(uint16_t conn_handle, int ci);
  ****************************************************************************************
  */
 void ll_set_conn_latency(uint16_t conn_handle, int latency);
- 
+
 /**
  ****************************************************************************************
  * @brief Set default antenna ID
@@ -104,6 +104,16 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
  ****************************************************************************************
  */
 void ll_set_def_antenna(uint8_t ant_id);
+
+/**
+ ****************************************************************************************
+ * @brief Set legacy advertising PDU interval within a single event
+ *
+ * @param[in]  for_hdc      interval for high duty cycle advertising in micro sec  (default 1250)
+ * @param[in]  not_hdc      interval for normal duty cycle advertising is micro sec (default 1500)
+ ****************************************************************************************
+ */
+void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
 
 struct ll_raw_packet;
 
@@ -410,5 +420,5 @@ void ll_scan_set_fixed_channel(int channel_index);
 #ifdef __cplusplus
 }
 #endif
-   
+
 #endif

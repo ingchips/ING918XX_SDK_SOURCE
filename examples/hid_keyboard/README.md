@@ -9,5 +9,7 @@ This example demonstrates how to:
 
 Note: 
     * Use Key1/Key2/Key3 to input `1`, `2` and '3'.
-    * Windows & Android: Works;
-    * MacOS/iOS: Not work.
+    * Test Result:
+        * OK: RedMi Note5 (MIUI 11.0.2)
+        * OK: iPhone XR (iOS 14.5)
+        * OK: Thinkbook 13s (Win10 Home 20H2).

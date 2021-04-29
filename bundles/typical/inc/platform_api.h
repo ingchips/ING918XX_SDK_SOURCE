@@ -292,6 +292,10 @@ typedef enum
     PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // sleep time reduction (other sleep mode) in us. (default: ~450us)
     PLATFORM_CFG_PS_DBG_2 = PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // obsoleted
     PLATFORM_CFG_LL_DBG_FLAGS,  // Link layer flags (combination of `ll_cfg_flag_t`)
+    PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL,    // Link layer legacy advertising intervals for high duty cycle (higher 16bits)
+                                            //      and normal duty cylce (lower 16bits) in micro seconds
+                                            // Default:   high duty cycle: 1250
+                                            //          normal duty cycle: 1500
 } platform_cfg_item_t;
 
 typedef enum

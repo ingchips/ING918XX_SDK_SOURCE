@@ -8,11 +8,14 @@
 #include "btstack_event.h"
 #include "btstack_defines.h"
 #include "gatt_client.h"
-
-#include "ad_parser.h"
+#include "kv_storage.h"
 
 #include "FreeRTOS.h"
 #include "timers.h"
+
+#include "service_console.h"
+
+#include "profile.h"
 
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
@@ -20,6 +23,8 @@
 #define HANDLE_GENERIC_OUTPUT                                8
 
 #define INVALID_HANDLE 0xffff
+
+#define KEY_SETTINGS KV_USER_KEY_START
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"
@@ -36,57 +41,11 @@ const static uint8_t profile_data[] = {
 hci_con_handle_t handle_send = INVALID_HANDLE;
 static uint8_t notify_enable = 0;
 
-typedef struct
-{
-    int len;
-    const uint8_t *ant_ids;
-} pattern_info_t;
-
-#if (ANT_TYPE == 1)
-
-#include "ti_array.h"
-static const uint8_t PATTEN1[] = {AOA_A1_2, AOA_A1_3, AOA_A1_1};
-static const uint8_t PATTEN2[] = {AOA_A2_2, AOA_A2_1, AOA_A2_3}; 
-
-#define DEF_ANT AOA_A1_2
-
-pattern_info_t patterns[] = 
-{
-    {sizeof(PATTEN1), PATTEN1},
-    {sizeof(PATTEN2), PATTEN2},
-};
-
-#elif (ANT_TYPE == 2)
-
-static const uint8_t PATTEN1[] = {8 | 6,8 | 7};
-static const uint8_t PATTEN2[] = {4,3,5};
-
-pattern_info_t patterns[] = 
-{
-    {sizeof(PATTEN1), PATTEN1},
-    //{sizeof(PATTEN2), PATTEN2},
-};
-
-#define DEF_ANT PATTEN1[0]
-
-#else
-
-#define DEF_ANT 1
-
-static const uint8_t PATTEN1[] = {1,0,2};
-static const uint8_t PATTEN2[] = {4,3,5};
-
-pattern_info_t patterns[] = 
-{
-    {sizeof(PATTEN1), PATTEN1},
-    {sizeof(PATTEN2), PATTEN2},
-};
-
-#endif
-
+extern void set_sample_offset(int n);
 
 int current_pattern = -1;
 hci_con_handle_t conn_handle = INVALID_HANDLE;
+settings_t *settings = NULL;
 
 char *base64_encode(const uint8_t *data, int data_len,
                     char *res, int buffer_size);
@@ -115,6 +74,9 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         else
             notify_enable = 0;        
         return 0;
+    case HANDLE_GENERIC_INPUT:
+        console_rx_data((const char *)buffer, buffer_size);
+        return 0;
     default:
         return 0;
     }
@@ -131,8 +93,18 @@ void recv_iq_report(const le_meta_conn_iq_report_t *report)
         iq_str_buffer + len, sizeof(iq_str_buffer) - len - 1);
     if (notify_enable)
         att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)iq_str_buffer, strlen(iq_str_buffer) + 1);
-    
-    platform_printf("%s\n", iq_str_buffer);
+    else
+        platform_printf("%s\n", iq_str_buffer);
+}
+
+void stack_notify_tx_data()
+{
+    if (notify_enable)
+    {
+        uint16_t len;
+        uint8_t *data = console_get_clear_tx_data(&len);
+        att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, data, len);
+    }
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
@@ -165,18 +137,31 @@ static initiating_phy_config_t phy_configs[] =
 void config_switching_pattern(void)
 {
     current_pattern++;
-    if (current_pattern >= sizeof(patterns) / sizeof(patterns[0]))
+    if (current_pattern >= PAT_NUMBER)
         current_pattern = 0;
+    if (settings->patterns[current_pattern].len <= 0)
+        current_pattern = 0;
+    
+    if (settings->patterns[current_pattern].len <= 2)
+        settings->patterns[current_pattern].len = 2;
 
     gap_set_connection_cte_rx_param(conn_handle,
                                     1,
-                                    CTE_SLOT_DURATION_2US,
-                                    patterns[current_pattern].len,
-                                    patterns[current_pattern].ant_ids);
+                                    (cte_slot_duration_type_t)settings->slot_duration,
+                                    settings->patterns[current_pattern].len,
+                                    settings->patterns[current_pattern].ant_ids);
     gap_set_connection_cte_request_enable(conn_handle,
                                     1,
                                     0,
                                     20, CTE_AOA);
+}
+
+void set_channel(void)
+{
+    uint8_t channel = settings->channel;
+    uint32_t low = channel <= 31 ? 1ul << channel : 0;
+    uint8_t high = channel >= 32 ? 1 << (channel - 32) : 0;
+    gap_set_host_channel_classification(low, high);
 }
 
 static void setup_adv()
@@ -245,7 +230,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                           phy_configs);
                     break;
                 }
-                
+
                 if (HCI_ROLE_SLAVE == conn_complete->role)
                 {
                     handle_send = conn_complete->handle;
@@ -256,6 +241,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     conn_handle = conn_complete->handle;
                     current_pattern = -1;
                     config_switching_pattern();
+                    set_channel();
                 }
             }
             break;
@@ -306,7 +292,19 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 uint32_t setup_profile(void *data, void *user_data)
 {
-    ll_set_def_antenna(DEF_ANT);
+    if (kv_get(KEY_SETTINGS, NULL) == NULL)
+    {
+        settings_t *p = pvPortMalloc(sizeof(settings_t));
+        memset(p, 0, sizeof(settings_t));
+        p->slot_duration = 1;
+        p->patterns[0].len = 2;
+        kv_put(KEY_SETTINGS, (const uint8_t *)p, sizeof(settings_t));
+        vPortFree(p);
+    }
+    settings = (settings_t *)kv_get(KEY_SETTINGS, NULL);
+
+    ll_set_def_antenna(settings->def_ant);
+    set_sample_offset(settings->iq_select);
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
@@ -314,4 +312,3 @@ uint32_t setup_profile(void *data, void *user_data)
     gatt_client_register_handler(user_packet_handler);
     return 0;
 }
-
