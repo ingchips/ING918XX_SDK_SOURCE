@@ -51,7 +51,6 @@
         "gatt_client_is_ready", 
         "gatt_client_listen_for_characteristic_value_updates", 
         "gatt_client_register_handler", 
-        "gatt_client_pts_suppress_mtu_exchange", 
         "gap_set_random_device_address", 
         "gap_disconnect", 
         "gap_disconnect_all", 
@@ -86,6 +85,7 @@
         "gap_read_periodic_adv_list_size", 
         "gap_ext_create_connection", 
         "gap_create_connection_cancel", 
+        "gap_set_data_length", 
         "gap_set_host_channel_classification", 
         "gap_update_connection_parameters", 
         "gap_get_connection_parameter_range", 
@@ -146,6 +146,7 @@
         "sscanf_bd_addr", 
         "uuid_add_bluetooth_prefix", 
         "uuid_has_bluetooth_prefix", 
+        "btstack_config", 
         "btstack_push_user_msg", 
         "l2cap_register_fixed_channel", 
         "l2cap_can_send_fixed_channel_packet_now", 
@@ -291,15 +292,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 31324
+        "size": 31316
     }, 
     "rom": {
         "base": 16384, 
-        "size": 131576
+        "size": 131608
     }, 
     "version": [
         1, 
         4, 
-        0
+        2
     ]
 }

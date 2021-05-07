@@ -212,7 +212,7 @@ uint32_t setup_profile(void *data, void *user_data)
 
     xTaskCreate(battery_task,
                "b",
-               50,
+               configMINIMAL_STACK_SIZE,
                NULL,
                (configMAX_PRIORITIES - 1),
                NULL);
