@@ -153,6 +153,23 @@ void uuid_add_bluetooth_prefix(uint8_t * uuid128, uint32_t short_uuid);
  */
 int  uuid_has_bluetooth_prefix(const uint8_t * uuid128);
 
+enum btstack_config_item {
+    STACK_ATT_SERVER_ENABLE_AUTO_DATA_LEN_REQ = 1,      // enable automatic LL_DATA_LENGTH_REQ in MTU exchange of att server (default: Disabled)
+    STACK_GATT_CLIENT_DISABLE_AUTO_DATA_LEN_REQ = 2,    // disable automatic LL_DATA_LENGTH_REQ in MTU exchange of gatt client (default: Enabled)
+                                                        // See also `gap_set_data_length()`.
+    STACK_DISABLE_L2CAP_TIMEOUT = 4,                    // Disable automatic L2CAP disconnect if no L2CAP connection is established (default: Enabled)
+                                                        // Only for PTS testing
+    STACK_SM_USE_FIXED_CSRK = 8,                        // for testing only (default: SM not use fixed CSRK)
+    STACK_GATT_CLIENT_DISABLE_MTU_EXCHANGE = 16,        // suppress MTU exchange in gatt client
+                                                        // Only for PTS testing
+};
+
+/**
+ * @brief Bluetooth LE stack configurations
+ * @param flags     flags (combination of btstack_config_item)
+ */
+void btstack_config(uint32_t flags);
+
 #ifdef __cplusplus
 }
 #endif

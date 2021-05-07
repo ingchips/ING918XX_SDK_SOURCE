@@ -191,7 +191,7 @@ uint8_t gatt_client_write_long_value_of_characteristic_with_offset(btstack_packe
 /**
  * @brief Writes of the long characteristic value using the characteristic's value handle. It uses server response to validate that the write was correctly received. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE marks the end of write. The write is successfully performed, if the event's status field is set to 0.
  */
-uint8_t gatt_client_reliable_write_long_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, uint8_t  * data);
+uint8_t gatt_client_reliable_write_long_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, const uint8_t  * data);
 
 /**
  * @brief Reads the characteristic descriptor using its handle. If the characteristic descriptor is found, an le_characteristic_descriptor_event_t with type set to GATT_EVENT_CHARACTERISTIC_DESCRIPTOR_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
@@ -262,9 +262,6 @@ void gatt_client_listen_for_characteristic_value_updates(gatt_client_notificatio
  * @param handler
  */
 void gatt_client_register_handler(btstack_packet_handler_t handler);
-
-// only used for testing
-void gatt_client_pts_suppress_mtu_exchange(void);
 
 /**
  * @brief Parse event GATT_EVENT_QUERY_COMPLETE

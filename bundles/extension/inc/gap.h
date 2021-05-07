@@ -695,6 +695,34 @@ uint8_t gap_ext_create_connection(const initiating_filter_policy_t filter_policy
 uint8_t gap_create_connection_cancel(void);
 
 /**
+ * @brief  suggest the maximum transmission payload size and maximum packet transmission time
+ *         to be used for LL Data PDUs on a given connection.
+ *
+ * @param connection_handle     Connection handle
+ *
+ * @param tx_octets             Preferred maximum number of payload octets that the local Controller
+ *                              should include in a single LL Data PDU on this connection.
+ *
+ *                              Range 0x001B to 0x00FB
+ *
+ *                              Note: Recommended to set `tx_octets` to (MTU + L2CAP_HEADER_SIZE)
+ *                              where, MTU = `att_server_get_mtu()` or `gatt_client_get_mtu()`,
+ *                              L2CAP_HEADER_SIZE = 4.
+ *
+ *
+ * @param tx_time               Preferred maximum number of microseconds that the local Controller
+ *                              should use to transmit a single Link Layer packet containing an LL
+ *                              Data PDU on this connection.
+ *
+ *                              Range 0x0148 to 0x4290
+ *
+ *                              Tip: Just use maximum value.
+ *
+ * @return                      0: message sent to controller
+ */
+uint8_t gap_set_data_length(uint16_t connection_handle, uint16_t tx_octets, uint16_t tx_time);
+
+/**
  * @brief structure:cte_type_t
  *
  */
