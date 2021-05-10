@@ -748,12 +748,14 @@ typedef enum
  * @param antenna_ids           List of Antenna IDs in the pattern
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_set_connectionless_cte_tx_param(const uint8_t       adv_handle,
-                                            const uint8_t       cte_len,
-                                            const cte_type_t    cte_type,
-                                            const uint8_t       cte_count,
-                                            const uint8_t       switching_pattern_len,
-                                            const uint8_t      *antenna_ids);
+// uint8_t gap_set_connectionless_cte_tx_param(const uint8_t       adv_handle,
+//                                             const uint8_t       cte_len,
+//                                             const cte_type_t    cte_type,
+//                                             const uint8_t       cte_count,
+//                                             const uint8_t       switching_pattern_len,
+//                                             const uint8_t      *antenna_ids);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Request that the Controller enables or disables the use of Constant Tone
@@ -765,8 +767,10 @@ uint8_t gap_set_connectionless_cte_tx_param(const uint8_t       adv_handle,
  * @param cte_enable            Disable (0x00), Enable (0x01)
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_set_connectionless_cte_tx_enable(const uint8_t       adv_handle,
-                                             const uint8_t       cte_enable);
+// uint8_t gap_set_connectionless_cte_tx_enable(const uint8_t       adv_handle,
+//                                              const uint8_t       cte_enable);
+// WARNING: ^^^ this API is not available in this release
+
 /**
  * @brief structure:cte_slot_duration_type_t
  *
@@ -793,12 +797,14 @@ typedef enum
  *
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handle,
-                                                  const uint8_t       sampling_enable,
-                                                  const cte_slot_duration_type_t slot_durations,
-                                                  const uint8_t       max_sampled_ctes,
-                                                  const uint8_t       switching_pattern_len,
-                                                  const uint8_t      *antenna_ids);
+// uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handle,
+//                                                   const uint8_t       sampling_enable,
+//                                                   const cte_slot_duration_type_t slot_durations,
+//                                                   const uint8_t       max_sampled_ctes,
+//                                                   const uint8_t       switching_pattern_len,
+//                                                   const uint8_t      *antenna_ids);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Enable or disable sampling received Constant Tone Extension fields on the
@@ -814,11 +820,13 @@ uint8_t gap_set_connectionless_iq_sampling_enable(const uint16_t      sync_handl
  * @return                      0: Message is sent out; Other: Message is not sent out
  *
  */
-uint8_t gap_set_connection_cte_rx_param(const hci_con_handle_t  conn_handle,
-                                        const uint8_t           sampling_enable,
-                                        const cte_slot_duration_type_t slot_durations,
-                                        const uint8_t           switching_pattern_len,
-                                        const uint8_t          *antenna_ids);
+// uint8_t gap_set_connection_cte_rx_param(const hci_con_handle_t  conn_handle,
+//                                         const uint8_t           sampling_enable,
+//                                         const cte_slot_duration_type_t slot_durations,
+//                                         const uint8_t           switching_pattern_len,
+//                                         const uint8_t          *antenna_ids);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Set the antenna switching pattern and permitted Constant Tone Extension
@@ -832,10 +840,12 @@ uint8_t gap_set_connection_cte_rx_param(const hci_con_handle_t  conn_handle,
  * @return                      0: Message is sent out; Other: Message is not sent out
  *
  */
-uint8_t gap_set_connection_cte_tx_param(const hci_con_handle_t  conn_handle,
-                                        const uint8_t           cte_types,
-                                        const uint8_t           switching_pattern_len,
-                                        const uint8_t          *antenna_ids);
+// uint8_t gap_set_connection_cte_tx_param(const hci_con_handle_t  conn_handle,
+//                                         const uint8_t           cte_types,
+//                                         const uint8_t           switching_pattern_len,
+//                                         const uint8_t          *antenna_ids);
+// WARNING: ^^^ this API is not available in this release
+
 
 
 /**
@@ -856,11 +866,13 @@ uint8_t gap_set_connection_cte_tx_param(const hci_con_handle_t  conn_handle,
  * @return                      0: Message is sent out; Other: Message is not sent out
  *
  */
-uint8_t gap_set_connection_cte_request_enable(const hci_con_handle_t  conn_handle,
-                                              const uint8_t           enable,
-                                              const uint16_t          requested_cte_interval,
-                                              const uint8_t           requested_cte_length,
-                                              const cte_type_t        requested_cte_type);
+// uint8_t gap_set_connection_cte_request_enable(const hci_con_handle_t  conn_handle,
+//                                               const uint8_t           enable,
+//                                               const uint16_t          requested_cte_interval,
+//                                               const uint8_t           requested_cte_length,
+//                                               const cte_type_t        requested_cte_type);
+// WARNING: ^^^ this API is not available in this release
+
 
 
 /**
@@ -871,15 +883,19 @@ uint8_t gap_set_connection_cte_request_enable(const hci_con_handle_t  conn_handl
  * @param enable                Disable (0x00), Enable (0x01)
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_set_connection_cte_response_enable(const hci_con_handle_t  conn_handle,
-                                               const uint8_t           enable);
+// uint8_t gap_set_connection_cte_response_enable(const hci_con_handle_t  conn_handle,
+//                                                const uint8_t           enable);
+// WARNING: ^^^ this API is not available in this release
+
 /**
  * @brief Read the switching rates, the sampling rates, the number of antennae, and the
  *          maximum length of a transmitted Constant Tone Extension supported by the
  *          Controller.
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_read_antenna_info(void);
+// uint8_t gap_read_antenna_info(void);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Enable or disable reports for the periodic advertising train identified by the
@@ -890,8 +906,10 @@ uint8_t gap_read_antenna_info(void);
  *
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_set_periodic_adv_rx_enable(const uint16_t       sync_handle,
-                                       const uint8_t        enable);
+// uint8_t gap_set_periodic_adv_rx_enable(const uint16_t       sync_handle,
+//                                        const uint8_t        enable);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Instruct the Controller to send synchronization information about the periodic
@@ -905,9 +923,11 @@ uint8_t gap_set_periodic_adv_rx_enable(const uint16_t       sync_handle,
  *
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_periodic_adv_sync_transfer(const hci_con_handle_t   conn_handle,
-                                       const uint16_t           service_data,
-                                       const uint16_t           sync_handle);
+// uint8_t gap_periodic_adv_sync_transfer(const hci_con_handle_t   conn_handle,
+//                                        const uint16_t           service_data,
+//                                        const uint16_t           sync_handle);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Instruct the Controller to send synchronization information about the periodic
@@ -920,9 +940,11 @@ uint8_t gap_periodic_adv_sync_transfer(const hci_con_handle_t   conn_handle,
  *
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_periodic_adv_set_info_transfer(const hci_con_handle_t   conn_handle,
-                                           const uint16_t           service_data,
-                                           const uint8_t            adv_handle);
+// uint8_t gap_periodic_adv_set_info_transfer(const hci_con_handle_t   conn_handle,
+//                                            const uint16_t           service_data,
+//                                            const uint8_t            adv_handle);
+// WARNING: ^^^ this API is not available in this release
+
 
 
 typedef enum
@@ -956,11 +978,13 @@ typedef enum
  *                              Combination of SYNC_EXCL_XXX
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_periodic_adv_sync_transfer_param(const hci_con_handle_t                     conn_handle,
-                                             const periodic_adv_sync_transfer_mode_t    mode,
-                                             const uint16_t                             skip,
-                                             const uint16_t                             sync_timeout,
-                                             const uint8_t                              cte_excl_types);
+// uint8_t gap_periodic_adv_sync_transfer_param(const hci_con_handle_t                     conn_handle,
+//                                              const periodic_adv_sync_transfer_mode_t    mode,
+//                                              const uint16_t                             skip,
+//                                              const uint16_t                             sync_timeout,
+//                                              const uint8_t                              cte_excl_types);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Specify the initial value for the mode, skip, timeout, and
@@ -981,11 +1005,13 @@ uint8_t gap_periodic_adv_sync_transfer_param(const hci_con_handle_t             
  *                              Combination of SYNC_EXCL_XXX
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_default_periodic_adv_sync_transfer_param(
-                                             const periodic_adv_sync_transfer_mode_t    mode,
-                                             const uint16_t                             skip,
-                                             const uint16_t                             sync_timeout,
-                                             const uint8_t                              cte_excl_types);
+// uint8_t gap_default_periodic_adv_sync_transfer_param(
+//                                              const periodic_adv_sync_transfer_mode_t    mode,
+//                                              const uint16_t                             skip,
+//                                              const uint16_t                             sync_timeout,
+//                                              const uint8_t                              cte_excl_types);
+// WARNING: ^^^ this API is not available in this release
+
 
 uint8_t gap_set_host_channel_classification(const uint32_t channel_low, const uint8_t channel_high);
 
@@ -1063,10 +1089,12 @@ uint8_t gap_rx_test_v2(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index
  * @param antenna_ids           List of Antenna IDs in the patter
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_rx_test_v3(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index,
-                            uint8_t expected_cte_length, uint8_t expected_cte_type,
-                            uint8_t slot_durations,
-                            uint8_t switching_pattern_length, uint8_t antenna_ids);
+// uint8_t gap_rx_test_v3(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index,
+//                             uint8_t expected_cte_length, uint8_t expected_cte_type,
+//                             uint8_t slot_durations,
+//                             uint8_t switching_pattern_length, uint8_t antenna_ids);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief  Start a test where the DUT generates test reference packets at a fixed interval.
@@ -1096,10 +1124,12 @@ uint8_t gap_tx_test_v2(uint8_t tx_channel, uint8_t test_data_length,
  * @param antenna_ids           List of Antenna IDs in the patter
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_tx_test_v3(uint8_t tx_channel, uint8_t test_data_length,
-                            uint8_t packet_payload, uint8_t phy,
-                            uint8_t cte_length, uint8_t cte_type,
-                            uint8_t switching_pattern_length, uint8_t antenna_ids);
+// uint8_t gap_tx_test_v3(uint8_t tx_channel, uint8_t test_data_length,
+//                             uint8_t packet_payload, uint8_t phy,
+//                             uint8_t cte_length, uint8_t cte_type,
+//                             uint8_t switching_pattern_length, uint8_t antenna_ids);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief  Stop any test which is in progress
