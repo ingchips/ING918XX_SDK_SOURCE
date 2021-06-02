@@ -21,7 +21,8 @@ static uint8_t profile_data[] = {
     #include "../data/gatt.profile"
 };
 
-void set_led_color(uint8_t r, uint8_t g, uint8_t b);
+extern void set_led_color(uint8_t r, uint8_t g, uint8_t b);
+extern void start_led_breathing(void);
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -64,7 +65,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    static const bd_addr_t rand_addr = { 0xF2, 0xF5, 0x15, 0xAA, 0xF9, 0x23 };
+    static const bd_addr_t rand_addr = { 0xFD, 0xAB, 0x79, 0x08, 0x91, 0xBF };
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
@@ -99,8 +100,16 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
-                       profile_data);
+            {
+                const le_meta_event_enh_create_conn_complete_t *conn_complete
+                    = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
+                att_set_db(conn_complete->handle, profile_data);
+                gap_set_connection_cte_tx_param(conn_complete->handle,
+                                                (1 << CTE_AOA),
+                                                2, NULL);
+                gap_set_connection_cte_response_enable(conn_complete->handle, 1);
+                set_led_color(0, 0, 0);
+            }
             break;
         default:
             break;
@@ -110,6 +119,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+        start_led_breathing();
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:

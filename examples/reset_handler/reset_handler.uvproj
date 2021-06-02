@@ -41,7 +41,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\output\</OutputDirectory>
-          <OutputName>peripheral_cte</OutputName>
+          <OutputName>reset_handler</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -72,7 +72,7 @@
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>fromelf.exe --bin -o peripheral_cte.bin ./output/peripheral_cte.axf</UserProg1Name>
+            <UserProg1Name>fromelf.exe --bin -o reset_handler.bin ./output/reset_handler.axf</UserProg1Name>
             <UserProg2Name/>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -136,13 +136,13 @@
             <RestoreTracepoints>1</RestoreTracepoints>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>1</TargetSelection>
+          <TargetSelection>7</TargetSelection>
           <SimDlls>
             <CpuDll/>
             <CpuDllArguments/>
             <PeripheralDll/>
             <PeripheralDllArguments/>
-            <InitializationFile>.\init.ini</InitializationFile>
+            <InitializationFile>..\map.ini</InitializationFile>
           </SimDlls>
           <TargetDlls>
             <CpuDll/>
@@ -150,7 +150,7 @@
             <PeripheralDll/>
             <PeripheralDllArguments/>
             <InitializationFile>.\init.ini</InitializationFile>
-            <Driver>BIN\UL2CM3.DLL</Driver>
+            <Driver>Segger\JL2CM3.dll</Driver>
           </TargetDlls>
         </DebugOption>
         <Utilities>
@@ -295,7 +295,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>155648</StartAddress>
-                <Size>385024</Size>
+                <Size>122880</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536902228</StartAddress>
-                <Size>34220</Size>
+                <StartAddress>536893728</StartAddress>
+                <Size>9952</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -345,7 +345,7 @@
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <VariousControls>
-              <MiscControls>--gnu</MiscControls>
+              <MiscControls/>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
@@ -379,7 +379,7 @@
             <ScatterFile/>
             <IncludeLibs/>
             <IncludeLibsPath/>
-            <Misc/>
+            <Misc>--entry Reset_Handler --diag_suppress=L6314</Misc>
             <LinkerInputFile/>
             <DisabledWarnings/>
           </LDads>
@@ -388,18 +388,6 @@
       <Groups>
         <Group>
           <GroupName>APP</GroupName>
-          <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>profile.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\profile.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>StartUP</GroupName>
@@ -409,51 +397,16 @@
               <FileType>2</FileType>
               <FilePath>.\src\startup_ing91800.s</FilePath>
             </File>
-            <File>
-              <FileName>symdefs.m</FileName>
-              <FileType>3</FileType>
-              <FilePath>../..\bundles\typical\ING9188xx\symdefs.m</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
-          <Files/>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>
-          <Files>
-            <File>
-              <FileName>peripheral_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>peripheral_pinctrl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_pinctrl.c</FilePath>
-            </File>
-            <File>
-              <FileName>peripheral_sysctrl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
-            </File>
-            <File>
-              <FileName>peripheral_timer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
-          <Files>
-            <File>
-              <FileName>trace.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../..\src\Tools\trace.c</FilePath>
-            </File>
-          </Files>
         </Group>
       </Groups>
     </Target>

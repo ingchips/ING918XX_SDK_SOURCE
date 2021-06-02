@@ -29,6 +29,8 @@ sm_persistent_t sm_persistent =
 #define MAX_ADVERTISERS     50
 bd_addr_t scaned_advertisers[MAX_ADVERTISERS] = {0};
 int advertiser_num = 0;
+int is_targeted_scan = 0;
+uint64_t last_seen = 0;
 
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
@@ -511,6 +513,8 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
 #define USER_MSG_START_SCAN_ALL     13
 #define USER_MSG_SET_PHY            14
 #define USER_MSG_SET_INTERVAL       15
+#define USER_MSG_START_SCAN_OLD_ADDR    16
+#define USER_MSG_START_SCAN_OLD_ALL     17
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
@@ -541,7 +545,7 @@ static initiating_phy_config_t phy_configs[] =
     }
 };
 
-static const scan_phy_config_t scan_configs[2] =
+static scan_phy_config_t scan_configs[] =
 {
     {
         .phy = PHY_1M,
@@ -554,6 +558,16 @@ static const scan_phy_config_t scan_configs[2] =
         .type = SCAN_PASSIVE,
         .interval = 200,
         .window = 50
+    }
+};
+
+static const scan_phy_config_t scan_configs_lagecy[] =
+{
+    {
+        .phy = PHY_1M,
+        .type = SCAN_ACTIVE,
+        .interval = 200,
+        .window = 200
     }
 };
 
@@ -704,12 +718,32 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
         break;
     case USER_MSG_START_SCAN_ADDR:
+        is_targeted_scan = 1;
+        last_seen = 0;
         advertiser_num = 0;
         gap_clear_white_lists();
         gap_add_whitelist(slave_addr, slave_addr_type);
         gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
                               sizeof(scan_configs) / sizeof(scan_configs[0]),
                               scan_configs);
+        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+        break;
+    case USER_MSG_START_SCAN_OLD_ALL:
+        advertiser_num = 0;
+        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
+                              sizeof(scan_configs_lagecy) / sizeof(scan_configs_lagecy[0]),
+                              scan_configs_lagecy);
+        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+        break;
+    case USER_MSG_START_SCAN_OLD_ADDR:
+        is_targeted_scan = 1;
+        last_seen = 0;
+        advertiser_num = 0;
+        gap_clear_white_lists();
+        gap_add_whitelist(slave_addr, slave_addr_type);
+        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
+                              sizeof(scan_configs_lagecy) / sizeof(scan_configs_lagecy[0]),
+                              scan_configs_lagecy);
         gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
         break;
     case USER_MSG_SET_PHY:
@@ -784,6 +818,11 @@ void conn_to_slave()
 void start_scan(int targeted)
 {
     btstack_push_user_msg(targeted ? USER_MSG_START_SCAN_ADDR : USER_MSG_START_SCAN_ALL, NULL, 0);
+}
+
+void start_scan_legacy(int targeted)
+{
+    btstack_push_user_msg(targeted ? USER_MSG_START_SCAN_OLD_ADDR : USER_MSG_START_SCAN_OLD_ALL, NULL, 0);
 }
 
 void cancel_create_conn()
@@ -862,6 +901,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
+        
+        platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, 1500);
+        
         gap_set_random_device_address(sm_persistent.identity_addr);
         gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
         gap_set_ext_adv_para(0,
@@ -888,15 +930,35 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         case HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT:
             {
                 const le_ext_adv_report_t *report = decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports;
-                if (!is_new_advertiser(report->address)) break;
+                if (is_targeted_scan)
+                {
+                    if ((report->evt_type & HCI_EXT_ADV_PROP_SCAN_RSP) == 0)
+                    {
+                        uint64_t now = platform_get_us_time();
+                        if (last_seen != 0)
+                            platform_printf("Interval: %d ms\n", (int)((now - last_seen) / 1000));
+                        last_seen = now;
+                    }
                     
-                platform_printf("No. %d:\n"
+                    platform_printf("ADV %02X:%02X:%02X:%02X:%02X:%02X %ddBm\n"
+                                "Type: 0x%02x\n",
+                                report->address[5], report->address[4], report->address[3],
+                                report->address[2], report->address[1], report->address[0],
+                                report->rssi, report->evt_type);
+                }
+                else
+                {
+                    if (!is_new_advertiser(report->address)) break;
+                    platform_printf("No. %d:\n"
                                 "ADV %02X:%02X:%02X:%02X:%02X:%02X %ddBm\n"
                                 "Type: 0x%02x\n",
                                 advertiser_num,
                                 report->address[5], report->address[4], report->address[3],
                                 report->address[2], report->address[1], report->address[0],
                                 report->rssi, report->evt_type);
+                }
+                    
+                
                 print_hex_table(report->data, report->data_len, print_fun);
                 platform_printf("\n");
             }

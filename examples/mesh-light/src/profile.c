@@ -282,8 +282,8 @@ void light_update(struct light_state *a_light)
 #else
     printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n", 
                a_light->led_gpio_pin, r, g, b);
-    extern void set_led_color(uint8_t r, uint8_t g, uint8_t b);
-    set_led_color(r, g, b);
+    extern void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b);
+    set_rgb_led_color(r, g, b);
 #endif
 }
 

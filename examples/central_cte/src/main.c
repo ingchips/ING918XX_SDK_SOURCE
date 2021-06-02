@@ -100,8 +100,8 @@ void set_sample_offset(int n)
 
 uint32_t cb_lle_init(char *c, void *dummy)
 {
-    ll_set_def_antenna(0);
-    set_sample_offset(0);
+    extern void setup_ll_param(void);
+    setup_ll_param();
     return 0;
 }
 

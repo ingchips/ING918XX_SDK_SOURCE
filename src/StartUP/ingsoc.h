@@ -236,6 +236,9 @@ typedef struct{
 // Test if in interrupt mode
 #define IS_IN_INTERRUPT() ((SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0)
 
+// Test if debugger is attached
+#define IS_DEBUGGER_ATTACHED() (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)
+
 #ifdef USE_STDPERIPH_DRIVER
     #include "peripheral_uart.h"
     #include "peripheral_gpio.h"

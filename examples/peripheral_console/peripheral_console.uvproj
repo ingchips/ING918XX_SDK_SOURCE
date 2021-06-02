@@ -461,6 +461,13 @@
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
+          <Files>
+            <File>
+              <FileName>trace.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\trace.c</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>

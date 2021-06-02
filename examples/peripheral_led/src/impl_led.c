@@ -1,64 +1,10 @@
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #ifndef PWM_LED
 
-#define PIN_SDI   GIO_GPIO_0
-
-// CPU clok: PLL_CLK_FREQ  48000000
-// 1 cycle = 21ns
-// 48 cycles per us
-// Tcycle = 2us --> ~100 cycles
-void delay(int cycles)
-{
-    int i;
-    for (i = 0; i < cycles; i++)
-    {
-        __nop();
-    }
-}
-
-void tlc59731_write(uint32_t value)
-{
-    int8_t i;
-
-    #define pulse()                     \
-        { GIO_WriteValue(PIN_SDI, 1);   \
-        delay(1);                       \
-        GIO_WriteValue(PIN_SDI, 0); } while (0)
-
-    for( i = 0; i < 32; i++ )
-    {
-        uint32_t bit = value & ( 0x80000000 >> i );
-        pulse();
-        
-        if (bit)
-        {
-            delay(10);
-            pulse();
-            delay(78);
-        }
-        else
-            delay(90);
-    }
-    delay(100 * 8);
-}
-
-void set_led_color(uint8_t r, uint8_t g, uint8_t b)
-{
-    uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
-    tlc59731_write(cmd);
-}
-
-void setup_led()
-{
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
-                              | (1 << SYSCTRL_ClkGate_APB_PWM));
-    PINCTRL_SetPadMux(PIN_SDI, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(PIN_SDI, 0);
-    GIO_SetDirection(PIN_SDI, GIO_DIR_OUTPUT);
-    GIO_WriteValue(PIN_SDI, 0);
-
-    set_led_color(50, 50, 50);
-}
+#include "rgb_led.c"
 
 #else
 
@@ -68,7 +14,7 @@ void setup_led()
 
 #define PERA_THRESHOLD (OSC_CLK_FREQ / 1000)
 
-void set_led_color(uint8_t r, uint8_t g, uint8_t b)
+void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
 #define TO_PERCENT(v) (((uint32_t)(v) * 100) >> 8)
 
@@ -90,7 +36,7 @@ static void setup_channel(uint8_t channel_index)
     PWM_HaltCtrlEnable(channel_index, 0);
 }
 
-void setup_led()
+void setup_rgb_led()
 {
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
                               | (1 << SYSCTRL_ClkGate_APB_PWM));
@@ -100,7 +46,7 @@ void setup_led()
     PINCTRL_SetPadPwmSel(PIN_GREEN, 1);
     PINCTRL_SetPadMux(PIN_BLUE, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(PIN_BLUE, 1);
-    
+
     setup_channel(PIN_RED   >> 1);
     setup_channel(PIN_GREEN >> 1);
     setup_channel(PIN_BLUE  >> 1);
@@ -109,3 +55,76 @@ void setup_led()
 }
 
 #endif
+
+typedef struct
+{
+    union
+    {
+        struct {uint8_t r, g, b;};
+        uint32_t value;
+    };
+} rgb_t;
+
+struct
+{
+    rgb_t rgb0, rgb1, cur;
+    int dir;
+} breathing_info = {};
+    
+static uint8_t value_step(uint8_t cur, uint8_t target, uint8_t step)
+{
+    int offset = (int)target - cur;
+    if (offset > step)
+    {
+        return cur + step;
+    }
+    else if (offset < -(int)step)
+    {
+        return cur - step;
+    }
+    else
+        return target;
+}
+
+static void breathing_task(void *pdata)
+{
+    #define STEP 2
+    for (;;)
+    {
+        vTaskDelay(pdMS_TO_TICKS(30));
+        if (breathing_info.rgb0.value == breathing_info.rgb1.value)
+            continue;
+        rgb_t *target = breathing_info.dir ? &breathing_info.rgb0 : &breathing_info.rgb1;
+        breathing_info.cur.r = value_step(breathing_info.cur.r,
+                                          target->r, STEP);
+        breathing_info.cur.g = value_step(breathing_info.cur.g,
+                                          target->g, STEP);
+        breathing_info.cur.b = value_step(breathing_info.cur.b,
+                                          target->b, STEP);
+        set_rgb_led_color(breathing_info.cur.r, breathing_info.cur.g, breathing_info.cur.b);
+        if (breathing_info.cur.value == breathing_info.rgb1.value)
+            breathing_info.dir = 1;
+        else if (breathing_info.cur.value == breathing_info.rgb0.value)
+            breathing_info.dir = 0;
+    }
+}
+
+void setup_rgb_breathing()
+{
+    xTaskCreate(breathing_task,
+               "d",
+               configMINIMAL_STACK_SIZE,
+               NULL,
+               (configMAX_PRIORITIES - 1),
+               NULL);
+}
+
+void set_rbg_breathing(rgb_t rgb0, rgb_t rgb1)
+{
+    breathing_info.rgb0 = rgb0;
+    breathing_info.rgb1 = rgb1;
+    breathing_info.dir = 0;
+    breathing_info.cur = breathing_info.rgb0;
+    set_rgb_led_color(breathing_info.cur.r, breathing_info.cur.g, breathing_info.cur.b);
+}
+

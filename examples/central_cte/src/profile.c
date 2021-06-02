@@ -50,7 +50,7 @@ settings_t *settings = NULL;
 char *base64_encode(const uint8_t *data, int data_len,
                     char *res, int buffer_size);
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -63,7 +63,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -72,7 +72,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
             notify_enable = 1;
         else
-            notify_enable = 0;        
+            notify_enable = 0;
         return 0;
     case HANDLE_GENERIC_INPUT:
         console_rx_data((const char *)buffer, buffer_size);
@@ -141,7 +141,7 @@ void config_switching_pattern(void)
         current_pattern = 0;
     if (settings->patterns[current_pattern].len <= 0)
         current_pattern = 0;
-    
+
     if (settings->patterns[current_pattern].len <= 2)
         settings->patterns[current_pattern].len = 2;
 
@@ -164,9 +164,21 @@ void set_channel(void)
     gap_set_host_channel_classification(low, high);
 }
 
+void set_responder_led(int r, int g, int b)
+{
+    #define HANDLE_RGB_LIGHTING_CONTROL                          6
+    uint8_t v[3] = { (uint8_t)r, (uint8_t)g, (uint8_t)b };
+    if (conn_handle != INVALID_HANDLE)
+        gatt_client_write_value_of_characteristic_without_response(conn_handle,
+                                                                   HANDLE_RGB_LIGHTING_CONTROL,
+                                                                   sizeof(v),
+                                                                   v);
+
+}
+
 static void setup_adv()
 {
-    gap_set_ext_adv_para(0, 
+    gap_set_ext_adv_para(0,
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             800, 800,                  // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -182,6 +194,15 @@ static void setup_adv()
                             0x00);                     // Scan_Request_Notification_Enable
     gap_set_ext_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
     gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
+}
+
+void setup_ll_param(void)
+{
+    if (settings)
+    {
+        ll_set_def_antenna(settings->def_ant);
+        set_sample_offset(settings->iq_select);
+    }
 }
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
@@ -216,7 +237,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
-            {                
+            {
                 const le_meta_event_enh_create_conn_complete_t *conn_complete
                     = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                 platform_printf("connected,%d,%d\n", conn_complete->status,conn_complete->role);
@@ -236,9 +257,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     handle_send = conn_complete->handle;
                     att_set_db(handle_send, profile_data);
                 }
-                else 
+                else
                 {
                     conn_handle = conn_complete->handle;
+                    gatt_client_is_ready(conn_handle);
                     current_pattern = -1;
                     config_switching_pattern();
                     set_channel();
@@ -303,8 +325,7 @@ uint32_t setup_profile(void *data, void *user_data)
     }
     settings = (settings_t *)kv_get(KEY_SETTINGS, NULL);
 
-    ll_set_def_antenna(settings->def_ant);
-    set_sample_offset(settings->iq_select);
+    setup_ll_param();
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

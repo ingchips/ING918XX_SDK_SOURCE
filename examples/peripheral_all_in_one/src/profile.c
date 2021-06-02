@@ -269,7 +269,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         img_write_offset += buffer_size;
         return 0;
     case HANDLE_RGB_LIGHTING_CONTROL:
-        set_led_color(buffer[0], buffer[1], buffer[2]);
+        set_rgb_led_color(buffer[0], buffer[1], buffer[2]);
         return 0;
 
     case HANDLE_TEMPERATURE_MEASUREMENT + 1:
