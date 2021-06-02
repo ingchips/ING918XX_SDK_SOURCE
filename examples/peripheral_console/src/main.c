@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "power_ctrl.h"
 #include "key_detector.h"
+#include "trace.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -96,6 +97,8 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
+    if (IS_DEBUGGER_ATTACHED())
+        return 0;
     power_ctrl_before_deep_sleep();
     return 1;
 }
@@ -111,6 +114,8 @@ const int16_t power_mapping[] = {
     5700, 5800, 5900, 6000, 6100, 6200, 6300};
 
 extern void on_key_event(key_press_event_t evt);
+
+trace_rtt_t trace_ctx = {0};
 
 int app_main()
 {
@@ -138,6 +143,10 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
+
+    trace_rtt_init(&trace_ctx);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
 
     return 0;
 }

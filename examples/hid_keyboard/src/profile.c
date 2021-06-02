@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "platform_api.h"
 #include "att_db.h"
 #include "gap.h"
@@ -56,6 +58,14 @@ enum
     HID_CTRL_EXIT_SUSPEND
 };
 uint8_t suspended = 0;
+
+struct
+{
+    int flag;
+    int cnt;
+    char value[6];
+    char zero;
+} input_number = { 0 };
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -126,12 +136,18 @@ kb_report_t report =
     .codes = {0}
 };
 
-#define USER_MSG_ID_REQUEST_SEND            1
+#define USER_MSG_ID_INPUT_HW_KEYS           2
+#define USER_MSG_ID_INPUT_ASCII             3
 
-void kb_state_changed(void)
+void kb_state_changed(uint16_t key_state)
 {
     if(handle_send != INVALID_HANDLE)
-        btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, 0);
+        btstack_push_user_msg(USER_MSG_ID_INPUT_HW_KEYS, NULL, key_state);
+}
+
+void kb_input_char(char c)
+{
+    btstack_push_user_msg(USER_MSG_ID_INPUT_ASCII, NULL, c);
 }
 
 void kb_send_report(void)
@@ -139,7 +155,7 @@ void kb_send_report(void)
     if (protocol_mode != HID_PROTO_REPORT)
         return;
 
-    if(handle_send == INVALID_HANDLE)
+    if (handle_send == INVALID_HANDLE)
         return;
     if (0 == att_handle_notify)
         return;
@@ -147,17 +163,127 @@ void kb_send_report(void)
     att_server_notify(handle_send, att_handle_notify, (uint8_t*)&report, sizeof(report));
 }
 
+struct
+{
+    uint8_t modifier;
+    uint8_t code;
+} ascii_to_usb[255] =
+{
+    ['~'] = { .code = KEY_GRAVE, .modifier = KEY_MOD_LSHIFT },
+    ['`'] = { .code = KEY_GRAVE },
+    ['!'] = { .code = KEY_1, .modifier = KEY_MOD_LSHIFT },
+    ['@'] = { .code = KEY_2, .modifier = KEY_MOD_LSHIFT },
+    ['#'] = { .code = KEY_3, .modifier = KEY_MOD_LSHIFT },
+    ['$'] = { .code = KEY_4, .modifier = KEY_MOD_LSHIFT },
+    ['%'] = { .code = KEY_5, .modifier = KEY_MOD_LSHIFT },
+    ['^'] = { .code = KEY_6, .modifier = KEY_MOD_LSHIFT },
+    ['&'] = { .code = KEY_7, .modifier = KEY_MOD_LSHIFT },
+    ['*'] = { .code = KEY_8, .modifier = KEY_MOD_LSHIFT },
+    ['('] = { .code = KEY_9, .modifier = KEY_MOD_LSHIFT },
+    [')'] = { .code = KEY_0, .modifier = KEY_MOD_LSHIFT },
+    
+    ['{'] = { .code = KEY_LEFTBRACE, .modifier = KEY_MOD_LSHIFT },
+    ['}'] = { .code = KEY_RIGHTBRACE, .modifier = KEY_MOD_LSHIFT },
+    [':'] = { .code = KEY_SEMICOLON, .modifier = KEY_MOD_LSHIFT },
+    ['"'] = { .code = KEY_APOSTROPHE, .modifier = KEY_MOD_LSHIFT },
+    ['|'] = { .code = KEY_BACKSLASH, .modifier = KEY_MOD_LSHIFT },
+    ['<'] = { .code = KEY_COMMA, .modifier = KEY_MOD_LSHIFT },
+    ['>'] = { .code = KEY_DOT, .modifier = KEY_MOD_LSHIFT },
+    ['?'] = { .code = KEY_SLASH, .modifier = KEY_MOD_LSHIFT },
+    ['['] = { .code = KEY_LEFTBRACE },
+    [']'] = { .code = KEY_RIGHTBRACE },
+    [';'] = { .code = KEY_SEMICOLON },
+    ['\''] = { .code = KEY_APOSTROPHE },
+    ['\\'] = { .code = KEY_BACKSLASH },
+    [','] = { .code = KEY_COMMA },
+    ['.'] = { .code = KEY_DOT },
+    ['/'] = { .code = KEY_SLASH },
+    
+    ['\r'] = { .code = KEY_ENTER },
+    ['\n'] = { .code = KEY_ENTER },
+    
+    ['\t'] = { .code = KEY_TAB },
+    
+    [0x1b] = { .code = KEY_ESC },
+    [' ']  = { .code = KEY_SPACE },
+
+    [0x8]  = { .code = KEY_BACKSPACE },
+    [0x7f] = { .code = KEY_BACKSPACE },
+};
+
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
     switch (msg_id)
     {
-    case USER_MSG_ID_REQUEST_SEND:
-        if (att_server_can_send_packet_now(handle_send))
+    case USER_MSG_ID_INPUT_HW_KEYS:
         {
-            kb_send_report();
+            int i = 0;
+            uint16_t current = size;
+            report.modifier = 0;
+            // report which keys are pressed
+            if (current & 1)
+                report.codes[i++] = KEY_1;
+            if (current & 2)
+                report.codes[i++] = KEY_2;
+            if (current & 4)
+                report.codes[i++] = KEY_3;
+            while (i < sizeof(report.codes))
+                report.codes[i++] = 0;
+            platform_printf("%02X-%02X-%02X\n", report.codes[0], report.codes[1], report.codes[2]);
+        }
+        kb_send_report();
+        break;
+    case USER_MSG_ID_INPUT_ASCII:
+        if (input_number.flag)
+        {
+            char c = (char)size;
+            if (('0' <= c) && (c <= '9'))
+            {
+                input_number.value[input_number.cnt++] = c;
+                if (input_number.cnt >= sizeof(input_number.value))
+                {
+                    input_number.flag = 0;
+
+                    int a = atoi(input_number.value);
+                    if (handle_send != INVALID_HANDLE)
+                        sm_passkey_input(handle_send, a);
+                }
+            }
         }
         else
-            att_server_request_can_send_now_event(handle_send);
+        {
+            char c = (char)size;
+            report.modifier = 0;
+            memset(report.codes, 0, sizeof(report.codes));
+            if (('a' <= c) && (c <= 'z'))
+            {
+                report.codes[0] = c - 'a' + KEY_A;
+            }
+            else if ('0' == c)
+            {
+                report.codes[0] = KEY_0;
+            }
+            else if (('1' <= c) && (c <= '9'))
+            {
+                report.codes[0] = c - '1' + KEY_1;
+            }
+            else if (('A' <= c) && (c <= 'Z'))
+            {
+                report.modifier = KEY_MOD_LSHIFT;
+                report.codes[0] = c - 'A' + KEY_A;
+            }
+            else
+            {
+                report.modifier = ascii_to_usb[c].modifier;
+                report.codes[0] = ascii_to_usb[c].code;
+                if (report.codes[0] == 0)
+                    break;
+            }
+            kb_send_report();
+            report.modifier = 0;
+            report.codes[0] = 0;
+            kb_send_report();
+        }
         break;
     }
 }
@@ -381,6 +507,10 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
         att_handle_notify =  att_handle_report;
         break;
+    case SM_EVENT_PASSKEY_INPUT_NUMBER:
+        input_number.flag = 1;
+        input_number.cnt = 0;
+        break;
     default:
         break;
     }
@@ -390,13 +520,14 @@ static btstack_packet_callback_registration_t sm_event_callback_registration  = 
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    platform_printf("setup profile\n");
     init_service();
     sm_add_event_handler(&sm_event_callback_registration);
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
-    sm_config(IO_CAPABILITY_NO_INPUT_NO_OUTPUT,
+    sm_config(IO_CAPABILITY_KEYBOARD_ONLY,
               0,
               &sm_persistent);
     sm_set_authentication_requirements(SM_AUTHREQ_BONDING);

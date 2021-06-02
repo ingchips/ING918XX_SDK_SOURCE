@@ -39,6 +39,7 @@ void cmd_help(const char *param)
                                 "ch         n                0..36\n"
                                 "ver                         version\n"
                                 "reboot                      reboot\n"
+                                "led        r,g,b            periperal led\n"
                                 "h/?                         show this\n";
     tx_data(help, strlen(help) + 1);
 }
@@ -80,6 +81,15 @@ void cmd_channel(const char *param)
     settings->channel = atoi(param);
     set_channel();
     kv_value_modified();
+}
+
+void cmd_led(const char *param)
+{
+    extern void set_responder_led(int r, int g, int b);
+    int r, g, b;
+    if (sscanf(param, "%d,%d,%d", &r, &g, &b) != 3)
+        return;
+    set_responder_led(r, g, b);
 }
 
 void cmd_patterns(const char *param)
@@ -160,6 +170,10 @@ static cmd_t cmds[] =
     {
         .cmd = "ch",
         .handler = cmd_channel
+    },
+    {
+        .cmd = "led",
+        .handler = cmd_led
     },
 };
 

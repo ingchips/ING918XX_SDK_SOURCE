@@ -25,7 +25,7 @@
 ;//-------- <<< Use Configuration Wizard in Context Menu >>> ------------------
 ;*/
 
-Stack_Size      EQU     0x00000004
+Stack_Size      EQU     0x00000000
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
@@ -51,8 +51,7 @@ __heap_limit
                 AREA    RESET, DATA, READONLY
                 EXPORT  __Vectors
 
-__Vectors       DCD     0                         ; Top of Stack
-                DCD     Reset_Handler             ; Reset Handler
+__Vectors       DCD     Reset_Handler             ; Reset Handler
                 
 __Vectors_End
 
@@ -66,29 +65,28 @@ __Vectors_Size  EQU     __Vectors_End - __Vectors
 
 Reset_Handler   PROC
                 EXPORT  Reset_Handler
-                IMPORT  __scatterload
 
-                ; this push is consumed by main
-                PUSH    {R1, LR}
+                LDR  R1, =0x40070000    ; AHB_SYSCTRL->SYSCTRL_ClkGate |= (1 << 6);
+                LDR  R0, [R1,#0x04]
+                ORR  R0, R0,#0x40
+                STR  R0, [R1,#0x04]
 
-                LDR     R0, =__scatterload
-                BX      R0
+                LDR  R1, =0x40001000    ; R1 = APB_TMR0
+                MOVS R0, #0x02          ; APB_TMR0->CTL = (1 << bsTMR_CTL_RELOAD);                
+                STR  R0, [R1,#0x08]
+                LDR  R0, =24000000      ; APB_TMR0->CMP = TMR_CLK_FREQ;
+                STR  R0, [R1,#0x04]
+                LDR  R0, [R1,#0x08]     ; APB_TMR0->CTL |= (1 << bsTMR_CTL_TMR_EN) | (1 << bsTMR_CTL_WatchDog_EN);
+                ORR  R0, R0,#0x21
+                STR  R0, [R1,#0x08]
+                MOVS R0, #0x01          ; APB_TMR0->LOCK = 1;
+                STR  R0, [R1,#0x0C]
+                
+                LDR  R0, =0xFEED4000    ; will be modified by tool
+                BX R0
                 
                 ENDP
 
                 ALIGN
 
-main            PROC
-                EXPORT  main
-                IMPORT  app_main
-
-                LDR     R0, =app_main
-                BLX     R0
-                
-                POP     {R1, PC}
-
-                ENDP
-                
-                ALIGN
-
-                END
+    END

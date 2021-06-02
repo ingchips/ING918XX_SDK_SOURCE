@@ -52,7 +52,7 @@ void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     
-    setup_led();
+    setup_rgb_led();
 }
 
 int app_main()

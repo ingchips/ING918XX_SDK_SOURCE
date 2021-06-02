@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include "trace.h"
 
-#include "USBKeyboard.h"
-
 #define PRINT_UART    APB_UART0
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
@@ -59,7 +57,7 @@ void config_uart(uint32_t freq, uint32_t baud)
     UART_0.ClockFrequency    = freq;
     UART_0.BaudRate          = baud;
 
-    apUART_Initialize(PRINT_UART, &UART_0, 0);
+    apUART_Initialize(PRINT_UART, &UART_0, 1 << bsUART_RECEIVE_INTENAB);
 }
 
 #define KB_KEY_1        GIO_GPIO_1
@@ -71,12 +69,11 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-
+    
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
 
     // setup GPIOs for keys
-    PINCTRL_DisableAllInputs();
     PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GENERAL);
@@ -91,26 +88,21 @@ void setup_peripherals(void)
                         GIO_INT_EDGE);
 }
 
-extern kb_report_t report;
-extern void kb_state_changed(void);
-
+extern void kb_state_changed(uint16_t key_state);
+extern void kb_input_char(char c);
+    
 uint32_t gpio_isr(void *user_data)
 {
     uint32_t current = ~GIO_ReadAll();
-    int8_t i = 0;
-
+    uint16_t v = 0;
     // report which keys are pressed
     if (current & (1 << KB_KEY_1))
-        report.codes[i++] = KEY_1;
+        v |= 1;
     if (current & (1 << KB_KEY_2))
-        report.codes[i++] = KEY_2;
+        v |= 2;
     if (current & (1 << KB_KEY_3))
-        report.codes[i++] = KEY_3;
-    while (i < sizeof(report.codes))
-        report.codes[i++] = 0;
-    kb_state_changed();
-
-    printf("%02X-%02X-%02X\n", report.codes[0], report.codes[1], report.codes[2]);
+        v |= 4;
+    kb_state_changed(v);
 
     GIO_ClearAllIntStatus();
     return 0;
@@ -131,6 +123,31 @@ int read_from_flash(void *db, const int max_size)
     return KV_OK;
 }
 
+uint32_t uart_isr(void *user_data)
+{
+    uint32_t status;
+
+    while(1)
+    {
+        status = apUART_Get_all_raw_int_stat(PRINT_UART);
+        if (status == 0)
+            break;
+
+        PRINT_UART->IntClear = status;
+
+        // rx int
+        if (status & (1 << bsUART_RECEIVE_INTENAB))
+        {
+            while (apUART_Check_RXFIFO_EMPTY(PRINT_UART) != 1)
+            {
+                char c = PRINT_UART->DataRead;
+                kb_input_char(c);
+            }
+        }
+    }
+    return 0;
+}
+
 trace_rtt_t trace_ctx = {0};
 
 int app_main()
@@ -148,6 +165,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
 
     kv_init(db_write_to_flash, read_from_flash);
     trace_rtt_init(&trace_ctx);

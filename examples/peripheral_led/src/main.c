@@ -45,7 +45,21 @@ void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     
-    setup_led();
+    setup_rgb_led();
+}
+
+const static rgb_t rgb0 = { .r = 0, .g = 0, .b = 0 };
+const static rgb_t rgb1 = { .r = 50, .g = 0, .b = 0 };
+
+void set_led_color(uint8_t r, uint8_t g, uint8_t b)
+{
+    rgb_t rgb = { .r = r, .g = g, .b = b };
+    set_rbg_breathing(rgb, rgb);
+}
+
+void start_led_breathing(void)
+{
+    set_rbg_breathing(rgb0, rgb1);
 }
 
 int app_main()
@@ -60,8 +74,9 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+    
+    setup_rgb_breathing();
+    start_led_breathing();
+
     return 0;
 }
-
-
-

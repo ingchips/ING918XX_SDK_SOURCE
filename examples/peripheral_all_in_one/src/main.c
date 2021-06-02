@@ -92,7 +92,7 @@ void setup_peripherals(void)
                               | (1 << SYSCTRL_ClkGate_APB_TMR1));
 
     // for RGB
-    setup_led();
+    setup_rgb_led();
 
     // buzzer
     PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_GENERAL);
