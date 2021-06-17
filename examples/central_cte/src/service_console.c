@@ -32,7 +32,7 @@ static void tx_data(const char *d, const uint8_t len);
 void cmd_help(const char *param)
 {
     static const char help[] =  "commands:\n"
-                                "def        id               default antenna\n"
+                                "def        id,...           default ant for each pattern\n"
                                 "patterns   a0,a0..;b0,b1..  antenna patterns\n"
                                 "iqsel      offset           iq sampling offset\n"
                                 "duration   1/2              slot duration\n"
@@ -58,8 +58,24 @@ void cmd_version(const char *param)
 
 void cmd_def_ant(const char *param)
 {
-    settings->def_ant = atoi(param);
-    ll_set_def_antenna(settings->def_ant);
+    char *first = (char *)param;
+    int pat_id = 0;
+    while ((pat_id < PAT_NUMBER) && *first)
+    {
+        char *p = first;
+
+        if (('0' <= *p) && (*p <= '9'))
+        {
+            ;
+        }
+        else
+        {
+            *p = '\0';
+            if (strlen(first) > 0)
+                settings->patterns[pat_id++].def = atoi(first);
+        }
+        first = p + 1;
+    }
     kv_value_modified();
 }
 

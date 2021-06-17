@@ -22,23 +22,28 @@ void att_db_util_add_service_uuid16(uint16_t uuid16);
 /**
  * @brief Add primary service for 128-bit UUID
  */
-void att_db_util_add_service_uuid128(uint8_t * uuid128);
+void att_db_util_add_service_uuid128(const uint8_t * uuid128);
 
 /**
  * @brief Add Characteristic with 16-bit UUID, properties, and data
  * @returns attribute value handle
  * @see ATT_PROPERTY_* in ble/att_db.h
  */
-uint16_t att_db_util_add_characteristic_uuid16(uint16_t uuid16,  uint16_t properties, uint8_t * data, uint16_t data_len);
+uint16_t att_db_util_add_characteristic_uuid16(uint16_t uuid16,  uint16_t properties, const uint8_t * data, uint16_t data_len);
 
-void att_db_util_add_descriptor_uuid16(uint16_t uuid16, uint16_t flags, uint8_t * data, uint16_t data_len);
+/**
+ * @brief Add Descriptor with 16-bit UUID properties, and data
+ * @returns discriptor handle
+ * @see ATT_PROPERTY_* in ble/att_db.h
+ */
+uint16_t att_db_util_add_descriptor_uuid16(uint16_t uuid16, uint16_t flags, const uint8_t * data, uint16_t data_len);
 
 /**
  * @brief Add Characteristic with 128-bit UUID, properties, and data
  * @returns attribute value handle
  * @see ATT_PROPERTY_* in ble/att_db.h
  */
-uint16_t att_db_util_add_characteristic_uuid128(uint8_t * uuid128, uint16_t properties, uint8_t * data, uint16_t data_len);
+uint16_t att_db_util_add_characteristic_uuid128(const uint8_t * uuid128, uint16_t properties, const uint8_t * data, uint16_t data_len);
 
 /** 
  * @brief Get address of constructed ATT DB

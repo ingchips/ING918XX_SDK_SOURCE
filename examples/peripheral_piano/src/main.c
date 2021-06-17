@@ -68,8 +68,7 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
     
-    PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(PIN_BUZZER, 1);
+    PINCTRL_SetGeneralPadMode(PIN_BUZZER, IO_MODE_PWM, 4, 0);
     
     set_freq(0);
 }

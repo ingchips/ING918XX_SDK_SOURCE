@@ -45,12 +45,12 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
     
-    // setup timer 1: 1sec timer
-	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 2);
-	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
-	TMR_IntEnable(APB_TMR1);
+    // setup timer 1: 0.5s (2Hz)
+    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 2);
+    TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
+    TMR_IntEnable(APB_TMR1);
     TMR_Reload(APB_TMR1);
-	TMR_Enable(APB_TMR1);
+    TMR_Enable(APB_TMR1);
 }
 
 uint32_t timer_isr(void *user_data);

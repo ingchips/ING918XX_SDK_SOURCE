@@ -145,6 +145,7 @@ void config_switching_pattern(void)
     if (settings->patterns[current_pattern].len <= 2)
         settings->patterns[current_pattern].len = 2;
 
+    ll_set_def_antenna(settings->patterns[current_pattern].def);
     gap_set_connection_cte_rx_param(conn_handle,
                                     1,
                                     (cte_slot_duration_type_t)settings->slot_duration,
@@ -200,7 +201,6 @@ void setup_ll_param(void)
 {
     if (settings)
     {
-        ll_set_def_antenna(settings->def_ant);
         set_sample_offset(settings->iq_select);
     }
 }

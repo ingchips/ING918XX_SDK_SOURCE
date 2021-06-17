@@ -14,8 +14,8 @@ void print_hex_table(const uint8_t *value, int len, f_print_string print)
 
     line[sizeof(line) - 1] = '\0';
 
-    print(" 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15\n");
-    print("===============================================\n");
+    print(" 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15");
+    print("===============================================");
 
     for (i = 0; i < (len + 15) / 16; i++)
     {
