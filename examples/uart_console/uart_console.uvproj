@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893728</StartAddress>
-                <Size>9952</Size>
+                <StartAddress>536893736</StartAddress>
+                <Size>9944</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -346,7 +346,7 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,iprintf=platform_printf</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -451,6 +451,11 @@
               <FileName>str_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\str_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>gatt_client_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\gatt_client_util.c</FilePath>
             </File>
           </Files>
         </Group>

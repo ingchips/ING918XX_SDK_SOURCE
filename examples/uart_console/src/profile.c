@@ -13,6 +13,7 @@
 #include "sm.h"
 
 #include "uart_console.h"
+#include "gatt_client_util.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -31,6 +32,11 @@ bd_addr_t scaned_advertisers[MAX_ADVERTISERS] = {0};
 int advertiser_num = 0;
 int is_targeted_scan = 0;
 uint64_t last_seen = 0;
+
+struct gatt_client_discoverer *discoverer = NULL;
+
+#define find_char(handle)   gatt_client_util_find_char(discoverer, handle)
+#define find_config_desc    gatt_client_util_find_config_desc
 
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
@@ -86,329 +92,6 @@ void do_set_data()
 }
 
 #define iprintf platform_printf
-
-typedef struct desc_node
-{
-    struct desc_node *next;
-    gatt_client_characteristic_descriptor_t desc;
-} desc_node_t;
-
-typedef struct char_node
-{
-    struct char_node *next;
-    gatt_client_characteristic_t chara;
-    gatt_client_notification_t *notification;
-    desc_node_t *descs;
-} char_node_t;
-
-typedef struct service_node
-{
-    struct service_node *next;
-    gatt_client_service_t service;
-    char_node_t *chars;
-} service_node_t;
-
-struct list_node
-{
-    struct list_node *next;
-};
-
-service_node_t first_service = {0};
-service_node_t *cur_disc_service = NULL;
-char_node_t *cur_disc_char = NULL;
-
-typedef void (*f_list_node)(struct list_node *node);
-
-void list_for_each(struct list_node *head, f_list_node f)
-{
-    while (head)
-    {
-        struct list_node *t = head;
-        head = head->next;
-        f(t);
-    }
-}
-
-void free_list(struct list_node *head)
-{
-    list_for_each(head, (f_list_node)free);
-}
-
-void free_char(char_node_t *a_char)
-{
-    if (a_char == NULL) return;
-    free_list((struct list_node *)a_char->descs);
-    if (a_char->notification) free(a_char->notification);
-    free(a_char);
-}
-
-void free_service(service_node_t *s)
-{
-    if (s == NULL) return;
-    list_for_each((struct list_node *)s->chars, (f_list_node)free_char);
-    free(s);
-}
-
-void free_services(void)
-{
-    if (NULL == first_service.next) return;
-    list_for_each((struct list_node *)first_service.next, (f_list_node)free_service);
-    first_service.next = NULL;
-}
-
-service_node_t *get_last_service(void)
-{
-    service_node_t *r = &first_service;
-    while (r->next)
-        r = r->next;
-    return r;
-}
-
-char_node_t *find_char(uint16_t handle)
-{
-    service_node_t *s = first_service.next;
-    while (s)
-    {
-        char_node_t *c = s->chars;
-        while (c)
-        {
-            if (c->chara.value_handle == handle)
-                return c;
-            c = c->next;
-        }
-        s = s->next;
-    }
-    return NULL;
-}
-
-int is_sig_uuid(const uint8_t *uuid, uint16_t sig_id)
-{
-    if (uuid_has_bluetooth_prefix(uuid))
-    {
-        uint16_t v = (uuid[2] << 8) | uuid[3];
-        return v == sig_id;
-    }
-    else
-        return 0;
-}
-
-desc_node_t *find_config_desc(char_node_t *c)
-{
-    if (NULL == c) return NULL;
-    desc_node_t *d = c->descs;
-    while (d)
-    {
-        if (is_sig_uuid(d->desc.uuid128, SIG_UUID_DESCRIP_GATT_CLIENT_CHARACTERISTIC_CONFIGURATION))
-            return d;
-        d = d->next;
-    }
-    return NULL;
-}
-
-void print_uuid(const uint8_t *uuid)
-{
-    if (uuid_has_bluetooth_prefix(uuid))
-    {
-        uint16_t v = (uuid[2] << 8) | uuid[3];
-        iprintf("0x%04x", v);
-    }
-    else
-        platform_printf("{%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
-                        uuid[0], uuid[1], uuid[2], uuid[3],
-                        uuid[4], uuid[5], uuid[6], uuid[7], uuid[8], uuid[9],
-                        uuid[10], uuid[11], uuid[12], uuid[13], uuid[14], uuid[15]);
-}
-
-void print_properties(uint16_t v)
-{
-    iprintf("0x%04x (", v);
-    if (v & 0x1)
-        iprintf("broadcast, ");
-    if (v & 0x2)
-        iprintf("read, ");
-    if (v & 0x4)
-        iprintf("writeWithoutResponse, ");
-    if (v & 0x8)
-        iprintf("write, ");
-    if (v & 0x10)
-        iprintf("notify, ");
-    if (v & 0x20)
-        iprintf("indicate, ");
-    if (v & 0x40)
-        iprintf("authWrite, ");
-    if (v & 0x80)
-        iprintf("extendedProperties, ");
-    iprintf(")");
-}
-
-void print_gatt_profile(void)
-{
-    service_node_t *s = first_service.next;
-
-    iprintf("========== GATT PROFILE DUMP ==========\n\n");
-
-    while (s)
-    {
-        char_node_t *c = s->chars;
-        iprintf("SERVICE: ");
-        print_uuid(s->service.uuid128);
-        iprintf("\nHANDLE RANGE: %d - %d\n\n", s->service.start_group_handle, s->service.end_group_handle);
-
-        while (c)
-        {
-            desc_node_t *d = c->descs;
-
-            iprintf("    CHARACTERISTIC: ");
-            print_uuid(c->chara.uuid128);
-            iprintf("\n        HANDLE RANGE: %d - %d\n", c->chara.start_handle, c->chara.end_handle);
-            iprintf(  "        VALUE HANDLE: %d\n", c->chara.value_handle);
-            iprintf(  "        PROPERTIES  : "); print_properties(c->chara.properties); iprintf("\n\n");
-
-            while (d)
-            {
-                iprintf("        DESCRIPTOR: ");
-                print_uuid(d->desc.uuid128);
-                iprintf("\n        HANDLE: %d\n\n", d->desc.handle);
-
-                d = d->next;
-            }
-            c = c->next;
-        }
-        s = s->next;
-    }
-}
-
-void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size);
-void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size);
-
-void discover_char_of_service(void)
-{
-    if (cur_disc_service)
-    {
-        gatt_client_discover_characteristics_for_service(characteristic_discovery_callback,
-                                                         0,
-                                                         cur_disc_service->service.start_group_handle,
-                                                         cur_disc_service->service.end_group_handle);
-    }
-    else
-    {
-        iprintf("all discovered\n");
-        print_gatt_profile();
-    }
-}
-
-void discover_desc_of_char(void)
-{
-    while (cur_disc_char)
-    {
-        if (cur_disc_char->chara.end_handle > cur_disc_char->chara.value_handle)
-            break;
-        cur_disc_char = cur_disc_char->next;
-    }
-
-    if (cur_disc_char)
-    {
-        gatt_client_discover_characteristic_descriptors(descriptor_discovery_callback,
-                                                        0,
-                                                        &cur_disc_char->chara);
-    }
-    else
-    {
-        cur_disc_service = cur_disc_service->next;
-        discover_char_of_service();
-    }
-}
-
-void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
-{
-    switch (packet[0])
-    {
-    case GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT:
-        {
-            const gatt_event_all_characteristic_descriptors_query_result_t *result =
-                gatt_event_all_characteristic_descriptors_query_result_parse(packet);
-            desc_node_t *node = (desc_node_t *)malloc(sizeof(desc_node_t));
-            node->next = cur_disc_char->descs;
-            cur_disc_char->descs = node;
-
-            node->desc = result->descriptor;
-        }
-        break;
-    case GATT_EVENT_QUERY_COMPLETE:
-        iprintf("descriptor_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
-        cur_disc_char = cur_disc_char->next;
-        if (cur_disc_char)
-        {
-            discover_desc_of_char();
-        }
-        else
-        {
-            cur_disc_service = cur_disc_service->next;
-            discover_char_of_service();
-        }
-        break;
-    }
-}
-
-void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
-{
-    switch (packet[0])
-    {
-    case GATT_EVENT_CHARACTERISTIC_QUERY_RESULT:
-        {
-            const gatt_event_characteristic_query_result_t *result = gatt_event_characteristic_query_result_parse(packet);
-            char_node_t *node = (char_node_t *)malloc(sizeof(char_node_t));
-            node->next = cur_disc_service->chars;
-            cur_disc_service->chars = node;
-
-            node->descs = NULL;
-            node->notification = NULL;
-            node->chara = result->characteristic;
-        }
-        break;
-    case GATT_EVENT_QUERY_COMPLETE:
-        iprintf("characteristic_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
-        if (gatt_event_query_complete_parse(packet)->status != 0)
-            break;
-
-        iprintf("characteristic_discovery COMPLETE\n");
-        cur_disc_char = cur_disc_service->chars;
-        discover_desc_of_char();
-        break;
-    }
-}
-
-void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
-{
-    switch (packet[0])
-    {
-    case GATT_EVENT_SERVICE_QUERY_RESULT:
-        {
-            const gatt_event_service_query_result_t *result = gatt_event_service_query_result_parse(packet);
-            service_node_t *last = get_last_service();
-            last->next = (service_node_t *)malloc(sizeof(service_node_t));
-            last->next->chars = NULL;
-            last->next->next = NULL;
-            last->next->service = result->service;
-        }
-        break;
-    case GATT_EVENT_QUERY_COMPLETE:
-        iprintf("service_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
-        if (gatt_event_query_complete_parse(packet)->status != 0)
-        {
-            gap_disconnect(0);
-            break;
-        }
-
-        cur_disc_service = first_service.next;
-        if (cur_disc_service)
-            gatt_client_discover_characteristics_for_service(characteristic_discovery_callback,
-                                                             0,
-                                                             cur_disc_service->service.start_group_handle,
-                                                             cur_disc_service->service.end_group_handle);
-        break;
-    }
-}
 
 void print_fun(const char *s)
 {
@@ -978,7 +661,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             if (0 == bonding_flag)
             {
                 iprintf("discovering...\n");
-                gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
+                discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile);
             }
             break;
         case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
@@ -1002,14 +685,18 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_ENCRYPTION_CHANGE:
         {
             iprintf("discovering...\n");
-            gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
+            discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile);
         }
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         iprintf("disconnected\n");
         conn_handle = INVALID_HANDLE;
-        free_services();
+        if (discoverer)
+        {
+            gatt_client_util_free(discoverer);
+            discoverer = NULL;
+        }
         break;
 
     case HCI_EVENT_COMMAND_COMPLETE:
@@ -1096,7 +783,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         }
         break;
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
-        gatt_client_discover_primary_services(service_discovery_callback, conn_handle);
+        discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile);
         break;
     default:
         break;

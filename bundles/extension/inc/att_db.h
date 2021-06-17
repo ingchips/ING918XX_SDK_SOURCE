@@ -1,14 +1,14 @@
-                                                       
+
 /** @file
-*  @brief API for ATT server 
+*  @brief API for ATT server
 *
-*  INGCHIPS confidential and proprietary.                                      
-*  COPYRIGHT (c) 2018 by INGCHIPS                                              
-*                                                                             
-*  All rights are reserved. Reproduction in whole or in part is                
-*  prohibited without the written consent of the copyright owner.              
-*                                                                             
-*                                                                             
+*  INGCHIPS confidential and proprietary.
+*  COPYRIGHT (c) 2018 by INGCHIPS
+*
+*  All rights are reserved. Reproduction in whole or in part is
+*  prohibited without the written consent of the copyright owner.
+*
+*
 */
 
 #ifndef __ATT_H
@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 /**
- * @brief Bluetooth 
+ * @brief Bluetooth
  * @defgroup Bluetooth_att_db
  * @ingroup bluetooth_host
  * @{
@@ -35,16 +35,21 @@ extern "C" {
 #define ATT_ERROR_DATA_MISMATCH                    0x7e
 #define ATT_ERROR_TIMEOUT                          0x7F
 
-#define ATT_ERROR_CMD_UNSUPPORTED                  0x06    
+#define ATT_ERROR_CMD_UNSUPPORTED                  0x06
+
+#define ATT_DEFERRED_READ                           0xffff
+
 /**@brief ATT Client Read Callback for Dynamic Data
-// - if buffer == NULL, don't copy data, just return size of value
-// - if buffer != NULL, copy data and return number bytes copied
+    - if buffer == NULL, don't copy data, just return size of value
+                         when ATT_DEFERRED_READ is returned in this case, deferred read is used
+                         Note: Deferred read only works for ATT_READ_REQUEST
+     - if buffer != NULL, copy data and return number bytes copied
  * @param con_handle       hci le connection
  * @param attribute_handle attribute handle in att database
  * @param offset           defines start of attribute value
  * @param buffer           buffer to allocate the read value
  * @param buffer_size      buffer size
- * @retrun                                  
+ * @retrun
  */
 typedef uint16_t (*att_read_callback_t)(hci_con_handle_t con_handle, uint16_t attribute_handle, uint16_t offset, uint8_t * buffer, uint16_t buffer_size);
 
@@ -72,7 +77,7 @@ void att_server_init(att_read_callback_t read_callback, att_write_callback_t wri
 
 /*
  * @brief register packet handler for ATT server events:
- *        - ATT_EVENT_MTU_EXCHANGE_COMPLETE 
+ *        - ATT_EVENT_MTU_EXCHANGE_COMPLETE
  *        - ATT_EVENT_HANDLE_VALUE_INDICATION_COMPLETE
  * @param handler         see function type @link btstack_packet_handler_t() @endlink
  */
@@ -85,13 +90,23 @@ void att_server_register_packet_handler(btstack_packet_handler_t handler);
  */
 int  att_server_can_send_packet_now(hci_con_handle_t con_handle);
 
-/** 
+/**
  * @brief Request emission of ATT_EVENT_CAN_SEND_NOW as soon as possible
  * @note ATT_EVENT_CAN_SEND_NOW might be emitted during call to this function
  *       so packet handler should be ready to handle it
- * @param con_handle      le connection handle 
+ * @param con_handle      le connection handle
  */
 void att_server_request_can_send_now_event(hci_con_handle_t con_handle);
+
+/*
+ * @brief notify stack that deferred read is complete
+ * @param con_handle             le connection handle
+ * @param attribute_handle       the attribute handle in the att database
+ * @param value                  buffer to value
+ * @param value_len              length of value
+ * @return                       0 if ok, error otherwise
+ */
+int att_server_deferred_read_response(hci_con_handle_t con_handle, uint16_t attribute_handle, const uint8_t *value, uint16_t value_len);
 
 /*
  * @brief notify client about attribute value change

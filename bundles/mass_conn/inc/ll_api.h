@@ -417,6 +417,18 @@ int ll_set_max_conn_number(int max_number);
  */
 void ll_scan_set_fixed_channel(int channel_index);
 
+/**
+ ****************************************************************************************
+ * @brief Modify the default access address of SIG advertising PDU
+ * 
+ * Note: Once changed, advertising data can't be detected by standard scanners.
+ *       This is used for debugging only.
+ *
+ * @param[in]  acc_addr     new access address
+ ****************************************************************************************
+ */
+void ll_set_adv_access_address(uint32_t acc_addr);
+
 #ifdef __cplusplus
 }
 #endif

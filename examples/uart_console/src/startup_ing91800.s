@@ -36,7 +36,7 @@ __initial_sp
                 EXPORT  __heap_base
                 EXPORT  __heap_limit
                 
-Heap_Size       EQU     0x00000000
+Heap_Size       EQU     4096
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base

@@ -134,10 +134,9 @@ void print_reg(uint32_t addr)
 {
     printf("%08X = %08X\n", addr, *(uint32_t *)(addr));
 }
-   
+
 uint16_t read_adc(uint8_t channel)
 {
-    int i;
     #define r32(a)   (*(volatile uint32_t*)(a))
 
     while ((r32(0x40040088) & (0x7 << 14)) != (0x7 << 14)) ;
@@ -145,20 +144,16 @@ uint16_t read_adc(uint8_t channel)
     ADC_PowerCtrl(1);
     ADC_Reset();
     ADC_SetClkSel(ADC_CLK_EN | ADC_CLK_128);
-    ADC_SetMode(ADC_MODE_SINGLE);
+    ADC_SetMode(ADC_MODE_LOOP);
     ADC_EnableChannel(channel == 0 ? 1 : 0, 1);
     ADC_EnableChannel(channel, 1);
-    for (i = 0; i < 100; i++) __nop();  // delay 100us before Enable
-
     ADC_Enable(1);
+
     while (ADC_IsChannelDataValid(channel) == 0) ;
     uint16_t voltage = ADC_ReadChannelData(channel);
-    ADC_Enable(0);
-    for (i = 0; i < 100; i++) __nop();  // delay 100us before Enable
-    ADC_Enable(1);
-    while (ADC_IsChannelDataValid(channel) == 0) ;
-    for (i = 0; i < 1000; i++) __nop();  // delay 100us before Enable
 
+    ADC_ClearChannelDataValid(channel);
+    while (ADC_IsChannelDataValid(channel) == 0) ;
     voltage = ADC_ReadChannelData(channel);
 
     ADC_Enable(0);

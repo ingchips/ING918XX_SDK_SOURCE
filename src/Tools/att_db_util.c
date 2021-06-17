@@ -5,10 +5,6 @@
 #include "bluetooth.h"
 #include "btstack_util.h"
 
-#include "platform_api.h"
-
-#define log_error platform_printf
-
 static uint8_t * att_db;
 static uint16_t  att_db_size;
 static uint16_t  att_db_max_size;
@@ -38,17 +34,17 @@ static int att_db_util_assert_space(uint16_t size){
     size += 2; // for end tag
     if (att_db_size + size <= att_db_max_size) return 1;
 
-    log_error("att_db: out of memory");
-    return 0;
+    // att_db: out of memory
+    while (1);
 }
 
 // attribute size in bytes (16), flags(16), handle (16), uuid (16/128), value(...)
 
 // db endds with 0x00 0x00
 
-static void att_db_util_add_attribute_uuid16(uint16_t uuid16, uint16_t flags, uint8_t * data, uint16_t data_len){
+uint16_t att_db_util_add_attribute_uuid16(uint16_t uuid16, uint16_t flags, const uint8_t * data, uint16_t data_len){
     int size = 2 + 2 + 2 + 2 + data_len;
-    if (!att_db_util_assert_space(size)) return;
+    if (!att_db_util_assert_space(size)) return 0xffff;
     little_endian_store_16(att_db, att_db_size, size);
     att_db_size += 2;
     little_endian_store_16(att_db, att_db_size, flags);
@@ -61,13 +57,14 @@ static void att_db_util_add_attribute_uuid16(uint16_t uuid16, uint16_t flags, ui
     memcpy(&att_db[att_db_size], data, data_len);
     att_db_size += data_len;
     att_db_util_set_end_tag();
+    return att_db_next_handle - 1;
 }
 
-void att_db_util_add_descriptor_uuid16(uint16_t uuid16, uint16_t flags, uint8_t * data, uint16_t data_len) {
-    att_db_util_add_attribute_uuid16(uuid16, flags, data, data_len);
+uint16_t att_db_util_add_descriptor_uuid16(uint16_t uuid16, uint16_t flags, const uint8_t * data, uint16_t data_len) {
+    return att_db_util_add_attribute_uuid16(uuid16, flags, data, data_len);
 }
 
-static void att_db_util_add_attribute_uuid128(uint8_t * uuid128, uint16_t flags, uint8_t * data, uint16_t data_len){
+static void att_db_util_add_attribute_uuid128(const uint8_t * uuid128, uint16_t flags, const uint8_t * data, uint16_t data_len){
     int size = 2 + 2 + 2 + 16 + data_len;
     if (!att_db_util_assert_space(size)) return;
     flags |= ATT_PROPERTY_UUID128;
@@ -91,13 +88,13 @@ void att_db_util_add_service_uuid16(uint16_t uuid16){
     att_db_util_add_attribute_uuid16(GATT_PRIMARY_SERVICE_UUID, ATT_PROPERTY_READ, buffer, 2);
 }
 
-void att_db_util_add_service_uuid128(uint8_t * uuid128){
+void att_db_util_add_service_uuid128(const uint8_t * uuid128){
     uint8_t buffer[16];
     reverse_128(uuid128, buffer);
     att_db_util_add_attribute_uuid16(GATT_PRIMARY_SERVICE_UUID, ATT_PROPERTY_READ, buffer, 16);
 }
 
-uint16_t att_db_util_add_characteristic_uuid16(uint16_t uuid16, uint16_t properties, uint8_t * data, uint16_t data_len){
+uint16_t att_db_util_add_characteristic_uuid16(uint16_t uuid16, uint16_t properties, const uint8_t * data, uint16_t data_len){
     uint8_t buffer[5];
     uint16_t value_handle = 0;
     uint16_t flags = 0;
@@ -118,7 +115,7 @@ uint16_t att_db_util_add_characteristic_uuid16(uint16_t uuid16, uint16_t propert
     return value_handle;
 }
 
-uint16_t att_db_util_add_characteristic_uuid128(uint8_t * uuid128, uint16_t properties, uint8_t * data, uint16_t data_len){
+uint16_t att_db_util_add_characteristic_uuid128(const uint8_t * uuid128, uint16_t properties, const uint8_t * data, uint16_t data_len){
     uint8_t buffer[19];
   uint16_t value_handle = 0;
     uint16_t flags = 0;

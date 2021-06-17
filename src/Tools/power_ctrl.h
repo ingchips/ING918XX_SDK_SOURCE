@@ -14,9 +14,12 @@ void power_ctrl_init(void);
 void power_ctrl_before_deep_sleep(void);
 
 // Call this function in event `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP`
-// Note: 1. call this before configuring peripherals.
-//       2. Extra delay (NOP) may be required.
+// Note: Call this before configuring peripherals.
 void power_ctrl_deep_sleep_wakeup(void);
+
+// Recommend to call this function before disabling power saving for better RF performance
+// Note: This is EXPERIMENTAL.
+void power_ctrl_before_disable_power_saving(void);
 
 #ifdef __cplusplus
 }
