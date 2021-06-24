@@ -310,13 +310,11 @@ int app_main()
     trace_uart_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_uart, &trace_ctx);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART1, (f_platform_irq_cb)trace_uart_isr, &trace_ctx);
-    trace_uart_isr(&trace_ctx);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0x00);
 
 #ifdef USE_DISPLAY
     display_init();
 #endif
-    
-    // platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
 
     return 0;
 }

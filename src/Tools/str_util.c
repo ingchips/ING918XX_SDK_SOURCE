@@ -1,6 +1,8 @@
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 #include "str_util.h"
+#include "ingsoc.h"
 
 static char nibble_to_char(int v)
 {
@@ -75,3 +77,32 @@ char *base64_encode(const uint8_t *data, int data_len,
     return res;
 }
 
+const char *fmt_rtc_timestamp(char *str, uint32_t rtc_value)
+{
+    uint32_t t = rtc_value;
+    uint32_t sec = t / RTC_CLK_FREQ;
+    uint32_t sub_sec = t - sec * RTC_CLK_FREQ;
+    uint32_t msec = 1000 * sub_sec / RTC_CLK_FREQ;
+    uint32_t usec = 1000 * (1000 * sub_sec - msec * RTC_CLK_FREQ) / RTC_CLK_FREQ;
+    uint32_t min = sec / 60;
+    uint32_t hour = min / 60;
+    sec -= min * 60;
+    min -= hour * 60;
+    sprintf(str, "%02u:%02u:%02u.%03u,%03u", hour, min, sec, msec, usec);
+    return str;
+}
+
+const char *fmt_rtc_timestamp_full(char *str, uint64_t rtc_value)
+{
+    uint64_t t = rtc_value;
+    uint64_t sec = t / RTC_CLK_FREQ;
+    uint32_t sub_sec = t % RTC_CLK_FREQ;
+    uint32_t msec = 1000 * sub_sec / RTC_CLK_FREQ;
+    uint32_t usec = 1000 * (1000 * sub_sec - msec * RTC_CLK_FREQ) / RTC_CLK_FREQ;
+    uint64_t min = sec / 60;
+    uint64_t hour = min / 60;
+    sec -= min * 60;
+    min -= hour * 60;
+    sprintf(str, "%02llu:%02u:%02u.%03u,%03u", hour, (uint32_t)min, (uint32_t)sec, msec, usec);
+    return str;
+}

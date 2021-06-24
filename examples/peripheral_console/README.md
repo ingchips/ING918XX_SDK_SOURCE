@@ -11,3 +11,7 @@ This example demonstrates how to:
 Note: 
     1. '\0' masks the end of a string;
     1. Connect `EXT_INT` key to both `EXT_INT` and `KEY_PIN`.
+
+Known Issue: When `USE_POWER_LIB`, only single click is OK, and other 
+    key events (multiple clicked & long pressed) might break BLE connection
+    with small interval.

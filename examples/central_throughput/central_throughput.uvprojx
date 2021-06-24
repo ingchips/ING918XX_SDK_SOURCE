@@ -330,7 +330,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,LOG_LEVEL=3</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -475,6 +475,16 @@
               <FileName>rf_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\rf_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>log_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\log_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>str_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\str_util.c</FilePath>
             </File>
           </Files>
         </Group>

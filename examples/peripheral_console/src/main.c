@@ -66,6 +66,10 @@ void setup_peripherals(void)
     int i;
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+#ifdef USE_WATCHDOG
+                              | (1 << SYSCTRL_ClkGate_APB_TMR0)
+#endif
+    
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
     config_uart(OSC_CLK_FREQ, 115200);
     
@@ -81,13 +85,20 @@ void setup_peripherals(void)
             PINCTRL_SetPadMux(i, IO_SOURCE_DEBUG_BUS);
     }
     on_lle_reset(NULL, NULL);
+#ifdef USE_WATCHDOG
+    // Watchdog will timeout after 10sec
+    TMR_WatchDogEnable(TMR_CLK_FREQ * 5);
+    TMR0_LOCK();
+#endif
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
+#ifdef USE_POWER_LIB
     power_ctrl_deep_sleep_wakeup();
+#endif
     setup_peripherals();
     key_detector_start_on_demand();
     return 1;
@@ -99,7 +110,9 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     (void)(user_data);
     if (IS_DEBUGGER_ATTACHED())
         return 0;
+#ifdef USE_POWER_LIB
     power_ctrl_before_deep_sleep();
+#endif
     return 1;
 }
 
@@ -119,7 +132,9 @@ trace_rtt_t trace_ctx = {0};
 
 int app_main()
 {
+#ifdef USE_POWER_LIB
     power_ctrl_init();
+#endif
 
 #ifdef USE_OSC32K
     platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
@@ -127,20 +142,18 @@ int app_main()
     platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
     platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
 #endif
-
-    key_detect_init(on_key_event);
-    setup_peripherals();
-
+    
     platform_set_rf_power_mapping(power_mapping);
 
-    // setup deep sleep handlers
+    // setup handlers
+    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, on_lle_reset, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-
-    // setup putc handle
-    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
+    
+    key_detect_init(on_key_event);
+    setup_peripherals();
 
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
 

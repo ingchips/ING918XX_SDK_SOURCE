@@ -20,6 +20,7 @@
 
 #include "FreeRTOS.h"
 #include "timers.h"
+#include "log_util.h"
 
 #define INVALID_HANDLE      (0xffff)
 const uint8_t UUID_TPT[]            = {0x24,0x45,0x31,0x4a,0xa1,0xd4,0x48,0x74,0xb4,0xd1,0xfd,0xfb,0x6f,0x50,0x14,0x85};
@@ -77,7 +78,7 @@ void loopback_send(void)
                             slave.input_char.value_handle, len, (uint8_t *)data);
         if (r != 0)
         {
-            platform_printf("error\n");
+            LOG_ERROR("error");
             break;
         }
         remain -= len;
@@ -89,12 +90,12 @@ void loopback_rx(const uint8_t *buffer, const uint16_t size)
 {
     const uint8_t *data = LOOPBACK_DATA + loopback_info.rx_len;
     if (memcmp(data, buffer, size) != 0)
-        platform_printf("ERR: data mismatch\n");
+        LOG_ERROR("data mismatch");
     loopback_info.rx_len += size;
     if (loopback_info.rx_len >= LOOPBACK_TEST_SIZE)
     {
         uint32_t duration = RTC_Current() - loopback_info.start;
-        printf("%04d: %.2f\n", loopback_info.counter, duration / 32.768);
+        LOG_MSG("%04d: %.2f", loopback_info.counter, duration / 32.768);
         xTimerStart(app_timer, portMAX_DELAY);
         loopback_info.counter++;
         gap_read_rssi(slave.conn_handle);
@@ -143,7 +144,7 @@ void btstack_callback(uint8_t packet_type, uint16_t channel, const uint8_t *pack
     case GATT_EVENT_QUERY_COMPLETE:
         if (gatt_event_query_complete_parse(packet)->status != 0)
             return;
-        platform_printf("cmpl\n");
+        LOG_INFO("cmpl");
         break;
     }
 }
@@ -163,7 +164,7 @@ void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_
                 SIG_UUID_DESCRIP_GATT_CLIENT_CHARACTERISTIC_CONFIGURATION)
             {
                 slave.output_desc = result->descriptor;
-                platform_printf("output desc: %d\n", slave.output_desc.handle);
+                LOG_INFO("output desc: %d", slave.output_desc.handle);
             }
         }
         break;
@@ -191,12 +192,12 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
             if (memcmp(result->characteristic.uuid128, UUID_CHAR_GEN_IN, sizeof(UUID_CHAR_GEN_OUT)) == 0)
             {
                 slave.input_char = result->characteristic;
-                platform_printf("input handle: %d\n", slave.input_char.value_handle);
+                LOG_INFO("input handle: %d", slave.input_char.value_handle);
             }
             else if (memcmp(result->characteristic.uuid128, UUID_CHAR_GEN_OUT, sizeof(UUID_CHAR_GEN_OUT)) == 0)
             {
                 slave.output_char = result->characteristic;
-                platform_printf("output handle: %d\n", slave.output_char.value_handle);
+                LOG_INFO("output handle: %d", slave.output_char.value_handle);
             }
         }
         break;
@@ -206,7 +207,7 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
 
         if (INVALID_HANDLE == slave.input_char.value_handle)
         {
-            platform_printf("characteristic not found, disc\n");
+            LOG_ERROR("characteristic not found, disc");
             gap_disconnect(slave.conn_handle);
         }
         else
@@ -224,7 +225,7 @@ void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *
     case GATT_EVENT_SERVICE_QUERY_RESULT:
         {
             slave.service_tpt = gatt_event_service_query_result_parse(packet)->service;
-            platform_printf("service handle: %d %d\n",
+            LOG_INFO("service handle: %d %d",
                     slave.service_tpt.start_group_handle, slave.service_tpt.end_group_handle);
         }
         break;
@@ -239,7 +240,7 @@ void service_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *
         }
         else
         {
-            platform_printf("service not found, disc\n");
+            LOG_ERROR("service not found, disc");
             gap_disconnect(slave.conn_handle);
         }
         break;
@@ -325,10 +326,10 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         if (slave.m2s_run)
         {
             if (slave.m2s_paused) send_data();
-            platform_printf("M->S: %dbps\n", slave.m2s_total << 3);
+            LOG_MSG("M->S: %dbps", slave.m2s_total << 3);
         }
         if (slave.s2m_run)
-            platform_printf("S->M: %dbps\n", slave.s2m_total << 3);
+            LOG_MSG("S->M: %dbps", slave.s2m_total << 3);
 
 #ifdef USE_DISPLAY
         app_status.m2s_bps = slave.m2s_run ? (int)slave.m2s_total << 3 : -1;
@@ -342,17 +343,17 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     case USER_MSG_LOOPBACK:
         if (slave.m2s_run | slave.m2s_run)
         {
-            platform_printf("ERR: tpt test is on\n");
+            LOG_ERROR("tpt test is on");
         }
         if (slave.loopback == size)
             break;
         slave.loopback = size;
         if (slave.loopback)
         {
-            platform_printf("\n+=======================+\n"
-                              "| start loopback test.  |\n"
-                              "| RTT measured in ms.   |\n"
-                              "+=======================+\n");
+            LOG_MSG("\n+=======================+\n"
+                      "| start loopback test.  |\n"
+                      "| RTT measured in ms.   |\n"
+                      "+=======================+");
             loopback_info.counter = 0;
             gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_callback, slave.conn_handle,
                     slave.output_desc.handle, sizeof(char_config_notification),
@@ -423,7 +424,7 @@ uint32_t timer_isr(void *user_data)
 #define CHECK_STATE()   \
     if (INVALID_HANDLE == slave.output_desc.handle) \
     {                                               \
-        platform_printf("ERROR: not ready\n");      \
+        LOG_ERROR("not ready");                   \
         return;                                     \
     }
 
@@ -556,7 +557,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 {
                     gap_set_ext_scan_enable(0, 0, 0, 0);
                     reverse_bd_addr(report->address, peer_addr);
-                    platform_printf("connecting ... ");  print_addr(peer_addr);
+                    LOG_MSG("connecting ...");  print_addr(peer_addr);
 #ifdef USE_DISPLAY
                     memcpy(app_status.peer, peer_addr, sizeof(app_status.peer));
 #endif
@@ -580,7 +581,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                      = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                 if (conn_complete->status)
                     platform_reset();
-                platform_printf("connected\n");
+                LOG_MSG("connected");
                 slave.conn_handle = conn_complete->handle;
                 gap_set_phy(slave.conn_handle, 0, PHY_2M_BIT, PHY_2M_BIT, HOST_NO_PREFERRED_CODING);
                 gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, conn_complete->handle, UUID_TPT);
@@ -593,13 +594,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
             {
                 const le_meta_phy_update_complete_t *cmpl = decode_hci_le_meta_event(packet, le_meta_phy_update_complete_t);
-                platform_printf("PHY updated: Rx %d, Tx %d\n", cmpl->rx_phy, cmpl->tx_phy);
+                LOG_MSG("PHY updated: Rx %d, Tx %d", cmpl->rx_phy, cmpl->tx_phy);
             }
             break;
         case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:
             {
                 const le_meta_event_conn_update_complete_t *cmpl = decode_hci_le_meta_event(packet, le_meta_event_conn_update_complete_t);
-                platform_printf("CONN updated: interval %.2f ms\n", cmpl->interval * 1.25);
+                LOG_MSG("CONN updated: interval %.2f ms", cmpl->interval * 1.25);
             }
             break;
         default:
@@ -614,7 +615,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const read_rssi_complete_t *cmpl =
                     (const read_rssi_complete_t *)hci_event_command_complete_get_return_parameters(packet);
-                platform_printf("RSSI: %ddBm\n", cmpl->rssi);
+                LOG_MSG("RSSI: %ddBm", cmpl->rssi);
             }
         }
         break;
@@ -634,6 +635,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         app_status.connected = 0;
         app_state_updated();
 #endif
+        break;
+    
+    case GATT_EVENT_MTU:
+        LOG_MSG("GATT client MTU updated: %d\n", gatt_event_mtu_get_mtu(packet));
         break;
 
     case L2CAP_EVENT_CAN_SEND_NOW:

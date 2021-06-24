@@ -98,4 +98,6 @@ void trace_flush(trace_uart_t *ctx);
 }
 #endif
 
+#include "SEGGER_RTT.h"
+
 #endif
