@@ -482,6 +482,16 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\rf_util.c</FilePath>
             </File>
+            <File>
+              <FileName>log_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\log_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>str_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\str_util.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
