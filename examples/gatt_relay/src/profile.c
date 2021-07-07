@@ -316,7 +316,7 @@ static bd_addr_t rand_addr = {0xC6, 0x2A, 0x35, 0xAD, 0xFC, 0x68};
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    static const bd_addr_t peer_addr = { 0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3e };
+    static const bd_addr_t peer_addr = { 0xD4, 0x29, 0xF6, 0xBE, 0xF3, 0x26 };
     const bd_addr_type_t peer_addr_type = BD_ADDR_TYPE_LE_RANDOM;
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;

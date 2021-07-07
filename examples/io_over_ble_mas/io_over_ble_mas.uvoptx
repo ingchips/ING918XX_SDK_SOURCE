@@ -89,7 +89,7 @@
         <sRfunc>1</sRfunc>
         <sRbox>1</sRbox>
         <tLdApp>1</tLdApp>
-        <tGomain>1</tGomain>
+        <tGomain>0</tGomain>
         <tRbreak>1</tRbreak>
         <tRwatch>1</tRwatch>
         <tRmem>1</tRmem>
@@ -117,7 +117,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>d</Name>
+          <Name>/</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -149,20 +149,44 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>269</LineNumber>
+          <LineNumber>50</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>159360</Address>
+          <Address>157728</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\src\profile.c</Filename>
+          <Filename>src\buf_io.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\io_over_ble_mas\src/profile.c\269</Expression>
+          <Expression>\\io_over_ble_mas\src/buf_io.c\50</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>37</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>src\buf_io.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
+      <MemoryWindow1>
+        <Mm>
+          <WinNumber>1</WinNumber>
+          <SubType>0</SubType>
+          <ItemText>slave.addr</ItemText>
+          <AccSizeX>0</AccSizeX>
+        </Mm>
+      </MemoryWindow1>
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>
@@ -247,7 +271,7 @@
 
   <Group>
     <GroupName>StartUP</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -404,6 +428,30 @@
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\Tools\rf_util.c</PathWithFileName>
       <FilenameWithoutPath>rf_util.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>15</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\src\Tools\uart_driver.c</PathWithFileName>
+      <FilenameWithoutPath>uart_driver.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>16</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\src\Tools\ring_buf.c</PathWithFileName>
+      <FilenameWithoutPath>ring_buf.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

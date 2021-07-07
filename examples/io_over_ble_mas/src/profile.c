@@ -13,13 +13,17 @@
 
 #include "io_interf.h"
 
+#include "FreeRTOS.h"
+#include "timers.h"
+
 #include "ad_parser.h"
 
 #define dbg_printf printf
 
 #define INVALID_HANDLE      (0xffff)
 
-extern const pair_config_t *pair_config;
+extern const pair_config_t pair_config;
+static TimerHandle_t flush_timer = 0;
 
 const uint8_t UUID_ING_CONSOLE_SERVICE[]    = {0x43, 0xf4, 0xb1, 0x14, 0xca, 0x67, 0x48, 0xe8, 0xa4, 0x6f, 0x9a, 0x8f, 0xfe, 0xb7, 0x14, 0x6a};
 const uint8_t UUID_ING_GENERIC_INPUT[]      = {0xbf, 0x83, 0xf3, 0xf1, 0x39, 0x9a, 0x41, 0x4d, 0x90, 0x35, 0xce, 0x64, 0xce, 0xb3, 0xff, 0x67};
@@ -30,7 +34,7 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
 typedef struct slave_info
 {
     const uint8_t *addr;
-    int16_t     conn_handle;
+    uint16_t     conn_handle;
     gatt_client_service_t                   service_console;
     gatt_client_characteristic_t            input_char;
     gatt_client_characteristic_t            output_char;
@@ -53,17 +57,47 @@ static const scan_phy_config_t configs[] =
         .phy = PHY_1M,
         .type = SCAN_PASSIVE,
         .interval = 200,
-        .window = 50
+        .window = 190
     },
     {
         .phy = PHY_CODED,
         .type = SCAN_PASSIVE,
         .interval = 200,
-        .window = 150
+        .window = 190
     }
 };
 
-#include "block_buf.c"
+static int cb_ring_buf_peek_data(const void *data, int len, int has_more, void *extra)
+{
+    int r = 0;
+    int flush = extra != NULL;
+
+    uint16_t mtu;
+    gatt_client_get_mtu(slave.conn_handle, &mtu);
+    mtu -= 3;
+    if ((flush == 0) && (has_more == 0) && (len < mtu))
+        return r;
+    const uint8_t *p = (const uint8_t *)(data);
+    while (len)
+    {
+        int size = len > mtu ? mtu : len;
+        uint8_t t = gatt_client_write_value_of_characteristic_without_response(slave.conn_handle, slave.input_char.value_handle, 
+                                                                       size, p);
+        if (t)
+        {
+            att_dispatch_client_request_can_send_now_event(slave.conn_handle);
+            break;
+        }
+        
+        len -= size;
+        p += size;
+        r += size;
+    }
+
+    return r;
+}
+
+#include "buf_io.c"
 
 static void output_notification_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
@@ -188,7 +222,7 @@ static initiating_phy_config_t phy_configs[] =
         .conn_param =
         {
             .scan_int = 200,
-            .scan_win = 50,
+            .scan_win = 200,
             .interval_min = 6,
             .interval_max = 6,
             .latency = 2,
@@ -202,7 +236,7 @@ static initiating_phy_config_t phy_configs[] =
         .conn_param =
         {
             .scan_int = 200,
-            .scan_win = 150,
+            .scan_win = 200,
             .interval_min = 20,
             .interval_max = 20,
             .latency = 2,
@@ -215,10 +249,22 @@ static initiating_phy_config_t phy_configs[] =
 
 #define USER_MSG_WRITE_DATA                 0
 
-void trigger_write(void)
+int is_triggering = 0;
+void trigger_write(int flush)
 {
-    if (INVALID_HANDLE != slave.input_char.value_handle)
-        btstack_push_user_msg(USER_MSG_WRITE_DATA, NULL, 0);
+    if (INVALID_HANDLE == slave.input_char.value_handle)
+        return;
+
+    if (is_triggering && (0 == flush))
+        return;
+    
+    is_triggering = 1;
+    btstack_push_user_msg(USER_MSG_WRITE_DATA, NULL, flush);
+}
+
+static void flush_timer_callback(TimerHandle_t xTimer)
+{
+    trigger_write(1);
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
@@ -226,7 +272,12 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     switch (msg_id)
     {
     case USER_MSG_WRITE_DATA:
-        do_write();
+        {
+            int flush = size;
+            xTimerReset(flush_timer, portMAX_DELAY);
+            do_write(flush);
+            is_triggering = 0;
+        }
         break;
     }
 }
@@ -244,7 +295,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        gap_set_random_device_address(pair_config->master.ble_addr);
+        gap_set_random_device_address(pair_config.master.ble_addr);
         gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
                               sizeof(configs) / sizeof(configs[0]),
                               configs);
@@ -261,6 +312,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 const le_ext_adv_report_t *report = decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports;
 
                 reverse_bd_addr(report->address, peer_addr);
+
                 if (memcmp(peer_addr, slave.addr, 6) == 0)
                 {
                     gap_set_ext_scan_enable(0, 0, 0, 0);
@@ -282,6 +334,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            if (decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->status)
+                platform_reset();
             show_state(STATE_DISCOVERING);
             slave_connected(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t));
             break;
@@ -292,15 +346,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
-        slave.input_char.value_handle = INVALID_HANDLE;
-        slave.output_char.value_handle = INVALID_HANDLE;
-        slave.conn_handle = INVALID_HANDLE;
-        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
-        show_state(STATE_SCANNING);
+        platform_reset();
         break;
 
-    case ATT_EVENT_CAN_SEND_NOW:
-        do_write();
+    case L2CAP_EVENT_CAN_SEND_NOW:
+        do_write(0);
         break;
 
     case BTSTACK_EVENT_USER_MSG:
@@ -315,7 +365,14 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 uint32_t setup_profile(void *data, void *user_data)
 {
-    slave.addr = pair_config->slave.ble_addr;
+    platform_printf("setup_profile\n");
+    init_buffer();
+    flush_timer = xTimerCreate("t1",
+                            pdMS_TO_TICKS(800),
+                            pdFALSE,
+                            NULL,
+                            flush_timer_callback);
+    slave.addr = pair_config.slave.ble_addr;
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);

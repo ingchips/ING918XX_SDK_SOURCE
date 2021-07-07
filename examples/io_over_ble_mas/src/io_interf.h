@@ -3,16 +3,13 @@
 
 #include <stdint.h>
 
-#define IO_TYPE_UART        0
-#define IO_TYPE_L2          1
-#define IO_TYPE_LOOPBACK    2
+#define IO_TYPE_UART_STR    0   // string-oriented transmission
+#define IO_TYPE_UART_BIN    1   // binary-oriented transmission
+#define IO_TYPE_LOOPBACK    2   // loopback (only one can be set to loopback)
 
 typedef struct
 {
     uint8_t ble_addr[6]; 
-#if (IO_TYPE == IO_TYPE_L2)
-    uint8_t mac_addr[6];
-#endif
 } node_info_t;
 
 typedef struct

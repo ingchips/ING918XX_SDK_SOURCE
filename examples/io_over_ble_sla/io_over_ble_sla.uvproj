@@ -472,6 +472,16 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\rf_util.c</FilePath>
             </File>
+            <File>
+              <FileName>uart_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\uart_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>ring_buf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\ring_buf.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
