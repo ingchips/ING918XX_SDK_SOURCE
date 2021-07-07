@@ -52,7 +52,7 @@ void config_uart(uint32_t freq, uint32_t baud)
     config.ClockFrequency    = freq;
     config.BaudRate          = baud;
 
-#if (IO_TYPE == IO_TYPE_UART)
+#if (IO_TYPE == IO_TYPE_UART_STR)
     apUART_Initialize(PRINT_PORT, &config, 1 << bsUART_RECEIVE_INTENAB);
 #else
     apUART_Initialize(PRINT_PORT, &config, 0);
@@ -123,9 +123,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
-    // platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-    
-    // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
+    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     setup_peripherals();
     
@@ -133,5 +131,3 @@ int app_main()
 
     return 0;
 }
-
-const pair_config_t *pair_config = (const pair_config_t *)0x42000;

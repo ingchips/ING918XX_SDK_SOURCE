@@ -8,12 +8,10 @@ This example demonstrates how to:
     * Discovery services & characteristics;
     * Get notification when characteristics value updated
 * Transfer different data types over the generic I/O service:
-    * Controlled by IO\_TYPE
+    * Controlled by IO\_TYPE (see `io_interf.h`)
     * Support UART and others
 
 Note: 
-    1. this example can work with "I/O Over BLE (Peripheral)".
+    1. This example can work with "I/O Over BLE (Peripheral)".
        For UART data, this example also works with
-       "Peripheral Console";
-    2. addresses are stored in flash, check `pair_config_t`.
-       Central & peripheral use the same configure data.
+       "Peripheral Console".

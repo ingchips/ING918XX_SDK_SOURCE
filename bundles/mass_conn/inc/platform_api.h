@@ -268,7 +268,7 @@ void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_d
 
 typedef enum
 {
-    LL_FLAG_DISABLE_CTE_PREPROSSING = 1,
+    LL_FLAG_DISABLE_CTE_PREPROCESSING = 1,
     LL_FLAG_LEGACY_ONLY_INITIATING = 4
 } ll_cfg_flag_t;
 
