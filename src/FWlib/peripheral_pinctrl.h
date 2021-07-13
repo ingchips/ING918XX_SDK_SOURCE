@@ -133,6 +133,11 @@ typedef enum
  */
 void PINCTRL_SetGeneralPadMode(const uint8_t io_pin_index, const gio_mode_t mode, const uint8_t pwm_channel, const uint8_t pwm_neg);
 
+/**
+ * @brief Enable all antenna control PINs
+ */
+void PINCTRL_EnableAllAntSelPins(void);
+
 // io_pin_index: 0~11 (obsoleted, use PINCTRL_SetGeneralPadMode instead)
 void PINCTRL_SetPadPwmSel(const uint8_t io_pin_index, const uint8_t pwm1_gpio0);
 
