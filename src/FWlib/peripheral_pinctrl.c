@@ -232,3 +232,15 @@ void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_st
         *ds1 = *ds1 & ~(1 << io_pin_index);
     }
 }
+
+void PINCTRL_EnableAllAntSelPins(void)
+{
+    int i;
+    static const int ant_pins[] = {7, 8, 10, 11, 16, 17, 18, 19};
+
+    for (i = 0; i < sizeof(ant_pins) / sizeof(ant_pins[0]); i++)
+    {
+        PINCTRL_SetPadMux(ant_pins[i], IO_SOURCE_GENERAL);
+        PINCTRL_SetGeneralPadMode(ant_pins[i], IO_MODE_ANT_SEL, 0, 0);
+    }
+}
