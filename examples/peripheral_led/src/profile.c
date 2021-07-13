@@ -104,10 +104,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 const le_meta_event_enh_create_conn_complete_t *conn_complete
                     = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                 att_set_db(conn_complete->handle, profile_data);
+#ifndef DISABLE_CTE
                 gap_set_connection_cte_tx_param(conn_complete->handle,
                                                 (1 << CTE_AOA),
                                                 2, NULL);
                 gap_set_connection_cte_response_enable(conn_complete->handle, 1);
+#endif
                 set_led_color(0, 0, 0);
             }
             break;

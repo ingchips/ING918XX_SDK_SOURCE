@@ -7,6 +7,8 @@
 #define SPI_LCD_DC      GIO_GPIO_8
 #define SPI_LCD_RST   	GIO_GPIO_7
 #define SPI_LCD_CS    	GIO_GPIO_5
+#define SPI_LCD_SCLK   	GIO_GPIO_0
+#define SPI_LCD_MOSI   	GIO_GPIO_1
 
 #define LCD_CS_0		GIO_WriteValue(SPI_LCD_CS, 0) 
 #define LCD_CS_1		GIO_WriteValue(SPI_LCD_CS, 0)  

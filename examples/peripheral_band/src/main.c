@@ -65,16 +65,16 @@ void setup_peripherals(void)
                               | (1 << SYSCTRL_ClkGate_APB_TMR2));
 
     // setup timer 1: 50Hz
-	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / ACC_SAMPLING_RATE);
-	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
+    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / ACC_SAMPLING_RATE);
+    TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR1);
-	TMR_IntEnable(APB_TMR1);
-    
+    TMR_IntEnable(APB_TMR1);
+
     // setup timer 2: SAMPLING_CNT_32HZ
-	TMR_SetCMP(APB_TMR2, TMR_CLK_FREQ / SAMPLING_CNT_32HZ);
-	TMR_SetOpMode(APB_TMR2, TMR_CTL_OP_MODE_WRAPPING);
+    TMR_SetCMP(APB_TMR2, TMR_CLK_FREQ / SAMPLING_CNT_32HZ);
+    TMR_SetOpMode(APB_TMR2, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR2);
-	TMR_IntEnable(APB_TMR2);
+    TMR_IntEnable(APB_TMR2);
 
     // IO setup
     PINCTRL_SetPadMux(SPI_LCD_POWER, IO_SOURCE_GENERAL);
@@ -82,7 +82,7 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(SPI_LCD_RST, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(SPI_LCD_CS, IO_SOURCE_GENERAL);
 
-	PINCTRL_SelUartRxdIn(UART_PORT_1, 0x3f);  // conflict with GPIO9
+    PINCTRL_SelUartRxdIn(UART_PORT_1, 0x3f);  // conflict with GPIO9
     GIO_SetDirection(SPI_LCD_POWER, GIO_DIR_OUTPUT);
     GIO_SetDirection(SPI_LCD_RST, GIO_DIR_OUTPUT);
     GIO_SetDirection(SPI_LCD_CS, GIO_DIR_OUTPUT);
@@ -90,8 +90,11 @@ void setup_peripherals(void)
 
     PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
     PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
-    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10); 
+    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10);
 
+    PINCTRL_SetPadMux(SPI_LCD_MOSI, IO_SOURCE_SPI0_DO);
+    PINCTRL_SetPadMux(SPI_LCD_SCLK, IO_SOURCE_SPI0_CLK);
+    
     SPI_Init(AHB_SSP0);
 
     RTC_Enable(RTC_ENABLED);

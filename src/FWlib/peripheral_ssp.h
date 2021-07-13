@@ -147,8 +147,8 @@ typedef enum apSSP_xDataSize
  */
 typedef enum apSSP_xSCLKPhase
 {
-    apSSP_SCLKPHASE_TRAILINGEDGE = 0,   /* Data changes on trailing edge of the clock */
-    apSSP_SCLKPHASE_LEADINGEDGE  = 1    /* Data changes on leading edge of the clock */
+    apSSP_SCLKPHASE_TRAILINGEDGE = 0,   /* Data changes on trailing edge of the clock (valid on leading edge) */
+    apSSP_SCLKPHASE_LEADINGEDGE  = 1    /* Data changes on leading edge of the clock (valid on trailing edge) */
 } apSSP_eSCLKPhase;
 
 /*
