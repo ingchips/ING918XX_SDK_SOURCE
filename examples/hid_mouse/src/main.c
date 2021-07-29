@@ -7,6 +7,9 @@
 #include "trace.h"
 #include <string.h>
 #include <stdio.h>
+#include "blink.h"
+
+#include "../../peripheral_console/src/key_detector.h"
 
 #define PRINT_UART    APB_UART0
 
@@ -60,17 +63,59 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_UART, &UART_0, 0);
 }
 
+uint32_t gpio_isr(void *user_data)
+{
+    GIO_ClearAllIntStatus();
+    key_detector_start_on_demand();
+    return 0;
+}
+
+#define LED_PIN     GIO_GPIO_6
+#define LED_PWM_CH  0
+
+void show_app_state(enum app_state state)
+{
+    switch (state)
+    {
+        case APP_PAIRING:
+            blink_style(LED_PWM_CH, BLINK_FAST);
+            break;
+        case APP_ADV:
+            blink_style(LED_PWM_CH, BLINK_NORMAL);
+            break;
+        case APP_CONN:
+            blink_style(LED_PWM_CH, BLINK_ON);
+            break;
+        default:
+            blink_style(LED_PWM_CH, BLINK_OFF);
+            break;
+    }
+}
+
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
 
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                              | (1 << SYSCTRL_ClkGate_APB_PWM));
+
     // setup timer 1: 1Hz
-	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 10);
-	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
-	TMR_IntEnable(APB_TMR1);
+    TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 10);
+    TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
+    TMR_IntEnable(APB_TMR1);
     TMR_Reload(APB_TMR1);
-	TMR_Enable(APB_TMR1);
+    TMR_Enable(APB_TMR1);
+
+    PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GENERAL);
+    GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
+    PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_UP);
+    GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE, GIO_INT_EDGE);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
+
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GENERAL);
+    PINCTRL_SetGeneralPadMode(LED_PIN, IO_MODE_PWM, LED_PWM_CH, 1);
 }
 
 uint32_t timer_isr(void *user_data)
@@ -84,7 +129,6 @@ uint32_t timer_isr(void *user_data)
 int db_write_to_flash(const void *db, const int size)
 {
     platform_printf("write to flash, size = %d\n", size);
-    printf_hexdump(db, size);
     program_flash(DB_FLASH_ADDRESS, (const uint8_t *)db, size);
     return KV_OK;
 }
@@ -94,6 +138,8 @@ int read_from_flash(void *db, const int max_size)
     memcpy(db, (void *)DB_FLASH_ADDRESS, max_size);
     return KV_OK;
 }
+
+extern void on_key_event(key_press_event_t evt);
 
 trace_rtt_t trace_ctx = {0};
 
@@ -114,6 +160,8 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     
     kv_init(db_write_to_flash, read_from_flash);
+
+    key_detect_init(on_key_event);
 
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);

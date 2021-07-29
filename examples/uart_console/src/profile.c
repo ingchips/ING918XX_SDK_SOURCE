@@ -800,7 +800,7 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(&user_packet_handler);
     gatt_client_register_handler(&user_packet_handler);
     sm_add_event_handler(&sm_event_callback_registration);
-    sm_config(IO_CAPABILITY_NO_INPUT_NO_OUTPUT,
+    sm_config(1, IO_CAPABILITY_NO_INPUT_NO_OUTPUT,
               0,
               &sm_persistent);
     sm_add_event_handler(&sm_event_callback_registration);

@@ -195,12 +195,14 @@
         "sm_private_random_address_generation_set_update_period", 
         "sm_private_random_address_generation_get", 
         "sm_register_oob_data_callback", 
-        "sm_bonding_decline", 
-        "sm_just_works_confirm", 
-        "sm_passkey_input", 
         "sm_set_accepted_stk_generation_methods", 
         "sm_set_encryption_key_size_range", 
         "sm_set_authentication_requirements", 
+        "sm_address_resolution_lookup", 
+        "sm_config_conn", 
+        "sm_bonding_decline", 
+        "sm_just_works_confirm", 
+        "sm_passkey_input", 
         "sm_send_security_request", 
         "sm_encryption_key_size", 
         "sm_authenticated", 
@@ -208,8 +210,15 @@
         "sm_request_pairing", 
         "sm_authorization_decline", 
         "sm_authorization_grant", 
-        "sm_address_resolution_lookup", 
         "sm_le_device_key", 
+        "le_device_db_add", 
+        "le_device_db_find", 
+        "le_device_db_from_key", 
+        "le_device_db_iter_init", 
+        "le_device_db_iter_cur", 
+        "le_device_db_iter_next", 
+        "le_device_db_iter_cur_key", 
+        "le_device_db_remove_key", 
         "kv_init", 
         "kv_remove_all", 
         "kv_remove", 
@@ -309,15 +318,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 31324
+        "size": 30988
     }, 
     "rom": {
         "base": 16384, 
-        "size": 137964
+        "size": 137752
     }, 
     "version": [
         1, 
-        5, 
+        6, 
         0
     ]
 }

@@ -527,7 +527,7 @@ uint32_t setup_profile(void *data, void *user_data)
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
-    sm_config(IO_CAPABILITY_KEYBOARD_ONLY,
+    sm_config(1, IO_CAPABILITY_KEYBOARD_ONLY,
               0,
               &sm_persistent);
     sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
