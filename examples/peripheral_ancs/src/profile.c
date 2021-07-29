@@ -281,7 +281,7 @@ uint32_t setup_profile(void *data, void *user_data)
                             NULL,
                             app_timer_callback);
     sm_add_event_handler(&sm_event_callback_registration);
-    sm_config(IO_CAPABILITY_DISPLAY_ONLY,
+    sm_config(1, IO_CAPABILITY_DISPLAY_ONLY,
               0,
               SECURITY_PERSISTENT_DATA);
     sm_add_event_handler(&sm_event_callback_registration);

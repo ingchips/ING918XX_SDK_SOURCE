@@ -55,12 +55,15 @@ typedef enum {
 /**
  * @brief Security configurations
  *
- * @param[in]   io_capability       IO Capabilities
- * @param[in]   request_security    Let Peripheral request an encrypted connection right after connecting
+ * @param[in]   enable              Enable (Bypass) SM (default: Disabled)
+ *                                  When disabled, SM can be enabled per connection by `sm_config_conn`.
+ * @param[in]   io_capability       Default IO Capabilities
+ * @param[in]   request_security    Let peripheral request an encrypted connection right after connecting
  *                                  Not used normally. Bonding is triggered by access to protected attributes in ATT Server
  * @param[in]   persistent          persistent data for security & privacy
  */
-void sm_config(const io_capability_t io_capability,
+void sm_config(uint8_t enable,
+               io_capability_t io_capability,
                int   request_security,
                const sm_persistent_t *persistent);
 
@@ -105,25 +108,6 @@ const uint8_t *sm_private_random_address_generation_get(void);
 void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t * oob_data));
 
 /**
- * @brief Decline bonding triggered by event before
- * @param addr_type and address
- */
-void sm_bonding_decline(hci_con_handle_t con_handle);
-
-/**
- * @brief Confirm Just Works bonding
- * @param addr_type and address
- */
-void sm_just_works_confirm(hci_con_handle_t con_handle);
-
-/**
- * @brief Reports passkey input by user
- * @param addr_type and address
- * @param passkey in [0..999999]
- */
-void sm_passkey_input(hci_con_handle_t con_handle, uint32_t passkey);
-
-/**
  * @brief Limit the STK generation methods. Bonding is stopped if the resulting one isn't in the list
  * @param OR combination of SM_STK_GENERATION_METHOD_
  */
@@ -142,13 +126,44 @@ void sm_set_encryption_key_size_range(uint8_t min_size, uint8_t max_size);
  */
 void sm_set_authentication_requirements(uint8_t auth_req);
 
-/**
- * @brief Let Peripheral request an encrypted connection right after connecting
- * @note Not used normally. Bonding is triggered by access to protected attributes in ATT Server
+/*
+ * @brief Match address against bonded devices
+ * @return 0 if successfully added to lookup queue
+ * @note Triggers SM_IDENTITY_RESOLVING_* events
  */
-// void sm_set_request_security(int enable);
-// WARNING: ^^^ this API is not available in this release
+int sm_address_resolution_lookup(uint8_t addr_type, bd_addr_t addr);
 
+/**
+ * @brief Security configuration of a connection
+ *
+ * Note: This function can only be used in HCI event handler of `HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE`
+ *
+ * @param[in]   con_handle          handle of an existing connection
+ * @param[in]   io_capability       IO Capabilities
+ * @param[in]   auth_req            requested authentication requirements
+ */
+void sm_config_conn(hci_con_handle_t con_handle,
+                    io_capability_t io_capability,
+                    uint8_t auth_req);
+
+/**
+ * @brief Decline bonding triggered by event before
+ * @param addr_type and address
+ */
+void sm_bonding_decline(hci_con_handle_t con_handle);
+
+/**
+ * @brief Confirm Just Works bonding
+ * @param addr_type and address
+ */
+void sm_just_works_confirm(hci_con_handle_t con_handle);
+
+/**
+ * @brief Reports passkey input by user
+ * @param addr_type and address
+ * @param passkey in [0..999999]
+ */
+void sm_passkey_input(hci_con_handle_t con_handle, uint32_t passkey);
 
 /**
  * @brief Trigger Security Request
@@ -195,13 +210,6 @@ void sm_authorization_decline(hci_con_handle_t con_handle);
  * @param addr_type and address
  */
 void sm_authorization_grant(hci_con_handle_t con_handle);
-
-/*
- * @brief Match address against bonded devices
- * @return 0 if successfully added to lookup queue
- * @note Triggers SM_IDENTITY_RESOLVING_* events
- */
-int sm_address_resolution_lookup(uint8_t addr_type, bd_addr_t addr);
 
 /**
  * @brief Identify device in LE Device DB.

@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "ING918xx",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${env:CMSIS_BASE}/Include",
+                "${env:ING_GCC_ROOT}/sdk/bundles/{{bundle}}/inc/os/portable/GCC/ARM_CM3",
+                "${env:ING_GCC_ROOT}/sdk/bundles/{{bundle}}/inc",
+                "${env:ING_GCC_ROOT}/sdk/bundles/{{bundle}}/inc/os",
+                "${env:ING_GCC_ROOT}/sdk/src/BSP",
+                "${env:ING_GCC_ROOT}/sdk/src/FWlib",
+                "${env:ING_GCC_ROOT}/sdk/src/StartUP",
+                "${env:ING_GCC_ROOT}/sdk/src/Tools",
+                "${env:ING_GCC_ROOT}/sdk/src/Mesh"
+            ],
+            "defines": [
+                "USE_STDPERIPH_DRIVER="
+            ],
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "${env:ING_GCC_ROOT}/arm-none-eabi-gcc.exe"
+        }
+    ],
+    "version": 4
+}

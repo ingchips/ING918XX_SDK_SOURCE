@@ -1023,6 +1023,8 @@ void gap_get_connection_parameter_range(le_connection_parameter_range_t * range)
  */
 void gap_set_connection_parameter_range(le_connection_parameter_range_t * range);
 
+typedef void (*gap_hci_cmd_complete_cb_t)(const uint8_t *return_params, void *user_data);
+
 /**
  * @brief Encrypt the Plaintext_Data in the command using the Key given in the command and
  *          returns the Encrypted_Data to the Host. The AES-128 bit block cypher is
@@ -1031,9 +1033,13 @@ void gap_set_connection_parameter_range(le_connection_parameter_range_t * range)
  *                              0x1234.... is represented by {0x12, 0x34, ...}
  * @param plaintext             Plaintext_Data, 16 Octets
  *                              0x1234.... is represented by {0x12, 0x34, ...}
+ * @param cb                    callback function on the corresponding command complete event
+ * @param user_data             user data for the callback function
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_aes_encrypt(const uint8_t *key, const uint8_t *plaintext);
+uint8_t gap_aes_encrypt(const uint8_t *key, const uint8_t *plaintext,
+                        gap_hci_cmd_complete_cb_t cb,
+                        void *user_data);
 
 /**
  * @brief Start a test where the DUT receives test reference

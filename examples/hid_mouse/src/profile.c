@@ -6,17 +6,22 @@
 #include "btstack_util.h"
 #include "btstack_event.h"
 #include "btstack_defines.h"
+#include "le_device_db.h"
 #include "sig_uuid.h"
+#include "profile.h"
 
 #include "att_db_util.h"
 
 #include "USBHID_Types.h"
 #include <math.h>
 
+#include "../../peripheral_console/src/key_detector.h"
+
 // GATT characteristic handles
 #define HANDLE_DEVICE_NAME                                   3
 #define HANDLE_APPEARANCE                                    5
 
+extern void show_app_state(enum app_state state);
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"
@@ -33,9 +38,14 @@ typedef __packed struct mouse_report
     int8_t y;
 } mouse_report_t;
 
+#define INVALID_HANDLE 0xffff
+
 static int notify_enable = 0;
 uint16_t att_handle_notify = 0;
-hci_con_handle_t handle_send;
+hci_con_handle_t handle_send = INVALID_HANDLE;
+int is_advertising = 0;
+int is_clear_pairing_pending = 0;
+int accept_pairing = 0;
 
 uint16_t att_handle_protocol_mode;
 uint16_t att_handle_hid_ctrl_point;
@@ -72,7 +82,6 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
-    handle_send = connection_handle;
     if (att_handle == att_handle_protocol_mode)
     {
         protocol_mode = *buffer;
@@ -103,11 +112,17 @@ bd_addr_t null_addr = {0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
 uint8_t adv_type = 0x00;
 
 #define USER_MSG_ID_REQUEST_SEND            1
+#define USER_MSG_ID_KEY_EVENT               2
 
 void app_timer_callback()
 {
     if (notify_enable)
         btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, 0);
+}
+
+void on_key_event(key_press_event_t evt)
+{
+    btstack_push_user_msg(USER_MSG_ID_KEY_EVENT, NULL, evt);
 }
 
 mouse_report_t report = 
@@ -142,6 +157,9 @@ void mouse_report_movement(void)
     }
 }
 
+void enable_adv(void);
+void clear_pairing_data(void);
+
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
     switch (msg_id)
@@ -149,10 +167,30 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     case USER_MSG_ID_REQUEST_SEND:
         mouse_report_movement();
         break;
+    case USER_MSG_ID_KEY_EVENT:
+        {
+            key_press_event_t evt = (key_press_event_t)size;
+            if (KEY_LONG_PRESSED == evt)
+            {
+                if (handle_send != INVALID_HANDLE) 
+                {
+                    is_clear_pairing_pending = 1;
+                    gap_disconnect(handle_send);
+                }
+                else
+                {
+                    clear_pairing_data();
+                    platform_reset();
+                }
+            }
+            else
+                enable_adv();
+        }
+        break;
     }
 }
 
-const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
+const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 2000, .max_events = 0}};
 
 void setup_adv(void)
 {
@@ -172,7 +210,6 @@ void setup_adv(void)
                             0x00);                     // Scan_Request_Notification_Enable
     gap_set_ext_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
     gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
-    gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
 }
 
 const sm_persistent_t sm_persistent =
@@ -185,6 +222,33 @@ const sm_persistent_t sm_persistent =
 
 uint8_t *init_service(void);
 
+int is_already_paired(void)
+{
+    le_device_memory_db_iter_t device_db_iter;
+    le_device_db_iter_init(&device_db_iter);
+    return le_device_db_iter_next(&device_db_iter) != NULL;
+}
+
+void clear_pairing_data(void)
+{
+    le_device_memory_db_iter_t device_db_iter;
+    le_device_db_iter_init(&device_db_iter);
+    while (le_device_db_iter_next(&device_db_iter))
+        le_device_db_remove_key(device_db_iter.key);
+    kv_commit(0);
+}
+
+void enable_adv(void)
+{
+    if (is_advertising) return;
+    if (handle_send != INVALID_HANDLE) return;
+    
+    is_advertising = 1;
+    gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+    
+    show_app_state(is_already_paired() ? APP_ADV : APP_PAIRING);
+}
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -196,16 +260,25 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
+        accept_pairing = is_already_paired() == 0;
         sm_private_random_address_generation_set_mode(GAP_RANDOM_ADDRESS_OFF);
         gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
         setup_adv();
+        enable_adv();
         break;
 
     case HCI_EVENT_LE_META:
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
-            att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle, att_db_util_get_address());
+            handle_send = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle;
+            att_set_db(handle_send, att_db_util_get_address());
+            show_app_state(APP_CONN);
+            break;
+        case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:
+            is_advertising = 0;
+            if (decode_hci_le_meta_event(packet, le_meta_adv_set_terminated_t)->status)
+                show_app_state(APP_IDLE);
             break;
         default:
             break;
@@ -215,7 +288,16 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
      case HCI_EVENT_DISCONNECTION_COMPLETE:
         notify_enable = 0;
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+        handle_send = INVALID_HANDLE;
+        if (is_clear_pairing_pending)
+        {
+            clear_pairing_data();
+            platform_reset();
+        }
+        if (is_already_paired())
+            enable_adv();
+        else
+            show_app_state(APP_IDLE);
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
@@ -248,7 +330,13 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         }
         break;
     case SM_EVENT_JUST_WORKS_REQUEST:
-        sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
+        if (is_already_paired())
+        {
+            sm_bonding_decline(sm_event_just_works_request_get_handle(packet));
+            accept_pairing = 0;
+        }
+        else
+            sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
         break;
     case SM_EVENT_PASSKEY_DISPLAY_NUMBER:
         platform_printf("===================\npasskey: %06d\n===================\n",
@@ -267,6 +355,11 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
         notify_enable = 1;
         att_handle_notify = att_handle_report;
+        break;
+    case SM_EVENT_IDENTITY_RESOLVING_FAILED:
+        platform_printf("RESOLVING_FAILED\n");
+        if (is_already_paired())
+            gap_disconnect(sm_event_identity_resolving_failed_get_handle(packet));
         break;
     default:
         break;
@@ -402,7 +495,7 @@ uint32_t setup_profile(void *data, void *user_data)
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
     sm_add_event_handler(&sm_event_callback_registration);
-    sm_config(IO_CAPABILITY_NO_INPUT_NO_OUTPUT,
+    sm_config(1, IO_CAPABILITY_NO_INPUT_NO_OUTPUT,
               0,
               &sm_persistent);
     sm_set_authentication_requirements(SM_AUTHREQ_BONDING);

@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893744</StartAddress>
-                <Size>9936</Size>
+                <StartAddress>536893408</StartAddress>
+                <Size>10272</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -346,7 +346,7 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,KEY_PIN=GIO_GPIO_4,VALUE_PRESSED=0</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -399,6 +399,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\profile.c</FilePath>
             </File>
+            <File>
+              <FileName>key_detector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peripheral_console\src\key_detector.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -444,6 +449,21 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_timer.c</FilePath>
             </File>
+            <File>
+              <FileName>peripheral_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pinctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pwm.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -458,6 +478,11 @@
               <FileName>trace.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\trace.c</FilePath>
+            </File>
+            <File>
+              <FileName>blink.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\blink.c</FilePath>
             </File>
           </Files>
         </Group>
