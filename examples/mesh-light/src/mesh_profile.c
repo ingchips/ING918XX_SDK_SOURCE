@@ -105,16 +105,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
 
-        case (0x2017): // HCI_LE_ENCRYPT
-            if (get_aes_result() == -1) //it means that
-            {
-                extern struct k_sem aes_sem;
-                extern uint8_t *ptr_aestext;
-                set_aes_result(0);
-                reverse_128(&packet[6], ptr_aestext);
-                k_sem_give(&aes_sem);
-            }
-            break;
         default:
             break;
         }

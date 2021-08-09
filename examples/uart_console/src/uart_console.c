@@ -50,6 +50,7 @@ static const char help[] =  "commands:\n"
                             "bond   0/1                 bonding\n"
                             "phy    1m/2m/s2/s8\n       central only\n"
                             "interval x                 central only(in 1.25 ms)\n"
+                            "assert                     raise assertion\n"
                             ;
 
 void cmd_help(const char *param)
@@ -310,6 +311,11 @@ void cmd_interval(const char *param)
     set_interval(interval);
 }
 
+void cmd_assert(const char *param)
+{
+    platform_raise_assertion(__MODULE__, __LINE__);
+}
+
 static cmd_t cmds[] =
 {
     {
@@ -407,6 +413,10 @@ static cmd_t cmds[] =
     {
         .cmd = "interval",
         .handler = cmd_interval
+    },
+    {
+        .cmd = "assert",
+        .handler = cmd_assert
     },
 };
 
