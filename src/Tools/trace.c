@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include "trace.h"
 #include "peripheral_uart.h"
 
@@ -140,4 +141,64 @@ uint32_t trace_uart_isr(trace_uart_t *ctx)
     ctx->port->IntClear = ctx->port->Interrupt;
     trace_trigger_output(ctx);
     return 0;
+}
+
+static char nibble_to_char(int v)
+{
+    return v <= 9 ? v - 0 + '0' : v - 10 + 'A';
+}
+
+static void hex_dump_line(const uint8_t *buf, int size, char *str, f_trace_puts f_puts)
+{
+    int i;
+    uint8_t sum = 0;
+    char *s = str + 1;
+    for (i = 0; i < size; i++)
+    {
+        s[0] = nibble_to_char(buf[i] >> 4);
+        s[1] = nibble_to_char(buf[i] & 0xf);
+        sum += buf[i];
+        s += 2;
+    }
+    sum = 1 + ~sum;
+    s[0] = nibble_to_char(sum >> 4);
+    s[1] = nibble_to_char(sum & 0xf);
+    s[2] = '\0';
+    f_puts(str);
+}
+
+static void hex_dump(char *str, uint8_t *buf, f_trace_puts f_puts, uint32_t base, int size)
+{
+#define HEX_REC_SIZE   16
+    int i;
+    uint16_t offset = 0;
+    
+    *(uint32_t*)buf = 0x04000002;
+    buf[4] = base >> 24;
+    buf[5] = (base >> 16) & 0xff;
+    hex_dump_line(buf, 6, str, f_puts);
+    
+    *(uint32_t*)buf = 0x00000010;
+    for (i = 0; i < size * 1024 / HEX_REC_SIZE; i++)
+    {
+        buf[1] = offset >> 8;
+        buf[2] = offset & 0xff;
+        memcpy(buf + 4, (void *)base, HEX_REC_SIZE);
+        base += HEX_REC_SIZE;
+        offset += 16;
+        hex_dump_line(buf, 4 + HEX_REC_SIZE, str, f_puts);
+    }
+}
+
+void trace_full_dump(f_trace_puts f_puts, int size)
+{
+    static char str[46];
+    static uint8_t buf[HEX_REC_SIZE + 4];    
+    sprintf(str,    " PC: %08x", (uint32_t)trace_full_dump); f_puts(str);
+    sprintf(str,    "MSP: %08x", __get_MSP()); f_puts(str);
+    sprintf(str,    "PSP: %08x", __get_PSP()); f_puts(str);
+    sprintf(str,    "CTL: %08x", __get_CONTROL()); f_puts(str);
+    str[0] = ':';
+    hex_dump(str, buf, f_puts, 0x20000000, size);
+    hex_dump(str, buf, f_puts, 0x400A0000, size);
 }
