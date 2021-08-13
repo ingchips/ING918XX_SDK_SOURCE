@@ -1079,9 +1079,7 @@ void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
  * \defgroup vTaskSuspend vTaskSuspend
  * \ingroup TaskCtrl
  */
-// void vTaskSuspend( TaskHandle_t xTaskToSuspend ) PRIVILEGED_FUNCTION;
-// WARNING: ^^^ this API is not available in this release
-
+void vTaskSuspend( TaskHandle_t xTaskToSuspend ) PRIVILEGED_FUNCTION;
 
 /**
  * task. h
@@ -1130,9 +1128,7 @@ void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
  * \defgroup vTaskResume vTaskResume
  * \ingroup TaskCtrl
  */
-// void vTaskResume( TaskHandle_t xTaskToResume ) PRIVILEGED_FUNCTION;
-// WARNING: ^^^ this API is not available in this release
-
+void vTaskResume( TaskHandle_t xTaskToResume ) PRIVILEGED_FUNCTION;
 
 /**
  * task. h
@@ -1161,9 +1157,7 @@ void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
  * \defgroup vTaskResumeFromISR vTaskResumeFromISR
  * \ingroup TaskCtrl
  */
-// BaseType_t xTaskResumeFromISR( TaskHandle_t xTaskToResume ) PRIVILEGED_FUNCTION;
-// WARNING: ^^^ this API is not available in this release
-
+BaseType_t xTaskResumeFromISR( TaskHandle_t xTaskToResume ) PRIVILEGED_FUNCTION;
 
 /*-----------------------------------------------------------
  * SCHEDULER CONTROL

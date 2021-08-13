@@ -260,6 +260,7 @@ uint8_t platform_read_persistent_reg(void);
  *
  * @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
  *                                  Mininum value: 825 cycles (about 25.18ms)
+ *                                  When = 0: power on when EXT_INT is asserted
  * @param[in] p_retention_data      Pointer to the start of data to be retentioned
  * @param[in] data_size             Size of the data to be retentioned
  ****************************************************************************************
