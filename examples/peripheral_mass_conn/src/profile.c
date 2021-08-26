@@ -7,8 +7,7 @@
 #include "btstack_defines.h"
 
 // GATT characteristic handles
-#define HANDLE_DATE_RECEPTION       3
-#define HANDLE_DATE_NOTIFICATION    5
+#include "../data/gatt.const"
 
 #define MAX_CONN_NUMBER     24
 

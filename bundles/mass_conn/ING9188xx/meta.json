@@ -317,7 +317,7 @@
         "vPortValidateInterruptPriority"
     ], 
     "app": {
-        "base": 155648
+        "base": 163840
     }, 
     "ram": {
         "base": 536870912, 
@@ -325,11 +325,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 139248
+        "size": 139368
     }, 
     "version": [
         1, 
         6, 
-        5
+        6
     ]
 }

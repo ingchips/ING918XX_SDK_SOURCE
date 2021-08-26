@@ -137,7 +137,14 @@ int app_main()
 #endif
 
 #ifdef USE_OSC32K
+    platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_ENABLE);
+    while (platform_read_info(PLATFORM_INFO_OSC32K_STATUS) == 0) ;
     platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
+    {
+        int i;
+        for (i = 0; i < 100 * 48; i++) __nop();
+    }
+    platform_config(PLATFORM_CFG_RC32K_EN, PLATFORM_CFG_DISABLE);
 #else
     platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
     platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);

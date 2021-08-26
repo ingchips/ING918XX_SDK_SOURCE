@@ -17,9 +17,7 @@
 #include "profile.h" 
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_VOICE_CONTROL                                 6
-#define HANDLE_VOICE_OUTPUT                                  8
+#include "../data/gatt.const"
 
 #define CMD_DIGITAL_GAIN            0
 #define CMD_MIC_OPEN                1

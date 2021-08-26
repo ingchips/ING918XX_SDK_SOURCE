@@ -1,0 +1,8 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_APPEARANCE                                    5
+#define HANDLE_BATTERY_LEVEL                                 8
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_APPEARANCE_OFFSET                             64
+#define HANDLE_BATTERY_LEVEL_OFFSET                          97
+

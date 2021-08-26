@@ -1,0 +1,12 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_VOICE_CONTROL                                 6
+#define HANDLE_VOICE_OUTPUT                                  8
+#define HANDLE_VOICE_OUTPUT_CLIENT_CHAR_CONFIG               9
+#define HANDLE_VOICE_INFORMATION                             11
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_VOICE_CONTROL_OFFSET                          128
+#define HANDLE_VOICE_OUTPUT_OFFSET                           177
+#define HANDLE_VOICE_OUTPUT_CLIENT_CHAR_CONFIG_OFFSET        185
+#define HANDLE_VOICE_INFORMATION_OFFSET                      236
+

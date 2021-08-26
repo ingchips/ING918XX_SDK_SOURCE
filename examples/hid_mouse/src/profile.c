@@ -17,10 +17,6 @@
 
 #include "../../peripheral_console/src/key_detector.h"
 
-// GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_APPEARANCE                                    5
-
 extern void show_app_state(enum app_state state);
 
 const static uint8_t adv_data[] = {

@@ -1,0 +1,10 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_ETAG_CONTROL                                  6
+#define HANDLE_ETAG_DATA                                     8
+#define HANDLE_ETAG_RESOLUTION                               10
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_ETAG_CONTROL_OFFSET                           112
+#define HANDLE_ETAG_DATA_OFFSET                              162
+#define HANDLE_ETAG_RESOLUTION_OFFSET                        211
+
