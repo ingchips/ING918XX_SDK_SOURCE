@@ -7,9 +7,6 @@
 
 #include "dev_info.h"
 
-// GATT characteristic handles
-
-
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"
 };

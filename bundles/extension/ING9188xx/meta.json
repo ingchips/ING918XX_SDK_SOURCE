@@ -290,6 +290,9 @@
         "xTaskCreate", 
         "xTaskCreateStatic", 
         "vTaskDelay", 
+        "vTaskSuspend", 
+        "vTaskResume", 
+        "xTaskResumeFromISR", 
         "vTaskStartScheduler", 
         "vTaskSuspendAll", 
         "xTaskResumeAll", 
@@ -336,11 +339,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 139856
+        "size": 140584
     }, 
     "version": [
         1, 
         6, 
-        4
+        6
     ]
 }

@@ -80,10 +80,10 @@ void setup_peripherals(void)
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
 	TMR_IntEnable(APB_TMR1);
     
-    // uart1: 4, 5
-    PINCTRL_SetPadMux(5, IO_SOURCE_GENERAL);
-    PINCTRL_SelUartRxdIn(UART_PORT_1, 5);
-    PINCTRL_SetPadMux(4, IO_SOURCE_UART1_TXD);
+    // uart1: 18, 19
+    PINCTRL_SetPadMux(19, IO_SOURCE_GENERAL);
+    PINCTRL_SelUartRxdIn(UART_PORT_1, 19);
+    PINCTRL_SetPadMux(18, IO_SOURCE_UART1_TXD);
     
     PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GENERAL);

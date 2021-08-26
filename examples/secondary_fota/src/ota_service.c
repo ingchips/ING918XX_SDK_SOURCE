@@ -18,9 +18,11 @@
 
 extern ota_ver_t this_version;
 
-#define ATT_OTA_HANDLE_VER          6
-#define ATT_OTA_HANDLE_DATA         10
-#define ATT_OTA_HANDLE_CTRL         8
+#include "../data/gatt.const"
+
+#define ATT_OTA_HANDLE_VER          HANDLE_FOTA_VERSION
+#define ATT_OTA_HANDLE_DATA         HANDLE_FOTA_DATA
+#define ATT_OTA_HANDLE_CTRL         HANDLE_FOTA_CONTROL
 
 static uint8_t  ota_ctrl[] = {OTA_STATUS_DISABLED};
 static uint8_t  ota_downloading = 0;

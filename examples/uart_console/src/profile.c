@@ -39,7 +39,7 @@ struct gatt_client_discoverer *discoverer = NULL;
 #define find_config_desc    gatt_client_util_find_config_desc
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
+#include "../data/gatt.const"
 
 static uint8_t adv_data[31] = {
     #include "../data/advertising.adv"

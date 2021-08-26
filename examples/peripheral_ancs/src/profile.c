@@ -24,7 +24,7 @@ const sm_persistent_t sm_persistent =
 #include "ancs.h"
 
 // GATT characteristic handles
-
+#include "../data/gatt.const"
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"

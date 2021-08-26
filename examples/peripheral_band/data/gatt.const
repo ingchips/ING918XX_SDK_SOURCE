@@ -1,0 +1,14 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_HEART_RATE_MEASUREMENT                        6
+#define HANDLE_HEART_RATE_MEASUREMENT_CLIENT_CHAR_CONFIG     7
+#define HANDLE_RSC_MEASUREMENT                               10
+#define HANDLE_RSC_MEASUREMENT_CLIENT_CHAR_CONFIG            11
+#define HANDLE_RSC_FEATURE                                   13
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_HEART_RATE_MEASUREMENT_OFFSET                 70
+#define HANDLE_HEART_RATE_MEASUREMENT_CLIENT_CHAR_CONFIG_OFFSET   78
+#define HANDLE_RSC_MEASUREMENT_OFFSET                        111
+#define HANDLE_RSC_MEASUREMENT_CLIENT_CHAR_CONFIG_OFFSET     119
+#define HANDLE_RSC_FEATURE_OFFSET                            142
+

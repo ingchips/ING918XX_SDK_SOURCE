@@ -58,7 +58,7 @@ type
 
 
 type
-  tskTaskControlBlock* {.importc: "tskTaskControlBlock", header: "FreeRTOSNim.h",
+  tskTaskControlBlock* {.importc: "struct tskTaskControlBlock", header: "FreeRTOSNim.h",
                         bycopy.} = object
 
 

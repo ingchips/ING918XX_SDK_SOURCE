@@ -1,0 +1,10 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_FOTA_VERSION                                  6
+#define HANDLE_FOTA_CONTROL                                  8
+#define HANDLE_FOTA_DATA                                     10
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_FOTA_VERSION_OFFSET                           122
+#define HANDLE_FOTA_CONTROL_OFFSET                           179
+#define HANDLE_FOTA_DATA_OFFSET                              228
+

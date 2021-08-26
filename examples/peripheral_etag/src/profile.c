@@ -75,10 +75,7 @@ static int8_t  etag_status = ETAG_STATUS_OK;
 static int16_t img_write_offset = -1;
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_ETAG_CONTROL                                  6
-#define HANDLE_ETAG_DATA                                     8
-
+#include "../data/gatt.const"
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"

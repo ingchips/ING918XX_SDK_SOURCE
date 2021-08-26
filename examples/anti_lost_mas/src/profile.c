@@ -13,8 +13,6 @@
 
 #include "../../anti_lost_sla/src/dev_info.h"
 
-// GATT characteristic handles
-
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
 {

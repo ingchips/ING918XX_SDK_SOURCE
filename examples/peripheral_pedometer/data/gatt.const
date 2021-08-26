@@ -1,0 +1,12 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_APPEARANCE                                    5
+#define HANDLE_RSC_MEASUREMENT                               8
+#define HANDLE_RSC_MEASUREMENT_CLIENT_CHAR_CONFIG            9
+#define HANDLE_RSC_FEATURE                                   11
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_APPEARANCE_OFFSET                             65
+#define HANDLE_RSC_MEASUREMENT_OFFSET                        98
+#define HANDLE_RSC_MEASUREMENT_CLIENT_CHAR_CONFIG_OFFSET     116
+#define HANDLE_RSC_FEATURE_OFFSET                            139
+

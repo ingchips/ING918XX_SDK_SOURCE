@@ -18,13 +18,7 @@
 #include "timers.h"
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                  3
-#define HANDLE_GENERIC_INPUT                                6
-#define HANDLE_GENERIC_OUTPUT                               8
-#define HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG			9
-#define HANDLE_GENERIC_INPUT_1			                    12
-#define HANDLE_GENERIC_OUTPUT_1			                    14
-#define HANDLE_GENERIC_OUTPUT_1_CLIENT_CHAR_CONFIG			15
+#include "../data/gatt.const"
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"

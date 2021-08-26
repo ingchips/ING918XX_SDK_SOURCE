@@ -1,0 +1,6 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_KEY_INPUT                                     6
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_KEY_INPUT_OFFSET                              113
+

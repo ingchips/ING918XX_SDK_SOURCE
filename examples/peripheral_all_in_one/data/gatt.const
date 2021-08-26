@@ -1,0 +1,28 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_BATTERY_LEVEL                                 6
+#define HANDLE_RSC_MEASUREMENT                               9
+#define HANDLE_RSC_MEASUREMENT_CLIENT_CHAR_CONFIG            10
+#define HANDLE_RSC_FEATURE                                   12
+#define HANDLE_TEMPERATURE_MEASUREMENT                       15
+#define HANDLE_TEMPERATURE_MEASUREMENT_CLIENT_CHAR_CONFIG    16
+#define HANDLE_TEMPERATURE_TYPE                              18
+#define HANDLE_RGB_LIGHTING_CONTROL                          21
+#define HANDLE_ETAG_CONTROL                                  24
+#define HANDLE_ETAG_DATA                                     26
+#define HANDLE_ETAG_RESOLUTION                               28
+#define HANDLE_KEY_INPUT                                     31
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_BATTERY_LEVEL_OFFSET                          76
+#define HANDLE_RSC_MEASUREMENT_OFFSET                        108
+#define HANDLE_RSC_MEASUREMENT_CLIENT_CHAR_CONFIG_OFFSET     126
+#define HANDLE_RSC_FEATURE_OFFSET                            149
+#define HANDLE_TEMPERATURE_MEASUREMENT_OFFSET                182
+#define HANDLE_TEMPERATURE_MEASUREMENT_CLIENT_CHAR_CONFIG_OFFSET   195
+#define HANDLE_TEMPERATURE_TYPE_OFFSET                       218
+#define HANDLE_RGB_LIGHTING_CONTROL_OFFSET                   292
+#define HANDLE_ETAG_CONTROL_OFFSET                           368
+#define HANDLE_ETAG_DATA_OFFSET                              418
+#define HANDLE_ETAG_RESOLUTION_OFFSET                        468
+#define HANDLE_KEY_INPUT_OFFSET                              545
+

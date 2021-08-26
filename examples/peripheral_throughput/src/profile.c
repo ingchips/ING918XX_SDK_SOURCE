@@ -5,9 +5,7 @@
 #include "btstack_event.h"
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_GENERIC_INPUT                                 6
-#define HANDLE_GENERIC_OUTPUT                                8
+#include "../data/gatt.const"
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"

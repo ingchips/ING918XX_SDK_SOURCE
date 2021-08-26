@@ -260,6 +260,7 @@ uint8_t platform_read_persistent_reg(void);
  *
  * @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
  *                                  Mininum value: 825 cycles (about 25.18ms)
+ *                                  When = 0: power on when EXT_INT is asserted
  * @param[in] p_retention_data      Pointer to the start of data to be retentioned
  * @param[in] data_size             Size of the data to be retentioned
  ****************************************************************************************
@@ -290,7 +291,7 @@ typedef enum
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
     PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (deep sleep mode) in us. (default: ~550us)
     PLATFORM_CFG_PS_DBG_1 = PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // obsoleted
-    PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // sleep time reduction (other sleep mode) in us. (default: ~450us)
+    PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // sleep time reduction (other sleep mode) in us. (default: ~550us)
     PLATFORM_CFG_PS_DBG_2 = PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // obsoleted
     PLATFORM_CFG_LL_DBG_FLAGS,  // Link layer flags (combination of `ll_cfg_flag_t`)
     PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL,    // Link layer legacy advertising intervals for high duty cycle (higher 16bits)

@@ -14,9 +14,7 @@
 #define dbg_printf printf
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_GENERIC_INPUT                                 6
-#define HANDLE_GENERIC_OUTPUT                                8
+#include "../data/gatt.const"
 
 extern const pair_config_t pair_config;
 static TimerHandle_t flush_timer = 0;

@@ -14,11 +14,7 @@
 #include "timers.h"
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_HEART_RATE_MEASUREMENT                        6
-#define HANDLE_RSC_MEASUREMENT                               10
-#define HANDLE_RSC_FEATURE                                   13
-
+#include "../data/gatt.const"
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"

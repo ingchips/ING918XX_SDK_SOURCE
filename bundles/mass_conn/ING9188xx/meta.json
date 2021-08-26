@@ -276,6 +276,9 @@
         "xTaskCreate", 
         "xTaskCreateStatic", 
         "vTaskDelay", 
+        "vTaskSuspend", 
+        "vTaskResume", 
+        "xTaskResumeFromISR", 
         "vTaskStartScheduler", 
         "vTaskSuspendAll", 
         "xTaskResumeAll", 
@@ -314,7 +317,7 @@
         "vPortValidateInterruptPriority"
     ], 
     "app": {
-        "base": 155648
+        "base": 163840
     }, 
     "ram": {
         "base": 536870912, 
@@ -322,11 +325,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 138640
+        "size": 139368
     }, 
     "version": [
         1, 
         6, 
-        4
+        6
     ]
 }

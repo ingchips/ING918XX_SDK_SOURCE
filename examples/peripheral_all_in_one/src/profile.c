@@ -86,19 +86,7 @@ static int8_t  etag_status = ETAG_STATUS_OK;
 static int16_t img_write_offset = -1;
 
 // GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_BATTERY_LEVEL                                 6
-#define HANDLE_RSC_MEASUREMENT                               9
-#define HANDLE_RSC_FEATURE                                   12
-#define HANDLE_TEMPERATURE_MEASUREMENT                       15
-#define HANDLE_TEMPERATURE_TYPE                              18
-#define HANDLE_RGB_LIGHTING_CONTROL                          21
-#define HANDLE_ETAG_CONTROL                                  24
-#define HANDLE_ETAG_DATA                                     26
-#define HANDLE_KEY_INPUT                                     31
-
-#define HANDLE_BATTERY_LEVEL_OFFSET                          76
-
+#include "../data/gatt.const"
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"

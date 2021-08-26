@@ -16,10 +16,6 @@
 
 #include "profile.h"
 
-// GATT characteristic handles
-#define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_APPEARANCE                                    5
-
 const sm_persistent_t sm_persistent =
 {
     .er = {1, 2, 3},
