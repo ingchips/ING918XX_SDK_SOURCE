@@ -285,10 +285,10 @@ uint32_t setup_profile(void *data, void *user_data)
 {
     init_service();
     app_timer = xTimerCreate("app",
-								pdMS_TO_TICKS(2000),
-								pdTRUE,
-								NULL,
-								app_timer_callback);
+                            pdMS_TO_TICKS(2000),
+                            pdTRUE,
+                            NULL,
+                            app_timer_callback);
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
