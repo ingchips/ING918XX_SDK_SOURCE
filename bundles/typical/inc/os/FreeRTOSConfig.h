@@ -86,6 +86,7 @@
 
 #define configUSE_PREEMPTION        1
 #define configUSE_IDLE_HOOK         0
+#define configUSE_IDLE_RESUMED_HOOK 1
 #define configUSE_TICK_HOOK         0
 #ifdef POWER_SAVING
 #define configUSE_TICKLESS_IDLE     1
@@ -96,10 +97,12 @@
 #else
 #define configCPU_CLOCK_HZ          ( ( unsigned long ) 48000000 )
 #endif
-#define configTICK_RATE_HZ          ( ( TickType_t ) 1000 )
+#define configTICK_RATE_HZ          ( ( TickType_t ) 1024 )
 #define configMAX_PRIORITIES        ( 15 )
 #define configMINIMAL_STACK_SIZE    ( ( unsigned short ) 128 )
-#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 20 * 1024 ) )
+#ifndef configTOTAL_HEAP_SIZE
+#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 23520 ) )
+#endif
 #define configMAX_TASK_NAME_LEN     ( 16 )
 #define configUSE_TRACE_FACILITY    0
 #define configUSE_16_BIT_TICKS      0
@@ -112,7 +115,9 @@
 #define configUSE_COUNTING_SEMAPHORES   1
 #define configUSE_RECURSIVE_MUTEXES     1
 
-#define configTIMER_TASK_PRIORITY               ( configMAX_PRIORITIES - 1 )
+#define INCLUDE_uxTaskGetStackHighWaterMark 1
+
+#define configTIMER_TASK_PRIORITY               1
 #define configTIMER_QUEUE_LENGTH				10
 #define configTIMER_TASK_STACK_DEPTH			configMINIMAL_STACK_SIZE
 
@@ -170,9 +175,10 @@ standard names. */
         } while (0)
 
 #define configPRE_SLEEP_PROCESSING(xModifiableIdleTime)                             \
-		do {    extern void sysPreSleepProcessing(TickType_t idleTime);             \
-                sysPreSleepProcessing(xModifiableIdleTime);                         \
-        } while (0)
+    do {    extern void sysPreSleepProcessing(TickType_t idleTime);                 \
+            sysPreSleepProcessing(xModifiableIdleTime);                             \
+            xModifiableIdleTime = 0;                                                \
+    } while (0)
 
 #define configPOST_SLEEP_PROCESSING( xExpectedIdleTime )                            \
    		do {    extern void sysPostSleepProcessing(TickType_t idleTime);            \
@@ -184,6 +190,20 @@ standard names. */
                 xExpectedIdleTime = 0;       \
         } while (0)
 #endif
+
+/*
+#ifdef ENABLE_TRACE
+#define traceTASK_SWITCHED_IN()     \
+        do { extern void vTaskTraceSwitch(void *tcb, uint8_t flag); \
+            vTaskTraceSwitch(pxCurrentTCB, 0);        \
+        } while (0)
+
+#define traceTASK_SWITCHED_OUT()     \
+        do { extern void vTaskTraceSwitch(void *tcb, uint8_t flag); \
+            vTaskTraceSwitch(pxCurrentTCB, 1);        \
+        } while (0)
+#endif
+*/
 
 #endif /* FREERTOS_CONFIG_H */
 

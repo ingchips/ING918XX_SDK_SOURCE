@@ -330,7 +330,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,USE_WATCHDOG,USE_POWER_LIB</Define>
+              <Define>USE_STDPERIPH_DRIVER,USE_POWER_LIB,LISTEN_TO_POWER_SAVING</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
