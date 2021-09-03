@@ -44,6 +44,7 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#ifdef LISTEN_TO_POWER_SAVING
 uint32_t on_lle_reset(void *dummy, void *user_data)
 {
     (void)(dummy);
@@ -53,6 +54,7 @@ uint32_t on_lle_reset(void *dummy, void *user_data)
 
     return 0;
 }
+#endif
 
 uint32_t gpio_isr(void *user_data)
 {
@@ -63,7 +65,6 @@ uint32_t gpio_isr(void *user_data)
 
 void setup_peripherals(void)
 {
-    int i;
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
 #ifdef USE_WATCHDOG
@@ -78,13 +79,12 @@ void setup_peripherals(void)
     PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_DOWN);
     GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
-    
-    for (i = 8; i <= 15; i++)
-    {
-        if (i != KEY_PIN)
-            PINCTRL_SetPadMux(i, IO_SOURCE_DEBUG_BUS);
-    }
+
+#ifdef LISTEN_TO_POWER_SAVING
+    PINCTRL_SetPadMux(8, IO_SOURCE_DEBUG_BUS);
     on_lle_reset(NULL, NULL);
+#endif
+
 #ifdef USE_WATCHDOG
     // Watchdog will timeout after 10sec
     TMR_WatchDogEnable(TMR_CLK_FREQ * 5);
@@ -156,8 +156,11 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, on_lle_reset, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+
+#ifdef LISTEN_TO_POWER_SAVING
+    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, on_lle_reset, NULL);
+#endif
     
     key_detect_init(on_key_event);
     setup_peripherals();

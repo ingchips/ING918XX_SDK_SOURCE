@@ -6,6 +6,7 @@
 
 #include "FreeRTOS.h"
 #include "semphr.h"
+#include "freertos_util.h"
 
 #include "ingsoc.h"
 #include "peripheral_adc.h"
@@ -162,10 +163,48 @@ uint16_t read_adc(uint8_t channel)
     return voltage;
 }
 
-static SemaphoreHandle_t sem_battery = NULL;
 uint8_t *battery_level = NULL;
 
 #define ADC_CHANNEL    4
+
+#ifdef DEMO_TASK_DELAY_UNTIL
+
+static void battery_task(void *pdata)
+{
+    uint16_t voltage;
+    TickType_t xPreviousWakeTime = xTaskGetTickCount();
+    for (;;)
+    {
+        vTaskDelayUntil(&xPreviousWakeTime, AccurateMS_TO_TICKS(900));
+
+#ifndef SIMULATION        
+        printf("U = %d", read_adc(ADC_CHANNEL));
+#else
+        voltage = 800 + rand() % 200;
+#endif
+        // level is reported by comparing max & min voltage
+        // for DEMO only
+#define MAX_VOLT       1023
+#define MIN_VOLT       800
+        if (voltage > MIN_VOLT)
+            *battery_level = (uint32_t)(voltage - MIN_VOLT) * 100 / (MAX_VOLT - MIN_VOLT);
+        else
+            *battery_level = 0;
+        
+        // add a random delay. see how ADC is sampled at fixed intervals.
+        vTaskDelay(pdMS_TO_TICKS(100 + (platform_rand() & 0xf) * 10));
+    }
+}
+
+uint32_t timer_isr(void *user_data)
+{
+    TMR_IntClr(APB_TMR1);
+    return 0;
+}
+
+#else
+
+static SemaphoreHandle_t sem_battery = NULL;
 
 static void battery_task(void *pdata)
 {
@@ -175,7 +214,7 @@ static void battery_task(void *pdata)
         BaseType_t r = xSemaphoreTake(sem_battery,  portMAX_DELAY);
         if (r != pdTRUE)
             continue;
-
+            
 #ifndef SIMULATION        
         printf("U = %d\n", read_adc(ADC_CHANNEL));
 #else
@@ -200,10 +239,18 @@ uint32_t timer_isr(void *user_data)
     return 0;
 }
 
+#endif
+
 uint32_t setup_profile(void *data, void *user_data)
 {
-    battery_level = profile_data + 97;
+    battery_level = profile_data + HANDLE_BATTERY_LEVEL_OFFSET;
+
+#ifdef DEMO_TASK_DELAY_UNTIL
+    platform_32k_rc_auto_tune();
+    vUpdateTicksClockFrequency();
+#else
     sem_battery = xSemaphoreCreateBinary();
+#endif
 
     xTaskCreate(battery_task,
                "b",
