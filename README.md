@@ -9,7 +9,7 @@ targeting Bluetooth 5 specification.
 
 ### The Easy Way
 
-[Download](https://github.com/ingchips/sdk/releases) &
+[Download](/releases) setup file &
 install our SDK package, which includes not only source code, but also GUI tools and documentation.
 
 ### The Hard Way
