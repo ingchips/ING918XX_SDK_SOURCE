@@ -1,0 +1,40 @@
+{
+  "type": "shell",
+
+  "options": {
+    "env": {"Path": "${env:Path};${env:ING_GCC_ROOT};${env:ING_SDK_ROOT}/wizard"},
+    "cwd": "${workspaceFolder}"
+  },
+
+  "tasks": [
+    {
+      "label": "build (release)",
+      "type": "shell",
+      "command": "make release",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [ "$gcc" ]
+    },
+    {
+      "label": "build (debug)",
+      "type": "shell",
+      "command": "make debug",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [ "$gcc" ]
+    },
+    {
+      "label": "clean",
+      "command": "make clean",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "download",
+      "type": "process",
+      "command": "${env:ING_SDK_ROOT}/downloader/icsdw.exe",
+      "args": ["${workspaceFolder}/flash_download.ini"],
+      "problemMatcher": []
+    }
+  ],
+  "version": "2.0.0"
+}
+

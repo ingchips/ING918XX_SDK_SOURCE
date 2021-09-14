@@ -75,8 +75,6 @@ service_node_t *gatt_client_util_get_first_service(struct gatt_client_discoverer
  */
 void gatt_client_util_dump_profile(service_node_t *first);
 
-
-
 /**
  ****************************************************************************************
  * @brief Find charasteristic node
@@ -87,6 +85,30 @@ void gatt_client_util_dump_profile(service_node_t *first);
  ****************************************************************************************
  */
 char_node_t *gatt_client_util_find_char(struct gatt_client_discoverer *discoverer, uint16_t handle);
+
+/**
+ ****************************************************************************************
+ * @brief Find charasteristic node from uuid
+ *
+ * @param[in] discoverer            discovering context
+ * @param[in] uuid                  uuid
+ * @return                          the found charasteristic node
+ ****************************************************************************************
+ */
+char_node_t *gatt_client_util_find_char_uuid128(struct gatt_client_discoverer *discoverer,
+                                                const uint8_t *uuid);
+
+/**
+ ****************************************************************************************
+ * @brief Find charasteristic node from sig uuid
+ *
+ * @param[in] discoverer            discovering context
+ * @param[in] uuid                  sig uuid
+ * @return                          the found charasteristic node
+ ****************************************************************************************
+ */
+char_node_t *gatt_client_util_find_char_uuid16(struct gatt_client_discoverer *discoverer,
+                                                const uint16_t uuid);
 
 /**
  ****************************************************************************************
