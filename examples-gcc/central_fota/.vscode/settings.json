@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.rmd": "markdown",
+        "ota_service.h": "c",
+        "rom_tools.h": "c"
+    }
+}

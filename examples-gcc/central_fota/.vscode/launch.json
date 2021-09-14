@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cortex-debug",
+            "request": "launch",
+            "name": "Debug (JLINK)",
+            "servertype": "jlink",
+            "cwd": "${workspaceRoot}",
+            "interface": "swd",
+            "runToMain": false,
+            "executable": "central_fota.axf",
+            "device": "Cortex-M3",
+            "configFiles": [ ],
+            "svdFile": "${env:ING_SDK_ROOT}/flash/KeilFlash/pack/SVD/ING91800.svd",
+            "swoConfig": {
+                "enabled": true,
+                "cpuFrequency": 48000000,
+                "swoFrequency": 4000000,
+                "source": "probe",
+                "decoders": [
+                    { "type": "console", "label": "ITM", "port": 0 }
+                ]
+            }
+        }
+    ]
+}
+

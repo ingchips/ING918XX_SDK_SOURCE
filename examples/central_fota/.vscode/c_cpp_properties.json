@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "ING918xx",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${env:CMSIS_BASE}/Include",
+                "${env:ING_SDK_ROOT}/sdk/bundles/typical/inc/os/portable/GCC/ARM_CM3",
+                "${env:ING_SDK_ROOT}/sdk/bundles/typical/inc",
+                "${env:ING_SDK_ROOT}/sdk/bundles/typical/inc/os",
+                "${env:ING_SDK_ROOT}/sdk/src/BSP",
+                "${env:ING_SDK_ROOT}/sdk/src/FWlib",
+                "${env:ING_SDK_ROOT}/sdk/src/StartUP",
+                "${env:ING_SDK_ROOT}/sdk/src/Tools",
+                "${env:ING_SDK_ROOT}/sdk/src/Mesh"
+            ],
+            "defines": [
+                "USE_STDPERIPH_DRIVER=",
+                "__packed="
+            ], 
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}

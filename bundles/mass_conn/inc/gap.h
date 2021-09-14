@@ -217,7 +217,7 @@ typedef enum phy_option
 /**
  * @brief Host to set PHY preferences for a connection
  *
- * @param con_handle            connection handl. (0x000--0x0EFF)
+ * @param con_handle            connection handle. (0x000--0x0EFF)
  *
  * @param all_phys              BIT(0): no preference for transmit channel
  *                              BIT(1): no preference for receive channel
@@ -290,7 +290,7 @@ typedef enum scan_filter_policy
 /**
  * @brief to set the extended scan parameters
  *
- * @param addr_type            address type
+ * @param own_addr_type        indicates the type of address being used in the scan request packets
  *
  * @param filter               @link #scan_filter_policy_t @endlink
  *
@@ -300,7 +300,7 @@ typedef enum scan_filter_policy
  *
  * @return                     0: messgae sent to controller
  */
-uint8_t gap_set_ext_scan_para(const bd_addr_type_t addr_type, const scan_filter_policy_t filter, const uint8_t config_num,
+uint8_t gap_set_ext_scan_para(const bd_addr_type_t own_addr_type, const scan_filter_policy_t filter, const uint8_t config_num,
                               const scan_phy_config_t *configs);
 /**
  * @brief to set the extended scan response data for an advertising set
@@ -410,11 +410,11 @@ typedef enum adv_filter_policy
  *
  * @param primary_adv_channel_map    see structure @link #adv_channel_bits_t @endlink
  *
- * @param own_addr_type              own BLE device address type
+ * @param own_addr_type               specifies the type of address being used in the advertising packets
  *
- * @param peer_addr_type             peer BLE device address type
+ * @param peer_addr_type             peer BLE device address type when Directed advertising is selected
  *
- * @param peer_addr                  peer BLE device address
+ * @param peer_addr                  peer BLE device address when Directed advertising is selected
  *
  * @param adv_filter_policy          filter policy , see structure @link #adv_filter_policy_t @endlink
  *
@@ -669,11 +669,14 @@ typedef struct initiating_phy_config
  *
  * @param filter_policy        see structure @link #initiating_filter_policy_t @endlink
  *
- * @param own_addr_type        own device address type
+ * @param own_addr_type        indicates the type of address being used in the connection request packets
  *
- * @param peer_addr_type       peer device address type
+ * @param peer_addr_type       indicates the type of address used in the connectable advertisement sent by the peer
+ *                             if the Filter Accept List is not used
  *
- * @param peer_addr            pointer to peer device address
+ * @param peer_addr            indicates the Peer’s Public Device Address, Random (static) Device Address,
+ *                             Non-Resolvable Private Address, or Resolvable Private Address depending on
+ *                             the Peer_Address_Type parameter if the Filter Accept List is not used
  *
  * @param initiating_phy_num   PHY numbers configured for initiating process
  *

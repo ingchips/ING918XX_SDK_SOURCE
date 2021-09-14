@@ -76,9 +76,7 @@ uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
 
 uint32_t cb_lle_init(char *c, void *dummy)
 {
-    volatile uint32_t *reg = (volatile uint32_t *)0x40090200;
     ll_set_def_antenna(4);
-    *reg = (*reg & ~(0x1f << 15)) | (0 << 15);
     return 0;
 }
 

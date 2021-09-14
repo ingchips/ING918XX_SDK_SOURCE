@@ -250,7 +250,6 @@ uint8_t *init_service()
 
 #ifdef V2
     static uint8_t temp_value_type = temperature_type_toe;
-    uint8_t addr[] = {6, 5, 4, 2, 2, 2};
 #else
     static uint8_t temp_value_type = temperature_type_body;
 #endif

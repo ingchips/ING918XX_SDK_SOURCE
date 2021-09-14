@@ -21,7 +21,7 @@
 
 #define PAGE_SIZE (8192)
 
-#define DEF_UUID(var, ID)  static uint8_t var[] = ID;
+#define DEF_UUID(var, ID)  static const uint8_t var[] = ID;
 
 DEF_UUID(uuid_ota_service,  INGCHIPS_UUID_OTA_SERVICE);
 DEF_UUID(uuid_ota_ver,      INGCHIPS_UUID_OTA_VER);
@@ -59,9 +59,9 @@ void ota_init_service()
     //        "att_ota_ctrl_handle  = %d\n", att_ota_ver_handle, att_ota_data_handle, att_ota_ctrl_handle);
 }
 
-void ota_init_handles(const uint16_t handler_ver, const uint16_t handle_ctrl, const uint16_t handle_data)
+void ota_init_handles(const uint16_t handle_ver, const uint16_t handle_ctrl, const uint16_t handle_data)
 {
-    att_ota_ver_handle = handler_ver;
+    att_ota_ver_handle = handle_ver;
     att_ota_data_handle = handle_data;
     att_ota_ctrl_handle = handle_ctrl;
 }

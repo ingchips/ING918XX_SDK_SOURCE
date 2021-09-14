@@ -131,6 +131,7 @@ typedef enum
     PLATFORM_TRACE_ID_LLCP                  = 4,
     PLATFORM_TRACE_ID_RAW                   = 5,
     PLATFORM_TRACE_ID_EVENT_ERROR           = 6,
+    PLATFORM_TRACE_ID_SM                    = 8,
 } platform_trace_item_t;
 
 /**
@@ -298,6 +299,9 @@ typedef enum
                                             //      and normal duty cylce (lower 16bits) in micro seconds
                                             // Default:   high duty cycle: 1250
                                             //          normal duty cycle: 1500
+    PLATFORM_CFG_RTOS_ENH_TICK,             // Enhanced Ticks. Default: DISABLE
+                                            // When enabled: IRQ's impact on accuracy of RTOS ticks is reduced
+                                            // Note: this feature has negative impact on power consumption.
 } platform_cfg_item_t;
 
 typedef enum

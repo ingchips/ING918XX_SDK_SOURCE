@@ -103,8 +103,6 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     return 0;
 }
 
-bd_addr_t null_addr = {0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
-
 uint8_t adv_type = 0x00;
 
 #define USER_MSG_ID_REQUEST_SEND            1

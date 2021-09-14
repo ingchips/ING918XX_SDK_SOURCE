@@ -348,3 +348,40 @@ service_node_t *gatt_client_util_get_first_service(struct gatt_client_discoverer
 {
     return ctx->first.next;
 }
+
+char_node_t *gatt_client_util_find_char_uuid128(struct gatt_client_discoverer *discoverer,
+                                                const uint8_t *uuid)
+{
+    service_node_t *s = discoverer->first.next;
+    while (s)
+    {
+        char_node_t *c = s->chars;
+        while (c)
+        {
+            if (memcmp(c->chara.uuid128, uuid, sizeof(c->chara.uuid128)) == 0)
+                return c;
+            c = c->next;
+        }
+        s = s->next;
+    }
+    return NULL;
+}
+
+char_node_t *gatt_client_util_find_char_uuid16(struct gatt_client_discoverer *discoverer,
+                                                const uint16_t uuid)
+{
+    service_node_t *s = discoverer->first.next;
+    while (s)
+    {
+        char_node_t *c = s->chars;
+        while (c)
+        {
+            if (is_sig_uuid(c->chara.uuid128, uuid))
+                return c;
+            c = c->next;
+        }
+        s = s->next;
+    }
+    return NULL;
+    
+}

@@ -80,7 +80,7 @@ void ota_init_service(void);
  *
  *   If FOTA related GATT service is *not* initialized by `ota_init_service`, then call this function.
  */
-void ota_init_handles(const uint16_t handler_ver, const uint16_t handle_ctrl, const uint16_t handle_data);
+void ota_init_handles(const uint16_t handle_ver, const uint16_t handle_ctrl, const uint16_t handle_data);
 
 int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, const uint8_t *buffer, uint16_t buffer_size);
 int ota_read_callback(uint16_t att_handle, uint16_t offset, uint8_t * buffer, uint16_t buffer_size);
