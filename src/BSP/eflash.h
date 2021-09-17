@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define EFLASH_PAGE_SIZE    8192
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -3,7 +3,7 @@
 
 static uint32_t ClkFreq; //0:16M 1:24M
 
-#define PAGE_SIZE (8192)
+#define PAGE_SIZE (EFLASH_PAGE_SIZE)
 #define PAGE_SIZE_SHIFT 13
 
 #define RTC_CHIP_STAT_ADDR (0x40050004)
