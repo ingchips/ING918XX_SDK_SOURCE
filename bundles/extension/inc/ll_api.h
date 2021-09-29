@@ -26,6 +26,21 @@ typedef enum coded_scheme_e
     BLE_CODED_S2
 } coded_scheme_t;
 
+typedef enum link_layer_opt_e
+{
+    LL_ENABLE_MULTIPLES_OF_1MS_INTERVAL = 1,        // Note: avaliable as an EXTENSION
+} link_layer_opt_t;
+
+/**
+ ****************************************************************************************
+ * @brief set Link Layer options.
+ *        Note: This API can only be called after Link Layer got initialized.
+ *
+ * @param[in]  opts             combination of `link_layer_opt_t`
+ ****************************************************************************************
+ */
+void ll_config(uint32_t opts);
+
 /**
  ****************************************************************************************
  * @brief set coded scheme of a advertising set

@@ -140,6 +140,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
+        platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, (1250 << 16) | 750);
         setup_adv();
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         break;
