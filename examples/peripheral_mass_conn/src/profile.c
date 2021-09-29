@@ -9,7 +9,7 @@
 // GATT characteristic handles
 #include "../data/gatt.const"
 
-#define MAX_CONN_NUMBER     24
+#define MAX_CONN_NUMBER     26
 
 #define INVALID_HANDLE  0xffff
 

@@ -2,4 +2,4 @@
 
 This example demonstrates how to:
 
-* Connect to up to 24 central devices.
+* Connect to up to 26 central devices.

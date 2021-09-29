@@ -215,6 +215,7 @@
         "btstack_memory_pool_create", 
         "btstack_memory_pool_get", 
         "btstack_memory_pool_free", 
+        "ll_config", 
         "ll_set_adv_coded_scheme", 
         "ll_set_initiating_coded_scheme", 
         "ll_hint_on_ce_len", 
@@ -306,15 +307,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 34108
+        "size": 34216
     }, 
     "rom": {
         "base": 16384, 
-        "size": 134484
+        "size": 134584
     }, 
     "version": [
         1, 
         7, 
-        0
+        1
     ]
 }
