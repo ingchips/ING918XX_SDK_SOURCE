@@ -26,28 +26,13 @@ static uint16_t SERVICE_MESH_PROXY_HDL = 0;
 static uint16_t SERVICE_MESH_PROV_HDL = 0;
 static uint16_t PROV_DATA_IN_HDL = 0;
 static uint16_t PROXY_DATA_IN_HDL = 0;
-static uint16_t CLIENT_CHARAC_CONF = 5;  // TODO
-
+static uint16_t PROV_DATA_OUT_CCC = 0;
+static uint16_t PROXY_DATA_OUT_CCC = 0;
 static uint16_t notify_write = 0;
 
 static uint8_t pre_adv[255] = {0};
 
 static mesh_gap_event mesh_event;
-
-uint16_t mesh_write_callback(hci_con_handle_t con_handle, uint16_t attribute_handle, uint16_t transaction_mode, uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
-{
-    if (!bt_mesh_is_provisioned())
-    {
-        if (attribute_handle == CLIENT_CHARAC_CONF)
-            notify_write = little_endian_read_16(buffer, 0);
-    }
-    else
-    {
-        if (attribute_handle == CLIENT_CHARAC_CONF)
-            notify_write = little_endian_read_16(buffer, 0);
-    }
-    return 0;
-}
 
 int mesh_att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_handle, uint16_t transaction_mode, uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
@@ -73,11 +58,20 @@ int mesh_att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_hand
         memcpy(ptr, buffer, buffer_size);
         Host2Mesh_msg_send((uint8_t *)(proxy_data->data), sizeof(mesh_event) + buffer_size);
     }
-    else if (attribute_handle == CLIENT_CHARAC_CONF)
+    else
     {
-        mesh_write_callback(con_handle, attribute_handle, transaction_mode, offset, buffer, buffer_size);
+        if (!bt_mesh_is_provisioned())
+        {
+            if (attribute_handle == PROV_DATA_OUT_CCC)
+                notify_write = little_endian_read_16(buffer, 0);
+        }
+        else
+        {
+            if (attribute_handle == PROXY_DATA_OUT_CCC)
+                notify_write = little_endian_read_16(buffer, 0);
+        }
     }
-    else;
+    
     return 0;
 }
 
@@ -102,13 +96,13 @@ uint16_t mesh_att_read_callback(hci_con_handle_t con_handle, uint16_t attribute_
 {
     if (!bt_mesh_is_provisioned())
     {
-        if (attribute_handle == CLIENT_CHARAC_CONF)
+        if (attribute_handle == PROV_DATA_OUT_CCC)
             memcpy(buffer, &notify_write, 2);
         return 2;
     }
     else
     {
-        if (attribute_handle == CLIENT_CHARAC_CONF)
+        if (attribute_handle == PROXY_DATA_OUT_CCC)
             memcpy(buffer, &notify_write, 2);
         return 2;
     }
@@ -279,7 +273,6 @@ void mesh_stack_init(uint16_t service_proxy, uint16_t handle_proxy_in, uint16_t 
 {
     mesh_platform_setup();
     mesh_memory_init();
-    bt_mesh_handle_set(0x03, 0x05, 0x03, 0x05);                                    //here set the handle of  proxy and prov
     mesh_feature_set(BT_MESH_FEAT_RELAY | BT_MESH_FEAT_PROXY, BT_MESH_FEAT_PROXY); //setup the feature_role
     model_init();
     mesh_main();
@@ -287,6 +280,10 @@ void mesh_stack_init(uint16_t service_proxy, uint16_t handle_proxy_in, uint16_t 
     PROXY_DATA_IN_HDL = handle_proxy_in;
     SERVICE_MESH_PROV_HDL = service_prov;
     SERVICE_MESH_PROXY_HDL = service_proxy;
+    PROV_DATA_OUT_CCC = handle_prov_out + 1;
+    PROXY_DATA_OUT_CCC = handle_proxy_out + 1;
+    bt_mesh_handle_set(service_prov, handle_prov_in, handle_prov_out,
+                       service_proxy, handle_proxy_in, handle_proxy_out);
 }    
 
 void gap_beacon_disable(void)

@@ -3,6 +3,7 @@
 #include "peripheral_pwm.h"
 #include <stdio.h>
 #include "profile.h"
+#include "trace.h"
 
 #define PRINT_UART    APB_UART0
 
@@ -37,9 +38,9 @@ int fputc(int ch, FILE *f)
     return ch;
 }
 
-__weak void __aeabi_assert()
+__weak void __aeabi_assert(const char *a ,const char* b, int c)
 {
-    printf("assert\n");
+    platform_printf("assert:%s,%s,%d\n", a, b, c);
     for (;;);
 }
 
@@ -73,6 +74,8 @@ void setup_peripherals(void)
     setup_rgb_led();
 }
 
+trace_rtt_t trace_ctx = {0};
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -87,7 +90,10 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-    // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
+
+    trace_rtt_init(&trace_ctx);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0xfff);
 
     return 0;
 }

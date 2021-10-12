@@ -26,21 +26,6 @@ typedef enum coded_scheme_e
     BLE_CODED_S2
 } coded_scheme_t;
 
-typedef enum link_layer_opt_e
-{
-    LL_ENABLE_MULTIPLES_OF_1MS_INTERVAL = 1,        // Note: avaliable as an EXTENSION
-} link_layer_opt_t;
-
-/**
- ****************************************************************************************
- * @brief set Link Layer options.
- *        Note: This API can only be called after Link Layer got initialized.
- *
- * @param[in]  opts             combination of `link_layer_opt_t`
- ****************************************************************************************
- */
-void ll_config(uint32_t opts);
-
 /**
  ****************************************************************************************
  * @brief set coded scheme of a advertising set
@@ -415,6 +400,19 @@ void ll_scan_set_fixed_channel(int channel_index);
  ****************************************************************************************
  */
 void ll_set_adv_access_address(uint32_t acc_addr);
+
+/**
+ ****************************************************************************************
+ * @brief set Link Layer connection interval unit.
+ *        Note: 
+ *          * This API can only be called after Link Layer got initialized.
+ *          * This API can be used to achieve a non-standard smaller connection inteval (< 1ms).
+ *          * A non-standard interval may cause inconsistant within HCI commands/events.      
+ *
+ * @param[in]  unit         connection interval unit in micro-seconds. (default: 1250us)                          
+ ****************************************************************************************
+ */
+void ll_set_conn_interval_unit(uint16_t unit);
 
 #ifdef __cplusplus
 }

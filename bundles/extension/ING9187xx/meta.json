@@ -215,7 +215,6 @@
         "btstack_memory_pool_create", 
         "btstack_memory_pool_get", 
         "btstack_memory_pool_free", 
-        "ll_config", 
         "ll_set_adv_coded_scheme", 
         "ll_set_initiating_coded_scheme", 
         "ll_hint_on_ce_len", 
@@ -240,6 +239,7 @@
         "ll_set_max_conn_number", 
         "ll_scan_set_fixed_channel", 
         "ll_set_adv_access_address", 
+        "ll_set_conn_interval_unit", 
         "ll_query_timing_info", 
         "xQueueGenericSend", 
         "xQueuePeek", 
@@ -322,11 +322,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 135368
+        "size": 135360
     }, 
     "version": [
         1, 
         7, 
-        1
+        2
     ]
 }

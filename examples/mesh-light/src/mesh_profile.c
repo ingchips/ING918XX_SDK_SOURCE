@@ -27,14 +27,14 @@ static uint16_t mesh_conn_handle = INVALID_HANDLE;
 extern uint32_t MYNEWT_VAL_BLE_MESH_GATT_PROXY;
 extern uint32_t MYNEWT_VAL_BLE_MESH_PB_GATT;
 
-const uint8_t pb_gatt_service_data[] =
+const uint8_t gatt_data_pb[] =
 {
-    #include "../data/pb_gatt_service_data.profile"
+    #include "../data/gatt_pb.profile"
 };
 
-const uint8_t proxy_service_data[] =
+const uint8_t gatt_data_proxy[] =
 {
-    #include "../data/proxy_service_data.profile"
+    #include "../data/gatt_proxy.profile"
 };
 
 const uint8_t mesh_proxy_service_scan_rsp_data[] =
@@ -42,16 +42,8 @@ const uint8_t mesh_proxy_service_scan_rsp_data[] =
     #include "../data/mesh_proxy_service_scan_rsp_data.adv"
 };
 
-enum
-{
-    HANDLE_MESH_PROVISIONING_DATA_IN = 3,
-    HANDLE_MESH_PROVISIONING_DATA_OUT = 5,
-    HANDLE_MESH_PROVISIONING_DATA_OUT_CLIENT_CHAR_CONFIG = 6,
-    
-    HANDLE_MESH_PROXY_DATA_IN = 3,
-    HANDLE_MESH_PROXY_DATA_OUT = 5,
-    HANDLE_MESH_PROXY_DATA_OUT_CLIENT_CHAR_CONFIG = 6
-};
+#include "../data/gatt_pb.const"
+#include "../data/gatt_proxy.const"
 
 const uint8_t adv_mesh_rsp_data_len = sizeof(mesh_proxy_service_scan_rsp_data);
 
@@ -67,9 +59,10 @@ static uint16_t att_read_callback(hci_con_handle_t con_handle, uint16_t attribut
 
 static int att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_handle, uint16_t transaction_mode, uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
-    if ((attribute_handle == HANDLE_MESH_PROVISIONING_DATA_IN) 
+    if ((attribute_handle == HANDLE_MESH_PROVISIONING_DATA_IN)
         || (attribute_handle == HANDLE_MESH_PROXY_DATA_IN)
-        || (attribute_handle == HANDLE_MESH_PROVISIONING_DATA_OUT_CLIENT_CHAR_CONFIG))
+        || (attribute_handle == HANDLE_MESH_PROVISIONING_DATA_OUT_CLIENT_CHAR_CONFIG)
+        || (attribute_handle == HANDLE_MESH_PROXY_DATA_OUT_CLIENT_CHAR_CONFIG))
     {
         return mesh_att_write_callback(con_handle, attribute_handle, transaction_mode, offset, buffer, buffer_size);
     }
@@ -118,20 +111,21 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
         case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:
-            if (7 == packet[4]) //it is the proxy_service adv set terminated and a connection had been established, 7 means PB_GATT_ADV_HANDLE
             {
-                //check status here to decide whether it is just connected or not
-                if (0 != packet[3])
-                {
-                    // TODO: unnormal event from controller
-                    break;
-                }
-                
                 const le_meta_adv_set_terminated_t *adv_term = decode_hci_le_meta_event(packet, le_meta_adv_set_terminated_t);
-
+                if (adv_term->adv_handle != 7) break;
+                if (adv_term->status) break;
                 mesh_conn_handle = adv_term->conn_handle;
                 mesh_connected(adv_term->conn_handle);
-                att_set_db(mesh_conn_handle, bt_mesh_is_provisioned() ? proxy_service_data : pb_gatt_service_data);
+                att_set_db(mesh_conn_handle, bt_mesh_is_provisioned() ? gatt_data_proxy : gatt_data_pb);
+                
+                /*
+                if (bt_mesh_is_provisioned())
+                {
+                    uint8_t v = 1;
+                    att_server_indicate(adv_term->conn_handle, HANDLE_SERVICE_CHANGED, &v, 1);
+                }
+                */
             }
             break;
 
@@ -188,8 +182,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 int mesh_env_init()
 {
     static btstack_packet_callback_registration_t hci_event_callback_registration;
-    mesh_stack_init(1, HANDLE_MESH_PROVISIONING_DATA_IN, HANDLE_MESH_PROVISIONING_DATA_OUT,
-                    1, HANDLE_MESH_PROXY_DATA_IN, HANDLE_MESH_PROXY_DATA_OUT,
+    mesh_stack_init(HANDLE_MESH_PROXY_DATA_IN - 2, HANDLE_MESH_PROXY_DATA_IN, HANDLE_MESH_PROXY_DATA_OUT,
+                    HANDLE_MESH_PROVISIONING_DATA_IN - 2, HANDLE_MESH_PROVISIONING_DATA_IN, HANDLE_MESH_PROVISIONING_DATA_OUT,
                     BT_MESH_FEAT_RELAY | BT_MESH_FEAT_PROXY, BT_MESH_FEAT_PROXY);
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;

@@ -666,6 +666,17 @@ typedef struct initiating_phy_config
 
 /**
  * @brief LE Extended Create Connection command
+ * 
+ * Besides errors in the input parameters, this API will fail on following conditions:
+ *      1. Scanning is enabled;
+ *      1. Another `create_connection` session is ongoing;
+ *      1. Running out of resources (rarely happens).
+ * 
+ * `HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE`, indicating a `create_connection` session is completed,
+ * is triggered by following conditions:
+ *      1. A connection is established, where `status` == 0;
+ *      1. Cancelled by `gap_create_connection_cancel`, where `status` != 0;
+ *      1. Link Layer runs out of resources, where `status` != 0. 
  *
  * @param filter_policy        see structure @link #initiating_filter_policy_t @endlink
  *

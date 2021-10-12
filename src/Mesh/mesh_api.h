@@ -486,7 +486,8 @@ void mesh_platform_setup(void);
 /** @brief notify the attribut handle of database.
  *  
  */
-void bt_mesh_handle_set(uint16_t prov_in, uint16_t prov_out, uint16_t proxy_in, uint16_t proxy_out);
+void bt_mesh_handle_set(uint16_t prov_service, uint16_t prov_in, uint16_t prov_out, 
+                        uint16_t proxy_service, uint16_t proxy_in, uint16_t proxy_out);
 
 /**@brief a initialize for mesh AT commands environement
  *

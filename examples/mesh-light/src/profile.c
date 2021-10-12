@@ -88,7 +88,7 @@ typedef struct light_state {
     u8_t led_gpio_pin;
 } light_state_t;
 
-light_state_t a_light_state = 
+light_state_t a_light_state =
 {
     .led_gpio_pin = LED_1
 };
@@ -163,7 +163,7 @@ volatile static u16_t primary_net_idx;
 
 
 #define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->user_data
-    
+
 
 int light_model_gen_onoff_get(struct bt_mesh_model *model, u8_t *state)
 {
@@ -214,7 +214,7 @@ int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t lightness
     struct light_state *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
     a_light->lightness[1] = a_light->lightness[0];
     a_light->lightness[0] = lightness;
-    
+
     light_update(a_light);
     return 0;
 }
@@ -261,11 +261,11 @@ void hsl_to_rgb(u16_t H, u16_t S, u16_t L,
         *B = L;
         return;
     }
-    
+
     if (L < 128) var_2 = Q_MULT(L, (255 + S));
     else         var_2 = (L + S) - Q_MULT(S, L);
     var_2 = CLIP(var_2);
-    var_1 = 2 * L - var_2;    
+    var_1 = 2 * L - var_2;
     *R = hue2rgb(var_1, var_2, ((int16_t)H) + (255 / 3));
     *G = hue2rgb(var_1, var_2, H);
     *B = hue2rgb(var_1, var_2, ((int16_t)H) - (255 / 3));
@@ -277,10 +277,10 @@ void light_update(struct light_state *a_light)
     printf("HSL = %d,%d,%d\n", a_light->hue[0], a_light->saturation[0], a_light->lightness[0]);
     hsl_to_rgb(a_light->hue[0], a_light->saturation[0], a_light->lightness[0], &r, &g, &b);
 #ifdef SIMULATION
-    printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n", 
+    printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n",
                a_light->led_gpio_pin, r, g, b);
 #else
-    printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n", 
+    printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n",
                a_light->led_gpio_pin, r, g, b);
     extern void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b);
     set_rgb_led_color(r, g, b);
@@ -296,7 +296,7 @@ int light_model_light_hsl_set(struct bt_mesh_model *model, u16_t  lightness, u16
     a_light->saturation[1]    = a_light->saturation[0];
     a_light->lightness[0] = lightness;
     a_light->hue[0]       = hue;
-    a_light->saturation[0]= saturation;    
+    a_light->saturation[0]= saturation;
 
     light_update(a_light);
     return 0;
@@ -374,19 +374,19 @@ static uint8_t param[32] = {0};
 
 void mesh_platform_setup()
 {
-    const static bd_addr_t addr_pb_adv  = {0x73, 0x2a, 0x4e, 0x19, 0x28, 0xC0};
-    const static bd_addr_t addr_pb_gatt = {0x77, 0x33, 0xa3, 0x17, 0x2f, 0xC0};
+    const static bd_addr_t addr_pb_adv  = {0xd0, 0x2a, 0x4e, 0x19, 0x28, 0xFC};
+    const static bd_addr_t addr_pb_gatt = {0xd5, 0x33, 0xa3, 0x17, 0x2f, 0xFC};
 #ifdef V2
     mesh_set_dev_name("hello-mesh-2");
 #else
     mesh_set_dev_name("hello-mesh");
 #endif
-#ifdef TIANMAO    
+#ifdef TIANMAO
     mesh_platform_config(MESH_PLT_PB_ADV, addr_pb_adv, param);
 #else
     mesh_platform_config(MESH_PLT_PB_ADV, addr_pb_adv, NULL);
 #endif
-    mesh_platform_config(MESH_PLT_PB_GATT, addr_pb_gatt, NULL); 
+    mesh_platform_config(MESH_PLT_PB_GATT, addr_pb_gatt, NULL);
 }
 
 extern int mesh_env_init(void);
@@ -394,7 +394,7 @@ extern void create_mesh_task (void);
 
 uint32_t setup_profile(void *data, void *user_data)
 {
-    mesh_env_init(); 
+    mesh_env_init();
 
     create_mesh_task();
     return 0;
@@ -402,9 +402,9 @@ uint32_t setup_profile(void *data, void *user_data)
 
 void model_init()
 {
-    nimble_port_init();  //initialze the memory.   
+    nimble_port_init();  //initialze the memory.
     init_pub();
-    mesh_setup(&prov, &comp);       
+    mesh_setup(&prov, &comp);
 }
 
 struct bt_mesh_elem * get_element_of_node()
