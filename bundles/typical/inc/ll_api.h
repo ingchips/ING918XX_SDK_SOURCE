@@ -429,6 +429,21 @@ void ll_scan_set_fixed_channel(int channel_index);
  */
 void ll_set_adv_access_address(uint32_t acc_addr);
 
+/**
+ ****************************************************************************************
+ * @brief set Link Layer connection interval unit.
+ *        Note: 
+ *          * This API can only be called after Link Layer got initialized.
+ *          * This API can be used to achieve a non-standard smaller connection inteval (< 1ms).
+ *          * A non-standard interval may cause inconsistant within HCI commands/events.      
+ *
+ * @param[in]  unit         connection interval unit in micro-seconds. (default: 1250us)                          
+ ****************************************************************************************
+ */
+// void ll_set_conn_interval_unit(uint16_t unit);
+// WARNING: ^^^ this API is not available in this release
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -33,7 +33,10 @@ typedef uint16_t (* f_crc_t)(uint8_t *buffer, uint16_t len);
  * @param item_cnt          number of binaries (<= MAX_UPDATE_BLOCKS)
  * @param items             information for each binary
  * @param entry             entry address
- * @param on_done           callback when FOTA completes (err_code != 0 if error occurs)
+ * @param on_done           callback when FOTA completes
+ *                          When err_code == 0: updated successfully
+ *                               err_code == 1: nothing to update
+ *                               err_code < 0 : error occurs
  * */
 void fota_client_do_update(const ota_ver_t *latest, uint16_t conn_handle,
                               uint16_t handle_ver, uint16_t handle_ctrl, uint16_t handle_data,

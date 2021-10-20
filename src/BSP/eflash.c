@@ -72,6 +72,24 @@ int program_flash0(const uint32_t dest_addr, const uint8_t *buffer, uint32_t siz
     return 0;
 }
 
+int erase_flash_page(const uint32_t addr)
+{
+    if ((addr & (PAGE_SIZE - 1)) != 0)
+        return 1;
+
+    init();
+    EflashProgramEnable();
+
+    uint32_t page_idx = ((addr - EFLASH_BASE) >> PAGE_SIZE_SHIFT) & 0x3f;
+    EraseEFlashPage(page_idx);
+
+    EflashProgramDisable();
+
+    uninit();
+    
+    return 0;
+}
+
 int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
     return program_flash0(dest_addr, buffer, size, 1);

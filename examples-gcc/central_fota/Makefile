@@ -23,6 +23,6 @@ PROJECT_FILES += gatt_client_async_helper.c
 
 ZIG_FILES = src/fota_client.zig
 
-ZCFLAGS= -Dprint_info=0 -O ReleaseSmall
+ZCFLAGS= -Dprint_info=1 -O ReleaseSmall
 
 include makefile.conf

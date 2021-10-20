@@ -144,7 +144,7 @@ static const uint8_t *parse_uuid(const uint8_t *uuid, uint16_t *uuid16)
     }
 }
 
-void clone_gatt_profile(service_node_t *first)
+void clone_gatt_profile(service_node_t *first, void *user_data)
 {
     service_node_t *s = first;
     const uint8_t *uuid128;
@@ -405,7 +405,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     handle_to_slave = complete->handle;
                     show_app_status(APP_CLONING);
                     iprintf("discovering...\n");
-                    discoverer = gatt_client_util_discover_all(handle_to_slave, clone_gatt_profile);
+                    discoverer = gatt_client_util_discover_all(handle_to_slave, clone_gatt_profile, NULL);
                 }
             }
             break;

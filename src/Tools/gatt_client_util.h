@@ -30,7 +30,7 @@ typedef struct service_node
 } service_node_t;
 
 struct gatt_client_discoverer;
-typedef void (* f_on_fully_discovered)(service_node_t *first);
+typedef void (* f_on_fully_discovered)(service_node_t *first, void *user_data);
 
 /**
  ****************************************************************************************
@@ -41,7 +41,7 @@ typedef void (* f_on_fully_discovered)(service_node_t *first);
  * @return                          discovering context which is allocated on heap
  ****************************************************************************************
  */
-struct gatt_client_discoverer *gatt_client_util_discover_all(hci_con_handle_t con_handle, f_on_fully_discovered on_fully_discovered);
+struct gatt_client_discoverer *gatt_client_util_discover_all(hci_con_handle_t con_handle, f_on_fully_discovered on_fully_discovered, void *user_data);
 
 /**
  ****************************************************************************************
@@ -73,7 +73,7 @@ service_node_t *gatt_client_util_get_first_service(struct gatt_client_discoverer
  * @param[in] first                 first service
  ****************************************************************************************
  */
-void gatt_client_util_dump_profile(service_node_t *first);
+void gatt_client_util_dump_profile(service_node_t *first, void *user_data);
 
 /**
  ****************************************************************************************
@@ -123,7 +123,7 @@ desc_node_t *gatt_client_util_find_config_desc(char_node_t *c);
 /**
  ****************************************************************************************
  * @brief Print a 128-bit UUID
- * 
+ *
  * Note: SIG UUID is printed as an uint16_t.
  *
  * @param[in] uuid                  UUID
@@ -134,7 +134,7 @@ void gatt_client_util_print_uuid(const uint8_t *uuid);
 /**
  ****************************************************************************************
  * @brief Print properties of a charasteristic
- * 
+ *
  * @param[in] v                     properties
  ****************************************************************************************
  */

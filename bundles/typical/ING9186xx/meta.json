@@ -314,7 +314,12 @@
         "vPortEnterCritical", 
         "vPortExitCritical", 
         "vPortSuppressTicksAndSleep", 
-        "vPortValidateInterruptPriority"
+        "vPortValidateInterruptPriority", 
+        "vListInitialise", 
+        "vListInitialiseItem", 
+        "vListInsert", 
+        "vListInsertEnd", 
+        "uxListRemove"
     ], 
     "app": {
         "base": 163840
@@ -330,6 +335,6 @@
     "version": [
         1, 
         7, 
-        0
+        3
     ]
 }

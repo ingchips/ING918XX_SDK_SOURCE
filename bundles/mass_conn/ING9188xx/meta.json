@@ -230,7 +230,6 @@
         "btstack_memory_pool_create", 
         "btstack_memory_pool_get", 
         "btstack_memory_pool_free", 
-        "ll_config", 
         "ll_set_adv_coded_scheme", 
         "ll_set_initiating_coded_scheme", 
         "ll_hint_on_ce_len", 
@@ -315,22 +314,27 @@
         "vPortEnterCritical", 
         "vPortExitCritical", 
         "vPortSuppressTicksAndSleep", 
-        "vPortValidateInterruptPriority"
+        "vPortValidateInterruptPriority", 
+        "vListInitialise", 
+        "vListInitialiseItem", 
+        "vListInsert", 
+        "vListInsertEnd", 
+        "uxListRemove"
     ], 
     "app": {
         "base": 163840
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 34216
+        "size": 34208
     }, 
     "rom": {
         "base": 16384, 
-        "size": 140764
+        "size": 140888
     }, 
     "version": [
         1, 
         7, 
-        1
+        3
     ]
 }

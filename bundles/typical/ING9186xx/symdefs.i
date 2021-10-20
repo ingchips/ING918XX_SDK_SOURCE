@@ -247,10 +247,15 @@
 --define_symbol uuid128_to_str=0x0002289d
 --define_symbol uuid_add_bluetooth_prefix=0x000228f5
 --define_symbol uuid_has_bluetooth_prefix=0x00022915
+--define_symbol uxListRemove=0x00022931
 --define_symbol uxQueueMessagesWaiting=0x00022959
 --define_symbol uxQueueMessagesWaitingFromISR=0x00022981
 --define_symbol uxQueueSpacesAvailable=0x0002299d
 --define_symbol uxTaskGetStackHighWaterMark=0x000229c9
+--define_symbol vListInitialise=0x00022a6f
+--define_symbol vListInitialiseItem=0x00022a85
+--define_symbol vListInsert=0x00022a8b
+--define_symbol vListInsertEnd=0x00022abb
 --define_symbol vPortEnterCritical=0x00022ad5
 --define_symbol vPortExitCritical=0x00022b19
 --define_symbol vPortFree=0x00022b49

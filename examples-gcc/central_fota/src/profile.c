@@ -63,7 +63,7 @@ static void fota_done(int err_code)
     platform_printf("fota_done: %d\n", err_code);
 }
 
-static void fully_discovered(service_node_t *first)
+static void fully_discovered(service_node_t *first, void *user_data)
 {
     char_node_t *char_ver = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_ver);
     char_node_t *char_ctrl = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_ctrl);
@@ -145,7 +145,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 }
 
                 platform_printf("discovering...\n");
-                discoverer = gatt_client_util_discover_all(conn_complete->handle, fully_discovered);
+                discoverer = gatt_client_util_discover_all(conn_complete->handle, fully_discovered, NULL);
             }
             break;
 
