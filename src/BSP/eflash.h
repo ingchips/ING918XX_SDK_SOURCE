@@ -30,6 +30,14 @@ int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size
  */
 int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
 
+/**
+ * @brief Erase a page of flash
+ *
+ * @param[in] addr              start address (unified address) of the page
+ * @return                      0 if successful else non-0
+ */
+int erase_flash_page(const uint32_t addr);
+
 typedef struct fota_update_block
 {
     uint32_t src;

@@ -661,7 +661,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             if (0 == bonding_flag)
             {
                 iprintf("discovering...\n");
-                discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile);
+                discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile, NULL);
             }
             break;
         case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
@@ -685,7 +685,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_ENCRYPTION_CHANGE:
         {
             iprintf("discovering...\n");
-            discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile);
+            discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile, NULL);
         }
         break;
 
@@ -783,7 +783,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         }
         break;
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
-        discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile);
+        discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile, NULL);
         break;
     default:
         break;

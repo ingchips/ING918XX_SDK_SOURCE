@@ -299,7 +299,12 @@
         "vPortEnterCritical", 
         "vPortExitCritical", 
         "vPortSuppressTicksAndSleep", 
-        "vPortValidateInterruptPriority"
+        "vPortValidateInterruptPriority", 
+        "vListInitialise", 
+        "vListInitialiseItem", 
+        "vListInsert", 
+        "vListInsertEnd", 
+        "uxListRemove"
     ], 
     "app": {
         "base": 155648
@@ -310,11 +315,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 133484
+        "size": 133596
     }, 
     "version": [
         1, 
         7, 
-        0
+        3
     ]
 }

@@ -247,10 +247,15 @@
 --defsym:uuid128_to_str=0x0002289d
 --defsym:uuid_add_bluetooth_prefix=0x000228f5
 --defsym:uuid_has_bluetooth_prefix=0x00022915
+--defsym:uxListRemove=0x00022931
 --defsym:uxQueueMessagesWaiting=0x00022959
 --defsym:uxQueueMessagesWaitingFromISR=0x00022981
 --defsym:uxQueueSpacesAvailable=0x0002299d
 --defsym:uxTaskGetStackHighWaterMark=0x000229c9
+--defsym:vListInitialise=0x00022a6f
+--defsym:vListInitialiseItem=0x00022a85
+--defsym:vListInsert=0x00022a8b
+--defsym:vListInsertEnd=0x00022abb
 --defsym:vPortEnterCritical=0x00022ad5
 --defsym:vPortExitCritical=0x00022b19
 --defsym:vPortFree=0x00022b49

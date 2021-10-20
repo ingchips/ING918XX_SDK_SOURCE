@@ -248,10 +248,15 @@
 0x0002289d T uuid128_to_str
 0x000228f5 T uuid_add_bluetooth_prefix
 0x00022915 T uuid_has_bluetooth_prefix
+0x00022931 T uxListRemove
 0x00022959 T uxQueueMessagesWaiting
 0x00022981 T uxQueueMessagesWaitingFromISR
 0x0002299d T uxQueueSpacesAvailable
 0x000229c9 T uxTaskGetStackHighWaterMark
+0x00022a6f T vListInitialise
+0x00022a85 T vListInitialiseItem
+0x00022a8b T vListInsert
+0x00022abb T vListInsertEnd
 0x00022ad5 T vPortEnterCritical
 0x00022b19 T vPortExitCritical
 0x00022b49 T vPortFree

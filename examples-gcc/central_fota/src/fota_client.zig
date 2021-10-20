@@ -8,6 +8,7 @@ pub usingnamespace @import("gatt_client_async.zig");
 const print = platform_printf;
 const enable_print = print_info == 1;
 
+
 const rom_crc: f_crc_t = @intToPtr(f_crc_t, 0x00000f79);
 
 fn same_version(a: *const prog_ver_t, b: * const prog_ver_t) bool {
@@ -181,7 +182,7 @@ const Client = struct {
         self.mtu -= 3;
 
         const bitmap = ((@intCast(u16, 1) << @intCast(u4, item_cnt)) - 1) & (fota_make_bitmap(self, optional_latest) orelse return -1);
-        if (bitmap == 0) return 0;
+        if (bitmap == 0) return 1;
         if (enable_print) {
             print("update bitmap: %02x\n", bitmap);
         }
