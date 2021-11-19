@@ -6,6 +6,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "trace.h"
+#include "ing918_uecc.h"
 
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -107,9 +108,15 @@ static void watchdog_task(void *pdata)
 
 trace_rtt_t trace_ctx = {0};
 
+int ecc_rng(uint8_t *dest, unsigned size)
+{
+    platform_hrng(dest, size);
+    return 1;
+}
 
 int app_main()
 {
+    uECC_set_rng(ecc_rng);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
     // setup handlers

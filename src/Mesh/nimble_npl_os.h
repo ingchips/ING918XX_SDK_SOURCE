@@ -31,7 +31,6 @@
 #include "task.h"
 #include "timers.h"
 
-extern BaseType_t xTimerIsTimerActive( TimerHandle_t xTimer );
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -220,11 +219,11 @@ ble_npl_callout_stop(struct ble_npl_callout *co)
     xTimerStop(co->handle, portMAX_DELAY);
 }
 
-static inline bool
-ble_npl_callout_is_active(struct ble_npl_callout *co)
-{
-    return xTimerIsTimerActive(co->handle) == pdTRUE;
-}
+//static inline bool
+//ble_npl_callout_is_active(struct ble_npl_callout *co)
+//{
+//    return xTimerIsTimerActive(co->handle) == pdTRUE;
+//}
 
 static inline ble_npl_time_t
 ble_npl_callout_get_ticks(struct ble_npl_callout *co)

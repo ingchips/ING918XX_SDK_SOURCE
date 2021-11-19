@@ -1,16 +1,11 @@
 #define OPTIONAL_RF_CLK
 #include "profilestask.h"
-
 #include "ingsoc.h"
-
-#include "bme280.h"
-#include "iic.h"
 #include <stdio.h>
+#include <string.h>
 
 #include "platform_api.h"
 #include "ing918_uecc.h"
-
-struct bme280_t bme280_data;
 
 uint32_t cb_putc(char *c, void *dummy)
 {
@@ -65,21 +60,6 @@ void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_I2C0));
-
-#ifndef SIMULATION   
-    PINCTRL_SetPadMux(6, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
-    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
-    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10);
-    i2c_init(I2C_PORT_0);
-
-    printf("sensor init...");
-    if (bme280_init(&bme280_data)==0)
-        printf("failed\n");
-    else
-        printf("OK\n");
-#endif
 }
 
 uint32_t setup_profile(void *, void *);

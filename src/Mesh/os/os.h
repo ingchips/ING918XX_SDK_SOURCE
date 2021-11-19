@@ -1,4 +1,5 @@
-/*
+/** @file os.h
+ * 
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +33,7 @@ extern "C" {
 #define max(a, b) ((a)>(b)?(a):(b))
 #endif
 
+#include "syscfg.h"
 #include "nimble_npl.h"
 
 #define OS_ALIGN(__n, __a) (                             \

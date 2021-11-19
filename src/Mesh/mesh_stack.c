@@ -13,6 +13,8 @@
 #include "att_db.h"
 #include "mesh_api.h"
 #include "sig_uuid.h"
+#include "cfg_cli.h"
+#include "glue.h"
 
 #define PANIC(fmt, args...)            \
     do                                 \
@@ -312,9 +314,6 @@ void gap_beacon_enable(void)
         bt_mesh_beacon_enable();
 }
 
-uint16_t fea_layer_sel = 0;
-uint8_t cla_flag = 0;
-
 void mesh_trace_config(uint16_t sel_bits, uint16_t cla_bit)
 {
     fea_layer_sel = sel_bits;
@@ -387,3 +386,198 @@ int8_t set_mesh_sleep_duration(uint32_t ms)
         return -EPERM;
     }
 }
+
+static int8_t ccm_result = 0;
+static int8_t aes_result = -2;
+static uint8_t * ptr_aestext = NULL;
+
+static void mesh_enc_cb(const uint8_t *return_params, void *user_data)
+{
+    extern struct k_sem aes_sem;
+    extern uint8_t *ptr_aestext;
+    set_aes_result(0);
+    reverse_128(return_params + 1, ptr_aestext);
+    k_sem_give(&aes_sem);
+}
+
+void set_ccm_result(uint8_t result)
+{
+    ccm_result = result;
+}
+
+int8_t get_ccm_result()
+{
+    return ccm_result;
+}
+
+void set_aes_result(uint8_t result)
+{
+    aes_result = result;
+}
+
+int8_t get_aes_result()
+{
+    return aes_result;
+}
+
+void user_msg_handler(btstack_user_msg_t * usrmsg)
+{
+    bool done = false;
+    uint32_t msg_id = usrmsg->msg_id;
+    void *data = usrmsg->data;
+
+    switch (msg_id) {
+    case USER_MSG_ID_CCM_REQ:
+        {
+            ccm_data_t *ccm = data;
+            ccm_result = -1;  //reset value
+            gap_start_ccm(
+                ccm->type,          // 0: encrypt  1: decrypt
+                ccm->mic_size,
+                ccm->msg_len,
+                ccm->aad_len,
+                ccm->tag,          // same value will be reported in event
+                ccm->key,
+                ccm->nonce,
+                ccm->msg,
+                ccm->aad,
+                ccm->out_msg);
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_AES_REQ:
+        {
+            aes_data_t *aes = data;
+            aes_result = -1;   //reset value
+            gap_aes_encrypt(aes->key, aes->plaintext, mesh_enc_cb, NULL);
+            ptr_aestext = aes->enc_data;
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_SCAN_RSP_DATA_SET:
+        {
+            scan_rsp_data_t *rsp = data;
+            gap_set_ext_scan_response_data(rsp->adv_handle,rsp->length,rsp->data);
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_EXT_SCAN:
+        {
+            ext_scan_t *scan = data;
+            gap_set_ext_scan_enable(scan->enable,0,0,0);
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_EXT_ADV:
+        {
+            adv_en_t* adv_en = data;
+            gap_set_ext_adv_enable(adv_en->en, adv_en->setsnum, &adv_en->adv_set_conf);
+            done =true;
+        }
+        break;
+
+    case USER_MSG_ID_ADV_PARAM_SET:
+        {
+            adv_param_t *adv_param = data;
+            gap_set_ext_adv_para(adv_param->adv_handle,
+                adv_param->prop,
+                adv_param->inter_min,
+                adv_param->inter_max,
+                adv_param->map,
+                adv_param->addr_type,
+                adv_param->peer_addr_type,
+                adv_param->peer_addr,
+                adv_param->filter,
+                adv_param->tx_power,
+                adv_param->adv_phy,
+                adv_param->max_skip,
+                adv_param->sec_phy,
+                adv_param->sid,
+                adv_param->notify);
+            done =true;
+        }
+        break;
+
+    case USER_MSG_ID_ADV_DATA_SET:
+        {
+            adv_data_t * adv_data = data;
+            gap_set_ext_adv_data(adv_data->adv_handle,adv_data->len,adv_data->data);
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_RAND_ADDR_SET:
+        {
+            rand_addr_t *rand_addr = data;
+            gap_set_adv_set_random_addr(rand_addr->adv_handle,rand_addr->addr);
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_WHITELST_SET:
+        {
+            whitelst_t * whitlst = data;
+            gap_add_whitelist(whitlst->whitaddr,(bd_addr_type_t)whitlst->type);
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_SCAN_PARAM_SET:
+        {
+            scan_param_t * scan_param = data;
+            gap_set_ext_scan_para(scan_param->addr_type,
+            scan_param->pol,
+            scan_param->num,
+            scan_param->config);
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_DISCONNECT:
+        {
+            uint16_t *conn_handle = data;
+            gap_disconnect(*conn_handle);
+            done = true;
+        }
+        break;
+
+    case USER_MSG_ID_WHITELST_RMV:   //clear whitelist in controller
+        {
+            gap_clear_white_lists();
+        }
+        break;
+
+    case USER_MSG_ID_MESH_INIT_DONE:
+        if (service_is_ready(0)) {
+            set_flag_for_adv_sent(1);
+        } else {
+            set_flag_for_adv_sent(0);
+        }
+        set_mesh_sleep_duration(1000);
+        set_relay_duration(1000);
+
+        if(bt_mesh_relay_get() == BT_MESH_RELAY_ENABLED) {
+        } else {
+        }
+
+        if(bt_mesh_gatt_proxy_get() == BT_MESH_GATT_PROXY_ENABLED) {
+        } else {
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    //relase the memory
+    if (done) {
+        btstack_memory_dtbt_small_msg_free((DTBT_small_msg_t *)(GET_MSG_BLOCK_HEAD_BASE_DATA(data)));
+    }
+
+    return;
+}
+

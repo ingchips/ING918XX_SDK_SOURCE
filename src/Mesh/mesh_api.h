@@ -1,6 +1,6 @@
 
-/** @file     mesh_api.h                                                 *                                                                            
-*  @brief    function API and data structure for customer to work with stack               *                       
+/** @file     mesh_api.h                                                 *
+*  @brief    function API and data structure for customer to work with stack               *
 *  @version  1.0.0.                                                     *
 *  @date     2019/10/10                                                 *
 *                                                                       *
@@ -60,11 +60,11 @@
 typedef enum TARACE_DEF
 {
     TRACE_DISABLE,
-    TRACE_ENABLE  
+    TRACE_ENABLE
 }trace_def_t;
-    
 
-/** @brief configure a mesh device 
+
+/** @brief configure a mesh device
  *
  *     to configure a mesh device:  prov capability  and support model etc.
  *
@@ -94,7 +94,7 @@ void mesh_setup(const struct bt_mesh_prov *a_prov,
 
 /** @brief platform configure
  *
- *      Some platform only supports one of pb_gatt and pb_adv, and some details that associate with 
+ *      Some platform only supports one of pb_gatt and pb_adv, and some details that associate with
  *    the special platform. So to provide this API to setup special configuration of platform
  *
  *  @param platform    identify platform  1: PB_ADV platform
@@ -105,7 +105,7 @@ void mesh_setup(const struct bt_mesh_prov *a_prov,
  *  @param param         the private param that platform specifies ,it could be NULL
  *
  *  @note   here support Alibaba tianmao ,and CSR mesh platform
- */									   
+ */
 void mesh_platform_config(uint8_t platform , uint8_t* addr,uint8_t* param);
 
 /** @brief  judge that the mesh device is provisioned or not.
@@ -120,7 +120,7 @@ bool is_provisioned_poweron(void);
 
 /** @brief  To start a mesh service for the application level.
  *
- *      Provide to application to start a mesh client service 
+ *      Provide to application to start a mesh client service
  *
  *  @param msg     pointer to app_request_t structure
  *
@@ -133,7 +133,7 @@ bool is_provisioned_poweron(void);
  */
 void mesh_service_trigger(uint8_t* msg, uint8_t len);
 
-/** @brief  faciliate to write to NVM 
+/** @brief  faciliate to write to NVM
  *
  *     Currently Only use to remove the provsion information.
  *
@@ -149,8 +149,8 @@ void flash_write(void);
 
 /** @brief   transfer uart data to mesh stack
  *
- *     If application support uart input operation, then this API will transfer uart data from application 
- *     to mesh stack.             
+ *     If application support uart input operation, then this API will transfer uart data from application
+ *     to mesh stack.
  *
  *  @param mesh_msg    buffer from the uart
  *
@@ -160,11 +160,11 @@ void mesh_at_entry(uint8_t* mesh_msg ,uint8_t len);
 
 /** @brief   check some appid is avaliable from stack inside
  *
- *    Use this API to check whther an appid exist in mesh stack, if exist then application could start the service 
+ *    Use this API to check whther an appid exist in mesh stack, if exist then application could start the service
  *    assocates with is appid.
  *
  *  @param appid     mesh application id
- * 
+ *
  *  @return bool    FALSE : not exist
  *                  TRUE:exist
  */
@@ -173,14 +173,14 @@ bool service_is_ready(uint16_t appid);
 /** @brief   disable beacon advertising function
  *
  *     Sometimes application would require disable beacon advertising, so this API would take it effect. this API must be called in host task.
- *    
+ *
  */
 void  gap_beacon_disable(void);
 
 /** @brief   enable beacon advertising function
  *
  *     revert to beaconning adv,and  this API should must be called in host task.
- *    
+ *
  */
 void  gap_beacon_enable(void);
 /**
@@ -189,12 +189,12 @@ void  gap_beacon_enable(void);
  * @ingroup bt_mesh
  * @{
  */
- 
+
 /** @brief setup the uart data output function from APP
 *
 *  function pointer mesh_at_out declaration.
-*  the system support AT command, and customer could nominate a uart trace port to 
-*  print the response AT command  execute results,or some trace that the customer 
+*  the system support AT command, and customer could nominate a uart trace port to
+*  print the response AT command  execute results,or some trace that the customer
 *  want to get from specified UART.So system needs to know such funcion pointer from
 *  customer which will redirect such trace to the appointed UART.
 *
@@ -214,11 +214,11 @@ typedef void (*mesh_at_out)(const char* buf, int len);
 *
 *  @param enable       enable or disable the trace output. @see trace_info
 *
-*  @param sel_bits     bitsets for which layer sets the trace information would print. 
+*  @param sel_bits     bitsets for which layer sets the trace information would print.
 *
 *  @param cla_bit      bitsets which class trace will print associated to sel_bits  @see TRACE_CLA
-* 
-*           
+*
+*
 */
 
 void mesh_trace_config(uint16_t sel_bits,uint16_t cla_bit);
@@ -226,7 +226,7 @@ void mesh_trace_config(uint16_t sel_bits,uint16_t cla_bit);
 
 /** @brief    an API configure for mesh stack to transfer  data to uart
  *
- *    Sometimes application would expect mesh stack trace info output to the desired port, so application would 
+ *    Sometimes application would expect mesh stack trace info output to the desired port, so application would
  *    configure this function through this API. Stack inside would call this function if trace is needed.
  *
  *  @param ptrfun     function pointer to typed mesh_at_out. @see mesh_at_out
@@ -244,38 +244,38 @@ void set_mesh_uart_output_func(mesh_at_out ptrfun);
  * @ingroup bluetooth_mesh
  * @{
  */
- 
+
 /** @brief    to get the default event queue for  MESH stack
  *
  *  @return ble_npl_eventq  a pointer to this type
  *
  */
- 
+
 struct ble_npl_eventq *nimble_port_get_dflt_eventq(void);
 
-/** @brief   enable or disable white list specified by mesh  
+/** @brief   enable or disable white list specified by mesh
  *
  *  @param en           0: disable  1: enable
- * 
+ *
  *
  */
 void mesh_whitlist_enable(uint8_t en);
 
-/** @brief  start the scanning in mesh 
+/** @brief  start the scanning in mesh
  *
- *  @note   this API must be only used in mesh task 
+ *  @note   this API must be only used in mesh task
  *
  */
 int bt_mesh_scan_enable(void);
 
-/** @brief  stop the scanning in mesh  
+/** @brief  stop the scanning in mesh
  *
  *  @note   this API must be only used in mesh task
  *
  */
 int bt_mesh_scan_disable(void);
 
-/** @brief   setup the items in white list 
+/** @brief   setup the items in white list
  *
  *  @param addr        BLE device address into white list
  *
@@ -286,7 +286,7 @@ int bt_mesh_scan_disable(void);
  void bt_mesh_set_white_list(uint8_t* addr, uint8_t type);
 
 
-/** @brief   stop the advertising in mesh task. There are 2 advertising sets in mesh, and advertising handle are specified internally. 
+/** @brief   stop the advertising in mesh task. There are 2 advertising sets in mesh, and advertising handle are specified internally.
  *           One for proxy service ,the advertising handle is 7 , the other one for beacon service, the advertising handle is 6.
  *
  *  @param proxy       TRUE: stop advertising for proxy service  FALSE: stop advertisiong for beacon service
@@ -295,7 +295,7 @@ int bt_mesh_scan_disable(void);
 int bt_le_adv_stop(bool proxy);
 
 /** @brief   Once mesh deliver the advertising data to host for assure of that the advertising data would be successfully sent to peer,
- *           the mesh task would sleep for a little time (duration) avoid to sending new advertising data to host. application could adjust this 
+ *           the mesh task would sleep for a little time (duration) avoid to sending new advertising data to host. application could adjust this
  *           duration as times of the adverting interval.
  *
  *  @param   ms        sleeping duration. 20ms is the minimum value. normally as 60ms.
@@ -316,7 +316,7 @@ int8_t set_mesh_sleep_duration(uint32_t ms);
  *  @param id          model is vendor specified. so it is the id of vendor model.
  *
  *  @param company     the commpay id that specifies the vendor model id.
- * 
+ *
  *  @return            0: success   others: failed
  *
  *  @note    typical scenario for this API is that many light models are groupped, so they will be light on/off simultaneously.
@@ -334,7 +334,7 @@ int8_t mesh_add_local_group_addr(uint16_t elem_addr, uint16_t sub_addr, uint32_t
  *  @param id          model is vendor specified. so it is the id of vendor model.
  *
  *  @param company     the commpay id that specifies the vendor model id.
- * 
+ *
  *  @return            0: success   others: failed
  *
  *  @note    typical scenario for this API is that many light models are groupped, so they will be light on/off simultaneously.
@@ -344,7 +344,7 @@ int8_t mesh_delete_local_group_addr(uint16_t elem_addr, uint16_t sub_addr, uint3
 
 /** @brief   to mark a flag that application would set current node as a provisioner.
  *
- *  @note    once a device is provisioned and turn to be a node. In consideration of the fast provision, the node could play 
+ *  @note    once a device is provisioned and turn to be a node. In consideration of the fast provision, the node could play
  *           the role of a provisioner, so call this API to mark this role. This API should be called in HOST task.
  *
  *  @return             0: success  others: failed
@@ -364,11 +364,11 @@ int8_t mesh_provision_disable(void);
  *
  *  @param mark         0: not stop advertising    1:stop advertising once sent out
  *
- *  @note    There are 2 modes to transfer the advertising package. One is advertising enable always on ,and controller would 
- *           advertise the last advertising data even if the data has been received by peer, so it would increase the power 
- *           consumption,and the other one is advertising is stopped once the advertising data has been sent for a piece of time,and 
+ *  @note    There are 2 modes to transfer the advertising package. One is advertising enable always on ,and controller would
+ *           advertise the last advertising data even if the data has been received by peer, so it would increase the power
+ *           consumption,and the other one is advertising is stopped once the advertising data has been sent for a piece of time,and
  *           it can save the power.
- *           This piece of time could be defined by the API: int8_t set_mesh_sleep_duration(uint32_t ms).           
+ *           This piece of time could be defined by the API: int8_t set_mesh_sleep_duration(uint32_t ms).
  */
 void set_flag_for_adv_sent(uint8_t  mark);
 
@@ -441,7 +441,7 @@ bool bt_mesh_is_provisioned(void);
  *           0: the package is passed to mesh stack.
  *
  *  @note  In order to decrease the memory allocation for the duplicated advertising packet of mesh package,the functionality will compare
- *         current advertising packet with last received advertising packet,if they are same ,then the current packet would 
+ *         current advertising packet with last received advertising packet,if they are same ,then the current packet would
  *         be dropped.
  */
 uint8_t filtermeshADV(uint8_t type, uint8_t *packet, uint8_t size)  PRIVATE_FUNCTION;
@@ -466,27 +466,27 @@ int bt_mesh_init(u8_t own_addr_type, const struct bt_mesh_prov *prov, const stru
 void bt_mesh_beacon_init(void)  PRIVATE_FUNCTION;
 
 /** @brief called in mesh task.
- *  
+ *
  *  @note should call gap_beacon_disable instead of it ,if needed.
  */
 void bt_mesh_beacon_disable(void) PRIVATE_FUNCTION;
 
 /** @brief called in mesh task.
- *  
+ *
  *  @note should call gap_beacon_enable instead of it ,if needed.
  */
 void bt_mesh_beacon_enable(void) PRIVATE_FUNCTION;
 
 /** @brief configure parameters for different platform
- *  
+ *
  *  @note currently support Tianmao genie platform PB_ADV mode,and also support PB_GATT mode.
  */
 void mesh_platform_setup(void);
 
 /** @brief notify the attribut handle of database.
- *  
+ *
  */
-void bt_mesh_handle_set(uint16_t prov_service, uint16_t prov_in, uint16_t prov_out, 
+void bt_mesh_handle_set(uint16_t prov_service, uint16_t prov_in, uint16_t prov_out,
                         uint16_t proxy_service, uint16_t proxy_in, uint16_t proxy_out);
 
 /**@brief a initialize for mesh AT commands environement
@@ -494,7 +494,7 @@ void bt_mesh_handle_set(uint16_t prov_service, uint16_t prov_in, uint16_t prov_o
  */
 void ble_mesh_shell_init(void);
 
-/**@brief configure the proxy service role 
+/**@brief configure the proxy service role
  *
  * @param role  typed of svc_role;
  */
@@ -544,4 +544,7 @@ void beacon_param_config(uint32_t unprov_inter, uint32_t prov_inter, uint32_t ad
 /*
 * @}
 */
+
+void set_relay_duration(uint16_t dura);
+
 #endif

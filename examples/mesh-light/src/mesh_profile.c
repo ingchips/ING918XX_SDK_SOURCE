@@ -208,7 +208,7 @@ int mesh_srv_restart()
 {
     printf("reset dis conn %d\n", mesh_conn_handle);
     if (mesh_conn_handle != 0xffff)
-        hci_cmds_put(DISCONNECT, &mesh_conn_handle, 2);
+        hci_cmds_put(USER_MSG_ID_DISCONNECT, &mesh_conn_handle, 2);
     else
     {
         bt_mesh_gatt_config(MESH_GATT_PROV);

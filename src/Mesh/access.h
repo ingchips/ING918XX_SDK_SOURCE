@@ -29,8 +29,8 @@
 #define BT_MESH_KEY_DEV_REMOTE    0xfffd
 
 #define BT_MESH_IS_DEV_KEY(key) (key == BT_MESH_KEY_DEV_LOCAL || \
-				 key == BT_MESH_KEY_DEV_REMOTE)
-                 
+                 key == BT_MESH_KEY_DEV_REMOTE)
+
 /** Helper to define a mesh element within an array.
  *
  *  In case the element has no SIG or Vendor models the helper
@@ -42,26 +42,26 @@
  */
 #define BT_MESH_ELEM(_loc, _mods, _vnd_mods)        \
 {                                                   \
-	.loc              = (_loc),                 \
-	.model_count      = ARRAY_SIZE(_mods),      \
-	.models           = (_mods),                \
-	.vnd_model_count  = ARRAY_SIZE(_vnd_mods),  \
-	.vnd_models       = (_vnd_mods),            \
+    .loc              = (_loc),                 \
+    .model_count      = ARRAY_SIZE(_mods),      \
+    .models           = (_mods),                \
+    .vnd_model_count  = ARRAY_SIZE(_vnd_mods),  \
+    .vnd_models       = (_vnd_mods),            \
 }
 
 /** Abstraction that describes a Mesh Element */
 struct bt_mesh_elem {
-	/* Unicast Address. Set at runtime during provisioning. */
-	u16_t addr;
+    /* Unicast Address. Set at runtime during provisioning. */
+    u16_t addr;
 
-	/* Location Descriptor (GATT Bluetooth Namespace Descriptors) */
-	const u16_t loc;
+    /* Location Descriptor (GATT Bluetooth Namespace Descriptors) */
+    const u16_t loc;
 
-	const u8_t model_count;
-	const u8_t vnd_model_count;
+    const u8_t model_count;
+    const u8_t vnd_model_count;
 
-	struct bt_mesh_model * const models;
-	struct bt_mesh_model * const vnd_models;
+    struct bt_mesh_model * const models;
+    struct bt_mesh_model * const vnd_models;
 };
 
 /* Foundation Models */
@@ -124,43 +124,45 @@ struct bt_mesh_elem {
 #define BT_MESH_MODEL_ID_LIGHT_LC_SETUPSRV         0x1310
 #define BT_MESH_MODEL_ID_LIGHT_LC_CLI              0x1311
 
+#define BT_MESH_VND_MODEL_ID_INGCHIPS_COMP         0x4321
+
 /** Message sending context. */
 struct bt_mesh_msg_ctx {
-	/** NetKey Index of the subnet to send the message on. */
-	u16_t net_idx;
+    /** NetKey Index of the subnet to send the message on. */
+    u16_t net_idx;
 
-	/** AppKey Index to encrypt the message with. */
-	u16_t app_idx;
+    /** AppKey Index to encrypt the message with. */
+    u16_t app_idx;
 
-	/** Remote address. */
-	u16_t addr;
+    /** Remote address. */
+    u16_t addr;
 
-	/** Destination address of a received message. Not used for sending. */
-	u16_t recv_dst;
+    /** Destination address of a received message. Not used for sending. */
+    u16_t recv_dst;
 
-	/** Received TTL value. Not used for sending. */
-	u8_t  recv_ttl:7;
+    /** Received TTL value. Not used for sending. */
+    u8_t  recv_ttl:7;
 
-	/** Force sending reliably by using segment acknowledgement */
-	u8_t  send_rel:1;
+    /** Force sending reliably by using segment acknowledgement */
+    u8_t  send_rel:1;
 
-	/** TTL, or BT_MESH_TTL_DEFAULT for default TTL. */
-	u8_t  send_ttl;
+    /** TTL, or BT_MESH_TTL_DEFAULT for default TTL. */
+    u8_t  send_ttl;
 };
 
 /** @brief operation of model
 */
 struct bt_mesh_model_op {
-	/* OpCode encoded using the BT_MESH_MODEL_OP_* macros */
-	const u32_t  opcode;
+    /* OpCode encoded using the BT_MESH_MODEL_OP_* macros */
+    const u32_t  opcode;
 
-	/* Minimum required message length */
-	const size_t min_len;
+    /* Minimum required message length */
+    const size_t min_len;
 
-	/* Message handler for the opcode */
-	void (*const func)(struct bt_mesh_model *model,
-			   struct bt_mesh_msg_ctx *ctx,
-			   struct os_mbuf *buf);
+    /* Message handler for the opcode */
+    void (*const func)(struct bt_mesh_model *model,
+               struct bt_mesh_msg_ctx *ctx,
+               struct os_mbuf *buf);
 };
 
 #define BT_MESH_MODEL_OP_1(b0) (b0)
@@ -169,34 +171,34 @@ struct bt_mesh_model_op {
 
 #define BT_MESH_MODEL_OP_END { 0, 0, NULL }
 #define BT_MESH_MODEL_NO_OPS ((struct bt_mesh_model_op []) \
-			      { BT_MESH_MODEL_OP_END })
+                  { BT_MESH_MODEL_OP_END })
 
 /** Helper to define an empty model array */
 #define BT_MESH_MODEL_NONE ((struct bt_mesh_model []){})
 
 #define BT_MESH_MODEL(_id, _op, _pub, _user_data)                            \
 {                                                                            \
-	.id = (_id),                                                         \
-	.op = _op,                                                           \
-	.keys = { [0 ... (CONFIG_BT_MESH_MODEL_KEY_COUNT - 1)] =             \
-			BT_MESH_KEY_UNUSED },                                \
-	.pub = _pub,                                                         \
-	.groups = { [0 ... (CONFIG_BT_MESH_MODEL_GROUP_COUNT - 1)] =         \
-			BT_MESH_ADDR_UNASSIGNED },                           \
-	.user_data = _user_data,                                             \
+    .id = (_id),                                                         \
+    .op = _op,                                                           \
+    .keys = { [0 ... (CONFIG_BT_MESH_MODEL_KEY_COUNT - 1)] =             \
+            BT_MESH_KEY_UNUSED },                                \
+    .pub = _pub,                                                         \
+    .groups = { [0 ... (CONFIG_BT_MESH_MODEL_GROUP_COUNT - 1)] =         \
+            BT_MESH_ADDR_UNASSIGNED },                           \
+    .user_data = _user_data,                                             \
 }
 
 #define BT_MESH_MODEL_VND(_company, _id, _op, _pub, _user_data)              \
 {                                                                            \
-	.vnd.company = (_company),                                           \
-	.vnd.id = (_id),                                                     \
-	.op = _op,                                                           \
-	.pub = _pub,                                                         \
-	.keys = { [0 ... (CONFIG_BT_MESH_MODEL_KEY_COUNT - 1)] =             \
-			BT_MESH_KEY_UNUSED },                                \
-	.groups = { [0 ... (CONFIG_BT_MESH_MODEL_GROUP_COUNT - 1)] =         \
-			BT_MESH_ADDR_UNASSIGNED },                           \
-	.user_data = _user_data,                                             \
+    .vnd.company = (_company),                                           \
+    .vnd.id = (_id),                                                     \
+    .op = _op,                                                           \
+    .pub = _pub,                                                         \
+    .keys = { [0 ... (CONFIG_BT_MESH_MODEL_KEY_COUNT - 1)] =             \
+            BT_MESH_KEY_UNUSED },                                \
+    .groups = { [0 ... (CONFIG_BT_MESH_MODEL_GROUP_COUNT - 1)] =         \
+            BT_MESH_ADDR_UNASSIGNED },                           \
+    .user_data = _user_data,                                             \
 }
 
 /** @def BT_MESH_TRANSMIT
@@ -244,7 +246,7 @@ struct bt_mesh_model_op {
  *          values of the configuration model data.
  */
 #define BT_MESH_PUB_TRANSMIT(count, int_ms) BT_MESH_TRANSMIT(count,           \
-							     (int_ms) / 5)
+                                 (int_ms) / 5)
 
 /** @def BT_MESH_PUB_TRANSMIT_COUNT
  *
@@ -269,100 +271,100 @@ struct bt_mesh_model_op {
 /** @brief Model publication context.
   */
 struct bt_mesh_model_pub {
-	/** The model the context belongs to. Initialized by the stack. */
-	struct bt_mesh_model *mod;
+    /** The model the context belongs to. Initialized by the stack. */
+    struct bt_mesh_model *mod;
 
-	u16_t addr;         /**< Publish Address. */
-	u16_t key;          /**< Publish AppKey Index. */
+    u16_t addr;         /**< Publish Address. */
+    u16_t key;          /**< Publish AppKey Index. */
 
-	u8_t  ttl;          /**< Publish Time to Live. */
-	u8_t  retransmit;   /**< Retransmit Count & Interval Steps. */
-	u8_t  period;       /**< Publish Period. */
-	u8_t  period_div:4, /**< Divisor for the Period. */
-	      cred:1,       /**< Friendship Credentials Flag. */
-	      count:3;      /**< Retransmissions left. */
+    u8_t  ttl;          /**< Publish Time to Live. */
+    u8_t  retransmit;   /**< Retransmit Count & Interval Steps. */
+    u8_t  period;       /**< Publish Period. */
+    u8_t  period_div:4, /**< Divisor for the Period. */
+          cred:1,       /**< Friendship Credentials Flag. */
+          count:3;      /**< Retransmissions left. */
 
-	u32_t period_start; /**< Start of the current period. */
+    u32_t period_start; /**< Start of the current period. */
 
-	/** @brief Publication buffer, containing the publication message.
-	 *
-	 *  The application is expected to initialize this with
-	 *  a valid net_buf_simple pointer, with the help of e.g.
-	 *  the NET_BUF_SIMPLE() macro. The publication buffer must
-	 *  contain a valid publication message before calling the
-	 *  bt_mesh_model_publish() API or after the publication's
-	 *  @ref bt_mesh_model_pub.update callback has been called
-	 *  and returned success. The buffer must be created outside
-	 *  of function context, i.e. it must not be on the stack.
-	 *  This is most conveniently acheived by creating it inline
-	 *  when declaring the publication context:
-	 *
-	 *      static struct bt_mesh_model_pub my_pub = {
-	 *              .msg = NET_BUF_SIMPLE(size),
-	 *      };
-	 */
-	struct os_mbuf *msg;
+    /** @brief Publication buffer, containing the publication message.
+     *
+     *  The application is expected to initialize this with
+     *  a valid net_buf_simple pointer, with the help of e.g.
+     *  the NET_BUF_SIMPLE() macro. The publication buffer must
+     *  contain a valid publication message before calling the
+     *  bt_mesh_model_publish() API or after the publication's
+     *  @ref bt_mesh_model_pub.update callback has been called
+     *  and returned success. The buffer must be created outside
+     *  of function context, i.e. it must not be on the stack.
+     *  This is most conveniently acheived by creating it inline
+     *  when declaring the publication context:
+     *
+     *      static struct bt_mesh_model_pub my_pub = {
+     *              .msg = NET_BUF_SIMPLE(size),
+     *      };
+     */
+    struct os_mbuf *msg;
 
-	/** @brief Callback for updating the publication buffer.
-	 *
-	 *  When set to NULL, the model is assumed not to support
-	 *  periodic publishing. When set to non-NULL the callback
-	 *  will be called periodically and is expected to update
-	 *  @ref bt_mesh_model_pub.msg with a valid publication
-	 *  message.
-	 *
-	 *  @param mod The Model the Publication Context belogs to.
-	 *
-	 *  @return Zero on success or (negative) error code otherwise.
-	 */
-	int (*update)(struct bt_mesh_model *mod);
+    /** @brief Callback for updating the publication buffer.
+     *
+     *  When set to NULL, the model is assumed not to support
+     *  periodic publishing. When set to non-NULL the callback
+     *  will be called periodically and is expected to update
+     *  @ref bt_mesh_model_pub.msg with a valid publication
+     *  message.
+     *
+     *  @param mod The Model the Publication Context belogs to.
+     *
+     *  @return Zero on success or (negative) error code otherwise.
+     */
+    int (*update)(struct bt_mesh_model *mod);
 
-	/** Publish Period Timer. Only for stack-internal use. */
-	struct k_delayed_work timer;
+    /** Publish Period Timer. Only for stack-internal use. */
+    struct k_delayed_work timer;
 };
 
-/** @brief Abstraction that describes a Mesh Model instance 
+/** @brief Abstraction that describes a Mesh Model instance
   */
 struct bt_mesh_model {
-	union {
-		const u16_t id;
-		struct {
-			u16_t company;
-			u16_t id;
-		} vnd;
-	};
+    union {
+        const u16_t id;
+        struct {
+            u16_t company;
+            u16_t id;
+        } vnd;
+    };
 
-	/* Internal information, mainly for persistent storage */
-	u8_t  elem_idx;   /* Belongs to Nth element */
-	u8_t  mod_idx;    /* Is the Nth model in the element */
-	u16_t flags;      /* Information about what has changed */
+    /* Internal information, mainly for persistent storage */
+    u8_t  elem_idx;   /* Belongs to Nth element */
+    u8_t  mod_idx;    /* Is the Nth model in the element */
+    u16_t flags;      /* Information about what has changed */
 
-	/* Model Publication */
-	struct bt_mesh_model_pub * const pub;
+    /* Model Publication */
+    struct bt_mesh_model_pub * const pub;
 
-	/* AppKey List */
-	u16_t keys[CONFIG_BT_MESH_MODEL_KEY_COUNT];
+    /* AppKey List */
+    u16_t keys[CONFIG_BT_MESH_MODEL_KEY_COUNT];
 
-	/* Subscription List (group or virtual addresses) */
-	u16_t groups[CONFIG_BT_MESH_MODEL_GROUP_COUNT];
+    /* Subscription List (group or virtual addresses) */
+    u16_t groups[CONFIG_BT_MESH_MODEL_GROUP_COUNT];
 
-	const struct bt_mesh_model_op * const op;
+    const struct bt_mesh_model_op * const op;
 
-	/* Model-specific user data */
-	void *user_data;
+    /* Model-specific user data */
+    void *user_data;
 };
 
-/** @brief callback funtion mesh messaget sent 
+/** @brief callback funtion mesh messaget sent
   */
 struct bt_mesh_send_cb {
-	void (*start)(u16_t duration, int err, void *cb_data);
-	void (*end)(int err, void *cb_data);
+    void (*start)(u16_t duration, int err, void *cb_data);
+    void (*end)(int err, void *cb_data);
 };
 
-/** @brief callback funtion mesh messaget sent 
+/** @brief callback funtion mesh messaget sent
  *
  *  @param msg      message to be sent,see structure @ref #os_mbuf
- *  
+ *
  *  @param opcode   vendor or SIG defined operation code.
  *
   */
@@ -386,10 +388,10 @@ void bt_mesh_model_msg_init(struct os_mbuf *msg, u32_t opcode);
  * @return 0 on success, or (negative) error code on failure.
  */
 int bt_mesh_model_send(struct bt_mesh_model *model,
-		       struct bt_mesh_msg_ctx *ctx,
-		       struct os_mbuf *msg,
-		       const struct bt_mesh_send_cb *cb,
-		       void *cb_data);
+               struct bt_mesh_msg_ctx *ctx,
+               struct os_mbuf *msg,
+               const struct bt_mesh_send_cb *cb,
+               void *cb_data);
 
 /**
  * @brief Send a model publication message.
@@ -451,12 +453,12 @@ struct bt_mesh_model *bt_mesh_model_get(bool vnd, u8_t elem_idx, u8_t mod_idx);
 int8_t mesh_app_start(struct bt_mesh_model *model,uint16_t app_idx ,uint16_t dst, u32_t opcode,uint8_t *msg, uint8_t len, uint8_t bear);
 /** Node Composition */
 struct bt_mesh_comp {
-	u16_t cid;
-	u16_t pid;
-	u16_t vid;
+    u16_t cid;
+    u16_t pid;
+    u16_t vid;
 
-	size_t elem_count;
-	struct bt_mesh_elem *elem;
+    size_t elem_count;
+    struct bt_mesh_elem *elem;
 };
 
 /**

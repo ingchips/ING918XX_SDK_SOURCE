@@ -5,6 +5,7 @@
 #define ING918_UECC_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* Specifies whether compressed point format is supported.
    Set to 0 to disable point compression/decompression functions. */
@@ -22,6 +23,7 @@ extern "C"
 
 uECC_Curve uECC_secp192r1(void);
 uECC_Curve uECC_secp256r1(void);
+uECC_Curve uECC_secp256k1(void);
 
 /* uECC_RNG_Function type
 The RNG function should fill 'size' random bytes into 'dest'. It should return 1 if
