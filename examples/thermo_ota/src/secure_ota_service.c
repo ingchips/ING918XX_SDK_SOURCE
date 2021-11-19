@@ -42,6 +42,7 @@ static uint8_t  ota_downloading = 0;
 static uint32_t ota_start_addr = 0;
 static uint32_t ota_page_offset = 0;
 static uint8_t  page_buffer[PAGE_SIZE];
+static uint8_t  sec_validated = 0;
 
 typedef struct
 {
@@ -93,7 +94,13 @@ void ota_init_service()
         ATT_PROPERTY_READ | ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_DYNAMIC, NULL, 0);
 }
 
-void ota_init_handles(const uint16_t handler_ver, const uint16_t handle_ctrl, const uint16_t handle_data,
+void ota_connected(void)
+{
+    ota_ctrl[0] = OTA_STATUS_DISABLED;
+    sec_validated = 0;
+}
+
+void secure_ota_init_handles(const uint16_t handler_ver, const uint16_t handle_ctrl, const uint16_t handle_data,
     const uint16_t handle_pk)
 {
     att_ota_ver_handle = handler_ver;
@@ -135,6 +142,9 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
 
     if (att_handle == ATT_OTA_HANDLE_CTRL)
     {
+        if (sec_validated == 0)
+            return 0;
+
         if (OTA_CTRL_START == buffer[0])
         {
             ota_ctrl[0] = OTA_STATUS_OK;
@@ -195,7 +205,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 break;
             if ((0 == ota_downloading) || (buffer_size < 1 + SIG_SIZE + sizeof(ota_meta_t)))
             {
-                const ota_meta_t *meta = (const ota_meta_t *)(buffer + 1);
+                const sec_ota_meta_t *meta = (const sec_ota_meta_t *)(buffer + 1);
                 int s = buffer + buffer_size - (uint8_t *)&meta->entry;
                 if (decrypt_and_verify((uint8_t *)&meta->entry,
                                        s,
@@ -229,7 +239,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
     }
     else if (att_handle == ATT_OTA_HANDLE_DATA)
     {
-        if (OTA_STATUS_OK == ota_ctrl[0])
+        if ((OTA_STATUS_OK == ota_ctrl[0]) && sec_validated)
         {
             if (   (buffer_size & 0x3) || (0 == ota_downloading)
                 || (ota_page_offset + buffer_size > PAGE_SIZE))
@@ -252,7 +262,8 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
         {
             ota_ctrl[0] = OTA_STATUS_ERROR;
             return 0;
-        }        
+        }
+        sec_validated = 1;        
         memcpy(session_keys.peer_pk, buffer, sizeof(session_keys.peer_pk));
         uECC_shared_secret(buffer, session_keys.sk, session_keys.dh_sk, CURVE);
         calc_sha_256(session_keys.xor_sk, session_keys.dh_sk, sizeof(session_keys.dh_sk));
@@ -277,13 +288,19 @@ int ota_read_callback(uint16_t att_handle, uint16_t offset, uint8_t * buffer, ui
         else
             return 0;
     }
-
+    
     if (att_handle == ATT_OTA_HANDLE_CTRL)
     {
         buffer[0] = ota_ctrl[0];
     }
     else if (att_handle == ATT_OTA_HANDLE_VER)
     {
+        if (0 == sec_validated)
+        {
+            memset(buffer, 0, buffer_size);
+            return buffer_size;
+        }
+
         ota_ver_t *this_version = (ota_ver_t *)buffer;
         const platform_ver_t * v = platform_get_version();
 

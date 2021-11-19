@@ -26,9 +26,11 @@
 
 #ifndef _DEVICE_COMPOSITION_H
 #define _DEVICE_COMPOSITION_H
+
 #include "mesh_def.h"
-#define CID_RUNTIME INGCHIPS_COMP_ID
-#define CID_RUNTIME2 ALIbaba_COMP_ID
+
+//#define CID_RUNTIME INGCHIPS_COMP_ID
+//#define CID_RUNTIME2 ALIbaba_COMP_ID
 #define STATE_OFF	0x00
 #define STATE_ON	0x01
 #define STATE_DEFAULT	0x01
@@ -153,18 +155,15 @@ struct light_ctl_state {
 	struct transition *transition;
 };
 
-extern struct generic_onoff_state gen_onoff_srv_root_user_data;
-extern struct generic_level_state gen_level_srv_root_user_data;
-extern struct gen_def_trans_time_state gen_def_trans_time_srv_user_data;
-extern struct generic_onpowerup_state gen_power_onoff_srv_user_data;
-extern struct light_lightness_state light_lightness_srv_user_data;
-extern struct light_ctl_state light_ctl_srv_user_data;
-extern struct generic_level_state gen_level_srv_s0_user_data;
+extern struct generic_onoff_state      gen_onoff_srv_root_user_data;
+extern struct generic_level_state      gen_level_srv_root_user_data;
+extern struct light_lightness_state    light_lightness_srv_user_data;
+extern struct light_ctl_state          light_ctl_srv_user_data;
+extern struct generic_level_state      gen_level_srv_s0_user_data;
 
-extern struct bt_mesh_model root_models[];
-extern struct bt_mesh_model vnd_models[];
-extern struct bt_mesh_model s0_models[];
-
+extern uint8_t g_gen_onoff_state;
+extern int16_t g_gen_level_state;
+extern uint32_t GWW, GCW;
 extern const struct bt_mesh_comp comp;
 
 void gen_onoff_publish(struct bt_mesh_model *model);
@@ -174,6 +173,10 @@ void light_lightness_linear_publish(struct bt_mesh_model *model);
 void light_ctl_publish(struct bt_mesh_model *model);
 void light_ctl_temp_publish(struct bt_mesh_model *model);
 struct bt_mesh_comp * get_comp_of_node(void);
-void init_pub(void);
+void device_composition_init_pub(void);
 uint8_t model_info_pub(void);
+bool get_group_addr_by_id(uint16_t id,uint16_t* group);
+struct bt_mesh_model * get_model_by_id(uint16_t id);
+void device_composition_data_init(void);
+
 #endif

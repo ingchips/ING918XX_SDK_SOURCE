@@ -1,4 +1,7 @@
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "platform_api.h"
 #include "att_db.h"
 #include "gap.h"
@@ -7,17 +10,13 @@
 #include "ota_service.h"
 
 #include "att_db_util.h"
-
-#ifndef SIMULATION
 #include "bme280.h"
-#else
-#include <stdlib.h>
-#endif
-
-#include <stdio.h>
+#include "iic.h"
 
 #include "FreeRTOS.h"
 #include "timers.h"
+
+extern void ota_connected(void);
 
 uint16_t att_temp_value_handle = 0;
 uint16_t att_client_desc_value_handle = 0;
@@ -27,14 +26,67 @@ uint8_t temperature_value[]={0x00,0x00,0x00,0x00,0xFE};
 static int temperture_notify_enable=0;
 static int temperture_indicate_enable=0;
 
+#define I2C_PORT        I2C_PORT_0
+#define BME280_ADDR     BME280_I2C_ADDR_PRIM
+
+BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
+{
+    i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len);
+    return BME280_OK;
+}
+
+BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
+                                                    void *intf_ptr)
+{
+    uint8_t data[len + 1];
+    data[0] = reg_addr;
+    memcpy(data + 1, reg_data, len);
+    i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data));
+    return BME280_OK;
+}
+
+void user_delay_us(uint32_t period, void *intf_ptr)
+{
+    uint32_t ms = (period + 999) / 1000;
+    vTaskDelay(pdMS_TO_TICKS(ms));
+}
+
+uint8_t dev_addr = BME280_ADDR;
+struct bme280_dev bme280_data =
+{
+    .intf_ptr = &dev_addr,
+    .intf = BME280_I2C_INTF,
+    .read = user_i2c_read,
+    .write = user_i2c_write,
+    .delay_us = user_delay_us,
+    /* Recommended mode of operation: Indoor navigation */
+    .settings =
+    {
+        .osr_h = BME280_OVERSAMPLING_1X,
+        .osr_p = BME280_OVERSAMPLING_16X,
+        .osr_t = BME280_OVERSAMPLING_2X,
+        .filter = BME280_FILTER_COEFF_16,
+        .standby_time = BME280_STANDBY_TIME_62_5_MS,
+    },
+};
+
+struct bme280_data comp_data;
+
 static void read_temperature(void)
 {
 #ifndef SIMULATION
-    int32_t  bme280_temperature;
-    bme280_temperature = bme280_compensate_temperature_read() + 1800;
+    if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
+        return;
+#ifdef PRINT_ALL
+    platform_printf("T: %04d * 0.01 Deg\n", comp_data.temperature);
+    platform_printf("H: %04d / 1024 %%\n", comp_data.humidity);
+    platform_printf("P: %08d Pascal \n", comp_data.pressure);
+#endif
+    int32_t bme280_temperature = comp_data.temperature;
     temperature_value[3]=(uint8_t)(bme280_temperature>>16);
     temperature_value[2]=(uint8_t)(bme280_temperature>>8);
     temperature_value[1]=(uint8_t)bme280_temperature;
+    
 #else
     temperature_value[2] = 10;
     temperature_value[1] = (rand() & 0x1f);
@@ -119,16 +171,10 @@ uint8_t adv_type = 0x00;
 static void send_temperature(void)
 {
     if (temperture_notify_enable)
-    {
-        read_temperature();
         att_server_notify(handle_send, att_temp_value_handle, (uint8_t*)temperature_value, sizeof(temperature_value));
-    }
 
     if (temperture_indicate_enable)
-    {
-        read_temperature();
         att_server_indicate(handle_send, att_temp_value_handle, (uint8_t*)temperature_value, sizeof(temperature_value));
-    }
 }
 
 static TimerHandle_t app_timer = 0;
@@ -137,10 +183,7 @@ static TimerHandle_t app_timer = 0;
 
 static void app_timer_callback(TimerHandle_t xTimer)
 {
-    //printf("t\n");
-    read_temperature();
-    if (temperture_notify_enable | temperture_indicate_enable)
-        btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, 0);
+    btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, 0);
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
@@ -148,7 +191,11 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     switch (msg_id)
     {
     case USER_MSG_ID_REQUEST_SEND:
-        send_temperature();
+        if (temperture_notify_enable | temperture_indicate_enable)
+        {
+            read_temperature();
+            send_temperature();
+        }
         break;
     }
 }
@@ -193,6 +240,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            ota_connected();
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        att_db_util_get_address());
             xTimerStart(app_timer, portMAX_DELAY);
@@ -292,5 +340,25 @@ uint32_t setup_profile(void *data, void *user_data)
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
+
+#ifndef SIMULATION
+    PINCTRL_SetPadMux(6, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
+    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SelI2cSclIn(I2C_PORT, 10);
+    i2c_init(I2C_PORT);
+
+    printf("sensor init...");
+    if (bme280_init(&bme280_data) != BME280_OK)
+        printf("failed\n");
+    else
+    {
+        printf("OK\n");
+        bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
+        bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
+    }
+#endif
+
     return 0;
 }

@@ -2,6 +2,8 @@
     "files.associations": {
         "*.rmd": "markdown",
         "ota_service.h": "c",
-        "rom_tools.h": "c"
+        "rom_tools.h": "c",
+        "secure_ota_service.h": "c",
+        "fota_client.h": "c"
     }
 }

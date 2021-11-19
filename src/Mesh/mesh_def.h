@@ -1,5 +1,5 @@
-/** @file     mesh_def.h                                                 *                                                                            
-*  @brief    function API and data structure in MESH stack              *                                       
+/** @file     mesh_def.h                                                 *
+*  @brief    function API and data structure in MESH stack              *
 *  @version  1.0.0.                                                     *
 *  @date     2019/10/10                                                 *
 *                                                                       *
@@ -12,11 +12,12 @@
 #define _MESH_DEF_
 
 #include <assert.h>
+#include "os/syscfg.h"
 #include "gap.h"
 #include "errno.h"
 #include "nimble_npl.h"
-#define MYNEWT_VAL(x)                           MYNEWT_VAL_ ## x
-#include "os_mbuf.h"
+
+//#include "os_mbuf.h"
 #include "queue.h"
 
 #define ASSERT_ERR(cond)  \
@@ -28,19 +29,22 @@
   }
 
 /*below for MESH->HOST message invoke*/
-#define USER_MSG_ID_CCM_REQ    (0x0f)
-#define USER_MSG_ID_AES_REQ    (0x10)
-#define USER_MSG_ID_MESH_INIT_DONE (0x11)
-#define SCAN_RSP_DATA_SET  0x21
-#define EXT_SCAN           0x22
-#define EXT_ADV            0x23
-#define WHITELST_SET       0x24
-#define ADV_PARAM_SET      0x25
-#define SCAN_PARAM_SET     0x26
-#define RAND_ADDR_SET      0x27
-#define ADV_DATA_SET       0x28
-#define DISCONNECT         0x29
-#define WHITELST_RMV       0x2A
+#define USER_MSG_ID_CCM_REQ            (0x0f)
+#define USER_MSG_ID_AES_REQ            (0x10)
+#define USER_MSG_ID_MESH_INIT_DONE     (0x11)
+//#define USER_MSG_MESH_INIT_DONE        (0x11) //when mesh beacon has been initialized ,it will signal this message to app.
+#define USER_MSG_ID_SCAN_RSP_DATA_SET  (0x21)
+#define USER_MSG_ID_EXT_SCAN           (0x22)
+#define USER_MSG_ID_EXT_ADV            (0x23)
+#define USER_MSG_ID_WHITELST_SET       (0x24)
+#define USER_MSG_ID_ADV_PARAM_SET      (0x25)
+#define USER_MSG_ID_SCAN_PARAM_SET     (0x26)
+#define USER_MSG_ID_RAND_ADDR_SET      (0x27)
+#define USER_MSG_ID_ADV_DATA_SET       (0x28)
+#define USER_MSG_ID_DISCONNECT         (0x29)
+#define USER_MSG_ID_WHITELST_RMV       (0x2A)
+#define USER_MSG_ID_UPDATE_CON_PARA    (0xa507)
+#define USER_MSG_ID_SEND_LIGHT_ONOFF   (0xa508)
 
 /**
  * @brief CCM and AES structure declaration
@@ -48,7 +52,7 @@
  * @ingroup bt_mesh
  * @{
  */
- 
+
 /** structure definition for CCM, AES for HARDWARE implement */
 /**
 * @struct ccm_data
@@ -75,7 +79,7 @@ typedef struct aes_data
     const uint8_t * key;
     uint8_t * plaintext;
     uint8_t * enc_data;
-}aes_data_t; 
+}aes_data_t;
 
 /**
  * @}
@@ -122,7 +126,7 @@ typedef enum {
  */
 /**
 * @struct ble_addr_t2
-* 
+*
 * @note host stack has defined ble_addr_t type,but is not same structure. so rename ble_addr_t2.
 */
 typedef struct {
@@ -132,7 +136,7 @@ typedef struct {
 
 /**
 * @struct ble_gap_ext_disc_desc
-* 
+*
 * @note for extended advertising data.
 */
 struct ble_gap_ext_disc_desc {
@@ -157,7 +161,7 @@ struct ble_gap_ext_disc_desc {
 
 /**
 * @struct ble_gap_disc_desc
-* 
+*
 * @note for legacy advertising data.
 */
 struct ble_gap_disc_desc {
@@ -194,7 +198,7 @@ struct ble_gap_sec_state {
     unsigned key_size:5;
 };
 
-/** @brief Connection descriptor 
+/** @brief Connection descriptor
  *
  *  @note not used the structure in mesh.
  **/
@@ -229,7 +233,7 @@ struct ble_gap_conn_desc {
     uint8_t master_clock_accuracy;
 };
 
-/** @brief gap event deliveried to mesh stack. 
+/** @brief gap event deliveried to mesh stack.
  *
  *  @note once the mesh advertising data is received, it should compose the data into such format and deliver to mesh stack
  **/
@@ -265,12 +269,12 @@ struct ble_gap_event
 
             /** The handle in the server database*/
             uint16_t attr_handle;
-            
+
             /*pointer to the data of the upper data*/
             uint8_t* data;
-            
+
             /*lenth of data*/
-            uint8_t  length;            
+            uint8_t  length;
         } connect;
 
         /**
@@ -387,20 +391,24 @@ struct ble_gap_event
 
             /** Whether the peer is currently subscribed to indications. */
             uint8_t cur_indicate:1;
-        } subscribe;   
+        } subscribe;
         struct{
             uint8_t * data;
-            uint8_t length;
-        }mesh_app;  
+            uint16_t length;
+        }mesh_app;
 
         struct{
             uint8_t enable;
         }beacon_state;
-        
+
         struct{
             uint8_t role;
-        }device_role;            
+        }device_role;
 
+        struct {
+            uint8_t ctrl_code;
+            uint8_t param[20];
+        }priv_mesh_ctrl_t;
     };
 };
 
@@ -423,7 +431,7 @@ typedef  struct ble_gap_event  mesh_gap_event;
 
 /**
 * @brief  the callback function type for acknowledge of mesh config client request.
- * 
+ *
  * @param cmd_code  the configuration cliet command code
  *
  * @param status    the result of execution
@@ -485,7 +493,7 @@ int os_mbuf_free_chain(struct os_mbuf *om);
     if (BT_WARN_ENABLED) {   \
         BLE_HS_LOG(WARN, "%s: " fmt "\n", __func__, ## __VA_ARGS__);  \
     }
-    
+
 #define BT_ERR(fmt, ...)  BLE_HS_LOG(ERROR, "%s: " fmt "\n", __func__, ## __VA_ARGS__);
 
 
@@ -509,11 +517,6 @@ static inline struct os_mbuf * NET_BUF_SIMPLE(uint16_t size)
 
 #define K_NO_WAIT (0)
 #define K_FOREVER (-1)
-
-/*
-* @note when mesh beacon has been initialized ,it will signal this message to app.
-*/
-#define USER_MSG_MESH_INIT_DONE (0x11)
 
 /*
 * @note  must not modify the vlue  once defined
@@ -716,7 +719,7 @@ struct bt_mesh_prov {
 	 *  @param addr Primary element address.
 	 */
 	void        (*complete)(u16_t net_idx, u16_t addr);
-    
+
 	/** @brief A new node has been added to the provisioning database.
 	 *
 	 *  This callback notifies the application that provisioning has
@@ -727,7 +730,7 @@ struct bt_mesh_prov {
 	 *  @param addr Primary element address.
 	 *  @param num_elem Number of elements that this node has.
 	 */
-	void        (*node_added)(u16_t net_idx, u16_t addr, u8_t num_elem);    
+	void        (*node_added)(u16_t net_idx, u16_t addr, u8_t num_elem);
 
 	/** @brief Node has been reset.
 	 *
@@ -738,29 +741,29 @@ struct bt_mesh_prov {
 	 *  unprovisioned advertising on one or more provisioning bearers.
 	 */
 	void        (*reset)(void);
-    
+
     /**@brief provisioner has provisioned a device.
 	 *
 	 *  This callback notifies the application that the provisioner
 	 *  has provisioned a device.
      */
     void        (*provisioner_complete)(u16_t addr);
-    
+
     /**@brief report to APP the middle status in the provisioner or device.
 	 *
 	 *  This callback notifies the application
-	 * 
-     */    
+	 *
+     */
     void       (*status_report)(u8_t  status_code,u8_t* param);
-    
+
     /**@brief add for proxy_service.
 	 *
 	 *  proxy_uuid for pb_gatt or gatt_proxy service.
-	 * 
-     */ 
+	 *
+     */
     const u8_t *proxy_uuid;
 };
-						 
+
 /** @brief Enable specific provisioning bearers
  *
  *  Enable one or more provisioning bearers.
@@ -768,6 +771,7 @@ struct bt_mesh_prov {
  *  @param bearers Bit-wise or of provisioning bearers.
  *
  *  @return Zero on success or (negative) error code otherwise.
+ *
  */
 int bt_mesh_prov_enable(bt_mesh_prov_bearer_t bearers);
 
@@ -783,7 +787,7 @@ int bt_mesh_prov_disable(bt_mesh_prov_bearer_t bearers);
 
 /**
  * @}
- */		
+ */
 
 /**
 * @brief operation on os_mbuf
@@ -866,7 +870,7 @@ uint32_t net_buf_simple_pull_le32(struct os_mbuf *om);
 
 /** @brief  get the uint8_t  value from os_mbuf
  *
- *  to obstain the uint_t value 
+ *  to obstain the uint_t value
  *
  *  @param om  a pointer to an struct memory of os_mbuf
  *
@@ -876,7 +880,7 @@ uint8_t net_buf_simple_pull_u8(struct os_mbuf *om);
 
 /** @brief  add an uint16_t value to os_mbuf
  *
- *  to store an uint16_t  value in little endium ,and it increase the os_mbuf buffer size 
+ *  to store an uint16_t  value in little endium ,and it increase the os_mbuf buffer size
  *
  *  @param om  a pointer to an struct memory of os_mbuf
  *
@@ -886,7 +890,7 @@ void net_buf_simple_add_le16(struct os_mbuf *om, uint16_t val);
 
 /** @brief  add an uint16_t value to os_mbuf
  *
- *  to store an uint16_t  value in lbig endium ,and it increase the os_mbuf buffer size 
+ *  to store an uint16_t  value in lbig endium ,and it increase the os_mbuf buffer size
  *
  *  @param om  a pointer to an struct memory of os_mbuf
  *
@@ -899,10 +903,10 @@ void net_buf_simple_add_be16(struct os_mbuf *om, uint16_t val);
 
 /** @brief  add an uint8_t value to os_mbuf
  *
- *  to store an uint8_t  value ,and it increase the os_mbuf buffer size 
+ *  to store an uint8_t  value ,and it increase the os_mbuf buffer size
  *
  *  @param om  a pointer to an struct memory of os_mbuf
- * 
+ *
  *  @param val   value of uint16_t
  *
  *  @return   void
@@ -911,7 +915,7 @@ void net_buf_simple_add_u8(struct os_mbuf *om, uint8_t val);
 
 /** @brief  add an uint32_t value to os_mbuf
  *
- *  to store an uint32_t  value in big endium ,and it increase the os_mbuf buffer size 
+ *  to store an uint32_t  value in big endium ,and it increase the os_mbuf buffer size
  *
  *  @param om  a pointer to an struct memory of os_mbuf
  *
@@ -923,7 +927,7 @@ void net_buf_simple_add_be32(struct os_mbuf *om, uint32_t val);
 
 /** @brief  add an uint32_t value to os_mbuf
  *
- *  to store an uint32_t  value in little endium ,and it increase the os_mbuf buffer size 
+ *  to store an uint32_t  value in little endium ,and it increase the os_mbuf buffer size
  *
  *  @param om  a pointer to an struct memory of os_mbuf
  *
@@ -935,7 +939,7 @@ void net_buf_simple_add_le32(struct os_mbuf *om, uint32_t val);
 
 /** @brief  add a series zero value specified by len  to os_mbuf
  *
- *  to store a seriese zero value,and it increase the os_mbuf buffer size 
+ *  to store a seriese zero value,and it increase the os_mbuf buffer size
  *
  *  @param om  a pointer to an struct memory of os_mbuf
  *
@@ -1104,7 +1108,7 @@ void k_delayed_work_init(struct k_delayed_work *w, ble_npl_event_fn *f);
  */
 void k_delayed_work_cancel(struct k_delayed_work *w);
 
-/** @brief   start a timer 
+/** @brief   start a timer
  *
  *  to start a timer routine
  *
@@ -1138,7 +1142,7 @@ u32_t k_uptime_get_32(void);
 
 /** @brief   to make a task sleep in some time
  *
- *  to make the current task sleep for some time 
+ *  to make the current task sleep for some time
  *
  *  @param duration   how long in milliseconds current task would sleep
  *
@@ -1164,7 +1168,7 @@ void k_work_submit(struct ble_npl_callout *w);
  *
  *  @param w   a structure to hold the timer resource and event queue that timer routine events would be pushed to
  *
- *  @param arg  the pointer to the arument 
+ *  @param arg  the pointer to the arument
  *
  *  @return    void
  *
@@ -1177,7 +1181,7 @@ void k_work_add_arg(struct ble_npl_callout *w, void *arg);
  *
  *  @param w   a structure k_delayed_work  to hold the timer resource and event queue that timer routine events would be pushed to
  *
- *  @param arg  the pointer to the arument 
+ *  @param arg  the pointer to the arument
  *
  *  @return    void
  *
@@ -1251,7 +1255,7 @@ extern const struct bt_mesh_model_op bt_mesh_cfg_srv_op[];
 *
 *  A helper to define a server model  message.
 *
-*  @param srv_data Pointer to struct bt_mesh_cfg_srv 
+*  @param srv_data Pointer to struct bt_mesh_cfg_srv
 *
 *  @return New mesh model instance.
 
@@ -1362,7 +1366,7 @@ typedef struct app_request
     uint16_t dst;                 /*the peer mesh node that this reuqest sent to*/
     u32_t opcode;                 /*the opcode that the refered model has already defined*/
     uint8_t msg[MSG_LEN];         /*the message body that should refer to the model opcod definition*/
-    uint8_t len;                  /*the message body lenth*/
+    uint16_t len;                  /*the message body lenth*/
     uint8_t bear;                 /*1: means that send message over advertising bearer */
                                   /*0: means that send message over gatt bearer */
 }app_request_t;
@@ -1378,22 +1382,23 @@ typedef struct app_request
 * @brief bit sets of mesh trace layer or functional trace
 *
 */
-typedef enum trace_info{   
+typedef enum trace_info{
     ADV_LAYER   = BIT(0),    ///< bit set of advertise layer for trace
     NET_LAYER   = BIT(1),    ///< bit set of network layer for trace
     TRANS_LAYER = BIT(2),    ///< bit set of transport layer for trace
     ACC_LAYER   = BIT(3),    ///< bit set of access layer for trace
     BEA_FEA     = BIT(4),    ///< bit set of beacon message for trace
-    FRND_FEA    = BIT(5),    ///< bit set of friend message for trace 
+    FRND_FEA    = BIT(5),    ///< bit set of friend message for trace
     LPN_FEA     = BIT(6),    ///< bit set of low power exchange message for trace
     MESH_FEA    = BIT(7),    ///< bit set of mesh related message for trace
     CRYPTO_FEA  = BIT(8),    ///< bit set of encryption or decryption message for trace
-    PROV_FEA    = BIT(9),    ///< bit set of proving message for trace 
+    PROV_FEA    = BIT(9),    ///< bit set of proving message for trace
     PROXY_FEA   = BIT(10),   ///< bit set of proxy message for trace
     SET_FEA     = BIT(11),   ///< bit set of NVM operation message for trace
     CFG_FEA     = BIT(12),   ///< bit set of configure server mssage for trace
     HEALTH_FEA  = BIT(13),   ///< bit set of health model message for trace
-    NODE_FEA    = BIT(14)    ///< bit set of node message for trace 
+    NODE_FEA    = BIT(14),   ///< bit set of node message for trace
+    RSV_FEA     = BIT(15),   ///< bit set of for trace
 }mesh_trace_info_t;
 
 /**
@@ -1432,5 +1437,4 @@ static inline void k_sem_give(struct k_sem *sem)
 {
 	ble_npl_sem_release(sem);  //not used the sem mechanism
 }
-
 #endif

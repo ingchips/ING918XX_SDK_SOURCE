@@ -26,9 +26,7 @@
 extern "C" {
 #endif
 
-// struct ble_npl_eventq *npl_freertos_eventq_dflt_get(void);
-// WARNING: ^^^ this API is not available in this release
-
+struct ble_npl_eventq *npl_freertos_eventq_dflt_get(void);
 
 struct ble_npl_event *npl_freertos_eventq_get(struct ble_npl_eventq *evq,
                                               ble_npl_time_t tmo);
@@ -69,17 +67,11 @@ ble_npl_error_t npl_freertos_time_ms_to_ticks(uint32_t ms,
 ble_npl_error_t npl_freertos_time_ticks_to_ms(ble_npl_time_t ticks,
                                               uint32_t *out_ms);
 
-// void npl_freertos_hw_set_isr(int irqn, uint32_t addr);
-// WARNING: ^^^ this API is not available in this release
+void npl_freertos_hw_set_isr(int irqn, uint32_t addr);
 
+uint32_t npl_freertos_hw_enter_critical(void);
 
-// uint32_t npl_freertos_hw_enter_critical(void);
-// WARNING: ^^^ this API is not available in this release
-
-
-// void npl_freertos_hw_exit_critical(uint32_t ctx);
-// WARNING: ^^^ this API is not available in this release
-
+void npl_freertos_hw_exit_critical(uint32_t ctx);
 
 #ifdef __cplusplus
 }

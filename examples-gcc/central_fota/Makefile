@@ -18,8 +18,9 @@ PROJECT_FILES += ${ING_REL}/src/FWlib/peripheral_timer.c
 PROJECT_FILES += ${ING_REL}/src/Tools/trace.c
 PROJECT_FILES += ${ING_REL}/src/Tools/platform_tools.c
 PROJECT_FILES += ${ING_REL}/src/Tools/gatt_client_util.c
+PROJECT_FILES += ${ING_REL}/src/Tools/malloc_override.c
 
-PROJECT_FILES += gatt_client_async_helper.c
+PROJECT_FILES += gatt_client_async_helper.c sec_fota_utils.c
 
 ZIG_FILES = src/fota_client.zig
 

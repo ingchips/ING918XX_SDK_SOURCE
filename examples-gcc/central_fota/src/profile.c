@@ -10,7 +10,7 @@
 
 #include "ad_parser.h"
 #include "gatt_client_util.h"
-#include "ota_service.h"
+#include "../../examples/thermo_ota/src/secure_ota_service.h"
 #include "fota_client.h"
 
 struct gatt_client_discoverer * discoverer = NULL;
@@ -20,11 +20,12 @@ struct gatt_client_discoverer * discoverer = NULL;
 DEF_UUID(uuid_ota_ver,      INGCHIPS_UUID_OTA_VER);
 DEF_UUID(uuid_ota_data,     INGCHIPS_UUID_OTA_DATA);
 DEF_UUID(uuid_ota_ctrl,     INGCHIPS_UUID_OTA_CTRL);
+DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
 
 const ota_item_t ota_items[] =
 {
     {.local_storage_addr = 0x44000, .target_storage_addr = 0x44000, .target_load_addr = 0x4000,  .size = 0x22000 },
-    {.local_storage_addr = 0x66000, .target_storage_addr = 0x66000, .target_load_addr = 0x26000, .size = 0x2000},
+    {.local_storage_addr = 0x66000, .target_storage_addr = 0x66000, .target_load_addr = 0x26000, .size = 0x4000},
 };
 
 static ota_ver_t ota_ver =
@@ -68,13 +69,34 @@ static void fully_discovered(service_node_t *first, void *user_data)
     char_node_t *char_ver = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_ver);
     char_node_t *char_ctrl = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_ctrl);
     char_node_t *char_data = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_data);
-    platform_printf("fully_discovered: %d, %d, %d, %n", char_ver->chara.value_handle, char_data->chara.value_handle, char_ctrl->chara.value_handle);
-    fota_client_do_update(&ota_ver,
-                         0,
-                         char_ver->chara.value_handle, char_ctrl->chara.value_handle, char_data->chara.value_handle,
-                         2, ota_items,
-                         ENTRY,
-                         fota_done);
+    char_node_t *char_pk = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_pubkey);
+    if (char_pk)
+    {
+        extern const ecc_driver_t *get_ecc_driver(void);
+        platform_printf("=== SECURE FOTA ===\ngenerating secrets...");
+        const ecc_driver_t *driver = get_ecc_driver();
+        platform_printf("done\n");
+        secure_fota_client_do_update(&ota_ver,
+                            0,
+                            char_ver->chara.value_handle,
+                            char_ctrl->chara.value_handle,
+                            char_data->chara.value_handle,
+                            char_pk->chara.value_handle,
+                            2, ota_items,
+                            ENTRY,
+                            fota_done,
+                            driver);
+    }
+    else
+    {
+        platform_printf("=== UNSECURE FOTA ===\n");
+        fota_client_do_update(&ota_ver,
+                            0,
+                            char_ver->chara.value_handle, char_ctrl->chara.value_handle, char_data->chara.value_handle,
+                            2, ota_items,
+                            ENTRY,
+                            fota_done);
+    }
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)

@@ -51,17 +51,17 @@ struct bt_mesh_light_lightness_srv_cb {
 struct bt_mesh_light_hsl_srv_cb{
     int (*get)(struct bt_mesh_model *model,uint16_t *hue,uint16_t* sa,uint16_t* lightness,uint8_t* remain );
     int (*set)(struct bt_mesh_model *model,hsl_val_t *val);
-    void* user_data;    
+    void* user_data;
 };
 
 struct bt_mesh_light_ctl_temp_srv_cb{
     int (*get)(struct bt_mesh_model *model,uint16_t *temp , s16_t* deluv, uint16_t* tar_temp, uint16_t* tar_deluv, uint8_t* time);
-    int (*set)(struct bt_mesh_model *model,uint16_t temp , uint16_t deluv, uint8_t TID, uint8_t transit, uint8_t delay);      
+    int (*set)(struct bt_mesh_model *model,uint16_t temp , uint16_t deluv, uint8_t TID, uint8_t transit, uint8_t delay);
 };
 
 struct bt_mesh_light_ctl_srv_cb{
     int (*get)(struct bt_mesh_model *model,uint16_t *lightness,uint16_t *temp , uint16_t* tar_lightness, uint16_t* tar_temp, uint8_t* time);
-    int (*set)(struct bt_mesh_model *model,uint16_t lightness , uint16_t temp, s16_t deluv,uint8_t TID, uint8_t transit, uint8_t delay);      
+    int (*set)(struct bt_mesh_model *model,uint16_t lightness , uint16_t temp, s16_t deluv,uint8_t TID, uint8_t transit, uint8_t delay);
 };
 
 extern const struct bt_mesh_model_op light_lightness_srv_op[];
@@ -85,9 +85,11 @@ extern const struct bt_mesh_model_op light_ctl_temp_srv_op[];
 #define BT_MESH_MODEL_LIGHT_CTL_TEMP_SRV(srv,pub)   \
     BT_MESH_MODEL(BT_MESH_MODEL_ID_LIGHT_CTL_TEMP_SRV,    \
               light_ctl_temp_srv_op, pub, srv)
-              
+
 extern const struct bt_mesh_model_op light_ctl_srv_op[];
 #define BT_MESH_MODEL_LIGHT_CTL_SRV(srv,pub)   \
     BT_MESH_MODEL(BT_MESH_MODEL_ID_LIGHT_CTL_SRV,    \
-              light_ctl_srv_op, pub, srv)             
+              light_ctl_srv_op, pub, srv)
+
+
 #endif

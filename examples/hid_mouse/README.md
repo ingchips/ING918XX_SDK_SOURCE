@@ -6,6 +6,7 @@ This example demonstrates how to:
 * Enable simple paring;
 * Manage bonding/paring data;
 * Report _fake_ mouse movements;
+* Use resolvable address.
 
 Note: 
     * Press `KEY_4` for sevaral seconds to clear bonding

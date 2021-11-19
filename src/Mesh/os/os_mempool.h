@@ -31,7 +31,7 @@
 #include <stdbool.h>
 #include "os/os.h"
 #include "os/queue.h"
-
+#include "os_error.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
