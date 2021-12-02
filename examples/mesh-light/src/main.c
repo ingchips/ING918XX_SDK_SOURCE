@@ -38,7 +38,7 @@ int fputc(int ch, FILE *f)
     return ch;
 }
 
-__weak void __aeabi_assert(const char *a ,const char* b, int c)
+void __aeabi_assert(const char *a ,const char* b, int c)
 {
     platform_printf("assert:%s,%s,%d\n", a, b, c);
     for (;;);

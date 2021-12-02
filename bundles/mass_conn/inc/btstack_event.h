@@ -965,6 +965,20 @@ typedef struct le_meta_connless_iq_report
     le_iq_sample_t samples[0];
 } le_meta_connless_iq_report_t;
 
+typedef struct le_meta_pro_connless_iq_report
+{
+    bd_addr_type_t addr_type;
+    bd_addr_t  addr;
+    uint8_t  channel_index;
+    int16_t  rssi;
+    uint8_t  rssi_ant_id;
+    uint8_t  cte_type;
+    uint8_t  slot_durations;
+    uint8_t  packet_status;
+    uint8_t  sample_count;
+    le_iq_sample_t samples[0];
+} le_meta_pro_connless_iq_report_t;
+
 typedef struct le_meta_conn_iq_report
 {
     uint16_t conn_handle;

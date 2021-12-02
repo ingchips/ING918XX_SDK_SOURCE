@@ -115,6 +115,56 @@ void ll_set_def_antenna(uint8_t ant_id);
  */
 void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
 
+/**
+ ****************************************************************************************
+ * @brief Attach CTE to an extended advertising set
+ *
+ * Note: This function will fail when the specified advertising set has not been instantiated.
+ *
+ * @param[in]  adv_handle               handle of the advertising set
+ * @param[in]  cte_type                 CTE type (0: AoA)
+ * @param[in]  cte_len                  CTE length in 8us
+ * @param[in]  switching_pattern_len    switching pattern len
+ * @param[in]  switching_pattern        switching pattern
+ * @return                              0 if successful else error code
+ ****************************************************************************************
+ */
+int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
+                             uint8_t cte_len,
+                             uint8_t switching_pattern_len,
+                             const uint8_t *switching_pattern);
+
+/**
+ ****************************************************************************************
+ * @brief Enable IQ sampling after scanning is enabled
+ *
+ * IQ samples in periodic advertising or other extended advertising sets
+ * (see `ll_attach_cte_to_adv_set`) are sampled and reported through a vendor defined LE
+ * subevent.
+ *
+ * Note: This function will fail if scannning has not been started. IQ sampling is
+ * disabled when scanning is disabled.
+ *
+ * @param[in]   cte_type                cte_type (0: AoA; 1: AoD 1us; 2: AoD 2us)
+ * @param[in]   slot_len                slot length for AoA
+ * @param[in]   switching_pattern_len   switching pattern len
+ * @param[in]   switching_pattern       switching pattern
+ * @param[in]   slot_sampling_offset    sampling offset (0..23) in a slot
+ * @param[in]   slot_sample_count       sample count within a slot (1..5)
+ * @return                              0 if successful else error code
+ *
+ * Note:
+ * Recommended value: slot_sampling_offset = 12, slot_sample_count = 1
+ * (slot_sampling_offset + slot_sample_count) should be <= 24
+ ****************************************************************************************
+ */
+int ll_scanner_enable_iq_sampling(uint8_t cte_type,
+                          uint8_t slot_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *swiching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
+
 struct ll_raw_packet;
 
 typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_data);
@@ -164,6 +214,48 @@ int ll_raw_packet_set_param(struct ll_raw_packet *packet,
 
 /**
  ****************************************************************************************
+ * @brief Set bare mode of a raw packet object
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   header              header sending before packet length
+ * @param[in]   freq_mhz            freqency in MHz
+ *                                  When 0: use the channel specified in `ll_raw_packet_set_param`)
+ *                                  When != 0: out band mode is activated
+ * @return                          0 if successful else error code
+ *
+ *
+ * Note: 1. Only a subset of uint8_t are supported in `header`;
+ *       When bare mode is used, CRC & whitening are all handled by apps;
+ *       When bare mode is used, `crc_init` is ignored.
+ *
+ *       2. When out band mode is activated, only bare mode raw packets with `freq_mhz != 0`
+ *          are supported, and all other functionalities are .
+ *
+ *       3. Out band mode is deactivated when all bare mode raw packets with `freq_mhz != 0`
+ *          are freed.
+ ****************************************************************************************
+ */
+int ll_raw_packet_set_bare_mode(struct ll_raw_packet *packet,
+                                uint8_t header,
+                                int freq_mhz);
+
+/**
+ ****************************************************************************************
+ * @brief Set Tx data of a raw packet object (bare mode)
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   data                point to the data
+ * @param[in]   size                data size (<= 255)
+ * @param[in]   crc_value           CRC value
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+int ll_raw_packet_set_bare_data(struct ll_raw_packet *packet,
+                                const void *data,
+                                int size, uint32_t crc_value);
+
+/**
+ ****************************************************************************************
  * @brief Set Tx data of a raw packet object
  *
  * @param[in]   packet              the packet object
@@ -209,6 +301,28 @@ int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
                                void *data,
                                int *size,
                                int *rssi);
+
+/**
+ ****************************************************************************************
+ * @brief Get received data of a raw packet object (bare mode)
+ *
+ * @param[in]   packet              the packet object
+ * @param[out]  air_time            start time of the received packet (in us)
+ * @param[out]  header              received `header`
+ * @param[out]  data                point to the data
+ * @param[out]  size                data size
+ * @param[out]  rssi                RSSI in dBm
+ * @param[out]  crc_value           CRC value
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+int ll_raw_packet_get_bare_rx_data(struct ll_raw_packet *packet,
+                               uint64_t *air_time,
+                               uint8_t *header,
+                               void *data,
+                               int *size,
+                               int *rssi,
+                               uint32_t *crc_value);
 
 /**
  ****************************************************************************************
@@ -392,7 +506,7 @@ void ll_scan_set_fixed_channel(int channel_index);
 /**
  ****************************************************************************************
  * @brief Modify the default access address of SIG advertising PDU
- * 
+ *
  * Note: Once changed, advertising data can't be detected by standard scanners.
  *       This is used for debugging only.
  *
@@ -404,15 +518,71 @@ void ll_set_adv_access_address(uint32_t acc_addr);
 /**
  ****************************************************************************************
  * @brief set Link Layer connection interval unit.
- *        Note: 
+ *        Note:
  *          * This API can only be called after Link Layer got initialized.
  *          * This API can be used to achieve a non-standard smaller connection inteval (< 1ms).
- *          * A non-standard interval may cause inconsistant within HCI commands/events.      
+ *          * A non-standard interval may cause inconsistant within HCI commands/events.
  *
- * @param[in]  unit         connection interval unit in micro-seconds. (default: 1250us)                          
+ * @param[in]  unit         connection interval unit in micro-seconds. (default: 1250us)
  ****************************************************************************************
  */
 void ll_set_conn_interval_unit(uint16_t unit);
+
+/**
+ ****************************************************************************************
+ * @brief Generate a new P-256 public/private key pair
+ ****************************************************************************************
+ */
+typedef void (*f_start_generate_p256_key_pair)(void);
+
+/**
+ ****************************************************************************************
+ * @brief Initiate generation of a Diffie-Hellman key
+ *
+ * @param[in]  key_type         0: Use the generated private key; 1: Use the debug private key
+ * @param[in]  remote_pub_key   The remote P-256 public key: X, Y format
+ *                              Octets  0-31: X co-ordinate
+ *                              Octets 32-63: Y co-ordinate
+ *                              Big-endian Format
+ * @return                      0 if `remote_pub_key` is an valid key else invalid
+ ****************************************************************************************
+ */
+typedef int  (*f_start_generate_dhkey)(int key_type, const uint8_t *remote_pub_key);
+
+/**
+ ****************************************************************************************
+ * @brief A new pair of P-256 keys are genereted
+ *
+ * @param[in]  status           0: ok; else error
+ * @param[in]  pub_key          public key
+ ****************************************************************************************
+ */
+// void ll_p256_key_pair_generated(int status, const uint8_t *pub_key);
+// WARNING: ^^^ this API is not available in this release
+
+/**
+ ****************************************************************************************
+ * @brief Diffie Hellman key generation has been completed
+ *
+ * @param[in]  status           0: ok; else error
+ * @param[in]  dh_key           Diffie Hellman Key
+ ****************************************************************************************
+ */
+// void ll_dhkey_generated(int status, const uint8_t *dh_key);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Setup extern ECC engine
+ *
+ * @param[in]  start_generate_p256_key_pair             trigger for key pair generation
+ * @param[in]  start_generate_dhkey                     trigger for DHKey generation
+ ****************************************************************************************
+ */
+// void ll_install_ecc_engine(f_start_generate_p256_key_pair start_generate_p256_key_pair,
+//                           f_start_generate_dhkey start_generate_dhkey);
+// WARNING: ^^^ this API is not available in this release
 
 #ifdef __cplusplus
 }

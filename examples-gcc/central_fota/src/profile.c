@@ -64,8 +64,11 @@ static void fota_done(int err_code)
     platform_printf("fota_done: %d\n", err_code);
 }
 
-static void fully_discovered(service_node_t *first, void *user_data)
+static void fully_discovered(service_node_t *first, void *user_data, int err_code)
 {
+    if (err_code)
+        return;
+
     char_node_t *char_ver = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_ver);
     char_node_t *char_ctrl = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_ctrl);
     char_node_t *char_data = gatt_client_util_find_char_uuid128(discoverer, uuid_ota_data);

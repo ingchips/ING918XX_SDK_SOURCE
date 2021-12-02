@@ -97,10 +97,10 @@ int light_model_gen_onoff_get(struct bt_mesh_model *model, u8_t *state);
 int light_model_gen_onoff_set(struct bt_mesh_model *model, u8_t  state);
 int light_model_gen_level_get(struct bt_mesh_model *model, s16_t *level);
 int light_model_gen_level_set(struct bt_mesh_model *model, s16_t  level);
-int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness);
+int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *light, u8_t *remain);
 int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t  lightness);
-int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *hue, u16_t *saturation);
-int light_model_light_hsl_set(struct bt_mesh_model *model, u16_t  lightness, u16_t  hue, u16_t  saturation);
+int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *hue, u16_t *saturation, u16_t *lightness, uint8_t* remain);
+int light_model_light_hsl_set(struct bt_mesh_model *model, hsl_val_t *val);
 
 static struct bt_mesh_gen_onoff_srv_cb gen_onoff_srv_cb = {
     .get = light_model_gen_onoff_get,
@@ -202,7 +202,7 @@ int light_model_gen_level_set(struct bt_mesh_model *model, s16_t  level)
     return 0;
 }
 
-int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness)
+int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *light, u8_t *remain)
 {
     struct light_state *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
     *lightness = a_light->lightness[0];
@@ -219,7 +219,7 @@ int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t lightness
     return 0;
 }
 
-int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *hue, u16_t *saturation)
+int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *hue, u16_t *saturation, u16_t *lightness, uint8_t* remain)
 {
     struct light_state *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
     *lightness  = a_light->lightness[0];
@@ -287,16 +287,16 @@ void light_update(struct light_state *a_light)
 #endif
 }
 
-int light_model_light_hsl_set(struct bt_mesh_model *model, u16_t  lightness, u16_t  hue, u16_t  saturation)
+int light_model_light_hsl_set(struct bt_mesh_model *model, hsl_val_t *val)
 {
     struct light_state *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
 
     a_light->lightness[1]     = a_light->lightness[0];
     a_light->hue[1]           = a_light->hue[0];
     a_light->saturation[1]    = a_light->saturation[0];
-    a_light->lightness[0] = lightness;
-    a_light->hue[0]       = hue;
-    a_light->saturation[0]= saturation;
+    a_light->lightness[0] = val->lightness;
+    a_light->hue[0]       = val->hue;
+    a_light->saturation[0]= val->sa;
 
     light_update(a_light);
     return 0;

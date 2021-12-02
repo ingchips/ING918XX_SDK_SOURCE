@@ -2,7 +2,7 @@
 
 #define SET_BIT(V, n)       ((V) |  (1 << (n)))
 #define CLEAR_BIT(V, n)     ((V) & ~(1 << (n)))
-#define CHANGE_BIT(V, n, b) (CLEAR_BIT(V, n) | ((b) << n))
+#define CHANGE_BIT(V, n, b) (CLEAR_BIT(V, n) | ((b) << (n)))
 
 #define ADC_POW_MASK    0x3
 

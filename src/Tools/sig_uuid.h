@@ -1,5 +1,8 @@
 #ifndef _SIG_UUID_H
-#define _SIG_NUMBER_H
+#define _SIG_UUID_H
+
+#define COMPANY_ID_INGCHIPS        0x06AC
+#define VENDOR_COMPANY_ID          COMPANY_ID_INGCHIPS
 
 // Assigned UUIDs by Bluetooth SIG
 

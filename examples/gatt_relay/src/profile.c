@@ -144,12 +144,18 @@ static const uint8_t *parse_uuid(const uint8_t *uuid, uint16_t *uuid16)
     }
 }
 
-void clone_gatt_profile(service_node_t *first, void *user_data)
+void clone_gatt_profile(service_node_t *first, void *user_data, int err_code)
 {
     service_node_t *s = first;
     const uint8_t *uuid128;
     uint16_t uuid16;
     uint16_t handle;
+    
+    if (err_code)
+    {
+        iprintf("error occured: %d\n", err_code);
+        return;
+    }
 
     iprintf("========== CLONING GATT PROFILE ==========\n\n");
 

@@ -9,6 +9,7 @@
 #include "btstack_defines.h"
 #include "gatt_client.h"
 #include "kv_storage.h"
+#include "ll_api.h"
 
 #include "FreeRTOS.h"
 #include "timers.h"
@@ -44,6 +45,8 @@ extern void set_sample_offset(int n);
 int current_pattern = -1;
 hci_con_handle_t conn_handle = INVALID_HANDLE;
 settings_t *settings = NULL;
+
+uint8_t scanner_configured = 0;
 
 char *base64_encode(const uint8_t *data, int data_len,
                     char *res, int buffer_size);
@@ -85,6 +88,21 @@ void recv_iq_report(const le_meta_conn_iq_report_t *report)
     static char iq_str_buffer[500];
     int len;
     sprintf(iq_str_buffer, "CTE%d:", current_pattern);
+    len = strlen(iq_str_buffer);
+    base64_encode((const uint8_t *)report,
+        sizeof(*report) + report->sample_count * sizeof(report->samples[0]),
+        iq_str_buffer + len, sizeof(iq_str_buffer) - len - 1);
+    if (notify_enable)
+        att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)iq_str_buffer, strlen(iq_str_buffer) + 1);
+    else
+        platform_printf("%s\n", iq_str_buffer);
+}
+
+void recv_pro_connless_iq_report(const le_meta_pro_connless_iq_report_t *report)
+{
+    static char iq_str_buffer[500];
+    int len;
+    sprintf(iq_str_buffer, "EXT%d:", current_pattern);
     len = strlen(iq_str_buffer);
     base64_encode((const uint8_t *)report,
         sizeof(*report) + report->sample_count * sizeof(report->samples[0]),
@@ -143,6 +161,13 @@ void config_switching_pattern(void)
     if (settings->patterns[current_pattern].len <= 2)
         settings->patterns[current_pattern].len = 2;
 
+#ifdef PRO_MODE
+    ll_scanner_enable_iq_sampling(CTE_AOA, 
+                                  settings->slot_duration,
+                                  settings->patterns[current_pattern].len,
+                                  settings->patterns[current_pattern].ant_ids,
+                                  12, 1);
+#else
     ll_set_def_antenna(settings->patterns[current_pattern].def);
     gap_set_connection_cte_rx_param(conn_handle,
                                     1,
@@ -153,6 +178,8 @@ void config_switching_pattern(void)
                                     1,
                                     0,
                                     20, CTE_AOA);
+
+#endif
 }
 
 void set_channel(void)
@@ -172,7 +199,6 @@ void set_responder_led(int r, int g, int b)
                                                                    HANDLE_RGB_LIGHTING_CONTROL,
                                                                    sizeof(v),
                                                                    v);
-
 }
 
 static void setup_adv()
@@ -203,6 +229,16 @@ void setup_ll_param(void)
     }
 }
 
+static const scan_phy_config_t configs[] =
+{
+    {
+        .phy = PHY_1M,
+        .type = SCAN_PASSIVE,
+        .interval = 200,
+        .window = 90
+    },
+};
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[1] = {{.handle = 0, .duration = 0, .max_events = 0}};
@@ -219,6 +255,17 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
         gap_set_random_device_address(rand_addr);
+
+        gap_set_adv_set_random_addr(0, rand_addr);
+        setup_adv();
+        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+
+#ifdef PRO_MODE
+        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
+                              sizeof(configs) / sizeof(configs[0]),
+                              configs);
+        gap_set_ext_scan_enable(1, 0, 0, 0);
+#else
         platform_printf("connecting...\n");
         gap_ext_create_connection(    INITIATING_ADVERTISER_FROM_PARAM, // Initiator_Filter_Policy,
                                       BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
@@ -226,9 +273,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                       peer_addr,                        // Peer_Address,
                                       sizeof(phy_configs) / sizeof(phy_configs[0]),
                                       phy_configs);
-        gap_set_adv_set_random_addr(0, rand_addr);
-        setup_adv();
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+#endif        
         break;
 
     case HCI_EVENT_LE_META:
@@ -264,6 +309,16 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     set_channel();
                 }
             }
+            break;
+        case HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT:
+            if (0 == scanner_configured)
+            {
+                scanner_configured = 1;
+                config_switching_pattern();
+            }
+            break;
+        case HCI_SUBEVENT_LE_VENDOR_PRO_CONNECTIONLESS_IQ_REPORT:
+            recv_pro_connless_iq_report(decode_hci_le_meta_event(packet, le_meta_pro_connless_iq_report_t));
             break;
         case HCI_SUBEVENT_LE_CONNECTION_IQ_REPORT:
             recv_iq_report(decode_hci_le_meta_event(packet, le_meta_conn_iq_report_t));
@@ -312,6 +367,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    platform_printf("setup profile\n");
     if (kv_get(KEY_SETTINGS, NULL) == NULL)
     {
         settings_t *p = pvPortMalloc(sizeof(settings_t));

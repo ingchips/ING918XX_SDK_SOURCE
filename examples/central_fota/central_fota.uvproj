@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536901900</StartAddress>
-                <Size>34548</Size>
+                <StartAddress>536901904</StartAddress>
+                <Size>34544</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -348,7 +348,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine/>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../bundles/typical/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -408,6 +408,16 @@
               <FileName>profile.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\examples-gcc\central_fota\src\profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>sec_fota_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\examples-gcc\central_fota\src\sec_fota_utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>ing918_uecc.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\src\Tools\ing918_uecc.lib</FilePath>
             </File>
           </Files>
         </Group>

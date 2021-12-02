@@ -390,12 +390,22 @@ const static uint8_t KB_REPORT_MAP[] = {
     END_COLLECTION(0),
 };
 
-typedef __packed struct
+#pragma pack (push, 1)
+
+typedef struct
+{
+    uint8_t report_id;
+    uint8_t report_type;
+} report_ref_t;
+
+typedef struct
 {
     uint16_t bcd_hid;
     uint8_t  b_country_code;
     uint8_t  flags;
 } hid_info_t;
+
+#pragma pack (pop)
 
 hid_info_t hid_info =
 {
@@ -409,12 +419,6 @@ hid_info_t hid_info =
 #define REPORT_TYPE_INPUT               1
 #define REPORT_TYPE_OUTPUT              2
 #define REPORT_TYPE_FEATURE             3
-
-typedef __packed struct
-{
-    uint8_t report_id;
-    uint8_t report_type;
-} report_ref_t;
 
 const static report_ref_t kb_desc_input_report =
 {

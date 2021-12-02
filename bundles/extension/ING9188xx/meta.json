@@ -238,12 +238,17 @@
         "ll_set_conn_latency", 
         "ll_set_def_antenna", 
         "ll_legacy_adv_set_interval", 
+        "ll_attach_cte_to_adv_set", 
+        "ll_scanner_enable_iq_sampling", 
         "ll_raw_packet_free", 
         "ll_raw_packet_alloc", 
         "ll_raw_packet_set_param", 
+        "ll_raw_packet_set_bare_mode", 
+        "ll_raw_packet_set_bare_data", 
         "ll_raw_packet_set_tx_data", 
         "ll_raw_packet_send", 
         "ll_raw_packet_get_rx_data", 
+        "ll_raw_packet_get_bare_rx_data", 
         "ll_raw_packet_recv", 
         "ll_raw_packet_set_tx_cte", 
         "ll_raw_packet_set_rx_cte", 
@@ -341,15 +346,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 30996
+        "size": 30988
     }, 
     "rom": {
         "base": 16384, 
-        "size": 142028
+        "size": 143708
     }, 
     "version": [
         1, 
         7, 
-        5
+        6
     ]
 }

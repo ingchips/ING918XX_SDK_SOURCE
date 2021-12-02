@@ -30,7 +30,7 @@ typedef struct service_node
 } service_node_t;
 
 struct gatt_client_discoverer;
-typedef void (* f_on_fully_discovered)(service_node_t *first, void *user_data);
+typedef void (* f_on_fully_discovered)(service_node_t *first, void *user_data, int err_code);
 
 /**
  ****************************************************************************************
@@ -73,7 +73,7 @@ service_node_t *gatt_client_util_get_first_service(struct gatt_client_discoverer
  * @param[in] first                 first service
  ****************************************************************************************
  */
-void gatt_client_util_dump_profile(service_node_t *first, void *user_data);
+void gatt_client_util_dump_profile(service_node_t *first, void *user_data, int err_code);
 
 /**
  ****************************************************************************************

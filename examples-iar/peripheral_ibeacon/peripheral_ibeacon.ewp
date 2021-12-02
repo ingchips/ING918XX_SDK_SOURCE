@@ -352,7 +352,6 @@
           <name>CCIncludePath2</name>
           <state>../../bundles/typical/inc</state>
           <state>../../bundles/typical/inc/os</state>
-          <state>../../bundles/typical/inc/os/portable/IAR/ARM_CM3</state>
           <state>../../src/BSP</state>
           <state>../../src/FWlib</state>
           <state>../../src/StartUP</state>
@@ -1393,9 +1392,9 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
+          <state>../../bundles/typical/inc/os/portable/IAR/ARM_CM3</state>
           <state>../../bundles/typical/inc</state>
           <state>../../bundles/typical/inc/os</state>
-          <state>../../bundles/typical/inc/os/portable/IAR/ARM_CM3</state>
           <state>../../src/BSP</state>
           <state>../../src/FWlib</state>
           <state>../../src/StartUP</state>

@@ -243,7 +243,7 @@ static void printsn(const uint8_t *data, int len)
     static char s[ANCS_NAME_MAX_LENGTH_LSB + 1];
     memcpy(s, data, len);
     s[len] = '\0';
-    printf(s);
+    puts(s);
 }
 
 typedef struct

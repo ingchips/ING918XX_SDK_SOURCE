@@ -161,7 +161,7 @@ void gatt_client_util_print_properties(uint16_t v)
     iprintf(")");
 }
 
-void gatt_client_util_dump_profile(service_node_t *first, void *user_data)
+void gatt_client_util_dump_profile(service_node_t *first, void *user_data, int err_code)
 {
     service_node_t *s = first;
 
@@ -212,7 +212,7 @@ static void discover_char_of_service(uint16_t con_handle)
     else
     {
         iprintf("all discovered\n");
-        discoverers[con_handle]->on_fully_discovered(discoverers[con_handle]->first.next, discoverers[con_handle]->user_data);
+        discoverers[con_handle]->on_fully_discovered(discoverers[con_handle]->first.next, discoverers[con_handle]->user_data, 0);
         discoverers[con_handle] = NULL;
     }
 }
@@ -239,6 +239,17 @@ static void discover_desc_of_char(uint16_t con_handle)
     }
 }
 
+#define CHECK_STATUS()                                                                              \
+        if (gatt_event_query_complete_parse(packet)->status != 0)                                   \
+        {                                                                                           \
+            iprintf("failed: %08x\n", discoverers[con_handle]);                                     \
+            discoverers[con_handle]->on_fully_discovered(discoverers[con_handle]->first.next,       \
+                                                         discoverers[con_handle]->user_data,        \
+                                                         gatt_event_query_complete_parse(packet)->status); \
+            discoverers[con_handle] = NULL;                                                         \
+            break;                                                                                  \
+        }
+
 static void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
 {
     uint16_t con_handle;
@@ -258,8 +269,10 @@ static void descriptor_discovery_callback(uint8_t packet_type, uint16_t _, const
         break;
     case GATT_EVENT_QUERY_COMPLETE:
         {
-            iprintf("descriptor_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
             con_handle = gatt_event_query_complete_parse(packet)->handle;
+            iprintf("descriptor_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
+            CHECK_STATUS();
+            
             cur_disc_char = cur_disc_char->next;
             if (cur_disc_char)
             {
@@ -294,12 +307,10 @@ static void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, c
         }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
-        iprintf("characteristic_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
-        if (gatt_event_query_complete_parse(packet)->status != 0)
-            break;
-
-        iprintf("characteristic_discovery COMPLETE\n");
         con_handle = gatt_event_query_complete_parse(packet)->handle;
+        iprintf("characteristic_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
+        CHECK_STATUS();
+
         cur_disc_char = cur_disc_service->chars;
         discover_desc_of_char(con_handle);
         break;
@@ -323,15 +334,9 @@ static void service_discovery_callback(uint8_t packet_type, uint16_t _, const ui
         }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
-        iprintf("service_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
         con_handle = gatt_event_query_complete_parse(packet)->handle;
-        if (gatt_event_query_complete_parse(packet)->status != 0)
-        {
-            iprintf("failed\n");
-            discoverers[con_handle]->on_fully_discovered(discoverers[con_handle]->first.next, discoverers[con_handle]->user_data);
-            discoverers[con_handle] = NULL;
-            break;
-        }
+        iprintf("service_discovery COMPLETE: %d\n", gatt_event_query_complete_parse(packet)->status);
+        CHECK_STATUS();
 
         cur_disc_service = first_service.next;
         if (cur_disc_service)
