@@ -250,7 +250,7 @@ static void temperature_notification_handler(uint8_t packet_type, uint16_t chann
             const gatt_event_value_packet_t *value = gatt_event_notification_parse(packet, size, &value_size);
             sprintf(info, "[%d] %s deg\n", slave->id, float_ieee_11073_val_to_repr(*(const uint32_t *)(value->value + 1)));
             len = strlen(info);
-            iprintf(info);
+            puts(info);
             if (sizeof(console_output) - output_len < len)
                 output_len = 0;
             memcpy(console_output + output_len, info, len + 1);
@@ -271,7 +271,7 @@ void btstack_callback(uint8_t packet_type, uint16_t channel, const uint8_t *pack
     case GATT_EVENT_QUERY_COMPLETE:
         if (gatt_event_query_complete_parse(packet)->status != 0)
             return;
-        iprintf("cmpl\n");
+        puts("cmpl\n");
         break;
     }
 }

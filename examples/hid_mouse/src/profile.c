@@ -41,12 +41,29 @@ const static uint8_t scan_data[] = {
     #include "../data/scan_response.adv"
 };
 
-typedef __packed struct mouse_report
+#pragma pack (push, 1)
+
+typedef struct mouse_report
 {
     uint8_t buttons;
     int8_t x;
     int8_t y;
 } mouse_report_t;
+
+typedef struct
+{
+    uint8_t report_id;
+    uint8_t report_type;
+} report_ref_t;
+
+typedef struct
+{
+    uint16_t bcd_hid;
+    uint8_t  b_country_code;
+    uint8_t  flags;
+} hid_info_t;
+
+#pragma pack (pop)
 
 #define INVALID_HANDLE 0xffff
 
@@ -421,13 +438,6 @@ const static uint8_t MOUSE_REPORT_MAP[] = {
     END_COLLECTION(0),
 };
 
-typedef __packed struct
-{
-    uint16_t bcd_hid;
-    uint8_t  b_country_code;
-    uint8_t  flags;
-} hid_info_t;
-
 hid_info_t hid_info = 
 {
     .bcd_hid = 0x0101,
@@ -440,12 +450,6 @@ static uint8_t att_db_storage[800];
 #define REPORT_TYPE_INPUT               1
 #define REPORT_TYPE_OUTPUT              2
 #define REPORT_TYPE_FEATURE             3
-
-typedef __packed struct
-{
-    uint8_t report_id;
-    uint8_t report_type;
-} report_ref_t;
 
 const static report_ref_t mouse_report = 
 {

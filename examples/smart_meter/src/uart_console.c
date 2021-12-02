@@ -198,7 +198,7 @@ static void tx_data(const char *d, const uint16_t len)
 
     if ((output.size > 0) && (output.buf[output.size - 1] == '\0'))
     {
-        iprintf((const char *)output.buf);
+        puts((const char *)output.buf);
         output.size = 0;
     }
 }

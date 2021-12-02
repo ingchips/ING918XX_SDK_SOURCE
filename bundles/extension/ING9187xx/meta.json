@@ -226,9 +226,12 @@
         "ll_raw_packet_free", 
         "ll_raw_packet_alloc", 
         "ll_raw_packet_set_param", 
+        "ll_raw_packet_set_bare_mode", 
+        "ll_raw_packet_set_bare_data", 
         "ll_raw_packet_set_tx_data", 
         "ll_raw_packet_send", 
         "ll_raw_packet_get_rx_data", 
+        "ll_raw_packet_get_bare_rx_data", 
         "ll_raw_packet_recv", 
         "ll_ackable_packet_alloc", 
         "ll_ackable_packet_set_tx_data", 
@@ -323,15 +326,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 30996
+        "size": 30988
     }, 
     "rom": {
         "base": 16384, 
-        "size": 135480
+        "size": 136556
     }, 
     "version": [
         1, 
         7, 
-        5
+        6
     ]
 }

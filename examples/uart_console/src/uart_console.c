@@ -313,7 +313,7 @@ void cmd_interval(const char *param)
 
 void cmd_assert(const char *param)
 {
-    platform_raise_assertion(__MODULE__, __LINE__);
+    platform_raise_assertion("uart_console.c", __LINE__);
 }
 
 static cmd_t cmds[] =

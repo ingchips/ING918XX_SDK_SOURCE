@@ -31,11 +31,19 @@
   #define __INLINE         inline                                     /*!< inline keyword for IAR Compiler. Only available in High optimization mode! */
   #define __STATIC_INLINE  static inline
 
-#elif defined ( __GNUC__ )
-  #define __ASM            __asm                                      /*!< asm keyword for GNU Compiler          */
+#else
+#ifndef __ASM
+  #define __ASM            __asm
+#endif
+#ifndef __INLINE
   #define __INLINE         inline                                     /*!< inline keyword for GNU Compiler       */
+#endif
+#ifndef __STATIC_INLINE
   #define __STATIC_INLINE  static inline
-  #define __weak            __attribute__((weak))
+#endif
+#ifndef __weak
+  #define __weak            __attribute__((weak)) 
+#endif
 #endif
 
 #endif // _COMPILER_H_

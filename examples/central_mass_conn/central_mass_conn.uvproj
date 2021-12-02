@@ -348,7 +348,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine/>
-              <IncludePath>../../bundles/extension/inc;../../bundles/extension/inc/os;../../bundles/extension/inc/os/portable/RVDS/ARM_CM3;../../bundles/mass_conn/inc;../../bundles/mass_conn/inc/os;../../bundles/mass_conn/inc/os/portable/RVDS/ARM_CM3;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/mass_conn/inc;../../bundles/mass_conn/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

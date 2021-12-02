@@ -114,16 +114,10 @@ void disp_init(void)
                NULL);
 }
 
-//! Test if in interrupt mode
-inline uint8_t isInterrupt()
-{
-    return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
-}
-
 void disp_item(uint8_t item)
 {
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
-    if (isInterrupt())
+    if (IS_IN_INTERRUPT())
         xQueueSendFromISR(xDispQueue, &item, &xHigherPriorityTaskWoke);
     else
         xQueueSend(xDispQueue, &item, 0);
