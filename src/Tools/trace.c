@@ -4,6 +4,7 @@
 #include "peripheral_uart.h"
 
 #include "SEGGER_RTT.c"
+#include "eflash.h"
 
 void trace_task(trace_uart_t *ctx)
 {
@@ -118,6 +119,91 @@ uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx)
     return 0;
 }
 
+__attribute((weak)) int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
+{
+    return 0;
+}
+
+__attribute((weak)) int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
+{
+    platform_raise_assertion("trace.c: MISSING eflash.c", __LINE__);
+    return 0;
+}
+
+static void flash_trace_aligned_append(trace_flash_t *ctx, const uint8_t *data, int len)
+{
+    while (len > 0)
+    {
+        uint32_t c;
+        int empty = EFLASH_PAGE_SIZE - ctx->offset_in_page;
+        if (empty == 0)
+        {
+            ctx->cur_page += EFLASH_PAGE_SIZE;
+            if (ctx->cur_page >= ctx->start_addr + ctx->total_size)
+                ctx->cur_page = ctx->start_addr;
+            program_flash(ctx->cur_page, (uint8_t *)&ctx->page_cnt, sizeof(ctx->page_cnt));
+            ctx->page_cnt++;
+            ctx->offset_in_page = sizeof(ctx->page_cnt);
+            empty = EFLASH_PAGE_SIZE - sizeof(ctx->page_cnt);
+        };
+        
+        {
+            c = len > empty ? empty : len;
+            write_flash(ctx->cur_page + ctx->offset_in_page, data, c);
+            ctx->offset_in_page += c;
+        }
+        
+        data += c;
+        len -= c;
+    }
+}
+
+static void flash_trace_append(trace_flash_t *ctx, const uint8_t *data, int len)
+{
+    if (len < 1) return;
+    if (ctx->frag_size)
+    {
+        int c = len >= 4 - ctx->frag_size ? 4 - ctx->frag_size : len;
+        len -= c;
+        memcpy(ctx->frag + ctx->frag_size, data, c);
+        data += c;
+        ctx->frag_size += c;
+        if (ctx->frag_size == 4)
+        {
+            flash_trace_aligned_append(ctx, ctx->frag, 4);
+            ctx->frag_size = 0;
+        }
+    }
+    
+    if (len < 1) return;
+    
+    int rounded = len & ~0x3ul;    
+    flash_trace_aligned_append(ctx, data, rounded);
+    
+    if (len > rounded)
+    {
+        data += rounded;
+        ctx->frag_size = len - rounded;
+        memcpy(ctx->frag, data, ctx->frag_size);
+    }
+}
+
+uint32_t cb_trace_flash(const platform_evt_trace_t *trace, trace_flash_t *ctx)
+{
+    if (ctx->enable == 0) return 0;
+
+    uint8_t use_mutex = !IS_IN_INTERRUPT();
+
+    if (use_mutex) xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+    
+    flash_trace_append(ctx, trace->data1, trace->len1);
+    flash_trace_append(ctx, trace->data2, trace->len2);
+    
+    if (use_mutex) xSemaphoreGive(ctx->mutex);
+    
+    return 0;
+}
+
 void trace_uart_init(trace_uart_t *ctx)
 {
     ctx->tx_sem = xSemaphoreCreateBinary();
@@ -134,6 +220,33 @@ void trace_rtt_init(trace_rtt_t *ctx)
 {
     SEGGER_RTT_Init();
     ctx->mutex = xSemaphoreCreateMutex();
+}
+
+void trace_flash_init(trace_flash_t *ctx, uint32_t flash_start_addr, uint32_t total_size)
+{
+    ctx->mutex = xSemaphoreCreateMutex();
+    ctx->enable = 0;
+    ctx->offset_in_page = EFLASH_PAGE_SIZE;
+    ctx->start_addr = flash_start_addr;
+    ctx->total_size = total_size;
+    ctx->frag_size = 0;
+    ctx->cur_page =  flash_start_addr + total_size;
+}
+
+void trace_flash_enable(trace_flash_t *ctx, int enable)
+{
+    ctx->enable = enable;
+}
+
+void trace_flash_erase_all(trace_flash_t *ctx)
+{
+    uint32_t v = 0xfffffffful;
+    uint32_t addr = ctx->start_addr;
+    while (addr < ctx->start_addr + ctx->total_size)
+    {
+        program_flash(addr, (uint8_t *)&v, sizeof(v));
+        addr += EFLASH_PAGE_SIZE;
+    }
 }
 
 uint32_t trace_uart_isr(trace_uart_t *ctx)

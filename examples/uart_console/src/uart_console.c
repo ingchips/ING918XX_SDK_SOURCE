@@ -9,6 +9,10 @@
 #include "bluetooth.h"
 #include "sm.h"
 
+#ifdef TRACE_TO_FLASH
+#include "trace.h"
+#endif
+
 typedef void (*f_cmd_handler)(const char *param);
 
 int adv_tx_power = 100;
@@ -51,6 +55,7 @@ static const char help[] =  "commands:\n"
                             "phy    1m/2m/s2/s8\n       central only\n"
                             "interval x                 central only(in 1.25 ms)\n"
                             "assert                     raise assertion\n"
+                            "trace  0/1                 enable/disable flash trace\n"
                             ;
 
 void cmd_help(const char *param)
@@ -183,6 +188,24 @@ void cmd_pat(const char *param)
         return;
     }
     slave_addr_type = (bd_addr_type_t)t;
+}
+
+void cmd_trace(const char *param)
+{
+#ifdef TRACE_TO_FLASH
+    extern trace_flash_t trace_ctx;
+    int t = 0;
+    if (sscanf(param, "%d", &t) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    if (t) trace_flash_erase_all(&trace_ctx);
+    trace_flash_enable(&trace_ctx, t);
+#else
+    static const char msg[] = "only available with `TRACE_TO_FLASH`"; 
+    tx_data(msg, strlen(msg) + 1);
+#endif
 }
 
 void cmd_read_char(const char *param)
@@ -417,6 +440,10 @@ static cmd_t cmds[] =
     {
         .cmd = "assert",
         .handler = cmd_assert
+    },
+    {
+        .cmd = "trace",
+        .handler = cmd_trace
     },
 };
 

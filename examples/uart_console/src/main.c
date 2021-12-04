@@ -3,6 +3,7 @@
 #include "platform_api.h"
 #include <stdio.h>
 #include "trace.h"
+#include "eflash.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -91,7 +92,11 @@ uint32_t uart_isr(void *user_data)
     return 0;
 }
 
+#ifdef TRACE_TO_FLASH
+trace_flash_t trace_ctx = {0};
+#else
 trace_rtt_t trace_ctx = {0};
+#endif
 
 int app_main()
 {
@@ -109,8 +114,14 @@ int app_main()
     setup_peripherals();
     printf("system started, type ? for help\n");
 
+#ifdef TRACE_TO_FLASH
+    trace_flash_init(&trace_ctx, 0x2e000, EFLASH_PAGE_SIZE * 11);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_flash, &trace_ctx);
+#else
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
+#endif
+
     platform_config(PLATFORM_CFG_TRACE_MASK, 0x3f);
     return 0;
 }
