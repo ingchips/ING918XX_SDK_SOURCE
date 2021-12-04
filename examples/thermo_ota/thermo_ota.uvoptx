@@ -73,7 +73,7 @@
         <LExpSel>0</LExpSel>
       </OPTXL>
       <OPTFL>
-        <tvExp>0</tvExp>
+        <tvExp>1</tvExp>
         <tvExpOptDlg>0</tvExpOptDlg>
         <IsCurrentTarget>1</IsCurrentTarget>
       </OPTFL>
@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>/</Name>
+          <Name></Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -152,25 +152,25 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>175</LineNumber>
+          <LineNumber>34</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>168110</Address>
+          <Address>166670</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>C:\projects\svn\SDK_Release\examples\thermo_ota\src\secure_ota_service.c</Filename>
+          <Filename>.\src\profilestask.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\thermo_ota\src/secure_ota_service.c\175</Expression>
+          <Expression>\\thermo_ota\src/profilestask.c\34</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>session_keys.xor_sk</ItemText>
+          <ItemText>bme280_data</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -236,7 +236,7 @@
 
   <Group>
     <GroupName>APP</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

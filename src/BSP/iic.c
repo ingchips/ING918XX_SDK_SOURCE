@@ -1,5 +1,6 @@
 #include "iic.h"      
 
+#include <string.h>
 #include "ingsoc.h"
 
 #define I2C_BASE(port)    ((port) == I2C_PORT_0 ? APB_I2C0 : APB_I2C1)
@@ -63,11 +64,20 @@ void i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, in
                  addr, byte_data, length);
 }
 
+static int write_bytes(uint8_t *data, uint32_t d32, int len)
+{
+    len = len >= 4 ? 4 : len;
+    if (len < 4)
+        memcpy(data, &d32, len);
+    else
+        *(uint32_t *)data = d32;
+    return len;
+}
+
 void i2c_read(const i2c_port_t port, uint8_t addr, 
               const uint8_t *write_data, int16_t write_len,
               uint8_t *read_data, int16_t read_length)
 {
-    uint32_t *p_data = (uint32_t *)(read_data);
     I2C_TypeDef *BASE = I2C_BASE(port);
 
     if (write_len)
@@ -121,9 +131,9 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
         // check whether rdFIFO is empty
         while (I2C_QUEUESTAT_RD_QUEUE_EMPTY(BASE));
 
-        *p_data = BASE->I2C_QUEUEDATA;
-        p_data++;
-        read_length -= sizeof(*p_data);
+        int len = write_bytes(read_data, BASE->I2C_QUEUEDATA, read_length);
+        read_data += len;
+        read_length -= len;
     }
 
     // WAIT I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ (software polling)
