@@ -6,6 +6,9 @@
 
 #define ADC_POW_MASK    0x3
 
+#define ADC              ((ADC_Type          *)(SYSCTRL_BASE + 0x30))
+#define ADC_Pwr_Ctrl     ((ADC_Pwr_Ctrl_Type *)(APB_RTC_BASE + 0x90))
+
 uint8_t adc_get_power_state(void)
 {
     return ((*(volatile uint32_t *)(APB_RTC_BASE + 0x88)) >> 3) & ADC_POW_MASK;
@@ -24,7 +27,8 @@ void ADC_PowerCtrl(const uint8_t flag)
         ADC_Pwr_Ctrl->act = (ADC_Pwr_Ctrl->act & (~ADC_POW_MASK)) | ADC_PON;
         while (adc_get_power_state() != ADC_PON_STATE) ;
         ADC_Pwr_Ctrl->act = CLEAR_BIT(ADC_Pwr_Ctrl->act, 2);
-        ADC->ctrl0 = (ADC->ctrl0 & ((1 << 26) - 1)) | (0x10 << 26);    // init impedance of input control to 0x10
+        ADC->ctrl0 &= ~((0xff<<3) | (0x3<<11) | (0x3<<13) | (0x3<<26));
+        ADC->ctrl0 |= (0x1<<11) | (0x1<<13) | (0x2<<26);    // ibias, iota, inres
     }
     else
     {

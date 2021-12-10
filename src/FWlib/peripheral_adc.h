@@ -38,9 +38,6 @@ typedef struct
     volatile uint32_t act;
 }  ADC_Pwr_Ctrl_Type;
 
-#define ADC              ((ADC_Type          *)(SYSCTRL_BASE + 0x30))
-#define ADC_Pwr_Ctrl     ((ADC_Pwr_Ctrl_Type *)(APB_RTC_BASE + 0x90))
-
 /** \brief ADC power control
  * flag: 1: power on
  *       0: power off

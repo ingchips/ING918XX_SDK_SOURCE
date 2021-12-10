@@ -3,16 +3,23 @@
 
 struct ring_buf
 {
+    void (*highwater_cb)(struct ring_buf *buf);
     uint32_t          total_size;
+    uint32_t          free_size_low;
+    uint32_t          free_size_high;
     uint32_t          write_next;
     uint32_t          read_next;
+    uint8_t           watermark_event;
     uint8_t           buffer[1];
 };
 
-struct ring_buf *ring_buf_init(void *buf, int total_size)
+struct ring_buf *ring_buf_init(void *buf, int total_size, void (*highwater_cb)(struct ring_buf *buf))
 {
     struct ring_buf *r = (struct ring_buf *)buf;
     r->total_size = total_size - sizeof(struct ring_buf) + 1;
+    r->free_size_low = total_size / 2;
+    r->free_size_high = (r->total_size * 3) / 4;
+    r->highwater_cb = highwater_cb;
     ring_buf_reset(r);
     return r;
 }
@@ -60,10 +67,23 @@ int ring_buf_peek_data(struct ring_buf *buf, f_ring_peek_data peek_data, void *e
     return r;
 }
 
+static void ring_buf_rpt_event(struct ring_buf *buf, int free_size)
+{
+    if ((free_size < buf->free_size_low) && (0 == buf->watermark_event))
+    {
+        buf->watermark_event = 1;
+        buf->highwater_cb(buf);
+        return;
+    }
+    if (free_size > buf->free_size_high)
+        buf->watermark_event = 0;
+}
+
 int ring_buf_write_data(struct ring_buf *buf, const void *data, int len)
 {
     uint16_t next;
     int free_size;
+    int evt_called = 0;
 
     next = buf->write_next;
     free_size = buf->read_next - buf->write_next;
@@ -71,10 +91,15 @@ int ring_buf_write_data(struct ring_buf *buf, const void *data, int len)
     if (free_size > 0) free_size--;
 
     if (len > free_size)
+    {
+        ring_buf_rpt_event(buf, free_size);
         return 0;
+    }
 
     next = ring_buf_add_buffer(buf, data, len, next);
     buf->write_next = next < buf->total_size ? next : 0;
+    
+    ring_buf_rpt_event(buf, free_size - len);
 
     return len;
 }

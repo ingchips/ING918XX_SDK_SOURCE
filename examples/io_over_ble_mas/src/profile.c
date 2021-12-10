@@ -24,6 +24,7 @@
 
 extern const pair_config_t pair_config;
 static TimerHandle_t flush_timer = 0;
+uint32_t total_rx = 0;
 
 const uint8_t UUID_ING_CONSOLE_SERVICE[]    = {0x43, 0xf4, 0xb1, 0x14, 0xca, 0x67, 0x48, 0xe8, 0xa4, 0x6f, 0x9a, 0x8f, 0xfe, 0xb7, 0x14, 0x6a};
 const uint8_t UUID_ING_GENERIC_INPUT[]      = {0xbf, 0x83, 0xf3, 0xf1, 0x39, 0x9a, 0x41, 0x4d, 0x90, 0x35, 0xce, 0x64, 0xce, 0xb3, 0xff, 0x67};
@@ -106,9 +107,10 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
     switch (packet[0])
     {
     case GATT_EVENT_NOTIFICATION:
-        show_state(STATE_RX);
+        show_state(STATE_RX);        
         value = gatt_event_notification_parse(packet, size, &value_size);
         handle_output(value->value, value_size);
+        total_rx += value_size;
         break;
     }
 }
@@ -207,10 +209,10 @@ void service_discovery_callback(uint8_t packet_type, uint16_t channel, const uin
     }
 }
 
-void slave_connected(const le_meta_event_enh_create_conn_complete_t *conn_complete)
+void slave_connected(uint16_t conn_handle)
 {
     slave.service_console.start_group_handle = INVALID_HANDLE;
-    slave.conn_handle = conn_complete->handle;
+    slave.conn_handle = conn_handle;
     gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, slave.conn_handle, UUID_ING_CONSOLE_SERVICE);
     dbg_printf(">> discovering\n");    
 }
@@ -223,12 +225,12 @@ static initiating_phy_config_t phy_configs[] =
         {
             .scan_int = 200,
             .scan_win = 200,
-            .interval_min = 6,
-            .interval_max = 6,
-            .latency = 2,
-            .supervision_timeout = 800,
-            .min_ce_len = 10,
-            .max_ce_len = 10
+            .interval_min = 13,
+            .interval_max = 13,
+            .latency = 0,
+            .supervision_timeout = 200,
+            .min_ce_len = 22,
+            .max_ce_len = 22
         }
     },
     {
@@ -239,8 +241,8 @@ static initiating_phy_config_t phy_configs[] =
             .scan_win = 200,
             .interval_min = 20,
             .interval_max = 20,
-            .latency = 2,
-            .supervision_timeout = 800,
+            .latency = 0,
+            .supervision_timeout = 200,
             .min_ce_len = 10,
             .max_ce_len = 10
         }
@@ -336,8 +338,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             if (decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->status)
                 platform_reset();
+            else
+                gap_set_phy(0, 0, PHY_2M_BIT, PHY_2M_BIT, HOST_NO_PREFERRED_CODING);
+            break;
+        case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
             show_state(STATE_DISCOVERING);
-            slave_connected(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t));
+            slave_connected(0);
+            xTimerReset(flush_timer, portMAX_DELAY);
             break;
         default:
             break;
@@ -346,6 +353,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
+        platform_printf("Total Rx over BLE: %u\n", total_rx);
+        vTaskDelay(100);
         platform_reset();
         break;
 
@@ -369,7 +378,7 @@ uint32_t setup_profile(void *data, void *user_data)
     init_buffer();
     flush_timer = xTimerCreate("t1",
                             pdMS_TO_TICKS(800),
-                            pdFALSE,
+                            pdTRUE,
                             NULL,
                             flush_timer_callback);
     slave.addr = pair_config.slave.ble_addr;

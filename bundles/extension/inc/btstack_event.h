@@ -969,6 +969,7 @@ typedef struct le_meta_pro_connless_iq_report
 {
     bd_addr_type_t addr_type;
     bd_addr_t  addr;
+    phy_type_t rx_phy;
     uint8_t  channel_index;
     int16_t  rssi;
     uint8_t  rssi_ant_id;

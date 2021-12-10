@@ -342,8 +342,6 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(&user_packet_handler);
 
 #ifndef SIMULATION
-    PINCTRL_SetPadMux(6, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
     PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
     PINCTRL_SelI2cSclIn(I2C_PORT, 10);

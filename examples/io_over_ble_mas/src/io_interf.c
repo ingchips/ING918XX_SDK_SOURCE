@@ -126,7 +126,7 @@ static void config_uart(uint32_t freq, uint32_t baud)
     config.UART_en           = 1;
     config.cts_en            = 0;
     config.rts_en            = 0;
-    config.rxfifo_waterlevel = 1;
+    config.rxfifo_waterlevel = 7;
     config.txfifo_waterlevel = 1;
     config.ClockFrequency    = freq;
     config.BaudRate          = baud;
@@ -146,7 +146,7 @@ void io_interf_setup_peripherals()
 
 void io_interf_init()
 {
-    uart_driver_init(APB_UART1, NULL, recv_char);
+    uart_driver_init(COMM_PORT, NULL, recv_char);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART1, uart_driver_isr, NULL);
 }
 
