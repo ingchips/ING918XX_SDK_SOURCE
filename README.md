@@ -2,8 +2,7 @@
 
 This repository contains ING918XX SDK source code, including platform header files, bundle binaries, and examples.
 
-ING918xx (available in Q2/2020) is a fully integrated Bluetooth Low Energy wireless communication SoC
-targeting Bluetooth 5 specification.
+ING918xx is a fully integrated Bluetooth Low Energy wireless communication SoC targeting Bluetooth 5.1 specification.
 
 ## Get Started
 
@@ -35,7 +34,7 @@ To build Nim projects, besides of Gnu Arm toolchain & CMSIS:
 
 ## License
 
-   Copyright 2019-2020 INGCHIPS
+   Copyright 2019-2021 INGCHIPS
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
