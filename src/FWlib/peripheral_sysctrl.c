@@ -55,3 +55,7 @@ void SYSCTRL_SetLDOOutput(int level)
     *(volatile uint32_t*)(0x40040060) =  ((*(volatile uint32_t*)(0x40040060)) & 0xffffff03)|(level<<2);
 }
 
+void SYSCTRL_WaitForLDO(void)
+{
+    while ((io_read(0x40040088) & (0x7 << 14)) != (0x7 << 14)) ;
+}

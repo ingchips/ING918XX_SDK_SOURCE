@@ -116,7 +116,17 @@ enum
     SYSCTRL_LDO_OUPUT_2V50 = 0x1f,  // Recommended for Vbat = 3.3V
 };
 
+/**
+ * @brief Set LDO output level
+ *
+ * @param[in] level         output level
+ */
 void SYSCTRL_SetLDOOutput(int level);
+
+/**
+ * @brief Wait for LDO state ready
+ */
+void SYSCTRL_WaitForLDO(void);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

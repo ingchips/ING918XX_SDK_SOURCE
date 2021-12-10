@@ -1,4 +1,4 @@
-#include "iic.h"      
+#include "iic.h"
 
 #include <string.h>
 #include "ingsoc.h"
@@ -7,9 +7,6 @@
 
 void i2c_init(const i2c_port_t port)
 {
-    //SYSCTRL_ResetItem item = port == I2C_PORT_0 ? SYSCTRL_Reset_APB_I2C0 : SYSCTRL_Reset_APB_I2C1;
-    //SYSCTRL_ResetBlock(item);
-    //SYSCTRL_ReleaseBlock(item);
     I2C_CTRL0_CLR(I2C_BASE(port), I2C_CTRL0_SFTRST | I2C_CTRL0_CLKGATE);
 }
 
@@ -18,9 +15,9 @@ void i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const
     uint32_t *p_data = (uint32_t *)(byte_data + 3);
     uint32_t data = (addr <<  1) | 0;     // control: write
     I2C_TypeDef *BASE = I2C_BASE(port);
-    
+
     if (length > 0)
-        data |= (byte_data[0] <<  8) | (byte_data[1] << 16) | (byte_data[2] << 24);        
+        data |= (byte_data[0] <<  8) | (byte_data[1] << 16) | (byte_data[2] << 24);
 
     I2C_CTRL0_CLR(BASE, I2C_CTRL0_SFTRST | I2C_CTRL0_CLKGATE);
 
@@ -29,7 +26,7 @@ void i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const
 
     // frist operation, do not need clear I2C_QUEUECTRL and I2C_QUEUECMD.
     BASE->I2C_QUEUECMD.NRM = nrm + 1 + length;
-    
+
     I2C_QUEUECTRL_SET(BASE, I2C_QUEUECTRL_QUEUE_RUN);
 
 #if 0
@@ -38,15 +35,15 @@ void i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const
 #endif
 
     length += 1;
-    while (1) 
+    while (1)
     {
-        while (I2C_QUEUESTAT_WR_QUEUE_FULL(BASE)); 
+        while (I2C_QUEUESTAT_WR_QUEUE_FULL(BASE));
         BASE->I2C_DATA = data;
         length -= 4;
         if (length <= 0)
             break;
         data = *p_data;
-        p_data++;        
+        p_data++;
     }
 
     // WAIT I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ (software polling)
@@ -74,7 +71,7 @@ static int write_bytes(uint8_t *data, uint32_t d32, int len)
     return len;
 }
 
-void i2c_read(const i2c_port_t port, uint8_t addr, 
+void i2c_read(const i2c_port_t port, uint8_t addr,
               const uint8_t *write_data, int16_t write_len,
               uint8_t *read_data, int16_t read_length)
 {
@@ -93,9 +90,9 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
         // ONLY SUPPORT PIO QUEUE MODE, SET HW_I2C_QUEUECTRL_PIO_QUEUE_MODE AT FRIST
         I2C_QUEUECTRL_SET(BASE, I2C_QUEUECTRL_PIO_QUEUE_MODE);
     }
-    
+
     // STEP 2 : transmit (control byte + Read command), need hold SCL (I2C_QUEUECMD_RETAIN_CLOCK)
-    BASE->I2C_QUEUECMD.NRM = (I2C_QUEUECMD_RETAIN_CLOCK | I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION | 
+    BASE->I2C_QUEUECMD.NRM = (I2C_QUEUECMD_RETAIN_CLOCK | I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION |
           1);
 
     I2C_QUEUECTRL_SET(BASE, I2C_QUEUECTRL_QUEUE_RUN);
@@ -109,17 +106,17 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
 
     // NOTE : MUST SET I2C_QUEUECTRL_WR_CLEAR
     I2C_QUEUECTRL_SET(BASE, I2C_QUEUECTRL_WR_CLEAR);
-    I2C_QUEUECTRL_CLR(BASE, I2C_QUEUECTRL_WR_CLEAR);                    
+    I2C_QUEUECTRL_CLR(BASE, I2C_QUEUECTRL_WR_CLEAR);
 
-#if 0    
-    printf("READ : Step 2 - ... \n");    
+#if 0
+    printf("READ : Step 2 - ... \n");
 #endif
 
-    // 
+    //
     // STEP 3 : read data byte + (NO ACK) + STOP
     //
 
-    BASE->I2C_QUEUECMD.NRM = (I2C_QUEUECMD_SEND_NAK_ON_LAST | I2C_QUEUECMD_POST_SEND_STOP | I2C_QUEUECMD_MASTER_MODE | 
+    BASE->I2C_QUEUECMD.NRM = (I2C_QUEUECMD_SEND_NAK_ON_LAST | I2C_QUEUECMD_POST_SEND_STOP | I2C_QUEUECMD_MASTER_MODE |
          /*I2C_QUEUECMD_XFER_COUNT*/
          read_length);
 
@@ -147,7 +144,7 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
     I2C_QUEUECTRL_CLR(BASE, I2C_QUEUECTRL_RD_CLEAR);
 
 #if 0
-    printf("READ DONE ... \n");    
-#endif    
+    printf("READ DONE ... \n");
+#endif
 }
 

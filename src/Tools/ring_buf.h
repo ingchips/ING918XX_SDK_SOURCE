@@ -32,7 +32,7 @@ struct ring_buf;
  * @return                  `ring_buf` object
  ****************************************************************************************
  */
-struct ring_buf *ring_buf_init(void *buf, int total_size);
+struct ring_buf *ring_buf_init(void *buf, int total_size, void (*highwater_cb)(struct ring_buf *buf));
 
 /**
  ****************************************************************************************

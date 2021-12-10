@@ -3,6 +3,7 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include <stdio.h>
+#include "adc_cali.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -71,6 +72,8 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
+
+    adc_prepare_calibration();
 
     return 0;
 }

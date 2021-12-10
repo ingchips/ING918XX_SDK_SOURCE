@@ -35,6 +35,7 @@ const static uint8_t profile_data[] = {
 
 hci_con_handle_t handle_send = INVALID_HANDLE;
 static uint8_t notify_enable = 0;
+uint32_t total_sent = 0;
 
 void trigger_write(int flush);
 
@@ -57,6 +58,7 @@ static int cb_ring_buf_peek_data(const void *data, int len, int has_more, void *
         len -= size;
         p += size;
         r += size;
+        total_sent += size;
     }
 
     return r;
@@ -127,11 +129,8 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     case USER_MSG_ID_REQUEST_SEND:
         {
             int flush = size;
-            if (0 == flush)
-                xTimerReset(flush_timer, portMAX_DELAY);
-            else
-                xTimerStop(flush_timer, portMAX_DELAY);
-            do_write(flush);
+            xTimerReset(flush_timer, portMAX_DELAY);
+            do_write(flush);            
             is_triggering = 0;
         }
         break;
@@ -185,6 +184,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             show_state(STATE_CONNECTED);
+            xTimerReset(flush_timer, portMAX_DELAY);
             break;
         default:
             break;
@@ -193,6 +193,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
+        platform_printf("Total send over BLE: %u\n", total_sent);
+        vTaskDelay(100);
         platform_reset();
         break;
 
@@ -215,7 +217,7 @@ uint32_t setup_profile(void *data, void *user_data)
     platform_printf("setup_profile\n");
     flush_timer = xTimerCreate("t1",
                             pdMS_TO_TICKS(800),
-                            pdFALSE,
+                            pdTRUE,
                             NULL,
                             flush_timer_callback);
     init_buffer();

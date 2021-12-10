@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "adc_cali.h"
+
 // GATT characteristic handles
 #include "../data/gatt.const"
 
@@ -131,19 +133,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     }
 }
 
-void print_reg(uint32_t addr)
-{
-    printf("%08X = %08X\n", addr, *(uint32_t *)(addr));
-}
-
 uint16_t read_adc(uint8_t channel)
 {
-    #define r32(a)   (*(volatile uint32_t*)(a))
+    SYSCTRL_WaitForLDO();
 
-    while ((r32(0x40040088) & (0x7 << 14)) != (0x7 << 14)) ;
-
-    ADC_PowerCtrl(1);
     ADC_Reset();
+    ADC_PowerCtrl(1);    
+
     ADC_SetClkSel(ADC_CLK_EN | ADC_CLK_128);
     ADC_SetMode(ADC_MODE_LOOP);
     ADC_EnableChannel(channel == 0 ? 1 : 0, 1);
@@ -159,8 +155,8 @@ uint16_t read_adc(uint8_t channel)
 
     ADC_Enable(0);
     ADC_PowerCtrl(0);
-    
-    return voltage;
+
+    return adc_calibrate(ADC_SAMPLE_MODE_SLOW, channel, voltage);
 }
 
 uint8_t *battery_level = NULL;
@@ -243,6 +239,8 @@ uint32_t timer_isr(void *user_data)
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    platform_printf("setup_profile\n");
+    
     battery_level = profile_data + HANDLE_BATTERY_LEVEL_OFFSET;
 
 #ifdef DEMO_TASK_DELAY_UNTIL
