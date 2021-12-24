@@ -430,6 +430,45 @@ void platform_set_rf_power_mapping(const int16_t *rf_power_mapping);
  */
 void platform_patch_rf_init_data(const void *data);
 
+/**
+ ****************************************************************************************
+ * @brief Pre-suppress ticks and sleep processing
+ *
+ * @param[in]  expected_ticks   expected ticks to sleep
+ * @return                      adjusted ticks to sleep
+ ****************************************************************************************
+ */
+// uint32_t platform_pre_suppress_ticks_and_sleep_processing(uint32_t expected_ticks);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Preprocessing for tickless sleep
+ ****************************************************************************************
+ */
+// void platform_pre_sleep_processing(void);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Postprocessing for tickless sleep
+ ****************************************************************************************
+ */
+// void platform_post_sleep_processing(void);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Hook for idle task got resumed
+ ****************************************************************************************
+ */
+// void platform_os_idle_resumed_hook(void);
+// WARNING: ^^^ this API is not available in this release
+
+
 #ifdef __cplusplus
 }
 #endif

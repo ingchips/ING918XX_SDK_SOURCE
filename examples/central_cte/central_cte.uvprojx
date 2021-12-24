@@ -334,7 +334,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls/>
-              <Define>USE_STDPERIPH_DRIVER,ANT_TYPE=0</Define>
+              <Define>USE_STDPERIPH_DRIVER,PRO_MODE</Define>
               <Undefine/>
               <IncludePath>../../bundles/extension/inc/os/portable/RVDS/ARM_CM3;../../bundles/extension/inc;../../bundles/extension/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -462,6 +462,11 @@
               <FileName>rf_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\rf_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>gatt_client_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\gatt_client_util.c</FilePath>
             </File>
           </Files>
         </Group>

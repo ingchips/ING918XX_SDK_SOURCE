@@ -404,6 +404,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\io_interf.c</FilePath>
             </File>
+            <File>
+              <FileName>uart_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\uart_driver.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -476,11 +481,6 @@
               <FileName>rf_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\rf_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>uart_driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\uart_driver.c</FilePath>
             </File>
             <File>
               <FileName>ring_buf.c</FileName>

@@ -102,6 +102,8 @@ void cmd_version(const char *param)
     tx_data(buffer, strlen(buffer) + 1);
 }
 
+extern void platform_get_heap_status(platform_heap_status_t *status);
+
 void cmd_mem(const char *param)
 {
     platform_heap_status_t status;

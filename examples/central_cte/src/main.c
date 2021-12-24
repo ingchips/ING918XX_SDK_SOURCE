@@ -64,8 +64,10 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals(void)
 {
-    config_uart(OSC_CLK_FREQ, 921600);
-    
+    config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+
     PINCTRL_EnableAllAntSelPins();
 }
 

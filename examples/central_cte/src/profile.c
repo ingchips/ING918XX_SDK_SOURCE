@@ -10,6 +10,11 @@
 #include "gatt_client.h"
 #include "kv_storage.h"
 #include "ll_api.h"
+#include "ad_parser.h"
+#include "sig_uuid.h"
+#include "gatt_client_util.h"
+
+#include "ant_id_mapping_4x4.h"
 
 #include "FreeRTOS.h"
 #include "timers.h"
@@ -20,6 +25,12 @@
 
 // GATT characteristic handles
 #include "../data/gatt.const"
+
+#ifdef PRO_MODE
+#define iprintf(...)
+#else
+#define iprintf         platform_printf
+#endif
 
 #define INVALID_HANDLE 0xffff
 
@@ -39,6 +50,7 @@ const static uint8_t profile_data[] = {
 
 hci_con_handle_t handle_send = INVALID_HANDLE;
 static uint8_t notify_enable = 0;
+struct gatt_client_discoverer *discoverer = NULL;
 
 extern void set_sample_offset(int n);
 
@@ -160,12 +172,14 @@ void config_switching_pattern(void)
 
     if (settings->patterns[current_pattern].len <= 2)
         settings->patterns[current_pattern].len = 2;
+    
+    const uint8_t *mapped = switch_pattern_mapping(settings->patterns[current_pattern].len, settings->patterns[current_pattern].ant_ids);
 
 #ifdef PRO_MODE
     ll_scanner_enable_iq_sampling(CTE_AOA, 
                                   settings->slot_duration,
                                   settings->patterns[current_pattern].len,
-                                  settings->patterns[current_pattern].ant_ids,
+                                  mapped,
                                   12, 1);
 #else
     ll_set_def_antenna(settings->patterns[current_pattern].def);
@@ -173,7 +187,7 @@ void config_switching_pattern(void)
                                     1,
                                     (cte_slot_duration_type_t)settings->slot_duration,
                                     settings->patterns[current_pattern].len,
-                                    settings->patterns[current_pattern].ant_ids);
+                                    mapped);
     gap_set_connection_cte_request_enable(conn_handle,
                                     1,
                                     0,
@@ -239,11 +253,57 @@ static const scan_phy_config_t configs[] =
     },
 };
 
+static bd_addr_t peer_addr = { 0 };
+static bd_addr_type_t peer_addr_type = BD_ADDR_TYPE_LE_PUBLIC;
+static int peer_found = 0;
+
+static void try_connect_to_peer_with_cte_service(const le_ext_adv_report_t *rpt)
+{
+    if (peer_found) return;
+    if (ad_data_contains_uuid16(rpt->data_len, rpt->data, SIG_UUID_SERVICE_CONSTANT_TONE_EXTENSION) == 0)
+        return;
+    peer_found = 1;
+    gap_set_ext_scan_enable(0, 0, 0, 0);   
+    peer_addr_type = rpt->addr_type;
+    reverse_bd_addr(rpt->address, peer_addr);
+    iprintf("connecting to %02X:%02X:%02X:%02X:%02X:%02X:...\n", 
+        peer_addr[0],peer_addr[1],peer_addr[2],
+        peer_addr[3],peer_addr[4],peer_addr[5]);
+    gap_ext_create_connection(    INITIATING_ADVERTISER_FROM_PARAM, // Initiator_Filter_Policy,
+                              BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
+                              peer_addr_type,                   // Peer_Address_Type,
+                              peer_addr,                        // Peer_Address,
+                              sizeof(phy_configs) / sizeof(phy_configs[0]),
+                              phy_configs);
+}
+
+static void write_characteristic_value_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size)
+{
+    switch (packet[0])
+    {
+    case GATT_EVENT_QUERY_COMPLETE:
+        iprintf("peer cte enabled\n");
+        config_switching_pattern();
+        set_channel();
+        break;
+    }
+}
+
+static void enable_peer_cte(service_node_t *first, void *user_data, int err_code)
+{
+    if (err_code) platform_reset();
+    char_node_t *ch = gatt_client_util_find_char_uuid16(discoverer, SIG_UUID_CHARACT_CONSTANT_TONE_EXTENSION_ENABLE);
+    if (ch == NULL) platform_reset();
+    uint8_t enable = 1;
+    gatt_client_write_value_of_characteristic(write_characteristic_value_callback, conn_handle, ch->chara.value_handle, sizeof(enable), &enable);
+    gatt_client_util_free(discoverer);
+    discoverer = NULL;
+}
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[1] = {{.handle = 0, .duration = 0, .max_events = 0}};
-    static const bd_addr_t rand_addr = { 0xD4, 0x29, 0xF6, 0xBE, 0xF3, 0x26 };
-    static const bd_addr_t peer_addr = { 0xFD, 0xAB, 0x79, 0x08, 0x91, 0xBF };
+    static const bd_addr_t rand_addr = { 0xD4, 0x29, 0xF6, 0xBE, 0xF3, 0x26 };    
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     const event_disconn_complete_t *disconn_event;
@@ -260,20 +320,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         setup_adv();
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
 
-#ifdef PRO_MODE
         gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
                               sizeof(configs) / sizeof(configs[0]),
                               configs);
-        gap_set_ext_scan_enable(1, 0, 0, 0);
-#else
-        platform_printf("connecting...\n");
-        gap_ext_create_connection(    INITIATING_ADVERTISER_FROM_PARAM, // Initiator_Filter_Policy,
-                                      BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
-                                      BD_ADDR_TYPE_LE_RANDOM,           // Peer_Address_Type,
-                                      peer_addr,                        // Peer_Address,
-                                      sizeof(phy_configs) / sizeof(phy_configs[0]),
-                                      phy_configs);
-#endif        
+        gap_set_ext_scan_enable(1, 0, 0, 0);   
         break;
 
     case HCI_EVENT_LE_META:
@@ -283,12 +333,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_meta_event_enh_create_conn_complete_t *conn_complete
                     = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
-                platform_printf("connected,%d,%d\n", conn_complete->status,conn_complete->role);
+                iprintf("connected,%d,%d\n", conn_complete->status,conn_complete->role);
                 if (conn_complete->status != 0)
                 {
                     gap_ext_create_connection(    INITIATING_ADVERTISER_FROM_PARAM, // Initiator_Filter_Policy,
                                           BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
-                                          BD_ADDR_TYPE_LE_RANDOM,           // Peer_Address_Type,
+                                          peer_addr_type,                   // Peer_Address_Type,
                                           peer_addr,                        // Peer_Address,
                                           sizeof(phy_configs) / sizeof(phy_configs[0]),
                                           phy_configs);
@@ -305,17 +355,20 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     conn_handle = conn_complete->handle;
                     gatt_client_is_ready(conn_handle);
                     current_pattern = -1;
-                    config_switching_pattern();
-                    set_channel();
+                    discoverer = gatt_client_util_discover_all(conn_handle, enable_peer_cte, NULL);
                 }
             }
             break;
         case HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT:
+#ifdef PRO_MODE
             if (0 == scanner_configured)
             {
                 scanner_configured = 1;
                 config_switching_pattern();
             }
+#else
+            try_connect_to_peer_with_cte_service(decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports);
+#endif
             break;
         case HCI_SUBEVENT_LE_VENDOR_PRO_CONNECTIONLESS_IQ_REPORT:
             recv_pro_connless_iq_report(decode_hci_le_meta_event(packet, le_meta_pro_connless_iq_report_t));
@@ -332,7 +385,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         disconn_event = decode_hci_event_disconn_complete(packet);
-        platform_printf("disc:%d,%d,%d\n",disconn_event->conn_handle,handle_send,conn_handle);
+        iprintf("disc:%d,%d,%d\n",disconn_event->conn_handle,handle_send,conn_handle);
         if (disconn_event->conn_handle == handle_send)
         {
             handle_send = INVALID_HANDLE;
@@ -344,7 +397,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             conn_handle = INVALID_HANDLE;
             gap_ext_create_connection(    INITIATING_ADVERTISER_FROM_PARAM, // Initiator_Filter_Policy,
                                           BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
-                                          BD_ADDR_TYPE_LE_RANDOM,           // Peer_Address_Type,
+                                          peer_addr_type,                   // Peer_Address_Type,
                                           peer_addr,                        // Peer_Address,
                                           sizeof(phy_configs) / sizeof(phy_configs[0]),
                                           phy_configs);
@@ -367,13 +420,16 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 uint32_t setup_profile(void *data, void *user_data)
 {
-    platform_printf("setup profile\n");
+    iprintf("setup profile\n");
     if (kv_get(KEY_SETTINGS, NULL) == NULL)
     {
+        int i;
         settings_t *p = pvPortMalloc(sizeof(settings_t));
         memset(p, 0, sizeof(settings_t));
         p->slot_duration = 1;
-        p->patterns[0].len = 2;
+        p->patterns[0].len = 16;
+        for (i = 0; i < p->patterns[0].len; i++)
+            p->patterns[0].ant_ids[i] = i;
         kv_put(KEY_SETTINGS, (const uint8_t *)p, sizeof(settings_t));
         vPortFree(p);
     }

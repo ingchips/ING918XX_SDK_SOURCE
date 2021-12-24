@@ -83,7 +83,6 @@ int ring_buf_write_data(struct ring_buf *buf, const void *data, int len)
 {
     uint16_t next;
     int free_size;
-    int evt_called = 0;
 
     next = buf->write_next;
     free_size = buf->read_next - buf->write_next;

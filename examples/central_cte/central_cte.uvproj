@@ -472,6 +472,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\rf_util.c</FilePath>
             </File>
+            <File>
+              <FileName>gatt_client_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\gatt_client_util.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

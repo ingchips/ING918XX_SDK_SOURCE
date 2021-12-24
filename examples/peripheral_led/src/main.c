@@ -2,6 +2,7 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include <stdio.h>
+#include "rf_util.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -67,6 +68,8 @@ int app_main()
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
+
+    rf_enable_powerboost();
 
     setup_peripherals();
 
