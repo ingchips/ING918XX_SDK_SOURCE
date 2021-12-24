@@ -27,6 +27,8 @@ const static uint8_t profile_data[] = {
 hci_con_handle_t handle_send = 0;
 static uint8_t notify_enable = 0;
 
+extern const char welcome_msg[];
+
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
 {
@@ -51,7 +53,10 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     case HANDLE_GENERIC_OUTPUT + 1:
         handle_send = connection_handle;
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
+        {
             notify_enable = 1;
+            att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)welcome_msg, strlen(welcome_msg) + 1);
+        }
         else
             notify_enable = 0;        
         return 0;

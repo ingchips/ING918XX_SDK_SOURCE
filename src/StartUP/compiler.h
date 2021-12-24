@@ -42,7 +42,15 @@
   #define __STATIC_INLINE  static inline
 #endif
 #ifndef __weak
-  #define __weak            __attribute__((weak)) 
+  #define __weak            __attribute__((weak))
+#endif
+#endif
+
+#ifndef __MODULE__
+#ifdef __FILE_NAME__
+#define __MODULE__          __FILE_NAME__
+#else
+#define __MODULE__          __FILE__
 #endif
 #endif
 

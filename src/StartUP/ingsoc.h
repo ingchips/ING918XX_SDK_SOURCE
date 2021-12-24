@@ -25,9 +25,9 @@ typedef enum IRQn
 
 #ifndef C2NIM
 
-/* --------  Configuration of the Cortex-M4 Processor and Core Peripherals  ------- */
+/* --------  Configuration of the Cortex-M3 Processor and Core Peripherals  ------- */
 #define __CM3_REV                 0x0201    /*!< Core revision r2p1                              */
-#define __MPU_PRESENT             1         /*!< MPU present or not                              */
+#define __MPU_PRESENT             0         /*!< MPU present or not                              */
 #define __NVIC_PRIO_BITS          3         /*!< Number of Bits used for Priority Levels         */
 #define __Vendor_SysTickConfig    0         /*!< Set to 1 if different SysTick Config is used    */
 

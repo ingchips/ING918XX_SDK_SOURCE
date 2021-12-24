@@ -50,7 +50,7 @@ void ll_set_initiating_coded_scheme(const coded_scheme_t scheme);
 
 /**
  ****************************************************************************************
- * @brief Give link layer (slave role) a hint on ce_len of a connection
+ * @brief Give link layer a hint on ce_len of a connection
  *
  * @param[in]  conn_handle      handle of an existing connection
  * @param[in]  min_ce_len       information parameter about the minimum length of connection
@@ -230,19 +230,12 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @param[in]   header              header sending before packet length
  * @param[in]   freq_mhz            freqency in MHz
  *                                  When 0: use the channel specified in `ll_raw_packet_set_param`)
- *                                  When != 0: out band mode is activated
  * @return                          0 if successful else error code
  *
  *
- * Note: 1. Only a subset of uint8_t are supported in `header`;
+ * Note: Only a subset of uint8_t are supported in `header`;
  *       When bare mode is used, CRC & whitening are all handled by apps;
  *       When bare mode is used, `crc_init` is ignored.
- *
- *       2. When out band mode is activated, only bare mode raw packets with `freq_mhz != 0`
- *          are supported, and all other functionalities are .
- *
- *       3. Out band mode is deactivated when all bare mode raw packets with `freq_mhz != 0`
- *          are freed.
  ****************************************************************************************
  */
 // int ll_raw_packet_set_bare_mode(struct ll_raw_packet *packet,

@@ -442,6 +442,13 @@
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
+          <Files>
+            <File>
+              <FileName>rf_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\rf_util.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>

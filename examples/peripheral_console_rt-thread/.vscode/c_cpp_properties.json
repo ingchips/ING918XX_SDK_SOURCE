@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "ING918xx",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${env:CMSIS_BASE}/Include",
+                "../../bundles/noos_typical/inc",
+                "../../src/BSP",
+                "../../src/FWlib",
+                "../../src/StartUP",
+                "../../src/Tools",
+                "../../src/Mesh",
+                "../../src/rt-thread/include"
+            ],
+            "defines": [
+                "USE_STDPERIPH_DRIVER=",
+                "__packed="
+            ],
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}

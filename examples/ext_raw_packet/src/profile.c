@@ -10,7 +10,7 @@
 #define MAX_SAMPLES_PER_SLOT    5
 
 #define SAMPLES_PER_SLOT        1
-#define SAMPLING_OFFSET         15
+#define SAMPLING_OFFSET         12
 #define CH_ID                   10
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 

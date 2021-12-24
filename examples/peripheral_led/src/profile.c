@@ -69,9 +69,10 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     }
 }
 
+static bd_addr_t rand_addr = { 0xFD, 0xAB, 0x79, 0x08, 0x91, 0xBE };
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
-{
-    static const bd_addr_t rand_addr = { 0xFD, 0xAB, 0x79, 0x08, 0x91, 0xBE };
+{    
     static const ext_adv_set_en_t adv_sets_en[] = {
         {.handle = 0, .duration = 0, .max_events = 0},
 #ifndef DISABLE_CTE
@@ -87,6 +88,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
+#ifndef DISABLE_CTE
+        rand_addr[4] = platform_rand() & 0xff;
+        rand_addr[5] = platform_rand() & 0xff;
+#endif
         gap_set_adv_set_random_addr(0, rand_addr);
         gap_set_ext_adv_para(0, 
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
@@ -96,7 +101,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
                                 NULL,                      // Peer_Address      (ignore)
                                 ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
-                                0x00,                      // Advertising_Tx_Power
+                                100,                       // Advertising_Tx_Power
                                 PHY_1M,                    // Primary_Advertising_PHY
                                 0,                         // Secondary_Advertising_Max_Skip
                                 PHY_1M,                    // Secondary_Advertising_PHY
@@ -109,13 +114,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         gap_set_adv_set_random_addr(1, rand_addr);
         gap_set_ext_adv_para(1, 
                             0,
-                            0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
+                            0x0050, 0x0050,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
                             BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
                             BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
                             NULL,                      // Peer_Address      (ignore)
                             ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
-                            0x00,                      // Advertising_Tx_Power
+                            100,                       // Advertising_Tx_Power
                             PHY_1M,                    // Primary_Advertising_PHY
                             0,                         // Secondary_Advertising_Max_Skip
                             PHY_1M,                    // Secondary_Advertising_PHY

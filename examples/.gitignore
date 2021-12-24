@@ -4,7 +4,10 @@ RTE/
 *.uvgui.*
 *.uvguix.*
 *.dep
+*.scvd
 
 homekit-bulb/
 mesh-sensor-light/
 peripheral_dirfinding/
+ble_rpc/
+dual_i2c/

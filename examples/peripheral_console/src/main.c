@@ -173,3 +173,5 @@ int app_main()
 
     return 0;
 }
+
+const char welcome_msg[] = "Using Built-in FreeRTOS";
