@@ -1,11 +1,31 @@
 //! This module provides async functions for GATT Client.
 //! CAUTION: This is an experimental module.
 
-pub usingnamespace @import("ingble.zig");
+const ingble = @import("ingble.zig");
+const GATT_EVENT_SERVICE_QUERY_RESULT = ingble.GATT_EVENT_SERVICE_QUERY_RESULT;
+const GATT_EVENT_QUERY_COMPLETE = ingble.GATT_EVENT_QUERY_COMPLETE;
+const GATT_EVENT_CHARACTERISTIC_QUERY_RESULT = ingble.GATT_EVENT_CHARACTERISTIC_QUERY_RESULT;
+const GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT = ingble.GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT;
+const GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT = ingble.GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT;
+const gatt_client_read_value_of_characteristic_using_value_handle = ingble.gatt_client_read_value_of_characteristic_using_value_handle;
+
+const hci_con_handle_t = ingble.hci_con_handle_t;
+const gatt_client_service_t = ingble.gatt_client_service_t;
+const gatt_client_characteristic_t = ingble.gatt_client_characteristic_t;
+const gatt_client_characteristic_descriptor_t = ingble.gatt_client_characteristic_descriptor_t;
+
+const gatt_event_query_complete_parse = ingble.gatt_event_query_complete_parse;
+const gatt_event_characteristic_query_result_parse = ingble.gatt_event_characteristic_query_result_parse;
+const gatt_client_discover_characteristics_for_service = ingble.gatt_client_discover_characteristics_for_service;
+const gatt_client_discover_characteristics_for_handle_range_by_uuid16 = ingble.gatt_client_discover_characteristics_for_handle_range_by_uuid16;
+const gatt_client_discover_characteristics_for_handle_range_by_uuid128 = ingble.gatt_client_discover_characteristics_for_handle_range_by_uuid128;
+const gatt_event_all_characteristic_descriptors_query_result_parse = ingble.gatt_event_all_characteristic_descriptors_query_result_parse;
+const gatt_client_discover_characteristic_descriptors = ingble.gatt_client_discover_characteristic_descriptors;
+const gatt_client_write_value_of_characteristic = ingble.gatt_client_write_value_of_characteristic;
 
 var session_complete: bool = true;
 
-const print = platform_printf;
+const print = ingble.platform_printf;
 
 pub var all_services_discoverer: AllServicesDiscoverer = undefined;
 
@@ -15,9 +35,10 @@ const AllServicesDiscoverer = struct {
     service: gatt_client_service_t = undefined,
 
     fn callback(packet_type: u8, _: u16, packet: [*c] const u8, size: u16) callconv(.C) void {
+        _ = size; _= packet_type;
         switch (packet[0]) {
             GATT_EVENT_SERVICE_QUERY_RESULT => {
-                var result = gatt_event_service_query_result_parse(packet);
+                var result = ingble.gatt_event_service_query_result_parse(packet);
                 all_services_discoverer.service = result.*.service;
             },
             GATT_EVENT_QUERY_COMPLETE => {
@@ -35,7 +56,7 @@ const AllServicesDiscoverer = struct {
         if (!session_complete) return false;
         self.frame = null;
         session_complete = false;
-        if (0 == gatt_client_discover_primary_services(callback, conn_handle)) {
+        if (0 == ingble.gatt_client_discover_primary_services(callback, conn_handle)) {
             return !session_complete;
         } else {
             session_complete = true;
@@ -66,9 +87,10 @@ const ServiceDiscoverer = struct {
     service: ?gatt_client_service_t = undefined,
 
     fn callback(packet_type: u8, _: u16, packet: [*c] const u8, size: u16) callconv(.C) void {
+        _ = packet_type; _ = size;
         switch (packet[0]) {
             GATT_EVENT_SERVICE_QUERY_RESULT => {
-                var result = gatt_event_service_query_result_parse(packet);
+                var result = ingble.gatt_event_service_query_result_parse(packet);
                 service_discoverer.service = result.*.service;
             },
             GATT_EVENT_QUERY_COMPLETE => {
@@ -88,7 +110,7 @@ const ServiceDiscoverer = struct {
         self.frame = null;
         self.service = null;
         session_complete = false;
-        if (0 != gatt_client_discover_primary_services_by_uuid16(callback, conn_handle, uuid)) {
+        if (0 != ingble.gatt_client_discover_primary_services_by_uuid16(callback, conn_handle, uuid)) {
             session_complete = true;
             return null;
         }
@@ -106,7 +128,7 @@ const ServiceDiscoverer = struct {
         self.frame = null;
         self.service = null;
         session_complete = false;
-        if (0 != gatt_client_discover_primary_services_by_uuid128(callback, conn_handle, uuid)) {
+        if (0 != ingble.gatt_client_discover_primary_services_by_uuid128(callback, conn_handle, uuid)) {
             session_complete = true;
             return null;
         }
@@ -127,6 +149,7 @@ const AllCharacteristicsDiscoverer = struct {
     characteristic: gatt_client_characteristic_t = undefined,
 
     fn callback(packet_type: u8, _: u16, packet: [*c] const u8, size: u16) callconv(.C) void {
+        _ = size; _= packet_type;
         switch (packet[0]) {
             GATT_EVENT_CHARACTERISTIC_QUERY_RESULT => {
                 var result = gatt_event_characteristic_query_result_parse(packet);
@@ -181,6 +204,7 @@ const CharacteristicsDiscoverer = struct {
     characteristic: ?gatt_client_characteristic_t = undefined,
 
     fn callback(packet_type: u8, _: u16, packet: [*c] const u8, size: u16) callconv(.C) void {
+        _ = size; _= packet_type;
         switch (packet[0]) {
             GATT_EVENT_CHARACTERISTIC_QUERY_RESULT => {
                 var result = gatt_event_characteristic_query_result_parse(packet);
@@ -246,6 +270,7 @@ const AllDescriptorsDiscoverer = struct {
     descriptor: gatt_client_characteristic_descriptor_t = undefined,
 
     fn callback(packet_type: u8, _: u16, packet: [*c] const u8, size: u16) callconv(.C) void {
+        _ = size; _= packet_type;
         switch (packet[0]) {
             GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT => {
                 var result = gatt_event_all_characteristic_descriptors_query_result_parse(packet);
@@ -303,6 +328,7 @@ const ValueOfCharacteristicReader = struct {
     value: ?[*c] const u8,
 
     fn callback(packet_type: u8, _: u16, packet: [*c] const u8, size: u16) callconv(.C) void {
+        _ = size; _= packet_type;
         switch (packet[0]) {
             GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT => {
                 value_of_characteristic_reader.value = gatt_helper_value_query_result_parse(packet, size,
@@ -355,6 +381,7 @@ const ValueOfCharacteristicWriter = struct {
     frame: ? (anyframe -> bool) = null,
 
     fn callback(packet_type: u8, _: u16, packet: [*c] const u8, size: u16) callconv(.C) void {
+        _ = size; _= packet_type;
         switch (packet[0]) {
             GATT_EVENT_QUERY_COMPLETE => {
                 value_of_characteristic_writer.status = gatt_event_query_complete_parse(packet).*.status;

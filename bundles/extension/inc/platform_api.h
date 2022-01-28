@@ -15,7 +15,7 @@
 #define _STACK_API_H_
 
 #include <stdint.h>
-
+#include "ingsoc.h"
 #include "ll_api.h"
 
 #ifdef __cplusplus
@@ -88,23 +88,6 @@ typedef enum
 
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;
-
-typedef enum
-{
-    PLATFORM_CB_IRQ_RTC,
-    PLATFORM_CB_IRQ_TIMER0,
-    PLATFORM_CB_IRQ_TIMER1,
-    PLATFORM_CB_IRQ_TIMER2,
-    PLATFORM_CB_IRQ_GPIO,
-    PLATFORM_CB_IRQ_SPI0,
-    PLATFORM_CB_IRQ_SPI1,
-    PLATFORM_CB_IRQ_UART0,
-    PLATFORM_CB_IRQ_UART1,
-    PLATFORM_CB_IRQ_I2C0,
-    PLATFORM_CB_IRQ_I2C1,
-
-    PLATFORM_CB_IRQ_MAX
-} platform_irq_callback_type_t;
 
 typedef uint32_t (*f_platform_evt_cb)(void *data, void *user_data);
 typedef uint32_t (*f_platform_irq_cb)(void *user_data);
@@ -466,6 +449,51 @@ void platform_patch_rf_init_data(const void *data);
  ****************************************************************************************
  */
 // void platform_os_idle_resumed_hook(void);
+// WARNING: ^^^ this API is not available in this release
+
+
+typedef enum
+{    
+    PLATFORM_TASK_CONTROLLER,
+    PLATFORM_TASK_HOST,
+    PLATFORM_TASK_RTOS_TIMER,
+} platform_task_id_t;
+
+/**
+ ****************************************************************************************
+ * @brief Get RTOS handle of a specific platform task
+ *
+ * @param[in]   id              task identifier
+ * @return                      task handle if such task is known to platform bundles else 0.
+ *                              0 is returned 
+ *                              For FreeRTOS bundles, this is casted from `TaskHandle_t`;
+ *                              For NoOS bundles, this is casted from `gen_handle_t`.
+ ****************************************************************************************
+ */
+uintptr_t platform_get_task_handle(platform_task_id_t id);
+
+/**
+ ****************************************************************************************
+ * @brief Init controller
+ *
+ * For NoOS bundles, and `task_create` is NULL in generic OS driver:
+ *
+ *     To use raw packet APIs, controller needs to be initialized, and call 
+ *     `platform_controller_run()` continously.
+ ****************************************************************************************
+ */
+// void platform_init_controller(void);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Run controller
+ * 
+ * Controller will do its pending jobs, and return after all pending jobs are done.
+ ****************************************************************************************
+ */
+// void platform_controller_run(void);
 // WARNING: ^^^ this API is not available in this release
 
 

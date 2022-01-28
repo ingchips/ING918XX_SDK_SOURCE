@@ -1,5 +1,102 @@
-
 #include "peripheral_ssp.h"
+
+#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_918
+/*
+ * Description:
+ * Bit shifts and widths for Control register 0 (SSPCR0)
+ */
+#define bsSSP_CONTROL0_CLOCKRATE        8
+#define bwSSP_CONTROL0_CLOCKRATE        0xff //8
+#define bsSSP_CONTROL0_SCLKPHASE        7
+#define bwSSP_CONTROL0_SCLKPHASE        1
+#define bsSSP_CONTROL0_SCLKPOLARITY     6
+#define bwSSP_CONTROL0_SCLKPOLARITY     1
+#define bsSSP_CONTROL0_FRAMEFORMAT      4
+#define bwSSP_CONTROL0_FRAMEFORMAT      0x3 //2
+#define bsSSP_CONTROL0_DATASIZE         0
+#define bwSSP_CONTROL0_DATASIZE         0xf //4
+
+/*
+ * Description:
+ * Bit shifts and widths for Control register 1 (SSPCR1)
+ */
+#define bsSSP_CONTROL1_SLAVEOUTPUT      3
+#define bwSSP_CONTROL1_SLAVEOUTPUT      1
+#define bsSSP_CONTROL1_MASTERSLAVEMODE  2
+#define bwSSP_CONTROL1_MASTERSLAVEMODE  1
+#define bsSSP_CONTROL1_SSPENABLE        1
+#define bwSSP_CONTROL1_SSPENABLE        1
+#define bsSSP_CONTROL1_LOOPBACK         0
+#define bwSSP_CONTROL1_LOOPBACK         1
+
+/*
+ * Description:
+ * Bit shifts and widths for Status register
+ */
+#define bsSSP_STATUS_BUSY           4
+#define bwSSP_STATUS_BUSY           1
+#define bsSSP_STATUS_RXFULL         3
+#define bwSSP_STATUS_RXFULL         1
+#define bsSSP_STATUS_RXNOTEMPTY     2
+#define bwSSP_STATUS_RXNOTEMPTY     1
+#define bsSSP_STATUS_TXNOTFULL      1
+#define bwSSP_STATUS_TXNOTFULL      1
+#define bsSSP_STATUS_TXEMPTY        0
+#define bwSSP_STATUS_TXEMPTY        1
+
+/*
+ * Description:
+ * Bit shifts and widths for Clock Prescale register
+ */
+#define bsSSP_CLOCKPRESCALE_CLOCKDIVISOR    0
+#define bwSSP_CLOCKPRESCALE_CLOCKDIVISOR    0xff //8
+
+/*
+ * Description:
+ * Bit shifts and widths for Interrupt Enables in Mask register
+ */
+#define bsSSP_MASK_TXINTENABLE         3
+#define bwSSP_MASK_TXINTENABLE         1
+#define bsSSP_MASK_RXINTENABLE         2
+#define bwSSP_MASK_RXINTENABLE         1
+#define bsSSP_MASK_RTMINTENABLE        1
+#define bwSSP_MASK_RTMINTENABLE        1
+#define bsSSP_MASK_RORINTENABLE        0
+#define bwSSP_MASK_RORINTENABLE        1
+
+/*
+ * Description:
+ * Bit shifts and widths for Raw and Masked Interrupt Status register
+ */
+
+#define bsSSP_INTERRUPTID_TXINT         3
+#define bwSSP_INTERRUPTID_TXINT         1
+#define bsSSP_INTERRUPTID_RXINT         2
+#define bwSSP_INTERRUPTID_RXINT         1
+#define bsSSP_INTERRUPTID_RTMINT        1
+#define bwSSP_INTERRUPTID_RTMINT        1
+#define bsSSP_INTERRUPTID_RORINT        0
+#define bwSSP_INTERRUPTID_RORINT        1
+
+
+/*
+ * Descripton:
+ * Bit shifts and widths for interrupt clear register
+ */
+#define bsSSP_INTERRUPTCLEAR_RTMINT        1
+#define bwSSP_INTERRUPTCLEAR_RTMINT        1
+#define bsSSP_INTERRUPTCLEAR_RORINT        0
+#define bwSSP_INTERRUPTCLEAR_RORINT        1
+
+
+/*
+ * Descripton:
+ * Bit shifts and widths for DMA Control Register
+ */
+#define bsSSP_DMA_TRANSMIT_ENABLE        1
+#define bwSSP_DMA_TRANSMIT_ENABLE        1
+#define bsSSP_DMA_RECEIVE_ENABLE         0
+#define bwSSP_DMA_RECEIVE_ENABLE         1
 
 /*====================================================================*/
 void apSSP_Initialize (SSP_TypeDef * SSP_Ptr)
@@ -169,3 +266,122 @@ uint32_t apSSP_GetIntRawStatus(SSP_TypeDef * SSP_Ptr)
 {
     return SSP_Ptr->IntRawStatus;
 }
+
+#endif
+
+#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
+/*====================================================================*/
+void apSSP_Initialize (SPI_REG_H *SPI_Ptr)
+{
+    //disable all int
+    SPI_Ptr->IntrEn.r = 0;
+    SPI_Ptr->TransCtrl.r = 0;
+    
+    //SPI reset
+    SPI_Ptr->Ctrl.r |= (1 << SPI_REG_CTRL_SPIRST);
+    
+    //1. Read TX/RX FIFO depth in the Configuration Register
+    //SPI_Ptr->Config.f.RxFIFOSize
+    //SPI_Ptr->Config.f.TxFIFOSize
+}
+
+/*====================================================================*/
+void apSSP_DeviceParametersSet(SPI_REG_H *SPI_Ptr, apSSP_sDeviceControlBlock *pParam)
+{
+    //Wait for the previous SPI transfer to finish
+    while(SPI_Ptr->Status.f.SPIActive == 1);
+    
+    if(pParam->SlvMode == SPI_SLVMODE_MASTER_MODE)
+    {
+      SPI_Ptr->TransFmt.r = ( (pParam->DataMerge << SPI_REG_TRANSFMT_DATAMERGE) |
+                              (pParam->CPOL << SPI_REG_TRANSFMT_CPOL) |
+                              (pParam->CPHA << SPI_REG_TRANSFMT_CPHA) |
+                              (pParam->LSB << SPI_REG_TRANSFMT_LSB) |
+                              (pParam->MOSIBiDir << SPI_REG_TRANSFMT_MOSIBIDIR) |
+                              (pParam->DataLength << SPI_REG_TRANSFMT_DATALEN) |
+                              (pParam->AddressLength << SPI_REG_TRANSFMT_ADDRLEN) );
+
+      SPI_Ptr->TransCtrl.r = (  (pParam->TransMode << SPI_REG_TRANSCTRL_TRANSMODE) |
+                                (pParam->DualQuad << SPI_REG_TRANSCTRL_DUALQUAD) |
+                                (pParam->WrTranCnt << SPI_REG_TRANSCTRL_WRTRANCNT) |
+                                (pParam->RdTranCnt << SPI_REG_TRANSCTRL_RDTRANCNT) |
+                                (pParam->PhaseCmd << SPI_REG_TRANSCTRL_CMDEN) |
+                                (pParam->PhaseAddr << SPI_REG_TRANSCTRL_ADDREN) );
+                                
+      //Enable the End of SPI Transfer interrupt.
+      SPI_Ptr->IntrEn.r = (0x1 << SPI_REG_INTREN_ENDINTEN);
+    }
+    else
+    {
+      SPI_Ptr->Ctrl.r = ((0x1 << SPI_REG_CTRL_RXFIFORST) |
+                         (0x1 << SPI_REG_CTRL_TXFIFORST));
+      while(SPI_Ptr->Ctrl.f.RXFIFORST == 1);
+      while(SPI_Ptr->Ctrl.f.TXFIFORST == 1);
+      
+      SPI_Ptr->Ctrl.r |= ((pParam->RXTHRES << SPI_REG_CTRL_RXTHRES)|
+                          (pParam->TXTHRES << SPI_REG_CTRL_RXTHRES));
+      
+      SPI_Ptr->IntrEn.r = ( (0x1 << SPI_REG_INTREN_ENDINTEN) |
+                            (0x1 << SPI_REG_INTREN_RXFIFOINTEN) |
+                            (0x1 << SPI_REG_INTREN_TXFIFOINTEN) |
+                            (0x1 << SPI_REG_INTREN_SLVCMDEN));
+    }
+    
+}
+
+/*====================================================================*/
+void apSSP_WriteFIFO(SPI_REG_H *SPI_Ptr, uint32_t Addr, uint32_t Cmd, uint32_t Data[], uint16_t Len)
+{
+    uint16_t i;
+    for(i = 0; i < Len; i++){
+        //Transmit FIFO Empty flag
+        while(SPI_Ptr->Status.f.TXFULL == 0x1);
+        //For writes, data is enqueued to the TX FIFO
+        SPI_Ptr->Data.r = Data[i];
+    }
+
+    //SPI Address (Master mode only)
+    SPI_Ptr->Addr.r = Addr;
+    //SPI Command
+    //This register must be written with a dummy value to start a SPI transfer even when the command phase is not enabled
+    SPI_Ptr->Cmd.r = Cmd;
+    
+    //Wait the EndInt interrupt by checking the EndInt bit of the SPI Interrupt Status Register (0x3C).
+    //Write one to clear the EndInt bit of the SPI Interrupt Status Register (0x3C).
+    
+}
+
+/*====================================================================*/
+void apSSP_DeviceReceiveEnable(SPI_REG_H *SPI_Ptr, uint32_t Addr, uint32_t Cmd)
+{
+    //SPI Address (Master mode only)
+    SPI_Ptr->Addr.r = Addr;
+    //SPI Command
+    //This register must be written with a dummy value to start a SPI transfer even when the command phase is not enabled
+    SPI_Ptr->Cmd.r = Cmd;
+    
+    //Wait the EndInt interrupt by checking the EndInt bit of the SPI Interrupt Status Register (0x3C).
+    //Write one to clear the EndInt bit of the SPI Interrupt Status Register (0x3C).
+}
+
+/*====================================================================*/
+void apSSP_ReadFIFO(SPI_REG_H *SPI_Ptr, uint32_t Data[], uint16_t Len)
+{
+    uint16_t i;
+    for(i = 0; i < SPI_Ptr->Status.f.RXNUMLo; i++){
+        //Receive FIFO Empty flag
+        while(SPI_Ptr->Status.f.RXEMPTY == 0x1);
+        //For reads, data is read and dequeued from the RX FIFO
+        if(i < Len) {Data[i] = SPI_Ptr->Data.r;}
+    }
+
+}
+
+/*====================================================================*/
+uint32_t apSSP_GetIntRawStatus(SPI_REG_H *SPI_Ptr)
+{
+    return SPI_Ptr->IntrSt.r;
+}
+
+
+#endif

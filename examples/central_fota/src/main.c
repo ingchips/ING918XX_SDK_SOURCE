@@ -6,7 +6,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "trace.h"
-#include "ing918_uecc.h"
+#include "ing_uecc.h"
 
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {

@@ -336,7 +336,7 @@
               <MiscControls/>
               <Define>USE_STDPERIPH_DRIVER,PRO_MODE</Define>
               <Undefine/>
-              <IncludePath>../../bundles/extension/inc/os/portable/RVDS/ARM_CM3;../../bundles/extension/inc;../../bundles/extension/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/extension/inc;../../bundles/extension/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

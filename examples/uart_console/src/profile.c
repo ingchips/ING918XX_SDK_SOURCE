@@ -1,4 +1,5 @@
 #include "platform_api.h"
+#include "profile.h"
 #include "att_db.h"
 #include "gap.h"
 #include "btstack_event.h"
@@ -11,6 +12,7 @@
 #include <stdlib.h>
 #include "str_util.h"
 #include "sm.h"
+#include "trace.h"
 
 #include "uart_console.h"
 #include "gatt_client_util.h"
@@ -18,6 +20,13 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
+
+#include "../data/gatt.const"
+#include "../data/advertising.const"
+
+#if (defined TRACE_TO_AIR)
+extern trace_air_t trace_ctx;
+#endif
 
 sm_persistent_t sm_persistent =
 {
@@ -54,7 +63,8 @@ const static uint8_t profile_data[] = {
 };
 
 #define INVALID_HANDLE  0xffff
-uint16_t conn_handle = INVALID_HANDLE;
+uint16_t mas_conn_handle = INVALID_HANDLE;
+uint16_t sla_conn_handle = INVALID_HANDLE;
 static int bonding_flag = 0;
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
@@ -88,7 +98,8 @@ extern int8_t adv_tx_power;
 
 void do_set_data()
 {
-    gap_set_ext_adv_data(0, adv_data[0] + 1, (uint8_t *)(adv_data));
+    gap_set_ext_adv_data(0, adv_data[ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME - 2]
+                            + ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME - 1, (uint8_t *)(adv_data));
 }
 
 #define iprintf platform_printf
@@ -301,7 +312,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 
             gatt_client_read_value_of_characteristic_using_value_handle(
                 read_characteristic_value_callback,
-                conn_handle,
+                mas_conn_handle,
                 c->chara.value_handle);
         }
         break;
@@ -317,7 +328,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 
             gatt_client_write_value_of_characteristic(
                 write_characteristic_value_callback,
-                conn_handle,
+                mas_conn_handle,
                 c->chara.value_handle,
                 v->len,
                 v->value);
@@ -334,7 +345,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             }
 
             gatt_client_write_value_of_characteristic_without_response(
-                conn_handle,
+                mas_conn_handle,
                 c->chara.value_handle,
                 v->len,
                 v->value);
@@ -356,12 +367,12 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                 c->notification = (gatt_client_notification_t *)malloc(sizeof(gatt_client_notification_t));
                 gatt_client_listen_for_characteristic_value_updates(
                     c->notification, output_notification_handler,
-                    conn_handle, c->chara.value_handle);
+                    mas_conn_handle, c->chara.value_handle);
             }
 
             gatt_client_write_characteristic_descriptor_using_descriptor_handle(
                 write_characteristic_descriptor_callback,
-                conn_handle,
+                mas_conn_handle,
                 d->desc.handle,
                 sizeof(config),
                 (uint8_t *)&config);
@@ -380,7 +391,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 
             gatt_client_write_characteristic_descriptor_using_descriptor_handle(
                 write_characteristic_descriptor_callback,
-                conn_handle,
+                mas_conn_handle,
                 d->desc.handle,
                 sizeof(config),
                 (uint8_t *)&config);
@@ -448,18 +459,23 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                 phy_bit = PHY_CODED_BIT;
                 break;
             }
-            gap_set_phy(conn_handle, 0, phy_bit, phy_bit, phy_opt);
+            gap_set_phy(mas_conn_handle, 0, phy_bit, phy_bit, phy_opt);
         }
         break;
     case USER_MSG_SET_INTERVAL:
         {
             uint16_t interval = size;
             uint16_t ce_len = (interval << 1) - 2;
-            gap_update_connection_parameters(conn_handle, interval, interval,
+            gap_update_connection_parameters(mas_conn_handle, interval, interval,
                 0, interval > 10 ? interval : 10, // supervisor_timeout = max(100, interval * 8)
                 ce_len, ce_len);
         }
         break;
+#if (defined TRACE_TO_AIR)
+    case USER_MSG_ID_TRACE:
+        trace_air_send(&trace_ctx);
+        break;
+#endif
     default:
         ;
     }
@@ -650,18 +666,34 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_meta_event_enh_create_conn_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
-                conn_handle = complete->handle;
+
                 if (HCI_ROLE_SLAVE == complete->role)
-                    att_set_db(conn_handle, profile_data);
+                {
+                    sla_conn_handle = complete->handle;
+                    att_set_db(sla_conn_handle, profile_data);
+#if (defined TRACE_TO_AIR)
+                    trace_air_enable(&trace_ctx, 1, sla_conn_handle, HANDLE_TRACE_DATA);
+#endif
+                }
                 else
-                    gap_read_remote_info(conn_handle);
+                {
+                    mas_conn_handle = complete->handle;
+                    gap_read_remote_info(mas_conn_handle);
+                }
             }
             break;
         case HCI_SUBEVENT_LE_READ_REMOTE_USED_FEATURES_COMPLETE:
-            if (0 == bonding_flag)
             {
-                iprintf("discovering...\n");
-                discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile, NULL);
+                const le_meta_event_read_remote_feature_complete_t * complete =
+                    decode_hci_le_meta_event(packet, le_meta_event_read_remote_feature_complete_t);
+                if (complete->handle == mas_conn_handle)
+                {
+                    if (0 == bonding_flag)
+                    {
+                        iprintf("discovering...\n");
+                        discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);
+                    }
+                }
             }
             break;
         case HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE:
@@ -684,18 +716,37 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_ENCRYPTION_CHANGE:
         {
-            iprintf("discovering...\n");
-            discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile, NULL);
+            const hci_encryption_change_event_t *complete =
+                decode_hci_event(packet, hci_encryption_change_event_t);
+            if (complete->conn_handle == mas_conn_handle)
+            {
+                iprintf("discovering...\n");
+                discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);
+            }
         }
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
-        iprintf("disconnected\n");
-        conn_handle = INVALID_HANDLE;
-        if (discoverer)
         {
-            gatt_client_util_free(discoverer);
-            discoverer = NULL;
+            const event_disconn_complete_t *complete = decode_hci_event_disconn_complete(packet);
+            iprintf("disconnected\n");
+            if (complete->conn_handle == sla_conn_handle)
+            {
+                sla_conn_handle = INVALID_HANDLE;
+#if (defined TRACE_TO_AIR)
+                trace_air_enable(&trace_ctx, 0, 0, 0);
+                start_adv();
+#endif    
+            }
+            if (complete->conn_handle == mas_conn_handle)
+            {
+                mas_conn_handle = INVALID_HANDLE;
+                if (discoverer)
+                {
+                    gatt_client_util_free(discoverer);
+                    discoverer = NULL;
+                }
+            }
         }
         break;
 
@@ -725,7 +776,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 "Manufacturer Name: 0x%04X\n"
                 "Subversion       : 0x%04X\n", version->Version, version->Manufacturer_Name, version->Subversion);
             }
-            gap_read_remote_used_features(conn_handle);
+            if (version->Connection_Handle == mas_conn_handle)
+                gap_read_remote_used_features(mas_conn_handle);
         }
         break;
 
@@ -776,14 +828,14 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         break;
     case SM_EVENT_IDENTITY_RESOLVING_FAILED:
         platform_printf("not authourized\n");
-        if (bonding_flag)
+        if (bonding_flag && (mas_conn_handle != INVALID_HANDLE))
         {
-            iprintf("paring...\n");
-            sm_request_pairing(conn_handle == INVALID_HANDLE ? 0 : conn_handle);
+            iprintf("paring...\n");            
+            sm_request_pairing(mas_conn_handle);
         }
         break;
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
-        discoverer = gatt_client_util_discover_all(conn_handle, gatt_client_util_dump_profile, NULL);
+        discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);
         break;
     default:
         break;

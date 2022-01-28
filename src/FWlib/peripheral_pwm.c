@@ -1,4 +1,6 @@
-#include "ingsoc.h"
+#include "peripheral_pwm.h"
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 static void PWM_SetRegBit(uint32_t addr_offset, const uint8_t channel_index, const uint8_t v, const uint8_t bit_width)
 {
@@ -72,14 +74,80 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
     *reg = threshold;
 }
 
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+static void PWM_SetRegBit(uint32_t addr_offset, const uint8_t offset, const uint8_t v, const uint8_t bit_width)
+{
+    volatile uint32_t *reg = (volatile uint32_t *)(APB_PWM_BASE + addr_offset);
+    uint32_t mask = ((1 << bit_width) - 1) << offset;
+    *reg = (*reg & ~mask) | (v << offset);
+}
+
+void PWM_Enable(const uint8_t channel_index, const uint8_t enable)
+{
+    PWM_SetRegBit(0x00, 5, enable & 1, 1);
+}
+
+void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_t mask_b)
+{
+    PWM_SetRegBit(0x00, 0, (mask_b << 1) | mask_a, 2);
+}
+
+void PWM_SetInvertOutput(const uint8_t channel_index, const uint8_t inv_a, const uint8_t inv_b)
+{
+    PWM_SetRegBit(0x00, 9, (inv_b << 1) | inv_a, 2);
+}
+
+void PWM_SetMode(const uint8_t channel_index, const PWM_WordMode_t mode)
+{
+    PWM_SetRegBit(0x00, 6, mode, 3);
+}
+
+void PWM_HaltCtrlEnable(const uint8_t channel_index, const uint8_t enable)
+{
+    PWM_SetRegBit(0x00, 2, enable, 1);
+}
+
+void PWM_HaltCtrlCfg(const uint8_t channel_index, const uint8_t out_a, const uint8_t out_b)
+{
+    PWM_SetRegBit(0x00, 3, (out_b << 1) | out_a, 2);
+}
+
+void PWM_SetPeraThreshold(const uint8_t channel_index, const uint32_t threshold)
+{
+    APB_PWM->PeraTh = threshold;
+}
+
+void PWM_SetDiedZoneThreshold(const uint8_t channel_index, const uint32_t threshold)
+{
+    APB_PWM->DZoneTh = threshold;
+}
+
+void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_index, const uint32_t threshold)
+{
+    APB_PWM->HighTh = threshold;
+}
+
+void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable)
+{
+    uint32_t mask = APB_PWM->Ctrl0 & ~(0xful << 19);
+    mask |= enable << 19;
+    mask |= trig_cfg << 20;
+    APB_PWM->Ctrl0 = mask;
+}
+
+#endif
+
 void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty)
 {
-    uint32_t pera = OSC_CLK_FREQ / frequency;
+    uint32_t pera = PWM_CLOCK_FREQ / frequency;
     uint32_t high = pera > 1000 ? pera / 100 * (100 - on_duty) : pera * (100 - on_duty) / 100;
     PWM_HaltCtrlEnable(channel_index, 1);
     PWM_Enable(channel_index, 0);
     PWM_SetPeraThreshold(channel_index, pera);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
+#endif
     PWM_SetHighThreshold(channel_index, 0, high);
     PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
     PWM_SetMask(channel_index, 0, 0);

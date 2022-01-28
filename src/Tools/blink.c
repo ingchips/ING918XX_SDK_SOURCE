@@ -1,6 +1,8 @@
 #include "blink.h"
 #include "peripheral_pwm.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
 #define LIGHT_PERA_THRESHOLD            (PWM_CLOCK_FREQ / 1000)
 #define SINGLE_PERA_THRESHOLD           (PWM_CLOCK_FREQ / 5)
 #define MORSE_PERA_THRESHOLD            (PWM_CLOCK_FREQ / 2)
@@ -128,3 +130,5 @@ void blink_lightness(const uint8_t pwm_channel_index, const uint8_t lightness)
     PWM_Enable(pwm_channel_index, 1); 
     PWM_HaltCtrlEnable(pwm_channel_index, 0);
 }
+
+#endif

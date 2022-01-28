@@ -348,7 +348,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine/>
-              <IncludePath>.\data_template;..\..\src\qcloud_iot_explorer_ble\inc;..\..\src\qcloud_iot_explorer_ble\src\internal_inc;./src;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
+              <IncludePath>.\data_template;..\..\src\qcloud_iot_explorer_ble\inc;..\..\src\qcloud_iot_explorer_ble\src\internal_inc;./src;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

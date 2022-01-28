@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
-#include "ing918_uecc.h"
+#include "ing_uecc.h"
 #include "fota_client.h"
 
 #define CURVE       uECC_secp256r1()

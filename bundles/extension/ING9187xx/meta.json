@@ -94,6 +94,7 @@
         "gap_aes_encrypt", 
         "gap_rx_test_v2", 
         "gap_tx_test_v2", 
+        "gap_tx_test_v4", 
         "gap_test_end", 
         "gap_vendor_tx_continuous_wave", 
         "gap_start_ccm", 
@@ -126,6 +127,7 @@
         "platform_set_rf_init_data", 
         "platform_set_rf_power_mapping", 
         "platform_patch_rf_init_data", 
+        "platform_get_task_handle", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -276,6 +278,9 @@
         "xTaskCreate", 
         "xTaskCreateStatic", 
         "vTaskDelay", 
+        "uxTaskPriorityGet", 
+        "uxTaskPriorityGetFromISR", 
+        "vTaskPrioritySet", 
         "vTaskSuspend", 
         "vTaskResume", 
         "xTaskResumeFromISR", 
@@ -304,6 +309,7 @@
         "xTimerCreate", 
         "xTimerCreateStatic", 
         "pvTimerGetTimerID", 
+        "xTimerGetTimerDaemonTaskHandle", 
         "xTimerGetExpiryTime", 
         "xTimerCreateTimerTask", 
         "xTimerGenericCommand", 
@@ -330,11 +336,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 136620
+        "size": 137020
     }, 
     "version": [
         1, 
         7, 
-        8
+        9
     ]
 }

@@ -25,6 +25,7 @@ uint32_t cb_assertion(assertion_info_t *info, void *_)
 }
 
 #define PRINT_PORT    APB_UART0
+#define TRACE_PORT    APB_UART1
 
 uint32_t cb_putc(char *c, void *dummy)
 {
@@ -58,10 +59,21 @@ void config_uart(uint32_t freq, uint32_t baud)
     config.BaudRate          = baud;
 
     apUART_Initialize(PRINT_PORT, &config, 1 << bsUART_RECEIVE_INTENAB);
+
+#ifdef TRACE_TO_UART
+    //config.BaudRate          = 921600;
+    apUART_Initialize(TRACE_PORT, &config, 1 << bsUART_TRANSMIT_INTENAB);
+#endif
 }
 
 void setup_peripherals(void)
 {
+#ifdef TRACE_TO_UART
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART1)
+                            | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+    PINCTRL_SetPadMux(19, IO_SOURCE_UART1_TXD);
+#endif
+
     config_uart(OSC_CLK_FREQ, 115200);
 }
 
@@ -92,7 +104,11 @@ uint32_t uart_isr(void *user_data)
     return 0;
 }
 
-#ifdef TRACE_TO_FLASH
+#if (defined TRACE_TO_AIR)
+trace_air_t trace_ctx = {0};
+#elif (defined TRACE_TO_UART)
+trace_uart_t trace_ctx = {.port = TRACE_PORT};
+#elif (defined TRACE_TO_FLASH)
 trace_flash_t trace_ctx = {0};
 #else
 trace_rtt_t trace_ctx = {0};
@@ -114,7 +130,14 @@ int app_main()
     setup_peripherals();
     printf("system started, type ? for help\n");
 
-#ifdef TRACE_TO_FLASH
+#if (defined TRACE_TO_AIR)
+    trace_air_init(&trace_ctx, USER_MSG_ID_TRACE, 244);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_air, &trace_ctx);
+#elif (defined TRACE_TO_UART)
+    trace_uart_init(&trace_ctx);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_UART1, (f_platform_irq_cb)trace_uart_isr, &trace_ctx);
+    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_uart, &trace_ctx);
+#elif (defined TRACE_TO_FLASH)
     trace_flash_init(&trace_ctx, 0x2e000, EFLASH_PAGE_SIZE * 11);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_flash, &trace_ctx);
 #else

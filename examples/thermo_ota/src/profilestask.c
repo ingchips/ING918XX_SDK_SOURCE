@@ -26,6 +26,8 @@ uint8_t temperature_value[]={0x00,0x00,0x00,0x00,0xFE};
 static int temperture_notify_enable=0;
 static int temperture_indicate_enable=0;
 
+#ifndef SIMULATION
+
 #define I2C_PORT        I2C_PORT_0
 #define BME280_ADDR     BME280_I2C_ADDR_PRIM
 
@@ -71,6 +73,8 @@ struct bme280_dev bme280_data =
 };
 
 struct bme280_data comp_data;
+
+#endif
 
 static void read_temperature(void)
 {
@@ -342,9 +346,21 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(&user_packet_handler);
 
 #ifndef SIMULATION
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
     PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
     PINCTRL_SelI2cSclIn(I2C_PORT, 10);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_DisableAllInputs();
+    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDA_OUT);
+    PINCTRL_SelI2cIn(I2C_PORT, 10, 11);
+    
+    //PINCTRL_SetPadMux(10, IO_SOURCE_GPIO);
+    //GIO_SetDirection(10, GIO_DIR_OUTPUT);
+    //GIO_WriteValue(10, 0);
+#endif
+
     i2c_init(I2C_PORT);
 
     printf("sensor init...");

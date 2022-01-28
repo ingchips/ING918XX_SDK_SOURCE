@@ -1,5 +1,7 @@
 #include "platform_api.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
 static const uint32_t rf_data[] = {
 #include "rf_powerboost.dat"
 };
@@ -17,3 +19,11 @@ void rf_enable_powerboost(void)
     platform_set_rf_power_mapping(power_mapping);
 }
 
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+void rf_enable_powerboost(void)
+{
+#warning WIP: rf_enable_powerboost
+}
+
+#endif

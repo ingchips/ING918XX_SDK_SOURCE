@@ -328,6 +328,16 @@ void UART_SendData(UART_TypeDef* pBase, uint8_t Data);
 uint8_t UART_ReceData(UART_TypeDef* pBase);
 void uart_reset(UART_TypeDef* pBase);
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+/**
+ * @brief Enable/Disable DMA transfer
+ * @param[in] pBase                 base address
+ * @param[in] tx_enable             enable(1)/disable(0) on TX
+ * @param[in] rx_enable             enable(1)/disable(0) on RX
+ * @param[in] dma_on_err            DMA on error
+ */
+void UART_DmaEnable(UART_TypeDef *pBase, uint8_t tx_enable, uint8_t rx_enable, uint8_t dma_on_err);
+#endif
 
 #ifdef __cplusplus
   }

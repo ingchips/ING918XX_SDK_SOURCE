@@ -8,6 +8,10 @@
 
 #include "audio.h"
 
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
+#error only ING918xx is supported
+#endif
+
 uint32_t audio_sample_isr(void *user_data)
 {    
     pcm_sample_t sample;

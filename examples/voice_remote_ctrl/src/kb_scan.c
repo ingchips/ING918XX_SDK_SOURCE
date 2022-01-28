@@ -5,6 +5,8 @@
 #include "peripheral_pinctrl.h"
 #include "peripheral_gpio.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
 // state changed event
 // each bit represent the state of one key
 //           COL[0]  COL[1] .... 
@@ -31,6 +33,7 @@ uint8_t down_counter[KB_ROW_NUM * KB_COL_NUM] = {0};
 
 void kb_init(void)
 {
+
     int i;
     for (i = 0; i < KB_ROW_NUM; i++)
     {
@@ -89,3 +92,5 @@ void kb_update(void)
         kb_old_keep_pressed = keep_pressed;
     }
 }
+
+#endif

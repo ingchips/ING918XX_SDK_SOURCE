@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
 #define ADC_CLK_16      0
 #define ADC_CLK_32      1
 #define ADC_CLK_64      2
@@ -70,6 +72,9 @@ void ADC_EnableChannel(const uint8_t channel_id, const uint8_t flag);
 void ADC_ClearChannelDataValid(const uint8_t channel_id);
 uint8_t ADC_IsChannelDataValid(const uint8_t channel_id);
 uint16_t ADC_ReadChannelData(const uint8_t channel_id);
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#endif
 
 #ifdef __cplusplus
 }
