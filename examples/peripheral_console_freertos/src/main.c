@@ -92,7 +92,7 @@ void setup_peripherals(void)
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
 #ifdef USE_WATCHDOG
-                              | (1 << SYSCTRL_ClkGate_APB_TMR0)
+                              | (1 << SYSCTRL_ClkGate_APB_WDT)
 #endif
     
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
@@ -112,7 +112,6 @@ void setup_peripherals(void)
 #ifdef USE_WATCHDOG
     // Watchdog will timeout after 10sec
     TMR_WatchDogEnable(TMR_CLK_FREQ * 5);
-    TMR0_LOCK();
 #endif
 }
 

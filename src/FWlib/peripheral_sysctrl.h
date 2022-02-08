@@ -25,8 +25,10 @@ typedef enum
     SYSCTRL_ClkGate_APB_I2C1                = 19
 } SYSCTRL_ClkGateItem;
 
+// compatible definitions with ING916xx
 #define SYSCTRL_ClkGate_APB_GPIO0           SYSCTRL_ClkGate_APB_GPIO
 #define SYSCTRL_ClkGate_APB_GPIO1           SYSCTRL_ClkGate_APB_GPIO
+#define SYSCTRL_ClkGate_APB_WDT             SYSCTRL_ClkGate_APB_TMR0
 
 typedef enum
 {

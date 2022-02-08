@@ -188,7 +188,7 @@ void setup_peripherals(void)
 {
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_UART0)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
-                              | (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_WDT)
                               | (1 << SYSCTRL_ClkGate_APB_PWM));
     config_uart(OSC_CLK_FREQ, 115200);
 

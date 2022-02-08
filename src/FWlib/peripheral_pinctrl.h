@@ -66,6 +66,19 @@ typedef enum
     IO_SOURCE_DEBUG_BUS
 } io_source_t;
 
+// compatible definitions with ING916xx
+#define IO_SOURCE_GPIO           IO_SOURCE_GENERAL
+#define IO_SOURCE_SPI0_CLK_OUT   IO_SOURCE_SPI0_CLK
+#define IO_SOURCE_SPI0_MOSI_OUT  IO_SOURCE_SPI0_DO
+#define IO_SOURCE_SPI0_CSN_OUT   IO_SOURCE_SPI0_SSN
+#define IO_SOURCE_I2C0_SCL_OUT   IO_SOURCE_I2C0_SCL_O
+#define IO_SOURCE_I2C0_SDA_OUT   IO_SOURCE_I2C0_SDO
+#define IO_SOURCE_SPI1_CLK_OUT   IO_SOURCE_SPI1_CLK
+#define IO_SOURCE_SPI1_MOSI_OUT  IO_SOURCE_SPI1_DO
+#define IO_SOURCE_SPI1_CSN_OUT   IO_SOURCE_SPI1_SSN
+#define IO_SOURCE_I2C1_SCL_OUT   IO_SOURCE_I2C1_SCL_O
+#define IO_SOURCE_I2C1_SDA_OUT   IO_SOURCE_I2C1_SDO
+
 #define IO_SOURCE_MASK      0xF
 
 typedef enum
@@ -229,6 +242,19 @@ typedef enum
     IO_SOURCE_KEYSCN_COL_0  = 0x63,
 } io_source_t;
 
+// compatible definitions with ING918xx
+#define IO_SOURCE_GENERAL           IO_SOURCE_GPIO
+#define IO_SOURCE_SPI0_CLK	        IO_SOURCE_SPI0_CLK_OUT
+#define IO_SOURCE_SPI0_DO	        IO_SOURCE_SPI0_MOSI_OUT
+#define IO_SOURCE_SPI0_SSN	        IO_SOURCE_SPI0_CSN_OUT
+#define IO_SOURCE_I2C0_SCL_O	    IO_SOURCE_I2C0_SCL_OUT
+#define IO_SOURCE_I2C0_SDO	        IO_SOURCE_I2C0_SDA_OUT
+#define IO_SOURCE_SPI1_CLK	        IO_SOURCE_SPI1_CLK_OUT
+#define IO_SOURCE_SPI1_DO	        IO_SOURCE_SPI1_MOSI_OUT
+#define IO_SOURCE_SPI1_SSN	        IO_SOURCE_SPI1_CSN_OUT
+#define IO_SOURCE_I2C1_SCL_O	    IO_SOURCE_I2C1_SCL_OUT
+#define IO_SOURCE_I2C1_SDO	        IO_SOURCE_I2C1_SDA_OUT
+
 #define IO_SOURCE_MASK      0x3F
 
 typedef enum
@@ -341,9 +367,22 @@ void PINCTRL_Pull(const io_source_t io_source, const pinctrl_pull_mode_t mode);
 /**
  * @brief Select antenna control PINs
  *
- * Note: ANT_SEL[0..count - 1] is setup according to `io_pins`.
+ * Note: ANT_SEL[0..count - 1] is setup according to `io_pins`, i.e.
+ *
+ * ANT_SEL[0] -> io_pins[0]
+ * ...
+ * ANT_SEL[count - 1] -> io_pins[count - 1]
+ *
+ * @param count             PIN count in io_pins
+ * @param io_pins           PIN array
  */
 void PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
+
+/**
+ * @brief Select antenna control PINs as ING918xx
+ *
+ */
+void PINCTRL_EnableAllAntSelPins(void);
 
 #endif
 

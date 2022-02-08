@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include <stdio.h>
+#include "blink.h"
 
 #define PRINT_UART    APB_UART0
 
@@ -45,27 +46,11 @@ void config_uart(uint32_t freq, uint32_t baud)
 #define PIN_GREEN   1
 #define PIN_BLUE    7
 
-#define PERA_THRESHOLD (OSC_CLK_FREQ / 2)
-
-static void setup_channel(uint8_t channel_index)
-{
-    PWM_HaltCtrlEnable(channel_index, 1);
-    PWM_Enable(channel_index, 0);
-    PWM_SetPeraThreshold(channel_index, PERA_THRESHOLD);
-    PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
-    PWM_SetHighThreshold(channel_index, 0, PERA_THRESHOLD / 2);
-    PWM_SetMode(channel_index, PWM_WORK_MODE_SINGLE_WITHOUT_DIED_ZONE);
-    PWM_SetMask(channel_index, 0, 0);
-    PWM_Enable(channel_index, 1); 
-    PWM_HaltCtrlEnable(channel_index, 0);
-}
-
 void blink(const uint8_t led_id)
 {
     const static uint8_t led_pins[] = {PIN_RED, PIN_RED, PIN_BLUE, PIN_GREEN};
     uint8_t channel_index = led_pins[led_id] >> 1;
-    PWM_Enable(channel_index, 0);
-    PWM_Enable(channel_index, 1); 
+    blink_style(channel_index, BLINK_SINGLE); 
 }
 
 void setup_peripherals(void)
@@ -73,28 +58,19 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
 
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
-    
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetPadMux(PIN_RED, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(PIN_RED, 1);
     PINCTRL_SetPadMux(PIN_GREEN, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(PIN_GREEN, 1);
     PINCTRL_SetPadMux(PIN_BLUE, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(PIN_BLUE, 1);
-    
-    setup_channel(PIN_RED   >> 1);
-    setup_channel(PIN_GREEN >> 1);
-    setup_channel(PIN_BLUE  >> 1);
-}
-
-static void watchdog_task(void *pdata)
-{
-    // Watchdog will timeout after 20sec
-    TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
-    for (;;)
-    {
-        vTaskDelay(pdMS_TO_TICKS(9000));
-        TMR_WatchDogRestart();
-    }
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #error WIP
+#else
+    #error unknown or unsupported chip family
+#endif
 }
 
 int app_main()
@@ -109,13 +85,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-    
-    xTaskCreate(watchdog_task,
-               "w",
-               configMINIMAL_STACK_SIZE,
-               NULL,
-               (configMAX_PRIORITIES - 1),
-               NULL);
+
     return 0;
 }
 

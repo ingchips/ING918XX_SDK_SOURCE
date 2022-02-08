@@ -66,17 +66,23 @@ uint32_t gpio_isr(void *user_data)
 void setup_peripherals(void)
 {
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
 #ifdef USE_WATCHDOG
-                              | (1 << SYSCTRL_ClkGate_APB_TMR0)
+                              | (1 << SYSCTRL_ClkGate_APB_WDT)
 #endif
     
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
     config_uart(OSC_CLK_FREQ, 115200);
     
-    PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_DOWN);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_DOWN);
+#else
+    #error unknown or unsupported chip family
+#endif    
     GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
 
@@ -88,7 +94,6 @@ void setup_peripherals(void)
 #ifdef USE_WATCHDOG
     // Watchdog will timeout after 10sec
     TMR_WatchDogEnable(TMR_CLK_FREQ * 5);
-    TMR0_LOCK();
 #endif
 }
 

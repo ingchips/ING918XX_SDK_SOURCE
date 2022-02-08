@@ -206,7 +206,10 @@ typedef struct{
 /******************************************************************************/
 /*                         memory map                                         */
 /******************************************************************************/
-// AHB
+
+#define ROM_BASE           ((uint32_t)0x00000000UL)
+#define FLASH_BASE         ((uint32_t)0x00004000UL)
+#define SYS_MEM_BASE       ((uint32_t)0x20000000UL)
 
 #define APB_BASE           ((uint32_t)0x40000000UL)
 #define AHB_SPI0_BASE      ((uint32_t)0x40060000UL) // SPI0 site in AHB BUS

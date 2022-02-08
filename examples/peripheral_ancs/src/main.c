@@ -83,14 +83,14 @@ void connection_changed(int connected)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
 
     // setup GPIOs for keys
     PINCTRL_DisableAllInputs();
-    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GPIO);
+    PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GPIO);
+    PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GPIO);
     GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
     GIO_SetDirection(KB_KEY_2, GIO_DIR_INPUT);
     GIO_SetDirection(KB_KEY_3, GIO_DIR_INPUT);
@@ -102,7 +102,7 @@ void setup_peripherals(void)
                         GIO_INT_EDGE);
     
     // LED
-    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(LED_PIN, GIO_DIR_OUTPUT);
     connection_changed(0);
 }

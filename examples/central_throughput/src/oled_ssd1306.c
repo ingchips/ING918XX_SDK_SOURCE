@@ -5,6 +5,9 @@
 #include "task.h"
 
 #ifdef USE_I2C
+
+#include "iic.h"
+
 /**********************************************
 // IIC Write Command
 **********************************************/
@@ -194,7 +197,7 @@ void OLED_On(void)
 //y:0~63
 //mode:0,反白显示;1,正常显示                 
 //size:选择字体 16/12 
-void OLED_ShowChar(u8 x,u8 y,u8 chr, u8 mode, u8 Char_Size)
+void OLED_ShowChar(u8 x,u8 y,char chr, u8 mode, u8 Char_Size)
 {          
     unsigned char c=0,i=0;    
     c=chr-' ';//得到偏移后的值            
@@ -217,7 +220,7 @@ void OLED_ShowChar(u8 x,u8 y,u8 chr, u8 mode, u8 Char_Size)
 }
 
 //显示一个字符号串
-void OLED_ShowString(u8 x,u8 y, const u8 *chr,u8 mode, u8 Char_Size)
+void OLED_ShowString(u8 x,u8 y, const char *chr,u8 mode, u8 Char_Size)
 {
     unsigned char j=0;
     while (chr[j]!='\0')
@@ -261,15 +264,19 @@ void OLED_Init(void)
     int i;
 
 #ifdef USE_I2C
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO));
+
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_I2C0));
+    PINCTRL_SetPadMux(PIN_SCL, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(PIN_SDA, IO_SOURCE_I2C0_SDA_OUT);
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    PINCTRL_SetPadMux(PIN_SCL, IO_SOURCE_I2C0_SCL_O);
-    PINCTRL_SetPadMux(PIN_SDA, IO_SOURCE_I2C0_SDO);
-    PINCTRL_SelI2cSclIn(I2C_PORT, PIN_SCL);
-    i2c_init(I2C_PORT);
+    PINCTRL_SelI2cSclIn(I2C_PORT, PIN_SCL);    
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #error WIP
+    PINCTRL_SelI2cIn(I2C_PORT, PIN_SCL, PIN_SDA);
+#else
+    #error unknown or unsupported chip family
 #endif
+    i2c_init(I2C_PORT);
+
 #else
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)

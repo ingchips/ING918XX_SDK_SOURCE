@@ -43,17 +43,19 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void set_freq0(uint8_t channel_index, uint16_t freq)
 {
-    uint32_t pera = OSC_CLK_FREQ / freq;
+    uint32_t pera = PWM_CLOCK_FREQ / freq;
     PWM_HaltCtrlEnable(channel_index, 1);
     PWM_Enable(channel_index, 0);
     if (freq > 0)
     {
         PWM_SetPeraThreshold(channel_index, pera);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
         PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
+#endif
         PWM_SetHighThreshold(channel_index, 0, pera >> 1);
         PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
         PWM_SetMask(channel_index, 0, 0);
-        PWM_Enable(channel_index, 1); 
+        PWM_Enable(channel_index, 1);
         PWM_HaltCtrlEnable(channel_index, 0);
     }
 }
@@ -67,9 +69,13 @@ void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
-    
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetGeneralPadMode(PIN_BUZZER, IO_MODE_PWM, 4, 0);
-    
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_PWM6_B);
+#else
+    #error unknown or unsupported chip family
+#endif
     set_freq(0);
 }
 

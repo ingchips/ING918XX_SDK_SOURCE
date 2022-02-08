@@ -1,4 +1,4 @@
-
+#include "ingsoc.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -11,6 +11,8 @@
 #define PIN_RED     4
 #define PIN_GREEN   0
 #define PIN_BLUE    6
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 #define PERA_THRESHOLD (OSC_CLK_FREQ / 1000)
 
@@ -53,6 +55,12 @@ void setup_rgb_led()
     
     set_led_color(50, 50, 50);
 }
+
+#else
+
+#error unknown or unsupported chip family
+
+#endif
 
 #endif
 

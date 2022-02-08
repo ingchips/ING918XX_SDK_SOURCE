@@ -552,4 +552,12 @@ void PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins)
     for (i = 0; i < count; i++)
         PINCTRL_SetPadMux(io_pins[i], (io_source_t)(IO_SOURCE_ANT_SW0 + i));
 }
+
+void PINCTRL_EnableAllAntSelPins(void)
+{
+    static const uint8_t ant_pins[] = {7, 8, 10, 11, 16, 17, 18, 19};
+
+    PINCTRL_EnableAntSelPins(sizeof(ant_pins), ant_pins);
+}
+
 #endif

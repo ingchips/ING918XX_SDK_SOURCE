@@ -101,9 +101,7 @@ void DMA_AbortChannel(int channel_id);
 /**
  * @brief `memcpy` backed by DMA
  *
- * Comparing with `memcpy`, this might be slower, but use less CPU cycles.
- *
- * Caution: This function is not thread-safe.
+ * Note: This function is a demo of DMA, not thread-safe, and slower than `memcpy`.
  *
  * @param[in] channel_id        channel id to be used
  * @param[in] dst               destination address

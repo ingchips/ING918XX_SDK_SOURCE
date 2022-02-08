@@ -355,10 +355,8 @@ uint32_t setup_profile(void *data, void *user_data)
     PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_OUT);
     PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDA_OUT);
     PINCTRL_SelI2cIn(I2C_PORT, 10, 11);
-    
-    //PINCTRL_SetPadMux(10, IO_SOURCE_GPIO);
-    //GIO_SetDirection(10, GIO_DIR_OUTPUT);
-    //GIO_WriteValue(10, 0);
+#else
+    #error unknown or unsupported chip family
 #endif
 
     i2c_init(I2C_PORT);

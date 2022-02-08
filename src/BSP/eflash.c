@@ -154,13 +154,15 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #include "rom_tools.h"
 
-__attribute__((section(".data"))) static void ram_rase_sector(uint32_t addr)
+#define __RAM_CODE    __attribute__((section(".data")))
+
+__RAM_CODE static void ram_rase_sector(uint32_t addr)
 {
     FlashSectorErase(addr);
     FlashWriteDisable();
 }
 
-__attribute__((section(".data"))) static void ram_prog_page(uint32_t addr, const uint8_t *data, uint32_t len)
+__RAM_CODE static void ram_prog_page(uint32_t addr, const uint8_t *data, uint32_t len)
 {
     FlashPageProgram(addr, data, len);
     FlashWriteDisable();
@@ -234,7 +236,7 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
     return 0;
 }
 
-__attribute__((section(".data"))) static void ram_flash_do_update(const int block_num, const fota_update_block_t *blocks,
+__RAM_CODE static void ram_flash_do_update(const int block_num, const fota_update_block_t *blocks,
     uint8_t *page_buffer)
 {
     int i;   

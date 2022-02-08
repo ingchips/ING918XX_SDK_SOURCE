@@ -36,7 +36,7 @@ char *base64_encode(const uint8_t *data, int data_len,
 
 /**
  ****************************************************************************************
- * @brief Format RTC value  into HH:MM:SS.milli_sec,micro_sec
+ * @brief Format RTC value into HH:MM:SS.milli_sec,micro_sec
  *
  * @param[in]   str         buffer to hode the string
  * @param[in]   rtc_value   RTC value (lower 32bit)
@@ -47,7 +47,7 @@ const char *fmt_rtc_timestamp(char *str, uint32_t rtc_value);
 
 /**
  ****************************************************************************************
- * @brief Format RTC valueinto HH:MM:SS.milli_sec,micro_sec
+ * @brief Format RTC value into HH:MM:SS.milli_sec,micro_sec
  *
  * @param[in]   str         buffer to hode the string
  * @param[in]   rtc_value   RTC value  (full 48bit) 
@@ -55,6 +55,17 @@ const char *fmt_rtc_timestamp(char *str, uint32_t rtc_value);
  ****************************************************************************************
  */
 const char *fmt_rtc_timestamp_full(char *str, uint64_t rtc_value);
+
+/**
+ ****************************************************************************************
+ * @brief Format time stamp in micro second into HH:MM:SS.milli_sec,micro_sec
+ *
+ * @param[in]   str         buffer to hode the string
+ * @param[in]   us_time     time stamp in micro second (us)
+ * @return                  str
+ ****************************************************************************************
+ */
+const char *fmt_us_timestamp(char *str, uint64_t us_time);
 
 #ifdef _cplusplus
 }

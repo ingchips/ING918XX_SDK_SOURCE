@@ -84,8 +84,14 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(LED_PIN, 1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM6_B);
+#else
+    #error unknown or unsupported chip family
+#endif
 
     io_interf_setup_peripherals();
 }

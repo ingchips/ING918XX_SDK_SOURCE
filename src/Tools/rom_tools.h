@@ -38,14 +38,14 @@ typedef void (* f_prog_page)(uint32_t addr, const uint8_t data[256], uint32_t le
 #define FlashDisableContinuousMode      ((f_void)0x000012cd)
 #define FlashEnableContinuousMode       ((f_void)0x00001311)
 
-#define DCacheDisable       ((f_void)0x000010c1)
-#define DCacheEnable        ((f_void)0x000010d5)
-#define DCacheFlush         ((f_void)0x000010e9)
-#define ICacheDisable       ((f_void)0x00001669)
-#define ICacheEnable        ((f_void)0x0000167d)
-#define ICacheFlush         ((f_void)0x00001691)
+#define DCacheDisable                   ((f_void)0x000010c1)
+#define DCacheEnable                    ((f_void)0x000010d5)
+#define DCacheFlush                     ((f_void)0x000010e9)
+#define ICacheDisable                   ((f_void)0x00001669)
+#define ICacheEnable                    ((f_void)0x0000167d)
+#define ICacheFlush                     ((f_void)0x00001691)
 
-#define ROM_NVIC_SystemReset               ((f_void)0x00001b11)
+#define ROM_NVIC_SystemReset            ((f_void)0x00001b11)
 
 #endif
 

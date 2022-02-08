@@ -64,6 +64,8 @@ void setup_peripherals(void)
                               | (1 << SYSCTRL_ClkGate_APB_TMR1)
                               | (1 << SYSCTRL_ClkGate_APB_TMR2));
 
+    PINCTRL_DisableAllInputs();
+
     // setup timer 1: 50Hz
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / ACC_SAMPLING_RATE);
     TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
@@ -82,7 +84,6 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(SPI_LCD_RST, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(SPI_LCD_CS, IO_SOURCE_GENERAL);
 
-    PINCTRL_SelUartRxdIn(UART_PORT_1, 0x3f);  // conflict with GPIO9
     GIO_SetDirection(SPI_LCD_POWER, GIO_DIR_OUTPUT);
     GIO_SetDirection(SPI_LCD_RST, GIO_DIR_OUTPUT);
     GIO_SetDirection(SPI_LCD_CS, GIO_DIR_OUTPUT);

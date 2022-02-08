@@ -54,15 +54,20 @@ void setup_peripherals(void)
                               | (1 << SYSCTRL_ClkGate_APB_TMR1));
 
 #ifndef SIMULATION
-    PINCTRL_SetPadMux(6, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(7, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
-    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDA_OUT);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SelI2cSclIn(I2C_PORT_0, 10);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)   
+    PINCTRL_SelI2cIn(I2C_PORT_0, 10, IO_NOT_A_PIN);
+#else
+    #error unknown or unsupported chip family
+#endif
     printf("init");
     i2c_init(I2C_PORT_0);
 #endif
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     // timer 0 can be used as watchdog, so we use timer 1.
     // setup timer 1: 50Hz
 	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / ACC_SAMPLING_RATE);
@@ -70,6 +75,14 @@ void setup_peripherals(void)
 	TMR_IntEnable(APB_TMR1);
     TMR_Reload(APB_TMR1);
 	TMR_Enable(APB_TMR1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    // setup channel 0 of timer 1: 50Hz
+    TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
+    TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / ACC_SAMPLING_RATE);
+    TMR_Enable(APB_TMR1, 0, 0xf);
+#else
+    #error unknown or unsupported chip family
+#endif
 }
 
 static SemaphoreHandle_t sem_pedometer = NULL;
@@ -96,7 +109,14 @@ void BMA2x2_delay_msek(u32 msek)
 uint32_t timer_isr(void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    TMR_IntClr(APB_TMR1, 0, 0xf);
+#else
+    #error unknown or unsupported chip family
+#endif
+    
     xSemaphoreGiveFromISR(sem_pedometer, &xHigherPriorityTaskWoke);
     return 0;
 }

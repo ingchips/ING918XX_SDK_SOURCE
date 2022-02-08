@@ -271,117 +271,166 @@ uint32_t apSSP_GetIntRawStatus(SSP_TypeDef * SSP_Ptr)
 
 #if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
 /*====================================================================*/
-void apSSP_Initialize (SPI_REG_H *SPI_Ptr)
+void apSSP_Initialize (SSP_TypeDef *SPI_BASE)
 {
-    //disable all int
-    SPI_Ptr->IntrEn.r = 0;
-    SPI_Ptr->TransCtrl.r = 0;
-    
-    //SPI reset
-    SPI_Ptr->Ctrl.r |= (1 << SPI_REG_CTRL_SPIRST);
-    
-    //1. Read TX/RX FIFO depth in the Configuration Register
-    //SPI_Ptr->Config.f.RxFIFOSize
-    //SPI_Ptr->Config.f.TxFIFOSize
+    SPI_BASE->Ctrl |= (1 << bsSPI_CTRL_SPIRST);
+    while((SPI_BASE->Ctrl >> bsSPI_CTRL_SPIRST) & bwSPI_CTRL_SPIRST);
 }
 
 /*====================================================================*/
-void apSSP_DeviceParametersSet(SPI_REG_H *SPI_Ptr, apSSP_sDeviceControlBlock *pParam)
+void apSSP_WriteFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data[], uint16_t Len)
 {
-    //Wait for the previous SPI transfer to finish
-    while(SPI_Ptr->Status.f.SPIActive == 1);
-    
-    if(pParam->SlvMode == SPI_SLVMODE_MASTER_MODE)
-    {
-      SPI_Ptr->TransFmt.r = ( (pParam->DataMerge << SPI_REG_TRANSFMT_DATAMERGE) |
-                              (pParam->CPOL << SPI_REG_TRANSFMT_CPOL) |
-                              (pParam->CPHA << SPI_REG_TRANSFMT_CPHA) |
-                              (pParam->LSB << SPI_REG_TRANSFMT_LSB) |
-                              (pParam->MOSIBiDir << SPI_REG_TRANSFMT_MOSIBIDIR) |
-                              (pParam->DataLength << SPI_REG_TRANSFMT_DATALEN) |
-                              (pParam->AddressLength << SPI_REG_TRANSFMT_ADDRLEN) );
+    uint16_t i;
 
-      SPI_Ptr->TransCtrl.r = (  (pParam->TransMode << SPI_REG_TRANSCTRL_TRANSMODE) |
-                                (pParam->DualQuad << SPI_REG_TRANSCTRL_DUALQUAD) |
-                                (pParam->WrTranCnt << SPI_REG_TRANSCTRL_WRTRANCNT) |
-                                (pParam->RdTranCnt << SPI_REG_TRANSCTRL_RDTRANCNT) |
-                                (pParam->PhaseCmd << SPI_REG_TRANSCTRL_CMDEN) |
-                                (pParam->PhaseAddr << SPI_REG_TRANSCTRL_ADDREN) );
-                                
-      //Enable the End of SPI Transfer interrupt.
-      SPI_Ptr->IntrEn.r = (0x1 << SPI_REG_INTREN_ENDINTEN);
+    for(i = 0; i < Len; i++){
+        //Transmit FIFO Empty flag
+        while(apSSP_TxFifoFull(SPI_BASE));
+        //For writes, data is enqueued to the TX FIFO
+        SPI_BASE->Data = Data[i];
     }
-    else
-    {
-      SPI_Ptr->Ctrl.r = ((0x1 << SPI_REG_CTRL_RXFIFORST) |
-                         (0x1 << SPI_REG_CTRL_TXFIFORST));
-      while(SPI_Ptr->Ctrl.f.RXFIFORST == 1);
-      while(SPI_Ptr->Ctrl.f.TXFIFORST == 1);
-      
-      SPI_Ptr->Ctrl.r |= ((pParam->RXTHRES << SPI_REG_CTRL_RXTHRES)|
-                          (pParam->TXTHRES << SPI_REG_CTRL_RXTHRES));
-      
-      SPI_Ptr->IntrEn.r = ( (0x1 << SPI_REG_INTREN_ENDINTEN) |
-                            (0x1 << SPI_REG_INTREN_RXFIFOINTEN) |
-                            (0x1 << SPI_REG_INTREN_TXFIFOINTEN) |
-                            (0x1 << SPI_REG_INTREN_SLVCMDEN));
-    }
-    
 }
 
 /*====================================================================*/
-void apSSP_WriteFIFO(SPI_REG_H *SPI_Ptr, uint32_t Addr, uint32_t Cmd, uint32_t Data[], uint16_t Len)
+void apSSP_WriteCmd(SSP_TypeDef *SPI_BASE, uint32_t Addr, uint32_t Cmd)
+{
+    SPI_BASE->Addr = Addr;
+    //Writing operations on this register will trigger SPI transfers
+    SPI_BASE->Cmd = Cmd;
+}
+
+/*====================================================================*/
+void apSSP_ReadFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data[], uint16_t Len)
 {
     uint16_t i;
     for(i = 0; i < Len; i++){
-        //Transmit FIFO Empty flag
-        while(SPI_Ptr->Status.f.TXFULL == 0x1);
-        //For writes, data is enqueued to the TX FIFO
-        SPI_Ptr->Data.r = Data[i];
-    }
-
-    //SPI Address (Master mode only)
-    SPI_Ptr->Addr.r = Addr;
-    //SPI Command
-    //This register must be written with a dummy value to start a SPI transfer even when the command phase is not enabled
-    SPI_Ptr->Cmd.r = Cmd;
-    
-    //Wait the EndInt interrupt by checking the EndInt bit of the SPI Interrupt Status Register (0x3C).
-    //Write one to clear the EndInt bit of the SPI Interrupt Status Register (0x3C).
-    
-}
-
-/*====================================================================*/
-void apSSP_DeviceReceiveEnable(SPI_REG_H *SPI_Ptr, uint32_t Addr, uint32_t Cmd)
-{
-    //SPI Address (Master mode only)
-    SPI_Ptr->Addr.r = Addr;
-    //SPI Command
-    //This register must be written with a dummy value to start a SPI transfer even when the command phase is not enabled
-    SPI_Ptr->Cmd.r = Cmd;
-    
-    //Wait the EndInt interrupt by checking the EndInt bit of the SPI Interrupt Status Register (0x3C).
-    //Write one to clear the EndInt bit of the SPI Interrupt Status Register (0x3C).
-}
-
-/*====================================================================*/
-void apSSP_ReadFIFO(SPI_REG_H *SPI_Ptr, uint32_t Data[], uint16_t Len)
-{
-    uint16_t i;
-    for(i = 0; i < SPI_Ptr->Status.f.RXNUMLo; i++){
         //Receive FIFO Empty flag
-        while(SPI_Ptr->Status.f.RXEMPTY == 0x1);
+        while(apSSP_RxFifoEmpty(SPI_BASE));
         //For reads, data is read and dequeued from the RX FIFO
-        if(i < Len) {Data[i] = SPI_Ptr->Data.r;}
+        if(i < Len) {Data[i] = SPI_BASE->Data;}
     }
 
 }
-
 /*====================================================================*/
-uint32_t apSSP_GetIntRawStatus(SPI_REG_H *SPI_Ptr)
+uint32_t apSSP_ReadCommand(SSP_TypeDef *SPI_BASE)
 {
-    return SPI_Ptr->IntrSt.r;
+    return SPI_BASE->Cmd;
 }
 
+/*====================================================================*/
+void apSSP_SetTransferFormat(SSP_TypeDef *SPI_BASE, uint32_t val)
+{
+    SPI_BASE->TransFmt |= val;
+}
+
+/*====================================================================*/
+void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val)
+{
+    SPI_BASE->TransCtrl |= val;
+}
+
+/*====================================================================*/
+uint8_t apSSP_GetSPIActiveStatus(SSP_TypeDef *SPI_BASE)
+{
+    return (uint8_t)((SPI_BASE->Status >> bsSPI_STATUS_SPIACTIVE) & BW2M(bwSPI_STATUS_SPIACTIVE));
+}
+
+/*====================================================================*/
+uint32_t apSSP_GetIntRawStatus(SSP_TypeDef *SPI_BASE)
+{
+    return SPI_BASE->IntrSt;
+}
+
+void apSSP_ClearIntStatus(SSP_TypeDef *SPI_BASE, uint32_t val)
+{
+    SPI_BASE->IntrSt |= val;
+}
+
+/*====================================================================*/
+void apSSP_IntEnable(SSP_TypeDef *SPI_BASE, uint32_t mask)
+{
+    SPI_BASE->IntrEn |= mask;
+}
+
+/*====================================================================*/
+void apSSP_SetTxThres(SSP_TypeDef *SPI_BASE, uint8_t thres)
+{
+    SPI_BASE->Ctrl &= (~(BW2M(bwSPI_CTRL_TXTHRES) << bsSPI_CTRL_TXTHRES));
+    SPI_BASE->Ctrl |= (thres << bsSPI_CTRL_TXTHRES);
+}
+
+/*====================================================================*/
+void apSSP_SetRxThres(SSP_TypeDef *SPI_BASE, uint8_t thres)
+{
+    SPI_BASE->Ctrl &= (~(BW2M(bwSPI_CTRL_RXTHRES) << bsSPI_CTRL_RXTHRES));
+    SPI_BASE->Ctrl |= (thres << bsSPI_CTRL_RXTHRES);
+}
+
+/*====================================================================*/
+void apSSP_ResetTxFifo(SSP_TypeDef *SPI_BASE)
+{
+    SPI_BASE->Ctrl |= (1UL << bsSPI_CTRL_TXFIFORST);
+    //It is automatically cleared to 0 after the reset operation completes.
+    while((SPI_BASE->Ctrl >> bsSPI_CTRL_TXFIFORST) & BW2M(bwSPI_CTRL_TXFIFORST));
+}
+
+/*====================================================================*/
+void apSSP_ResetRxFifo(SSP_TypeDef *SPI_BASE)
+{
+    SPI_BASE->Ctrl |= (1UL << bsSPI_CTRL_RXFIFORST);
+    //It is automatically cleared to 0 after the reset operation completes.
+    while((SPI_BASE->Ctrl >> bsSPI_CTRL_RXFIFORST) & BW2M(bwSPI_CTRL_RXFIFORST));
+}
+
+/*====================================================================*/
+uint8_t apSSP_RxFifoFull(SSP_TypeDef *SPI_BASE)
+{
+    return (uint8_t) ((SPI_BASE->Status >> bsSPI_STATUS_RXFULL) & BW2M(bwSPI_STATUS_RXFULL));
+}
+
+/*====================================================================*/
+uint8_t apSSP_RxFifoEmpty(SSP_TypeDef *SPI_BASE)
+{
+    return (uint8_t) ((SPI_BASE->Status >> bsSPI_STATUS_RXEMPTY) & BW2M(bwSPI_STATUS_RXEMPTY));
+}
+
+/*====================================================================*/
+uint8_t apSSP_TxFifoFull(SSP_TypeDef *SPI_BASE)
+{
+    return (uint8_t) ((SPI_BASE->Status >> bsSPI_STATUS_TXFULL) & BW2M(bwSPI_STATUS_TXFULL));
+}
+
+/*====================================================================*/
+uint8_t apSSP_TxFifoEmpty(SSP_TypeDef *SPI_BASE)
+{
+    return (uint8_t) ((SPI_BASE->Status >> bsSPI_STATUS_TXEMPTY) & BW2M(bwSPI_STATUS_TXEMPTY));
+}
+
+/*====================================================================*/
+uint8_t apSSP_GetDataNumInTxFifo(SSP_TypeDef *SPI_BASE)
+{
+    return (uint8_t) ( ((SPI_BASE->Status >> bsSPI_STATUS_TXNUML) & BW2M(bwSPI_STATUS_TXNUML)) |
+                       (((SPI_BASE->Status >> bsSPI_STATUS_TXNUMH) & BW2M(bwSPI_STATUS_TXNUMH)) << bwSPI_STATUS_TXNUML) );
+}
+
+/*====================================================================*/
+uint8_t apSSP_GetDataNumInRxFifo(SSP_TypeDef *SPI_BASE)
+{
+    return (uint8_t) ( ((SPI_BASE->Status >> bsSPI_STATUS_RXNUML) & BW2M(bwSPI_STATUS_RXNUML)) |
+                       (((SPI_BASE->Status >> bsSPI_STATUS_RXNUMH) & BW2M(bwSPI_STATUS_TXNUMH)) << bwSPI_STATUS_RXNUML) );
+}
+
+/*====================================================================*/
+void apSSP_SetTimingSclkDiv(SSP_TypeDef *SPI_BASE, uint8_t sclk_div)
+{
+    SPI_BASE->Timing &= (~BW2M(bwSPI_TIMING_SCLK_DIV));
+    SPI_BASE->Timing |= (sclk_div << bsSPI_TIMING_SCLK_DIV);
+}
+
+/*====================================================================*/
+void apSSP_SetTimingCs2Sclk(SSP_TypeDef *SPI_BASE, uint8_t cs2sclk)
+{
+    SPI_BASE->Timing &= (~(BW2M(bwSPI_TIMING_CS2SCLK) << bsSPI_TIMING_CS2SCLK));
+    SPI_BASE->Timing |= (cs2sclk << bsSPI_TIMING_CS2SCLK);
+}
 
 #endif

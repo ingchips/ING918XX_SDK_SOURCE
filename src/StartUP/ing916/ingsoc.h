@@ -250,31 +250,6 @@ typedef struct{
     DMA_ChannelReg Channels[8];         // 0x40
 } DMA_TypeDef;
 
-// SPI
-typedef struct
-{
-    __IO uint32_t Reserved1[4];                   //0x00
-    __IO uint32_t TransFmt;                       //0x10
-    __IO uint32_t DirectIO;                       //0x14
-    __IO uint32_t Reserved2[2];                   //0x18
-    __IO uint32_t TransCtrl;                      //0x20
-    __IO uint32_t Cmd;                            //0x24
-    __IO uint32_t Addr;                           //0x28
-    __IO uint32_t Data;                           //0x2C
-    __IO uint32_t Ctrl;                           //0x30
-    __IO uint32_t Status;                         //0x34
-    __IO uint32_t IntrEn;                         //0x38
-    __IO uint32_t IntrSt;                         //0x3C
-    __IO uint32_t Timing;                         //0x40
-    __IO uint32_t Reserved3[3];                   //0x44
-    __IO uint32_t MemCtrl;                        //0x50
-    __IO uint32_t Reserved4[3];                   //0x54
-    __IO uint32_t SlvSt;                          //0x60
-    __IO uint32_t SlvDataCnt;                     //0x64
-    __IO uint32_t Reserved5[5];                   //0x68
-    __IO uint32_t Config;                         //0x7C
-} SSP_TypeDef;
-
 // System Control
 typedef struct{
     __IO uint32_t CguCfg[8];           // 0x00
@@ -290,6 +265,46 @@ typedef struct{
     __IO uint32_t SysIoWkSource;       // 0x64
     __IO uint32_t SysIoInStatus;       // 0x68
 } SYSCTRL_TypeDef;
+
+typedef struct
+{
+    __IO uint32_t Reserved0[4];       //0x0
+    __IO uint32_t TransFmt;           //0x10
+    __IO uint32_t DirectIO;           //0x14
+    __IO uint32_t Reserved1[2];       //0x18
+    __IO uint32_t TransCtrl;          //0x20
+    __IO uint32_t Cmd;                //0x24
+    __IO uint32_t Addr;               //0x28
+    __IO uint32_t Data;               //0x2C
+    __IO uint32_t Ctrl;               //0x30
+    __IO uint32_t Status;             //0x34
+    __IO uint32_t IntrEn;             //0x38
+    __IO uint32_t IntrSt;             //0x3C
+    __IO uint32_t Timing;             //0x40
+    __IO uint32_t Reserved2[3];       //0x44
+    __IO uint32_t MemCtrl;            //0x50
+    __IO uint32_t Reserved3[3];       //0x54
+    __IO uint32_t SlvSt;              //0x60
+    __IO uint32_t SlvDataCnt;         //0x64
+    __IO uint32_t Reserved4[5];       //0x68
+    __IO uint32_t Config;             //0x7C
+} SSP_TypeDef;
+
+typedef struct
+{
+    __IO uint32_t Efuse_cfg0;         //0x0
+    __IO uint32_t Efuse_cfg1;         //0x4
+    __IO uint32_t Efuse_cfg2;         //0x8
+    __IO uint32_t Efuse_cfg3;         //0xC
+    __IO uint32_t Reserved0[3];       //0x10
+    __IO uint32_t efuse_cfg4;         //0x1C
+    __IO uint32_t efuse_dly_cfg0;     //0x20
+    __IO uint32_t efuse_dly_cfg1;     //0x24
+    __IO uint32_t Reserved1[2];       //0x28
+    __IO uint32_t efuse_status;       //0x30
+    __IO uint32_t Reserved2[3];       //0x34
+    __IO uint32_t efuse_rdata[4];     //0x40
+} EFUSE_TypeDef;
 
 /******************************************************************************/
 /*                         memory map                                         */
@@ -351,6 +366,9 @@ typedef struct{
 #define APB_SSP1           ((SSP_TypeDef *)APB_SPI_BASE)
 #define APB_DMA            ((DMA_TypeDef *)APB_DMACFG_BASE)
 #define APB_RTC            ((RTC_TypeDef *)AON_RTC_BASE)
+#define APB_EFUSE          ((EFUSE_TypeDef *)APB_EFUSE_BASE)
+#define APB_SPI            APB_SSP1
+#define AHB_QSPI           AHB_SSP0
 
 // Test if in interrupt mode
 #define IS_IN_INTERRUPT() ((SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0)
@@ -371,6 +389,7 @@ typedef struct{
     #include "peripheral_pdm.h"
     #include "peripheral_rtc.h"
     #include "peripheral_adc.h"
+    #include "peripheral_efuse.h"
     #include "peripheral_dma.h"
 #endif
 

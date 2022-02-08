@@ -64,12 +64,11 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     SYSCTRL_ClearClkGateMulti(0
-                            | (1 << SYSCTRL_ClkGate_APB_TMR0));
+                            | (1 << SYSCTRL_ClkGate_APB_WDT));
     config_uart(OSC_CLK_FREQ, 115200);
 
     // Watchdog will timeout after 20sec
-    //TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
-    //TMR0_LOCK();
+    TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)

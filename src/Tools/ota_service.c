@@ -27,6 +27,11 @@
 
 #ifndef SEC_FOTA_APP_ADDR
 #define SEC_FOTA_APP_ADDR 0x2040000
+
+#else
+
+#error unknown or unsupported chip family
+
 #endif
 
 #define PAGE_SIZE (EFLASH_SECTOR_SIZE)
@@ -156,7 +161,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                     break;
                 }
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-                program_fota_metadata(meta->entry, 
+                program_fota_metadata(meta->entry,
                                       (s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
                                       meta->blocks);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
@@ -193,7 +198,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 ota_ctrl[0] = OTA_STATUS_ERROR;
                 return 0;
             }
-            
+
             memcpy(page_buffer + ota_page_offset,
                    buffer, buffer_size);
             ota_page_offset += buffer_size;

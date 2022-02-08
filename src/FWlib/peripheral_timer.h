@@ -275,7 +275,20 @@ uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id);
  * @param[in] enable_int            enable interrupt in "interrupt stage"
  ****************************************************************************************
  */
-void TMR_WatchDogEnable(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uint8_t enable_int);
+void TMR_WatchDogEnable3(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uint8_t enable_int);
+
+/**
+ ****************************************************************************************
+ * @brief Enable watchdog.
+ *
+ * This macro tries to provide similar interface as the one in ING918xx.
+ *
+ * Please use `TMR_WatchDogEnable3` instead for ING916xx.
+ *
+ * @param[in] timeout              see `TMR_WatchDogEnable` in ING918xx
+ ****************************************************************************************
+ */
+#define TMR_WatchDogEnable(timeout) do { uint32_t TMR_CLK_FREQ = OSC_CLK_FREQ; uint32_t cnt = ((uint64_t)(timeout) * 1000 / OSC_CLK_FREQ); TMR_WatchDogEnable3(cnt, cnt, 0); } while (0)
 
 /**
  ****************************************************************************************

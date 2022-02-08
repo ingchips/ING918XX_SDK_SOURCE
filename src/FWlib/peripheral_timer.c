@@ -80,10 +80,12 @@ void TMR_WatchDogEnable(uint32_t timeout)
     APB_TMR0->CTL = (1 << bsTMR_CTL_RELOAD);
     APB_TMR0->CMP = timeout;
 	APB_TMR0->CTL |= (1 << bsTMR_CTL_TMR_EN) | (1 << bsTMR_CTL_WatchDog_EN);
+    TMR0_LOCK();
 }
 
 void TMR_WatchDogDisable(void)
 {
+    TMR0_UNLOCK();
 	APB_TMR0->CTL &= ~(1 << bsTMR_CTL_WatchDog_EN);
 }
 
@@ -161,7 +163,7 @@ uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id)
 
 #define WDT_UNLOCK()    APB_WDT->WrEn = 0x5aa5
 
-void TMR_WatchDogEnable(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uint8_t enable_int)
+void TMR_WatchDogEnable3(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uint8_t enable_int)
 {
     uint32_t inttime = 15;
     uint32_t rsttime = 7;
@@ -191,7 +193,7 @@ void TMR_WatchDogEnable(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uint
     else if (reset_timeout_ms <= 125) rsttime = 5;
     else if (reset_timeout_ms <= 250) rsttime = 6;
     else;
-    
+
     volatile uint32_t *reg = (volatile uint32_t *)(AON_CTRL_BASE + 0x40);
     *reg &= ~(0xFUL << 13);
 
