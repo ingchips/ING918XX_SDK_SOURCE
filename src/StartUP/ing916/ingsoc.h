@@ -58,10 +58,10 @@ typedef enum
 /* ================================================================================ */
 
 /* Configuration of the Cortex-M# Processor and Core Peripherals */
-#define __CM4_REV                 0x0201    /*!< Core Revision r2p1                               */
+#define __CM4_REV                 0x0001    /*!< Core Revision r0p1                               */
 #define __NVIC_PRIO_BITS          5         /*!< Number of Bits used for Priority Levels          */
 #define __Vendor_SysTickConfig    0         /*!< Set to 1 if different SysTick Config is used     */
-#define __MPU_PRESENT             0         /*!< MPU present or not                               */
+#define __MPU_PRESENT             1         /*!< MPU present or not                               */
 #define __FPU_PRESENT             1         /*!< FPU present or not                               */
 
 #include <core_cm4.h>                       /* Processor and core peripherals                    */
@@ -230,6 +230,7 @@ typedef struct tagDMA_Descriptor
     uint32_t DstAddr;               // +0x10
     uint32_t Reserved2;
     struct tagDMA_Descriptor *Next; // +0x18    (8-bytes aligned address)
+    uint32_t Reserved3;             // +0x1c
 } DMA_Descriptor;
 
 typedef struct
@@ -306,6 +307,21 @@ typedef struct
     __IO uint32_t efuse_rdata[4];     //0x40
 } EFUSE_TypeDef;
 
+typedef struct
+{
+    __IO uint32_t ir_ctrl;                //0x0
+    __IO uint32_t ir_tx_config;           //0x4
+    __IO uint32_t ir_carry_config;        //0x8
+    __IO uint32_t ir_time_1;              //0xC
+    __IO uint32_t ir_time_2;              //0x10
+    __IO uint32_t ir_time_3;              //0x14
+    __IO uint32_t ir_time_4;              //0x18
+    __IO uint32_t ir_time_5;              //0x1C
+    __IO uint32_t ir_rx_code;             //0x20
+    __IO uint32_t ir_tx_code;             //0x24
+    __IO uint32_t ir_fsm;                 //0x28
+} IR_TypeDef;
+
 /******************************************************************************/
 /*                         memory map                                         */
 /******************************************************************************/
@@ -367,6 +383,8 @@ typedef struct
 #define APB_DMA            ((DMA_TypeDef *)APB_DMACFG_BASE)
 #define APB_RTC            ((RTC_TypeDef *)AON_RTC_BASE)
 #define APB_EFUSE          ((EFUSE_TypeDef *)APB_EFUSE_BASE)
+#define APB_IR             ((IR_TypeDef *)APB_IR_BASE)
+
 #define APB_SPI            APB_SSP1
 #define AHB_QSPI           AHB_SSP0
 

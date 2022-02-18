@@ -218,6 +218,19 @@ void sm_authorization_grant(hci_con_handle_t con_handle);
  */
 int sm_le_device_key(hci_con_handle_t con_handle);
 
+/**
+ * @brief SM state event
+ */
+enum sm_state_t
+{
+    SM_STARTED,
+    SM_FINAL_PAIRED,
+    SM_FINAL_REESTABLISHED,
+    SM_FINAL_FAIL_PROTOCOL,
+    SM_FINAL_FAIL_TIMEOUT,
+    SM_FINAL_FAIL_DISCONNECT,
+};
+
 #ifdef __cplusplus
 }
 #endif

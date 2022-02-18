@@ -418,6 +418,41 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     }
 }
 
+#define ANTENNA_ARRAY_4x4   0
+#define ANTENNA_ARRAY_1x4   1
+#define ANTENNA_ARRAY_1x3   2
+#define ANTENNA_ARRAY_2x2   3
+#define ANTENNA_ARRAY_3x3   4
+#define ANTENNA_ARRAY_1100  5
+#define ANTENNA_ARRAY_1010  6
+#define ANTENNA_ARRAY_1001  7
+
+#ifndef CURRENT_ARRAY
+#define CURRENT_ARRAY       ANTENNA_ARRAY_4x4
+#endif
+
+const static uint8_t pattern[] =
+#if (CURRENT_ARRAY == ANTENNA_ARRAY_4x4)
+{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
+#elif (CURRENT_ARRAY == ANTENNA_ARRAY_3x3)
+{ 0, 1, 2, 4, 5, 6, 8, 9, 10 }
+#elif (CURRENT_ARRAY == ANTENNA_ARRAY_2x2)
+{ 0, 1, 4, 5 }
+#elif (CURRENT_ARRAY == ANTENNA_ARRAY_1x4)
+{ 0, 1, 2, 3 }
+#elif (CURRENT_ARRAY == ANTENNA_ARRAY_1x3)
+{ 0, 1, 2 }
+#elif (CURRENT_ARRAY == ANTENNA_ARRAY_1100)
+{ 0, 1 }
+#elif (CURRENT_ARRAY == ANTENNA_ARRAY_1010)
+{ 0, 2 }
+#elif (CURRENT_ARRAY == ANTENNA_ARRAY_1001)
+{ 0, 3 }
+#else
+#error unknown array: CURRENT_ARRAY
+#endif
+;
+
 uint32_t setup_profile(void *data, void *user_data)
 {
     iprintf("setup profile\n");
@@ -427,9 +462,8 @@ uint32_t setup_profile(void *data, void *user_data)
         settings_t *p = pvPortMalloc(sizeof(settings_t));
         memset(p, 0, sizeof(settings_t));
         p->slot_duration = 1;
-        p->patterns[0].len = 16;
-        for (i = 0; i < p->patterns[0].len; i++)
-            p->patterns[0].ant_ids[i] = i;
+        p->patterns[0].len = sizeof(pattern);
+        memcpy(p->patterns[0].ant_ids, pattern, sizeof(pattern));
         kv_put(KEY_SETTINGS, (const uint8_t *)p, sizeof(settings_t));
         vPortFree(p);
     }

@@ -2,51 +2,189 @@
 
 #if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
 
-void IR_Send_Data(IR_REG_H* IR_BASE, IR_Send_Data_Input_Params *Param_p )
+
+void IR_CtrlEnable(IR_TypeDef* IR_BASE)
 {
-    uint32_t cycle_low = ((IR_CLK_DEFAULT_HZ / Param_p->carrier_freq_hz)) / IR_CARRIER_DUTY_CYCLE_FACTOR;
-    uint32_t cycle_high = ((IR_CLK_DEFAULT_HZ / Param_p->carrier_freq_hz)) - cycle_low;
-    
-    IR_BASE->ir_carry_config.r = (cycle_high << 9)|cycle_low;
-    
-    IR_BASE->ir_time_1 = Param_p->lead_code_low_time_us;
-    IR_BASE->ir_time_2 = Param_p->lead_code_repeat_high_time_us;
-    IR_BASE->ir_time_3 = Param_p->lead_code_high_time_us;
-    
-    IR_BASE->ir_ctrl.r |= ((Param_p->bit_0_time_us/IR_BIT_TIME_FACTOR) & 0x7f) << 8;
-    IR_BASE->ir_ctrl.r |= ((Param_p->bit_1_time_us/IR_BIT_TIME_FACTOR) & 0x7f) << 16;
-    IR_BASE->ir_ctrl.r |= ((Param_p->bit_0_1_low_time_us/IR_BIT_TIME_FACTOR) & 0x7f) << 24;
-    
-    IR_BASE->ir_ctrl.r |= 0x1 << 23;//txrx_mode
-    
-    IR_BASE->ir_tx_code.r |= ((Param_p->datacode << 16)|(Param_p->usercode));//datacode | usercode
-    
-    IR_BASE->ir_tx_config.r |= (0x1 << 0);//tx_start_set
+  IR_BASE->ir_ctrl |= (1 << bsIR_IR_CTRL_IR_EN);
 }
 
-void IR_Send_Repeat(IR_REG_H* IR_BASE)
+void IR_CtrlSetIrMode(IR_TypeDef* IR_BASE, IR_IrMode_e mode)
 {
-    IR_BASE->ir_ctrl.r |= (0x1 << 15);//repeat_mode
-    IR_BASE->ir_tx_config.r |= (0x1 << 0);//tx_start_set
+  IR_BASE->ir_ctrl &= (~(BW2M(bwIR_IR_CTRL_IR_MODE) << bsIR_IR_CTRL_IR_MODE));
+  IR_BASE->ir_ctrl |= (mode << bsIR_IR_CTRL_IR_MODE);
 }
 
-void IR_Send_NEC(IR_REG_H* IR_BASE)
+void IR_CtrlSetIrEndDetectEn(IR_TypeDef* IR_BASE)
 {
-  IR_Send_Data_Input_Params Param;
-  
-  Param.carrier_freq_hz = 38000;
-  Param.lead_code_low_time_us = 9000;
-  Param.lead_code_repeat_high_time_us = 2250;
-  Param.lead_code_high_time_us = 4500;
+  IR_BASE->ir_ctrl |= (1 << bsIR_IR_CTRL_IR_END_DETECT_EN);
+}
 
-  Param.bit_0_time_us = 1120;
-  Param.bit_1_time_us = 2250;
-  Param.bit_0_1_low_time_us = 560;
+void IR_CtrlSetIrIntEn(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_ctrl |= (1 << bsIR_IR_CTRL_IR_INT_EN);
+}
 
-  Param.datacode = 0x1234;
-  Param.usercode = 0xabcd;
-  
-  IR_Send_Data(IR_BASE, &Param);
+void IR_CtrlSetIrIntVerifyEn(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_ctrl |= (1 << bsIR_IR_CTRL_IR_INT_VERIFY_EN);
+}
+
+void IR_CtrlIrUsercodeVerify(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_ctrl |= (1 << bsIR_IR_CTRL_IR_USERCODE_VERIFY);
+}
+
+void IR_CtrlIrDatacodeVerify(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_ctrl |= (1 << bsIR_IR_CTRL_IR_DATACODE_VERIFY);
+}
+
+void IR_CtrlIrSetBitTime1(IR_TypeDef* IR_BASE, uint8_t time)
+{
+  IR_BASE->ir_ctrl &= (~(BW2M(bwIR_IR_CTRL_BIT_TIME_1) << bsIR_IR_CTRL_BIT_TIME_1));
+  IR_BASE->ir_ctrl |= (time << bsIR_IR_CTRL_BIT_TIME_1);
+}
+
+void IR_CtrlIrTxRepeatMode(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_ctrl |= (1 << bsIR_IR_CTRL_TX_REPEAT_MODE);
+}
+
+void IR_CtrlIrSetBitTime2(IR_TypeDef* IR_BASE, uint8_t time)
+{
+  IR_BASE->ir_ctrl &= (~(BW2M(bwIR_IR_CTRL_BIT_TIME_2) << bsIR_IR_CTRL_BIT_TIME_2));
+  IR_BASE->ir_ctrl |= (time << bsIR_IR_CTRL_BIT_TIME_2);
+}
+
+void IR_CtrlSetTxRxMode(IR_TypeDef* IR_BASE, IR_TxRxMode_e mode)
+{
+  IR_BASE->ir_ctrl &= (~(BW2M(bwIR_IR_CTRL_TXRX_MODE) << bsIR_IR_CTRL_TXRX_MODE));
+  IR_BASE->ir_ctrl |= (mode << bsIR_IR_CTRL_TXRX_MODE);
+}
+
+void IR_CtrlIrSetIrBitCycle(IR_TypeDef* IR_BASE, uint8_t cycle)
+{
+  IR_BASE->ir_ctrl &= (~(BW2M(bwIR_IR_CTRL_IR_BIT_CYCLE) << bsIR_IR_CTRL_IR_BIT_CYCLE));
+  IR_BASE->ir_ctrl |= (cycle << bsIR_IR_CTRL_IR_BIT_CYCLE);
+}
+
+
+void IR_TxConfigTxStart(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_tx_config |= (1 << bsIR_IR_TX_CONFIG_TX_START);
+}
+
+void IR_TxConfigIrTxPol(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_tx_config |= (1 << bsIR_IR_TX_CONFIG_IR_TX_POL);
+}
+
+void IR_TxConfigCarrierCntClr(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_tx_config |= (1 << bsIR_IR_TX_CONFIG_CARRIER_CNT_CLR);
+}
+
+void IR_TxConfigIrIntEn(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_tx_config |= (1 << bsIR_IR_TX_CONFIG_IR_INT_EN);
+}
+
+
+void IR_CarryConfigSetIrCarryLow(IR_TypeDef* IR_BASE, uint16_t val)
+{
+  IR_BASE->ir_carry_config &= (~(BW2M(bwIR_IR_CARRY_CONFIG_IR_CARRY_LOW) << bsIR_IR_CARRY_CONFIG_IR_CARRY_LOW));
+  IR_BASE->ir_carry_config |= (val << bsIR_IR_CARRY_CONFIG_IR_CARRY_LOW);
+}
+
+void IR_CarryConfigSetIrCarryHigh(IR_TypeDef* IR_BASE, uint16_t val)
+{
+  IR_BASE->ir_carry_config &= (~(BW2M(bwIR_IR_CARRY_CONFIG_IR_CARRY_HIGH) << bsIR_IR_CARRY_CONFIG_IR_CARRY_HIGH));
+  IR_BASE->ir_carry_config |= (val << bsIR_IR_CARRY_CONFIG_IR_CARRY_HIGH);
+}
+
+
+void IR_TimeSetIrTime1(IR_TypeDef* IR_BASE, uint16_t time)
+{
+  IR_BASE->ir_time_1 &= (~(BW2M(bwIR_IR_TIME_IR_TIME_S) << bsIR_IR_TIME_IR_TIME_S));
+  IR_BASE->ir_time_1 |= (time << bsIR_IR_TIME_IR_TIME_S);
+}
+
+void IR_TimeSetIrTime2(IR_TypeDef* IR_BASE, uint16_t time)
+{
+  IR_BASE->ir_time_2 &= (~(BW2M(bwIR_IR_TIME_IR_TIME_S) << bsIR_IR_TIME_IR_TIME_S));
+  IR_BASE->ir_time_2 |= (time << bsIR_IR_TIME_IR_TIME_S);
+}
+
+void IR_TimeSetIrTime3(IR_TypeDef* IR_BASE, uint16_t time)
+{
+  IR_BASE->ir_time_3 &= (~(BW2M(bwIR_IR_TIME_IR_TIME_S) << bsIR_IR_TIME_IR_TIME_S));
+  IR_BASE->ir_time_3 |= (time << bsIR_IR_TIME_IR_TIME_S);
+}
+
+void IR_TimeSetIrTime4(IR_TypeDef* IR_BASE, uint16_t time)
+{
+  IR_BASE->ir_time_4 &= (~(BW2M(bwIR_IR_TIME_IR_TIME_S) << bsIR_IR_TIME_IR_TIME_S));
+  IR_BASE->ir_time_4 |= (time << bsIR_IR_TIME_IR_TIME_S);
+}
+
+void IR_TimeSetIrTime5(IR_TypeDef* IR_BASE, uint16_t time)
+{
+  IR_BASE->ir_time_5 &= (~(BW2M(bwIR_IR_TIME_IR_TIME_S) << bsIR_IR_TIME_IR_TIME_S));
+  IR_BASE->ir_time_5 |= (time << bsIR_IR_TIME_IR_TIME_S);
+}
+
+void IR_RxCodeSetIrRxUsercode(IR_TypeDef* IR_BASE, uint16_t val)
+{
+  IR_BASE->ir_rx_code &= (~(BW2M(bwIR_IR_RX_CODE_IR_RX_USERCODE) << bsIR_IR_RX_CODE_IR_RX_USERCODE));
+  IR_BASE->ir_rx_code |= (val << bsIR_IR_RX_CODE_IR_RX_USERCODE);
+}
+
+void IR_RxCodeSetIrRxDatacode(IR_TypeDef* IR_BASE, uint16_t val)
+{
+  IR_BASE->ir_rx_code &= (~(BW2M(bwIR_IR_RX_CODE_IR_RX_DATACODE) << bsIR_IR_RX_CODE_IR_RX_DATACODE));
+  IR_BASE->ir_rx_code |= (val << bsIR_IR_RX_CODE_IR_RX_DATACODE);
+}
+
+void IR_TxCodeSetIrTxUsercode(IR_TypeDef* IR_BASE, uint16_t val)
+{
+  IR_BASE->ir_tx_code &= (~(BW2M(bwIR_IR_TX_CODE_IR_TX_USERCODE) << bsIR_IR_TX_CODE_IR_TX_USERCODE));
+  IR_BASE->ir_tx_code |= (val << bsIR_IR_TX_CODE_IR_TX_USERCODE);
+}
+
+void IR_TxCodeSetIrTxDatacode(IR_TypeDef* IR_BASE, uint16_t val)
+{
+  IR_BASE->ir_tx_code &= (~(BW2M(bwIR_IR_TX_CODE_IR_TX_DATACODE) << bsIR_IR_TX_CODE_IR_TX_DATACODE));
+  IR_BASE->ir_tx_code |= (val << bsIR_IR_TX_CODE_IR_TX_DATACODE);
+}
+
+uint8_t IR_FsmGetIrReceivedOk(IR_TypeDef* IR_BASE)
+{
+  return (uint8_t) ((IR_BASE->ir_fsm >> bsIR_IR_FSM_IR_RECEIVED_OK) & BW2M(bwIR_IR_FSM_IR_RECEIVED_OK));
+}
+
+uint8_t IR_FsmGetIrUsercodeVerify(IR_TypeDef* IR_BASE)
+{
+  return (uint8_t) ((IR_BASE->ir_fsm >> bsIR_IR_FSM_IR_USERCODE_VERIFY) & BW2M(bwIR_IR_FSM_IR_USERCODE_VERIFY));
+}
+
+uint8_t IR_FsmGetIrDatacodeVerify(IR_TypeDef* IR_BASE)
+{
+  return (uint8_t) ((IR_BASE->ir_fsm >> bsIR_IR_FSM_IR_DATACODE_VERIFY) & BW2M(bwIR_IR_FSM_IR_DATACODE_VERIFY));
+}
+
+uint8_t IR_FsmGetIrRepeat(IR_TypeDef* IR_BASE)
+{
+  return (uint8_t) ((IR_BASE->ir_fsm >> bsIR_IR_FSM_IR_REPEAT) & BW2M(bwIR_IR_FSM_IR_REPEAT));
+}
+
+uint8_t IR_FsmGetIrTransmitOk(IR_TypeDef* IR_BASE)
+{
+  return (uint8_t) ((IR_BASE->ir_fsm >> bsIR_IR_FSM_IR_TRANSMIT_OK) & BW2M(bwIR_IR_FSM_IR_TRANSMIT_OK));
+}
+
+uint8_t IR_FsmGetIrTxRepeat(IR_TypeDef* IR_BASE)
+{
+  return (uint8_t) ((IR_BASE->ir_fsm >> bsIR_IR_FSM_IR_TX_REPEAT) & BW2M(bwIR_IR_FSM_IR_TX_REPEAT));
 }
 
 #endif

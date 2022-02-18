@@ -130,9 +130,9 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 
 void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable)
 {
-    uint32_t mask = APB_PWM->Ctrl0 & ~(0xful << 19);
-    mask |= enable << 19;
-    mask |= trig_cfg << 20;
+    uint32_t mask = APB_PWM->Ctrl0 & ~(0x1ful << 18);
+    mask |= (enable ? 0x3 : 0x0) << 18;
+    mask |= (trig_cfg & 0x7) << 20;
     APB_PWM->Ctrl0 = mask;
 }
 

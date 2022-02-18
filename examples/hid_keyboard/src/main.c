@@ -178,7 +178,7 @@ int app_main()
     kv_init(db_write_to_flash, read_from_flash);
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
-    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0x1ff);
 
     return 0;
 }

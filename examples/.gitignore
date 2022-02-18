@@ -5,7 +5,7 @@ RTE/
 *.uvguix.*
 *.dep
 *.scvd
-
+ll_noos/
 homekit-bulb/
 mesh-sensor-light/
 peripheral_dirfinding/

@@ -138,6 +138,7 @@
         "platform_set_rf_power_mapping", 
         "platform_patch_rf_init_data", 
         "platform_get_task_handle", 
+        "platform_set_timer", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -168,7 +169,6 @@
         "l2cap_send_connectionless3", 
         "l2cap_le_send_flow_control_credit", 
         "l2cap_send_echo_request", 
-        "l2cap_require_security_level_2_for_outgoing_sdp", 
         "l2cap_init", 
         "l2cap_register_packet_handler", 
         "l2cap_max_mtu", 
@@ -319,19 +319,19 @@
         "uxListRemove"
     ], 
     "app": {
-        "base": 33705984
+        "base": 33701888
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 22572
+        "size": 22580
     }, 
     "rom": {
         "base": 33554432, 
-        "size": 147692
+        "size": 146880
     }, 
     "version": [
         2, 
         0, 
-        0
+        1
     ]
 }

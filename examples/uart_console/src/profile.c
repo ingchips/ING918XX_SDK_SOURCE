@@ -589,6 +589,79 @@ typedef struct read_remote_version
 } read_remote_version_t;
 #pragma pack (pop)
 
+static void print_features(const le_meta_event_read_remote_feature_complete_t * complete)
+{
+    static const char features[][48] =
+    {
+        "LE Encryption",
+        "Connection Parameters Request",
+        "Extended Reject Indication",
+        "Slave-initiated Features Exchange",
+        "LE Ping",
+        "LE Data Packet Length Extension",
+        "LL Privacy",
+        "Extended Scanner Filter Policies",
+        "LE 2M PHY",
+        "Stable Modulation Index - Transmitter",
+        "Stable Modulation Index - Receiver",
+        "LE Coded PHY",
+        "LE Extended Advertising",
+        "LE Periodic Advertising",
+        "Channel Selection Algorithm #2",
+        "LE Power Class 1",
+        "Minimum Number of Used Channels Procedure",
+        "Connection CTE Request",
+        "Connection CTE Response",
+        "Connectionless CTE Transmitter",
+        "Connectionless CTE Receiver",
+        "Antenna Switching During CTE Transmission (AoD)",
+        "Antenna Switching During CTE Reception (AoA)",
+        "Receiving Constant Tone Extensions",
+        "Periodic Advertising Sync Transfer - Sender",
+        "Periodic Advertising Sync Transfer - Recipient",
+        "Sleep Clock Accuracy Updates",
+        "Remote Public Key Validation",
+        "Connected Isochronous Stream - Master",
+        "Connected Isochronous Stream - Slave",
+        "Isochronous Broadcaster",
+        "Synchronized Receiver",
+        "Isochronous Channels (Host Support)",
+        "LE Power Control Request",
+        "LE Power Control Request",
+        "LE Path Loss Monitoring",
+        "Periodic Advertising ADI",
+        "Connection Subrating",
+        "Connection Subrating (Host Support)",
+        "Channel Classification",        
+    };
+    int i;
+    iprintf("Features of peer #%d (status %d)\n", complete->handle, complete->status);
+    for (i = 0; i < sizeof(features) / sizeof(features[0]); i++)
+    {
+        int B_i = i >> 3;
+        int b_i = i & 0x7;
+        iprintf("[%c] %s\n", complete->features[B_i] & (1 << b_i) ? '*' : ' ', features[i]);
+    }
+    iprintf("\n");
+}
+
+static const char *decode_version(int ver)
+{
+    switch (ver)
+    {
+        case 6: return "4.0";
+        case 7:  return "4.1";
+        case 8:  return "4.2";
+        case 9:  return "5.0";
+        case 10: return "5.1";
+        case 11: return "5.2";
+        case 12: return "5.3";
+        case 13: return "5.4";
+        case 14: return "5.5";
+        default: return "??";
+    }
+}
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -639,21 +712,23 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                         last_seen = now;
                     }
                     
-                    platform_printf("ADV %02X:%02X:%02X:%02X:%02X:%02X %ddBm\n"
+                    platform_printf("ADV %02X:%02X:%02X:%02X:%02X:%02X (%s) %ddBm\n"
                                 "Type: 0x%02x\n",
                                 report->address[5], report->address[4], report->address[3],
                                 report->address[2], report->address[1], report->address[0],
+                                report->addr_type ? "RANDOM" : "PUBLIC",
                                 report->rssi, report->evt_type);
                 }
                 else
                 {
                     if (!is_new_advertiser(report->address)) break;
                     platform_printf("No. %d:\n"
-                                "ADV %02X:%02X:%02X:%02X:%02X:%02X %ddBm\n"
+                                "ADV %02X:%02X:%02X:%02X:%02X:%02X (%s) %ddBm\n"
                                 "Type: 0x%02x\n",
                                 advertiser_num,
                                 report->address[5], report->address[4], report->address[3],
                                 report->address[2], report->address[1], report->address[0],
+                                report->addr_type ? "RANDOM" : "PUBLIC",
                                 report->rssi, report->evt_type);
                 }
                     
@@ -686,6 +761,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_meta_event_read_remote_feature_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_read_remote_feature_complete_t);
+                print_features(complete);
                 if (complete->handle == mas_conn_handle)
                 {
                     if (0 == bonding_flag)
@@ -772,9 +848,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             if (version->Status == 0)
             {
                 platform_printf("Remote version\n"
-                "Version          : %d\n"
+                "Version          : %d (%s)\n"
                 "Manufacturer Name: 0x%04X\n"
-                "Subversion       : 0x%04X\n", version->Version, version->Manufacturer_Name, version->Subversion);
+                "Subversion       : 0x%04X\n",
+                version->Version, decode_version(version->Version),
+                version->Manufacturer_Name, version->Subversion);
             }
             if (version->Connection_Handle == mas_conn_handle)
                 gap_read_remote_used_features(mas_conn_handle);

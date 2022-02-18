@@ -85,6 +85,10 @@ typedef enum
     // platform callback for output or save a trace item
     // NOTE: param (void *data) is casted from platform_trace_evt_t *
     PLATFORM_CB_EVT_TRACE,
+    
+    // platform callback for hardware exceptions
+    // NOTE: param (void *data) is casted from platform_exception_id_t
+    PLATFORM_CB_EVT_EXCEPTION,
 
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;
@@ -103,6 +107,16 @@ typedef struct
     uint16_t len1;
     uint16_t len2;
 } platform_evt_trace_t;
+
+// Exception ID
+typedef enum
+{
+    PLATFORM_EXCEPTION_NMI          = 0,
+    PLATFORM_EXCEPTION_HARD_FAULT   = 1,    // this will not be reported in `PLATFORM_CB_EVT_EXCEPTION`
+    PLATFORM_EXCEPTION_MPU_FAULT    = 2,
+    PLATFORM_EXCEPTION_BUS_FAULT    = 3,
+    PLATFORM_EXCEPTION_USAGE_FAULT  = 4,
+} platform_exception_id_t;
 
 // A trace item is has an ID
 typedef enum
@@ -478,9 +492,7 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  *     `platform_controller_run()` continously.
  ****************************************************************************************
  */
-// void platform_init_controller(void);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_init_controller(void);
 
 /**
  ****************************************************************************************
@@ -489,9 +501,33 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  * Controller will do its pending jobs, and return after all pending jobs are done.
  ****************************************************************************************
  */
-// void platform_controller_run(void);
-// WARNING: ^^^ this API is not available in this release
+void platform_controller_run(void);
 
+/**
+ ****************************************************************************************
+ * @brief Setup a single-shot platform timer
+ *
+ * Note: 1. Comparing to hardware timers, this timer can be thought as "running" during
+ *          power saving;
+ *       1. Comparing to RTOS software timers, this timer is software + hardware too,
+ *       1. Comparing to RTOS software timers, this timer may be more accurate in some
+ *          circumstance;
+ *       1. This will always succeed, except when running out of memory;
+ *       1. `callback` is also the identifer of the timer, below two lines defines only
+ *          a timer expiring after 200 units but not two separate timers:
+ *          ```c
+ *          platform_set_timer(f, 100);
+ *          platform_set_timer(f, 200);
+ *          ```
+ * 
+ * @param[in]  callback         the callback function when the timer expired, and is
+ *                              called in a RTOS task (if existing) not an ISR
+ * @param[in]  delay            time delay before the timer expires (unit: 625us)
+ *                              Range: 0~0x7fffffff
+ *                              When `delay` == 0, the timer is cleared
+ ****************************************************************************************
+ */
+void platform_set_timer(void (* callback)(void), uint32_t delay);
 
 #ifdef __cplusplus
 }

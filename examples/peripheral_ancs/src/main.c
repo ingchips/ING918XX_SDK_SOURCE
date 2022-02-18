@@ -65,7 +65,13 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define DB_FLASH_ADDRESS  0x42000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define DB_FLASH_ADDRESS  0x20e0000
+#else
+#error unknown or unsupported chip family
+#endif
 
 #define KB_KEY_1        GIO_GPIO_1
 #define KB_KEY_2        GIO_GPIO_5

@@ -21,6 +21,7 @@ typedef enum
 
 typedef enum
 {
+    DMA_DESC_OPTION_BIT_ENABLE = 0,
     DMA_DESC_OPTION_BIT_DISABLE_TERMINAL_COUNT_INT = 1,
     DMA_DESC_OPTION_BIT_DISABLE_ERROR_INT = 2,
     DMA_DESC_OPTION_BIT_DISABLE_ABORT_INT = 3,
@@ -31,7 +32,7 @@ typedef enum
 #define DMA_MAKE_BURST_SIZE_OPTION(size)        (((uint32_t)(size) & 0x7) << 24)
 
 /**
- * @brief Prepare DMA descriptor for RAM to RAM transfer
+ * @brief Prepare DMA descriptor for memory to memory transfer
  *
  * @param[in] pDesc             the descriptor
  * @param[in] dst               destination address
@@ -42,13 +43,13 @@ typedef enum
  * @param[in] options           bit combination of `DMA_DescriptorOptionBit`
  * @return                      0 if no error else non-0
  */
-int DMA_PrepareRAM2RAM(DMA_Descriptor *pDesc,
+int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
                         void *dst, void *src, int size,
                         DMA_AddressControl dst_addr_ctrl, DMA_AddressControl src_addr_ctrl,
                         uint32_t options);
 
 /**
- * @brief Prepare DMA descriptor for peripheral to RAM transfer
+ * @brief Prepare DMA descriptor for peripheral to memory transfer
  *
  * @param[in] pDesc             the descriptor
  * @param[in] dst               destination address
@@ -58,13 +59,13 @@ int DMA_PrepareRAM2RAM(DMA_Descriptor *pDesc,
  * @param[in] options           bit combination of `DMA_DescriptorOptionBit`
  * @return                      0 if no error else non-0
  */
-int DMA_PreparePeripheral2RAM(DMA_Descriptor *pDesc,
+int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
                             uint32_t *dst, SYSCTRL_DMA src, int size,
                             DMA_AddressControl dst_addr_ctrl,
                             uint32_t options);
 
 /**
- * @brief Prepare DMA descriptor for RAM to peripheral transfer
+ * @brief Prepare DMA descriptor for memory to peripheral transfer
  *
  * @param[in] pDesc             the descriptor
  * @param[in] dst               destination peripheral
@@ -74,7 +75,7 @@ int DMA_PreparePeripheral2RAM(DMA_Descriptor *pDesc,
  * @param[in] options           bit combination of `DMA_DescriptorOptionBit`
  * @return                      0 if no error else non-0
  */
-int DMA_PrepareRAM2Peripheral(DMA_Descriptor *pDesc,
+int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
                             SYSCTRL_DMA dst, uint32_t *src, int size,
                             DMA_AddressControl src_addr_ctrl,
                             uint32_t options);
@@ -92,10 +93,48 @@ int DMA_PrepareRAM2Peripheral(DMA_Descriptor *pDesc,
 int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
                                     uint32_t options);
-
+/**
+ * @brief Reset DMA peripheral
+ *
+ * @param[in] reset             reset (1) or release (0)
+ */
 void DMA_Reset(uint8_t reset);
 
+/**
+ * @brief Check if a DMA descriptor's address is valid
+ *
+ * Rules:
+ * * Each descriptor shall not cross the 4K byte boundary;
+ * * Each descriptor shall be aligned at 8 bytes boundary.
+ *
+ * Tips: use `__attribute__((aligned (8)))` to align the descriptor, e.g.
+ *
+ * ```c
+ * DMA_Descriptor desc __attribute__((aligned (8)));
+ * ```
+ *
+ * @result                      true if valid, false if invalid
+ */
+#define IS_VALID_DMA_DESC_ADDR(p)  \
+    (((((uint32_t)(p)) & 0xfff) <= (0x1000 - sizeof(DMA_Descriptor))) \
+    && ((((uint32_t)(p)) & 0x7) == 0))
+
+/**
+ * @brief Enable (Start) a DMA channel
+ *
+ * Caution: All DMA descriptors' address in the chain that is pointed to by a
+ * preceeding descriptor shall be valid, i.e. `IS_VALID_DMA_DESC_ADDR` evaluated to true.
+ *
+ * @param[in] channel_id            channel id to be enabled/started
+ * @param[in] first                 first descriptor
+ */
 void DMA_EnableChannel(int channel_id, DMA_Descriptor *first);
+
+/**
+ * @brief Abort a DMA channel
+ *
+ * @param[in] channel_id            channel id to be enabled/started
+ */
 void DMA_AbortChannel(int channel_id);
 
 /**

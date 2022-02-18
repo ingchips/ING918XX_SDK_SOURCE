@@ -267,7 +267,6 @@ void DMA_Data_Transfer(DMA_REG_H* DMA_BASE, DMA_REG_ChCtrl_Reg Params[], uint8_t
 
       DMA_BASE->ChCtrlList[i].ChCtrl.r |= (1 << DMA_REG_CHCTRL_ENABLE);
     }
-
 }
 
 
@@ -298,7 +297,7 @@ void DMA_Data_Transfer_Without_Chain_Transfer(DMA_REG_H* DMA_BASE, uint32_t Src,
   DMA_Data_Transfer(DMA_BASE, Params, 1);
 }
 
-int DMA_PrepareRAM2RAM(DMA_Descriptor *pDesc,
+int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
                                  void *dst, void *src, int size,
                                  DMA_AddressControl dst_addr_ctrl, DMA_AddressControl src_addr_ctrl,
                                  uint32_t options)
@@ -396,7 +395,7 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
     }
 }
 
-int DMA_PreparePeripheral2RAM(DMA_Descriptor *pDesc,
+int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
                                         uint32_t *dst, SYSCTRL_DMA src, int size,
                                         DMA_AddressControl dst_addr_ctrl,
                                         uint32_t options)
@@ -422,7 +421,7 @@ int DMA_PreparePeripheral2RAM(DMA_Descriptor *pDesc,
     return 0;
 }
 
-int DMA_PrepareRAM2Peripheral(DMA_Descriptor *pDesc,
+int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
                                         SYSCTRL_DMA dst, uint32_t *src, int size,
                                         DMA_AddressControl src_addr_ctrl,
                                         uint32_t options)
@@ -492,8 +491,10 @@ void DMA_Reset(uint8_t reset)
 
 void DMA_EnableChannel(int channel_id, DMA_Descriptor *first)
 {
+    uint32_t t = first->Ctrl;
     first->Ctrl &= ~(uint32_t)1;
     APB_DMA->Channels[channel_id].Descriptor = *first;
+    first->Ctrl = t;
     APB_DMA->Channels[channel_id].Descriptor.Ctrl |= 1;
 }
 
@@ -524,7 +525,7 @@ int DMA_MemCopy(int channel_id, void *dst, void *src, int size)
     DMA_Descriptor descriptor;
     uint32_t state;
     descriptor.Next = (DMA_Descriptor *)0;
-    DMA_PrepareRAM2RAM(&descriptor, dst, src, size, DMA_ADDRESS_INC, DMA_ADDRESS_INC, 0);
+    DMA_PrepareMem2Mem(&descriptor, dst, src, size, DMA_ADDRESS_INC, DMA_ADDRESS_INC, 0);
     DMA_EnableChannel(channel_id, &descriptor);
 
     while ((state = DMA_GetChannelIntState(channel_id)) == 0) ;

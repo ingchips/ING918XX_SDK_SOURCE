@@ -21,7 +21,7 @@ const sm_persistent_t sm_persistent =
     .er = {1, 2, 3},
     .ir = {4, 5, 6},
     .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
-    .identity_addr          = {0xC3, 0x82, 0x63, 0xc4, 0x35, 0x6b}
+    .identity_addr          = {0xC3, 0x82, 0x63, 0xc4, 0x35, 0x7b}
 };
 
 const static uint8_t adv_data[] = {
@@ -335,6 +335,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
      case HCI_EVENT_DISCONNECTION_COMPLETE:
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         handle_send = INVALID_HANDLE;
+        att_handle_notify = 0;
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
@@ -510,6 +511,32 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
     case SM_EVENT_PASSKEY_INPUT_NUMBER:
         input_number.flag = 1;
         input_number.cnt = 0;
+        break;
+    case SM_EVENT_STATE_CHANGED:
+        {
+            const sm_event_state_changed_t *state_changed = decode_hci_event(packet, sm_event_state_changed_t);
+            switch (state_changed->reason)
+            {
+                case SM_STARTED:
+                    platform_printf("SM: STARTED\n");
+                    break;
+                case SM_FINAL_PAIRED:
+                    platform_printf("SM: PAIRED\n");
+                    break;
+                case SM_FINAL_REESTABLISHED:
+                    platform_printf("SM: REESTABLISHED");
+                    if (0 == att_handle_notify)
+                    {
+                        platform_printf(" BUT LOCAL INFO DELETED");
+                    }
+                    platform_printf("\n");
+                    break;
+                default:
+                    platform_printf("SM: FINAL ERROR: %d\n", state_changed->reason);
+                    break;
+            }
+        }
+        
         break;
     default:
         break;

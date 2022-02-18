@@ -12,108 +12,212 @@ extern "C" {	/* allow C++ to use these headers */
 
 #if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
 
+/**
+ ****************************************************************************************
+ * reg of ir_ctrl
+ */
+#define bsIR_IR_CTRL_IR_EN                          0
+#define bsIR_IR_CTRL_IR_MODE                        1
+#define bsIR_IR_CTRL_IR_END_DETECT_EN               3
+#define bsIR_IR_CTRL_IR_INT_EN                      4
+#define bsIR_IR_CTRL_IR_INT_VERIFY_EN               5
+#define bsIR_IR_CTRL_IR_USERCODE_VERIFY             6
+#define bsIR_IR_CTRL_IR_DATACODE_VERIFY             7
+#define bsIR_IR_CTRL_BIT_TIME_1                     8
+#define bsIR_IR_CTRL_TX_REPEAT_MODE                 15
+#define bsIR_IR_CTRL_BIT_TIME_2                     16
+#define bsIR_IR_CTRL_TXRX_MODE                      23
+#define bsIR_IR_CTRL_IR_BIT_CYCLE                   24
 
-typedef union
+#define bwIR_IR_CTRL_IR_EN                          1
+#define bwIR_IR_CTRL_IR_MODE                        2
+#define bwIR_IR_CTRL_IR_END_DETECT_EN               1
+#define bwIR_IR_CTRL_IR_INT_EN                      1
+#define bwIR_IR_CTRL_IR_INT_VERIFY_EN               1
+#define bwIR_IR_CTRL_IR_USERCODE_VERIFY             1
+#define bwIR_IR_CTRL_IR_DATACODE_VERIFY             1
+#define bwIR_IR_CTRL_BIT_TIME_1                     7
+#define bwIR_IR_CTRL_TX_REPEAT_MODE                 1
+#define bwIR_IR_CTRL_BIT_TIME_2                     7
+#define bwIR_IR_CTRL_TXRX_MODE                      1
+#define bwIR_IR_CTRL_IR_BIT_CYCLE                   7
+
+typedef enum
 {
-    volatile uint32_t r;
-    struct
-    {
-      volatile uint32_t ir_en                  : 1 ;
-      volatile uint32_t ir_mode                : 2 ;
-      volatile uint32_t ir_end_detect_en       : 1 ;
-      volatile uint32_t ir_int_en              : 1 ;
-      volatile uint32_t ir_int_verify_en       : 1 ;
-      volatile uint32_t ir_usercode_verify     : 1 ;
-      volatile uint32_t ir_datacode_verify     : 1 ;
-      volatile uint32_t bit_time_1             : 7 ;
-      volatile uint32_t tx_repeat_mode         : 1 ;
-      volatile uint32_t bit_time_2             : 7 ;
-      volatile uint32_t txrx_mode              : 1 ;
-      volatile uint32_t ir_bit_cycle           : 7 ;
-      volatile uint32_t unused                 : 1 ;
-    }f;
-}IR_REG_IR_Ctrl;
+  IR_IR_MODE_IR_NEC,
+  IR_IR_MODE_IR_9012,
+  IR_IR_MODE_IR_RC5
+} IR_IrMode_e;
 
-typedef union
+typedef enum
 {
-    volatile uint32_t r;
-    struct
-    {
-      volatile uint32_t tx_start            : 1 ;
-      volatile uint32_t ir_tx_pol           : 1 ;
-      volatile uint32_t ir_debug_sel        : 1 ;
-      volatile uint32_t carrier_cnt_clr     : 1 ;
-      volatile uint32_t ir_int_en           : 1 ;
-      volatile uint32_t unused              : 27 ;
-    }f;
-}IR_REG_IR_Tx_Config;
+  IR_txrx_mode_rx_mode,
+  IR_txrx_mode_tx_mode
+} IR_TxRxMode_e;
 
-typedef union
-{
-    volatile uint32_t r;
-    struct
-    {
-      volatile uint32_t ir_carry_low             : 9 ;
-      volatile uint32_t ir_carry_high            : 9 ;
-      volatile uint32_t unused                   : 14 ;
-    }f;
-}IR_REG_IR_Carry_Config;
+/**
+ ****************************************************************************************
+ * reg of ir_tx_config
+ */
+#define bsIR_IR_TX_CONFIG_TX_START                          0
+#define bsIR_IR_TX_CONFIG_IR_TX_POL                         1
+#define bsIR_IR_TX_CONFIG_CARRIER_CNT_CLR                   3
+#define bsIR_IR_TX_CONFIG_IR_INT_EN                         4
 
-typedef union
-{
-    volatile uint32_t r;
-    struct
-    {
-      volatile uint32_t ir_rx_usercode             : 16 ;
-      volatile uint32_t ir_rx_datacode             : 16 ;
-    }f;
-}IR_REG_IR_Rx_Code;
+#define bwIR_IR_TX_CONFIG_TX_START                          1
+#define bwIR_IR_TX_CONFIG_IR_TX_POL                         1
+#define bwIR_IR_TX_CONFIG_CARRIER_CNT_CLR                   1
+#define bwIR_IR_TX_CONFIG_IR_INT_EN                         1
 
-typedef union
-{
-    volatile uint32_t r;
-    struct
-    {
-      volatile uint32_t ir_tx_usercode             : 16 ;
-      volatile uint32_t ir_tx_datacode             : 16 ;
-    }f;
-}IR_REG_IR_Tx_Code;
+/**
+ ****************************************************************************************
+ * reg of ir_carry_config
+ */
+#define bsIR_IR_CARRY_CONFIG_IR_CARRY_LOW                          0
+#define bsIR_IR_CARRY_CONFIG_IR_CARRY_HIGH                         9
 
-typedef struct
-{
-  volatile IR_REG_IR_Ctrl                                     ir_ctrl           ; //0x0
-  volatile IR_REG_IR_Tx_Config                                ir_tx_config           ; //0x4
-  volatile IR_REG_IR_Carry_Config                             ir_carry_config           ; //0x8
-  volatile uint32_t                                            ir_time_1           ; //0xC
-  volatile uint32_t                                            ir_time_2            ; //0x10
-  volatile uint32_t                                            ir_time_3            ; //0x14
-  volatile uint32_t                                            ir_time_4            ; //0x18
-  volatile uint32_t                                            ir_time_5           ; //0x1C
-  volatile IR_REG_IR_Rx_Code                                   ir_rx_code       ; //0x20
-  volatile IR_REG_IR_Tx_Code                                   ir_tx_code       ; //0x24
-  volatile uint32_t                                            ir_fsm            ; //0x28
-}IR_REG_H;
+#define bwIR_IR_CARRY_CONFIG_IR_CARRY_LOW                          9
+#define bwIR_IR_CARRY_CONFIG_IR_CARRY_HIGH                         9
 
-#define IR_CLK_DEFAULT_HZ (24000000)
-#define IR_CARRIER_DUTY_CYCLE_FACTOR (3)
-#define IR_BIT_TIME_FACTOR (30)
 
-typedef struct
-{
-  uint32_t carrier_freq_hz;
-  
-  uint16_t lead_code_low_time_us;
-  uint16_t lead_code_repeat_high_time_us;
-  uint16_t lead_code_high_time_us;
-  
-  uint16_t bit_0_time_us;
-  uint16_t bit_1_time_us;
-  uint16_t bit_0_1_low_time_us;
-  
-  uint16_t datacode;
-  uint16_t usercode;
-  
-}IR_Send_Data_Input_Params;
+/**
+ ****************************************************************************************
+ * reg of ir_time
+ */
+#define bsIR_IR_TIME_IR_TIME_S                         0
+#define bwIR_IR_TIME_IR_TIME_S                         12
+
+
+/**
+ ****************************************************************************************
+ * reg of ir_rx_code
+ */
+#define bsIR_IR_RX_CODE_IR_RX_USERCODE                         0
+#define bsIR_IR_RX_CODE_IR_RX_DATACODE                         16
+
+#define bwIR_IR_RX_CODE_IR_RX_USERCODE                         16
+#define bwIR_IR_RX_CODE_IR_RX_DATACODE                         16
+
+/**
+ ****************************************************************************************
+ * reg of ir_tx_code
+ */
+#define bsIR_IR_TX_CODE_IR_TX_USERCODE                         0
+#define bsIR_IR_TX_CODE_IR_TX_DATACODE                         16
+
+#define bwIR_IR_TX_CODE_IR_TX_USERCODE                         16
+#define bwIR_IR_TX_CODE_IR_TX_DATACODE                         16
+
+/**
+ ****************************************************************************************
+ * reg of ir_fsm
+ */
+#define bsIR_IR_FSM_IR_RECEIVED_OK                             0
+#define bsIR_IR_FSM_IR_USERCODE_VERIFY                         1
+#define bsIR_IR_FSM_IR_DATACODE_VERIFY                         2
+#define bsIR_IR_FSM_IR_REPEAT                                  3
+#define bsIR_IR_FSM_IR_TRANSMIT_OK                             4
+#define bsIR_IR_FSM_IR_TX_REPEAT                               5
+
+#define bwIR_IR_FSM_IR_RECEIVED_OK                             1
+#define bwIR_IR_FSM_IR_USERCODE_VERIFY                         1
+#define bwIR_IR_FSM_IR_DATACODE_VERIFY                         1
+#define bwIR_IR_FSM_IR_REPEAT                                  1
+#define bwIR_IR_FSM_IR_TRANSMIT_OK                             1
+#define bwIR_IR_FSM_IR_TX_REPEAT                               1
+
+
+/**
+ ****************************************************************************************
+ * @brief IR ctrl reg operations
+ *
+ * @param[in] IR_BASE              Base address of IR module
+ ****************************************************************************************
+ */
+void IR_CtrlEnable(IR_TypeDef* IR_BASE);
+void IR_CtrlSetIrMode(IR_TypeDef* IR_BASE, IR_IrMode_e mode);
+void IR_CtrlSetIrEndDetectEn(IR_TypeDef* IR_BASE);
+void IR_CtrlSetIrIntEn(IR_TypeDef* IR_BASE);
+void IR_CtrlSetIrIntVerifyEn(IR_TypeDef* IR_BASE);
+void IR_CtrlIrUsercodeVerify(IR_TypeDef* IR_BASE);
+void IR_CtrlIrDatacodeVerify(IR_TypeDef* IR_BASE);
+void IR_CtrlIrSetBitTime1(IR_TypeDef* IR_BASE, uint8_t time);
+void IR_CtrlIrTxRepeatMode(IR_TypeDef* IR_BASE);
+void IR_CtrlIrSetBitTime2(IR_TypeDef* IR_BASE, uint8_t time);
+void IR_CtrlSetTxRxMode(IR_TypeDef* IR_BASE, IR_TxRxMode_e mode);
+void IR_CtrlIrSetIrBitCycle(IR_TypeDef* IR_BASE, uint8_t cycle);
+
+/**
+ ****************************************************************************************
+ * @brief IR ir_tx_config reg operations
+ *
+ * @param[in] IR_BASE              Base address of IR module
+ ****************************************************************************************
+ */
+void IR_TxConfigTxStart(IR_TypeDef* IR_BASE);
+void IR_TxConfigIrTxPol(IR_TypeDef* IR_BASE);
+void IR_TxConfigCarrierCntClr(IR_TypeDef* IR_BASE);
+void IR_TxConfigIrIntEn(IR_TypeDef* IR_BASE);
+
+
+/**
+ ****************************************************************************************
+ * @brief IR ir_carry_config reg operations
+ *
+ * @param[in] IR_BASE              Base address of IR module
+ ****************************************************************************************
+ */
+void IR_CarryConfigSetIrCarryLow(IR_TypeDef* IR_BASE, uint16_t val);
+void IR_CarryConfigSetIrCarryHigh(IR_TypeDef* IR_BASE, uint16_t val);
+
+
+/**
+ ****************************************************************************************
+ * @brief IR ir_time reg operations
+ *
+ * @param[in] IR_BASE              Base address of IR module
+ ****************************************************************************************
+ */
+void IR_TimeSetIrTime1(IR_TypeDef* IR_BASE, uint16_t time);
+void IR_TimeSetIrTime2(IR_TypeDef* IR_BASE, uint16_t time);
+void IR_TimeSetIrTime3(IR_TypeDef* IR_BASE, uint16_t time);
+void IR_TimeSetIrTime4(IR_TypeDef* IR_BASE, uint16_t time);
+void IR_TimeSetIrTime5(IR_TypeDef* IR_BASE, uint16_t time);
+
+/**
+ ****************************************************************************************
+ * @brief IR ir_rx_code reg operations
+ *
+ * @param[in] IR_BASE              Base address of IR module
+ ****************************************************************************************
+ */
+void IR_RxCodeSetIrRxUsercode(IR_TypeDef* IR_BASE, uint16_t val);
+void IR_RxCodeSetIrRxDatacode(IR_TypeDef* IR_BASE, uint16_t val);
+
+/**
+ ****************************************************************************************
+ * @brief IR ir_tx_code reg operations
+ *
+ * @param[in] IR_BASE              Base address of IR module
+ ****************************************************************************************
+ */
+void IR_TxCodeSetIrTxUsercode(IR_TypeDef* IR_BASE, uint16_t val);
+void IR_TxCodeSetIrTxDatacode(IR_TypeDef* IR_BASE, uint16_t val);
+
+/**
+ ****************************************************************************************
+ * @brief IR ir_fsm reg operations
+ *
+ * @param[in] IR_BASE              Base address of IR module
+ ****************************************************************************************
+ */
+uint8_t IR_FsmGetIrReceivedOk(IR_TypeDef* IR_BASE);
+uint8_t IR_FsmGetIrUsercodeVerify(IR_TypeDef* IR_BASE);
+uint8_t IR_FsmGetIrDatacodeVerify(IR_TypeDef* IR_BASE);
+uint8_t IR_FsmGetIrRepeat(IR_TypeDef* IR_BASE);
+uint8_t IR_FsmGetIrTransmitOk(IR_TypeDef* IR_BASE);
+uint8_t IR_FsmGetIrTxRepeat(IR_TypeDef* IR_BASE);
+
 
 #endif
 

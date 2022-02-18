@@ -138,7 +138,13 @@ int app_main()
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART1, (f_platform_irq_cb)trace_uart_isr, &trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_uart, &trace_ctx);
 #elif (defined TRACE_TO_FLASH)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     trace_flash_init(&trace_ctx, 0x2e000, EFLASH_PAGE_SIZE * 11);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    trace_flash_init(&trace_ctx, 0x2100000, 0x100000);
+#else
+    #error unknown or unsupported chip family
+#endif
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_flash, &trace_ctx);
 #else
     trace_rtt_init(&trace_ctx);

@@ -37,7 +37,6 @@ int l2cap_le_send_flow_control_credit(hci_con_handle_t con_handle,uint8_t id ,ui
 
 // PTS Testing
 int l2cap_send_echo_request(hci_con_handle_t con_handle, uint8_t *data, uint16_t len);
-void l2cap_require_security_level_2_for_outgoing_sdp(void);
 
 // Used by RFCOMM - similar to l2cap_can-send_packet_now but does not check if outgoing buffer is reserved
 // int  l2cap_can_send_prepared_packet_now(uint16_t local_cid);
