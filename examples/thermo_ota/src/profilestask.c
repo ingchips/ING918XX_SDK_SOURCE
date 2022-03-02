@@ -33,8 +33,7 @@ static int temperture_indicate_enable=0;
 
 BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
-    i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len);
-    return BME280_OK;
+    return i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
 }
 
 BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
@@ -43,8 +42,7 @@ BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, u
     uint8_t data[len + 1];
     data[0] = reg_addr;
     memcpy(data + 1, reg_data, len);
-    i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data));
-    return BME280_OK;
+    return i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data)) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
 }
 
 void user_delay_us(uint32_t period, void *intf_ptr)

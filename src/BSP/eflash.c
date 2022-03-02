@@ -88,7 +88,21 @@ int erase_flash_page(const uint32_t addr)
     EraseEFlashPage(page_idx);
 
     EflashProgramDisable();
+    uninit();
 
+    return 0;
+}
+
+int erase_info_page(const int index)
+{
+    init();
+    EflashProgramEnable();
+
+    *(volatile uint32_t *)(0xc40a0) = 0x4;
+    EraseEFlashPage(index & 1);
+    *(volatile uint32_t *)(0xc40a0) = 0x0;
+
+    EflashProgramDisable();
     uninit();
 
     return 0;

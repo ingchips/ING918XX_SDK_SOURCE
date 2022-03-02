@@ -56,6 +56,14 @@ typedef struct fota_update_block
 int erase_flash_page(const uint32_t addr);
 
 /**
+ * @brief Erase a info page of flash
+ *
+ * @param[in] index             page index (0..1)
+ * @return                      0 if successful else non-0
+ */
+int erase_info_page(const int index);
+
+/**
  * @brief Program FOTA metadata.
  *
  * @param[in] entry             new entry address (0 if use old entry address)

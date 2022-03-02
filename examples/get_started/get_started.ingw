@@ -1,12 +1,12 @@
 {
- "watchdog": false,
+ "watchdog": true,
  "bundle_meta": {
   "rom": {
-   "size": 133304,
+   "size": 133508,
    "base": 16384
   },
   "ram": {
-   "size": 22496,
+   "size": 30996,
    "base": 536870912
   },
   "app": {
@@ -36,8 +36,8 @@
  "template": "C:\\projects\\ingWizard\\templates\\typical\\peripheral",
  "coding_adv": false,
  "key_incode": true,
- "series": "ING9185xx",
- "proj_name": "bqb_rf",
+ "series": "ING9187xx",
+ "proj_name": "get_started",
  "sdk_release_path": "..\/..",
  "printf_port": "uart0",
  "security": false,
@@ -50,12 +50,12 @@
  "pb_adv": true,
  "pb_gatt": true,
  "deep_sleep": true,
- "proj_dir": "C:\/projects\/svn\/SDK_Release\/examples\\bqb_rf",
+ "proj_dir": "C:\\projects\\svn\\SDK_Release\\examples\\get_started",
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
  "bundle": "typical",
- "app_rom_size": "122880",
+ "app_rom_size": "385024",
  "app_rom_addr": "155648",
  "family": "ing918",
  "vcode": true,
@@ -71,9 +71,9 @@
   "proxy": true
  },
  "keil": true,
- "cmsis": "",
- "app_ram_size": 10272,
- "app_ram_addr": 536893408,
+ "cmsis": "C:\/projects\/ingWizard\/CMSIS",
+ "app_ram_size": 34536,
+ "app_ram_addr": 536901912,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",

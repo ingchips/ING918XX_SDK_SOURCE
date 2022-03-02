@@ -6,18 +6,26 @@
 
 #define I2C_BASE(port)    ((port) == I2C_PORT_0 ? APB_I2C0 : APB_I2C1)
 
+#define while_with_timeout(statement)  \
+    do { timeout = I2C_HW_TIME_OUT; while (statement) { timeout--; if (timeout <= 0) return -1; } } while (0)
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
+#ifndef I2C_HW_TIME_OUT
+#define I2C_HW_TIME_OUT      200000
+#endif
 
 void i2c_init(const i2c_port_t port)
 {
     I2C_CTRL0_CLR(I2C_BASE(port), I2C_CTRL0_SFTRST | I2C_CTRL0_CLKGATE);
 }
 
-void i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const uint8_t *byte_data, int16_t length)
+int i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const uint8_t *byte_data, int16_t length)
 {
     uint32_t *p_data = (uint32_t *)(byte_data + 3);
     uint32_t data = (addr <<  1) | 0;     // control: write
     I2C_TypeDef *BASE = I2C_BASE(port);
+    int timeout = I2C_HW_TIME_OUT;
 
     if (length > 0)
         data |= (byte_data[0] <<  8) | (byte_data[1] << 16) | (byte_data[2] << 24);
@@ -40,7 +48,7 @@ void i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const
     length += 1;
     while (1)
     {
-        while (I2C_QUEUESTAT_WR_QUEUE_FULL(BASE));
+        while_with_timeout(I2C_QUEUESTAT_WR_QUEUE_FULL(BASE));
         BASE->I2C_DATA = data;
         length -= 4;
         if (length <= 0)
@@ -50,17 +58,19 @@ void i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const
     }
 
     // WAIT I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ (software polling)
-    while (GET_I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ(BASE) == 0);
+    while_with_timeout(GET_I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ(BASE) == 0);
     I2C_CTRL1_CLR(BASE, I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ);
 
     // NOTE : MUST SET I2C_QUEUECTRL_WR_CLEAR
     I2C_QUEUECTRL_SET(BASE, I2C_QUEUECTRL_WR_CLEAR);
     I2C_QUEUECTRL_CLR(BASE, I2C_QUEUECTRL_WR_CLEAR);
+
+    return 0;
 }
 
-void i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, int16_t length)
+int i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, int16_t length)
 {
-    i2c_do_write(port, I2C_QUEUECMD_POST_SEND_STOP | I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION,
+    return i2c_do_write(port, I2C_QUEUECMD_POST_SEND_STOP | I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION,
                  addr, byte_data, length);
 }
 
@@ -74,17 +84,19 @@ static int write_bytes(uint8_t *data, uint32_t d32, int len)
     return len;
 }
 
-void i2c_read(const i2c_port_t port, uint8_t addr,
+int i2c_read(const i2c_port_t port, uint8_t addr,
               const uint8_t *write_data, int16_t write_len,
               uint8_t *read_data, int16_t read_length)
 {
     I2C_TypeDef *BASE = I2C_BASE(port);
+    int timeout = I2C_HW_TIME_OUT;
 
     if (write_len)
     {
         // STEP 1: send write command
-        i2c_do_write(port, I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION,
+        int r = i2c_do_write(port, I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION,
                      addr, write_data, write_len);
+        if (r != 0) return r;
     }
     else
     {
@@ -102,7 +114,7 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
 
     BASE->I2C_DATA = 0xA5UL << 24 | 0x5A   << 16 |0xAA   <<  8 | (addr <<  1) | 1;
 
-    while (GET_I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ(BASE) == 0);
+    while_with_timeout(GET_I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ(BASE) == 0);
 
     // CLEAR I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ
     I2C_CTRL1_CLR(BASE, I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ);
@@ -129,7 +141,7 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
     while (read_length > 0)
     {
         // check whether rdFIFO is empty
-        while (I2C_QUEUESTAT_RD_QUEUE_EMPTY(BASE));
+        while_with_timeout(I2C_QUEUESTAT_RD_QUEUE_EMPTY(BASE));
 
         int len = write_bytes(read_data, BASE->I2C_QUEUEDATA, read_length);
         read_data += len;
@@ -137,7 +149,7 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
     }
 
     // WAIT I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ (software polling)
-    while (GET_I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ(BASE) == 0);
+    while_with_timeout(GET_I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ(BASE) == 0);
 
     // cLEAR I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ
     I2C_CTRL1_CLR(BASE, I2C_CTRL1_DATA_ENGINE_CMPLT_IRQ);
@@ -149,18 +161,25 @@ void i2c_read(const i2c_port_t port, uint8_t addr,
 #if 0
     printf("READ DONE ... \n");
 #endif
+    return 0;
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+#ifndef I2C_HW_TIME_OUT
+#define I2C_HW_TIME_OUT      600000
+#endif
 
 void i2c_init(const i2c_port_t port)
 {
     I2C_Enable(I2C_BASE(port), 0);
 }
 
-void I2C_MasterWrite(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t Addr, const uint8_t *Data, uint8_t DataCnt)
+int I2C_MasterWrite(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t Addr, const uint8_t *Data, uint8_t DataCnt)
 {
     uint8_t i;
+    int timeout = I2C_HW_TIME_OUT;
+
     I2C_Config(I2C_BASE, I2C_ROLE_MASTER, AddrMode, Addr);
 
     I2C_BASE->Ctrl = DataCnt
@@ -172,17 +191,20 @@ void I2C_MasterWrite(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t
     I2C_BASE->Cmd = 0x1;
 
     for (i = 0; i < DataCnt; i++) {
-        while (I2C_FifoFull(I2C_BASE)) ;
+        while_with_timeout(I2C_FifoFull(I2C_BASE)) ;
         I2C_BASE->Data = Data[i];
     }
     I2C_BASE->IntEn = (1 << I2C_INT_CMPL);
-    while (I2C_TransactionComplete(I2C_BASE) == 0);
+    while_with_timeout(I2C_TransactionComplete(I2C_BASE) == 0);
     I2C_BASE->IntEn = 0;
+
+    return 0;
 }
 
-void I2C_MasterRead(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t Addr, uint8_t *Data, uint8_t DataCnt)
+int I2C_MasterRead(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t Addr, uint8_t *Data, uint8_t DataCnt)
 {
     uint8_t i;
+    int timeout = I2C_HW_TIME_OUT;
     I2C_Config(I2C_BASE, I2C_ROLE_MASTER, AddrMode, Addr);
 
     I2C_BASE->Ctrl = DataCnt
@@ -194,30 +216,34 @@ void I2C_MasterRead(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t 
     I2C_BASE->Cmd = 0x1;
 
     for (i = 0; i < DataCnt; i++) {
-        while (I2C_FifoEmpty(I2C_BASE)) ;
+        while_with_timeout(I2C_FifoEmpty(I2C_BASE)) ;
         Data[i] = I2C_BASE->Data;
     }
 
-    while (I2C_TransactionComplete(I2C_BASE) == 0);
+    while_with_timeout(I2C_TransactionComplete(I2C_BASE) == 0);
     I2C_BASE->IntEn = 0;
+    return 0;
 }
 
-void i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, int16_t length)
+int i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, int16_t length)
 {
-    I2C_MasterWrite(I2C_BASE(port), I2C_ADDRESSING_MODE_07BIT, addr, byte_data, length);
+    return I2C_MasterWrite(I2C_BASE(port), I2C_ADDRESSING_MODE_07BIT, addr, byte_data, length);
 }
 
-void i2c_read(const i2c_port_t port, uint8_t addr,
+int i2c_read(const i2c_port_t port, uint8_t addr,
               const uint8_t *write_data, int16_t write_len,
               uint8_t *read_data, int16_t read_length)
 {
     I2C_TypeDef *BASE = I2C_BASE(port);
 
     if (write_len)
-        I2C_MasterWrite(BASE, I2C_ADDRESSING_MODE_07BIT, addr, write_data, write_len);
+    {
+        int r = I2C_MasterWrite(BASE, I2C_ADDRESSING_MODE_07BIT, addr, write_data, write_len);
+        if (r != 0) return r;
+    }
     else;
 
-    I2C_MasterRead(BASE, I2C_ADDRESSING_MODE_07BIT, addr, read_data, read_length);
+    return I2C_MasterRead(BASE, I2C_ADDRESSING_MODE_07BIT, addr, read_data, read_length);
 }
 
 #endif

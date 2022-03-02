@@ -19,9 +19,19 @@ extern "C" {
  */
 typedef uint16_t (* f_crc_t)(uint8_t *buffer, uint16_t len);
 
+/**
+ ****************************************************************************************
+ * @brief Start UART downloading mode
+ *
+ ****************************************************************************************
+ */
+typedef uint16_t (* f_void_t)(void);
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
-#define crc     ((f_crc_t)(0x00000f79))
+#define crc                 ((f_crc_t)(0x00000f79))
+#define boot_uart_init      ((f_void_t)(0x000006f5))
+#define boot_uart_download  ((f_void_t)(0x00000bc9))
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
