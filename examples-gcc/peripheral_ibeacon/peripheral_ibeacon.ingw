@@ -1,11 +1,11 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133284,
+   "size": 133508,
    "base": 16384
   },
   "ram": {
-   "size": 22496,
+   "size": 30996,
    "base": 536870912
   },
   "app": {
@@ -16,9 +16,9 @@
   "version": [
    1,7,10]
  },
- "tc_dir": "C:\/Program Files(2)\/gcc-arm-none-eabi-10-2020-q4-major\/bin",
+ "tc_dir": "C:\\Program Files(2)\\gcc-arm-none-eabi-10.3-2021.10\\bin",
  "ide_ver": "",
- "ide_exe": "C:\/Program Files(2)\/gcc-arm-none-eabi-10-2020-q4-major\/bin\/arm-none-eabi-gcc.exe",
+ "ide_exe": "C:\\Program Files(2)\\gcc-arm-none-eabi-10.3-2021.10\\bin\\arm-none-eabi-gcc.exe",
  "ota": false,
  "ide": "gcc",
  "git": false,
@@ -29,7 +29,7 @@
  "ota_ver_minor": "0",
  "ota_ver_major": "0",
  "template": "C:\\projects\\ingWizard\\templates\\typical\\peripheral",
- "series": "ING9185xx",
+ "series": "ING9187xx",
  "proj_name": "peripheral_ibeacon",
  "sdk_release_path": "..\/..",
  "legacy_adv": true,
@@ -40,7 +40,7 @@
  "deep_sleep": true,
  "proj_dir": "C:\/projects\/svn\/SDK_Release\/examples-gcc\\peripheral_ibeacon",
  "bundle": "typical",
- "app_rom_size": "122880",
+ "app_rom_size": "385024",
  "app_rom_addr": "155648",
  "family": "ing918",
  "vcode": false,
@@ -52,8 +52,8 @@
   "proxy": true
  },
  "cmsis": "C:\/projects\/ingWizard\/CMSIS",
- "app_ram_size": 10272,
- "app_ram_addr": 536893408,
+ "app_ram_size": 34536,
+ "app_ram_addr": 536901912,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",
