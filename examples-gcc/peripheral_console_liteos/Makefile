@@ -3,7 +3,7 @@ ING_REL=../..
 ING_BUNDLE=../../bundles/noos_typical/inc
 SYMDEFS=-Wl,--just-symbols=../../bundles/noos_typical/ING9187xx/symdefs.g
 
-LITEOS_BASE=$(ING_REL)/src/LiteOS
+LITEOS_BASE=LiteOS
 
 APPNAME=peripheral_console_liteos
 

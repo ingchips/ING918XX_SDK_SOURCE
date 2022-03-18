@@ -336,7 +336,7 @@
               <MiscControls/>
               <Define>USE_STDPERIPH_DRIVER,LISTEN_TO_POWER_SAVING,POWER_SAVING</Define>
               <Undefine/>
-              <IncludePath>../../src/rt-thread/include;./src;../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <IncludePath>./rt-thread/include;./src;../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -444,82 +444,82 @@
             <File>
               <FileName>clock.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\clock.c</FilePath>
+              <FilePath>.\rt-thread\src\clock.c</FilePath>
             </File>
             <File>
               <FileName>cpu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\cpu.c</FilePath>
+              <FilePath>.\rt-thread\src\cpu.c</FilePath>
             </File>
             <File>
               <FileName>idle.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\idle.c</FilePath>
+              <FilePath>.\rt-thread\src\idle.c</FilePath>
             </File>
             <File>
               <FileName>ipc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\ipc.c</FilePath>
+              <FilePath>.\rt-thread\src\ipc.c</FilePath>
             </File>
             <File>
               <FileName>irq.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\irq.c</FilePath>
+              <FilePath>.\rt-thread\src\irq.c</FilePath>
             </File>
             <File>
               <FileName>kservice.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\kservice.c</FilePath>
+              <FilePath>.\rt-thread\src\kservice.c</FilePath>
             </File>
             <File>
               <FileName>mem.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\mem.c</FilePath>
+              <FilePath>.\rt-thread\src\mem.c</FilePath>
             </File>
             <File>
               <FileName>mempool.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\mempool.c</FilePath>
+              <FilePath>.\rt-thread\src\mempool.c</FilePath>
             </File>
             <File>
               <FileName>object.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\object.c</FilePath>
+              <FilePath>.\rt-thread\src\object.c</FilePath>
             </File>
             <File>
               <FileName>scheduler.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\scheduler.c</FilePath>
+              <FilePath>.\rt-thread\src\scheduler.c</FilePath>
             </File>
             <File>
               <FileName>slab.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\slab.c</FilePath>
+              <FilePath>.\rt-thread\src\slab.c</FilePath>
             </File>
             <File>
               <FileName>thread.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\thread.c</FilePath>
+              <FilePath>.\rt-thread\src\thread.c</FilePath>
             </File>
             <File>
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\timer.c</FilePath>
+              <FilePath>.\rt-thread\src\timer.c</FilePath>
             </File>
             <File>
               <FileName>cpuport.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\libcpu\arm\cortex-m3\cpuport.c</FilePath>
+              <FilePath>.\rt-thread\libcpu\arm\cortex-m3\cpuport.c</FilePath>
             </File>
             <File>
               <FileName>context_rvds.S</FileName>
               <FileType>2</FileType>
-              <FilePath>..\..\src\rt-thread\libcpu\arm\cortex-m3\context_rvds.S</FilePath>
+              <FilePath>.\rt-thread\libcpu\arm\cortex-m3\context_rvds.S</FilePath>
             </File>
             <File>
               <FileName>gen_os_impl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\rt-thread\src\gen_os_impl.c</FilePath>
+              <FilePath>.\rt-thread\src\gen_os_impl.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -215,11 +215,9 @@ static void display_task(void *pdata)
 {
     static uint64_t start_time;
     int conn = 0;
-printf("%d\n", __LINE__);
     OLED_Init();
-printf("%d\n", __LINE__);
     display_reset();
-printf("%d\n", __LINE__);
+
     for (;;)
     {
         BaseType_t r = xSemaphoreTake(sem_display,  portMAX_DELAY);

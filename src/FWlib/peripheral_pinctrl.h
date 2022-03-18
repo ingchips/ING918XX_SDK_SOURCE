@@ -140,6 +140,20 @@ void PINCTRL_Pull(const uint8_t io_pin_index, const pinctrl_pull_mode_t mode);
 void PINCTRL_SetPadPwmSel(const uint8_t io_pin_index, const uint8_t pwm1_gpio0);
 
 /**
+ * @brief Select antenna control PINs
+ *
+ * Note: ANT_SEL[0..count - 1] is setup according to `io_pins`, i.e.
+ *
+ * ANT_SEL[0] -> io_pins[0]
+ * ...
+ * ANT_SEL[count - 1] -> io_pins[count - 1]
+ *
+ * @param count             PIN count in io_pins
+ * @param io_pins           PIN array
+ */
+void PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
+
+/**
  * @brief Enable all antenna control PINs
  *
  */

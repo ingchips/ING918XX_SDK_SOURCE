@@ -236,16 +236,20 @@ void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_st
     }
 }
 
-void PINCTRL_EnableAllAntSelPins(void)
+void PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins)
 {
     int i;
-    static const int ant_pins[] = {7, 8, 10, 11, 16, 17, 18, 19};
-
-    for (i = 0; i < sizeof(ant_pins) / sizeof(ant_pins[0]); i++)
+    for (i = 0; i < count; i++)
     {
-        PINCTRL_SetPadMux(ant_pins[i], IO_SOURCE_GENERAL);
-        PINCTRL_SetGeneralPadMode(ant_pins[i], IO_MODE_ANT_SEL, 0, 0);
+        PINCTRL_SetPadMux(io_pins[i], IO_SOURCE_GENERAL);
+        PINCTRL_SetGeneralPadMode(io_pins[i], IO_MODE_ANT_SEL, 0, 0);
     }
+}
+
+void PINCTRL_EnableAllAntSelPins(void)
+{
+    static const uint8_t ant_pins[] = {7, 8, 10, 11, 16, 17, 18, 19};
+    PINCTRL_EnableAntSelPins(sizeof(ant_pins) / sizeof(ant_pins[0]), ant_pins);
 }
 
 #elif  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)

@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "platform_api.h"
 #include "att_db_util.h"
 #include "bluetooth.h"
@@ -28,9 +29,28 @@ extern "C" float get_pressure(void);
 extern "C" void set_led_hsl(float H, float S, float L);
 extern "C" void set_led_rgb(uint8_t r, uint8_t g, uint8_t b);
 extern "C" float read_adc(int channel);
+extern "C" void get_acc_xyz(float *x, float *y, float *z);
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+float get_pitch(void)
+{
+    float X, Y, Z;
+    get_acc_xyz(&X, &Y, &Z);
+    return -180 * atan (X /sqrt(Y * Y + Z * Z)) / M_PI;
+}
+
+float get_roll(void)
+{
+    float X, Y, Z;
+    get_acc_xyz(&X, &Y, &Z);
+    return 180 * atan (Y/sqrt(X * X + Z * Z))/M_PI;
+}
 
 void sleep(int ms)
 {
@@ -41,19 +61,32 @@ void sleep(int ms)
 #define set_rgb set_led_rgb
 
 #define MAX_HANDLERS 20
-typedef std::function<void(const uint8_t *buffer, uint16_t buffer_size)> att_write_callback_t;
+typedef std::function<void (const uint8_t *buffer, uint16_t buffer_size)> att_write_callback_t;
+typedef std::function<void (uint8_t *buffer, uint16_t buffer_size)> att_read_callback_t;
+typedef std::function<uint16_t (void)> att_get_read_size_callback_t;
 
-static att_write_callback_t write_callbacks[MAX_HANDLERS];
+static att_write_callback_t         write_callbacks[MAX_HANDLERS];
+static att_read_callback_t          read_callbacks[MAX_HANDLERS];
+static att_get_read_size_callback_t get_read_size_callbacks[MAX_HANDLERS];
 
 extern "C" uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
-    switch (att_handle)
+    if (att_handle < MAX_HANDLERS)
     {
-
-    default:
-        return 0;
+        if (buffer)
+        {
+            if (read_callbacks[att_handle])
+                read_callbacks[att_handle](buffer, buffer_size);
+            return buffer_size;
+        }
+        else
+        {
+            return get_read_size_callbacks[att_handle] ? get_read_size_callbacks[att_handle]() : 0;
+        }
     }
+    else
+        return 0;
 }
 
 extern "C" int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
@@ -98,13 +131,32 @@ class Characteristic
 private:
     uint16_t m_handle;
 public:
-    Characteristic(const char *uuid, att_write_callback_t fun)
+    Characteristic(const char *uuid, att_write_callback_t write)
     {
         m_handle = att_db_util_add_characteristic_uuid128(
             guid_to_bytes(uuid),
             ATT_PROPERTY_INDICATE | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_WRITE | ATT_PROPERTY_DYNAMIC,
             NULL, 0);
-        write_callbacks[m_handle] = fun;
+        write_callbacks[m_handle] = write;
+    }
+    Characteristic(const char *uuid, att_get_read_size_callback_t get_size, att_read_callback_t read)
+    {
+        m_handle = att_db_util_add_characteristic_uuid128(
+            guid_to_bytes(uuid),
+            ATT_PROPERTY_INDICATE | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_READ | ATT_PROPERTY_DYNAMIC,
+            NULL, 0);
+        read_callbacks[m_handle] = read;
+        get_read_size_callbacks[m_handle] = get_size;
+    }
+    Characteristic(const char *uuid, att_get_read_size_callback_t get_size, att_read_callback_t read, att_write_callback_t write)
+    {
+        m_handle = att_db_util_add_characteristic_uuid128(
+            guid_to_bytes(uuid),
+            ATT_PROPERTY_READ | ATT_PROPERTY_INDICATE | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_WRITE | ATT_PROPERTY_DYNAMIC,
+            NULL, 0);
+        read_callbacks[m_handle] = read;
+        get_read_size_callbacks[m_handle] = get_size;
+        write_callbacks[m_handle] = write;
     }
     uint16_t Handle()
     {
@@ -135,6 +187,47 @@ public:
         adv_data_len += strlen(m_name);
     }
 };
+
+class BLEEventHandler
+{
+public:
+    typedef std::function<void(bool state)> conn_state_changed_cb_t;
+    static conn_state_changed_cb_t conn_state_changed_cb;
+    typedef std::function<void (void)> conn_changed_cb_t;
+    static conn_changed_cb_t connected_cb;
+    static conn_changed_cb_t disconnected_cb;
+public:
+    static void SetConnStateChangedCallback(conn_state_changed_cb_t cb)
+    {
+        conn_state_changed_cb = cb;
+    }
+    static void SetConnectedCallback(conn_changed_cb_t cb)
+    {
+        connected_cb = cb;
+    }
+    static void SetDisconnectedCallback(conn_changed_cb_t cb)
+    {
+        disconnected_cb = cb;
+    }
+};
+
+BLEEventHandler::conn_state_changed_cb_t BLEEventHandler::conn_state_changed_cb = NULL;
+BLEEventHandler::conn_changed_cb_t BLEEventHandler::connected_cb = NULL;
+BLEEventHandler::conn_changed_cb_t BLEEventHandler::disconnected_cb = NULL;
+
+extern "C" void playground_conn_state_changed(int state)
+{
+    if (BLEEventHandler::conn_state_changed_cb)
+        BLEEventHandler::conn_state_changed_cb(state != 0);
+    if (state)
+    {
+        if (BLEEventHandler::connected_cb) BLEEventHandler::connected_cb();
+    }
+    else
+    {
+        if (BLEEventHandler::disconnected_cb) BLEEventHandler::disconnected_cb();
+    }
+}
 
 #define MAX_KEY_COUNT   32
 #define MAX_LED_COUNT   32
@@ -308,15 +401,15 @@ extern "C" void task_entry(void * param)
     while (true) sleep(1000);
  }
 
-void spawn(void_callback_t fun)
+void spawn(void_callback_t fun, int stack_size = 512, int priority = 2)
 {
     void_callback_t *cb = new void_callback_t;
     *cb = fun;
     xTaskCreate(task_entry,
                 "",
-                512 / sizeof(uint32_t),
+                stack_size / sizeof(uint32_t),
                 cb,
-                2,
+                priority,
                 NULL);
 }
 
@@ -381,6 +474,11 @@ void print(float v)
 void print(const char *v)
 {
     printf("%s\n", v);
+}
+
+void print(bool v)
+{
+    printf("%s\n", v ? "true" : "false");
 }
 
 class WordSpliter
@@ -472,9 +570,31 @@ int 执行英语指令(const char *指令)
     return 0;
 }
 
+void 设置颜色(const char *颜色)
+{
+    #define COL_MAP(name, rgb)  else if (strstr(颜色, name))  set_rgb(rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff)
+
+    if (0) ;
+    COL_MAP("赤", 0xd93a49);
+    COL_MAP("红", 0xd71345);
+    COL_MAP("橙", 0xf47920);
+    COL_MAP("黄", 0xffd400);
+    COL_MAP("绿", 0x00bb00);
+    COL_MAP("青", 0x102b6a);
+    COL_MAP("蓝", 0x0000cd);
+    COL_MAP("靛", 0x4B0082);
+    COL_MAP("紫", 0x8552a1);
+    COL_MAP("白", 0xa0a0a0);
+    else;
+}
+
 int 执行(const char *指令)
 {
-    if (strstr(指令, "灯"))
+    if (strstr(指令, "色"))
+    {
+        设置颜色(指令);
+    }
+    else if (strstr(指令, "灯"))
     {
         int i = strtoi(指令);
         bool on = (strstr(指令, "亮") != NULL) || (strstr(指令, "开") != NULL);
@@ -556,6 +676,8 @@ int 执行(const void *指令, int 长度)
 #define 现在的温度              get_temperature()
 #define 现在的湿度              get_humidity()
 #define 现在的气压              get_pressure()
+#define 现在的俯仰角            get_pitch()
+#define 现在的横滚角            get_roll()
 
 #define 设置红绿蓝              set_rgb
 #define 设置色饱亮              set_hsl
@@ -578,6 +700,7 @@ int 执行(const void *指令, int 长度)
 #define 演奏                    play
 #define 定时动作(动作, 时间间隔) setInterval([&]() { 动作; }, (时间间隔))
 #define 定时执行                setInterval
+#define 间隔执行                setInterval
 #define 一直(...)               while (1) { __VA_ARGS__; }
 #define 一直执行                一直
 #define 一直重复                一直
@@ -585,10 +708,13 @@ int 执行(const void *指令, int 长度)
 #define $(...)                  执行(#__VA_ARGS__)
 #define 创建新线程              spawn
 
+#define 随机数                  platform_rand()
+
 #define 如果                    if
 #define 否则                    else
 #define 变量                    auto
 #define 布尔量                  bool
+#define 整数                    int
 #define 真                      true
 #define 假                      false
 #define 静态                    static
@@ -602,21 +728,28 @@ int 执行(const void *指令, int 长度)
 #define 循环                    for
 #define 或者                    ||
 #define 且                      &&
+#define 并且                    &&
+
+#define on_connected(F)                     BLEEventHandler::SetConnectedCallback(F)
+#define on_disconnected(F)                  BLEEventHandler::SetDisconnectedCallback(F)
+#define on_connection_state_changed(F)      BLEEventHandler::SetConnStateChangedCallback(F)
 
 #define 设置蓝牙名称            set_name
 #define 定义服务                Service
 #define 定义服务特征            Characteristic
+#define 当连接建立时            on_connected
+#define 当连接断开时            on_disconnected
+#define 当连接状态改变时        on_connection_state_changed
 
 BleAdvertisement BleAdvertisement;
 
 #define set_name(name) BleAdvertisement.set_name(name)
 
-extern "C" void gap_set_adv_set_random_addr(const uint8_t adv_handle, const uint8_t *addr);
-
 extern "C" void playground_start(void)
 {
     set_name("Playground");
-#include "../playground/playground.cpp"
+#include "../code.cpp"
     ;
     BleAdvertisement.build();
 }
+

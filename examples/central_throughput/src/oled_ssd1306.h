@@ -21,8 +21,11 @@
 #define OLED_DATA 1
 
 #define I2C_PORT        I2C_PORT_0
+
+#ifndef PIN_SCL
 #define PIN_SCL       7
 #define PIN_SDA       8
+#endif
 
 //OLED¿ØÖÆÓÃº¯Êý
 void OLED_WR_Byte(unsigned dat,unsigned cmd);  

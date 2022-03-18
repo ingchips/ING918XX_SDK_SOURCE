@@ -210,11 +210,13 @@ void hsl_to_rgb(float H, float S, float L,
 
 void set_led_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
+    __disable_irq();
 #if (BOARD_ID == BOARD_ID_020205)
     set_rgb_led_color(r, g, b);
 #else
     set_rgb_led_color(r, b, g);
 #endif
+    __enable_irq();
 }
 
 void set_led_hsl(float H, float S, float L)

@@ -280,7 +280,7 @@ void OLED_Init(void)
 #else
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_GPIO));
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO));
     PINCTRL_SetPadMux(PIN_SCL, IO_SOURCE_GPIO);
     PINCTRL_SetPadMux(PIN_SDA, IO_SOURCE_GPIO);
     GIO_SetDirection((GIO_Index_t)PIN_SCL, GIO_DIR_OUTPUT);
