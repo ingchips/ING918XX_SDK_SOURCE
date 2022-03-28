@@ -748,7 +748,7 @@ BleAdvertisement BleAdvertisement;
 extern "C" void playground_start(void)
 {
     set_name("Playground");
-#include "../code.cpp"
+#include "../playground/playground.cpp"
     ;
     BleAdvertisement.build();
 }
