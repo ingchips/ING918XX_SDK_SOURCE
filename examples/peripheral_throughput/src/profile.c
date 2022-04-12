@@ -3,6 +3,7 @@
 #include "att_db.h"
 #include "gap.h"
 #include "btstack_event.h"
+#include "btstack_defines.h"
 
 // GATT characteristic handles
 #include "../data/gatt.const"
@@ -178,6 +179,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         notify_enable = 0;
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+        break;
+    
+    case ATT_EVENT_MTU_EXCHANGE_COMPLETE:
+        platform_printf("ATT_EVENT_MTU updated: %d\n", att_event_mtu_exchange_complete_get_MTU(packet));
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:

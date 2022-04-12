@@ -197,6 +197,28 @@ uint32_t TMR_GetClk(TMR_TypeDef *pTMR, uint8_t ch_id);
  * @param[in] pTMR              timer peripheral address
  * @param[in] ch_id             channel ID
  * @param[in] value             reload value
+ * Note on reload value:
+ *   - For TMR_CTL_OP_MODE_32BIT_TIMER_x1: for 32-bit Timer 0
+ *   - For TMR_CTL_OP_MODE_16BIT_TIMER_x2:
+ *      * lower 16-bit [0..15] for Timer 0
+ *      * upper 16-bit [16..31] for Timer 1
+ *   - For TMR_CTL_OP_MODE_8BIT_TIMER_x4:
+ *      * bits [0..7] for Timer 0
+ *      * bits [8..15] for Timer 1
+ *      * bits [16..23] for Timer 2
+ *      * bits [24..31] for Timer 3
+ *   - For TMR_CTL_OP_MODE_16BIT_PWM:
+ *      * lower 16-bit [0..15] for PWM low period
+ *      * upper 16-bit [16..31] for PWM high period
+ *   - For TMR_CTL_OP_MODE_8BIT_PWM_16BIT_TIMER_x1:
+ *      * bits [0..15] for Timer 0
+ *      * bits [16..23] for PWM low period
+ *      * bits [24..31] for PWM high period
+ *   - For TMR_CTL_OP_MODE_8BIT_PWM_8BIT_TIMER_x2:
+ *      * bits [0..7] for Timer 0
+ *      * bits [8..15] for Timer 1
+ *      * bits [16..23] for low period
+ *      * bits [24..31] for high period
  ****************************************************************************************
  */
 void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value);
