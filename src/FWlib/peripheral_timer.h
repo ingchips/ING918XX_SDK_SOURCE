@@ -153,8 +153,6 @@ void TMR0_UNLOCK(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
-#define CHANNEL_NUMBER_PER_TIMER                  2 // each timer has `CHANNEL_NUMBER_PER_TIMER` channels
-
 // timer work mode
 #define TMR_CTL_OP_MODE_32BIT_TIMER_x1            1           // one 32bit timer
 #define TMR_CTL_OP_MODE_16BIT_TIMER_x2            2           // dual 16bit timers
@@ -230,7 +228,8 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value);
  * @param[in] pTMR              timer peripheral address
  * @param[in] ch_id             channel ID
  * @param[in] mask              enable or disable a timer in a channel
- *                              (max. four interrupts per channel. see `TMR_SetOpMode`)
+ * Note:
+ *   - PWM is always identified as the 3rd timer.
  ****************************************************************************************
  */
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
@@ -253,7 +252,7 @@ uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint8_t ch_id);
  * @param[in] pTMR              timer peripheral address
  * @param[in] ch_id             channel ID
  * @param[in] mask              interrupt mask (max. four interrupts per channel)
- * Note: When a bit in `mask` is zero, the corresponding interrupt is disable.
+ * Note: When a bit in `mask` is zero, the corresponding interrupt is disabled.
  ****************************************************************************************
  */
 void TMR_IntEnable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);

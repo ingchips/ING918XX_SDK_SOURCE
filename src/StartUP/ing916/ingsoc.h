@@ -132,6 +132,7 @@ typedef struct
 } TMR_CH_TypeDef;
 
 // timer
+#define CHANNEL_NUMBER_PER_TMR                    2           // each TMR has `CHANNEL_NUMBER_PER_TMR` channels
 typedef struct
 {
     __IO uint32_t Reserved[4];
@@ -139,7 +140,7 @@ typedef struct
     __IO uint32_t IntEn;                // 0x14
     __IO uint32_t IntStatus;            // 0x18
     __IO uint32_t ChEn;                 // 0x1c
-    TMR_CH_TypeDef Channels[4];         // 0x20
+    TMR_CH_TypeDef Channels[CHANNEL_NUMBER_PER_TMR];   // 0x20
 } TMR_TypeDef;
 
 // watchdog timer
