@@ -319,13 +319,13 @@ uint32_t apSSP_ReadCommand(SSP_TypeDef *SPI_BASE)
 /*====================================================================*/
 void apSSP_SetTransferFormat(SSP_TypeDef *SPI_BASE, uint32_t val)
 {
-    SPI_BASE->TransFmt |= val;
+    SPI_BASE->TransFmt = val;
 }
 
 /*====================================================================*/
 void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val)
 {
-    SPI_BASE->TransCtrl |= val;
+    SPI_BASE->TransCtrl = val;
 }
 
 /*====================================================================*/
@@ -348,7 +348,7 @@ void apSSP_ClearIntStatus(SSP_TypeDef *SPI_BASE, uint32_t val)
 /*====================================================================*/
 void apSSP_IntEnable(SSP_TypeDef *SPI_BASE, uint32_t mask)
 {
-    SPI_BASE->IntrEn |= mask;
+    SPI_BASE->IntrEn = mask;
 }
 
 /*====================================================================*/

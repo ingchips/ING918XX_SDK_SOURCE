@@ -1,8 +1,8 @@
-# littleVGL
+# LittlevGL
 
 This example demonstrates how to:
 
-* Port littleVGL;
-* Show a simple chart with littleVGL.
+* Port LVGL (LittlevGL);
+* Show a simple chart with LittlevGL.
 
-Note: Keil 4 can't build littleVGL.
+Note: Keil 4 can't build LittlevGL.

@@ -12,10 +12,9 @@
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
+          <Device>ING91800</Device>
           <Vendor>INGCHIPS</Vendor>
-          <Device>ING91800</Device>          
           <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
-          
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
           <FlashDriverDll></FlashDriverDll>
@@ -140,13 +139,13 @@
             <RestoreTracepoints>1</RestoreTracepoints>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>1</TargetSelection>
+          <TargetSelection>7</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
             <PeripheralDll></PeripheralDll>
             <PeripheralDllArguments></PeripheralDllArguments>
-            <InitializationFile>.\init.ini</InitializationFile>
+            <InitializationFile>..\map.ini</InitializationFile>
           </SimDlls>
           <TargetDlls>
             <CpuDll></CpuDll>
@@ -154,7 +153,7 @@
             <PeripheralDll></PeripheralDll>
             <PeripheralDllArguments></PeripheralDllArguments>
             <InitializationFile>.\init.ini</InitializationFile>
-            <Driver>BIN\UL2CM3.DLL</Driver>
+            <Driver>Segger\JL2CM3.dll</Driver>
           </TargetDlls>
         </DebugOption>
         <Utilities>
@@ -298,8 +297,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>155648</StartAddress>
-                <Size>385024</Size>
+                <StartAddress>0x26000</StartAddress>
+                <Size>0x5e000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -323,8 +322,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536901912</StartAddress>
-                <Size>34536</Size>
+                <StartAddress>0x20007918</StartAddress>
+                <Size>0x86e8</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -352,7 +351,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src;./fatfs</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -402,9 +401,12 @@
               <FileName>profile.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\profile.c</FilePath>
-          </File> 
-
-
+            </File>
+            <File>
+              <FileName>mmc_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mmc_spi.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -424,9 +426,6 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
-          <Files>
-              
-          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>
@@ -435,42 +434,79 @@
               <FileName>peripheral_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_uart.c</FilePath>
-          </File>
-          <File>
+            </File>
+            <File>
               <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_pinctrl.c</FilePath>
-          </File>
+            </File>
             <File>
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
-          </File>
-
+            </File>
             <File>
               <FileName>peripheral_timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
             </File>
-
-      </Files>
+            <File>
+              <FileName>peripheral_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_ssp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_ssp.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_rtc.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
           <Files>
-
-
-
-
-              <File>
-              <FileName>trace.c</FileName>
+            <File>
+              <FileName>str_util.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\Tools\trace.c</FilePath>
-          </File>
-
-        </Files>
+              <FilePath>..\..\src\Tools\str_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>log_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\log_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>ring_buf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\ring_buf.c</FilePath>
+            </File>
+          </Files>
         </Group>
-        
+        <Group>
+          <GroupName>fatfs</GroupName>
+          <Files>
+            <File>
+              <FileName>ff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\fatfs\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>ffsystem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\fatfs\ffsystem.c</FilePath>
+            </File>
+            <File>
+              <FileName>ffunicode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\fatfs\ffunicode.c</FilePath>
+            </File>
+          </Files>
+        </Group>
       </Groups>
     </Target>
   </Targets>

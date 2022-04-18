@@ -53,7 +53,7 @@ struct settings
     uint8_t uart_data_bits;         // 5 | 6 | 7 | 8
     uint8_t uart_data_fmt;          // raw | str
     uint8_t ble_data_fmt;           // raw | hex
-    uint8_t ble_phy;                // coded | 1m | 2m
+    uint8_t ble_phy;                // coded | 1M | 2M
     uint8_t ble_addr_type;          // public | random
     uint8_t ble_addr[6];            // ble address
     uint8_t ble_service_uuid[16];   // ble service uuid
@@ -283,7 +283,7 @@ static void initiate(void)
     slave.conn_handle = INVALID_HANDLE;
     gap_ext_create_connection(INITIATING_ADVERTISER_FROM_PARAM,
                                 BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
-                                g_settings.ble_addr_type,         // Peer_Address_Type,
+                                (bd_addr_type_t)g_settings.ble_addr_type,         // Peer_Address_Type,
                                 g_settings.ble_addr,              // Peer_Address,
                                 sizeof(phy_configs) / sizeof(phy_configs[0]),
                                 phy_configs);
@@ -441,9 +441,7 @@ int write_hex_str(char *str, uint8_t *buf, int len)
 void save_settings(FIL *fil)
 {
     char buf[256];
-    int i;
     unsigned int len;
-    FRESULT res;
 
     len = sprintf(buf, g_settings.mode == 0 ? "mode=uart\n" : "mode=ble\n");
     f_write(fil, buf, len, &len);
@@ -486,6 +484,20 @@ void save_settings(FIL *fil)
     f_write(fil, buf, len, &len);
 
     len = sprintf(buf, "uart_data_fmt=%s\n", g_settings.uart_data_fmt ? "str" : "raw");
+    f_write(fil, buf, len, &len);
+
+    switch (g_settings.ble_phy)
+    {
+    case 1:
+        len = sprintf(buf, "ble_phy=1M\n");
+        break;
+    case 2:
+        len = sprintf(buf, "ble_phy=2M\n");
+        break;
+    default:
+        len = sprintf(buf, "ble_phy=coded\n");
+        break;
+    }
     f_write(fil, buf, len, &len);
 
     len = sprintf(buf, "ble_data_fmt=%s\n", g_settings.ble_data_fmt ? "hex" : "raw");
@@ -581,6 +593,15 @@ static void load_settings(FIL *fil)
         {
             g_settings.ble_data_fmt = strcmp(val, "raw") == 0 ? 0 : 1;
         }
+        else if (strcmp(key, "ble_phy") == 0)
+        {
+            if (strcmp(val, "1M") == 0)
+                g_settings.ble_phy = 1;
+            else if (strcmp(val, "2M") == 0)
+                g_settings.ble_phy = 2;
+            else
+                g_settings.ble_phy = 0;
+        }
         else if (strcmp(key, "ble_addr_type") == 0)
         {
             g_settings.ble_addr_type = strcmp(val, "random") == 0 ? 1 : 0;
@@ -638,7 +659,6 @@ static uint32_t uart_isr_byte(void *user_data)
 
 static void flush_line(FIL *fil)
 {
-    UINT bw = 0;
     if (g_settings.use_timestamp)
     {
         char c = '[';
@@ -694,8 +714,8 @@ static void config_comm_uart()
     PINCTRL_SetPadMux(PIN_UART_RX, IO_SOURCE_GENERAL);
     PINCTRL_SelUartRxdIn(UART_PORT_1, PIN_UART_RX);
 
-    config.word_length       = g_settings.uart_data_bits;
-    config.parity            = g_settings.uart_parity;
+    config.word_length       = (UART_eWLEN)g_settings.uart_data_bits;
+    config.parity            = (UART_ePARITY)g_settings.uart_parity;
     config.fifo_enable       = 1;
     config.two_stop_bits     = g_settings.uart_stop_bits;
     config.receive_en        = 1;
@@ -748,7 +768,6 @@ static void write_back_task(void *pdata)
 uint32_t setup_profile(void *data, void *user_data)
 {
     int i;
-    UINT bw;
     char log_name[20];
 
     sem_datamark = xSemaphoreCreateBinary();
