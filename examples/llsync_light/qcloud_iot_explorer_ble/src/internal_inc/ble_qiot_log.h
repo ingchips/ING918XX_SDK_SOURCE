@@ -39,58 +39,63 @@ typedef enum {
 extern e_ble_qiot_log_level g_log_level;
 
 #ifndef ble_qiot_log_d
-#define ble_qiot_log_d(fmt, args...) \
-do { \
-    if (g_log_level < BLE_QIOT_LOG_LEVEL_DEBUG) break; \
-    BLE_QIOT_LOG_PRINT("qiot debug: " fmt LOG_LINE_FEED_TYPE, ##args); \
-} while (0)
+#define ble_qiot_log_d(fmt, args...)                                       \
+    do {                                                                   \
+        if (g_log_level < BLE_QIOT_LOG_LEVEL_DEBUG)                        \
+            break;                                                         \
+        BLE_QIOT_LOG_PRINT("qiot debug: " fmt LOG_LINE_FEED_TYPE, ##args); \
+    } while (0)
 #endif
 
 #ifndef ble_qiot_log_i
-#define ble_qiot_log_i(fmt, args...) \
-do { \
-    if (g_log_level < BLE_QIOT_LOG_LEVEL_INFO) break; \
-    BLE_QIOT_LOG_PRINT("qiot info: " fmt LOG_LINE_FEED_TYPE, ##args); \
-} while (0)
+#define ble_qiot_log_i(fmt, args...)                                      \
+    do {                                                                  \
+        if (g_log_level < BLE_QIOT_LOG_LEVEL_INFO)                        \
+            break;                                                        \
+        BLE_QIOT_LOG_PRINT("qiot info: " fmt LOG_LINE_FEED_TYPE, ##args); \
+    } while (0)
 #endif
 
 #ifndef ble_qiot_log_w
-#define ble_qiot_log_w(fmt, args...) \
-do { \
-    if (g_log_level < BLE_QIOT_LOG_LEVEL_WARN) break; \
-    BLE_QIOT_LOG_PRINT("qiot warn(%s|%d): " fmt LOG_LINE_FEED_TYPE, __FILE__, __LINE__, ##args); \
-} while (0)
+#define ble_qiot_log_w(fmt, args...)                                                                 \
+    do {                                                                                             \
+        if (g_log_level < BLE_QIOT_LOG_LEVEL_WARN)                                                   \
+            break;                                                                                   \
+        BLE_QIOT_LOG_PRINT("qiot warn(%s|%d): " fmt LOG_LINE_FEED_TYPE, __FILE__, __LINE__, ##args); \
+    } while (0)
 #endif
 
 #ifndef ble_qiot_log_e
-#define ble_qiot_log_e(fmt, args...) \
-do { \
-    if (g_log_level < BLE_QIOT_LOG_LEVEL_ERR) break; \
-    BLE_QIOT_LOG_PRINT("qiot err(%s|%d): " fmt LOG_LINE_FEED_TYPE, __FILE__, __LINE__, ##args); \
-} while (0)
+#define ble_qiot_log_e(fmt, args...)                                                                \
+    do {                                                                                            \
+        if (g_log_level < BLE_QIOT_LOG_LEVEL_ERR)                                                   \
+            break;                                                                                  \
+        BLE_QIOT_LOG_PRINT("qiot err(%s|%d): " fmt LOG_LINE_FEED_TYPE, __FILE__, __LINE__, ##args); \
+    } while (0)
 #endif
 
 #ifndef ble_qiot_log
-#define ble_qiot_log(level, fmt, args...) \
-do { \
-    if (g_log_level < level) break; \
-    BLE_QIOT_LOG_PRINT("qiot log(%s|%d): " fmt LOG_LINE_FEED_TYPE, __FILE__, __LINE__, ##args); \
-} while (0)
+#define ble_qiot_log(level, fmt, args...)                                                           \
+    do {                                                                                            \
+        if (g_log_level < level)                                                                    \
+            break;                                                                                  \
+        BLE_QIOT_LOG_PRINT("qiot log(%s|%d): " fmt LOG_LINE_FEED_TYPE, __FILE__, __LINE__, ##args); \
+    } while (0)
 #endif
 
 // this function only use for ble_qiot_log_hex
 #ifndef ble_qiot_log_raw
-#define ble_qiot_log_raw(fmt, args...) \
-do { \
-    BLE_QIOT_LOG_PRINT(fmt, ##args); \
-} while (0)
+#define ble_qiot_log_raw(fmt, args...)   \
+    do {                                 \
+        BLE_QIOT_LOG_PRINT(fmt, ##args); \
+    } while (0)
 #endif
 
 void ble_qiot_set_log_level(e_ble_qiot_log_level level);
 
-#if (0 == BLE_QIOT_USER_DEFINE_HEDUMP)
+#if !BLE_QIOT_USER_DEFINE_HEXDUMP
 void ble_qiot_log_hex(e_ble_qiot_log_level level, const char *hex_name, const char *data, uint32_t data_len);
-#endif // BLE_QIOT_USER_DEFINE_HEDUMP
+#endif  // BLE_QIOT_USER_DEFINE_HEXDUMP
 
 #ifdef __cplusplus
 }

@@ -32,30 +32,31 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
 #if (TARGET_FAMILY == INGCHIPS_FAMILY_918)
     #define ENTRY                   0x04000
     #define TARGET_STORAGE_START    0x44000
-#elif (TARGET_FAMILY == INGCHIPS_FAMILY_916)   
+    #define APP_BIN_SIZE            0x4000
+#elif (TARGET_FAMILY == INGCHIPS_FAMILY_916)
     #define ENTRY                   0x02000000
     #define TARGET_STORAGE_START    0x02100000
+    #define APP_BIN_SIZE            0x0000          // ignored for ING916
 #else
     #error unknown or unsupported target chip family
 #endif
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #define LOCAL_STORAGE_START     0x44000
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)   
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define LOCAL_STORAGE_START     0x02100000
 #else
     #error unknown or unsupported chip family
 #endif
 
 #define PLATFORM_BIN_SIZE       0x22000
-#define APP_BIN_SIZE            0x4000
 
 const ota_item_t ota_items[] =
 {
     {
         .local_storage_addr = LOCAL_STORAGE_START,
-        .target_storage_addr = TARGET_STORAGE_START, 
-        .target_load_addr = ENTRY,  
+        .target_storage_addr = TARGET_STORAGE_START,
+        .target_load_addr = ENTRY,
         .size = PLATFORM_BIN_SIZE
     },
     {

@@ -28,6 +28,7 @@ enum {
     BLE_QIOT_EVENT_SLICE_FOOT = 3,
 };
 
+// 1 byte type + 2 bytes payload-length
 #define BLE_QIOT_EVENT_FIXED_HEADER_LEN (3)
 
 // the bit 15 - 14 is slice flag, bit 13 - 0 is tlv length
@@ -36,8 +37,17 @@ enum {
 #define BLE_QIOT_IS_SLICE_BODY(_C)    (((_C)&0XC0) == 0X80)
 #define BLE_QIOT_IS_SLICE_TAIL(_C)    (((_C)&0XC0) == 0XC0)
 
+#define BLE_QIOT_STRING_TYPE_LEN     2                               // string/struct type length
+#define BLE_QIOT_MIN_STRING_TYPE_LEN (BLE_QIOT_STRING_TYPE_LEN + 1)  // at least 2 bytes length and 1 byte payload
+#define BLE_QIOT_NOT_SUPPORT_WARN    " not support, please check the data template"
+
 ble_qiot_ret_status_t ble_event_notify(uint8_t type, uint8_t *header, uint8_t header_len, const char *buf,
                                        uint16_t buf_len);
+
+ble_qiot_ret_status_t ble_event_notify2(uint8_t type, uint8_t length_flag, uint8_t *header, uint8_t header_len,
+                                        const char *buf, uint16_t buf_len);
+
+ble_qiot_ret_status_t ble_event_sync_wait_time(void);
 
 #ifdef __cplusplus
 }

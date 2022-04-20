@@ -21,13 +21,7 @@ extern "C" {
 
 #define KEY_IOPAD_SIZE 64
 
-int8_t utils_hb2hex(uint8_t hb)
-{
-    hb = hb & 0xF;
-    return (int8_t)(hb < 10 ? '0' + hb : hb - 10 + 'a');
-}
-
-void utils_hmac_sha1(const char *msg, int msg_len, char *digest, const char *key, int key_len)
+void llsync_utils_hmac_sha1(const char *msg, int msg_len, char *digest, const char *key, int key_len)
 {
     if ((NULL == msg) || (NULL == digest) || (NULL == key)) {
         ble_qiot_log_e("parameter is Null,failed!");

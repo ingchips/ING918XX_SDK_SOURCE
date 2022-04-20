@@ -18,8 +18,9 @@ extern "C" {
 
 #define BLE_QIOT_PRODUCT_ID_LEN  (10)  // fixed length of product id
 #define BLE_QIOT_DEVICE_NAME_LEN (48)  // max length of device name
-#define BLE_QIOT_PSK_LEN         (24)  // fixed length of secret key
+#define BLE_QIOT_PSK_LEN         (24)  // fixed length of device secret key
 #define BLE_QIOT_MAC_LEN         (6)   // fixed length of mac
+#define BLE_QIOT_PRODUCT_SECRET_LEN (24) // fixed length of product secret key
 
 #define SWAP_32(x) \
     ((((x)&0xFF000000) >> 24) | (((x)&0x00FF0000) >> 8) | (((x)&0x0000FF00) << 8) | (((x)&0x000000FF) << 24))

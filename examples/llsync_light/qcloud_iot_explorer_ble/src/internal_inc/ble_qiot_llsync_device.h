@@ -22,7 +22,17 @@ extern "C" {
 #include "ble_qiot_hmac.h"
 #include "ble_qiot_llsync_event.h"
 
-#define BLE_QIOT_LLSYNC_PROTOCOL_VERSION (2)  // llsync protocol version
+#define LLSYNC_DYNREG_MASK_BIT       0x02
+#define LLSYNC_PROTO_VER_BIT         0x04
+#define LLSYNC_PROTOCOL_VERSION_MASK 0xF0
+#define LLSYNC_MTU_SET_MASK          0x8000
+
+#define LLSYNC_MTU_SET_RESULT_ERR 0xFFFF  // some error when setting mtu
+
+#define BLE_QIOT_LLSYNC_PROTOCOL_VERSION (2)  // llsync protocol version, equal or less than 15
+
+#define ATT_DEFAULT_MTU                 23  // default att mtu
+#define ATT_MTU_TO_LLSYNC_MTU(_att_mtu) ((_att_mtu)-3)
 
 #define BLE_LOCAL_PSK_LEN           4
 #define BLE_BIND_IDENTIFY_STR_LEN   8
@@ -42,6 +52,15 @@ typedef enum {
     E_DEV_MSG_CONN_FAIL,
     E_DEV_MSG_UNBIND_SUCC,  // inform unbind result
     E_DEV_MSG_UNBIND_FAIL,
+    E_DEV_MSG_SET_MTU_RESULT,  // inform set mtu result
+    E_DEV_MSG_BIND_TIMEOUT,    // inform bind timeout
+    E_DEV_MSG_DYNREG,
+    E_DEV_MSG_GET_DEV_INFO = 0xE0,  // configure network start
+    E_DEV_MSG_SET_WIFI_MODE,
+    E_DEV_MSG_SET_WIFI_INFO,
+    E_DEV_MSG_SET_WIFI_CONNECT,
+    E_DEV_MSG_SET_WIFI_TOKEN,
+    E_DEV_MSG_GET_DEV_LOG,
     E_DEV_MSG_MSG_BUTT,
 } e_dev_info_msg_type;
 
@@ -66,6 +85,9 @@ typedef struct ble_device_info_t_ {
     char device_name[BLE_QIOT_DEVICE_NAME_LEN + 1];
     char psk[BLE_QIOT_PSK_LEN];
     char mac[BLE_QIOT_MAC_LEN];
+#if BLE_QIOT_DYNREG_ENABLE
+    char product_secret[BLE_QIOT_PRODUCT_SECRET_LEN];
+#endif
 } ble_device_info;
 
 typedef struct ble_core_data_ {
@@ -110,14 +132,8 @@ e_llsync_bind_state llsync_bind_state_get(void);
 // set llsync connection state
 void llsync_connection_state_set(e_llsync_connection_state new_state);
 
-// get llsync connection state
-e_llsync_connection_state llsync_connection_state_get(void);
-
 // set ble connection state
 void ble_connection_state_set(e_ble_connection_state new_state);
-
-// get ble connection state
-e_ble_connection_state ble_connection_state_get(void);
 
 // get llsync connection state
 bool llsync_is_connected(void);
@@ -132,6 +148,12 @@ int ble_get_my_broadcast_data(char *out_buf, int buf_len);
 // out_buf length must greater than  SHA1_DIGEST_SIZE + BLE_QIOT_DEVICE_NAME_LEN
 int ble_bind_get_authcode(const char *bind_data, uint16_t data_len, char *out_buf, uint16_t buf_len);
 
+// get dynamic register authcode, return authcode length
+int ble_dynreg_get_authcode(const char *bind_data, uint16_t data_len, char *out_buf, uint16_t buf_len);
+
+// parse device secret and set device secret
+int ble_dynreg_parse_psk(const char *in_buf, uint16_t data_len);
+
 // write bind result to flash, return 0 is success
 ble_qiot_ret_status_t ble_bind_write_result(const char *result, uint16_t len);
 
@@ -145,6 +167,19 @@ int ble_conn_get_authcode(const char *conn_data, uint16_t data_len, char *out_bu
 // get connect authcode, return authcode length;
 // out_buf length must greater than  SHA1_DIGEST_SIZE + BLE_UNBIND_RESPONSE_STR_LEN
 int ble_unbind_get_authcode(const char *unbind_data, uint16_t data_len, char *out_buf, uint16_t buf_len);
+
+// inform device the result of mtu setting
+int ble_inform_mtu_result(const char *result, uint16_t data_len);
+
+// get llsync mtu
+uint16_t llsync_mtu_get(void);
+
+// update llsync mtu
+void llsync_mtu_update(uint16_t sync_mtu);
+
+// llsync should dynreg
+uint8_t llsync_need_dynreg(void);
+
 #ifdef __cplusplus
 }
 #endif

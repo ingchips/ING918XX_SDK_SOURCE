@@ -26,6 +26,7 @@ extern "C" {
 
 // handle property request
 ble_qiot_ret_status_t ble_lldata_property_request_handle(const char *in_buf, int buf_len);
+
 // handle property reply
 ble_qiot_ret_status_t ble_lldata_property_reply_handle(uint8_t type, const char *in_buf, int buf_len);
 
@@ -35,6 +36,7 @@ ble_qiot_ret_status_t ble_lldata_event_handle(uint8_t id, const char *in_buf, in
 // handle action data
 ble_qiot_ret_status_t ble_lldata_action_handle(uint8_t id, const char *in_buf, int len);
 
+// get report data
 ble_qiot_ret_status_t ble_user_property_get_report_data(void);
 #ifdef __cplusplus
 }

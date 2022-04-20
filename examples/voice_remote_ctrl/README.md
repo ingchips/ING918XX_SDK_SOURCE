@@ -8,7 +8,7 @@ This example demonstrates how to:
 * Scan keyboard state;
 * Update connection parameters.
 
-Note: Define `DEV_BOARD` to run this on development board (no keyboard),
-otherwise, this app is built for a special remote controller.
+Note: Define `BOARD=BOARD_DEV` to run this on development board (no keyboard);
+define `BOARD=BOARD_REM` to a special remote controller.
 
 Use `AUDIO_INPUT` to select input.

@@ -24,7 +24,7 @@ extern "C" {
 
 #define SHA1_DIGEST_SIZE 20
 
-void utils_hmac_sha1(const char *msg, int msg_len, char *digest, const char *key, int key_len);
+void llsync_utils_hmac_sha1(const char *msg, int msg_len, char *digest, const char *key, int key_len);
 
 #if defined(__cplusplus)
 }

@@ -20,14 +20,14 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
                     "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
                     "R12: 0x%08X\n",
-                    info->pc, info->lr, info->psr, 
+                    info->pc, info->lr, info->psr,
                     info->r0, info->r1, info->r2, info->r3, info->r12);
     for (;;);
 }
 
 #define PRINT_PORT    APB_UART0
 
-#define KB_KEY_1      GIO_GPIO_6
+#define KB_KEY_1      GIO_GPIO_1
 #define KB_KEY_2      GIO_GPIO_5
 
 uint32_t cb_putc(char *c, void *dummy)
@@ -99,7 +99,7 @@ void hw_timer_stop(void)
 }
 
 void setup_peripherals(void)
-{    
+{
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1)
                             | (1 << SYSCTRL_ClkGate_APB_GPIO0));
 
@@ -196,7 +196,7 @@ void sprint_addr(char *str, const uint8_t *addr)
 
 static void display_reset(void)
 {
-    OLED_Clear();     
+    OLED_Clear();
     OLED_ShowString(0, 0, "M->S:", 1, 16);
     OLED_ShowString(0, 2, "S->M:", 1, 16);
     OLED_ShowString(0, 5, "ING THROUGHPUT", 1, 12);
@@ -236,13 +236,13 @@ static void display_task(void *pdata)
             else
                 sprintf(str, "%11s", "---");
             OLED_ShowString(5 * 8, 0, str, 0, 16);
-            
+
             if (app_status.s2m_bps > 0)
                 sprintf(str, "%7.1fkbps", app_status.s2m_bps / 1000.);
             else
                 sprintf(str, "%11s", "---");
             OLED_ShowString(5 * 8, 2, str, 0, 16);
-            
+
             {
                 uint32_t now = platform_get_us_time();
                 if (now > start_time)
@@ -327,7 +327,7 @@ int app_main()
     // setup handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
+    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, cb_lle_init, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
@@ -336,7 +336,7 @@ int app_main()
 
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
-    
+
     cmd_help(NULL);
 
 #ifdef USE_DISPLAY

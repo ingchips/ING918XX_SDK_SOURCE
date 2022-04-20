@@ -14,6 +14,7 @@
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
 #include "lv_example_widgets.h"
+
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
@@ -79,8 +80,7 @@ void setup_peripherals(void)
     SYSCTRL_ClearClkGateMulti(0
                             | (1 << SYSCTRL_ClkGate_APB_TMR0)
                             | (1 << SYSCTRL_ClkGate_APB_TMR1)
-
-							|(1 << SYSCTRL_ClkGate_APB_GPIO) 
+							|(1 << SYSCTRL_ClkGate_APB_GPIO)
 							| (1 << SYSCTRL_ClkGate_AHB_SPI0)
 							|(1 << SYSCTRL_ClkGate_APB_PinCtrl)
 
@@ -91,7 +91,6 @@ void setup_peripherals(void)
     {
         // Watchdog will timeout after 20sec
         TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
-        TMR0_LOCK();
     }
 
 	// IO setup
@@ -106,10 +105,10 @@ void setup_peripherals(void)
 	GIO_SetDirection(SPI_LCD_RST, GIO_DIR_OUTPUT);
 	GIO_SetDirection(SPI_LCD_CS, GIO_DIR_OUTPUT);
 	GIO_SetDirection(SPI_LCD_DC, GIO_DIR_OUTPUT);
-	
+
 	SPI_Init(AHB_SSP0);
 
-	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 1000);//1k hz , 1ms 
+	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 1000);//1k hz , 1ms
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
 	TMR_IntEnable(APB_TMR1);
 	TMR_Reload(APB_TMR1);
@@ -138,9 +137,7 @@ static void watchdog_task(void *pdata)
     {
         vTaskDelay(pdMS_TO_TICKS(9000));
         if (IS_DEBUGGER_ATTACHED()) continue;
-        TMR0_UNLOCK();
         TMR_WatchDogRestart();
-        TMR0_LOCK();
     }
 }
 
@@ -164,7 +161,7 @@ static void lvgl_task(void *pdata)
 
 int app_main()
 {
-   platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+    platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
     // setup handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
@@ -176,22 +173,21 @@ int app_main()
 
     setup_peripherals();
 
-	
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer1_isr, NULL);
 
 	lv_init();
 	lv_port_disp_init();
 	//show a chart here
 	lv_example_chart_2();
-	
+
 	xTaskCreate(watchdog_task,
            "w",
            configMINIMAL_STACK_SIZE,
            NULL,
            (configMAX_PRIORITIES - 1),
            NULL);
-	
-	  xTaskCreate(lvgl_task,
+
+	xTaskCreate(lvgl_task,
                "b",
                1200,
                NULL,
