@@ -100,3 +100,8 @@ void adpcm_decode(adpcm_dec_t *adpcm, uint8_t data)
     adpcm_update(&adpcm->state, data & 0xF);
     adpcm->callback(adpcm->state.predicated, adpcm->param);
 }
+
+void adpcm_set_dec_state(adpcm_dec_t *adpcm, const adpcm_state_t *state)
+{
+    adpcm->state = *state;
+}

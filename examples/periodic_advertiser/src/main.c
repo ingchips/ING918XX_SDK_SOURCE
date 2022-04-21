@@ -79,9 +79,6 @@ int app_main()
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(1);
 
-    // Watchdog will timeout after 40sec
-    TMR_WatchDogEnable(TMR_CLK_FREQ * 20);
-
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
     // setup handlers
@@ -89,7 +86,6 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-    // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
 
     setup_peripherals();
     return 0;

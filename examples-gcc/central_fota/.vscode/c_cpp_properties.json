@@ -5,7 +5,6 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${env:CMSIS_BASE}/Include",
-                "../../bundles/typical/inc/os/portable/GCC/ARM_CM3",
                 "../../bundles/typical/inc",
                 "../../bundles/typical/inc/os",
                 "../../src/BSP",

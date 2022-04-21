@@ -55,14 +55,18 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 static TimerHandle_t timer;
 
-#define BUZZ_IO     9
-#define LED_IO      1
+#define BUZZ_IO     8
+#define LED_IO      9
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     PINCTRL_DisableAllInputs();
+
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
+
     PINCTRL_SetPadMux(LED_IO, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(LED_IO, 1);
@@ -80,6 +84,42 @@ void vTimerCallback(TimerHandle_t _)
 {    
     PWM_SetupSimple(BUZZ_IO >> 1, 500, 50);
 }
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+void setup_peripherals(void)
+{
+    config_uart(OSC_CLK_FREQ, 115200);
+    PINCTRL_DisableAllInputs();
+
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_PWM)
+                              | (1 << SYSCTRL_ClkGate_APB_GPIO0));
+
+    PINCTRL_SetPadMux(LED_IO, IO_SOURCE_GPIO);
+    PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_GPIO);
+    GIO_SetDirection(LED_IO, GIO_DIR_OUTPUT);
+    GIO_SetDirection(BUZZ_IO, GIO_DIR_OUTPUT);
+    GIO_WriteValue(LED_IO, 1);
+    GIO_WriteValue(BUZZ_IO, 1);
+}
+
+void scan_received()
+{
+    PINCTRL_SetPadMux(LED_IO, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_GPIO);
+    blink_style(0, BLINK_SINGLE);
+    xTimerReset(timer,  portMAX_DELAY);
+}
+
+void vTimerCallback(TimerHandle_t _)
+{
+    PINCTRL_SetPadMux(LED_IO, IO_SOURCE_GPIO);
+    PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_PWM6_B);
+    PWM_SetupSimple(0, 500, 50);
+}
+#else
+#error unknown or unsupported chip family
+#endif
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
 {

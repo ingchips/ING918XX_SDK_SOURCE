@@ -43,27 +43,27 @@ void cmd_help(const char *param)
 
 void cmd_read(const char *param)
 {
-    uint32_t addr = 0;
+    unsigned int addr = 0;
     if (sscanf(param, "0x%x", &addr) != 1)
     {
         tx_data(error, strlen(error) + 1);
         return;
     }
-    sprintf(buffer, "[0x%08x] = 0x%08x", addr, *(volatile uint32_t *)(addr));
+    sprintf(buffer, "[0x%08x] = 0x%08x", addr, *(volatile unsigned int *)(addr));
     tx_data(buffer, strlen(buffer) + 1);
 }
 
 void cmd_write(const char *param)
 {
-    uint32_t addr = 0;
-    uint32_t value = 0;
+    unsigned int addr = 0;
+    unsigned int value = 0;
     if (sscanf(param, "0x%x 0x%x", &addr, &value) != 2)
     {
         tx_data(error, strlen(error) + 1);
         return;
     }
-    *(volatile uint32_t *)(addr) = value;
-    sprintf(buffer, "[0x%08x] = 0x%08x", addr, *(volatile uint32_t *)(addr));
+    *(volatile uint32_t *)(addr) = (uint32_t)value;
+    sprintf(buffer, "[0x%08x] = 0x%08x", addr, *(volatile unsigned int *)(addr));
     tx_data(buffer, strlen(buffer) + 1);
 }
 
@@ -71,7 +71,7 @@ void cmd_powersaving(const char *param)
 {
     static const char enabled[]  = "power saving enabled";
     static const char disabled[] = "power saving disabled";
-    
+
     int flag = 0;
     if (sscanf(param, "%d", &flag) != 1)
     {
@@ -195,15 +195,15 @@ void handle_command(char *cmd_line)
     int i;
     while ((*param != ' ') && (*param != '\0')) param++;
     *param = '\0'; param++;
-    
+
     for (i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
     {
         if (strcasecmp(cmds[i].cmd, cmd_line) == 0)
             break;
     }
     if (i >= sizeof(cmds) / sizeof(cmds[0]))
-        goto show_help;   
-    
+        goto show_help;
+
     cmds[i].handler(param);
     return;
 
@@ -233,7 +233,7 @@ static void append_data(str_buf_t *buf, const char *d, const uint8_t len)
 {
     if (buf->size + len > sizeof(buf->buf))
         buf->size = 0;
-    
+
     if (buf->size + len <= sizeof(buf->buf))
     {
         memcpy(buf->buf + buf->size, d, len);

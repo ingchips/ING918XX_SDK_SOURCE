@@ -50,6 +50,8 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_AHB_SPI0) | (1 << SYSCTRL_ClkGate_APB_GPIO));
 
     // for eTAG
@@ -71,6 +73,28 @@ void setup_peripherals(void)
     PINCTRL_SelI2cSclIn(I2C_PORT_0, 0x3f);
 
     SPI_Init(AHB_SSP0);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_AHB_SPI0) | (1 << SYSCTRL_ClkGate_APB_GPIO0));
+
+    // for eTAG
+    PINCTRL_SetPadMux(SPI_EPD_SDI, IO_SOURCE_SPI0_DO);
+    PINCTRL_SetPadMux(SPI_EPD_SCK, IO_SOURCE_SPI0_CLK);
+    PINCTRL_SetPadMux(SPI_EPD_DC, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(SPI_EPD_CS, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(SPI_EPD_DC, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(SPI_EPD_POWER, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(SPI_EPD_RST, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(SPI_EPD_BUSY, IO_SOURCE_GENERAL);
+    GIO_SetDirection(SPI_EPD_CS, GIO_DIR_OUTPUT);      // set CS output
+    GIO_SetDirection(SPI_EPD_DC, GIO_DIR_OUTPUT);      // set CS output
+    GIO_SetDirection(SPI_EPD_POWER, GIO_DIR_OUTPUT);   // set output
+    GIO_SetDirection(SPI_EPD_RST, GIO_DIR_OUTPUT);     // set RST output
+    GIO_SetDirection(SPI_EPD_BUSY, GIO_DIR_INPUT);     // set Busy input
+
+    SPI_Init(AHB_SSP0);
+#else
+    #error unknown or unsupported chip family
+#endif
 }
 
 // message queue

@@ -51,6 +51,20 @@ typedef struct
     uint8_t enable;
 } trace_flash_t;
 
+typedef struct
+{
+    uint8_t           buffer[TRACE_BUFF_SIZE];
+    uint16_t          write_next;
+    uint16_t          read_next;
+    SemaphoreHandle_t mutex;
+    uint32_t          msg_id;
+    uint16_t          value_handle;
+    uint16_t          conn_handle;
+    uint8_t           req_thres;
+    uint8_t           enabled:1;
+    uint8_t           msg_sent:1;
+} trace_air_t;
+
 /**
  ****************************************************************************************
  * @brief Initialize UART trace
@@ -84,6 +98,43 @@ void trace_rtt_init(trace_rtt_t *ctx);
  ****************************************************************************************
  */
 void trace_flash_init(trace_flash_t *ctx, uint32_t flash_start_addr, uint32_t total_size);
+
+/**
+ ****************************************************************************************
+ * @brief Initialize air trace
+ *
+ * @param[in] ctx                   trace context
+ * @param[in] msg_id                user message ID to trigger data notification
+ * @param[in] req_thres             data length threshold to send `msg_id` message
+ ****************************************************************************************
+ */
+void trace_air_init(trace_air_t *ctx, uint32_t msg_id, uint8_t req_thres);
+
+/**
+ ****************************************************************************************
+ * @brief Control air trace
+ *
+ * Note: Use this to start/stop trace programmaticaly.
+ *       Default: Disabled.
+ *
+ * @param[in] ctx                   trace context
+ * @param[in] enable                start/continue (1) or stop/pause (0)
+ * @param[in] conn_handle           handle of connection (when enabled)
+ * @param[in] value_handle          handle of the chara. to send trace data (when enabled)
+ ****************************************************************************************
+ */
+void trace_air_enable(trace_air_t *ctx, int enable, uint16_t conn_handle, uint16_t value_handle);
+
+/**
+ ****************************************************************************************
+ * @brief Send recording data over the air
+ *
+ * Note: Call this in the user message handler of `msg_id` given in `trace_air_init`.
+ *
+ * @param[in] ctx                   trace context
+ ****************************************************************************************
+ */
+void trace_air_send(trace_air_t *ctx);
 
 /**
  ****************************************************************************************
@@ -146,6 +197,16 @@ uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx);
  ****************************************************************************************
  */
 uint32_t cb_trace_flash(const platform_evt_trace_t *trace, trace_flash_t *ctx);
+
+/**
+ ****************************************************************************************
+ * @brief Trace event callback
+ *
+ * @param[in] trace         trace event 
+ * @param[in] ctx           trace context
+ ****************************************************************************************
+ */
+uint32_t cb_trace_air(const platform_evt_trace_t *trace, trace_air_t *ctx);
 
 /**
  ****************************************************************************************

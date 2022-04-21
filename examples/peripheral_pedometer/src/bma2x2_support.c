@@ -53,10 +53,10 @@ s32 bma2x2_data_readout_template(void);
  *---------------------------------------------------------------------------*/
 struct bma2x2_t bma2x2 =
 {
-    	.bus_write = BMA2x2_I2C_bus_write,
+    	.dev_addr = BMA2x2_I2C_ADDR1,
+		.bus_write = BMA2x2_I2C_bus_write,
         .bus_read = BMA2x2_I2C_bus_read,
         .delay_msec = BMA2x2_delay_msek,
-        .dev_addr = BMA2x2_I2C_ADDR1
 };
 
 /*----------------------------------------------------------------------------*
@@ -120,7 +120,7 @@ s32 bma2x2_power_on()
 
 	/* This API used to read back the written value of bandwidth*/
 	com_rslt += bma2x2_get_bw(&banwid);
-    
+
     return com_rslt;
 }
 

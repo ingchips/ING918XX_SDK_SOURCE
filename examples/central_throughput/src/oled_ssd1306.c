@@ -2,8 +2,12 @@
 #include "oled_ssd1306_font.h"
 #include "ingsoc.h"
 #include "FreeRTOS.h"
+#include "task.h"
 
 #ifdef USE_I2C
+
+#include "iic.h"
+
 /**********************************************
 // IIC Write Command
 **********************************************/
@@ -193,7 +197,7 @@ void OLED_On(void)
 //y:0~63
 //mode:0,反白显示;1,正常显示                 
 //size:选择字体 16/12 
-void OLED_ShowChar(u8 x,u8 y,u8 chr, u8 mode, u8 Char_Size)
+void OLED_ShowChar(u8 x,u8 y,char chr, u8 mode, u8 Char_Size)
 {          
     unsigned char c=0,i=0;    
     c=chr-' ';//得到偏移后的值            
@@ -216,7 +220,7 @@ void OLED_ShowChar(u8 x,u8 y,u8 chr, u8 mode, u8 Char_Size)
 }
 
 //显示一个字符号串
-void OLED_ShowString(u8 x,u8 y,u8 *chr,u8 mode, u8 Char_Size)
+void OLED_ShowString(u8 x,u8 y, const char *chr,u8 mode, u8 Char_Size)
 {
     unsigned char j=0;
     while (chr[j]!='\0')
@@ -233,22 +237,19 @@ void OLED_ShowString(u8 x,u8 y,u8 *chr,u8 mode, u8 Char_Size)
 }
 
 /***********功能描述：显示显示BMP图片128×64起始点坐标(x,y),x的范围0～127，y为页的范围0～7*****************/
-void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1,unsigned char BMP[])
+void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1, const uint8_t *BMP)
 {     
     unsigned int j=0;
     unsigned char x,y;
 
-    if (y1%8==0)
-        y=y1/8;
-    else
-        y=y1/8+1;
-    for(y=y0;y<y1;y++)
+    for(y = y0; y< y1; y++)
     {
-        OLED_Set_Pos(x0,y);
-        for(x=x0;x<x1;x++)
+        OLED_Set_Pos(x0, y);
+        for(x = x0; x < x1; x++)
         {      
-            OLED_WR_Byte(BMP[j++],OLED_DATA);            
+            OLED_WR_Byte(BMP[j++], OLED_DATA);            
         }
+       
     }
 }
 
@@ -262,19 +263,39 @@ void OLED_Init(void)
 {
     int i;
 
-#ifndef USE_I2C
+#ifdef USE_I2C
+
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_I2C0));
+    PINCTRL_SetPadMux(PIN_SCL, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(PIN_SDA, IO_SOURCE_I2C0_SDA_OUT);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    PINCTRL_SelI2cSclIn(I2C_PORT, PIN_SCL);    
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_SelI2cIn(I2C_PORT, PIN_SCL, PIN_SDA);
+#else
+    #error unknown or unsupported chip family
+#endif
+    i2c_init(I2C_PORT);
+
+#else
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO));
-    PINCTRL_SetPadMux(PIN_SCL, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(PIN_SDA, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(PIN_SCL, IO_SOURCE_GPIO);
+    PINCTRL_SetPadMux(PIN_SDA, IO_SOURCE_GPIO);
     GIO_SetDirection((GIO_Index_t)PIN_SCL, GIO_DIR_OUTPUT);
     GIO_SetDirection((GIO_Index_t)PIN_SDA, GIO_DIR_OUTPUT);
-#else
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_I2C0));
-    PINCTRL_SetPadMux(PIN_SCL, IO_SOURCE_I2C0_SCL_O);
-    PINCTRL_SetPadMux(PIN_SDA, IO_SOURCE_I2C0_SDO);
-    PINCTRL_SelI2cSclIn(I2C_PORT, PIN_SCL);
-    i2c_init(I2C_PORT);
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_GPIO0) | (1 << SYSCTRL_ITEM_APB_GPIO1));
+    PINCTRL_SetPadMux(PIN_SCL, IO_SOURCE_GPIO);
+    PINCTRL_SetPadMux(PIN_SDA, IO_SOURCE_GPIO);
+    GIO_SetDirection((GIO_Index_t)PIN_SCL, GIO_DIR_OUTPUT);
+    GIO_SetDirection((GIO_Index_t)PIN_SDA, GIO_DIR_OUTPUT);
 #endif
+
+#endif
+
     vTaskDelay(pdMS_TO_TICKS(800));
     for (i = 0; i < sizeof(Init_CMD_Data); i++)
         OLED_WR_Byte(Init_CMD_Data[i], OLED_CMD);

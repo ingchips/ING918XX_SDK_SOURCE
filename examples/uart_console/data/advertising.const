@@ -1,0 +1,3 @@
+#define ADVERTISING_ITEM_OFFSET_FLAGS                                            2
+#define ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME                              5
+

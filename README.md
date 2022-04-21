@@ -1,8 +1,10 @@
-# ING918XX SDK Source Code
+# ING918XX/ING9186XX SDK Source Code
 
-This repository contains ING918XX SDK source code, including platform header files, bundle binaries, and examples.
+This repository contains ING918XX/ING9186XX SDK source code, including platform header files,
+bundle binaries, and examples.
 
-ING918xx is a fully integrated Bluetooth Low Energy wireless communication SoC targeting Bluetooth 5.1 specification.
+ING918xx is a fully integrated Bluetooth Low Energy wireless communication SoC targeting Bluetooth
+5.1 specification.
 
 ## Get Started
 

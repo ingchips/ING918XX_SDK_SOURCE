@@ -26,13 +26,14 @@ uint8_t temperature_value[]={0x00,0x00,0x00,0x00,0xFE};
 static int temperture_notify_enable=0;
 static int temperture_indicate_enable=0;
 
+#ifndef SIMULATION
+
 #define I2C_PORT        I2C_PORT_0
 #define BME280_ADDR     BME280_I2C_ADDR_PRIM
 
 BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
-    i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len);
-    return BME280_OK;
+    return i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
 }
 
 BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
@@ -41,8 +42,7 @@ BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, u
     uint8_t data[len + 1];
     data[0] = reg_addr;
     memcpy(data + 1, reg_data, len);
-    i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data));
-    return BME280_OK;
+    return i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data)) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
 }
 
 void user_delay_us(uint32_t period, void *intf_ptr)
@@ -71,6 +71,8 @@ struct bme280_dev bme280_data =
 };
 
 struct bme280_data comp_data;
+
+#endif
 
 static void read_temperature(void)
 {
@@ -342,9 +344,19 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(&user_packet_handler);
 
 #ifndef SIMULATION
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
     PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
     PINCTRL_SelI2cSclIn(I2C_PORT, 10);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_DisableAllInputs();
+    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDA_OUT);
+    PINCTRL_SelI2cIn(I2C_PORT, 10, 11);
+#else
+    #error unknown or unsupported chip family
+#endif
+
     i2c_init(I2C_PORT);
 
     printf("sensor init...");

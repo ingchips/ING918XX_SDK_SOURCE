@@ -14,7 +14,7 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
                     "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
                     "R12: 0x%08X\n",
-                    info->pc, info->lr, info->psr, 
+                    info->pc, info->lr, info->psr,
                     info->r0, info->r1, info->r2, info->r3, info->r12);
     for (;;);
 }
@@ -63,9 +63,6 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-#define MAIN_LED        GIO_GPIO_6
-#define STATUS_LED      GIO_GPIO_9
-
 enum
 {
     POWER_OFF = 0,
@@ -88,7 +85,7 @@ typedef struct qcloud_light
     char name[65];
 } qcloud_light_t;
 
-qcloud_light_t a_light = {.name = "A Light"};
+qcloud_light_t a_light = {.name = "A Light", .brightness = 50 };
 
 void update_led(void)
 {
@@ -98,7 +95,7 @@ void update_led(void)
         set_rgb_led_color(0, 0, 0);
         return;
     }
-    
+
     switch (a_light.color)
     {
     case COLOR_RED:
@@ -188,15 +185,18 @@ void setup_peripherals(void)
 {
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_UART0)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
-                              | (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_WDT)
                               | (1 << SYSCTRL_ClkGate_APB_PWM));
     config_uart(OSC_CLK_FREQ, 115200);
 
     setup_rgb_led();
     update_led();
 
-    // Watchdog will timeout after 20sec
-    TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
+    if (!IS_DEBUGGER_ATTACHED())
+    {
+        // Watchdog will timeout after 20sec
+        TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
+    }
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -220,7 +220,8 @@ static void watchdog_task(void *pdata)
     for (;;)
     {
         vTaskDelay(pdMS_TO_TICKS(9000));
-        TMR_WatchDogRestart();
+        if (!IS_DEBUGGER_ATTACHED())
+            TMR_WatchDogRestart();
     }
 }
 
@@ -235,7 +236,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
+    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     setup_peripherals();

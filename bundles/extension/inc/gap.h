@@ -666,17 +666,17 @@ typedef struct initiating_phy_config
 
 /**
  * @brief LE Extended Create Connection command
- * 
+ *
  * Besides errors in the input parameters, this API will fail on following conditions:
  *      1. Scanning is enabled;
  *      1. Another `create_connection` session is ongoing;
  *      1. Running out of resources (rarely happens).
- * 
+ *
  * `HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE`, indicating a `create_connection` session is completed,
  * is triggered by following conditions:
  *      1. A connection is established, where `status` == 0;
  *      1. Cancelled by `gap_create_connection_cancel`, where `status` != 0;
- *      1. Link Layer runs out of resources, where `status` != 0. 
+ *      1. Link Layer runs out of resources, where `status` != 0.
  *
  * @param filter_policy        see structure @link #initiating_filter_policy_t @endlink
  *
@@ -1114,12 +1114,17 @@ uint8_t gap_tx_test_v2(uint8_t tx_channel, uint8_t test_data_length,
  * @param cte_type              0x00: AoA; 0x01: AoD (1 µs); 0x02: AoD (2 µs)
  * @param switching_pattern_length   0x02 to 0x4B The number of Antenna IDs in the pattern
  * @param antenna_ids           List of Antenna IDs in the patter
+ * @param tx_power_level        Set transmitter to the specified or the nearest transmit power level
+ *                              0x7F: Set transmitter to maximum transmit power level
+ *                              0x7E: Set transmitter to minimum transmit power level
+ *                              Range: -127 to +20 Units: dBm
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_tx_test_v3(uint8_t tx_channel, uint8_t test_data_length,
-                            uint8_t packet_payload, uint8_t phy,
-                            uint8_t cte_length, uint8_t cte_type,
-                            uint8_t switching_pattern_length, uint8_t antenna_ids);
+uint8_t gap_tx_test_v4(uint8_t tx_channel, uint8_t test_data_length,
+                        uint8_t packet_payload, uint8_t phy,
+                        uint8_t cte_length, uint8_t cte_type,
+                        uint8_t switching_pattern_length, uint8_t antenna_ids,
+                        int8_t tx_power_level);
 
 /**
  * @brief  Stop any test which is in progress

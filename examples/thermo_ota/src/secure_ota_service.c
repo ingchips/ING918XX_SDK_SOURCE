@@ -15,9 +15,17 @@
 #include "platform_api.h"
 #include "rom_tools.h"
 
-#include "ing918_uecc.h"
+#include "ing_uecc.h"
 
-#define PAGE_SIZE (8192)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
+#define PAGE_SIZE (EFLASH_PAGE_SIZE)
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+#define PAGE_SIZE (EFLASH_SECTOR_SIZE)
+
+#endif
 
 #define DEF_UUID(var, ID)  static uint8_t var[] = ID;
 
@@ -215,9 +223,16 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                     ota_ctrl[0] = OTA_STATUS_ERROR;
                     break;
                 }
+                int block_num = (s - sizeof(meta->entry)) / sizeof(meta->blocks[0]);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
                 program_fota_metadata(meta->entry, 
-                                      (s - sizeof(meta->entry)) / sizeof(meta->blocks[0]),
+                                      block_num,
                                       meta->blocks);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+                flash_do_update(block_num,
+                                meta->blocks,
+                                page_buffer);
+#endif
             }
             else
             {

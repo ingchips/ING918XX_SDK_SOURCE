@@ -20,6 +20,7 @@ typedef enum
     BLINK_FAST,     // blink fast
     BLINK_NORMAL,   // blink normal
     BLINK_SLOW,     // blink slow
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)    
     BLINK_MORSE_A,  // using multi duty cycle feature, we can blink (some) morse codes (note: timing does not follow standards.)
     BLINK_MORSE_D,
     BLINK_MORSE_E,
@@ -32,7 +33,8 @@ typedef enum
     BLINK_MORSE_S,
     BLINK_MORSE_T,
     BLINK_MORSE_U,
-    BLINK_MORSE_W
+    BLINK_MORSE_W,
+#endif
 } blink_style_t;
 
 void blink_style(const uint8_t pwm_channel_index, const blink_style_t style);

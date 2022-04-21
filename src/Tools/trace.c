@@ -2,11 +2,15 @@
 #include <stdio.h>
 #include "trace.h"
 #include "peripheral_uart.h"
+#include "platform_api.h"
 
 #include "SEGGER_RTT.c"
 #include "eflash.h"
 
-void trace_task(trace_uart_t *ctx)
+#include "btstack_event.h"
+#include "att_db.h"
+
+static void trace_task(trace_uart_t *ctx)
 {
     for (;;)
     {
@@ -38,24 +42,24 @@ void trace_flush(trace_uart_t *ctx)
     }
 }
 
-int trace_add_buffer(trace_uart_t *ctx, const uint8_t *buffer, int size, int start)
+static int trace_add_buffer(uint8_t *ctx_buffer, const uint8_t *buffer, int size, int start)
 {
     int remain = TRACE_BUFF_SIZE - start;
     if (remain >= size)
     {
-        memcpy(ctx->buffer + start, buffer, size);
+        memcpy(ctx_buffer + start, buffer, size);
         return start + size;
     }
     else
     {
-        memcpy(ctx->buffer + start, buffer, remain);
+        memcpy(ctx_buffer + start, buffer, remain);
         size -= remain;
-        memcpy(ctx->buffer, buffer + remain, size);
+        memcpy(ctx_buffer, buffer + remain, size);
         return size;
     }
 }
 
-void trace_trigger_output(trace_uart_t *ctx)
+static void trace_trigger_output(trace_uart_t *ctx)
 {
     if (IS_IN_INTERRUPT())
     {
@@ -89,8 +93,8 @@ uint32_t cb_trace_uart(const platform_evt_trace_t *trace, trace_uart_t *ctx)
         return 0;
     }
 
-    next = trace_add_buffer(ctx, (const uint8_t *)trace->data1, trace->len1, next) & TRACE_BUFF_SIZE_MASK;
-    next = trace_add_buffer(ctx, (const uint8_t *)trace->data2, trace->len2, next) & TRACE_BUFF_SIZE_MASK;
+    next = trace_add_buffer(ctx->buffer, (const uint8_t *)trace->data1, trace->len1, next) & TRACE_BUFF_SIZE_MASK;
+    next = trace_add_buffer(ctx->buffer, (const uint8_t *)trace->data2, trace->len2, next) & TRACE_BUFF_SIZE_MASK;
 
     ctx->write_next = next;
 
@@ -106,16 +110,16 @@ uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx)
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
     if (use_mutex) xSemaphoreTake(ctx->mutex, portMAX_DELAY);
-    
+
     free_size = SEGGER_RTT_GetAvailWriteSpace(0);
     if (trace->len1 + trace->len2 < free_size)
     {
         SEGGER_RTT_Write(0, trace->data1, trace->len1);
         SEGGER_RTT_Write(0, trace->data2, trace->len2);
     }
-    
+
     if (use_mutex) xSemaphoreGive(ctx->mutex);
-    
+
     return 0;
 }
 
@@ -146,13 +150,13 @@ static void flash_trace_aligned_append(trace_flash_t *ctx, const uint8_t *data, 
             ctx->offset_in_page = sizeof(ctx->page_cnt);
             empty = EFLASH_PAGE_SIZE - sizeof(ctx->page_cnt);
         };
-        
+
         {
             c = len > empty ? empty : len;
             write_flash(ctx->cur_page + ctx->offset_in_page, data, c);
             ctx->offset_in_page += c;
         }
-        
+
         data += c;
         len -= c;
     }
@@ -174,12 +178,12 @@ static void flash_trace_append(trace_flash_t *ctx, const uint8_t *data, int len)
             ctx->frag_size = 0;
         }
     }
-    
+
     if (len < 1) return;
-    
-    int rounded = len & ~0x3ul;    
+
+    int rounded = len & ~0x3ul;
     flash_trace_aligned_append(ctx, data, rounded);
-    
+
     if (len > rounded)
     {
         data += rounded;
@@ -195,12 +199,12 @@ uint32_t cb_trace_flash(const platform_evt_trace_t *trace, trace_flash_t *ctx)
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
     if (use_mutex) xSemaphoreTake(ctx->mutex, portMAX_DELAY);
-    
+
     flash_trace_append(ctx, trace->data1, trace->len1);
     flash_trace_append(ctx, trace->data2, trace->len2);
-    
+
     if (use_mutex) xSemaphoreGive(ctx->mutex);
-    
+
     return 0;
 }
 
@@ -256,6 +260,128 @@ uint32_t trace_uart_isr(trace_uart_t *ctx)
     return 0;
 }
 
+void trace_air_init(trace_air_t *ctx, uint32_t msg_id, uint8_t req_thres)
+{
+    ctx->mutex = xSemaphoreCreateMutex();
+    ctx->msg_id = msg_id;
+    ctx->req_thres = TRACE_BUFF_SIZE - req_thres;
+}
+
+static void trace_air_send_req(trace_air_t *ctx)
+{
+    if ((0 == ctx->enabled) || ctx->msg_sent) return;
+    ctx->msg_sent = 1;
+    btstack_push_user_msg(ctx->msg_id, NULL, 0);
+}
+
+void trace_air_enable(trace_air_t *ctx, int enable, uint16_t conn_handle, uint16_t value_handle)
+{
+    ctx->enabled = enable & 1;
+    if (ctx->enabled)
+    {
+        ctx->value_handle = value_handle;
+        ctx->conn_handle = conn_handle;
+        trace_air_send_req(ctx);
+    }
+}
+
+static int peek_data(trace_air_t *ctx, uint8_t *data, int len, int has_more)
+{
+    int r = 0;
+    int mtu = att_server_get_mtu(ctx->conn_handle) - 3;
+
+    uint8_t *p = data;
+    while (len)
+    {
+        int size = len > mtu ? mtu : len;
+        if (att_server_notify(ctx->conn_handle, ctx->value_handle, p, size))
+        {
+            break;
+        }
+        len -= size;
+        p += size;
+        r += size;
+    }
+
+    return r;
+}
+
+void trace_air_send(trace_air_t *ctx)
+{
+    ctx->msg_sent = 0;
+    if (0 == ctx->enabled) return;
+
+    uint32_t read_next = ctx->read_next;
+    const uint32_t write_next = ctx->write_next;
+    while (read_next != write_next)
+    {
+        int cnt = read_next > write_next ? sizeof(ctx->buffer) - read_next : write_next - read_next;
+        int has_more = read_next > write_next ? 1 : 0;
+        int c = peek_data(ctx, ctx->buffer + read_next, cnt, has_more);
+        if (c < 1)
+            break;
+        read_next += c;
+        if (read_next >= sizeof(ctx->buffer)) read_next = 0;
+    }
+    ctx->read_next = read_next;
+}
+
+uint32_t cb_trace_air(const platform_evt_trace_t *trace, trace_air_t *ctx)
+{
+#pragma pack (push, 1)
+
+    typedef struct
+    {
+        uint32_t A;
+        uint32_t B;
+        uint8_t  id;
+        uint8_t  tag;
+    } header_t;
+
+    if (trace->len1 == sizeof(header_t))
+    {
+        const header_t *p = (const header_t *)trace->data1;
+        if ((p->id == PLATFORM_TRACE_ID_HCI_ACL) && (p->tag == (ctx->conn_handle << 1)))
+            return 0;
+    }
+
+#pragma pack (pop)
+
+    uint16_t next;
+    int free_size;
+    uint8_t use_mutex = !IS_IN_INTERRUPT();
+
+    if (use_mutex)
+        xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+
+    next = ctx->write_next;
+    free_size = ctx->read_next - ctx->write_next;
+    if (free_size <= 0) free_size += TRACE_BUFF_SIZE;
+    if (free_size > 0) free_size--;
+
+    free_size -= trace->len1;
+    free_size -= trace->len2;
+    if (free_size < 0)
+    {
+        if (use_mutex)
+            xSemaphoreGive(ctx->mutex);
+        trace_air_send_req(ctx);
+        return 0;
+    }
+
+    next = trace_add_buffer(ctx->buffer, (const uint8_t *)trace->data1, trace->len1, next) & TRACE_BUFF_SIZE_MASK;
+    next = trace_add_buffer(ctx->buffer, (const uint8_t *)trace->data2, trace->len2, next) & TRACE_BUFF_SIZE_MASK;
+
+    ctx->write_next = next;
+
+    if (use_mutex) xSemaphoreGive(ctx->mutex);
+
+    if (free_size < ctx->req_thres)
+        trace_air_send_req(ctx);
+
+    return 0;
+}
+
 static char nibble_to_char(int v)
 {
     return v <= 9 ? v - 0 + '0' : v - 10 + 'A';
@@ -285,12 +411,12 @@ static void hex_dump(char *str, uint8_t *buf, f_trace_puts f_puts, uint32_t base
 #define HEX_REC_SIZE   16
     int i;
     uint16_t offset = 0;
-    
+
     *(uint32_t*)buf = 0x04000002;
     buf[4] = base >> 24;
     buf[5] = (base >> 16) & 0xff;
     hex_dump_line(buf, 6, str, f_puts);
-    
+
     *(uint32_t*)buf = 0x00000010;
     for (i = 0; i < size * 1024 / HEX_REC_SIZE; i++)
     {
@@ -306,7 +432,7 @@ static void hex_dump(char *str, uint8_t *buf, f_trace_puts f_puts, uint32_t base
 void trace_full_dump(f_trace_puts f_puts, int size)
 {
     static char str[46];
-    static uint8_t buf[HEX_REC_SIZE + 4];    
+    static uint8_t buf[HEX_REC_SIZE + 4];
     sprintf(str,    " PC: %08x", (uint32_t)trace_full_dump); f_puts(str);
     sprintf(str,    "MSP: %08x", __get_MSP()); f_puts(str);
     sprintf(str,    "PSP: %08x", __get_PSP()); f_puts(str);

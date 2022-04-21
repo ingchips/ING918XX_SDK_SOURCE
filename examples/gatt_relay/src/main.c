@@ -87,14 +87,13 @@ void show_app_status(app_status_t status)
 void setup_peripherals(void)
 {
     SYSCTRL_ClearClkGateMulti(0
-                            | (1 << SYSCTRL_ClkGate_APB_TMR0));
+                            | (1 << SYSCTRL_ClkGate_APB_WDT));
     config_uart(OSC_CLK_FREQ, 115200);
     
     setup_rgb_led();
 
     // Watchdog will timeout after 20sec
     TMR_WatchDogEnable(TMR_CLK_FREQ * 10);
-    TMR0_LOCK();
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -118,9 +117,7 @@ static void watchdog_task(void *pdata)
     for (;;)
     {
         vTaskDelay(pdMS_TO_TICKS(9000));
-        TMR0_UNLOCK();
         TMR_WatchDogRestart();
-        TMR0_LOCK();
     }
 }
 

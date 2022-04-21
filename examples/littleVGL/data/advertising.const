@@ -1,0 +1,5 @@
+#define ADVERTISING_ITEM_OFFSET_FLAGS                                            2
+#define ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME                              5
+#define ADVERTISING_ITEM_OFFSET_COMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS      12
+#define ADVERTISING_ITEM_OFFSET_SERVICE_DATA_16_BIT_UUID                         16
+

@@ -9,105 +9,7 @@ extern "C" {	/* allow C++ to use these headers */
 
 #include "ingsoc.h"
 
-/*
- * Description:
- * Bit shifts and widths for Control register 0 (SSPCR0)
- */
-#define bsSSP_CONTROL0_CLOCKRATE        8
-#define bwSSP_CONTROL0_CLOCKRATE        0xff //8
-#define bsSSP_CONTROL0_SCLKPHASE        7
-#define bwSSP_CONTROL0_SCLKPHASE        1
-#define bsSSP_CONTROL0_SCLKPOLARITY     6
-#define bwSSP_CONTROL0_SCLKPOLARITY     1
-#define bsSSP_CONTROL0_FRAMEFORMAT      4
-#define bwSSP_CONTROL0_FRAMEFORMAT      0x3 //2
-#define bsSSP_CONTROL0_DATASIZE         0
-#define bwSSP_CONTROL0_DATASIZE         0xf //4
-
-/*
- * Description:
- * Bit shifts and widths for Control register 1 (SSPCR1)
- */
-#define bsSSP_CONTROL1_SLAVEOUTPUT      3
-#define bwSSP_CONTROL1_SLAVEOUTPUT      1
-#define bsSSP_CONTROL1_MASTERSLAVEMODE  2
-#define bwSSP_CONTROL1_MASTERSLAVEMODE  1
-#define bsSSP_CONTROL1_SSPENABLE        1
-#define bwSSP_CONTROL1_SSPENABLE        1
-#define bsSSP_CONTROL1_LOOPBACK         0
-#define bwSSP_CONTROL1_LOOPBACK         1
-
-/*
- * Description:
- * Bit shifts and widths for Status register
- */
-#define bsSSP_STATUS_BUSY           4
-#define bwSSP_STATUS_BUSY           1
-#define bsSSP_STATUS_RXFULL         3
-#define bwSSP_STATUS_RXFULL         1
-#define bsSSP_STATUS_RXNOTEMPTY     2
-#define bwSSP_STATUS_RXNOTEMPTY     1
-#define bsSSP_STATUS_TXNOTFULL      1
-#define bwSSP_STATUS_TXNOTFULL      1
-#define bsSSP_STATUS_TXEMPTY        0
-#define bwSSP_STATUS_TXEMPTY        1
-
-/*
- * Description:
- * Bit shifts and widths for Clock Prescale register
- */
-#define bsSSP_CLOCKPRESCALE_CLOCKDIVISOR    0
-#define bwSSP_CLOCKPRESCALE_CLOCKDIVISOR    0xff //8
-
-/*
- * Description:
- * Bit shifts and widths for Interrupt Enables in Mask register
- */
-#define bsSSP_MASK_TXINTENABLE         3
-#define bwSSP_MASK_TXINTENABLE         1
-#define bsSSP_MASK_RXINTENABLE         2
-#define bwSSP_MASK_RXINTENABLE         1
-#define bsSSP_MASK_RTMINTENABLE        1
-#define bwSSP_MASK_RTMINTENABLE        1
-#define bsSSP_MASK_RORINTENABLE        0
-#define bwSSP_MASK_RORINTENABLE        1
-
-/*
- * Description:
- * Bit shifts and widths for Raw and Masked Interrupt Status register
- */
-
-#define bsSSP_INTERRUPTID_TXINT         3
-#define bwSSP_INTERRUPTID_TXINT         1
-#define bsSSP_INTERRUPTID_RXINT         2
-#define bwSSP_INTERRUPTID_RXINT         1
-#define bsSSP_INTERRUPTID_RTMINT        1
-#define bwSSP_INTERRUPTID_RTMINT        1
-#define bsSSP_INTERRUPTID_RORINT        0
-#define bwSSP_INTERRUPTID_RORINT        1
-
-
-/*
- * Descripton:
- * Bit shifts and widths for interrupt clear register
- */
-#define bsSSP_INTERRUPTCLEAR_RTMINT        1
-#define bwSSP_INTERRUPTCLEAR_RTMINT        1
-#define bsSSP_INTERRUPTCLEAR_RORINT        0
-#define bwSSP_INTERRUPTCLEAR_RORINT        1
-
-
-/*
- * Descripton:
- * Bit shifts and widths for DMA Control Register
- */
-#define bsSSP_DMA_TRANSMIT_ENABLE        1
-#define bwSSP_DMA_TRANSMIT_ENABLE        1
-#define bsSSP_DMA_RECEIVE_ENABLE         0
-#define bwSSP_DMA_RECEIVE_ENABLE         1
-
-
-
+#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_918
 /*
  * Description:
  * This specifies the frame format options
@@ -266,6 +168,305 @@ uint8_t apSSP_RxFifoNotEmpty(SSP_TypeDef * SSP_Ptr);
 uint8_t apSSP_TxFifoNotFull(SSP_TypeDef * SSP_Ptr);
 
 uint8_t apSSP_TxFifoEmpty(SSP_TypeDef * SSP_Ptr);
+
+#endif
+
+#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
+
+/*
+ * Description:
+ * Bit shifts and widths for Transfer Format Register
+ */
+#define bsSPI_TRANSFMT_CPHA                 0
+#define bsSPI_TRANSFMT_CPOL                 1
+#define bsSPI_TRANSFMT_SLVMODE              2
+#define bsSPI_TRANSFMT_LSB                  3
+#define bsSPI_TRANSFMT_MOSIBIDIR            4
+#define bsSPI_TRANSFMT_DATAMERGE            7
+#define bsSPI_TRANSFMT_DATALEN              8
+#define bsSPI_TRANSFMT_ADDRLEN              16
+
+#define bwSPI_TRANSFMT_CPHA                 1
+#define bwSPI_TRANSFMT_CPOL                 1
+#define bwSPI_TRANSFMT_SLVMODE              1
+#define bwSPI_TRANSFMT_LSB                  1
+#define bwSPI_TRANSFMT_MOSIBIDIR            1
+#define bwSPI_TRANSFMT_DATAMERGE            1
+#define bwSPI_TRANSFMT_DATALEN              5
+#define bwSPI_TRANSFMT_ADDRLEN              2
+
+typedef enum
+{
+  SPI_CPHA_ODD_SCLK_EDGES = 0,
+  SPI_CPHA_EVEN_SCLK_EDGES = 1
+}SPI_TransFmt_CPHA_e;
+
+typedef enum
+{
+  SPI_CPOL_SCLK_LOW_IN_IDLE_STATES = 0,
+  SPI_CPOL_SCLK_HIGH_IN_IDLE_STATES = 1
+}SPI_TransFmt_CPOL_e;
+
+typedef enum
+{
+  SPI_SLVMODE_MASTER_MODE = 0,
+  SPI_SLVMODE_SLAVE_MODE = 1
+}SPI_TransFmt_SlvMode_e;
+
+typedef enum
+{
+  SPI_LSB_MOST_SIGNIFICANT_BIT_FIRST = 0,
+  SPI_LSB_LEAST_SIGNIFICANT_BIT_FIRST = 1
+}SPI_TransFmt_LSB_e;
+
+typedef enum
+{
+  SPI_MOSIBIDIR_UNI_DIRECTIONAL = 0,
+  SPI_MOSIBIDIR_BI_DIRECTIONAL = 1
+}SPI_TransFmt_MOSIBiDir_e;
+
+typedef enum
+{
+  SPI_DATAMERGE_DISABLE = 0,
+  SPI_DATAMERGE_ENABLE = 1
+}SPI_TransFmt_DataMerge_e;
+
+#define SPI_REG_TRANSFMT_DATALEN_X(x) ((x && 0x1F) - 1)
+
+typedef enum
+{
+  SPI_ADDRLEN_1_BYTE = 0,
+  SPI_ADDRLEN_2_BYTES = 1,
+  SPI_ADDRLEN_3_BYTES = 2,
+  SPI_ADDRLEN_4_BYTES = 3,
+}SPI_TransFmt_AddrLen_e;
+
+
+/*
+ * Description:
+ * Bit shifts and widths for Transfer Control Register
+ */
+#define bsSPI_TRANSCTRL_RDTRANCNT         0
+#define bsSPI_TRANSCTRL_WRTRANCNT         12
+#define bsSPI_TRANSCTRL_DUALQUAD          22
+#define bsSPI_TRANSCTRL_TRANSMODE         24
+#define bsSPI_TRANSCTRL_ADDREN            29
+#define bsSPI_TRANSCTRL_CMDEN             30
+#define bsSPI_TRANSCTRL_SLVDATAONLY       31
+
+#define bwSPI_TRANSCTRL_RDTRANCNT         9
+#define bwSPI_TRANSCTRL_WRTRANCNT         9
+#define bwSPI_TRANSCTRL_DUALQUAD          2
+#define bwSPI_TRANSCTRL_TRANSMODE         4
+#define bwSPI_TRANSCTRL_ADDREN            1
+#define bwSPI_TRANSCTRL_CMDEN             1
+
+#define SPI_TRANSCTRL_RDTRANCNT_X(x) ((x && 0x1FF) - 1)
+#define SPI_TRANSCTRL_WRTRANCNT_X(x) ((x && 0x1FF) - 1)
+
+typedef enum
+{
+  SPI_DUALQUAD_REGULAR_MODE = 0,
+  SPI_DUALQUAD_DUAL_IO_MODE = 1,
+  SPI_DUALQUAD_QUAD_IO_MODE = 2
+}SPI_TransCtrl_DualQuad_e;
+
+typedef enum
+{
+  SPI_TRANSMODE_WRITE_READ_SAME_TIME = 0,
+  SPI_TRANSMODE_WRITE_ONLY = 1,
+  SPI_TRANSMODE_READ_ONLY = 2
+}SPI_TransCtrl_TransMode_e;
+
+typedef enum
+{
+  SPI_ADDREN_DISABLE = 0,
+  SPI_ADDREN_ENABLE = 1
+}SPI_TransCtrl_AddrEn_e;
+
+typedef enum
+{
+  SPI_CMDEN_DISABLE = 0,
+  SPI_CMDEN_ENABLE = 1
+}SPI_TransCtrl_CmdEn_e;
+
+typedef enum
+{
+  SPI_SLVDATAONLY_DISABLE = 0,
+  SPI_SLVDATAONLY_ENABLE = 1
+}SPI_TransCtrl_SlvDataOnly_e;
+
+
+/*
+ * Description:
+ * Bit shifts and widths for Control Register
+ */
+
+#define bsSPI_CTRL_SPIRST           0
+#define bsSPI_CTRL_RXFIFORST        1
+#define bsSPI_CTRL_TXFIFORST        2
+#define bsSPI_CTRL_RXTHRES          8
+#define bsSPI_CTRL_TXTHRES          16
+
+#define bwSPI_CTRL_SPIRST           1
+#define bwSPI_CTRL_RXFIFORST        1
+#define bwSPI_CTRL_TXFIFORST        1
+#define bwSPI_CTRL_RXTHRES          8
+#define bwSPI_CTRL_TXTHRES          8
+
+
+#define bsSPI_INTREN_RXFIFOINTEN    2
+#define bsSPI_INTREN_TXFIFOINTEN    2
+#define bsSPI_INTREN_ENDINTEN       4
+#define bsSPI_INTREN_SLVCMDEN       5
+
+
+/*
+ * Description:
+ * Bit shifts and widths for Status register
+ */
+#define bsSPI_STATUS_SPIACTIVE           0
+#define bsSPI_STATUS_RXEMPTY             14
+#define bsSPI_STATUS_RXFULL              15
+#define bsSPI_STATUS_TXEMPTY             22
+#define bsSPI_STATUS_TXFULL              23
+#define bsSPI_STATUS_TXNUML              16
+#define bsSPI_STATUS_TXNUMH              28
+#define bsSPI_STATUS_RXNUML              8
+#define bsSPI_STATUS_RXNUMH              24
+
+#define bwSPI_STATUS_SPIACTIVE           1
+#define bwSPI_STATUS_RXEMPTY             1
+#define bwSPI_STATUS_RXFULL              1
+#define bwSPI_STATUS_TXEMPTY             1
+#define bwSPI_STATUS_TXFULL              1
+#define bwSPI_STATUS_TXNUML              6
+#define bwSPI_STATUS_TXNUMH              2
+#define bwSPI_STATUS_RXNUML              6
+#define bwSPI_STATUS_RXNUMH              2
+
+
+/*
+ * Description:
+ * Bit shifts and widths for Timing register
+ */
+#define bsSPI_TIMING_SCLK_DIV            0
+#define bsSPI_TIMING_CS2SCLK             12
+
+#define bwSPI_TIMING_SCLK_DIV            8
+#define bwSPI_TIMING_CS2SCLK             2
+
+/**
+ * @brief Get SPI active status
+ *
+ * @param[in] SPI_BASE              base address
+ */
+uint8_t apSSP_GetSPIActiveStatus(SSP_TypeDef *SPI_BASE);
+
+/**
+ * @brief Reset SPI module
+ *
+ * @param[in] SPI_BASE              base address
+ */
+void apSSP_Initialize (SSP_TypeDef *SPI_BASE);
+
+/**
+ * @brief Set SPI configuration
+ *
+ * @param[in] SPI_BASE              base address
+ */
+void apSSP_SetTransferFormat(SSP_TypeDef *SPI_BASE, uint32_t val);
+
+/**
+ * @brief Set SPI configuration
+ *
+ * @param[in] SPI_BASE              base address
+ */
+void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val);
+
+/**
+ * @brief Enable SPI Int
+ *
+ * @param[in] SPI_BASE              base address
+ */
+void apSSP_IntEnable(SSP_TypeDef *SPI_BASE, uint32_t mask);
+
+/**
+ * @brief Get FIFO status
+ *
+ * @param[in] SPI_BASE              base address
+ */
+uint8_t apSSP_RxFifoFull(SSP_TypeDef *SPI_BASE);
+uint8_t apSSP_RxFifoEmpty(SSP_TypeDef *SPI_BASE);
+uint8_t apSSP_TxFifoFull(SSP_TypeDef *SPI_BASE);
+uint8_t apSSP_TxFifoEmpty(SSP_TypeDef *SPI_BASE);
+
+/**
+ * @brief Reset FIFO
+ *
+ * @param[in] SPI_BASE              base address
+ */
+void apSSP_ResetTxFifo(SSP_TypeDef *SPI_BASE);
+void apSSP_ResetRxFifo(SSP_TypeDef *SPI_BASE);
+
+/**
+ * @brief Get SPI Int
+ *
+ * @param[in] SPI_BASE              base address
+ */
+uint32_t apSSP_GetIntRawStatus(SSP_TypeDef *SPI_BASE);
+void apSSP_ClearIntStatus(SSP_TypeDef *SPI_BASE, uint32_t val);
+
+/**
+ * @brief Write data to FIFO
+ *
+ * @param[in] SPI_BASE              base address
+ */
+void apSSP_WriteFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data[], uint16_t Len);
+
+/**
+ * @brief Get FIFO data
+ *
+ * @param[in] SPI_BASE              base address
+ */
+void apSSP_ReadFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data[], uint16_t Len);
+
+/**
+ * @brief Get data in command register
+ *
+ * @param[in] SPI_BASE              base address
+ *//**
+ * @brief Get FIFO data
+ *
+ * @param[in] SPI_BASE              base address
+ */
+uint32_t apSSP_ReadCommand(SSP_TypeDef *SPI_BASE);
+
+/**
+ * @brief Get Number of valid entries in the FIFO
+ *
+ * @param[in] SPI_BASE              base address
+ */
+uint8_t apSSP_GetDataNumInTxFifo(SSP_TypeDef *SPI_BASE);
+uint8_t apSSP_GetDataNumInRxFifo(SSP_TypeDef *SPI_BASE);
+
+/**
+ * @brief Write Cmd and Address and Trigger the data transfer
+ *
+ * @param[in] SPI_BASE              base address
+ */
+void apSSP_WriteCmd(SSP_TypeDef *SPI_BASE, uint32_t Addr, uint32_t Cmd);
+
+/**
+ * @brief Set sclk div
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] SCLK_DIV              SCLK period = (SCLK_DIV+1)*2*(Period of the SPI clock source)
+ */
+void apSSP_SetTimingSclkDiv(SSP_TypeDef *SPI_BASE, uint8_t sclk_div);
+void apSSP_SetTimingCs2Sclk(SSP_TypeDef *SPI_BASE, uint8_t cs2sclk);
+
+#endif
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

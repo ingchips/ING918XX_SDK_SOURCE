@@ -8,7 +8,7 @@
   <Extensions>
     <cExt>*.c</cExt>
     <aExt>*.s*; *.src; *.a*</aExt>
-    <oExt>*.obj</oExt>
+    <oExt>*.obj; *.o</oExt>
     <lExt>*.lib</lExt>
     <tExt>*.txt; *.h; *.inc; *.md</tExt>
     <pExt>*.plm</pExt>
@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>d</Name>
+          <Name></Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -148,7 +148,24 @@
           <Name>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0NEW_DEVICE -FS00 -FL040000 -FP0($$Device:ARMCM3$Device\ARM\Flash\NEW_DEVICE.FLM))</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint>
+        <Bp>
+          <Number>0</Number>
+          <Type>0</Type>
+          <LineNumber>40</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>160460</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\src\profile.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\llsync_light\src/profile.c\40</Expression>
+        </Bp>
+      </Breakpoint>
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>
@@ -196,7 +213,7 @@
 
   <Group>
     <GroupName>APP</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -416,7 +433,7 @@
 
   <Group>
     <GroupName>LLSync</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -427,7 +444,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\core\ble_qiot_llsync_data.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\core\ble_qiot_llsync_data.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_llsync_data.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -439,7 +456,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\core\ble_qiot_llsync_device.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\core\ble_qiot_llsync_device.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_llsync_device.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -451,7 +468,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\core\ble_qiot_llsync_event.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\core\ble_qiot_llsync_event.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_llsync_event.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -463,7 +480,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\core\ble_qiot_service.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\core\ble_qiot_service.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_service.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -475,7 +492,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_base64.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_base64.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_utils_base64.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -487,7 +504,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_hmac.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_hmac.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_utils_hmac.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -499,7 +516,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_log.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_log.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_utils_log.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -511,7 +528,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_md5.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_md5.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_utils_md5.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -523,8 +540,32 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_sha1.c</PathWithFileName>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\utils\ble_qiot_utils_sha1.c</PathWithFileName>
       <FilenameWithoutPath>ble_qiot_utils_sha1.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>25</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\core\ble_qiot_llsync_utils.c</PathWithFileName>
+      <FilenameWithoutPath>ble_qiot_llsync_utils.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>26</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\qcloud_iot_explorer_ble\src\core\ble_qiot_llsync_ota.c</PathWithFileName>
+      <FilenameWithoutPath>ble_qiot_llsync_ota.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

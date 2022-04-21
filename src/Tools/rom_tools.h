@@ -2,6 +2,7 @@
 #define _CRC_H
 
 #include <stdint.h>
+#include "ingsoc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +18,46 @@ extern "C" {
  ****************************************************************************************
  */
 typedef uint16_t (* f_crc_t)(uint8_t *buffer, uint16_t len);
-#define crc     ((f_crc_t)(0x00000f79))
+
+/**
+ ****************************************************************************************
+ * @brief Start UART downloading mode
+ *
+ ****************************************************************************************
+ */
+typedef uint16_t (* f_void_t)(void);
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
+#define crc                 ((f_crc_t)(0x00000f79))
+#define boot_uart_init      ((f_void_t)(0x000006f5))
+#define boot_uart_download  ((f_void_t)(0x00000bc9))
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+#define crc     ((f_crc_t)(0x00005699))
+
+typedef void (* f_erase_sector)(uint32_t addr);
+typedef void (* f_void)(void);
+typedef void (* f_prog_page)(uint32_t addr, const uint8_t data[256], uint32_t len);
+
+#define FlashSectorErase    ((f_erase_sector)0x0000150d)
+#define FlashWriteDisable   ((f_void)0x000015f1)
+#define FlashPageProgram    ((f_prog_page)0x00001405)
+
+#define FlashDisableContinuousMode      ((f_void)0x000012cd)
+#define FlashEnableContinuousMode       ((f_void)0x00001311)
+
+#define DCacheDisable                   ((f_void)0x000010c1)
+#define DCacheEnable                    ((f_void)0x000010d5)
+#define DCacheFlush                     ((f_void)0x000010e9)
+#define ICacheDisable                   ((f_void)0x00001669)
+#define ICacheEnable                    ((f_void)0x0000167d)
+#define ICacheFlush                     ((f_void)0x00001691)
+
+#define ROM_NVIC_SystemReset            ((f_void)0x00001b11)
+
+#endif
 
 #ifdef __cplusplus
 }

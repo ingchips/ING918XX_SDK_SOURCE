@@ -9,9 +9,9 @@
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91600</Device>
           <Vendor>INGCHIPS</Vendor>
-          <Cpu>CLOCK(48000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
+          <Cpu/>
           <FlashUtilSpec/>
           <StartupFile/>
           <FlashDriverDll/>
@@ -294,8 +294,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>155648</StartAddress>
-                <Size>122880</Size>
+                <StartAddress>33701888</StartAddress>
+                <Size>-31588352</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893400</StartAddress>
-                <Size>10280</Size>
+                <StartAddress>536893496</StartAddress>
+                <Size>10184</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -346,9 +346,9 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=3</Define>
               <Undefine/>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -414,25 +414,20 @@
               <FileType>1</FileType>
               <FilePath>.\src\audio_input.c</FilePath>
             </File>
-            <File>
-              <FileName>i2s_emu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\i2s_emu.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>StartUP</GroupName>
           <Files>
             <File>
-              <FileName>startup_ing91800.s</FileName>
+              <FileName>startup_ing91600.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\src\startup_ing91800.s</FilePath>
+              <FilePath>.\src\startup_ing91600.s</FilePath>
             </File>
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\ING9185xx\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\typical\ING9168xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -481,6 +476,16 @@
               <FileName>peripheral_ssp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_ssp.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_i2s.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_i2s.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pdm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pdm.c</FilePath>
             </File>
           </Files>
         </Group>

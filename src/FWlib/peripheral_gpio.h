@@ -40,7 +40,13 @@ typedef enum
     GIO_GPIO_28 ,
     GIO_GPIO_29 ,
     GIO_GPIO_30 ,
-    GIO_GPIO_31
+    GIO_GPIO_31 ,
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    GIO_GPIO_32 ,
+    GIO_GPIO_33 ,
+    GIO_GPIO_34 ,
+    GIO_GPIO_35 ,
+#endif
 } GIO_Index_t;
 
 typedef enum
@@ -69,14 +75,6 @@ typedef enum
     GIO_PULL_DOWN
 } GIO_PullType_t;
 
-#define GPIO_DI  ((__IO uint32_t *)(APB_GIO_BASE+0x00))
-#define GPIO_DO  ((__IO uint32_t *)(APB_GIO_BASE+0x10))
-#define GPIO_OEB ((__IO uint32_t *)(APB_GIO_BASE+0x20))
-#define GPIO_IS  ((__IO uint32_t *)(APB_GIO_BASE+0x40)) // interrupt status
-#define GPIO_LV  ((__IO uint32_t *)(APB_GIO_BASE+0x50)) // interrupt type 0-edge 1-level
-#define GPIO_PE  ((__IO uint32_t *)(APB_GIO_BASE+0x60)) // Positive edge and High Level interrupt enable
-#define GPIO_NE  ((__IO uint32_t *)(APB_GIO_BASE+0x70)) // Negtive edge and Low Level interrupt enable
-
 /**
  * @brief Set I/O direction of a GPIO
  *
@@ -84,7 +82,7 @@ typedef enum
  * @param[in] dir               I/O direction
  */
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir);
-    
+
 /**
  * @brief Get current I/O direction of a GPIO
  *
@@ -102,26 +100,12 @@ GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index);
 void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit);
 
 /**
- * @brief Write output value of all 32 GPIO
- *
- * @param[in] value               value
- */
-static __INLINE void GIO_WriteAll(const uint32_t value) { *GPIO_DO = value; }
-
-/**
  * @brief Get current value of a GPIO
  *
  * @param[in] io_index          the GPIO
  * @return                      value
  */
 uint8_t GIO_ReadValue(const GIO_Index_t io_index);
-
-/**
- * @brief Get current value of all 32 GPIO
- *
- * @return                      value
- */
-static __INLINE uint32_t GIO_ReadAll(void) { return *GPIO_DI; }
 
 /**
  * @brief Config interrupt trigger type of a GPIO
@@ -142,6 +126,37 @@ void GIO_ConfigIntSource(const GIO_Index_t io_index, const uint8_t enable, const
 uint8_t GIO_GetIntStatus(const GIO_Index_t io_index);
 
 /**
+ * @brief Clear current interrupt status of a GPIO
+ *
+ * @param[in] io_index          the GPIO
+ */
+void GIO_ClearIntStatus(const GIO_Index_t io_index);
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
+#define GPIO_DI  ((__IO uint32_t *)(APB_GIO_BASE+0x00))
+#define GPIO_DO  ((__IO uint32_t *)(APB_GIO_BASE+0x10))
+#define GPIO_OEB ((__IO uint32_t *)(APB_GIO_BASE+0x20))
+#define GPIO_IS  ((__IO uint32_t *)(APB_GIO_BASE+0x40)) // interrupt status
+#define GPIO_LV  ((__IO uint32_t *)(APB_GIO_BASE+0x50)) // interrupt type 0-edge 1-level
+#define GPIO_PE  ((__IO uint32_t *)(APB_GIO_BASE+0x60)) // Positive edge and High Level interrupt enable
+#define GPIO_NE  ((__IO uint32_t *)(APB_GIO_BASE+0x70)) // Negtive edge and Low Level interrupt enable
+
+/**
+ * @brief Write output value of all 32 GPIO
+ *
+ * @param[in] value               value
+ */
+static __INLINE void GIO_WriteAll(const uint32_t value) { *GPIO_DO = value; }
+
+/**
+ * @brief Get current value of all 32 GPIO
+ *
+ * @return                      value
+ */
+static __INLINE uint32_t GIO_ReadAll(void) { return *GPIO_DI; }
+
+/**
  * @brief Get current interrupt status of all GPIO
  *
  * @return                      interrupt status
@@ -149,17 +164,65 @@ uint8_t GIO_GetIntStatus(const GIO_Index_t io_index);
 static __INLINE uint32_t GIO_GetAllIntStatus(void)  { return (*GPIO_IS); }
 
 /**
- * @brief Clear current interrupt status of a GPIO
+ * @brief Clear current interrupt status of all GPIO
+ *
+ */
+static __INLINE void GIO_ClearAllIntStatus(void) { *GPIO_IS = 0; }
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+typedef enum
+{
+    GIO_DB_CLK_32K,
+    GIO_DB_CLK_PCLK,
+} GIO_DbClk_t;
+
+/**
+ * @brief Set debounce parameters of GPIOs
+ *
+ * @param[in] group_mask        Group mask of GPIOs
+ *      Note: There are two block of GPIOs, each has 18 GPIOs. Each group has its own debounce parameters.
+ *            Each bit specifies one group.
+ * @param[in] clk_pre_scale     Debounce clock pre scaling (0..255)
+ * @param[in] clk               clock type for debounce
+ */
+void GIO_DebounceCtrl(uint8_t group_mask, uint8_t clk_pre_scale, GIO_DbClk_t clk);
+
+/**
+ * @brief Enable debounce feature of GPIOs
  *
  * @param[in] io_index          the GPIO
+ * @param[in] enable            enable or disable
  */
-void GIO_ClearIntStatus(const GIO_Index_t io_index);
+void GIO_DebounceEn(const GIO_Index_t io_index, uint8_t enable);
+
+/**
+ * @brief Write output value of all GPIOs
+ *
+ * @param[in] value               value
+ */
+void GIO_WriteAll(const uint64_t value);
+
+/**
+ * @brief Get current value of all GPIOs
+ *
+ * @return                      value
+ */
+uint64_t GIO_ReadAll(void);
+
+/**
+ * @brief Get current interrupt status of all GPIO
+ *
+ * @return                      interrupt status
+ */
+uint64_t GIO_GetAllIntStatus(void);
 
 /**
  * @brief Clear current interrupt status of all GPIO
  *
  */
-static __INLINE void GIO_ClearAllIntStatus(void) { *GPIO_IS = 0; }
+void GIO_ClearAllIntStatus(void);
+
+#endif
 
 #ifdef __cplusplus
   }

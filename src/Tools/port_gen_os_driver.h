@@ -10,6 +10,18 @@ extern "C" {
 typedef struct gen_os_driver
 {
     // see `port_xxxx` in `port_gen_os.h`
+    // All functions in this struct should be implemented and provided, except
+    // for Link Layer Extension API only mode, in which case, some functions
+    // must/can be omitted:
+    // - `task_create`: **must** be NULL
+    // - timer APIs: ignored
+    // - queue APIs: ignored
+    // - `event_create` / `event_wait`/ : ignored
+    // - `event_set`: must be provided (an empty function is OK)
+    // - `malloc` / `free`: ignored
+    // - `enter_critical` / `exit_critical`: must be provided
+    // - `os_start`: must be provided
+    // - Exception handlers: must be provided
 
     gen_handle_t (* timer_create)(
         uint32_t timeout_in_ms,

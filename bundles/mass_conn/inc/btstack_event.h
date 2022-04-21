@@ -348,6 +348,7 @@ static __INLINE uint16_t att_event_handle_value_indication_complete_get_attribut
 static __INLINE hci_con_handle_t sm_event_just_works_request_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_JUST_WORKS_REQUEST
  * @param event packet
@@ -357,6 +358,7 @@ static __INLINE hci_con_handle_t sm_event_just_works_request_get_handle(const ui
 static __INLINE uint8_t sm_event_just_works_request_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_JUST_WORKS_REQUEST
  * @param event packet
@@ -376,6 +378,7 @@ static __INLINE void sm_event_just_works_request_get_address(const uint8_t * eve
 static __INLINE hci_con_handle_t sm_event_just_works_cancel_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_JUST_WORKS_CANCEL
  * @param event packet
@@ -385,6 +388,7 @@ static __INLINE hci_con_handle_t sm_event_just_works_cancel_get_handle(const uin
 static __INLINE uint8_t sm_event_just_works_cancel_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_JUST_WORKS_CANCEL
  * @param event packet
@@ -404,6 +408,7 @@ static __INLINE void sm_event_just_works_cancel_get_address(const uint8_t * even
 static __INLINE hci_con_handle_t sm_event_passkey_display_number_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_PASSKEY_DISPLAY_NUMBER
  * @param event packet
@@ -413,6 +418,7 @@ static __INLINE hci_con_handle_t sm_event_passkey_display_number_get_handle(cons
 static __INLINE uint8_t sm_event_passkey_display_number_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_PASSKEY_DISPLAY_NUMBER
  * @param event packet
@@ -422,6 +428,7 @@ static __INLINE uint8_t sm_event_passkey_display_number_get_addr_type(const uint
 static __INLINE void sm_event_passkey_display_number_get_address(const uint8_t * event, uint8_t * address){
     reverse_bd_addr(decode_event_offset(event, uint8_t, 5), address);
 }
+
 /**
  * @brief Get field passkey from event SM_EVENT_PASSKEY_DISPLAY_NUMBER
  * @param event packet
@@ -441,6 +448,7 @@ static __INLINE uint32_t sm_event_passkey_display_number_get_passkey(const uint8
 static __INLINE hci_con_handle_t sm_event_passkey_display_cancel_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_PASSKEY_DISPLAY_CANCEL
  * @param event packet
@@ -450,6 +458,7 @@ static __INLINE hci_con_handle_t sm_event_passkey_display_cancel_get_handle(cons
 static __INLINE uint8_t sm_event_passkey_display_cancel_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_PASSKEY_DISPLAY_CANCEL
  * @param event packet
@@ -469,6 +478,7 @@ static __INLINE void sm_event_passkey_display_cancel_get_address(const uint8_t *
 static __INLINE hci_con_handle_t sm_event_passkey_input_number_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_PASSKEY_INPUT_NUMBER
  * @param event packet
@@ -478,6 +488,7 @@ static __INLINE hci_con_handle_t sm_event_passkey_input_number_get_handle(const 
 static __INLINE uint8_t sm_event_passkey_input_number_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_PASSKEY_INPUT_NUMBER
  * @param event packet
@@ -506,6 +517,7 @@ static __INLINE hci_con_handle_t sm_event_passkey_input_cancel_get_handle(const 
 static __INLINE uint8_t sm_event_passkey_input_cancel_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_PASSKEY_INPUT_CANCEL
  * @param event packet
@@ -525,6 +537,7 @@ static __INLINE void sm_event_passkey_input_cancel_get_address(const uint8_t * e
 static __INLINE hci_con_handle_t sm_event_identity_resolving_started_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_IDENTITY_RESOLVING_STARTED
  * @param event packet
@@ -534,6 +547,7 @@ static __INLINE hci_con_handle_t sm_event_identity_resolving_started_get_handle(
 static __INLINE uint8_t sm_event_identity_resolving_started_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_IDENTITY_RESOLVING_STARTED
  * @param event packet
@@ -553,6 +567,7 @@ static __INLINE void sm_event_identity_resolving_started_get_address(const uint8
 static __INLINE hci_con_handle_t sm_event_identity_resolving_failed_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_IDENTITY_RESOLVING_FAILED
  * @param event packet
@@ -562,6 +577,7 @@ static __INLINE hci_con_handle_t sm_event_identity_resolving_failed_get_handle(c
 static __INLINE uint8_t sm_event_identity_resolving_failed_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_IDENTITY_RESOLVING_FAILED
  * @param event packet
@@ -581,6 +597,7 @@ static __INLINE void sm_event_identity_resolving_failed_get_address(const uint8_
 static __INLINE hci_con_handle_t sm_event_identity_resolving_succeeded_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED
  * @param event packet
@@ -590,6 +607,7 @@ static __INLINE hci_con_handle_t sm_event_identity_resolving_succeeded_get_handl
 static __INLINE uint8_t sm_event_identity_resolving_succeeded_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED
  * @param event packet
@@ -599,6 +617,7 @@ static __INLINE uint8_t sm_event_identity_resolving_succeeded_get_addr_type(cons
 static __INLINE void sm_event_identity_resolving_succeeded_get_address(const uint8_t * event, uint8_t * address){
     reverse_bd_addr(decode_event_offset(event, uint8_t, 5), address);
 }
+
 /**
  * @brief Get field le_device_db_index from event SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED
  * @param event packet
@@ -618,6 +637,7 @@ static __INLINE uint16_t sm_event_identity_resolving_succeeded_get_le_device_db_
 static __INLINE hci_con_handle_t sm_event_authorization_request_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_AUTHORIZATION_REQUEST
  * @param event packet
@@ -627,6 +647,7 @@ static __INLINE hci_con_handle_t sm_event_authorization_request_get_handle(const
 static __INLINE uint8_t sm_event_authorization_request_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_AUTHORIZATION_REQUEST
  * @param event packet
@@ -646,6 +667,7 @@ static __INLINE void sm_event_authorization_request_get_address(const uint8_t * 
 static __INLINE hci_con_handle_t sm_event_authorization_result_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field addr_type from event SM_EVENT_AUTHORIZATION_RESULT
  * @param event packet
@@ -655,6 +677,7 @@ static __INLINE hci_con_handle_t sm_event_authorization_result_get_handle(const 
 static __INLINE uint8_t sm_event_authorization_result_get_addr_type(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 4);
 }
+
 /**
  * @brief Get field address from event SM_EVENT_AUTHORIZATION_RESULT
  * @param event packet
@@ -664,6 +687,7 @@ static __INLINE uint8_t sm_event_authorization_result_get_addr_type(const uint8_
 static __INLINE void sm_event_authorization_result_get_address(const uint8_t * event, uint8_t * address){
     reverse_bd_addr(decode_event_offset(event, uint8_t, 5), address);
 }
+
 /**
  * @brief Get field authorization_result from event SM_EVENT_AUTHORIZATION_RESULT
  * @param event packet
@@ -683,6 +707,7 @@ static __INLINE uint8_t sm_event_authorization_result_get_authorization_result(c
 static __INLINE hci_con_handle_t gap_event_security_level_get_handle(const uint8_t * event){
     return little_endian_read_16(event, 2);
 }
+
 /**
  * @brief Get field security_level from event GAP_EVENT_SECURITY_LEVEL
  * @param event packet
@@ -702,6 +727,11 @@ static __INLINE uint8_t gap_event_security_level_get_security_level(const uint8_
 static __INLINE uint8_t gap_event_dedicated_bonding_completed_get_status(const uint8_t * event){
     return *decode_event_offset(event, uint8_t, 2);
 }
+
+typedef struct sm_event_state_changed {
+    uint16_t conn_handle;
+    uint8_t reason;
+} sm_event_state_changed_t;
 
 typedef struct event_disconn_complete
 {

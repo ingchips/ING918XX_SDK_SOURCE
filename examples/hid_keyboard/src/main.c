@@ -70,13 +70,14 @@ void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                              | (1 << SYSCTRL_ClkGate_APB_GPIO1) 
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
 
     // setup GPIOs for keys
-    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GPIO);
+    PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GPIO);
+    PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GPIO);
     GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
     GIO_SetDirection(KB_KEY_2, GIO_DIR_INPUT);
     GIO_SetDirection(KB_KEY_3, GIO_DIR_INPUT);
@@ -108,7 +109,14 @@ uint32_t gpio_isr(void *user_data)
     return 0;
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define DB_FLASH_ADDRESS  0x42000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define DB_FLASH_ADDRESS  0x20e0000
+#else
+#error unknown or unsupported chip family
+#endif
+
 int db_write_to_flash(const void *db, const int size)
 {
     platform_printf("write to flash, size = %d\n", size);
@@ -170,7 +178,7 @@ int app_main()
     kv_init(db_write_to_flash, read_from_flash);
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
-    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0x1ff);
 
     return 0;
 }

@@ -29,6 +29,10 @@ const uint8_t UUID_CHAR_GEN_OUT[]   = {0xbf,0x83,0xf3,0xf2,0x39,0x9a,0x41,0x4d,0
 
 void print_addr(const uint8_t *addr);
 
+void hw_timer_restart(void);
+void hw_timer_clear_int(void);
+void hw_timer_stop(void);
+
 typedef struct slave_info
 {
     uint32_t    s2m_total;
@@ -53,7 +57,7 @@ static TimerHandle_t app_timer = 0;
 typedef struct loopback_info
 {
     uint32_t counter;
-    uint32_t start;
+    uint64_t start;
     int rx_len;
 } loopback_info_t;
 
@@ -67,7 +71,7 @@ void loopback_send(void)
     if ((slave.conn_handle == INVALID_HANDLE) || (0 == slave.loopback))
         return;
 
-    loopback_info.start = RTC_Current();
+    loopback_info.start = platform_get_us_time();
     loopback_info.rx_len = 0;
     gatt_client_get_mtu(slave.conn_handle, &mtu);
     mtu -= 3;
@@ -94,8 +98,8 @@ void loopback_rx(const uint8_t *buffer, const uint16_t size)
     loopback_info.rx_len += size;
     if (loopback_info.rx_len >= LOOPBACK_TEST_SIZE)
     {
-        uint32_t duration = RTC_Current() - loopback_info.start;
-        LOG_MSG("%04d: %.2f", loopback_info.counter, duration / 32.768);
+        uint32_t duration = platform_get_us_time() - loopback_info.start;
+        LOG_MSG("%04d: %.2f", loopback_info.counter, duration / 1000.);
         xTimerStart(app_timer, portMAX_DELAY);
         loopback_info.counter++;
         gap_read_rssi(slave.conn_handle);
@@ -297,8 +301,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         slave.m2s_run = 1;
         slave.m2s_total = 0;
         send_data();
-        TMR_Reload(APB_TMR1);
-        TMR_Enable(APB_TMR1);
+        hw_timer_restart();
         break;
     case USER_MSG_START_S2M:
         slave.s2m_run = 1;
@@ -306,13 +309,12 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_callback, slave.conn_handle,
             slave.output_desc.handle, sizeof(char_config_notification),
             (uint8_t *)&char_config_notification);
-        TMR_Reload(APB_TMR1);
-        TMR_Enable(APB_TMR1);
+        hw_timer_restart();
         break;
     case USER_MSG_STOP_M2S:
         slave.m2s_run = 0;
         if ((slave.m2s_run | slave.m2s_run) == 0)
-            TMR_Disable(APB_TMR1);
+            hw_timer_stop();
         break;
     case USER_MSG_STOP_S2M:
         slave.s2m_run = 0;
@@ -320,7 +322,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             slave.output_desc.handle, sizeof(char_config_none),
             (uint8_t *)&char_config_none);
         if ((slave.m2s_run | slave.m2s_run) == 0)
-            TMR_Disable(APB_TMR1);
+            hw_timer_stop();
         break;
     case USER_MSG_SHOW_TPT:
         if (slave.m2s_run)
@@ -414,7 +416,8 @@ static void app_timer_callback(TimerHandle_t xTimer)
 
 uint32_t timer_isr(void *user_data)
 {
-    TMR_IntClr(APB_TMR1);
+    hw_timer_clear_int();
+
     if (INVALID_HANDLE == slave.output_desc.handle)
         return 0;
     btstack_push_user_msg(USER_MSG_SHOW_TPT, NULL, 0);
@@ -636,7 +639,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         app_state_updated();
 #endif
         break;
-    
+
     case GATT_EVENT_MTU:
         LOG_MSG("GATT client MTU updated: %d\n", gatt_event_mtu_get_mtu(packet));
         break;

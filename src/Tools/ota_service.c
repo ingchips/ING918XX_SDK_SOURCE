@@ -15,11 +15,28 @@
 #include "platform_api.h"
 #include "rom_tools.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
 #ifndef SEC_FOTA_APP_ADDR
 #define SEC_FOTA_APP_ADDR 0x44000
 #endif
 
-#define PAGE_SIZE (8192)
+#define PAGE_SIZE (EFLASH_PAGE_SIZE)
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+#ifndef SEC_FOTA_APP_ADDR
+#define SEC_FOTA_APP_ADDR 0x2040000
+
+#else
+
+#error unknown or unsupported chip family
+
+#endif
+
+#define PAGE_SIZE (EFLASH_SECTOR_SIZE)
+
+#endif
 
 #define DEF_UUID(var, ID)  static const uint8_t var[] = ID;
 
@@ -99,6 +116,8 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
             ota_page_offset = 0;
             break;
         case OTA_CTRL_PAGE_END:
+            if (OTA_STATUS_OK != ota_ctrl[0])
+                break;
             program_flash(ota_start_addr, page_buffer, ota_page_offset);
 
             ota_downloading = 0;
@@ -110,7 +129,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                     ota_ctrl[0] = OTA_STATUS_WAIT_DATA;
                     break;
                 }
-                    
+
                 if (crc((uint8_t *)ota_start_addr, len) != crc_value)
                     ota_ctrl[0] = OTA_STATUS_ERROR;
                 else
@@ -127,7 +146,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
             }
             break;
         case OTA_CTRL_SWITCH_APP:
-            platform_switch_app(SEC_FOTA_APP_ADDR);
+             platform_switch_app(SEC_FOTA_APP_ADDR);
             break;
         case OTA_CTRL_METADATA:
             if (OTA_STATUS_OK != ota_ctrl[0])
@@ -141,9 +160,15 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                     ota_ctrl[0] = OTA_STATUS_ERROR;
                     break;
                 }
-                program_fota_metadata(meta->entry, 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+                program_fota_metadata(meta->entry,
                                       (s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
                                       meta->blocks);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+                flash_do_update((s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
+                                meta->blocks,
+                                page_buffer);
+#endif
             }
             else
             {
@@ -173,7 +198,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 ota_ctrl[0] = OTA_STATUS_ERROR;
                 return 0;
             }
-            
+
             memcpy(page_buffer + ota_page_offset,
                    buffer, buffer_size);
             ota_page_offset += buffer_size;

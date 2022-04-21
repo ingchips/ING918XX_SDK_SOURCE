@@ -20,18 +20,15 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
                     "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
                     "R12: 0x%08X\n",
-                    info->pc, info->lr, info->psr, 
+                    info->pc, info->lr, info->psr,
                     info->r0, info->r1, info->r2, info->r3, info->r12);
     for (;;);
 }
 
 #define PRINT_PORT    APB_UART0
-#define TRACE_PORT    APB_UART1
 
 #define KB_KEY_1      GIO_GPIO_1
 #define KB_KEY_2      GIO_GPIO_5
-
-trace_uart_t trace_ctx = {.port = TRACE_PORT};
 
 uint32_t cb_putc(char *c, void *dummy)
 {
@@ -65,26 +62,61 @@ void config_uart(uint32_t freq, uint32_t baud)
     config.BaudRate          = baud;
 
     apUART_Initialize(PRINT_PORT, &config, 1 << bsUART_RECEIVE_INTENAB);
-    config.BaudRate          = 921600;
-    apUART_Initialize(TRACE_PORT, &config, 1 << bsUART_TRANSMIT_INTENAB);
+}
+
+void hw_timer_restart(void)
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    TMR_Reload(APB_TMR1);
+    TMR_Enable(APB_TMR1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    TMR_Enable(APB_TMR1, 0, 0xf);
+#else
+    #error unknown or unsupported chip family
+#endif
+}
+
+void hw_timer_clear_int(void)
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    TMR_IntClr(APB_TMR1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    TMR_IntClr(APB_TMR1, 0, 0xf);
+#else
+    #error unknown or unsupported chip family
+#endif
+}
+
+void hw_timer_stop(void)
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    TMR_Disable(APB_TMR1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    TMR_Enable(APB_TMR1, 0, 0);
+#else
+    #error unknown or unsupported chip family
+#endif
 }
 
 void setup_peripherals(void)
-{    
+{
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1)
-                            | (1 << SYSCTRL_ClkGate_APB_UART1)
-                            | (1 << SYSCTRL_ClkGate_APB_GPIO));
+                            | (1 << SYSCTRL_ClkGate_APB_GPIO0));
 
     config_uart(OSC_CLK_FREQ, 115200);
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ);
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
 	TMR_IntEnable(APB_TMR1);
-    
-    // uart1: 18, 19
-    PINCTRL_SetPadMux(19, IO_SOURCE_GENERAL);
-    PINCTRL_SelUartRxdIn(UART_PORT_1, 19);
-    PINCTRL_SetPadMux(18, IO_SOURCE_UART1_TXD);
-    
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
+    TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0));
+    TMR_IntEnable(APB_TMR1, 0, 0xf);
+#else
+    #error unknown or unsupported chip family
+#endif
+
     PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GENERAL);
     PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GENERAL);
     GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
@@ -164,7 +196,7 @@ void sprint_addr(char *str, const uint8_t *addr)
 
 static void display_reset(void)
 {
-    OLED_Clear();     
+    OLED_Clear();
     OLED_ShowString(0, 0, "M->S:", 1, 16);
     OLED_ShowString(0, 2, "S->M:", 1, 16);
     OLED_ShowString(0, 5, "ING THROUGHPUT", 1, 12);
@@ -181,7 +213,7 @@ static void sprint_time(char *str, uint32_t sec)
 
 static void display_task(void *pdata)
 {
-    static uint32_t start_time;
+    static uint64_t start_time;
     int conn = 0;
     OLED_Init();
     display_reset();
@@ -194,30 +226,30 @@ static void display_task(void *pdata)
             if (conn == 0)
             {
                 sprint_addr(str, app_status.peer);
-                OLED_ShowString(0, 6, (uint8_t *)str, 1, 12);
-                start_time = RTC_Current();
+                OLED_ShowString(0, 6, str, 1, 12);
+                start_time = platform_get_us_time();
                 conn = 1;
             }
-            
+            printf("%d\n", __LINE__);
             if (app_status.m2s_bps > 0)
                 sprintf(str, "%7.1fkbps", app_status.m2s_bps / 1000.);
             else
                 sprintf(str, "%11s", "---");
-            OLED_ShowString(5 * 8, 0, (uint8_t *)str, 0, 16);
-            
+            OLED_ShowString(5 * 8, 0, str, 0, 16);
+
             if (app_status.s2m_bps > 0)
                 sprintf(str, "%7.1fkbps", app_status.s2m_bps / 1000.);
             else
                 sprintf(str, "%11s", "---");
-            OLED_ShowString(5 * 8, 2, (uint8_t *)str, 0, 16);
-            
+            OLED_ShowString(5 * 8, 2, str, 0, 16);
+
             {
-                uint32_t now = RTC_Current();
+                uint32_t now = platform_get_us_time();
                 if (now > start_time)
                 {
                     now -= start_time;
-                    sprint_time(str, now / 32768);
-                    OLED_ShowString(0, 7, (uint8_t *)str, 1, 12);
+                    sprint_time(str, (uint32_t)(now / 1000000));
+                    OLED_ShowString(0, 7, str, 1, 12);
                 }
             }
         }
@@ -295,7 +327,7 @@ int app_main()
     // setup handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
+    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, cb_lle_init, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
@@ -304,13 +336,8 @@ int app_main()
 
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
-    
+
     cmd_help(NULL);
-    
-    trace_uart_init(&trace_ctx);
-    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_uart, &trace_ctx);
-    platform_set_irq_callback(PLATFORM_CB_IRQ_UART1, (f_platform_irq_cb)trace_uart_isr, &trace_ctx);
-    platform_config(PLATFORM_CFG_TRACE_MASK, 0x00);
 
 #ifdef USE_DISPLAY
     display_init();

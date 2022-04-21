@@ -1,5 +1,7 @@
 #include "peripheral_adc.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+
 #define SET_BIT(V, n)       ((V) |  (1 << (n)))
 #define CLEAR_BIT(V, n)     ((V) & ~(1 << (n)))
 #define CHANGE_BIT(V, n, b) (CLEAR_BIT(V, n) | ((b) << (n)))
@@ -114,3 +116,6 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
     }
     return v & 0x3FF; // // 10bit ADC
 }
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#endif

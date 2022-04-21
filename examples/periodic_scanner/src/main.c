@@ -59,11 +59,7 @@ void setup_peripherals(void)
     int i;
     config_uart(OSC_CLK_FREQ, 921600);
     
-    for (i = 0; i < sizeof(ant_pins) / sizeof(ant_pins[0]); i++)
-    {
-        PINCTRL_SetPadMux(ant_pins[i], IO_SOURCE_GENERAL);
-        PINCTRL_SetGeneralPadMode(ant_pins[i], IO_MODE_ANT_SEL, 0, 0);
-    }
+    PINCTRL_EnableAllAntSelPins();
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)

@@ -2,7 +2,7 @@
 //
 //  Adopted from https://blog.csdn.net/Dancer__Sky/article/details/81504778
 //  Reference: https://www.analog.com/en/analog-dialogue/articles/pedometer-design-3-axis-digital-acceler.html
-// 
+//
 // *****************************************************************************
 
 #include <stdint.h>
@@ -11,7 +11,7 @@
 #include <string.h>
 #include <signal.h>
 
-#include "eflash.h"   
+#include "eflash.h"
 #include "bma2x2.h"
 #include "step_calc.h"
 
@@ -40,47 +40,48 @@ typedef struct slid_reg{
 	axis_info_t old_sample;
 }slid_reg_t;
 
-static pedometer_info_t result = 
+static pedometer_info_t result =
 {
+    .total_sample_cnt    = 0,
+    .temp_sample_cnt    = 0,
+    .total_steps   = 0,
+    .temp_steps    = 0,
+
     .speed         = 0,
     .cadence       = 0,
     .stride_length = 70,     // 70cm
     .total_distance= 0,
-    .total_steps   = 0,
-    .total_sample_cnt    = 0,
-    .temp_sample_cnt    = 0,
-    .temp_steps    = 0
 };
 
-#define MOST_ACTIVE_NULL                  0          
+#define MOST_ACTIVE_NULL                  0
 #define MOST_ACTIVE_X                     1
-#define MOST_ACTIVE_Y                     2 
+#define MOST_ACTIVE_Y                     2
 #define MOST_ACTIVE_Z                     3
-#define ACTIVE_PRECISION                  500 
- 
+#define ACTIVE_PRECISION                  500
+
 #define ABS(a) (0 - (a)) > 0 ? (-(a)) : (a)
 
-#define DYNAMIC_PRECISION                 200 
+#define DYNAMIC_PRECISION                 200
 
 #define FILTER_CNT            3
 #define PEAK_UPDATE_PERIOD    ACC_SAMPLING_RATE
 
-#define MAX(a,b) ((a) > (b) ? (a) : (b)) 
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 void filter(axis_info_t *sample, struct bma2x2_accel_data *sample_xyz)
 {
-    static uint8_t counter = 0; 
+    static uint8_t counter = 0;
     static struct bma2x2_accel_data buffer[FILTER_CNT] = {0};
     uint8_t i;
-    
+
     buffer[counter].x = sample_xyz->x >> 2;
     buffer[counter].y = sample_xyz->y >> 2;
     buffer[counter].z = sample_xyz->z >> 2;
-    counter++;   
+    counter++;
     if (counter == FILTER_CNT)
         counter = 0;
-    
+
     sample->x = 0; sample->y = 0; sample->z = 0;
     for (i = 0; i < FILTER_CNT; i++)
     {
@@ -110,13 +111,13 @@ static void update_peak(peak_value_t *peak, axis_info_t *cur_sample)
     peak->newmax.x = MAX(peak->newmax.x, cur_sample->x);
     peak->newmax.y = MAX(peak->newmax.y, cur_sample->y);
     peak->newmax.z = MAX(peak->newmax.z, cur_sample->z);
-    
+
     peak->newmin.x = MIN(peak->newmin.x, cur_sample->x);
     peak->newmin.y = MIN(peak->newmin.y, cur_sample->y);
     peak->newmin.z = MIN(peak->newmin.z, cur_sample->z);
-    
+
     sample_size++;
-    if (sample_size >= PEAK_UPDATE_PERIOD) 
+    if (sample_size >= PEAK_UPDATE_PERIOD)
     {
         sample_size = 0;
         peak->oldmax = peak->newmax;
@@ -124,25 +125,25 @@ static void update_peak(peak_value_t *peak, axis_info_t *cur_sample)
         peak_value_init(peak);
     }
 }
- 
+
 static char update_slid(slid_reg_t *slid, axis_info_t *cur_sample)
 {
     char res = 0;
-    
+
     slid->old_sample = slid->new_sample;
-    
+
     if (ABS((cur_sample->x - slid->new_sample.x)) > DYNAMIC_PRECISION)
     {
         slid->new_sample.x = cur_sample->x;
         res = 1;
     }
- 
+
     if (ABS((cur_sample->y - slid->new_sample.y)) > DYNAMIC_PRECISION)
     {
         slid->new_sample.y = cur_sample->y;
         res = 1;
     }
-    
+
     if (ABS((cur_sample->z - slid->new_sample.z)) > DYNAMIC_PRECISION)
     {
         slid->new_sample.z = cur_sample->z;
@@ -169,34 +170,34 @@ static char is_most_active(peak_value_t *peak)
 }
 
 void detect_step(peak_value_t *peak, slid_reg_t *slid)
-{ 
+{
     int16_t threshold;
     int16_t old_sample;
     int16_t new_sample;
-    
+
 #define check_axis(a)                                                           \
     do {                                                                        \
         threshold = (peak->oldmax.a + peak->oldmin.a) / 2;                      \
         old_sample = slid->old_sample.a; new_sample = slid->new_sample.a;       \
     } while (0)
-    
+
     if (peak->oldmax.x < peak->oldmin.x)
         return;
 
-    switch (is_most_active(peak)) 
+    switch (is_most_active(peak))
     {
-    case MOST_ACTIVE_X: 
+    case MOST_ACTIVE_X:
         check_axis(x);
         break;
-    
-    case MOST_ACTIVE_Y: 
+
+    case MOST_ACTIVE_Y:
         check_axis(y);
         break;
-    
-    case MOST_ACTIVE_Z: 
+
+    case MOST_ACTIVE_Z:
         check_axis(z);
         break;
-    default: 
+    default:
         return;
     }
 
@@ -206,7 +207,7 @@ void detect_step(peak_value_t *peak, slid_reg_t *slid)
         result.temp_steps++;
     }
 }
- 
+
 static struct bma2x2_accel_data sample_xyz = {0};
 static axis_info_t cur_sample = {0};
 
@@ -245,7 +246,7 @@ void simulate_read_accel_xyz(struct bma2x2_accel_data *sample_xyz)
         sim_cnt = 0;
         return;
     }
-    
+
     if (sim_cnt < ACC_SAMPLING_RATE - 5)
         sample_xyz->x = (sim_cnt + 5 - (ACC_SAMPLING_RATE - 5)) * 200;
     else
@@ -267,14 +268,14 @@ void accelarator_sample_sim(void)
 
     // update speed estimations
     if (result.temp_sample_cnt >= ACC_SAMPLING_RATE * 1)
-    {        
+    {
         result.cadence = result.temp_steps * 60;
         result.speed = ((uint32_t)(result.stride_length * result.temp_steps) << 8) / (100);
         result.total_distance = result.stride_length * result.total_steps / 10;
 
         result.temp_steps = 0;
         result.temp_sample_cnt = 0;
-    }    
+    }
 }
 
 void accelarator_sample(void)
@@ -301,12 +302,12 @@ void accelarator_sample(void)
 
     // update speed estimations
     if (result.temp_sample_cnt >= ACC_SAMPLING_RATE * 10)
-    {        
+    {
         result.cadence = result.temp_steps * 6;
         result.speed = ((uint32_t)(result.stride_length * result.temp_steps) << 8) / (10 * 100);
         result.total_distance = result.stride_length * result.total_steps / 10;
         printf("%d,%d\n", result.speed, result.total_distance);
-        
+
         result.temp_steps = 0;
         result.temp_sample_cnt = 0;
     }

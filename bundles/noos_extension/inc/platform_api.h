@@ -15,7 +15,7 @@
 #define _STACK_API_H_
 
 #include <stdint.h>
-
+#include "ingsoc.h"
 #include "ll_api.h"
 
 #ifdef __cplusplus
@@ -85,26 +85,13 @@ typedef enum
     // platform callback for output or save a trace item
     // NOTE: param (void *data) is casted from platform_trace_evt_t *
     PLATFORM_CB_EVT_TRACE,
+    
+    // platform callback for hardware exceptions
+    // NOTE: param (void *data) is casted from platform_exception_id_t
+    PLATFORM_CB_EVT_EXCEPTION,
 
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;
-
-typedef enum
-{
-    PLATFORM_CB_IRQ_RTC,
-    PLATFORM_CB_IRQ_TIMER0,
-    PLATFORM_CB_IRQ_TIMER1,
-    PLATFORM_CB_IRQ_TIMER2,
-    PLATFORM_CB_IRQ_GPIO,
-    PLATFORM_CB_IRQ_SPI0,
-    PLATFORM_CB_IRQ_SPI1,
-    PLATFORM_CB_IRQ_UART0,
-    PLATFORM_CB_IRQ_UART1,
-    PLATFORM_CB_IRQ_I2C0,
-    PLATFORM_CB_IRQ_I2C1,
-
-    PLATFORM_CB_IRQ_MAX
-} platform_irq_callback_type_t;
 
 typedef uint32_t (*f_platform_evt_cb)(void *data, void *user_data);
 typedef uint32_t (*f_platform_irq_cb)(void *user_data);
@@ -120,6 +107,16 @@ typedef struct
     uint16_t len1;
     uint16_t len2;
 } platform_evt_trace_t;
+
+// Exception ID
+typedef enum
+{
+    PLATFORM_EXCEPTION_NMI          = 0,
+    PLATFORM_EXCEPTION_HARD_FAULT   = 1,    // this will not be reported in `PLATFORM_CB_EVT_EXCEPTION`
+    PLATFORM_EXCEPTION_MPU_FAULT    = 2,
+    PLATFORM_EXCEPTION_BUS_FAULT    = 3,
+    PLATFORM_EXCEPTION_USAGE_FAULT  = 4,
+} platform_exception_id_t;
 
 // A trace item is has an ID
 typedef enum
@@ -464,6 +461,73 @@ void platform_post_sleep_processing(void);
  ****************************************************************************************
  */
 void platform_os_idle_resumed_hook(void);
+
+typedef enum
+{    
+    PLATFORM_TASK_CONTROLLER,
+    PLATFORM_TASK_HOST,
+    PLATFORM_TASK_RTOS_TIMER,
+} platform_task_id_t;
+
+/**
+ ****************************************************************************************
+ * @brief Get RTOS handle of a specific platform task
+ *
+ * @param[in]   id              task identifier
+ * @return                      task handle if such task is known to platform bundles else 0.
+ *                              0 is returned 
+ *                              For FreeRTOS bundles, this is casted from `TaskHandle_t`;
+ *                              For NoOS bundles, this is casted from `gen_handle_t`.
+ ****************************************************************************************
+ */
+uintptr_t platform_get_task_handle(platform_task_id_t id);
+
+/**
+ ****************************************************************************************
+ * @brief Init controller
+ *
+ * For NoOS bundles, and `task_create` is NULL in generic OS driver:
+ *
+ *     To use raw packet APIs, controller needs to be initialized, and call 
+ *     `platform_controller_run()` continously.
+ ****************************************************************************************
+ */
+void platform_init_controller(void);
+
+/**
+ ****************************************************************************************
+ * @brief Run controller
+ * 
+ * Controller will do its pending jobs, and return after all pending jobs are done.
+ ****************************************************************************************
+ */
+void platform_controller_run(void);
+
+/**
+ ****************************************************************************************
+ * @brief Setup a single-shot platform timer
+ *
+ * Note: 1. Comparing to hardware timers, this timer can be thought as "running" during
+ *          power saving;
+ *       1. Comparing to RTOS software timers, this timer is software + hardware too,
+ *       1. Comparing to RTOS software timers, this timer may be more accurate in some
+ *          circumstance;
+ *       1. This will always succeed, except when running out of memory;
+ *       1. `callback` is also the identifer of the timer, below two lines defines only
+ *          a timer expiring after 200 units but not two separate timers:
+ *          ```c
+ *          platform_set_timer(f, 100);
+ *          platform_set_timer(f, 200);
+ *          ```
+ * 
+ * @param[in]  callback         the callback function when the timer expired, and is
+ *                              called in a RTOS task (if existing) not an ISR
+ * @param[in]  delay            time delay before the timer expires (unit: 625us)
+ *                              Range: 0~0x7fffffff
+ *                              When `delay` == 0, the timer is cleared
+ ****************************************************************************************
+ */
+void platform_set_timer(void (* callback)(void), uint32_t delay);
 
 #ifdef __cplusplus
 }

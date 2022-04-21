@@ -7,6 +7,8 @@
 #include "btstack_event.h"
 #include "btstack_defines.h"
 #include "gatt_client.h"
+#include "ingsoc.h"
+#include "platform_util.h"
 
 #include "ad_parser.h"
 #include "gatt_client_util.h"
@@ -22,18 +24,53 @@ DEF_UUID(uuid_ota_data,     INGCHIPS_UUID_OTA_DATA);
 DEF_UUID(uuid_ota_ctrl,     INGCHIPS_UUID_OTA_CTRL);
 DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
 
+#ifndef TARGET_FAMILY
+#warning TARGET_FAMILY default to: ING918xx
+#define TARGET_FAMILY       INGCHIPS_FAMILY_918
+#endif
+
+#if (TARGET_FAMILY == INGCHIPS_FAMILY_918)
+    #define ENTRY                   0x04000
+    #define TARGET_STORAGE_START    0x44000
+    #define APP_BIN_SIZE            0x4000
+#elif (TARGET_FAMILY == INGCHIPS_FAMILY_916)
+    #define ENTRY                   0x02000000
+    #define TARGET_STORAGE_START    0x02100000
+    #define APP_BIN_SIZE            0x0000          // ignored for ING916
+#else
+    #error unknown or unsupported target chip family
+#endif
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define LOCAL_STORAGE_START     0x44000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define LOCAL_STORAGE_START     0x02100000
+#else
+    #error unknown or unsupported chip family
+#endif
+
+#define PLATFORM_BIN_SIZE       0x22000
+
 const ota_item_t ota_items[] =
 {
-    {.local_storage_addr = 0x44000, .target_storage_addr = 0x44000, .target_load_addr = 0x4000,  .size = 0x22000 },
-    {.local_storage_addr = 0x66000, .target_storage_addr = 0x66000, .target_load_addr = 0x26000, .size = 0x4000},
+    {
+        .local_storage_addr = LOCAL_STORAGE_START,
+        .target_storage_addr = TARGET_STORAGE_START,
+        .target_load_addr = ENTRY,
+        .size = PLATFORM_BIN_SIZE
+    },
+    {
+        .local_storage_addr = LOCAL_STORAGE_START + PLATFORM_BIN_SIZE,
+        .target_storage_addr = TARGET_STORAGE_START + PLATFORM_BIN_SIZE,
+        .target_load_addr = ENTRY + PLATFORM_BIN_SIZE,
+        .size = APP_BIN_SIZE
+    },
 };
 
 static ota_ver_t ota_ver =
 {
-    .app = { 1, 2, 0}
+    .app = {1, 2, 0}
 };
-
-#define ENTRY   0x4000
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -206,9 +243,9 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(user_packet_handler);
     gatt_client_register_handler(user_packet_handler);
 
-    const platform_ver_t * v = platform_get_version();
-    ota_ver.platform.major = v->major;
-    ota_ver.platform.minor = v->minor;
-    ota_ver.platform.patch = v->patch;
+    const struct platform_info * v = platform_inspect2(TARGET_STORAGE_START, TARGET_FAMILY);
+    ota_ver.platform.major = v->version.major;
+    ota_ver.platform.minor = v->version.minor;
+    ota_ver.platform.patch = v->version.patch;
     return 0;
 }

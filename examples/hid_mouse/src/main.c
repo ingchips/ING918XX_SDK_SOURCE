@@ -96,36 +96,65 @@ void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
 
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
                               | (1 << SYSCTRL_ClkGate_APB_TMR1)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                               | (1 << SYSCTRL_ClkGate_APB_PWM));
 
-    // setup timer 1: 1Hz
+    PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GPIO);
+    GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
+    GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE, GIO_INT_EDGE);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
+        
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    // setup timer 1: 10Hz
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 10);
     TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
     TMR_IntEnable(APB_TMR1);
     TMR_Reload(APB_TMR1);
     TMR_Enable(APB_TMR1);
 
-    PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GENERAL);
-    GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
     PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_UP);
-    GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE, GIO_INT_EDGE);
-    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
 
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GENERAL);
     PINCTRL_SetGeneralPadMode(LED_PIN, IO_MODE_PWM, LED_PWM_CH, 1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    // setup channel 0 of timer 1: 10Hz
+    TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
+    TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / 10);
+    TMR_Enable(APB_TMR1, 0, 0xf);
+    TMR_IntEnable(APB_TMR1, 0, 0xf);
+    
+    PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_UP);
+
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM6_B);
+#else
+    #error unknown or unsupported chip family
+#endif
 }
 
 uint32_t timer_isr(void *user_data)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    TMR_IntClr(APB_TMR1, 0, 0xf);
+#else
+    #error unknown or unsupported chip family
+#endif
+
     app_timer_callback();
     return 0;
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define DB_FLASH_ADDRESS  0x42000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define DB_FLASH_ADDRESS  0x20e0000
+#else
+#error unknown or unsupported chip family
+#endif
+
 int db_write_to_flash(const void *db, const int size)
 {
     platform_printf("write to flash, size = %d\n", size);

@@ -1,20 +1,20 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-pub usingnamespace @import("ingble.zig");
+const ingble = @import("ingble.zig");
 
-pub usingnamespace @import("gatt_client_async.zig");
+const gatt = @import("gatt_client_async.zig");
 
-const print = platform_printf;
-const enable_print = print_info == 1;
+const print = ingble.platform_printf;
+const enable_print = ingble.print_info == 1;
 
-const rom_crc: f_crc_t = @intToPtr(f_crc_t, 0x00000f79);
+const rom_crc: ingble.f_crc_t = @intToPtr(ingble.f_crc_t, 0x00000f79);
 
-fn same_version(a: *const prog_ver_t, b: * const prog_ver_t) bool {
+fn same_version(a: *const ingble.prog_ver_t, b: * const ingble.prog_ver_t) bool {
     return (a.*.major == b.*.major) and (a.*.minor == b.*.minor) and (a.*.patch == b.*.patch);
 }
 
-const PAGE_SIZE = @intCast(u32, EFLASH_PAGE_SIZE);
+const PAGE_SIZE = @intCast(u32, ingble.EFLASH_PAGE_SIZE);
 const HASH_SIZE = 32;
 const PK_SIZE = 64;
 const SK_SIZE = 32;
@@ -24,7 +24,7 @@ const FullSigMeta = packed struct {
     sig: [64]u8,
     crc_value: u16,
     entry: u32,
-    blocks: [MAX_UPDATE_BLOCKS]fota_update_block_t,
+    blocks: [ingble.MAX_UPDATE_BLOCKS]ingble.fota_update_block_t,
 };
 
 const EccKeys = struct {
@@ -32,7 +32,7 @@ const EccKeys = struct {
     peer_pk: [64]u8,
     dh_sk: [32]u8,
     xor_sk: [32]u8,
-    page_buffer: [EFLASH_PAGE_SIZE]u8,
+    page_buffer: [ingble.EFLASH_PAGE_SIZE]u8,
     page_end_cmd: [5 + 64]u8,
 };
 
@@ -45,19 +45,19 @@ const Client = struct {
     handle_pk: u16,
     mtu: u16,
     sig_meta: FullSigMeta = undefined,
-    ecc_driver: ?*ecc_driver_t,
+    ecc_driver: ?*ingble.ecc_driver_t,
     ecc_keys: ?*EccKeys = null,
 
-    fn fota_make_bitmap(self: *Client, optional_latest: ?*const ota_ver_t) ?u16 {
+    fn fota_make_bitmap(self: *Client, optional_latest: ?*const ingble.ota_ver_t) ?u16 {
         var bitmap: u16 = 0xffff;
         if (optional_latest) |latest| {
             var value_size: u16 = undefined;
-            if (value_of_characteristic_reader.read(self.conn_handle, self.handle_ver, &value_size)) |value| {
-                if (value_size != @sizeOf(ota_ver_t)) {
+            if (gatt.value_of_characteristic_reader.read(self.conn_handle, self.handle_ver, &value_size)) |value| {
+                if (value_size != @sizeOf(ingble.ota_ver_t)) {
                     return null;
                 }
 
-                const local = @ptrCast(*const ota_ver_t, @alignCast(2, value));
+                const local = @ptrCast(*const ingble.ota_ver_t, @alignCast(2, value));
                 if (enable_print) {
                     print("device version:\n");
                     print("platform: %d.%d.%d\n", local.*.platform.major, local.*.platform.minor, local.*.platform.patch);
@@ -76,26 +76,26 @@ const Client = struct {
     }
 
     fn write_cmd2(self: *Client, len: usize, data: [*c] const u8) u8 {
-        return gatt_client_write_value_of_characteristic_without_response(self.conn_handle, self.handle_ctrl, @intCast(u16, len), data);
+        return ingble.gatt_client_write_value_of_characteristic_without_response(self.conn_handle, self.handle_ctrl, @intCast(u16, len), data);
     }
 
     fn read_status(self: *Client) u8 {
         var value_size: u16 = undefined;
-        return (value_of_characteristic_reader.read(self.conn_handle, self.handle_ctrl, &value_size) orelse return 0xff).*;
+        return (gatt.value_of_characteristic_reader.read(self.conn_handle, self.handle_ctrl, &value_size) orelse return 0xff).*;
     }
 
     fn check_status(self: *Client) bool {
-        return self.read_status() == OTA_STATUS_OK;
+        return self.read_status() == ingble.OTA_STATUS_OK;
     }
 
     fn enable_fota(self: *Client) bool {
-        const cmd = [_]u8{OTA_CTRL_START, 0, 0, 0, 0};
+        const cmd = [_]u8{ingble.OTA_CTRL_START, 0, 0, 0, 0};
         _ = self.write_cmd2(cmd.len, &cmd[0]);
         return self.check_status();
     }
 
     fn reboot(self: *Client) bool {
-        const cmd = [_]u8{OTA_CTRL_REBOOT};
+        const cmd = [_]u8{ingble.OTA_CTRL_REBOOT};
         _ = self.write_cmd2(cmd.len, &cmd[0]);
         return true;
     }
@@ -106,7 +106,7 @@ const Client = struct {
             print("burn_page: %p, %08x, %d\n", data, target_addr, size);
         }
         var cmd = page_end_cmd;
-        cmd[0] = OTA_CTRL_PAGE_BEGIN;
+        cmd[0] = ingble.OTA_CTRL_PAGE_BEGIN;
         @memcpy(@ptrCast([*]u8, &cmd[1]), @ptrCast([*]const u8, &target_addr), 4);
         _ = self.write_cmd2(5, &cmd[0]);
         if (!self.check_status()) return false;
@@ -115,7 +115,7 @@ const Client = struct {
 
         while (remain > 0) {
             const block = if (remain >= self.mtu) self.mtu else remain;
-            if (gatt_client_write_value_of_characteristic_without_response(self.conn_handle,
+            if (ingble.gatt_client_write_value_of_characteristic_without_response(self.conn_handle,
                 self.handle_data, @intCast(u16, block), read) != 0) {
                 if (!self.check_status())
                     return false;
@@ -125,7 +125,7 @@ const Client = struct {
             remain -= block;
         }
         var crc_value = rom_crc.?(data, @intCast(u16, size));
-        cmd[0] = OTA_CTRL_PAGE_END;
+        cmd[0] = ingble.OTA_CTRL_PAGE_END;
         cmd[1] = @intCast(u8, size & 0xff);
         cmd[2] = @intCast(u8, size >> 8);
         cmd[3] = @intCast(u8, crc_value & 0xff);
@@ -166,7 +166,7 @@ const Client = struct {
         return true;
     }
 
-    fn burn_items(self: *Client, bitmap: u16, item_cnt: c_int, items: [*c] const ota_item_t) bool {
+    fn burn_items(self: *Client, bitmap: u16, item_cnt: c_int, items: [*c] const ingble.ota_item_t) bool {
         var index: usize = 0;
         while (index < item_cnt) : (index += 1) {
             if ((bitmap & (@as(u16, 1) << @intCast(u4, index))) == 0) continue;
@@ -180,8 +180,9 @@ const Client = struct {
         return true;
     }
 
-    fn prepare_meta_info(self: *Client, bitmap: u16, item_cnt: c_int, items: [*c] const ota_item_t, entry: u32,
+    fn prepare_meta_info(self: *Client, bitmap: u16, item_cnt: c_int, items: [*c] const ingble.ota_item_t, entry: u32,
                          data: *FullSigMeta) c_int {
+        _ = self;
         var index: usize = 0;
         var cnt: usize = 0;
         data.entry = entry;
@@ -196,7 +197,7 @@ const Client = struct {
         return @intCast(c_int, cnt);
     }
 
-    fn burn_meta(self: *Client, bitmap: u16, item_cnt: c_int, items: [*c] const ota_item_t, entry: u32) bool {
+    fn burn_meta(self: *Client, bitmap: u16, item_cnt: c_int, items: [*c] const ingble.ota_item_t, entry: u32) bool {
         const cnt = self.prepare_meta_info(bitmap, item_cnt, items, entry, &self.sig_meta);
 
         var total: c_int = undefined;
@@ -205,7 +206,7 @@ const Client = struct {
             driver.sign.?(&self.ecc_driver.?.session_sk[0], @ptrCast([*c] u8, &self.sig_meta.entry), @intCast(u16, cnt * 12 + 4),
                         &self.sig_meta.sig[0]);
             self.encrypt(@ptrCast([*c] u8, &self.sig_meta.entry), @intCast(usize, cnt * 12 + 4));
-            total = @sizeOf(FullSigMeta) - MAX_UPDATE_BLOCKS * @sizeOf(fota_update_block_t) +cnt * 12;
+            total = @sizeOf(FullSigMeta) - ingble.MAX_UPDATE_BLOCKS * @sizeOf(ingble.fota_update_block_t) +cnt * 12;
             p = @ptrCast([*c] u8, &self.sig_meta);
 
         } else {
@@ -213,26 +214,26 @@ const Client = struct {
             total = cnt * 12 + 4 + 2 + 1;
         }
 
-        p[0] = OTA_CTRL_METADATA;
+        p[0] = ingble.OTA_CTRL_METADATA;
         self.sig_meta.crc_value = rom_crc.?(@ptrCast([*c] u8, &self.sig_meta.entry), @intCast(u16, cnt * 12 + 4));
         _ = self.write_cmd2(@intCast(usize, total), p);
         return self.check_status();
     }
 
-    pub fn update(self: *Client, optional_latest: ?*const ota_ver_t,
+    pub fn update(self: *Client, optional_latest: ?*const ingble.ota_ver_t,
                               conn_handle: u16,
                               handle_ver: u16, handle_ctrl: u16, handle_data: u16, handle_pk: u16,
-                              item_cnt: c_int, items: [*c] const ota_item_t,
+                              item_cnt: c_int, items: [*c] const ingble.ota_item_t,
                               entry: u32,
-                              driver: ?*ecc_driver_t) c_int {
+                              driver: ?*ingble.ecc_driver_t) c_int {
         self.conn_handle = conn_handle;
         self.handle_ver = handle_ver;
         self.handle_ctrl = handle_ctrl;
         self.handle_data = handle_data;
         self.handle_pk = handle_pk;
         self.ecc_driver = driver;
-        if (item_cnt > MAX_UPDATE_BLOCKS) return -127;
-        _ = gatt_client_get_mtu(conn_handle, &self.mtu);
+        if (item_cnt > ingble.MAX_UPDATE_BLOCKS) return -127;
+        _ = ingble.gatt_client_get_mtu(conn_handle, &self.mtu);
         self.mtu -= 3;
 
         defer {
@@ -241,7 +242,7 @@ const Client = struct {
 
         if (self.ecc_driver) |a_driver| {
             var value_size: u16 = 0;
-            const value = value_of_characteristic_reader.read(conn_handle, handle_pk, &value_size) orelse return -20;
+            const value = gatt.value_of_characteristic_reader.read(conn_handle, handle_pk, &value_size) orelse return -20;
             if (value_size != PK_SIZE) return -21;
             self.ecc_keys = @ptrCast(*EccKeys, a_driver.alloc.?(@sizeOf(EccKeys)) orelse return -22);
 
@@ -252,8 +253,8 @@ const Client = struct {
 
             @memcpy(@ptrCast([*]u8, &buf[0]), a_driver.session_pk, PK_SIZE);
             a_driver.sign.?(a_driver.root_sk, a_driver.session_pk, PK_SIZE, &buf[PK_SIZE]);
-            if (0 != gatt_client_write_value_of_characteristic_without_response(conn_handle, handle_pk, PK_SIZE * 2, &buf[0])) return -24;
-            if (self.read_status() == OTA_STATUS_ERROR)
+            if (0 != ingble.gatt_client_write_value_of_characteristic_without_response(conn_handle, handle_pk, PK_SIZE * 2, &buf[0])) return -24;
+            if (self.read_status() == ingble.OTA_STATUS_ERROR)
                 return -25;
 
             a_driver.shared_secret.?(&a_driver.session_sk[0], &self.ecc_keys.?.peer_pk[0], &self.ecc_keys.?.dh_sk[0]);
@@ -274,14 +275,14 @@ const Client = struct {
     }
 };
 
-fn fota_client_do_update_async(optional_latest: ?*const ota_ver_t,
+fn fota_client_do_update_async(optional_latest: ?*const ingble.ota_ver_t,
                               conn_handle: u16,
                               handle_ver: u16, handle_ctrl: u16, handle_data: u16,
                               handle_pk: u16,
-                              item_cnt: c_int, items: [*c] const ota_item_t,
+                              item_cnt: c_int, items: [*c] const ingble.ota_item_t,
                               entry: u32,
                               on_done: fn (err_code: c_int) callconv(.C) void,
-                              driver: ?*ecc_driver_t) void {
+                              driver: ?*ingble.ecc_driver_t) void {
     var client: Client = undefined;
     on_done(client.update(optional_latest, conn_handle, handle_ver, handle_ctrl, handle_data, handle_pk,
                           item_cnt, items, entry, driver));
@@ -289,10 +290,10 @@ fn fota_client_do_update_async(optional_latest: ?*const ota_ver_t,
 
 var fota_frame: @Frame(fota_client_do_update_async) = undefined;
 
-export fn fota_client_do_update(optional_latest: ?*const ota_ver_t,
+export fn fota_client_do_update(optional_latest: ?*const ingble.ota_ver_t,
                               conn_handle: u16,
                               handle_ver: u16, handle_ctrl: u16, handle_data: u16,
-                              item_cnt: c_int, items: [*c] const ota_item_t,
+                              item_cnt: c_int, items: [*c] const ingble.ota_item_t,
                               entry: u32,
                               on_done: fn (err_code: c_int) callconv(.C) void) void {
     fota_frame = async fota_client_do_update_async(optional_latest, conn_handle,
@@ -301,13 +302,13 @@ export fn fota_client_do_update(optional_latest: ?*const ota_ver_t,
                                                    null);
 }
 
-export fn secure_fota_client_do_update(optional_latest: ?*const ota_ver_t,
+export fn secure_fota_client_do_update(optional_latest: ?*const ingble.ota_ver_t,
                               conn_handle: u16,
                               handle_ver: u16, handle_ctrl: u16, handle_data: u16, handle_pk: u16,
-                              item_cnt: c_int, items: [*c] const ota_item_t,
+                              item_cnt: c_int, items: [*c] const ingble.ota_item_t,
                               entry: u32,
                               on_done: fn (err_code: c_int) callconv(.C) void,
-                              driver: *ecc_driver_t) void {
+                              driver: *ingble.ecc_driver_t) void {
     fota_frame = async fota_client_do_update_async(optional_latest, conn_handle,
                                                    handle_ver, handle_ctrl, handle_data, handle_pk,
                                                    item_cnt, items, entry, on_done,
@@ -315,10 +316,11 @@ export fn secure_fota_client_do_update(optional_latest: ?*const ota_ver_t,
 }
 
 pub fn panic(message: []const u8, stack_trace: ?*std.builtin.StackTrace) noreturn {
+    _ = stack_trace;
     print("\n!KERNEL PANIC!\n");
     for (message) |value| {
         print("%c", value);
     }
-    platform_raise_assertion("panic", 0);
+    ingble.platform_raise_assertion("panic", 0);
     while (true) {}
 }

@@ -108,7 +108,7 @@
         "gap_rx_test_v2", 
         "gap_rx_test_v3", 
         "gap_tx_test_v2", 
-        "gap_tx_test_v3", 
+        "gap_tx_test_v4", 
         "gap_test_end", 
         "gap_vendor_tx_continuous_wave", 
         "gap_start_ccm", 
@@ -141,6 +141,8 @@
         "platform_set_rf_init_data", 
         "platform_set_rf_power_mapping", 
         "platform_patch_rf_init_data", 
+        "platform_get_task_handle", 
+        "platform_set_timer", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -171,7 +173,6 @@
         "l2cap_send_connectionless3", 
         "l2cap_le_send_flow_control_credit", 
         "l2cap_send_echo_request", 
-        "l2cap_require_security_level_2_for_outgoing_sdp", 
         "l2cap_init", 
         "l2cap_register_packet_handler", 
         "l2cap_max_mtu", 
@@ -276,6 +277,9 @@
         "xTaskCreate", 
         "xTaskCreateStatic", 
         "vTaskDelay", 
+        "uxTaskPriorityGet", 
+        "uxTaskPriorityGetFromISR", 
+        "vTaskPrioritySet", 
         "vTaskSuspend", 
         "vTaskResume", 
         "xTaskResumeFromISR", 
@@ -304,6 +308,7 @@
         "xTimerCreate", 
         "xTimerCreateStatic", 
         "pvTimerGetTimerID", 
+        "xTimerGetTimerDaemonTaskHandle", 
         "xTimerGetExpiryTime", 
         "xTimerCreateTimerTask", 
         "xTimerGenericCommand", 
@@ -326,15 +331,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 30988
+        "size": 30996
     }, 
     "rom": {
         "base": 16384, 
-        "size": 140084
+        "size": 139640
     }, 
     "version": [
         1, 
         7, 
-        8
+        12
     ]
 }

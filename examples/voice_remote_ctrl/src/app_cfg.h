@@ -27,4 +27,11 @@
 
 #define SAMPLING_RATE        (EFFECTIVE_SAMPLING_RATE * OVER_SAMPLING)
 
+#define PDM_PIN_MCLK        28
+#define PDM_PIN_IN          29
+
+#define I2S_PIN_BCLK        28
+#define I2S_PIN_IN          29
+#define I2S_PIN_LRCLK       30
+
 #endif

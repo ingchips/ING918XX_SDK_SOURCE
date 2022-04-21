@@ -5,18 +5,12 @@
 #include <string.h>
 
 #include "platform_api.h"
-#include "ing918_uecc.h"
+#include "ing_uecc.h"
 
 uint32_t cb_putc(char *c, void *dummy)
 {
     uint8_t ch = (uint8_t)*c;
-    UART_TypeDef* pBase;
-    
-#if(USE_UART1)
-    pBase = APB_UART1;
-#else
-    pBase = APB_UART0;
-#endif
+    UART_TypeDef * pBase = APB_UART0;
     
     while (apUART_Check_TXFIFO_FULL(pBase) == 1);
     UART_SendData(pBase, ch);
@@ -49,17 +43,13 @@ void config_uart(uint32_t freq, uint32_t baud)
     UART_0.BaudRate          = baud;
 
     apUART_Initialize(APB_UART0, &UART_0, 0);
-
-#if(USE_UART1)
-    UART_0.BaudRate          = 115200;
-    apUART_Initialize_1(APB_UART1, &UART_0, 0);
-#endif
 }
 
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_I2C0));
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
+                              |(1 << SYSCTRL_ClkGate_APB_PinCtrl));
 }
 
 uint32_t setup_profile(void *, void *);

@@ -5,9 +5,10 @@ RTE/
 *.uvguix.*
 *.dep
 *.scvd
-
+ll_noos/
 homekit-bulb/
 mesh-sensor-light/
 peripheral_dirfinding/
 ble_rpc/
 dual_i2c/
+music_player/

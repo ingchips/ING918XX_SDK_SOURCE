@@ -49,12 +49,13 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+    
+    PINCTRL_DisableAllInputs();
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)    
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
                               | (1 << SYSCTRL_ClkGate_APB_TMR2)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-    PINCTRL_DisableAllInputs();
-
 #if (BOARD == BOARD_REM)
     kb_init();
     // setup timer 2: 20Hz
@@ -67,6 +68,12 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(GIO_GPIO_1, IO_SOURCE_GENERAL);
     GIO_SetDirection(GIO_GPIO_1, GIO_DIR_OUTPUT);
     PINCTRL_SetPadPwmSel(GIO_GPIO_1, 1);
+#endif
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ITEM_APB_GPIO0)
+                              | (1 << SYSCTRL_ITEM_APB_GPIO1)
+                              | (1 << SYSCTRL_ITEM_APB_TMR2)
+                              | (1 << SYSCTRL_ITEM_APB_PinCtrl));
 #endif
 }
 

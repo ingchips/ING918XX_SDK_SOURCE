@@ -1,4 +1,3 @@
-
 #include "peripheral_uart.h"
 
 //  Update ther previous function for Cortex-M3 not support hard float calculate
@@ -47,7 +46,7 @@ void apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t B
     pBase->LineCon_H = pBase->LineCon_H;
 }
 
-   
+
 //
 // NOTE : ClockFrequency is freq of UARTCLK
 //
@@ -59,14 +58,14 @@ uint32_t apUART_BaudRateGet (UART_TypeDef* pBase, uint32_t ClockFrequency)
       BaudRateDiv = (float) (((pBase->FractBaudDivisor - 0.5)/64) + pBase->IntBaudDivisor);
       return (uint32_t) (ClockFrequency / BaudRateDiv);
   }
-  else 
+  else
   {
       return (uint32_t) ((ClockFrequency >> 4) / pBase->IntBaudDivisor);
   }
 }
 
 //
-// User Note :  
+// User Note :
 //   ARM UART TRM Page 53 -
 //   The received data character must be read first from the Data Register, UARTDR,
 //   before reading the error status associated with that data character from the
@@ -76,23 +75,23 @@ uint32_t apUART_BaudRateGet (UART_TypeDef* pBase, uint32_t ClockFrequency)
 uint8_t apUART_Check_Rece_ERROR(UART_TypeDef* pBase)
 {
 	uint8_t error = 0;
-	
+
 	if ( (pBase->StatusClear >> bsUART_STAT_FRAME) & BW2M(bwUART_STAT_FRAME) )   // FE
 		error += 1<<0;
-	
+
 	if ( (pBase->StatusClear >> bsUART_STAT_PARITY) & BW2M(bwUART_STAT_PARITY) )   // PE
 	  error += 1<<1;
-	  
+
 	if ( (pBase->StatusClear >> bsUART_STAT_BREAK) & BW2M(bwUART_STAT_BREAK) )   // BE
 		error += 1<<2;
-	
+
 	if ( (pBase->StatusClear >> bsUART_STAT_OVERRUN) & BW2M(bwUART_STAT_OVERRUN) )   // OE
 		error += 1<<3;
-	
+
 	return error;
 }
 
-// 
+//
 uint8_t apUART_Check_RXFIFO_EMPTY(UART_TypeDef* pBase)
 {
 	return ( (pBase->Flag >> bsUART_RECEIVE_EMPTY) & BW2M(bwUART_RECEIVE_EMPTY) );
@@ -118,7 +117,7 @@ uint8_t apUART_Check_BUSY(UART_TypeDef* pBase)
 	return ( (pBase->Flag >> bsUART_BUSY) & BW2M(bwUART_BUSY) );
 }
 
-//  ljl add get Receive Status Register 
+//  ljl add get Receive Status Register
 uint8_t apUART_Get_ITStatus(UART_TypeDef* pBase,uint8_t UART_IT)
 {
 	return ( (pBase->IntRaw >> UART_IT) & BW2M(UART_IT) );
@@ -130,21 +129,21 @@ uint8_t apUART_Get_ITStatus(UART_TypeDef* pBase,uint8_t UART_IT)
 //
 void apUART_Enable_TRANSMIT_INT(UART_TypeDef* pBase)
 {
-	pBase->IntMask |= 1<<bsUART_TRANSMIT_INTENAB; 
+	pBase->IntMask |= 1<<bsUART_TRANSMIT_INTENAB;
 }
 
 void apUART_Disable_TRANSMIT_INT(UART_TypeDef* pBase)
 {
-	pBase->IntMask &= ~(1<<bsUART_TRANSMIT_INTENAB); 
+	pBase->IntMask &= ~(1<<bsUART_TRANSMIT_INTENAB);
 }
 
 void apUART_Enable_RECEIVE_INT(UART_TypeDef* pBase)
 {
-	pBase->IntMask |= 1<<bsUART_RECEIVE_INTENAB; 
+	pBase->IntMask |= 1<<bsUART_RECEIVE_INTENAB;
 }
 void apUART_Disable_RECEIVE_INT(UART_TypeDef* pBase)
 {
-	pBase->IntMask &= ~(1<<bsUART_RECEIVE_INTENAB); 
+	pBase->IntMask &= ~(1<<bsUART_RECEIVE_INTENAB);
 }
 
 ////////////////////////////////////////////add for controller
@@ -171,47 +170,46 @@ void apUART_Clr_NonRx_INT(UART_TypeDef* pBase)
 
 static void uart_disable(UART_TypeDef* pBase)
 {
-    pBase->Control &= (~(1<<bsUART_ENABLE));  
+    pBase->Control &= (~(1<<bsUART_ENABLE));
 }
 
 static void uart_enable(UART_TypeDef* pBase)
 {
-    pBase->Control |= (1<<bsUART_ENABLE);  
+    pBase->Control |= (1<<bsUART_ENABLE);
 }
 
 
 static void uart_empty_fifo(UART_TypeDef* pBase)
 {
-    pBase->LineCon_H &= (~(1<<bsUART_FIFO_ENABLE)); 
+    pBase->LineCon_H &= (~(1<<bsUART_FIFO_ENABLE));
 }
 
 static void uart_enable_fifo(UART_TypeDef* pBase)
 {
-    pBase->LineCon_H &= (~(1<<bsUART_FIFO_ENABLE)); 
+    pBase->LineCon_H &= (~(1<<bsUART_FIFO_ENABLE));
 }
 
 
 void uart_reset(UART_TypeDef* pBase)
 {
-    volatile uint32_t trash;
-
 	apUART_Disable_RECEIVE_INT(pBase);
-	
+
 	uart_disable(pBase);
-	
+
 	while (apUART_Check_RXFIFO_EMPTY(pBase) != 1)
 	{
-		trash = pBase->DataRead;
+		volatile uint32_t trash = pBase->DataRead;
+        (void)trash;
 	}
-	
+
 	uart_empty_fifo(pBase);
 
 	uart_enable_fifo(pBase);
 
 	uart_enable(pBase);
-	
+
 	apUART_Enable_RECEIVE_INT(pBase);
-	
+
 }
 
 
@@ -219,8 +217,6 @@ void uart_reset(UART_TypeDef* pBase)
 //
 void apUART_Initialize (UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t IntMask)
 {
-	volatile uint32_t Trash;
-	
 	// clear Control Register, UARTCR
 	pBase->Control = 0;
 	// clear all interrupt
@@ -247,19 +243,19 @@ void apUART_Initialize (UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t 
     // set Interrupt FIFO Level Select Register, UARTIFLS
     pBase->FifoSelect = (UARTx->txfifo_waterlevel << bsUART_TRANS_INT_LEVEL ) | // TXIFLSEL
                       (UARTx->rxfifo_waterlevel << bsUART_RECV_INT_LEVEL  ) ; // RXIFLSEL
-  
+
     /* Empty the receive FIFO */
 
 	//	set all interrupt mask bit
-    pBase->IntMask = IntMask; 
+    pBase->IntMask = IntMask;
 
     // set Control Register, UARTCR, at last
-    pBase->Control = UARTx->receive_en  << bsUART_RECEIVE_ENABLE | 
-                    UARTx->transmit_en << bsUART_TRANSMIT_ENABLE | 
+    pBase->Control = UARTx->receive_en  << bsUART_RECEIVE_ENABLE |
+                    UARTx->transmit_en << bsUART_TRANSMIT_ENABLE |
                     UARTx->UART_en     << bsUART_ENABLE          |
                     UARTx->cts_en      << bsUART_CTS_ENA         |
                     UARTx->rts_en      << bsUART_RTS_ENA;
- 
+
 }
 
 void UART_SendData(UART_TypeDef* pBase, uint8_t Data)
@@ -271,3 +267,10 @@ uint8_t UART_ReceData(UART_TypeDef* pBase)
 {
 	return pBase->DataRead;
 }
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+void UART_DmaEnable(UART_TypeDef *pBase, uint8_t tx_enable, uint8_t rx_enable, uint8_t dma_on_err)
+{
+    pBase->DmaCon = rx_enable | (tx_enable << 1) | (dma_on_err << 2);
+}
+#endif
