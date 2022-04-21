@@ -10,7 +10,7 @@ ING918xx is a fully integrated Bluetooth Low Energy wireless communication SoC t
 
 ### The Easy Way
 
-[Download](https://github.com/ingchips/sdk/releases) &
+[Download](https://github.com/ingchips/ING918XX_SDK_SOURCE/releases) setup file &
 install our SDK package, which includes not only source code, but also GUI tools and documentation.
 
 ### The Hard Way
@@ -36,7 +36,7 @@ To build Nim projects, besides of Gnu Arm toolchain & CMSIS:
 
 ## License
 
-   Copyright 2019-2020 INGCHIPS
+   Copyright 2019-2021 INGCHIPS
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
