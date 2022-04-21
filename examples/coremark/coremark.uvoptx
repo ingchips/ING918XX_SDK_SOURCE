@@ -239,8 +239,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\startup_ing91600.s</PathWithFileName>
-      <FilenameWithoutPath>startup_ing91600.s</FilenameWithoutPath>
+      <PathWithFileName>.\src\startup_ing91800.s</PathWithFileName>
+      <FilenameWithoutPath>startup_ing91800.s</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -251,7 +251,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\bundles\typical\ING9168xx\symdefs.m</PathWithFileName>
+      <PathWithFileName>../..\bundles\typical\ING9188xx\symdefs.m</PathWithFileName>
       <FilenameWithoutPath>symdefs.m</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

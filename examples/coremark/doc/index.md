@@ -8,6 +8,7 @@ always use latest IDE/toolchain, and below are recommendations on compiler optio
 * ING918xx Family
 
     * Use compiler version 6 (ARMClang)
+    * Enable LTO
     * Optimization: `-Ofast`
     * One ELF per function
     * Preprocessor: `ITERATIONS=3000`
@@ -15,6 +16,7 @@ always use latest IDE/toolchain, and below are recommendations on compiler optio
 * ING916xx Family
 
     * Use compiler version 6 (ARMClang)
+    * Enable LTO
     * Optimization: `-Ofast`
     * One ELF per function
     * Preprocessor: `ITERATIONS=15000`

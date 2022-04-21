@@ -9,9 +9,9 @@
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ing91600</Device>
+          <Device>ing91800</Device>
           <Vendor>INGCHIPS</Vendor>
-          <Cpu>CLOCK(128000000) CPUTYPE("Cortex-M4") ELITTLE IROM(0x2000000-0x21fffff) IRAM(0x20000000-0x20007fff)</Cpu>
+          <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
           <FlashUtilSpec/>
           <StartupFile/>
           <FlashDriverDll/>
@@ -294,8 +294,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>33701888</StartAddress>
-                <Size>-31588352</Size>
+                <StartAddress>163840</StartAddress>
+                <Size>376832</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893496</StartAddress>
-                <Size>10184</Size>
+                <StartAddress>536901912</StartAddress>
+                <Size>34536</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -348,7 +348,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER,ITERATIONS=1000,FLAGS_STR=\"TODO\"</Define>
               <Undefine/>
-              <IncludePath>./coremark;./src;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
+              <IncludePath>./coremark;./src;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -405,14 +405,14 @@
           <GroupName>StartUP</GroupName>
           <Files>
             <File>
-              <FileName>startup_ing91600.s</FileName>
+              <FileName>startup_ing91800.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\src\startup_ing91600.s</FilePath>
+              <FilePath>.\src\startup_ing91800.s</FilePath>
             </File>
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>../..\bundles\typical\ING9168xx\symdefs.m</FilePath>
+              <FilePath>../..\bundles\typical\ING9188xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
