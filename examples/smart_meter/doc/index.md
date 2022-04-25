@@ -79,7 +79,7 @@ begin
 end;
 ```
 
-It is also possible to use the Python Downloader, and in this case [Python script](https://ingchips.github.io/user_guide_cn/core-tools.html#python-%E7%89%88%E6%9C%AC) can be used to do the job.
+It is also possible to use the Python Downloader, and in this case [Python script](https://ingchips.github.io/user_guide/core-tools.html#python-%E7%89%88%E6%9C%AC) can be used to do the job.
 
 Suppose the download address of the bin is `X`, modify _Thermometer with FOTA_ to get address from this
 location like this:

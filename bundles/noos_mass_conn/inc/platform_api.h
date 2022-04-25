@@ -492,9 +492,7 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  *     `platform_controller_run()` continously.
  ****************************************************************************************
  */
-// void platform_init_controller(void);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_init_controller(void);
 
 /**
  ****************************************************************************************
@@ -503,9 +501,7 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  * Controller will do its pending jobs, and return after all pending jobs are done.
  ****************************************************************************************
  */
-// void platform_controller_run(void);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_controller_run(void);
 
 /**
  ****************************************************************************************

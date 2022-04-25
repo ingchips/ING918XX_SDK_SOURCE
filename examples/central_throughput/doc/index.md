@@ -42,7 +42,7 @@ Two test modes are implemented:
     checks the content and measures the round trip time.
 
 Mode of _Peripheral_ is controlled by Key 1: keep Key 1 **released** and reset, then it will run in
-throughput mode; while keep Key 1 **pressed** and reset, it will run in throughput mode.
+throughput mode; while keep Key 1 **pressed** and reset, it will run in loopback mode.
 Mode of _Central_ is controlled by entering commands through the default UART interface.
 
 ## Hardware Setup
