@@ -94,16 +94,16 @@ const char *fmt_rtc_timestamp(char *str, uint32_t rtc_value)
 
 const char *fmt_us_timestamp(char *str, uint64_t us_time)
 {
-    uint32_t t = us_time;
-    uint32_t sec = t / 1000000;
+    uint64_t t = us_time;
+    uint64_t sec = t / 1000000;
     uint32_t sub_sec = t - sec * 1000000;
     uint32_t msec = sub_sec / 1000;
     uint32_t usec = sub_sec - msec * 1000;
-    uint32_t min = sec / 60;
-    uint32_t hour = min / 60;
+    uint64_t min = sec / 60;
+    uint64_t hour = min / 60;
     sec -= min * 60;
     min -= hour * 60;
-    sprintf(str, "%02u:%02u:%02u.%03u,%03u", hour, min, sec, msec, usec);
+    sprintf(str, "%02llu:%02u:%02u.%03u,%03u", hour, (uint32_t)min, (uint32_t)sec, msec, usec);
     return str;
 }
 

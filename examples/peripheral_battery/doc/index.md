@@ -21,4 +21,4 @@ output.
     1. Call `adc_prepare_calibration()` in `app_main()`
     1. Call `adc_calibrate` to post-process the raw ADC value.
 
-* `read_adc()` should be used as a reference to read ADC value although it looks like wired.
+* `read_adc()` should be used as a reference to read ADC value although it looks like weird.

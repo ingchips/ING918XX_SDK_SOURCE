@@ -267,8 +267,6 @@ void rt_system_power_manager(void)
 {
 #ifdef POWER_SAVING
     rt_tick_t timeout_tick;
-    rt_tick_t delta_tick = 0;
-    rt_base_t level;
    
     timeout_tick = rt_timer_next_timeout_tick();
     if (timeout_tick != RT_TICK_MAX)

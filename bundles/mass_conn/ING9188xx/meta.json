@@ -316,6 +316,7 @@
         "pvPortMalloc", 
         "vPortFree", 
         "xPortStartScheduler", 
+        "vPortEndScheduler", 
         "vPortEnterCritical", 
         "vPortExitCritical", 
         "vPortSuppressTicksAndSleep", 
@@ -331,15 +332,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 34216
+        "size": 34208
     }, 
     "rom": {
         "base": 16384, 
-        "size": 140552
+        "size": 140600
     }, 
     "version": [
         1, 
         7, 
-        12
+        18
     ]
 }

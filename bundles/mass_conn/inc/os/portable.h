@@ -167,9 +167,7 @@ BaseType_t xPortStartScheduler( void ) PRIVILEGED_FUNCTION;
  * the hardware is left in its original condition after the scheduler stops
  * executing.
  */
-// void vPortEndScheduler( void ) PRIVILEGED_FUNCTION;
-// WARNING: ^^^ this API is not available in this release
-
+void vPortEndScheduler( void ) PRIVILEGED_FUNCTION;
 
 /*
  * The structures and methods of manipulating the MPU are contained within the

@@ -66,7 +66,7 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-#define PIN_BUZZER 8
+#define PIN_BUZZER GIO_GPIO_8
 
 void setup_peripherals(void)
 {

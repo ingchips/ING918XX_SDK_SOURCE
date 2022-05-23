@@ -13,7 +13,7 @@ This example demonstrates lots of BLE functionalities controlled through UART:
 
 This example exposes a command line interface through UART. Some notable commands are listed below.
 
-**IMPORTANT**: This example's purpose is to demonstrate functionalities and usage of APIs. Some of the
+:exclamation:**IMPORTANT:** This example's purpose is to demonstrate functionalities and usage of APIs. Some of the
 commands may not work if another specific command is sent, such as `ascan` after `scan`, `conn AAAA`
 after `conn BBB`. Just reset before sending these commands.
 
