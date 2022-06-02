@@ -6,6 +6,8 @@ This example demonstrates how to:
 * Dynamic changing of advertising data & address;
 * GATT client operations (discovering, subscribing, etc);
 * Trace Demo: SWD/UART/Flash/Air.
+* Power Control
+* Subrating
 
 Note: Use a serial tool to communicate. CR/LF is used
       to mark the end of a command.
