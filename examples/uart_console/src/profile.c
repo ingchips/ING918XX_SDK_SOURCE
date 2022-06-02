@@ -28,6 +28,12 @@
 extern trace_air_t trace_ctx;
 #endif
 
+#define RX_GOLDEN_RAGE_MIN (-75)
+#define RX_GOLDEN_RAGE_MAX (-50)
+
+#define OPCODE(ogf, ocf)            (ocf | ogf << 10)
+#define OPCODE_READ_RSSI            OPCODE(OGF_STATUS_PARAMETERS, 0x05)
+
 sm_persistent_t sm_persistent =
 {
     .er = {1, 2, 3},
@@ -66,6 +72,9 @@ const static uint8_t profile_data[] = {
 uint16_t mas_conn_handle = INVALID_HANDLE;
 uint16_t sla_conn_handle = INVALID_HANDLE;
 static int bonding_flag = 0;
+uint8_t peer_feature_power_control = 0;
+uint8_t peer_feature_subrate = 0;
+uint8_t auto_power_ctrl = 0;
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -209,6 +218,8 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
 #define USER_MSG_SET_INTERVAL       15
 #define USER_MSG_START_SCAN_OLD_ADDR    16
 #define USER_MSG_START_SCAN_OLD_ALL     17
+#define USER_MSG_READ_RSSI              18
+#define USER_MSG_SUBRATE_REQ            19
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
@@ -290,6 +301,8 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         break;
     case USER_MSG_CONN_TO_SLAVE:
         printf("create connection...\n");
+        peer_feature_power_control = 0;
+        peer_feature_subrate = 0;
         gap_ext_create_connection(INITIATING_ADVERTISER_FROM_PARAM,
                                                   BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
                                                   slave_addr_type,                  // Peer_Address_Type,
@@ -476,6 +489,16 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         trace_air_send(&trace_ctx);
         break;
 #endif
+    case USER_MSG_READ_RSSI:
+        if (mas_conn_handle != INVALID_HANDLE)
+            gap_read_rssi(mas_conn_handle);
+        if (sla_conn_handle != INVALID_HANDLE)
+            gap_read_rssi(sla_conn_handle);
+        break;
+    case USER_MSG_SUBRATE_REQ:
+        gap_subrate_request(0, size, size, 1, 
+                            0, 2000);
+        break;
     default:
         ;
     }
@@ -559,6 +582,42 @@ void set_phy(int phy)
     btstack_push_user_msg(USER_MSG_SET_PHY, NULL, phy);
 }
 
+void ble_set_conn_power(int level)
+{
+    ll_set_conn_tx_power(0, (int16_t)level);
+}
+
+void ble_adjust_peer_tx_power(int delta)
+{
+    if (peer_feature_power_control)
+    {
+        ll_adjust_conn_peer_tx_power(0, (int8_t)delta);
+    }
+    else
+        iprintf("ERROR: peer does not support power control\n");
+}
+
+void ble_set_conn_subrate(int factor)
+{
+    if (peer_feature_subrate)
+    {
+        btstack_push_user_msg(USER_MSG_SUBRATE_REQ, NULL, factor);
+    }
+    else
+        iprintf("ERROR: peer does not support power control\n");
+}
+
+void ble_set_auto_power_control(int enable)
+{
+    auto_power_ctrl = enable;
+    iprintf("Auto power control %s.\n", enable ? "enabled" : "disabled");
+}
+
+void ble_read_rssi(void)
+{
+    btstack_push_user_msg(USER_MSG_READ_RSSI, NULL, 0);
+}
+
 void set_interval(int interval)
 {
     btstack_push_user_msg(USER_MSG_SET_INTERVAL, NULL, interval);
@@ -589,7 +648,7 @@ typedef struct read_remote_version
 } read_remote_version_t;
 #pragma pack (pop)
 
-static void print_features(const le_meta_event_read_remote_feature_complete_t * complete)
+static void check_and_print_features(const le_meta_event_read_remote_feature_complete_t * complete)
 {
     static const char features[][48] =
     {
@@ -632,7 +691,7 @@ static void print_features(const le_meta_event_read_remote_feature_complete_t * 
         "Periodic Advertising ADI",
         "Connection Subrating",
         "Connection Subrating (Host Support)",
-        "Channel Classification",        
+        "Channel Classification",
     };
     int i;
     iprintf("Features of peer #%d (status %d)\n", complete->handle, complete->status);
@@ -643,6 +702,10 @@ static void print_features(const le_meta_event_read_remote_feature_complete_t * 
         iprintf("[%c] %s\n", complete->features[B_i] & (1 << b_i) ? '*' : ' ', features[i]);
     }
     iprintf("\n");
+    peer_feature_power_control = (complete->features[4] & 0x6) == 0x6;
+    peer_feature_subrate = (complete->features[4] & 0x60) == 0x60;
+    iprintf("peer_feature_power_control = %d\n", peer_feature_power_control);
+    iprintf("peer_feature_subrate = %d\n", peer_feature_subrate);
 }
 
 static const char *decode_version(int ver)
@@ -662,6 +725,38 @@ static const char *decode_version(int ver)
     }
 }
 
+static const char *decode_zone(le_path_loss_zone_event_t zone_entered)
+{
+    switch (zone_entered)
+    {
+    case PATH_LOSS_ZONE_ENTER_LOW:
+        return "LOW";
+    case PATH_LOSS_ZONE_ENTER_MIDDLE:
+        return "MIDDLE";
+    default:
+        return "HIGH";
+    }
+}
+
+static const char *decode_unified_phy(unified_phy_type_t phy)
+{
+    static const char phys[4][5] = {"1M", "2M", "S8", "S2"};
+    return phys[phy];
+}
+
+static const char *decode_tx_power_reason(le_tx_power_reporting_reason_t reason)
+{
+    switch (reason)
+    {
+    case TX_POWER_REPORTING_REASON_LOCAL_CHANGED:
+        return "LOCAL CHANGED";
+    case TX_POWER_REPORTING_REASON_REMOTE_CHANGED:
+        return "REMOTE CHANGED";
+    default:
+        return "HCI COMPLETE";
+    }
+}
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -673,9 +768,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        
+
         platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, 1500);
-        
+        ll_set_tx_power_range(-30, 10);
+
         gap_set_random_device_address(sm_persistent.identity_addr);
         gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
         gap_set_ext_adv_para(0,
@@ -711,7 +807,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                             platform_printf("Interval: %d ms\n", (int)((now - last_seen) / 1000));
                         last_seen = now;
                     }
-                    
+
                     platform_printf("ADV %02X:%02X:%02X:%02X:%02X:%02X (%s) %ddBm\n"
                                 "Type: 0x%02x\n",
                                 report->address[5], report->address[4], report->address[3],
@@ -731,8 +827,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 report->addr_type ? "RANDOM" : "PUBLIC",
                                 report->rssi, report->evt_type);
                 }
-                    
-                
+
+
                 print_hex_table(report->data, report->data_len, print_fun);
                 platform_printf("\n");
             }
@@ -741,6 +837,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_meta_event_enh_create_conn_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
+
+                if (complete->status != 0) break;
 
                 if (HCI_ROLE_SLAVE == complete->role)
                 {
@@ -753,15 +851,25 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 else
                 {
                     mas_conn_handle = complete->handle;
-                    gap_read_remote_info(mas_conn_handle);
                 }
+
+
+                gap_read_remote_info(complete->handle);
             }
             break;
         case HCI_SUBEVENT_LE_READ_REMOTE_USED_FEATURES_COMPLETE:
             {
                 const le_meta_event_read_remote_feature_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_read_remote_feature_complete_t);
-                print_features(complete);
+                check_and_print_features(complete);
+
+                gap_set_path_loss_reporting_param(complete->handle,
+                                                  60, 8,
+                                                  30, 8, 50);
+                gap_set_path_loss_reporting_enable(complete->handle, 1);
+                gap_set_tx_power_reporting_enable(complete->handle, 1,
+                                                  peer_feature_power_control);
+
                 if (complete->handle == mas_conn_handle)
                 {
                     if (0 == bonding_flag)
@@ -782,6 +890,56 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_meta_event_conn_update_complete_t *cmpl = decode_hci_le_meta_event(packet, le_meta_event_conn_update_complete_t);
                 platform_printf("CONN updated: interval %.2f ms\n", cmpl->interval * 1.25);
+            }
+            break;
+        case HCI_SUBEVENT_LE_PATH_LOSS_THRESHOLD:
+            {
+                const lle_meta_path_loss_threshold_t *rpt = decode_hci_le_meta_event(packet, lle_meta_path_loss_threshold_t);
+
+                platform_printf("PATH_LOSS_THRESHOLD:\n"
+                                "current_path_loss = %d dB\n"
+                                "zone_entered      = %s\n\n",
+                                rpt->current_path_loss,
+                                decode_zone(rpt->zone_entered));
+                if (auto_power_ctrl)
+                    gap_read_rssi(rpt->conn_handle);
+            }
+            break;
+        case HCI_SUBEVENT_LE_TRANSMIT_POWER_REPORTING:
+            {
+                const le_meta_tx_power_reporting_t *rpt = decode_hci_le_meta_event(packet, le_meta_tx_power_reporting_t);
+                platform_printf("TRANSMIT_POWER_REPORTING:\n"
+                                "status                 = %d\n"
+                                "reason                 = %s\n"
+                                "phy                    = %s\n"
+                                "tx_power_level         = %d dBm\n"
+                                "tx_power_level_flag    = %d\n"
+                                "delta                  = %d dB\n\n",
+                                rpt->status,
+                                decode_tx_power_reason(rpt->reason),
+                                decode_unified_phy(rpt->phy),
+                                rpt->tx_power_level,
+                                rpt->tx_power_level_flag,
+                                rpt->delta
+                                );
+
+            }
+            break;
+        case HCI_SUBEVENT_LE_SUBRATE_CHANGE:
+            {
+                const le_meta_subrate_change_t *rpt = decode_hci_le_meta_event(packet, le_meta_subrate_change_t);
+                platform_printf("SUBRATE_CHANGE:\n"
+                                "status             = %d\n"
+                                "subrate_factor     = %d\n"
+                                "peripheral_latency = %d\n"
+                                "continuation_number= %d\n"
+                                "supervision_timeou = %d\n\n",
+                                rpt->status,
+                                rpt->subrate_factor,
+                                rpt->peripheral_latency,
+                                rpt->continuation_number,
+                                rpt->supervision_timeout
+                                );
             }
             break;
         default:
@@ -812,7 +970,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 #if (defined TRACE_TO_AIR)
                 trace_air_enable(&trace_ctx, 0, 0, 0);
                 start_adv();
-#endif    
+#endif
             }
             if (complete->conn_handle == mas_conn_handle)
             {
@@ -828,10 +986,33 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_COMMAND_COMPLETE:
         {
+            const event_command_complete_return_param_read_rssi_t *
+                read_rssi;
             const uint8_t *returns = hci_event_command_complete_get_return_parameters(packet);
             if (*returns != 0)
+            {
                 platform_printf("COMMAND_COMPLETE: 0x%02x for OPCODE %04X\n",
                     *returns, hci_event_command_complete_get_command_opcode(packet));
+                break;
+            }
+
+            switch (hci_event_command_complete_get_command_opcode(packet))
+            {
+            case OPCODE_READ_RSSI:
+                read_rssi = (const event_command_complete_return_param_read_rssi_t *)returns;
+                iprintf("RSSI: %d dBm", read_rssi->rssi);
+                if (auto_power_ctrl)
+                {
+                    int delta = 0;
+                    if (read_rssi->rssi > RX_GOLDEN_RAGE_MAX)
+                        delta = RX_GOLDEN_RAGE_MAX - read_rssi->rssi;
+                    else if (read_rssi->rssi < RX_GOLDEN_RAGE_MIN)
+                        delta = RX_GOLDEN_RAGE_MIN - read_rssi->rssi;
+                    if (delta != 0)
+                        ll_adjust_conn_peer_tx_power(read_rssi->conn_handle, delta);
+                }
+                break;
+            }
         }
         break;
     case HCI_EVENT_COMMAND_STATUS:
@@ -854,8 +1035,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 version->Version, decode_version(version->Version),
                 version->Manufacturer_Name, version->Subversion);
             }
-            if (version->Connection_Handle == mas_conn_handle)
-                gap_read_remote_used_features(mas_conn_handle);
+            gap_read_remote_used_features(version->Connection_Handle);
         }
         break;
 
@@ -908,7 +1088,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         platform_printf("not authourized\n");
         if (bonding_flag && (mas_conn_handle != INVALID_HANDLE))
         {
-            iprintf("paring...\n");            
+            iprintf("paring...\n");
             sm_request_pairing(mas_conn_handle);
         }
         break;

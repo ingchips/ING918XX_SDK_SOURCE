@@ -56,11 +56,70 @@ static const char help[] =  "commands:\n"
                             "interval x                 central only(in 1.25 ms)\n"
                             "assert                     raise assertion\n"
                             "trace  0/1                 enable/disable flash trace\n"
+                            "cpwr   power               set connection tx power in dBm\n"
+                            "pwrctl delta               adjust peer tx power in dB\n"
+                            "auto   0/1                 enable/disable auto power control\n"
+                            "subr   factor              subrate with factor\n"
+                            "rssi                       read RX RSSI\n"
                             ;
 
 void cmd_help(const char *param)
 {
     tx_data(help, strlen(help) + 1);
+}
+
+void cmd_rssi(const char *param)
+{
+    extern void ble_read_rssi(void);
+    ble_read_rssi();
+}
+
+void cmd_auto(const char *param)
+{
+    extern void ble_set_auto_power_control(int enable);
+    int enable = 0;
+    if (sscanf(param, "%d", &enable) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    ble_set_auto_power_control(enable);
+}
+
+void cmd_cpwr(const char *param)
+{
+    extern void ble_set_conn_power(int level);
+    int level = 0;
+    if (sscanf(param, "%d", &level) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    ble_set_conn_power(level);
+}
+
+void cmd_subr(const char *param)
+{
+    extern void ble_set_conn_subrate(int factor);
+    int value = 0;
+    if (sscanf(param, "%d", &value) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    ble_set_conn_subrate(value);
+}
+
+void cmd_pwrctl(const char *param)
+{
+    extern void ble_adjust_peer_tx_power(int delta);
+    int delta = 0;
+    if (sscanf(param, "%d", &delta) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    ble_adjust_peer_tx_power(delta);
 }
 
 void cmd_read(const char *param)
@@ -445,6 +504,26 @@ static cmd_t cmds[] =
         .cmd = "trace",
         .handler = cmd_trace
     },
+    {
+        .cmd = "cpwr",
+        .handler = cmd_cpwr
+    },
+    {
+        .cmd = "pwrctl",
+        .handler = cmd_pwrctl
+    },
+    {
+        .cmd = "subr",
+        .handler = cmd_subr
+    },
+    {
+        .cmd = "auto",
+        .handler = cmd_auto
+    },
+    {
+        .cmd = "rssi",
+        .handler = cmd_rssi
+    }
 };
 
 void handle_command(char *cmd_line)
