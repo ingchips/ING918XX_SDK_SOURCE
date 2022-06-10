@@ -377,6 +377,28 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
 
 /**
  ****************************************************************************************
+ * @brief Set a fake CTEInfo value for CTE transmission of a raw packet object
+ *
+ * Note: When using this function, this function should be called after `ll_raw_packet_set_tx_cte`.
+ *
+ *       A possible use case: Both Rx/Tx sides of CTE switch antennas:
+ *         1) Call `ll_raw_packet_set_tx_cte` setup AoD transmission;
+ *         2) Call `ll_raw_packet_set_fake_cte`  to modify CTEInfo to AoA.
+ *
+ * @param[in]   packet                  the packet object
+ * @param[in]   cte_type                cte_type (0: AoA; 1: AoD 1us; 2: AoD 2us)
+ * @param[in]   cte_len                 CTE length in 8us
+ * @return                              0 if successful else error code
+ ****************************************************************************************
+ */
+// int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
+//                           uint8_t cte_type,
+//                           uint8_t cte_len);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
  * @brief Set parameters for CTE reception of a raw packet object
  *
  * @param[in]   packet                  the packet object
