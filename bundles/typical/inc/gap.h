@@ -124,14 +124,25 @@ uint8_t gap_read_remote_info(hci_con_handle_t handle);
 uint8_t gap_le_read_channel_map(hci_con_handle_t handle);
 
 /**
- * @brief physical channel type
+ * @brief PHY type
  */
 typedef enum phy_type
 {
-     PHY_1M = 0x01,
-     PHY_2M = 0x02,
-     PHY_CODED = 0x03,
+    PHY_1M = 0x01,
+    PHY_2M = 0x02,
+    PHY_CODED = 0x03,
 } phy_type_t;
+
+/**
+ * @brief unified PHY type
+ */
+typedef enum unified_phy_type
+{
+    UNIFIED_PHY_1M = 0x01,
+    UNIFIED_PHY_2M = 0x02,
+    UNIFIED_PHY_CODED_S8 = 0x03,
+    UNIFIED_PHY_CODED_S2 = 0x04,
+} unified_phy_type_t;
 
 /**
  * @brief bit of physical channel type
@@ -1036,6 +1047,149 @@ void gap_get_connection_parameter_range(le_connection_parameter_range_t * range)
  * @param range                 see structure @link #le_connection_parameter_range_t  @endlink
  */
 void gap_set_connection_parameter_range(le_connection_parameter_range_t * range);
+
+/**
+ * @brief Read the current and maximum transmit power levels of the local Controller
+ *  on the ACL connection identified by the Connection_Handle parameter and the
+ *  PHY indicated by the PHY parameter.
+ *
+ * @param con_handle                Connection handle
+ * @param phy                       PHY
+ * @return                          0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_read_local_tx_power_level(hci_con_handle_t con_handle, unified_phy_type_t phy);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Read the current and maximum transmit power levels of the remote Controller
+ *  on the ACL connection identified by the Connection_Handle parameter and the
+ *  PHY indicated by the PHY parameter.
+ *
+ * @param con_handle                Connection handle
+ * @param phy                       PHY
+ * @return                          0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_read_remote_tx_power_level(hci_con_handle_t con_handle, unified_phy_type_t phy);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Set the path loss threshold reporting parameters for an ACL connection.
+ *
+ * @param con_handle                Connection handle
+ * @param high_threshold            High threshold for the path loss in dB
+ * @param high_hysteresis           Hysteresis value for the high threshold in dB
+ * @param low_threshold             Low threshold for the path loss in dB
+ * @param low_hysteresis            Hysteresis value for the low threshold in dB
+ * @param min_time_spent            Minimum time in number of connection events
+ *                                  to be observed once the path crosses the threshold
+ *                                  before an event is generated
+ * @return                          0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_set_path_loss_reporting_param(hci_con_handle_t con_handle,
+//                                             uint8_t high_threshold,
+//                                             uint8_t high_hysteresis,
+//                                             uint8_t low_threshold,
+//                                             uint8_t low_hysteresis,
+//                                             uint8_t min_time_spent);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Enable or disable path loss reporting for an ACL connection.
+ *
+ * @param con_handle                Connection handle
+ * @param enable                    Reporting disabled(0) or enabled(1)
+ * @return                          0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_set_path_loss_reporting_enable(hci_con_handle_t con_handle, uint8_t enable);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Enable or disable the reporting to the local Host of transmit power level
+ * changes in the local and remote Controllers for an ACL connection
+ *
+ * @param con_handle                Connection handle
+ * @param local_enable              Disabled(0) or enabled(1) local transmit power reports
+ * @param remote_enable             Disabled(0) or enabled(1) remote transmit power reports
+ * @return                          0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_set_tx_power_reporting_enable(hci_con_handle_t con_handle, uint8_t local_enable,
+//                                           uint8_t remote_enable);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Set the initial values for the acceptable parameters for subrating requests
+ *
+ * @param subrate_min               Minimum subrate factor allowed in requests by a Peripheral
+ *                                  Range: 0x0001 to 0x01F4
+ *                                  Default: 0x0001
+ * @param subrate_max               Maximum subrate factor allowed in requests by a Peripheral
+ *                                  Range: 0x0001 to 0x01F4
+ *                                  Default: 0x0001
+ * @param max_latency               Maximum Peripheral latency allowed in requests by a Peripheral,
+ *                                  in units of subrated connection intervals
+ *                                  Range: 0x0000 to 0x01F3
+ *                                  Default: 0x0000
+ * @param continuation_number       Minimum number of underlying connection events to remain active
+ *                                  after a packet containing a Link Layer PDU with a non-zero Length field
+ *                                  is sent or received in requests by a Peripheral
+ *                                  Range: 0x0000 to 0x01F3
+ *                                  Default: 0x0000
+ * @param supervision_timeout       Maximum Peripheral supervision timeout allowed in requests by a Peripheral
+ *                                  Range: 0x000A to 0x0C80
+ *                                  Time = N × 10 ms
+ *                                  Time Range: 100 ms to 32 s
+ *                                  Default: 0x0C80
+ * @return                          0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_set_default_subrate(uint16_t subrate_min,
+//                                 uint16_t subrate_max,
+//                                 uint16_t max_latency,
+//                                 uint16_t continuation_number,
+//                                 uint16_t supervision_timeout);
+// WARNING: ^^^ this API is not available in this release
+
+
+
+/**
+ * @brief (Central or a Peripheral) Request a change to the subrating factor and/or other parameters
+ *  applied to an existing connection using the Connection Subrate Update procedure.
+ *
+ * @param con_handle                Connection handle
+ * @param subrate_min               Minimum subrate factor allowed in requests by a Peripheral
+ *                                  Range: 0x0001 to 0x01F4
+ *                                  Default: 0x0001
+ * @param subrate_max               Maximum subrate factor allowed in requests by a Peripheral
+ *                                  Range: 0x0001 to 0x01F4
+ *                                  Default: 0x0001
+ * @param max_latency               Maximum Peripheral latency allowed in requests by a Peripheral,
+ *                                  in units of subrated connection intervals
+ *                                  Range: 0x0000 to 0x01F3
+ *                                  Default: 0x0000
+ * @param continuation_number       Minimum number of underlying connection events to remain active
+ *                                  after a packet containing a Link Layer PDU with a non-zero Length field
+ *                                  is sent or received in requests by a Peripheral
+ *                                  Range: 0x0000 to 0x01F3
+ *                                  Default: 0x0000
+ * @param supervision_timeout       Maximum Peripheral supervision timeout allowed in requests by a Peripheral
+ *                                  Range: 0x000A to 0x0C80
+ *                                  Time = N × 10 ms
+ *                                  Time Range: 100 ms to 32 s
+ *                                  Default: 0x0C80
+ * @return                          0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_subrate_request(hci_con_handle_t con_handle,
+//                             uint16_t subrate_min,
+//                             uint16_t subrate_max,
+//                             uint16_t max_latency,
+//                             uint16_t continuation_number,
+//                             uint16_t supervision_timeout);
+// WARNING: ^^^ this API is not available in this release
+
 
 typedef void (*gap_hci_cmd_complete_cb_t)(const uint8_t *return_params, void *user_data);
 

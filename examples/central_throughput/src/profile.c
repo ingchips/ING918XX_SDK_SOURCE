@@ -510,28 +510,6 @@ bd_addr_t peer_addr;
 #define OPCODE(ogf, ocf)            (ocf | ogf << 10)
 #define OPCODE_READ_RSSI            OPCODE(OGF_STATUS_PARAMETERS, 0x05)
 
-#pragma pack (push, 1)
-typedef struct read_rssi_complete
-{
-    uint8_t  status;
-    uint16_t handle;
-    int8_t   rssi;
-} read_rssi_complete_t;
-
-typedef struct conn_packets
-{
-    uint16_t handle;
-    uint16_t num_of_packets;
-} conn_packets_t;
-
-typedef struct event_num_of_complete_packets
-{
-    uint8_t  num_handles;
-    conn_packets_t compl_packets[0];
-} event_num_of_complete_packets_t;
-
-#pragma pack (pop)
-
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -616,8 +594,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         {
             if (hci_event_command_complete_get_command_opcode(packet) == OPCODE_READ_RSSI)
             {
-                const read_rssi_complete_t *cmpl =
-                    (const read_rssi_complete_t *)hci_event_command_complete_get_return_parameters(packet);
+                const event_command_complete_return_param_read_tx_power_t *cmpl =
+                    (const event_command_complete_return_param_read_tx_power_t *)hci_event_command_complete_get_return_parameters(packet);
                 LOG_MSG("RSSI: %ddBm", cmpl->rssi);
             }
         }
@@ -627,7 +605,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (slave.m2s_run)
         {
             const event_num_of_complete_packets_t *report = decode_hci_event(packet, event_num_of_complete_packets_t);
-            slave.m2s_total += send_packet_len * report->compl_packets[0].num_of_packets;
+            slave.m2s_total += send_packet_len * report->complete_packets[0].num_of_packets;
         }
         break;
 

@@ -146,13 +146,13 @@ Firstly, connect to a device with Connection Subrating feature.
     of subrating. Below figure shows that after subrating (fator = 8) is
     activated, some (or rather 7) connection events are _skipped_:
 
-    ![](./img/subrate_start.png)
+    <img src="./img/subrate_start.png" width="80%" />
 
     Trigger some ATT operations (for example `read 3`), check the behavior again.
     Below figure show that ATT request is delayed to the next subrated event,
     and the response is got quickly after that event:
 
-    ![](./img/subrate_att_req.png)
+    <img src="./img/subrate_att_req.png" width="80%" />
 
 ## Trace
 

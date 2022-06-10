@@ -252,6 +252,7 @@
         "ll_raw_packet_get_bare_rx_data", 
         "ll_raw_packet_recv", 
         "ll_raw_packet_set_tx_cte", 
+        "ll_raw_packet_set_fake_cte_info", 
         "ll_raw_packet_set_rx_cte", 
         "ll_raw_packet_get_iq_samples", 
         "ll_ackable_packet_alloc", 
@@ -356,11 +357,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 143584
+        "size": 143668
     }, 
     "version": [
         1, 
         7, 
-        18
+        22
     ]
 }

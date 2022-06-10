@@ -728,6 +728,32 @@ static __INLINE uint8_t gap_event_dedicated_bonding_completed_get_status(const u
     return *decode_event_offset(event, uint8_t, 2);
 }
 
+typedef struct event_command_complete_return_param_read_rssi
+{
+    uint8_t          status;
+    hci_con_handle_t conn_handle;
+    int8_t           rssi;      // in dB
+} event_command_complete_return_param_read_rssi_t;
+
+typedef struct event_command_complete_return_param_read_tx_power
+{
+    uint8_t          status;
+    hci_con_handle_t conn_handle;
+    int8_t           rssi;      // in dB
+} event_command_complete_return_param_read_tx_power_t;
+
+typedef struct event_conn_packets
+{
+    hci_con_handle_t conn_handle;
+    uint16_t         num_of_packets;
+} event_conn_packets_t;
+
+typedef struct event_num_of_complete_packets
+{
+    uint8_t        num_handles;
+    event_conn_packets_t complete_packets[0];
+} event_num_of_complete_packets_t;
+
 typedef struct sm_event_state_changed {
     uint16_t conn_handle;
     uint8_t reason;
@@ -1041,9 +1067,82 @@ typedef struct le_meta_prd_adv_sync_transfer_recv
     bd_addr_type_t  addr_type;
     bd_addr_t  addr;
     phy_type_t phy;
-    uint16_t   prdAdvInterval;
-    uint8_t    clkAcc;
+    uint16_t   prd_adv_interval;
+    uint8_t    clk_acc;
 } le_meta_prd_adv_sync_transfer_recv_t;
+
+typedef enum le_clock_accuracy
+{
+    LE_CLOCK_ACCURACY_500_PPM = 0,
+    LE_CLOCK_ACCURACY_250_PPM,
+    LE_CLOCK_ACCURACY_150_PPM,
+    LE_CLOCK_ACCURACY_100_PPM,
+    LE_CLOCK_ACCURACY_75_PPM,
+    LE_CLOCK_ACCURACY_50_PPM,
+    LE_CLOCK_ACCURACY_30_PPM,
+    LE_CLOCK_ACCURACY_20_PPM,
+} le_clock_accuracy_t;
+
+typedef struct le_meta_request_peer_sca_complete
+{
+    uint8_t  status;
+    uint16_t conn_handle;
+    le_clock_accuracy_t peer_clock_accuracy;
+} le_meta_request_peer_sca_complete_t;
+
+typedef enum le_path_loss_zone_event
+{
+    PATH_LOSS_ZONE_ENTER_LOW = 0,
+    PATH_LOSS_ZONE_ENTER_MIDDLE = 1,
+    PATH_LOSS_ZONE_ENTER_HIGH = 2,
+} le_path_loss_zone_event_t;
+
+typedef struct le_meta_path_loss_threshold
+{
+    uint16_t conn_handle;
+    uint8_t  current_path_loss;     // Current path loss (always zero or positive) Units: dB
+    le_path_loss_zone_event_t  zone_entered;
+} lle_meta_path_loss_threshold_t;
+
+typedef enum le_tx_power_reporting_reason
+{
+    TX_POWER_REPORTING_REASON_LOCAL_CHANGED = 0,
+    TX_POWER_REPORTING_REASON_REMOTE_CHANGED = 1,
+    TX_POWER_REPORTING_REASON_HCI_COMPLETE = 2,
+} le_tx_power_reporting_reason_t;
+
+typedef struct le_meta_tx_power_reporting
+{
+    uint8_t  status;
+    uint16_t conn_handle;
+    le_tx_power_reporting_reason_t reason;
+    unified_phy_type_t phy;
+    int8_t  tx_power_level;         // Tx power level in dBm
+    uint8_t tx_power_level_flag;    // Bit 0: Transmit power level is at minimum level
+                                    // Bit 1: Transmit power level is at maximum level
+    int8_t  delta;                  // Change in transmit power level (positive indicates increased power,
+                                    // negative indicates decreased power, zero indicates unchanged)
+                                    // Units: dB
+                                    // 0x7F: Change is not available or is out of range
+} le_meta_tx_power_reporting_t;
+
+typedef struct le_meta_subrate_change
+{
+    uint8_t  status;
+    uint16_t conn_handle;
+    uint16_t subrate_factor;        // New subrate factor applied to the specified underlying connection interval
+                                    // Range 0x0001 to 0x01F4
+    uint16_t peripheral_latency;    // New Peripheral latency for the connection in number of subrated connection events
+                                    // Range: 0x0000 to 0x01F3
+    uint16_t continuation_number;   // Number of underlying connection events to remain active after a
+                                    // packet containing a Link Layer PDU with a non-zero Length field is
+                                    // sent or received
+                                    // Range: 0x0000 to 0x01F3
+    uint16_t supervision_timeout;   // New supervision timeout for this connection.
+                                    // Range: 0x000A to 0x0C80
+                                    // Time = N × 10 ms
+                                    // Time Range: 100 ms to 32 s
+} le_meta_subrate_change_t;
 
 #pragma pack (pop)
 

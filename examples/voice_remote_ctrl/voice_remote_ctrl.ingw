@@ -16,9 +16,9 @@
   "version": [
    2,0,5]
  },
- "tc_dir": "C:\\Keil_v536\\UV4",
+ "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",
- "ide_exe": "C:\\Keil_v536\\UV4\\UV4.exe",
+ "ide_exe": "C:\\Keil_v5\\UV4\\UV4.exe",
  "ota": false,
  "ide": "keil",
  "git": false,
@@ -37,7 +37,7 @@
  "pb_adv": true,
  "pb_gatt": true,
  "deep_sleep": true,
- "proj_dir": "C:\/projects\/svn\/SDK_Release\/examples\\voice_remote_ctrl",
+ "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\voice_remote_ctrl",
  "power_saving": false,
  "gatt_handle_value": "6",
  "bundle": "typical",
