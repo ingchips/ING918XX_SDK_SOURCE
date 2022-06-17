@@ -29,7 +29,7 @@ static uint8_t notify_enable = 0;
 
 extern const char welcome_msg[];
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -42,7 +42,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -58,7 +58,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
             att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)welcome_msg, strlen(welcome_msg) + 1);
         }
         else
-            notify_enable = 0;        
+            notify_enable = 0;
         return 0;
     default:
         return 0;
@@ -79,6 +79,11 @@ void on_key_event(key_press_event_t evt)
     btstack_push_user_msg(USER_MSG_ID_KEY_EVENT, NULL, evt);
 }
 
+void stack_set_latency(int latency)
+{
+    ll_set_conn_latency(handle_send, latency);
+}
+
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
     switch (msg_id)
@@ -88,7 +93,14 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         {
             uint16_t len;
             uint8_t *data = console_get_clear_tx_data(&len);
-            att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, data, len);
+            uint16_t mtu = att_server_get_mtu(handle_send) - 3;
+            while (len > 0)
+            {
+                uint16_t block = len > mtu ? mtu : len;
+                att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, data, block);
+                data += block;
+                len -= block;
+            }
         }
         break;
     case USER_MSG_ID_KEY_EVENT:
@@ -99,9 +111,9 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                 strcpy(str, "key long pressed\n");
             else
                 sprintf(str, "key pressed %d times\n", evt);
-                        
+
             if (notify_enable)
-                att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)str, strlen(str) + 1);    
+                att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)str, strlen(str) + 1);
         }
         break;
     default:
@@ -115,7 +127,7 @@ static void setup_adv()
 {
     const static bd_addr_t rand_addr = {0xFB, 0x89, 0x67, 0x45, 0x23, 0x01};
     gap_set_adv_set_random_addr(0, rand_addr);
-    gap_set_ext_adv_para(0, 
+    gap_set_ext_adv_para(0,
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             800, 800,                  // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map

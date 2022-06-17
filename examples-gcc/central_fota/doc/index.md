@@ -39,6 +39,8 @@ how to use an external mass storage device.
 
 ## Test
 
+ Zig 0.8.1 is required to build this project.
+
 [Get familiar](https://ingchips.github.io/blog/fota_demo_zh/) with the whole FOTA procedure,
 and test it using [_ING BLE_](https://github.com/ingchips/INGdemo/) and
 [_FOTA Web Tool_](https://ingchips.github.io/web_apps/ing918_ota/index.html). After this,
