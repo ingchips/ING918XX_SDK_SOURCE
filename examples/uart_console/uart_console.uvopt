@@ -266,8 +266,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\startup_ing91800.s</PathWithFileName>
-      <FilenameWithoutPath>startup_ing91800.s</FilenameWithoutPath>
+      <PathWithFileName>.\src\startup_ING91800.s</PathWithFileName>
+      <FilenameWithoutPath>startup_ING91800.s</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -282,7 +282,7 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\bundles\exp\ING9185xx\symdefs.m</PathWithFileName>
+      <PathWithFileName>..\..\bundles\exp\ing9187xx\symdefs.m</PathWithFileName>
       <FilenameWithoutPath>symdefs.m</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

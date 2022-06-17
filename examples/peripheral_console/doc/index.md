@@ -20,14 +20,25 @@ Download this example to Dev-Board, the buzzing indicates that the SoC has enter
 up again, busy with advertising. Connect it with _ING BLE_, the buzzing will become faster indicating
 that the SoC is now busy with connection activities which is more frequent than advertising.
 
-* Type `ps 0` command to the console, then power saving is disabled and the buzzing stops. Type `ps 1`
-to re-enable it;
+The console supports several commands. Some notable ones are listed below. Check out
+[`service_console.c`](../src/service_console.c) for more commands.
 
-* Type `ver` to check the version number of platform;
+* `ps`
 
-* Type `f` to check the frequency of the 32k clock;
+    `ps 0` will disable power saving and the buzzing will stop, while `ps 1` will re-enable it.
 
-* Check out [`service_console.c`](../src/service_console.c) for more commands.
+* `ver`
+
+    Show the version number of platform binary.
+
+* `f`
+
+    Show the actual frequency of the 32k clock.
+
+* `latency`
+
+    Self-assign a peripheral latency parameter. For example, after issuing command `latency 4`, the buzzing
+    will become slower since some connection events are skipped, and power consumption is reduced too.
 
 Hold the `EXT_INT` key down will prevent the SoC from entering deep sleep mode, and the buzzing will
 stop, too. Release the key, the buzzing resumes. If connected with _ING BLE_, a key event is also

@@ -20,25 +20,35 @@ typedef struct
 const static char error[] = "error";
 static char buffer[100] = {0};
 
-uint32_t stack[10] = {0};
-int8_t sp;
-
-static void tx_data(const char *d, const uint8_t len);
+static void tx_data(const char *d, const int len);
 
 void cmd_help(const char *param)
 {
     static const char help[] =  "commands:\n"
                                 "h/?        help\n"
-                                "r 0x..     read\n"
-                                "w 0x.. ..  write\n"
-                                "m          heap\n"
+                                "r 0x..     read memory\n"
+                                "w 0x.. ..  modify memory\n"
+                                "m          show heap status\n"
                                 "reboot     reboot\n"
-                                "ps 1/0     pow saving\n"
-                                "ver        ver\n"
-                                "f          32k freq\n"
-                                "advpwr ..  adv power"
+                                "ps 1/0     enable/disable power saving\n"
+                                "ver        show platform version\n"
+                                "f          show 32k freq\n"
+                                "advpwr ..  set adv power\n"
+                                "latency .. self assigned peripheral latency\n"
                                 ;
     tx_data(help, strlen(help) + 1);
+}
+
+void cmd_latency(const char *param)
+{
+    extern void stack_set_latency(int latency);
+    int latency = 0;
+    if (sscanf(param, "%d", &latency) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    stack_set_latency(latency);
 }
 
 void cmd_read(const char *param)
@@ -186,6 +196,10 @@ static cmd_t cmds[] =
         .cmd = "c",
         .handler = cmd_calib
     },
+    {
+        .cmd = "latency",
+        .handler = cmd_latency
+    },
 };
 
 void handle_command(char *cmd_line)
@@ -214,8 +228,8 @@ show_help:
 
 typedef struct
 {
-    uint8_t size;
-    char buf[255];
+    int size;
+    char buf[400];
 } str_buf_t;
 
 str_buf_t input = {0};
@@ -229,7 +243,7 @@ void handle_command()
 }
 */
 
-static void append_data(str_buf_t *buf, const char *d, const uint8_t len)
+static void append_data(str_buf_t *buf, const char *d, const int len)
 {
     if (buf->size + len > sizeof(buf->buf))
         buf->size = 0;
@@ -254,7 +268,7 @@ void console_rx_data(const char *d, const uint8_t len)
 
 extern void stack_notify_tx_data(void);
 
-static void tx_data(const char *d, const uint8_t len)
+static void tx_data(const char *d, const int len)
 {
     append_data(&output, d, len);
 
