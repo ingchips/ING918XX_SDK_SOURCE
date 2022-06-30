@@ -29,38 +29,38 @@ static char buffer[100] = {0};
 static void tx_data(const char *d, const uint16_t len);
 
 static const char help[] =  "commands:\n"
-                            "h/?                        show this\n"
-                            "r 0x..                     read data\n"
-                            "w 0x.. 0x..                write data\n"
-                            "reboot                     reboot\n"
-                            "ver                        version\n"
-                            "advpwr power               set adv power in dBm\n"
-                            "name   name                set dev name\n"
-                            "addr   01:02:03:04:05:06   set dev address\n"
-                            "start                      start advertising\n"
-                            "stop                       stop advertising\n"
-                            "pat    0/1                 peer address type\n"
-                            "conn   xx:xx:xx:xx:xx:xx   connect to dev and discover services\n"
-                            "cancel                     cancel create connection\n"
-                            "scan                       passive scan for all adv\n"
-                            "scan   xx:xx:xx:xx:xx:xx   scan for adv from a device\n"
-                            "ascan                      active scan for all adv\n"
-                            "ascan  xx:xx:xx:xx:xx:xx   active scan for adv from a device\n"
-                            "read   value_handle        read value of a characteristic\n"
-                            "write  handle XX XX ...    write value to a characteristic\n"
-                            "w/or   handle XX XX ...    write without response to a char.\n"
-                            "sub    handle              subscribe to a characteristic\n"
-                            "unsub  handle              unsubscribe\n"
-                            "bond   0/1                 bonding\n"
-                            "phy    1m/2m/s2/s8\n       central only\n"
-                            "interval x                 central only(in 1.25 ms)\n"
-                            "assert                     raise assertion\n"
-                            "trace  0/1                 enable/disable flash trace\n"
-                            "cpwr   power               set connection tx power in dBm\n"
-                            "pwrctl delta               adjust peer tx power in dB\n"
-                            "auto   0/1                 enable/disable auto power control\n"
-                            "subr   factor              subrate with factor\n"
-                            "rssi                       read RX RSSI\n"
+                            "h/?                                 show this\n"
+                            "r 0x..                              read data\n"
+                            "w 0x.. 0x..                         write data\n"
+                            "reboot                              reboot\n"
+                            "ver                                 version\n"
+                            "advpwr power                        set adv power in dBm\n"
+                            "name   name                         set dev name\n"
+                            "addr   01:02:03:04:05:06            set dev address\n"
+                            "start                               start advertising\n"
+                            "stop                                stop advertising\n"
+                            "conpar interval latency timeout     set connection parameters\n"
+                            "pat    0/1                          peer address type\n"
+                            "conn   xx:xx:xx:xx:xx:xx            connect to dev and discover services\n"
+                            "cancel                              cancel create connection\n"
+                            "scan                                passive scan for all adv\n"
+                            "scan   xx:xx:xx:xx:xx:xx            scan for adv from a device\n"
+                            "ascan                               active scan for all adv\n"
+                            "ascan  xx:xx:xx:xx:xx:xx            active scan for adv from a device\n"
+                            "read   value_handle                 read value of a characteristic\n"
+                            "write  handle XX XX ...             write value to a characteristic\n"
+                            "w/or   handle XX XX ...             write without response to a char.\n"
+                            "sub    handle                       subscribe to a characteristic\n"
+                            "unsub  handle                       unsubscribe\n"
+                            "bond   0/1                          bonding\n"
+                            "phy    1m/2m/s2/s8                  central only\n"
+                            "assert                              raise assertion\n"
+                            "trace  0/1                          enable/disable flash trace\n"
+                            "cpwr   power                        set connection tx power in dBm\n"
+                            "pwrctl delta                        adjust peer tx power in dB\n"
+                            "auto   0/1                          enable/disable auto power control\n"
+                            "subr   factor                       subrate with factor\n"
+                            "rssi                                read RX RSSI\n"
                             ;
 
 void cmd_help(const char *param)
@@ -262,7 +262,7 @@ void cmd_trace(const char *param)
     if (t) trace_flash_erase_all(&trace_ctx);
     trace_flash_enable(&trace_ctx, t);
 #else
-    static const char msg[] = "only available with `TRACE_TO_FLASH`"; 
+    static const char msg[] = "only available with `TRACE_TO_FLASH`";
     tx_data(msg, strlen(msg) + 1);
 #endif
 }
@@ -373,7 +373,7 @@ void cmd_stop(const char *param)
 }
 
 void set_phy(int phy);
-void set_interval(int interval);
+void change_conn_param(int interval, int latency, int timeout);
 
 void cmd_phy(const char *param)
 {
@@ -386,11 +386,13 @@ void cmd_phy(const char *param)
     set_phy(phy);
 }
 
-void cmd_interval(const char *param)
+void cmd_conpar(const char *param)
 {
     int interval = 0;
-    if (sscanf(param, "%d", &interval) != 1) return;
-    set_interval(interval);
+    int latency = 0;
+    int timeout = 0;
+    if (sscanf(param, "%d %d %d", &interval, &latency, &timeout) < 1) return;
+    change_conn_param(interval, latency, timeout);
 }
 
 void cmd_assert(const char *param)
@@ -493,8 +495,8 @@ static cmd_t cmds[] =
         .handler = cmd_phy
     },
     {
-        .cmd = "interval",
-        .handler = cmd_interval
+        .cmd = "conpar",
+        .handler = cmd_conpar
     },
     {
         .cmd = "assert",

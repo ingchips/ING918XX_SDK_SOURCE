@@ -10,8 +10,8 @@ ING918xx is a fully integrated Bluetooth Low Energy wireless communication SoC t
 
 ### The Easy Way
 
-[Download](https://github.com/ingchips/ING918XX_SDK_SOURCE/releases) setup file &
-install our SDK package, which includes not only source code, but also GUI tools and documentation.
+[Download](releases) setup file & install our SDK package, which includes not only source code,
+but also GUI tools and documentation.
 
 ### The Hard Way
 
@@ -21,22 +21,19 @@ install our SDK package, which includes not only source code, but also GUI tools
 1. Set environment variable `CMSIS_BASE` to the full path of CMSIS;
 1. Run `make`.
 
-To build Nim projects, besides of Gnu Arm toolchain & CMSIS:
-
-1. Install Nim compiler;
-1. Browse to examples in [examples for Nim](examples-nim);
-1. Set environment variable `CMSIS_BASE` to the full path of CMSIS;
-1. Set environment variable `NIM_PATH` to the full path of `nim` compiler;
-1. Run `make`.
-
 ## Branches
 
 1. `master` is used for releases;
 1. `develop` is used for developing.
 
+## How to Contribute
+
+Contributions - reporting/fixing bugs, adding features, adding documentation - are all welcome. We accept
+contributions via Github [Pull Requests](pulls) in the `develop` branch.
+
 ## License
 
-   Copyright 2019-2021 INGCHIPS
+   Copyright 2019-2022 INGCHIPS
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

@@ -182,9 +182,6 @@
         "l2cap_can_send_packet_now", 
         "l2cap_request_can_send_now_event", 
         "l2cap_request_connection_parameter_update", 
-        "l2cap_send_signaling_le", 
-        "l2cap_next_sig_id", 
-        "l2cap_next_local_cid", 
         "sm_config", 
         "sm_add_event_handler", 
         "sm_private_random_address_generation_set_mode", 
@@ -328,11 +325,11 @@
     }, 
     "rom": {
         "base": 33554432, 
-        "size": 146868
+        "size": 146928
     }, 
     "version": [
         2, 
         0, 
-        5
+        7
     ]
 }

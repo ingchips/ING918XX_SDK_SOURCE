@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 //
 // INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018 by INGCHIPS
+// COPYRIGHT (c) 2018-2022 by INGCHIPS
 //
 // All rights are reserved. Reproduction in whole or in part is
 // prohibited without the written consent of the copyright owner.
@@ -19,6 +19,20 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ ****************************************************************************************
+ * @brief set Tx power range
+ *
+ * Note: This range applies to all following advertisings, initiations, and connections.
+ *
+ * @param[in]  min_dBm          minimum Tx power in dBm
+ * @param[in]  max_dBm          maximum Tx power in dBm
+ ****************************************************************************************
+ */
+// void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
+// WARNING: ^^^ this API is not available in this release
+
 
 typedef enum coded_scheme_e
 {
@@ -72,6 +86,21 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
  ****************************************************************************************
  */
 void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
+
+/**
+ ****************************************************************************************
+ * @brief Try to adjust peer's tx power of a connection
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[in]  delta            delta of tx power in dBm
+ *                              Note: A positive value indicates a request to increase the
+ *                                    transmit power level; negtive to decrease the transmit
+ *                                    power level.
+ ****************************************************************************************
+ */
+// void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
@@ -572,6 +601,7 @@ typedef int  (*f_start_generate_dhkey)(int key_type, const uint8_t *remote_pub_k
  */
 // void ll_p256_key_pair_generated(int status, const uint8_t *pub_key);
 // WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************

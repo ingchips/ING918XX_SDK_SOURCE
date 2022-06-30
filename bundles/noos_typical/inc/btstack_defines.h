@@ -145,6 +145,14 @@
  */
 #define L2CAP_EVENT_CAN_SEND_NOW                           0x78
 
+ /**
+  * @format H12
+  * @param handle
+  * @param identifier
+  * @result
+  */
+#define L2CAP_EVENT_COMMAND_REJECT_RESPONSE                0x79
+
 /**
  * @format H1
  * @param handle

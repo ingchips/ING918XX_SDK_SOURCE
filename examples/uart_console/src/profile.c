@@ -6,6 +6,7 @@
 #include "btstack_util.h"
 #include "btstack_defines.h"
 #include "gatt_client.h"
+#include "l2cap.h"
 #include "sig_uuid.h"
 #include <string.h>
 #include <stdio.h>
@@ -215,7 +216,7 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
 #define USER_MSG_START_SCAN_ADDR    12
 #define USER_MSG_START_SCAN_ALL     13
 #define USER_MSG_SET_PHY            14
-#define USER_MSG_SET_INTERVAL       15
+#define USER_MSG_CHANGE_CONN_PARAM      15
 #define USER_MSG_START_SCAN_OLD_ADDR    16
 #define USER_MSG_START_SCAN_OLD_ALL     17
 #define USER_MSG_READ_RSSI              18
@@ -275,6 +276,13 @@ static const scan_phy_config_t scan_configs_lagecy[] =
         .window = 200
     }
 };
+
+struct
+{
+    uint16_t interval;
+    uint16_t latency;
+    uint16_t timeout;
+} conn_param_requst = {0};
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
@@ -475,13 +483,25 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             gap_set_phy(mas_conn_handle, 0, phy_bit, phy_bit, phy_opt);
         }
         break;
-    case USER_MSG_SET_INTERVAL:
+    case USER_MSG_CHANGE_CONN_PARAM:
         {
-            uint16_t interval = size;
-            uint16_t ce_len = (interval << 1) - 2;
-            gap_update_connection_parameters(mas_conn_handle, interval, interval,
-                0, interval > 10 ? interval : 10, // supervisor_timeout = max(100, interval * 8)
-                ce_len, ce_len);
+            uint16_t interval = conn_param_requst.interval;
+            if (sla_conn_handle != INVALID_HANDLE)
+            {
+                l2cap_request_connection_parameter_update(sla_conn_handle,
+                        interval, interval,
+                        conn_param_requst.latency,
+                        conn_param_requst.timeout);
+            }
+            if (mas_conn_handle != INVALID_HANDLE)
+            {
+                uint16_t ce_len = (interval << 1) - 2;
+                gap_update_connection_parameters(mas_conn_handle,
+                        interval, interval,
+                        conn_param_requst.latency,
+                        conn_param_requst.timeout,
+                        ce_len, ce_len);
+            }
         }
         break;
 #if (defined TRACE_TO_AIR)
@@ -496,7 +516,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             gap_read_rssi(sla_conn_handle);
         break;
     case USER_MSG_SUBRATE_REQ:
-        gap_subrate_request(0, size, size, 1, 
+        gap_subrate_request(0, size, size, 1,
                             0, 2000);
         break;
     default:
@@ -618,9 +638,13 @@ void ble_read_rssi(void)
     btstack_push_user_msg(USER_MSG_READ_RSSI, NULL, 0);
 }
 
-void set_interval(int interval)
+void change_conn_param(int interval, int latency, int timeout)
 {
-    btstack_push_user_msg(USER_MSG_SET_INTERVAL, NULL, interval);
+    conn_param_requst.interval = interval >= 6 ? interval : 6;
+    conn_param_requst.latency = latency;
+    conn_param_requst.timeout = timeout > 0 ? timeout :
+                    (conn_param_requst.interval > 10 ? conn_param_requst.interval * (latency + 1) : 10);
+    btstack_push_user_msg(USER_MSG_CHANGE_CONN_PARAM, NULL, 0);
 }
 
 int is_new_advertiser(const uint8_t *addr)
@@ -1039,9 +1063,40 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         }
         break;
 
+    case L2CAP_EVENT_CONNECTION_PARAMETER_UPDATE_REQUEST:
+        platform_printf("L2CAP_CONNECTION_PARAMETER_UPDATE_REQUEST:\n"
+                        "handle      : %d\n"
+                        "interval min: %d\n"
+                        "interval max: %d\n"
+                        "latency     : %d\n"
+                        "timeout     : %d\n",
+                        l2cap_event_connection_parameter_update_request_get_handle(packet),
+                        l2cap_event_connection_parameter_update_request_get_interval_min(packet),
+                        l2cap_event_connection_parameter_update_request_get_interval_max(packet),
+                        l2cap_event_connection_parameter_update_request_get_latency(packet),
+                        l2cap_event_connection_parameter_update_request_get_timeout_multiplier(packet));
+        break;
+
+    case L2CAP_EVENT_CONNECTION_PARAMETER_UPDATE_RESPONSE:
+        platform_printf("L2CAP_CONNECTION_PARAMETER_UPDATE_RESPONSE:\n"
+                        "handle: %d\n"
+                        "result: %d\n",
+                        l2cap_event_connection_parameter_update_response_get_handle(packet),
+                        l2cap_event_connection_parameter_update_response_get_result(packet));
+        break;
+
+    case L2CAP_EVENT_COMMAND_REJECT_RESPONSE:
+        platform_printf("L2CAP_COMMAND_REJECT_RESPONSE:\n"
+                        "handle: %d\n"
+                        "reason: %d\n",
+                        l2cap_event_command_reject_response_get_handle(packet),
+                        l2cap_event_command_reject_response_get_reason(packet));
+        break;
+
     case GATT_EVENT_MTU:
         iprintf("GATT client MTU updated: %d\n", gatt_event_mtu_get_mtu(packet));
         break;
+
     case ATT_EVENT_CAN_SEND_NOW:
         // add your code
         break;
@@ -1114,6 +1169,6 @@ uint32_t setup_profile(void *data, void *user_data)
               0,
               &sm_persistent);
     sm_add_event_handler(&sm_event_callback_registration);
+    l2cap_register_packet_handler(&user_packet_handler);
     return 0;
 }
-

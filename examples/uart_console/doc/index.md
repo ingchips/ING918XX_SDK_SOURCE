@@ -16,7 +16,7 @@ This example demonstrates lots of BLE functionalities controlled through UART:
 This example exposes a command line interface through UART. Some notable commands are listed below.
 
 :exclamation:**IMPORTANT:** This example's purpose is to demonstrate functionalities and usage of APIs. Some of the
-commands may not work if another specific command is sent, such as `ascan` after `scan`, `conn AAAA`
+commands may not work if another specific command is sent, such as `ascan` after `scan`, `conn AAA`
 after `conn BBB`. Just reset before sending these commands.
 
 
@@ -100,9 +100,10 @@ After the connection is established, the whole GATT profile is discovered and pr
     When `s2` or `s8` is used, this example's Tx PHY is changed to `s2` or `s8` respectively;
     the peer's PHY is changed to Coded, whether it is `s2` or `s8` is unknown.
 
-* `interval x`
+* `conpar interval latency timeout`
 
-    Change interval to $ X \times 1.25ms $.
+    Change (_Central_ role) or request (_Peripheral_ role) to change connection parameters, where _interval_
+    is $ X \times 1.25ms $, _timeout_ is $ X \times 10ms $.  _latency_ and _timeout_ are optional.
 
 ### Power Control
 
