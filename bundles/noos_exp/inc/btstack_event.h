@@ -255,10 +255,10 @@ static __INLINE uint16_t l2cap_event_connection_parameter_update_request_get_int
 /**
  * @brief Get field latencey from event L2CAP_EVENT_CONNECTION_PARAMETER_UPDATE_REQUEST
  * @param event packet
- * @return latencey
+ * @return latency
  * @note: btstack_type 2
  */
-static __INLINE uint16_t l2cap_event_connection_parameter_update_request_get_latencey(const uint8_t * event){
+static __INLINE uint16_t l2cap_event_connection_parameter_update_request_get_latency(const uint8_t * event){
     return little_endian_read_16(event, 8);
 }
 /**
@@ -282,6 +282,15 @@ static __INLINE hci_con_handle_t l2cap_event_connection_parameter_update_respons
 }
 
 /**
+ * @brief Get field result from event L2CAP_EVENT_CONNECTION_PARAMETER_UPDATE_RESPONSE
+ * @param event packet
+ * @return result
+ */
+static __INLINE uint16_t l2cap_event_connection_parameter_update_response_get_result(const uint8_t * event){
+    return little_endian_read_16(event, 4);
+}
+
+/**
  * @brief Get field local_cid from event L2CAP_EVENT_CAN_SEND_NOW
  * @param event packet
  * @return local_cid
@@ -289,6 +298,34 @@ static __INLINE hci_con_handle_t l2cap_event_connection_parameter_update_respons
  */
 static __INLINE uint16_t l2cap_event_can_send_now_get_local_cid(const uint8_t * event){
     return little_endian_read_16(event, 2);
+}
+
+/**
+ * @brief Get field handle from event L2CAP_COMMAND_REJECT_RSP
+ * @param event packet
+ * @return handle
+ * @note: btstack_type H
+ */
+static __INLINE hci_con_handle_t l2cap_event_command_reject_response_get_handle(const uint8_t * event){
+    return little_endian_read_16(event, 2);
+}
+
+/**
+ * @brief Get field identifier from event L2CAP_COMMAND_REJECT_RSP
+ * @param event packet
+ * @return identifier
+ */
+static __INLINE uint8_t l2cap_event_command_reject_response_get_identifier(const uint8_t * event){
+    return event[4];
+}
+
+/**
+ * @brief Get field reason from event L2CAP_COMMAND_REJECT_RSP
+ * @param event packet
+ * @return reason
+ */
+static __INLINE uint16_t l2cap_event_command_reject_response_get_reason(const uint8_t * event){
+    return little_endian_read_16(event, 5);
 }
 
 /**
@@ -1140,7 +1177,7 @@ typedef struct le_meta_subrate_change
                                     // Range: 0x0000 to 0x01F3
     uint16_t supervision_timeout;   // New supervision timeout for this connection.
                                     // Range: 0x000A to 0x0C80
-                                    // Time = N × 10 ms
+                                    // Time = N �� 10 ms
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
 

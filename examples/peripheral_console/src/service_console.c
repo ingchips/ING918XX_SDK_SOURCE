@@ -235,14 +235,6 @@ typedef struct
 str_buf_t input = {0};
 str_buf_t output = {0};
 
-/*
-void handle_command()
-{
-    tx_data("response: ", 10);
-    tx_data(input.buf, input.size);
-}
-*/
-
 static void append_data(str_buf_t *buf, const char *d, const int len)
 {
     if (buf->size + len > sizeof(buf->buf))
