@@ -68,6 +68,21 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 {
     switch (att_handle)
     {
+    case HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG:
+        {
+            uint8_t buffer[2];
+            if (notify_enable == 0){
+                buffer[0] = ((uint16_t)GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NONE) >> 0;
+                buffer[1] = ((uint16_t)GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NONE) >> 8;
+            } else if (notify_enable == 1){
+                buffer[0] = ((uint16_t)GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION) >> 0;
+                buffer[1] = ((uint16_t)GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION) >> 8;
+            }
+            att_server_deferred_read_response(  connection_handle,
+                                                HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG,
+                                                buffer, 2);
+            return buffer_size;
+        }
 
     default:
         return 0;
