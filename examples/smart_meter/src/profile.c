@@ -32,9 +32,6 @@ const static uint8_t profile_data[] = {
     #include "../data/gatt.profile"
 };
 
-#define GATT_SERVICE_HEALTH_THERMOMETER                 0x1809
-#define GATT_CHARACTERISTIC_TEMPERATURE_MEASUREMENT     0x2a1c
-
 #define INVALID_HANDLE      (0xffff)
 
 static char console_output[200];
@@ -329,7 +326,7 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
             const gatt_event_characteristic_query_result_t *result =
                 gatt_event_characteristic_query_result_parse(packet);
             slave = get_slave_by_conn(result->handle);
-            if (get_sig_short_uuid(result->characteristic.uuid128) == SIG_UUID_CHARACT_TEMPERATURE)
+            if (get_sig_short_uuid(result->characteristic.uuid128) == SIG_UUID_CHARACT_TEMPERATURE_MEASUREMENT)
             {
                 slave->temp_char = result->characteristic;
                 iprintf("[%d] temp handle: %d\n", slave->id, slave->temp_char.value_handle);
@@ -390,7 +387,7 @@ void slave_connected(const le_meta_event_enh_create_conn_complete_t *conn_comple
     if (slave)
     {
         slave->conn_handle = conn_complete->handle;
-        gatt_client_discover_primary_services_by_uuid16(service_discovery_callback, conn_complete->handle, GATT_SERVICE_HEALTH_THERMOMETER);
+        gatt_client_discover_primary_services_by_uuid16(service_discovery_callback, conn_complete->handle, SIG_UUID_SERVICE_HEALTH_THERMOMETER);
         iprintf("[%d] conn %d\n", slave->id, conn_complete->handle);
     }
     else

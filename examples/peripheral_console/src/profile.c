@@ -67,11 +67,17 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
 
 #define USER_MSG_ID_REQUEST_SEND            1
 #define USER_MSG_ID_KEY_EVENT               2
+#define USER_MSG_ID_FIRST_WAKE_UP           3
 
-void stack_notify_tx_data()
+void stack_notify_tx_data(void)
 {
     if (notify_enable)
         btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, 0);
+}
+
+void stack_on_first_wake_up(void)
+{
+    btstack_push_user_msg(USER_MSG_ID_FIRST_WAKE_UP, NULL, 0);
 }
 
 void on_key_event(key_press_event_t evt)
@@ -83,6 +89,8 @@ void stack_set_latency(int latency)
 {
     ll_set_conn_latency(handle_send, latency);
 }
+
+const static ext_adv_set_en_t adv_sets_en[1] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
@@ -116,6 +124,10 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                 att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)str, strlen(str) + 1);
         }
         break;
+    case USER_MSG_ID_FIRST_WAKE_UP:
+        platform_32k_rc_auto_tune();
+        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+        break;
     default:
         ;
     }
@@ -147,7 +159,6 @@ static void setup_adv()
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    const static ext_adv_set_en_t adv_sets_en[1] = {{.handle = 0, .duration = 0, .max_events = 0}};
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -159,7 +170,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             break;
         platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, (1250 << 16) | 750);
         setup_adv();
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+        platform_set_timer(stack_on_first_wake_up, 200);
         break;
 
     case HCI_EVENT_LE_META:
@@ -197,7 +208,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 uint32_t setup_profile(void *data, void *user_data)
 {
     platform_printf("setup profile\n");
-    platform_32k_rc_auto_tune();
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
