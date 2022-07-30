@@ -185,14 +185,12 @@ void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
  * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
-// int ll_scanner_enable_iq_sampling(uint8_t cte_type,
-//                           uint8_t slot_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *swiching_pattern,
-//                           uint8_t slot_sampling_offset,
-//                           uint8_t slot_sample_count);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_scanner_enable_iq_sampling(uint8_t cte_type,
+                          uint8_t slot_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *swiching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
 
 struct ll_raw_packet;
 
@@ -205,9 +203,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @param[in]  packet      the packet
  ****************************************************************************************
  */
-// void ll_raw_packet_free(struct ll_raw_packet *packet);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_raw_packet_free(struct ll_raw_packet *packet);
 
 /**
  ****************************************************************************************
@@ -219,9 +215,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                  the new packet object (NULL if out of memory)
  ****************************************************************************************
  */
-// struct ll_raw_packet *ll_raw_packet_alloc(uint8_t for_tx, f_ll_raw_packet_done on_done, void *user_data);
-// WARNING: ^^^ this API is not available in this release
-
+struct ll_raw_packet *ll_raw_packet_alloc(uint8_t for_tx, f_ll_raw_packet_done on_done, void *user_data);
 
 /**
  ****************************************************************************************
@@ -238,14 +232,12 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_param(struct ll_raw_packet *packet,
-//                           int8_t tx_power,
-//                           int8_t phy_channel_id,
-//                           uint8_t phy,
-//                           uint32_t access_addr,
-//                           uint32_t crc_init);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_param(struct ll_raw_packet *packet,
+                          int8_t tx_power,
+                          int8_t phy_channel_id,
+                          uint8_t phy,
+                          uint32_t access_addr,
+                          uint32_t crc_init);
 
 /**
  ****************************************************************************************
@@ -263,11 +255,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *       When bare mode is used, `crc_init` is ignored.
  ****************************************************************************************
  */
-// int ll_raw_packet_set_bare_mode(struct ll_raw_packet *packet,
-//                                 uint8_t header,
-//                                 int freq_mhz);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_bare_mode(struct ll_raw_packet *packet,
+                                uint8_t header,
+                                int freq_mhz);
 
 /**
  ****************************************************************************************
@@ -280,11 +270,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_bare_data(struct ll_raw_packet *packet,
-//                                 const void *data,
-//                                 int size, uint32_t crc_value);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_bare_data(struct ll_raw_packet *packet,
+                                const void *data,
+                                int size, uint32_t crc_value);
 
 /**
  ****************************************************************************************
@@ -297,12 +285,10 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_tx_data(struct ll_raw_packet *packet,
-//                                uint8_t header,
-//                                const void *data,
-//                                int size);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_tx_data(struct ll_raw_packet *packet,
+                               uint8_t header,
+                               const void *data,
+                               int size);
 
 /**
  ****************************************************************************************
@@ -313,10 +299,8 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_send(struct ll_raw_packet *packet,
-//                        uint64_t when);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_send(struct ll_raw_packet *packet,
+                       uint64_t when);
 
 /**
  ****************************************************************************************
@@ -331,14 +315,12 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
-//                                uint64_t *air_time,
-//                                uint8_t *header,
-//                                void *data,
-//                                int *size,
-//                                int *rssi);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
+                               uint64_t *air_time,
+                               uint8_t *header,
+                               void *data,
+                               int *size,
+                               int *rssi);
 
 /**
  ****************************************************************************************
@@ -354,15 +336,13 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_get_bare_rx_data(struct ll_raw_packet *packet,
-//                                uint64_t *air_time,
-//                                uint8_t *header,
-//                                void *data,
-//                                int *size,
-//                                int *rssi,
-//                                uint32_t *crc_value);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_get_bare_rx_data(struct ll_raw_packet *packet,
+                               uint64_t *air_time,
+                               uint8_t *header,
+                               void *data,
+                               int *size,
+                               int *rssi,
+                               uint32_t *crc_value);
 
 /**
  ****************************************************************************************
@@ -374,11 +354,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_recv(struct ll_raw_packet *packet,
-//                         uint64_t when,
-//                         uint32_t rx_window);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_recv(struct ll_raw_packet *packet,
+                        uint64_t when,
+                        uint32_t rx_window);
 
 /**
  ****************************************************************************************
@@ -392,13 +370,11 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
-//                           uint8_t cte_type,
-//                           uint8_t cte_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *switching_pattern);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
+                          uint8_t cte_type,
+                          uint8_t cte_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *switching_pattern);
 
 /**
  ****************************************************************************************
@@ -416,11 +392,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
-//                           uint8_t cte_type,
-//                           uint8_t cte_len);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
+                          uint8_t cte_type,
+                          uint8_t cte_len);
 
 /**
  ****************************************************************************************
@@ -440,15 +414,13 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
-// int ll_raw_packet_set_rx_cte(struct ll_raw_packet *packet,
-//                           uint8_t cte_type,
-//                           uint8_t slot_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *swiching_pattern,
-//                           uint8_t slot_sampling_offset,
-//                           uint8_t slot_sample_count);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_rx_cte(struct ll_raw_packet *packet,
+                          uint8_t cte_type,
+                          uint8_t slot_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *swiching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
 
 /**
  ****************************************************************************************
@@ -466,12 +438,10 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_get_iq_samples(struct ll_raw_packet *packet,
-//                                void *iq_samples,
-//                                int *iq_sample_cnt,
-//                                int preprocess);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_get_iq_samples(struct ll_raw_packet *packet,
+                               void *iq_samples,
+                               int *iq_sample_cnt,
+                               int preprocess);
 
 /**
  ****************************************************************************************
@@ -483,10 +453,8 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          the new packet object (NULL if out of memory)
  ****************************************************************************************
  */
-// struct ll_raw_packet *ll_ackable_packet_alloc(uint8_t for_initiator, f_ll_raw_packet_done
-//                                               on_done, void *user_data);
-// WARNING: ^^^ this API is not available in this release
-
+struct ll_raw_packet *ll_ackable_packet_alloc(uint8_t for_initiator, f_ll_raw_packet_done
+                                              on_done, void *user_data);
 
 
 /**
@@ -499,11 +467,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_ackable_packet_set_tx_data(struct ll_raw_packet *packet,
-//                                const void *data,
-//                                int size);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_ackable_packet_set_tx_data(struct ll_raw_packet *packet,
+                               const void *data,
+                               int size);
 
 /**
  ****************************************************************************************
@@ -518,14 +484,12 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if a packet is received else error code
  ****************************************************************************************
  */
-// int ll_ackable_packet_get_status(struct ll_raw_packet *packet,
-//                                int *acked,
-//                                uint64_t *air_time,
-//                                void *data,
-//                                int *size,
-//                                int *rssi);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_ackable_packet_get_status(struct ll_raw_packet *packet,
+                               int *acked,
+                               uint64_t *air_time,
+                               void *data,
+                               int *size,
+                               int *rssi);
 
 /**
  ****************************************************************************************
@@ -537,11 +501,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_ackable_packet_run(struct ll_raw_packet *packet,
-//                         uint64_t when,
-//                         uint32_t window);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_ackable_packet_run(struct ll_raw_packet *packet,
+                        uint64_t when,
+                        uint32_t window);
 
 /**
  ****************************************************************************************
@@ -604,9 +566,7 @@ void ll_set_adv_access_address(uint32_t acc_addr);
  * @param[in]  unit         connection interval unit in micro-seconds. (default: 1250us)
  ****************************************************************************************
  */
-// void ll_set_conn_interval_unit(uint16_t unit);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_conn_interval_unit(uint16_t unit);
 
 /**
  ****************************************************************************************

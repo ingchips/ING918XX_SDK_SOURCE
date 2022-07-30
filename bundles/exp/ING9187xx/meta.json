@@ -231,11 +231,26 @@
         "ll_set_conn_latency", 
         "ll_set_def_antenna", 
         "ll_legacy_adv_set_interval", 
+        "ll_raw_packet_free", 
+        "ll_raw_packet_alloc", 
+        "ll_raw_packet_set_param", 
+        "ll_raw_packet_set_bare_mode", 
+        "ll_raw_packet_set_bare_data", 
+        "ll_raw_packet_set_tx_data", 
+        "ll_raw_packet_send", 
+        "ll_raw_packet_get_rx_data", 
+        "ll_raw_packet_get_bare_rx_data", 
+        "ll_raw_packet_recv", 
+        "ll_ackable_packet_alloc", 
+        "ll_ackable_packet_set_tx_data", 
+        "ll_ackable_packet_get_status", 
+        "ll_ackable_packet_run", 
         "ll_malloc", 
         "ll_free", 
         "ll_set_max_conn_number", 
         "ll_scan_set_fixed_channel", 
         "ll_set_adv_access_address", 
+        "ll_set_conn_interval_unit", 
         "ll_p256_key_pair_generated", 
         "ll_dhkey_generated", 
         "ll_install_ecc_engine", 
@@ -326,15 +341,15 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 31084
+        "size": 31100
     }, 
     "rom": {
         "base": 16384, 
-        "size": 140288
+        "size": 143084
     }, 
     "version": [
         1, 
         7, 
-        24
+        25
     ]
 }
