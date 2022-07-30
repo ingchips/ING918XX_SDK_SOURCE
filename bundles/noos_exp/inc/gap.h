@@ -170,7 +170,6 @@ typedef enum
     ADV_INC_TX_POWER
 } adv_event_property_t;
 
-#ifndef C2NIM
 #define    CONNECTABLE_ADV_BIT       BIT(ADV_CONNECTABLE)
 #define    SCANNABLE_ADV_BIT         BIT(ADV_SCANNABLE)
 #define    DIRECT_ADV_BIT            BIT(ADV_DIRECT)
@@ -178,7 +177,6 @@ typedef enum
 #define    LEGACY_PDU_BIT            BIT(ADV_LEGACY)
 #define    ANONY_ADV_BIT             BIT(ADV_ANONYMOUS)
 #define    INC_TX_ADV_BIT            BIT(ADV_INC_TX_POWER)
-#endif
 
 typedef uint8_t adv_event_properties_t;
 
@@ -313,18 +311,22 @@ typedef enum scan_filter_policy
  */
 uint8_t gap_set_ext_scan_para(const bd_addr_type_t own_addr_type, const scan_filter_policy_t filter, const uint8_t config_num,
                               const scan_phy_config_t *configs);
+
 /**
  * @brief to set the extended scan response data for an advertising set
  *
  * @param adv_handle           handle of advertising set handle
  *
  * @param length               length of advertising data
+ *                             For legacy advertising, the length must be <= 31 bytes.
+ *                             For extended advertising, the length must be <= 1650 bytes.
  *
  * @param data                 pointer to the advertising data.
  *
  * @return                     0: messgae sent to controller
  */
 uint8_t gap_set_ext_scan_response_data(const uint8_t adv_handle, const uint16_t length, const uint8_t *data);
+
 /**
  * @brief to enable or disable scanning
  *
@@ -480,6 +482,8 @@ typedef enum adv_data_frag_pref
  * @param adv_handle           advertising set handle.
  *
  * @param length               advertising data length
+ *                             For legacy advertising, the length must be <= 31 bytes.
+ *                             For extended advertising, the length must be <= 1650 bytes.
  *
  * @param data                 pointer to advertising data
  *
@@ -492,7 +496,7 @@ uint8_t gap_set_ext_adv_data(const uint8_t adv_handle, uint16_t length, const ui
  *
  * @param adv_handle           advertising set handle.
  *
- * @param length               advertising data length
+ * @param length               advertising data length (<= 1650 bytes)
  *
  * @param data                 pointer to periodic advertising data
  *
@@ -511,6 +515,7 @@ uint8_t gap_set_periodic_adv_data(const uint8_t adv_handle, uint16_t length, con
  * @return                     0: message sent to controller
  */
 uint8_t gap_set_periodic_adv_enable(const uint8_t enable, const uint8_t adv_handle);
+
 /**
  * @brief LE Set Periodic Advertising Parameters command
  *
@@ -537,6 +542,7 @@ uint8_t gap_set_periodic_adv_para(const uint8_t adv_handle,
  * @return                     0: message sent to controller
  */
 uint8_t gap_clr_adv_set(void);
+
 /**
  * @brief LE Remove Advertising Set command
  *
@@ -583,12 +589,14 @@ uint8_t gap_periodic_adv_create_sync(const periodic_adv_filter_policy_t filter_p
                                      const uint16_t sync_timeout,
                                      const uint8_t sync_cte_type
                                     );
+
 /**
  * @brief LE Periodic Advertising Create Sync Cancel command
  *
  * @return                     0: message sent to controller
  */
 uint8_t gap_periodic_adv_create_sync_cancel(void);
+
 /**
  * @brief LE Periodic Advertising Terminate Sync command
  *
@@ -597,6 +605,7 @@ uint8_t gap_periodic_adv_create_sync_cancel(void);
  * @return                     0: message sent to controller
  */
 uint8_t gap_periodic_adv_term_sync(const uint16_t sync_handle);
+
 /**
  * @brief LE Add Device To Periodic Advertiser List command
  *
@@ -609,6 +618,7 @@ uint8_t gap_periodic_adv_term_sync(const uint16_t sync_handle);
  * @return                     0: message sent to controller
  */
 uint8_t gap_add_dev_to_periodic_list(const uint8_t addr_type, const uint8_t *addr, const uint8_t sid);
+
 /**
  * @brief LE Remove Device From Periodic Advertiser List command
  *
@@ -621,12 +631,14 @@ uint8_t gap_add_dev_to_periodic_list(const uint8_t addr_type, const uint8_t *add
  * @return                     0: message sent to controller
  */
 uint8_t gap_rmv_dev_from_periodic_list(const uint8_t addr_type, const uint8_t *addr, const uint8_t sid);
+
 /**
  * @brief LE Clear Periodic Advertiser List command
  *
  * @return                     0: message sent to controller
  */
 uint8_t gap_clr_periodic_adv_list(void);
+
 /**
  * @brief LE Read Periodic Advertiser List Size command
  *
@@ -1012,8 +1024,14 @@ uint8_t gap_default_periodic_adv_sync_transfer_param(
                                              const uint16_t                             sync_timeout,
                                              const uint8_t                              cte_excl_types);
 
+/**
+ * @brief Set Host channel classification parameters for 37 data channels.
+ *
+ * @param channel_low           The lower 32 channels of the 37 data channels.
+ * @param channel_high          The higher 5 channels of the 37 data channels.
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
 uint8_t gap_set_host_channel_classification(const uint32_t channel_low, const uint8_t channel_high);
-
 
 /**
  * @brief Sets update period for random address
