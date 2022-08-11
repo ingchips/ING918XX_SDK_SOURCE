@@ -1,5 +1,5 @@
-#include "../../lv_examples.h"
-#if LV_USE_CHART && LV_DRAW_COMPLEX && LV_BUILD_EXAMPLES
+#include "../lvgl.h"
+#include "ingsoc.h"
 
 static lv_obj_t * chart1;
 static lv_chart_series_t * ser1;
@@ -95,19 +95,29 @@ static void add_data(lv_timer_t * timer)
     cnt++;
 }
 
+static lv_obj_t * title;
+
+#define expand_2(x) #x
+#define expand_once(x) expand_2(x)
+
 /**
  * Add a faded area effect to the line chart and make some division lines ticker
  */
 void lv_example_chart_2(void)
 {
-    /*Create a chart1*/
+    title = lv_label_create(lv_scr_act());
+    lv_obj_set_pos(title, LV_DPI_DEF / 30, LV_DPI_DEF / 30);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    lv_label_set_text_fmt(title, "ING918");
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    lv_label_set_text_fmt(title, "ING916");
+#else
+    lv_label_set_text_fmt(title, "Family " expand_once(INGCHIPS_FAMILY));
+#endif
+
     chart1 = lv_chart_create(lv_scr_act());
-	#ifdef LCDMODULE_LCD128160
-    lv_obj_set_size(chart1, 128, 150);
-	#else
-    lv_obj_set_size(chart1, 240, 300);
-	#endif
-    lv_obj_center(chart1);
+    lv_obj_align_to(chart1, title, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+    lv_obj_set_size(chart1, lv_disp_get_hor_res(NULL) - 8, lv_disp_get_ver_res(NULL) - 20);
     lv_chart_set_type(chart1, LV_CHART_TYPE_LINE);   /*Show lines and points too*/
 
     lv_chart_set_div_line_count(chart1, 5, 7);
@@ -127,5 +137,3 @@ void lv_example_chart_2(void)
 
     lv_timer_create(add_data, 10, NULL);
 }
-
-#endif

@@ -2,9 +2,15 @@
 #define HANDLE_GENERIC_INPUT                                 6
 #define HANDLE_GENERIC_OUTPUT                                8
 #define HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG             9
+#define HANDLE_FOTA_VERSION                                  12
+#define HANDLE_FOTA_CONTROL                                  14
+#define HANDLE_FOTA_DATA                                     16
 
 #define HANDLE_DEVICE_NAME_OFFSET                            31
 #define HANDLE_GENERIC_INPUT_OFFSET                          111
 #define HANDLE_GENERIC_OUTPUT_OFFSET                         160
 #define HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG_OFFSET      168
+#define HANDLE_FOTA_VERSION_OFFSET                           243
+#define HANDLE_FOTA_CONTROL_OFFSET                           292
+#define HANDLE_FOTA_DATA_OFFSET                              341
 

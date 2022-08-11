@@ -1,6 +1,16 @@
 #include "spi.h"
+#include "ingsoc.h"
 
-void SPI_Init(SSP_TypeDef * SSP_Ptr)
+#define SSP_Ptr    AHB_SSP0
+
+#define DummyByte       0xA5
+#define DummyWord       0xA5A5A5A5
+
+#define W8_2(addr)      ((addr >> 16) & 0xFFU)
+#define W8_1(addr)      ((addr >> 8) & 0xFFU)
+#define W8_0(addr)      (addr& 0xFFU)
+
+void SPI_Init(void)
 {
     apSSP_sDeviceControlBlock param;
 
@@ -19,12 +29,10 @@ void SPI_Init(SSP_TypeDef * SSP_Ptr)
     param.eLoopBackMode    = apSSP_LOOPBACKOFF;
     param.eMasterSlaveMode = apSSP_MASTER;
     param.eSlaveOutput     = apSSP_SLAVEOUTPUTDISABLED;
-    apSSP_DeviceParametersSet(SSP_Ptr, &param);
-    
+    apSSP_DeviceParametersSet(SSP_Ptr, &param);    
 }
 
-
-void SPI_Init16bit(SSP_TypeDef * SSP_Ptr)
+void SPI_Init16bit(void)
 {
     apSSP_sDeviceControlBlock param;
 
@@ -58,7 +66,6 @@ void SPI_Delay(uint8_t t)
     }
 }
  
- 
 //********************************************/
 //
 //
@@ -67,22 +74,58 @@ void SPI_Delay(uint8_t t)
 void SPI_Write(uint8_t data)
 {
     // send data
-    apSSP_WriteFIFO(AHB_SSP0, data);
+    apSSP_WriteFIFO(SSP_Ptr, data);
     // wait data send complete
-    apSSP_DeviceEnable(AHB_SSP0);
+    apSSP_DeviceEnable(SSP_Ptr);
     while(apSSP_DeviceBusyGet(AHB_SSP0));
-    apSSP_DeviceDisable(AHB_SSP0);
+    apSSP_DeviceDisable(SSP_Ptr);
     // clear dummy data
-    apSSP_ReadFIFO(AHB_SSP0);
+    apSSP_ReadFIFO(SSP_Ptr);
 }
-void SPI_Write_FIFO(uint16_t data)
+
+void SPI_Write_FIFO_16(const uint16_t *data, int len)
 {
-    while (!apSSP_TxFifoNotFull(AHB_SSP0))
-			;
-      apSSP_WriteFIFO(AHB_SSP0, data);
-	
-	
-		
+    apSSP_DeviceEnable(SSP_Ptr);
+    for (; len > 0; len--)
+    {
+        while (!apSSP_TxFifoNotFull(SSP_Ptr));
+        apSSP_WriteFIFO(SSP_Ptr, *data++);
+    }
 }
 
+void SPI_Write_FIFO_8(const uint8_t *data, int len)
+{
+    apSSP_DeviceEnable(SSP_Ptr);
+    for (; len > 0; len--)
+    {
+        while (!apSSP_TxFifoNotFull(SSP_Ptr));
+        apSSP_WriteFIFO(SSP_Ptr, *data++);
+    }
+}
 
+void SPI_Fill_FIFO_16(uint16_t data, int len)
+{
+    apSSP_DeviceEnable(SSP_Ptr);
+    for (; len > 0; len--)
+    {
+        while (!apSSP_TxFifoNotFull(SSP_Ptr));
+        apSSP_WriteFIFO(SSP_Ptr, data);
+    }
+}
+
+void SPI_Fill_FIFO_8(uint8_t data, int len)
+{
+    apSSP_DeviceEnable(SSP_Ptr);
+    for (; len > 0; len--)
+    {
+        while (!apSSP_TxFifoNotFull(SSP_Ptr));
+        apSSP_WriteFIFO(SSP_Ptr, data);
+    }
+}
+
+void SPI_WaitTxDone(void)
+{
+    while (!apSSP_TxFifoEmpty(SSP_Ptr)) ;
+    SPI_Delay(10);
+    apSSP_DeviceDisable(SSP_Ptr);
+}
