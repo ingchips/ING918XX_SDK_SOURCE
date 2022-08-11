@@ -5,6 +5,8 @@ through UART and/or GATT.
 
 Check out _Application Note - Direction Finding Solution_ for more information on AoA algorithm, etc.
 
+To ease app downloading/updating, this app also includes [_INGCHIPS FOTA Sevice_](../../thermo_ota/doc/index.md#other-resources).
+
 ## Work Modes
 
 Use compiler switch `PRO_MODE` to switch between connection mode and proprietary conn-less mode:

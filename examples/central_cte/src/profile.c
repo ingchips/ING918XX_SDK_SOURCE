@@ -13,6 +13,7 @@
 #include "ad_parser.h"
 #include "sig_uuid.h"
 #include "gatt_client_util.h"
+#include "ota_service.h"
 
 #include "ant_id_mapping_4x4.h"
 
@@ -70,7 +71,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     {
 
     default:
-        return 0;
+        return ota_read_callback(att_handle, offset, buffer, buffer_size);
     }
 }
 
@@ -91,7 +92,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         console_rx_data((const char *)buffer, buffer_size);
         return 0;
     default:
-        return 0;
+        return ota_write_callback(att_handle, transaction_mode, offset, buffer, buffer_size);
     }
 }
 
@@ -172,11 +173,11 @@ void config_switching_pattern(void)
 
     if (settings->patterns[current_pattern].len <= 2)
         settings->patterns[current_pattern].len = 2;
-    
+
     const uint8_t *mapped = switch_pattern_mapping(settings->patterns[current_pattern].len, settings->patterns[current_pattern].ant_ids);
 
 #ifdef PRO_MODE
-    ll_scanner_enable_iq_sampling(CTE_AOA, 
+    ll_scanner_enable_iq_sampling(CTE_AOA,
                                   settings->slot_duration,
                                   settings->patterns[current_pattern].len,
                                   mapped,
@@ -263,10 +264,10 @@ static void try_connect_to_peer_with_cte_service(const le_ext_adv_report_t *rpt)
     if (ad_data_contains_uuid16(rpt->data_len, rpt->data, SIG_UUID_SERVICE_CONSTANT_TONE_EXTENSION) == 0)
         return;
     peer_found = 1;
-    gap_set_ext_scan_enable(0, 0, 0, 0);   
+    gap_set_ext_scan_enable(0, 0, 0, 0);
     peer_addr_type = rpt->addr_type;
     reverse_bd_addr(rpt->address, peer_addr);
-    iprintf("connecting to %02X:%02X:%02X:%02X:%02X:%02X:...\n", 
+    iprintf("connecting to %02X:%02X:%02X:%02X:%02X:%02X:...\n",
         peer_addr[0],peer_addr[1],peer_addr[2],
         peer_addr[3],peer_addr[4],peer_addr[5]);
     gap_ext_create_connection(    INITIATING_ADVERTISER_FROM_PARAM, // Initiator_Filter_Policy,
@@ -303,7 +304,7 @@ static void enable_peer_cte(service_node_t *first, void *user_data, int err_code
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[1] = {{.handle = 0, .duration = 0, .max_events = 0}};
-    static const bd_addr_t rand_addr = { 0xD4, 0x29, 0xF6, 0xBE, 0xF3, 0x26 };    
+    static const bd_addr_t rand_addr = { 0xD1, 0x29, 0xF6, 0xBE, 0xF3, 0x26 };
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     const event_disconn_complete_t *disconn_event;
@@ -323,7 +324,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
                               sizeof(configs) / sizeof(configs[0]),
                               configs);
-        gap_set_ext_scan_enable(1, 0, 0, 0);   
+        gap_set_ext_scan_enable(1, 0, 0, 0);
         break;
 
     case HCI_EVENT_LE_META:
@@ -458,7 +459,6 @@ uint32_t setup_profile(void *data, void *user_data)
     iprintf("setup profile\n");
     if (kv_get(KEY_SETTINGS, NULL) == NULL)
     {
-        int i;
         settings_t *p = pvPortMalloc(sizeof(settings_t));
         memset(p, 0, sizeof(settings_t));
         p->slot_duration = 1;
@@ -475,5 +475,14 @@ uint32_t setup_profile(void *data, void *user_data)
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(user_packet_handler);
     gatt_client_register_handler(user_packet_handler);
+
+    ota_init_handles(HANDLE_FOTA_VERSION, HANDLE_FOTA_CONTROL, HANDLE_FOTA_DATA);
     return 0;
 }
+
+prog_ver_t prog_ver =
+{
+    .major = 1,
+    .minor = 0,
+    .patch = VER_PATCH
+};

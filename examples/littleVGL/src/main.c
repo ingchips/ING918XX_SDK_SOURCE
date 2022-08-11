@@ -12,8 +12,7 @@
 #include "lvgl.h"
 #include "lv_api_map.h"
 #include "lv_port_disp.h"
-#include "lv_port_indev.h"
-#include "lv_example_widgets.h"
+//#include "lv_example_widgets.h"
 
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -80,9 +79,9 @@ void setup_peripherals(void)
     SYSCTRL_ClearClkGateMulti(0
                             | (1 << SYSCTRL_ClkGate_APB_TMR0)
                             | (1 << SYSCTRL_ClkGate_APB_TMR1)
-							|(1 << SYSCTRL_ClkGate_APB_GPIO)
+							| (1 << SYSCTRL_ClkGate_APB_GPIO)
 							| (1 << SYSCTRL_ClkGate_AHB_SPI0)
-							|(1 << SYSCTRL_ClkGate_APB_PinCtrl)
+							| (1 << SYSCTRL_ClkGate_APB_PinCtrl)
 
 	);
     config_uart(OSC_CLK_FREQ, 115200);
@@ -94,19 +93,19 @@ void setup_peripherals(void)
     }
 
 	// IO setup
-	PINCTRL_SetPadMux(SPI_LCD_POWER, IO_SOURCE_GENERAL);
+	PINCTRL_SetPadMux(SPI_LCD_BL, IO_SOURCE_GENERAL);
 	PINCTRL_SetPadMux(SPI_LCD_DC, IO_SOURCE_GENERAL);
 	PINCTRL_SetPadMux(SPI_LCD_RST, IO_SOURCE_GENERAL);
 	PINCTRL_SetPadMux(SPI_LCD_CS, IO_SOURCE_GENERAL);
 	PINCTRL_SetPadMux(SPI_LCD_MOSI, IO_SOURCE_SPI0_DO);
 	PINCTRL_SetPadMux(SPI_LCD_SCLK, IO_SOURCE_SPI0_CLK);
 
-	GIO_SetDirection(SPI_LCD_POWER, GIO_DIR_OUTPUT);
+	GIO_SetDirection(SPI_LCD_BL, GIO_DIR_OUTPUT);
 	GIO_SetDirection(SPI_LCD_RST, GIO_DIR_OUTPUT);
 	GIO_SetDirection(SPI_LCD_CS, GIO_DIR_OUTPUT);
 	GIO_SetDirection(SPI_LCD_DC, GIO_DIR_OUTPUT);
 
-	SPI_Init(AHB_SSP0);
+	SPI_Init();
 
 	TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 1000);//1k hz , 1ms
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
@@ -153,9 +152,17 @@ uint32_t timer1_isr(void *user_data)
 
 static void lvgl_task(void *pdata)
 {
+    extern void lv_example_chart_2(void);
+
+    lv_init();
+	lv_port_disp_init();
+	//show a chart here
+	lv_example_chart_2();
+    
     for (;;)
     {
     	lv_task_handler();
+        vTaskDelay(2);
     }
 }
 
@@ -173,12 +180,7 @@ int app_main()
 
     setup_peripherals();
 
-    platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer1_isr, NULL);
-
-	lv_init();
-	lv_port_disp_init();
-	//show a chart here
-	lv_example_chart_2();
+    platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer1_isr, NULL);	
 
 	xTaskCreate(watchdog_task,
            "w",
