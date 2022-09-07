@@ -50,6 +50,7 @@ int is_targeted_scan = 0;
 uint64_t last_seen = 0;
 
 struct gatt_client_discoverer *discoverer = NULL;
+struct gatt_client_synced_runner *synced_runner = NULL;
 
 #define find_char(handle)   gatt_client_util_find_char(discoverer, handle)
 #define find_config_desc    gatt_client_util_find_config_desc
@@ -201,6 +202,29 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
     }
 }
 
+static void demo_synced_api(void *user_data)
+{
+    uint16_t handle = (uint16_t)(uintptr_t)user_data;
+    static uint8_t data[255];
+    int n = 5;
+    iprintf("synced read value for %d times:\n", n);
+
+    for (; n > 0; n--)
+    {
+        uint16_t length = sizeof(data);
+        int err = gatt_client_sync_read_value_of_characteristic(synced_runner,
+                mas_conn_handle, handle,
+                data,
+                &length);
+        iprintf("[%d]: err = %d:\n", n, err);
+        if (err) break;
+        print_hex_table(data, length, print_fun);
+        iprintf("wait for 200ms...\n", n, err);
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+    iprintf("done\n\n");
+}
+
 #define USER_MSG_START_ADV          0
 #define USER_MSG_STOP_ADV           1
 #define USER_MSG_UPDATE_ADV_DATA    2
@@ -221,6 +245,8 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
 #define USER_MSG_START_SCAN_OLD_ALL     17
 #define USER_MSG_READ_RSSI              18
 #define USER_MSG_SUBRATE_REQ            19
+#define USER_MSG_SYNC_READ_CHAR         20
+#define USER_MSG_SYNC_MSG_START         0x10000
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
@@ -335,6 +361,18 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                 read_characteristic_value_callback,
                 mas_conn_handle,
                 c->chara.value_handle);
+        }
+        break;
+    case USER_MSG_SYNC_READ_CHAR:
+        {
+            char_node_t *c = find_char(size);
+            if (NULL == c)
+            {
+                iprintf("CHAR not found: %d\n", size);
+                break;
+            }
+
+            gatt_client_sync_run(synced_runner, demo_synced_api, (void *)(uintptr_t)c->chara.value_handle);
         }
         break;
     case USER_MSG_WRITE_CHAR:
@@ -520,7 +558,11 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                             0, 2000);
         break;
     default:
-        ;
+        if (msg_id >= USER_MSG_SYNC_MSG_START)
+        {
+            struct gatt_client_synced_runner *runner = (struct gatt_client_synced_runner *)data;
+            gatt_client_sync_handle_msg(runner, msg_id - USER_MSG_SYNC_MSG_START);
+        }
     }
 }
 
@@ -575,6 +617,11 @@ void cancel_create_conn()
 void read_value_of_char(int handle)
 {
     btstack_push_user_msg(USER_MSG_READ_CHAR, NULL, (uint16_t)handle);
+}
+
+void sync_read_value_of_char(int handle)
+{
+    btstack_push_user_msg(USER_MSG_SYNC_READ_CHAR, NULL, (uint16_t)handle);
 }
 
 void write_value_of_char(int handle, block_value_t *value)
@@ -645,6 +692,11 @@ void change_conn_param(int interval, int latency, int timeout)
     conn_param_requst.timeout = timeout > 0 ? timeout :
                     (conn_param_requst.interval > 10 ? conn_param_requst.interval * (latency + 1) : 10);
     btstack_push_user_msg(USER_MSG_CHANGE_CONN_PARAM, NULL, 0);
+}
+
+void synced_push_user_msg(struct gatt_client_synced_runner *runner, uint8_t msg_id)
+{
+    btstack_push_user_msg(USER_MSG_SYNC_MSG_START + msg_id, runner, 0);
 }
 
 int is_new_advertiser(const uint8_t *addr)
@@ -793,6 +845,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
 
+        synced_runner = gatt_client_create_sync_runner(synced_push_user_msg);
+
         platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, 1500);
         ll_set_tx_power_range(-30, 10);
 
@@ -918,7 +972,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             break;
         case HCI_SUBEVENT_LE_PATH_LOSS_THRESHOLD:
             {
-                const lle_meta_path_loss_threshold_t *rpt = decode_hci_le_meta_event(packet, lle_meta_path_loss_threshold_t);
+                const le_meta_path_loss_threshold_t *rpt = decode_hci_le_meta_event(packet, le_meta_path_loss_threshold_t);
 
                 platform_printf("PATH_LOSS_THRESHOLD:\n"
                                 "current_path_loss = %d dB\n"

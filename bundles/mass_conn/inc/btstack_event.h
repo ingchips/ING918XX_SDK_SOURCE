@@ -1036,7 +1036,7 @@ typedef struct le_meta_ch_sel_algo
 {
     uint16_t conn_handle;
     ble_ch_sel_algo_t algo;
-} le_meta_ch_sel_algo;
+} le_meta_ch_sel_algo_t;
 
 typedef struct le_iq_sample
 {
@@ -1139,7 +1139,7 @@ typedef struct le_meta_path_loss_threshold
     uint16_t conn_handle;
     uint8_t  current_path_loss;     // Current path loss (always zero or positive) Units: dB
     le_path_loss_zone_event_t  zone_entered;
-} lle_meta_path_loss_threshold_t;
+} le_meta_path_loss_threshold_t;
 
 typedef enum le_tx_power_reporting_reason
 {
@@ -1180,6 +1180,11 @@ typedef struct le_meta_subrate_change
                                     // Time = N �� 10 ms
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
+
+typedef enum btstack_l2cap_msg_def
+{
+    BTSTACK_L2CAP_MSG_CAN_SEND_NOW = 0,
+} btstack_l2cap_msg_def_t;
 
 #pragma pack (pop)
 

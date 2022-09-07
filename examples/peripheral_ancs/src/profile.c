@@ -42,7 +42,7 @@ uint16_t conn_handle = 0xffff;
 int paring = 0;
 static TimerHandle_t app_timer = 0;
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -53,7 +53,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     }
 }
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -73,7 +73,7 @@ static void app_timer_callback(TimerHandle_t xTimer)
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
-{    
+{
     switch (msg_id)
     {
     case USER_MSG_KEY_PRESSED:
@@ -100,7 +100,7 @@ const static ext_adv_set_en_t adv_sets_en[] = { {.handle = 0, .duration = 0, .ma
 
 static void setup_adv(void)
 {
-    gap_set_ext_adv_para(0, 
+    gap_set_ext_adv_para(0,
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -260,11 +260,11 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         break;
     case SM_EVENT_IDENTITY_RESOLVING_FAILED:
         platform_printf("not authourized\n");
-        gap_disconnect(conn_handle);  
+        gap_disconnect(conn_handle);
         break;
-    case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:        
+    case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
         xTimerReset(app_timer, portMAX_DELAY);
-        ancs_discover(conn_handle);  
+        ancs_discover(conn_handle);
         break;
     default:
         break;
@@ -284,7 +284,6 @@ uint32_t setup_profile(void *data, void *user_data)
     sm_config(1, IO_CAPABILITY_DISPLAY_ONLY,
               0,
               SECURITY_PERSISTENT_DATA);
-    sm_add_event_handler(&sm_event_callback_registration);
     sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
