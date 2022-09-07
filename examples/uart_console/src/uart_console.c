@@ -48,6 +48,7 @@ static const char help[] =  "commands:\n"
                             "ascan                               active scan for all adv\n"
                             "ascan  xx:xx:xx:xx:xx:xx            active scan for adv from a device\n"
                             "read   value_handle                 read value of a characteristic\n"
+                            "sread  value_handle                 read value of a characteristic using sync. API\n"
                             "write  handle XX XX ...             write value to a characteristic\n"
                             "w/or   handle XX XX ...             write without response to a char.\n"
                             "sub    handle                       subscribe to a characteristic\n"
@@ -191,6 +192,7 @@ void update_addr(void);
 void conn_to_slave(void);
 void cancel_create_conn(void);
 void read_value_of_char(int handle);
+void sync_read_value_of_char(int handle);
 void write_value_of_char(int handle, block_value_t *value);
 void wor_value_of_char(int handle, block_value_t *value);
 void sub_to_char(int handle);
@@ -276,6 +278,17 @@ void cmd_read_char(const char *param)
         return;
     }
     read_value_of_char(t);
+}
+
+void cmd_sread_char(const char *param)
+{
+    int t = 0;
+    if (sscanf(param, "%d", &t) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    sync_read_value_of_char(t);
 }
 
 void cmd_bond(const char *param)
@@ -469,6 +482,10 @@ static cmd_t cmds[] =
     {
         .cmd = "read",
         .handler = cmd_read_char
+    },
+    {
+        .cmd = "sread",
+        .handler = cmd_sread_char
     },
     {
         .cmd = "write",

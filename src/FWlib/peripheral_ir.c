@@ -133,16 +133,14 @@ void IR_TimeSetIrTime5(IR_TypeDef* IR_BASE, uint16_t time)
   IR_BASE->ir_time_5 |= (time << bsIR_IR_TIME_IR_TIME_S);
 }
 
-void IR_RxCodeSetIrRxUsercode(IR_TypeDef* IR_BASE, uint16_t val)
+uint16_t IR_RxCodeGetIrRxUsercode(IR_TypeDef* IR_BASE)
 {
-  IR_BASE->ir_rx_code &= (~(BW2M(bwIR_IR_RX_CODE_IR_RX_USERCODE) << bsIR_IR_RX_CODE_IR_RX_USERCODE));
-  IR_BASE->ir_rx_code |= (val << bsIR_IR_RX_CODE_IR_RX_USERCODE);
+    return (uint16_t)((IR_BASE->ir_rx_code >> bsIR_IR_RX_CODE_IR_RX_USERCODE) & BW2M(bwIR_IR_RX_CODE_IR_RX_USERCODE));
 }
 
-void IR_RxCodeSetIrRxDatacode(IR_TypeDef* IR_BASE, uint16_t val)
-{
-  IR_BASE->ir_rx_code &= (~(BW2M(bwIR_IR_RX_CODE_IR_RX_DATACODE) << bsIR_IR_RX_CODE_IR_RX_DATACODE));
-  IR_BASE->ir_rx_code |= (val << bsIR_IR_RX_CODE_IR_RX_DATACODE);
+uint16_t IR_RxCodeGetIrRxDatacode(IR_TypeDef* IR_BASE)
+{  
+    return (uint16_t)((IR_BASE->ir_rx_code >> bsIR_IR_RX_CODE_IR_RX_DATACODE) & BW2M(bwIR_IR_RX_CODE_IR_RX_DATACODE));
 }
 
 void IR_TxCodeSetIrTxUsercode(IR_TypeDef* IR_BASE, uint16_t val)

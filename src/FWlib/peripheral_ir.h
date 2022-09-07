@@ -189,10 +189,11 @@ void IR_TimeSetIrTime5(IR_TypeDef* IR_BASE, uint16_t time);
  * @brief IR ir_rx_code reg operations
  *
  * @param[in] IR_BASE              Base address of IR module
+              Val                  Data Pointer
  ****************************************************************************************
  */
-void IR_RxCodeSetIrRxUsercode(IR_TypeDef* IR_BASE, uint16_t val);
-void IR_RxCodeSetIrRxDatacode(IR_TypeDef* IR_BASE, uint16_t val);
+uint16_t IR_RxCodeGetIrRxUsercode(IR_TypeDef* IR_BASE);
+uint16_t IR_RxCodeGetIrRxDatacode(IR_TypeDef* IR_BASE);
 
 /**
  ****************************************************************************************
