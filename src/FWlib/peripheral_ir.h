@@ -143,6 +143,7 @@ void IR_CtrlIrUsercodeVerify(IR_TypeDef* IR_BASE);
 void IR_CtrlIrDatacodeVerify(IR_TypeDef* IR_BASE);
 void IR_CtrlIrSetBitTime1(IR_TypeDef* IR_BASE, uint8_t time);
 void IR_CtrlIrTxRepeatMode(IR_TypeDef* IR_BASE);
+void IR_CleanIrTxRepeatMode(IR_TypeDef* IR_BASE);
 void IR_CtrlIrSetBitTime2(IR_TypeDef* IR_BASE, uint8_t time);
 void IR_CtrlSetTxRxMode(IR_TypeDef* IR_BASE, IR_TxRxMode_e mode);
 void IR_CtrlIrSetIrBitCycle(IR_TypeDef* IR_BASE, uint8_t cycle);
