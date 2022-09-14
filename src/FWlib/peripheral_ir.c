@@ -49,7 +49,10 @@ void IR_CtrlIrTxRepeatMode(IR_TypeDef* IR_BASE)
 {
   IR_BASE->ir_ctrl |= (1 << bsIR_IR_CTRL_TX_REPEAT_MODE);
 }
-
+void IR_CleanIrTxRepeatMode(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_ctrl &= (~(1 << bsIR_IR_CTRL_TX_REPEAT_MODE));
+}
 void IR_CtrlIrSetBitTime2(IR_TypeDef* IR_BASE, uint8_t time)
 {
   IR_BASE->ir_ctrl &= (~(BW2M(bwIR_IR_CTRL_BIT_TIME_2) << bsIR_IR_CTRL_BIT_TIME_2));
