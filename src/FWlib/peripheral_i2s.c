@@ -92,12 +92,4 @@ void I2S_DataFromPDM(uint8_t enable)
     APB_SYSCTRL->PdmI2sCtrl = enable;
 }
 
-void I2S_DmaEnable(I2S_TypeDef *base, uint8_t tx_enable, uint8_t rx_enable)
-{
-    uint32_t mask = base->Config & ~((uint32_t)3 << 13);
-    mask |= tx_enable << 13;
-    mask |= rx_enable << 14;
-    base->Config = mask;
-}
-
 #endif

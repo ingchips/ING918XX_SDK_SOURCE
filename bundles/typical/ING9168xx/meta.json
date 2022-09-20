@@ -224,9 +224,12 @@
         "btstack_memory_pool_create", 
         "btstack_memory_pool_get", 
         "btstack_memory_pool_free", 
+        "ll_set_tx_power_range", 
         "ll_set_adv_coded_scheme", 
         "ll_set_initiating_coded_scheme", 
         "ll_hint_on_ce_len", 
+        "ll_set_conn_tx_power", 
+        "ll_adjust_conn_peer_tx_power", 
         "ll_set_conn_coded_scheme", 
         "ll_set_conn_latency", 
         "ll_set_def_antenna", 
@@ -236,7 +239,6 @@
         "ll_set_max_conn_number", 
         "ll_scan_set_fixed_channel", 
         "ll_set_adv_access_address", 
-        "ll_query_timing_info", 
         "xQueueGenericSend", 
         "xQueuePeek", 
         "xQueuePeekFromISR", 
@@ -317,19 +319,15 @@
         "uxListRemove"
     ], 
     "app": {
-        "base": 33701888
-    }, 
-    "ram": {
-        "base": 536870912, 
-        "size": 22580
+        "base": 33705984
     }, 
     "rom": {
         "base": 33554432, 
-        "size": 147020
+        "size": 148176
     }, 
     "version": [
         2, 
         0, 
-        10
+        11
     ]
 }

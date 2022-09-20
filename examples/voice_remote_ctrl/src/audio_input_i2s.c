@@ -118,8 +118,8 @@ void audio_input_setup(void)
 void audio_input_start(void)
 {
     DMA_EnableChannel(CHANNEL_ID, &PingPang.descriptor_pp[PingPang.status]);
-    I2S_DMAEnable(APB_I2S, 1, 1);
     I2S_ClearRxFIFO(APB_I2S);
+    I2S_DMAEnable(APB_I2S, 1, 1);
     I2S_Enable(APB_I2S, 0, 1);
 }
 
