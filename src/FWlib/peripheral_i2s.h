@@ -91,6 +91,9 @@ void I2S_ConfigIRQ(I2S_TypeDef *base, uint8_t tx_irq_en, uint8_t rx_irq_en,
 /**
  * @brief Enable/Disable I2S DMA
  *
+ * Note: These two bits are "write-only", any other _write_ operation to _Config_
+ *       clears this two bits.
+ *
  * @param[in] base              I2S peripheral base address
  * @param[in] tx_en             Enable DMA for tansmission
  * @param[in] rx_en             Enable DMA for reception
@@ -174,14 +177,6 @@ int I2S_GetRxFIFOCount(I2S_TypeDef *base);
  * @param[in] enable                    Enable or disable(default)
  */
 void I2S_DataFromPDM(uint8_t enable);
-
-/**
- * @brief Enable/Disable DMA transfer
- * @param[in] base                  base address
- * @param[in] tx_enable             enable(1)/disable(0) on TX
- * @param[in] rx_enable             enable(1)/disable(0) on RX
- */
-void I2S_DmaEnable(I2S_TypeDef *base, uint8_t tx_enable, uint8_t rx_enable);
 
 #endif
 
