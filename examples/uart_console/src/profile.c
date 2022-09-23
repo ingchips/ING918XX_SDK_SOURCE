@@ -955,6 +955,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                         iprintf("discovering...\n");
                         discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);
                     }
+                    else
+                        sm_request_pairing(mas_conn_handle);
                 }
             }
             break;
@@ -1195,11 +1197,6 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         break;
     case SM_EVENT_IDENTITY_RESOLVING_FAILED:
         platform_printf("not authourized\n");
-        if (bonding_flag && (mas_conn_handle != INVALID_HANDLE))
-        {
-            iprintf("paring...\n");
-            sm_request_pairing(mas_conn_handle);
-        }
         break;
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
         discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);

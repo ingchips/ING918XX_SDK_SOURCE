@@ -959,7 +959,11 @@ typedef struct le_ext_adv_report
     bd_addr_type_t  direct_addr_type;
     bd_addr_t       direct_addr;
     uint8_t         data_len;
+#ifdef __ICCARM__
+    uint8_t         data[1];
+#else
     uint8_t         data[0];
+#endif
 } le_ext_adv_report_t;
 
 //  LE Extended Advertising Report Event

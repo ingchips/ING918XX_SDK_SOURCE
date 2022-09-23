@@ -170,7 +170,7 @@ void gatt_client_util_dump_profile(service_node_t *first, void *user_data, int e
 {
     service_node_t *s = first;
 
-    iprintf("========== CLONING GATT PROFILE ==========\n\n");
+    iprintf("========== DUMPING GATT PROFILE ==========\n\n");
 
     while (s)
     {
