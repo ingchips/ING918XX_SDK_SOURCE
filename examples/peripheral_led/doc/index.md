@@ -24,3 +24,13 @@ Download the this example. Then test each function:
     without `PRO_MODE`.
 
 * Proprietary connection-less AoA: Ref to [_Central CTE_](../../central_cte/doc/index.md) with `PRO_MODE`.
+
+
+##  RGB_LED Support
+
+At present, the program supports two LED light drivers, which can be adapted to two different LED lights by modifying the following macro definition：
+```
+#define LED_TLC59731    0
+#define LED_WS2881      1
+#define RGB_LED     LED_WS2881
+```
