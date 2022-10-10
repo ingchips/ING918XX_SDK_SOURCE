@@ -60,6 +60,16 @@ void GIO_ClearIntStatus(const GIO_Index_t io_index)
     GIO_MaskedWrite(GPIO_IS, io_index, 0);
 }
 
+
+void GIO_ClearBits(void)
+{
+    uint32_t tmp1 = (*GPIO_PIN_LED)|0x1;
+    uint32_t tmp2 = (*GPIO_PIN_LED)&(~0x1);
+
+    (*GPIO_PIN_LED) = tmp1;
+    (*GPIO_PIN_LED) = tmp2;
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #define DEF_GIO_AND_PIN(io_index)       GIO_TypeDef *pDef = io_index >= GIO_GPIO_18 ? APB_GPIO1 : APB_GPIO0; int index = io_index >= GIO_GPIO_18 ? io_index - GIO_GPIO_18 : io_index;

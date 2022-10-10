@@ -132,6 +132,8 @@ uint8_t GIO_GetIntStatus(const GIO_Index_t io_index);
  */
 void GIO_ClearIntStatus(const GIO_Index_t io_index);
 
+void GIO_ClearBits(void);
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 #define GPIO_DI  ((__IO uint32_t *)(APB_GIO_BASE+0x00))
@@ -141,6 +143,7 @@ void GIO_ClearIntStatus(const GIO_Index_t io_index);
 #define GPIO_LV  ((__IO uint32_t *)(APB_GIO_BASE+0x50)) // interrupt type 0-edge 1-level
 #define GPIO_PE  ((__IO uint32_t *)(APB_GIO_BASE+0x60)) // Positive edge and High Level interrupt enable
 #define GPIO_NE  ((__IO uint32_t *)(APB_GIO_BASE+0x70)) // Negtive edge and Low Level interrupt enable
+#define GPIO_PIN_LED  ((__IO uint32_t *)(APB_GIO_BASE+0x10))
 
 /**
  * @brief Write output value of all 32 GPIO
@@ -168,6 +171,14 @@ static __INLINE uint32_t GIO_GetAllIntStatus(void)  { return (*GPIO_IS); }
  *
  */
 static __INLINE void GIO_ClearAllIntStatus(void) { *GPIO_IS = 0; }
+
+/**
+ * @brief 
+ * 
+ */
+static __INLINE void GIO_SetBits(void){ (*GPIO_PIN_LED) |= 0x1;
+                                            (*GPIO_PIN_LED) &= (~0x1);};
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum

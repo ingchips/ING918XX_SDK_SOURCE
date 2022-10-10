@@ -28,9 +28,8 @@ Download the this example. Then test each function:
 
 ##  RGB_LED Support
 
-At present, the program supports two LED light drivers, which can be adapted to two different LED lights by modifying the following macro definition：
+At present, the program supports two LED light drivers (TLC59731 and WS2881), which can be adapted to two different LED lights by defining macro RGB_LED to following values：
 ```
 #define LED_TLC59731    0
 #define LED_WS2881      1
-#define RGB_LED     LED_WS2881
 ```

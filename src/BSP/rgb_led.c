@@ -1,13 +1,18 @@
 #include "rgb_led.h"
 #include "ingsoc.h"
 
+//PIN_RGB_LED must be GPIO0.
 #ifndef PIN_RGB_LED
 #define PIN_RGB_LED   GIO_GPIO_0
 #endif
 
 #define LED_TLC59731    0
 #define LED_WS2881      1
-#define RGB_LED     LED_WS2881
+
+//default old driver:tlc59731
+#ifndef RGB_LED
+#define RGB_LED     LED_TLC59731
+#endif
 
 // CPU clok: PLL_CLK_FREQ  48000000
 // 1 cycle = 21ns
@@ -55,27 +60,21 @@ static void tlc59731_write(uint32_t value)
     delay(100 * 8);
 }
 
-#define APB_BASE_RGB_LED ((uint32_t)0x40000010UL)
 static void ws2881_write(uint32_t value)
 {
     int8_t i;
 
     for( i = 0; i < 24; i++ )
     {
-        uint32_t bit = value & ( 0x80000000 >> (i + 8) );
+        uint32_t bit = value & ( 0x00800000 >> i);
 
         if (bit)
         {
-            (*((__IO uint32_t *)APB_BASE_RGB_LED)) |= 0x1;
-            (*((__IO uint32_t *)APB_BASE_RGB_LED)) &= (~0x1);
+            GIO_SetBits();
         }
         else
         {
-            uint32_t tmp1 = (*((__IO uint32_t *)APB_BASE_RGB_LED))|0x1;
-            uint32_t tmp2 = (*((__IO uint32_t *)APB_BASE_RGB_LED))&(~0x1);
-
-            (*((__IO uint32_t *)APB_BASE_RGB_LED)) = tmp1;
-            (*((__IO uint32_t *)APB_BASE_RGB_LED)) = tmp2;
+            GIO_ClearBits();
         }
  
     }
@@ -84,7 +83,7 @@ static void ws2881_write(uint32_t value)
 
 void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
-    uint32_t cmd = (0x3a << 24) | (g << 16) | (r << 8) | b;
+    uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
 #if(RGB_LED == LED_TLC59731)
     tlc59731_write(cmd);
 #elif(RGB_LED == LED_WS2881)
