@@ -237,7 +237,6 @@ typedef struct tagDMA_Descriptor
 typedef struct
 {
     DMA_Descriptor Descriptor;      // +0x00
-    uint32_t Reserved3;             // +0x1c
 } DMA_ChannelReg;
 
 // DMA
