@@ -217,8 +217,7 @@ typedef enum
   SPI_SLVMODE_SLAVE_MODE = 1
 }SPI_TransFmt_SlvMode_e;
 
-/* Transfer data with the least significant bit first
-  0x0: Most significant bit first 0x1: Least significant bit first */
+/* Transfer data with the least significant bit first */
 typedef enum
 {
   SPI_LSB_MOST_SIGNIFICANT_BIT_FIRST = 0,
@@ -283,10 +282,7 @@ typedef enum
 /* bit width 9 bit */
 typedef uint16_t SPI_TransCtrl_TransCnt;
 
-/* SPI data phase format
-0x0: Regular (Single) mode 0x1: Dual I/O mode
-0x2: Quad I/O mode
-0x3: Reserved */
+/* SPI data phase format */
 typedef enum
 {
   SPI_DUALQUAD_REGULAR_MODE = 0,
@@ -294,10 +290,7 @@ typedef enum
   SPI_DUALQUAD_QUAD_IO_MODE = 2
 }SPI_TransCtrl_DualQuad_e;
 
-/* Transfer mode
-The transfer sequence could be
-0x0: Write and read at the same time 0x1: Write only
-0x2: Read only  */
+/* Transfer mode */
 typedef enum
 {
   SPI_TRANSMODE_WRITE_READ_SAME_TIME = 0,
@@ -347,12 +340,10 @@ Write 1 to reset. It is automatically cleared to 0 after the reset operation com
 #define bsSPI_CTRL_RXDMAEN          3
 #define bsSPI_CTRL_TXDMAEN          4
 /* Receive (RX) FIFO Threshold
-The RXFIFOInt interrupt or DMA request would be issued for consuming the RX FIFO when 
-the RX data count is more than or equal to the RX FIFO threshold. */
+The RXFIFOInt interrupt generate when the RX data count is more than or equal to the RX FIFO threshold. */
 #define bsSPI_CTRL_RXTHRES          8
 /* Transmit (TX) FIFO Threshold
-The TXFIFOInt interrupt or DMA request would be issued to replenish the TX FIFO when the TX data
-count is less than or equal to the TX FIFO threshold. */
+The TXFIFOInt interrupt generate when the TX data count is less than or equal to the TX FIFO threshold. */
 #define bsSPI_CTRL_TXTHRES          16
 
 /* bit width */
@@ -376,8 +367,7 @@ threshold. */
 threshold. */
 #define bsSPI_INTREN_TXFIFOINTEN    3
 /* Enable the End of SPI Transfer interrupt.
-Control whether interrupts are triggered when SPI transfers end.
-(In slave mode, end of read status transaction doesnt trigger this interrupt.) */
+Control whether interrupts are triggered when SPI transfers end. */
 #define bsSPI_INTREN_ENDINTEN       4
 /* Enable the Slave Command Interrupt.
 Control whether interrupts are triggered whenever slave commands are received.
@@ -436,10 +426,7 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
  * Description:
  * Bit shifts and widths for Timing register "Timing"
  */
- /* The clock frequency ratio between the clock source and SPI interface SCLK.
-SCLK period = (SCLK_DIV+1)*2* (Period of the SPI clock source) 
-The SCLK_DIV value 0xff is a special value which indicates that the SCLK frequency should be the same as the spi_clock
-frequency. */
+
 #define bsSPI_TIMING_SCLK_DIV            0
 /* The minimum time between the edges of SPI CS and the edges of SCLK. see bwSPI_TIMING_CS2SCLK for bit width*/
 #define bsSPI_TIMING_CS2SCLK             12
@@ -480,48 +467,28 @@ typedef struct apSSP_xDeviceControlBlock
   SPI_InterfaceTimingSclkDiv   eSclkDiv; /* Clock rate divisor */
   SPI_TransFmt_CPHA_e          eSCLKPhase;/* odd or even edge, used to for spi mode */
   SPI_TransFmt_CPOL_e          eSCLKPolarity;/* idle low or idle high, used to for spi mode */
-  /* Transfer data with the least significant bit first
-0x0: Most significant bit first 0x1: Least significant bit first */
+  /* Transfer data with the least significant bit first 0x0: Most significant bit first 0x1: Least significant bit first */
   SPI_TransFmt_LSB_e           eLsbMsbOrder;
-  /* The length of each data unit in bits
-The actual bit number of a data unit is (DataLen + 1) */
+  /* The length of each data unit in bits The actual bit number of a data unit is (DataLen + 1) */
   SPI_TransFmt_DataLen_e       eDataSize;
-  /* SPI Master/Slave mode selection 0x0: Master mode
-0x1: Slave mode */
+  /* SPI Master/Slave mode selection 0x0: Master mode 0x1: Slave mode */
   SPI_TransFmt_SlvMode_e       eMasterSlaveMode;
-  /* Transfer mode
-The transfer sequence could be
-0x0: Write and read at the same time 0x1: Write only
-0x2: Read only */
+  /* Transfer mode 0x0: Write and read at the same time 0x1: Write only 0x2: Read only */
   SPI_TransCtrl_TransMode_e    eReadWriteMode;
-  /* SPI data phase format
-0x0: Regular (Single) mode 0x1: Dual I/O mode
-0x2: Quad I/O mode
-0x3: Reserved */
+  /* SPI data phase format 0x0: Regular (Single) mode 0x2: Quad I/O mode */
   SPI_TransCtrl_DualQuad_e     eQuadMode;
-  /* Transfer count for write data
-WrTranCnt indicates the number of units of data to be transmitted to the SPI bus from the Data Register. The actual transfer count is (WrTranCnt+1).
-WrTranCnt only takes effect when TransMode is 0, 1, 3, 4, 5, 6 or 8.
-The size (bit-width) of a data unit is defined by the
-DataLen field of the Transfer Format Register. For TransMode 0, WrTranCnt must be equal to
-RdTranCnt. */
+  /* Transfer count for write/read data, eg. WrTranCnt indicates the number of units of data to be transmitted */
   SPI_TransCtrl_TransCnt       eWriteTransCnt;/* 9 bit width */
   SPI_TransCtrl_TransCnt       eReadTransCnt;/* 9 bit width */
-  /* SPI address phase enable (Master mode only) 0x0: Disable the address phase
-0x1: Enable the address phase */
+  /* SPI address phase enable (Master mode only) 0x0: Disable the address phase 0x1: Enable the address phase */
   SPI_TransCtrl_AddrEn_e       eAddrEn;
-  /* SPI command phase enable (Master mode only) 0x0: Disable the command phase
-0x1: Enable the command phase */
+  /* SPI command phase enable (Master mode only) 0x0: Disable the command phase 0x1: Enable the command phase */
   SPI_TransCtrl_CmdEn_e        eCmdEn;
   /* check bit definition of Int Register */
   SPI_InterruptEnableMask      eInterruptMask;
-  /* Transmit (TX) FIFO Threshold
-The TXFIFOInt interrupt or DMA request would be issued to replenish the TX FIFO when the TX data
-count is less than or equal to the TX FIFO threshold. */
+  /* Transmit (TX) FIFO Threshold, Interrupt will be triggered if TX data cnt less than TxThres*/
   SPI_ControlTxThres           TxThres;
-  /* Receive (RX) FIFO Threshold
-The RXFIFOInt interrupt or DMA request would be issued for consuming the RX FIFO when 
-the RX data count is more than or equal to the RX FIFO threshold. */
+  /* Receive (RX) FIFO Threshold, Interrupt will be triggered if RX data cnt exceed RxThres*/
   SPI_ControlRxThres           RxThres;
   /* Data-only mode (slave mode only) 0x0: Disable the data-only mode 0x1: Enable the data-only mode */
   SPI_TransCtrl_SlvDataOnly_e  SlaveDataOnly;

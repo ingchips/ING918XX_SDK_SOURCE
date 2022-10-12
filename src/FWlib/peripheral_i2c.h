@@ -460,6 +460,10 @@ typedef enum
 
 typedef enum
 {
+    I2C_STATUS_FIFO_EMPTY = 0,
+    I2C_STATUS_FIFO_FULL = 1,
+    I2C_STATUS_ADDRHIT = 3, // indicates a transaction is addressed on this controller
+    I2C_STATUS_CMPL = 9   , // indicates transaction completion
     I2C_STATUS_ACK  = 10  , // indicates the type of the last received/transmitted
     I2C_STATUS_BUS_BUSY   , // if the bus is busy
     I2C_STATUS_GEN_CALL   , // if the address of the current transaction is a general call address
@@ -489,6 +493,15 @@ typedef enum
     I2C_TRANSACTION_SLAVE2MASTER,
 } I2C_TransactionDir;
 
+typedef enum
+{
+    I2C_CLOCKFREQUENY_NULL,
+    I2C_CLOCKFREQUENY_STANDARD,//100kbit/s
+    I2C_CLOCKFREQUENY_FASTMODE,//400kbit/s
+    I2C_CLOCKFREQUENY_FASTMODE_PLUS,//1Mbit/s
+    I2C_CLOCKFREQUENY_MANUAL
+} I2C_ClockFrequenyOptions;
+
 #define bsI2C_CTRL_TRANSACTION_DIR               8
 #define bsI2C_CTRL_MASTER_PRE_SEND_START         12
 #define bsI2C_CTRL_MASTER_SEND_ADDR_AFTER_START  11
@@ -499,6 +512,11 @@ typedef enum
                                     | (1 << bsI2C_CTRL_MASTER_SEND_ADDR_AFTER_START) \
                                     | (1 << bsI2C_CTRL_MASTER_SEND_DATA_AFTER_ADDR) \
                                     | (1 << bsI2C_CTRL_MASTER_POST_SEND_STOP))
+
+// bit width of data cnt reg
+#define bwI2C_CTRL_DATA_CNT                      8
+// bit width of direction reg
+#define bwI2C_CTRL_TRANSACTION_DIR               1
 
 /**
  * @brief Configure I2C
@@ -538,13 +556,13 @@ void I2C_Enable(I2C_TypeDef *I2C_BASE, uint8_t enable);
 I2C_TransactionDir I2C_GetTransactionDir(I2C_TypeDef *I2C_BASE);
 
 /**
- * @brief Enable interrupts of I2C
+ * @brief Enable/Disable interrupts of I2C
  *
  * @param[in] I2C_BASE              base address
  * @param[in] mask                  bits combinatoin of `I2C_IntBit`
  */
 void I2C_IntEnable(I2C_TypeDef *I2C_BASE, uint32_t mask);
-
+void I2C_IntDisable(I2C_TypeDef *I2C_BASE, uint32_t mask);
 /**
  * @brief Get interrupts status of I2C
  *
@@ -603,6 +621,46 @@ void I2C_DmaEnable(I2C_TypeDef *I2C_BASE, uint8_t enable);
 void I2C_ConfigSCLTiming( I2C_TypeDef *I2C_BASE, uint32_t scl_hi, uint32_t scl_ratio,
                          uint32_t hddat, uint32_t sp, uint32_t sudat);
 
+/**
+ * @brief Update the data number that need to be transferred or received
+ * @param[in] I2C_BASE              base address
+ * @param[in] cnt                   maximum 8 bit
+ */
+void I2C_CtrlUpdateDataCnt(I2C_TypeDef *I2C_BASE, uint8_t cnt);
+
+/**
+ * @brief Write a command to trigger an action
+ * @param[in] I2C_BASE              base address
+ * @param[in] cmd                   see I2C_Command
+ */
+void I2C_CommandWrite(I2C_TypeDef *I2C_BASE, uint8_t cmd);
+
+/**
+ * @brief Get Data from I2C FIFO
+ * @param[in] I2C_BASE              base address
+ */
+void I2C_DataWrite(I2C_TypeDef *I2C_BASE, uint8_t data);
+uint8_t I2C_DataRead(I2C_TypeDef *I2C_BASE);
+
+/**
+ * @brief Config a direction for controller
+ * @param[in] I2C_BASE              base address
+ * @param[in] dir                   see I2C_TransactionDir
+ */
+void I2C_CtrlUpdateDirection(I2C_TypeDef *I2C_BASE, I2C_TransactionDir dir);
+
+/**
+ * @brief Get data cnt number that has been transferred.
+ * @param[in] I2C_BASE              base address
+ */
+uint8_t I2C_CtrlGetDataCnt(I2C_TypeDef *I2C_BASE);
+
+/**
+ * @brief Set clk frequency for controller.
+ * @param[in] I2C_BASE              base address
+ * @param[in] option                see I2C_ClockFrequenyOptions
+ */
+void I2C_ConfigClkFrequency(I2C_TypeDef *I2C_BASE, I2C_ClockFrequenyOptions option);
 #endif
 
 #ifdef __cplusplus

@@ -231,12 +231,12 @@ typedef struct tagDMA_Descriptor
     uint32_t DstAddr;               // +0x10
     uint32_t Reserved2;
     struct tagDMA_Descriptor *Next; // +0x18    (8-bytes aligned address)
-    uint32_t Reserved3;             // +0x1c
 } DMA_Descriptor;
 
 typedef struct
 {
     DMA_Descriptor Descriptor;      // +0x00
+    uint32_t Reserved3;             // +0x1c
 } DMA_ChannelReg;
 
 // DMA

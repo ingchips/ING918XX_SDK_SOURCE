@@ -246,10 +246,10 @@ typedef enum
     IO_SOURCE_UART1_RXD     = 0x5c,
     IO_SOURCE_UART1_CTS     = 0x5d,
 
-    //IO_SOURCE_I2C0_SCL_IN   = 0x5e,
-    //IO_SOURCE_I2C0_SDA_IN   = 0x5f,
-    //IO_SOURCE_I2C1_SCL_IN   = 0x60,
-    //IO_SOURCE_I2C1_SDA_IN   = 0x61,
+    IO_SOURCE_I2C0_SCL_IN   = 0x5e,
+    IO_SOURCE_I2C0_SDA_IN   = 0x5f,
+    IO_SOURCE_I2C1_SCL_IN   = 0x60,
+    IO_SOURCE_I2C1_SDA_IN   = 0x61,
 
     IO_SOURCE_PDM_DMIC_IN   = 0x62,
 
