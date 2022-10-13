@@ -173,9 +173,12 @@ uint8_t apSSP_TxFifoEmpty(SSP_TypeDef * SSP_Ptr);
 
 #if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
 
-/*
+/* same depth for both RX FIFO and TX FIFO */
+#define SPI_FIFO_DEPTH (8)//8 words
+
+/* ----------------------------------------------------------
  * Description:
- * Bit shifts and widths for Transfer Format Register
+ * Bit shifts and widths for Transfer Format Register "TransFmt"
  */
 #define bsSPI_TRANSFMT_CPHA                 0
 #define bsSPI_TRANSFMT_CPOL                 1
@@ -207,12 +210,14 @@ typedef enum
   SPI_CPOL_SCLK_HIGH_IN_IDLE_STATES = 1
 }SPI_TransFmt_CPOL_e;
 
+/* SPI Master/Slave mode selection 0x0: Master mode 0x1: Slave mode */
 typedef enum
 {
   SPI_SLVMODE_MASTER_MODE = 0,
   SPI_SLVMODE_SLAVE_MODE = 1
 }SPI_TransFmt_SlvMode_e;
 
+/* Transfer data with the least significant bit first */
 typedef enum
 {
   SPI_LSB_MOST_SIGNIFICANT_BIT_FIRST = 0,
@@ -238,17 +243,27 @@ typedef enum
   SPI_ADDRLEN_1_BYTE = 0,
   SPI_ADDRLEN_2_BYTES = 1,
   SPI_ADDRLEN_3_BYTES = 2,
-  SPI_ADDRLEN_4_BYTES = 3,
+  SPI_ADDRLEN_4_BYTES = 3
 }SPI_TransFmt_AddrLen_e;
 
+/* The length of each data unit in bits
+  The actual bit number of a data unit is (DataLen + 1) */
+typedef enum
+{
+  SPI_DATALEN_8_BITS = 0x7,
+  SPI_DATALEN_16_BITS = 0xf,
+  SPI_DATALEN_32_BITS = 0x1f
+}SPI_TransFmt_DataLen_e;
 
-/*
+/* ----------------------------------------------------------
  * Description:
- * Bit shifts and widths for Transfer Control Register
+ * Bit shifts and widths for Transfer Control Register "TransCtrl"
  */
 #define bsSPI_TRANSCTRL_RDTRANCNT         0
 #define bsSPI_TRANSCTRL_WRTRANCNT         12
+/* SPI_TransCtrl_DualQuad_e */
 #define bsSPI_TRANSCTRL_DUALQUAD          22
+/* SPI_TransCtrl_TransMode_e */
 #define bsSPI_TRANSCTRL_TRANSMODE         24
 #define bsSPI_TRANSCTRL_ADDREN            29
 #define bsSPI_TRANSCTRL_CMDEN             30
@@ -264,6 +279,10 @@ typedef enum
 #define SPI_TRANSCTRL_RDTRANCNT_X(x) ((x && 0x1FF) - 1)
 #define SPI_TRANSCTRL_WRTRANCNT_X(x) ((x && 0x1FF) - 1)
 
+/* bit width 9 bit */
+typedef uint16_t SPI_TransCtrl_TransCnt;
+
+/* SPI data phase format */
 typedef enum
 {
   SPI_DUALQUAD_REGULAR_MODE = 0,
@@ -271,6 +290,7 @@ typedef enum
   SPI_DUALQUAD_QUAD_IO_MODE = 2
 }SPI_TransCtrl_DualQuad_e;
 
+/* Transfer mode */
 typedef enum
 {
   SPI_TRANSMODE_WRITE_READ_SAME_TIME = 0,
@@ -278,18 +298,23 @@ typedef enum
   SPI_TRANSMODE_READ_ONLY = 2
 }SPI_TransCtrl_TransMode_e;
 
+/* SPI address phase enable (Master mode only) 0x0: Disable the address phase
+0x1: Enable the address phase */
 typedef enum
 {
   SPI_ADDREN_DISABLE = 0,
   SPI_ADDREN_ENABLE = 1
 }SPI_TransCtrl_AddrEn_e;
 
+/* SPI command phase enable (Master mode only) 0x0: Disable the command phase
+0x1: Enable the command phase */
 typedef enum
 {
   SPI_CMDEN_DISABLE = 0,
   SPI_CMDEN_ENABLE = 1
 }SPI_TransCtrl_CmdEn_e;
 
+/* Data-only mode (slave mode only) 0x0: Disable the data-only mode 0x1: Enable the data-only mode */
 typedef enum
 {
   SPI_SLVDATAONLY_DISABLE = 0,
@@ -297,42 +322,83 @@ typedef enum
 }SPI_TransCtrl_SlvDataOnly_e;
 
 
-/*
+/* ----------------------------------------------------------
  * Description:
- * Bit shifts and widths for Control Register
+ * Bit shifts and widths for Control Register "Ctrl"
  */
 
+/* SPI reset
+Write 1 to reset. It is automatically cleared to 0 after the reset operation completes. */
 #define bsSPI_CTRL_SPIRST           0
+/* Receive FIFO reset
+Write 1 to reset. It is automatically cleared to 0 after the reset operation completes. */
 #define bsSPI_CTRL_RXFIFORST        1
+/* Transmit FIFO reset
+Write 1 to reset. It is automatically cleared to 0 after the reset operation completes. */
 #define bsSPI_CTRL_TXFIFORST        2
+/* DMA enable */
+#define bsSPI_CTRL_RXDMAEN          3
+#define bsSPI_CTRL_TXDMAEN          4
+/* Receive (RX) FIFO Threshold
+The RXFIFOInt interrupt generate when the RX data count is more than or equal to the RX FIFO threshold. */
 #define bsSPI_CTRL_RXTHRES          8
+/* Transmit (TX) FIFO Threshold
+The TXFIFOInt interrupt generate when the TX data count is less than or equal to the TX FIFO threshold. */
 #define bsSPI_CTRL_TXTHRES          16
 
+/* bit width */
 #define bwSPI_CTRL_SPIRST           1
 #define bwSPI_CTRL_RXFIFORST        1
 #define bwSPI_CTRL_TXFIFORST        1
 #define bwSPI_CTRL_RXTHRES          8
 #define bwSPI_CTRL_TXTHRES          8
 
-
+typedef uint8_t SPI_ControlRxThres;
+typedef uint8_t SPI_ControlTxThres;
+/* ----------------------------------------------------------
+ * Description:
+ * Bit shifts and widths for Int Register "IntrEn"
+ */
+ 
+/* Enable the SPI Receive FIFO Threshold interrupt. Control whether interrupts are triggered when the valid entries are greater than or equal to the RX FIFO
+threshold. */
 #define bsSPI_INTREN_RXFIFOINTEN    2
-#define bsSPI_INTREN_TXFIFOINTEN    2
+/* Enable the SPI Transmit FIFO Threshold interrupt. Control whether interrupts are triggered when the valid entries are less than or equal to the TX FIFO
+threshold. */
+#define bsSPI_INTREN_TXFIFOINTEN    3
+/* Enable the End of SPI Transfer interrupt.
+Control whether interrupts are triggered when SPI transfers end. */
 #define bsSPI_INTREN_ENDINTEN       4
+/* Enable the Slave Command Interrupt.
+Control whether interrupts are triggered whenever slave commands are received.
+(Slave mode only) */
 #define bsSPI_INTREN_SLVCMDEN       5
 
+typedef uint8_t SPI_InterruptEnableMask;/* bit mask combined from above interrupt bit */
 
-/*
+/* ----------------------------------------------------------
  * Description:
- * Bit shifts and widths for Status register
+ * Bit shifts and widths for Status register "Status"
  */
+/* SPI register programming is in progress.
+In master mode, SPIActive becomes 1 after the SPI command register is written and becomes 0 after the transfer is finished.
+In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becomes 0 after the SPI CS signal is deasserted. */
 #define bsSPI_STATUS_SPIACTIVE           0
+/* Receive FIFO Empty flag */
 #define bsSPI_STATUS_RXEMPTY             14
+/* Receive FIFO Full flag */
 #define bsSPI_STATUS_RXFULL              15
+/* Transmit FIFO Empty flag */
 #define bsSPI_STATUS_TXEMPTY             22
+/* Transmit FIFO Full flag */
 #define bsSPI_STATUS_TXFULL              23
+/* Number of valid entries in the Transmit FIFO[5:0], bit width is bwSPI_STATUS_TXNUML */
 #define bsSPI_STATUS_TXNUML              16
+/* Number of valid entries in the Transmit FIFO[7:6], bit width is bwSPI_STATUS_TXNUMH */
 #define bsSPI_STATUS_TXNUMH              28
+/* Number of valid entries in the Receive FIFO[5:0] */
 #define bsSPI_STATUS_RXNUML              8
+/* Number of valid entries in the Receive FIFO[7:6] */
 #define bsSPI_STATUS_RXNUMH              24
 
 #define bwSPI_STATUS_SPIACTIVE           1
@@ -345,19 +411,100 @@ typedef enum
 #define bwSPI_STATUS_RXNUML              6
 #define bwSPI_STATUS_RXNUMH              2
 
-
-/*
+/* ----------------------------------------------------------
  * Description:
- * Bit shifts and widths for Timing register
+ * Bit shifts and widths for Configuration register
  */
+ /* Depth of TX/RX FIFO */
+#define bsSPI_CONFIG_RXFIFOSIZE          0
+#define bsSPI_CONFIG_TXFIFOSIZE          4
+
+#define bwSPI_CONFIG_RXFIFOSIZE          4
+#define bwSPI_CONFIG_TXFIFOSIZE          4
+
+/* ----------------------------------------------------------
+ * Description:
+ * Bit shifts and widths for Timing register "Timing"
+ */
+
 #define bsSPI_TIMING_SCLK_DIV            0
+/* The minimum time between the edges of SPI CS and the edges of SCLK. see bwSPI_TIMING_CS2SCLK for bit width*/
 #define bsSPI_TIMING_CS2SCLK             12
 
 #define bwSPI_TIMING_SCLK_DIV            8
 #define bwSPI_TIMING_CS2SCLK             2
 
+/* several options of spi clock */
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_24M   (0xFF)
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_12M   (0)
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_6M    (1)
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_4M    (2)
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_3M    (3)
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M4   (4)
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M    (5)
+
+typedef uint8_t  SPI_InterfaceTimingSclkDiv;// spi interface clock / (2 * (eSclkDiv + 1))
+
+/* ----------------------------------------------------------
+ * Description:
+ * Bit shifts and widths for Configuration register
+ */
+ /* Depth of TX/RX FIFO */
+
+#define bsSPI_SLAVE_DATA_COUNT_READ_CNT           0
+#define bsSPI_SLAVE_DATA_COUNT_WRITE_CNT          16
+
+#define bwSPI_SLAVE_DATA_COUNT_READ_CNT           10
+#define bwSPI_SLAVE_DATA_COUNT_WRITE_CNT          10
+
+
+/*
+ * Description:
+ * The data structure to hold parameters to control SSP device.
+ */
+typedef struct apSSP_xDeviceControlBlock
+{
+  SPI_InterfaceTimingSclkDiv   eSclkDiv; /* Clock rate divisor */
+  SPI_TransFmt_CPHA_e          eSCLKPhase;/* odd or even edge, used to for spi mode */
+  SPI_TransFmt_CPOL_e          eSCLKPolarity;/* idle low or idle high, used to for spi mode */
+  /* Transfer data with the least significant bit first 0x0: Most significant bit first 0x1: Least significant bit first */
+  SPI_TransFmt_LSB_e           eLsbMsbOrder;
+  /* The length of each data unit in bits The actual bit number of a data unit is (DataLen + 1) */
+  SPI_TransFmt_DataLen_e       eDataSize;
+  /* SPI Master/Slave mode selection 0x0: Master mode 0x1: Slave mode */
+  SPI_TransFmt_SlvMode_e       eMasterSlaveMode;
+  /* Transfer mode 0x0: Write and read at the same time 0x1: Write only 0x2: Read only */
+  SPI_TransCtrl_TransMode_e    eReadWriteMode;
+  /* SPI data phase format 0x0: Regular (Single) mode 0x2: Quad I/O mode */
+  SPI_TransCtrl_DualQuad_e     eQuadMode;
+  /* Transfer count for write/read data, eg. WrTranCnt indicates the number of units of data to be transmitted */
+  SPI_TransCtrl_TransCnt       eWriteTransCnt;/* 9 bit width */
+  SPI_TransCtrl_TransCnt       eReadTransCnt;/* 9 bit width */
+  /* SPI address phase enable (Master mode only) 0x0: Disable the address phase 0x1: Enable the address phase */
+  SPI_TransCtrl_AddrEn_e       eAddrEn;
+  /* SPI command phase enable (Master mode only) 0x0: Disable the command phase 0x1: Enable the command phase */
+  SPI_TransCtrl_CmdEn_e        eCmdEn;
+  /* check bit definition of Int Register */
+  SPI_InterruptEnableMask      eInterruptMask;
+  /* Transmit (TX) FIFO Threshold, Interrupt will be triggered if TX data cnt less than TxThres*/
+  SPI_ControlTxThres           TxThres;
+  /* Receive (RX) FIFO Threshold, Interrupt will be triggered if RX data cnt exceed RxThres*/
+  SPI_ControlRxThres           RxThres;
+  /* Data-only mode (slave mode only) 0x0: Disable the data-only mode 0x1: Enable the data-only mode */
+  SPI_TransCtrl_SlvDataOnly_e  SlaveDataOnly;
+  SPI_TransFmt_AddrLen_e       eAddrLen;
+} apSSP_sDeviceControlBlock;
+
 /**
- * @brief Get SPI active status
+ * @brief Setup SPI module
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] pParam                various config items, see definition of apSSP_sDeviceControlBlock
+ */
+void apSSP_DeviceParametersSet(SSP_TypeDef *SPI_BASE, apSSP_sDeviceControlBlock *pParam);
+
+/**
+ * @brief Get SPI active status, 1 represents SPI transfer is still ongoing
  *
  * @param[in] SPI_BASE              base address
  */
@@ -371,23 +518,32 @@ uint8_t apSSP_GetSPIActiveStatus(SSP_TypeDef *SPI_BASE);
 void apSSP_Initialize (SSP_TypeDef *SPI_BASE);
 
 /**
- * @brief Set SPI configuration
- *
+ * @brief Set SPI configuration, register value for "TransFmt" reg, see apSSP_DeviceParametersSet for reference
+ *        eg. apSSP_SetTransferFormat(APB_SSP1, 1, bsSPI_TRANSFMT_CPHA, bwSPI_TRANSFMT_CPHA);
  * @param[in] SPI_BASE              base address
  */
-void apSSP_SetTransferFormat(SSP_TypeDef *SPI_BASE, uint32_t val);
+void apSSP_SetTransferFormat(SSP_TypeDef *SPI_BASE, uint32_t val, uint32_t shift, uint32_t width);
 
 /**
- * @brief Set SPI configuration
- *
+ * @brief Set SPI configuration, register value for "TransCtrl" reg, see apSSP_DeviceParametersSet for reference
+ *        eg. apSSP_SetTransferControl(APB_SSP1, 1, bsSPI_TRANSCTRL_RDTRANCNT, bwSPI_TRANSCTRL_RDTRANCNT);
  * @param[in] SPI_BASE              base address
  */
-void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val);
+void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val, uint32_t shift, uint32_t width);
 
 /**
- * @brief Enable SPI Int
+ * @brief Set SPI configuration, see apSSP_DeviceParametersSet for reference
  *
  * @param[in] SPI_BASE              base address
+ * @param[in] val                   write/read cnt number for one spi transfer(CS down and up)
+ */
+void apSSP_SetTransferControlWrTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val);
+void apSSP_SetTransferControlRdTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val);
+/**
+ * @brief Enable SPI Int, see apSSP_DeviceParametersSet for reference
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] mask                  see description of reg "IntrEn"
  */
 void apSSP_IntEnable(SSP_TypeDef *SPI_BASE, uint32_t mask);
 
@@ -410,7 +566,7 @@ void apSSP_ResetTxFifo(SSP_TypeDef *SPI_BASE);
 void apSSP_ResetRxFifo(SSP_TypeDef *SPI_BASE);
 
 /**
- * @brief Get SPI Int
+ * @brief Get SPI Int status
  *
  * @param[in] SPI_BASE              base address
  */
@@ -422,21 +578,17 @@ void apSSP_ClearIntStatus(SSP_TypeDef *SPI_BASE, uint32_t val);
  *
  * @param[in] SPI_BASE              base address
  */
-void apSSP_WriteFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data[], uint16_t Len);
+void apSSP_WriteFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data);
 
 /**
  * @brief Get FIFO data
  *
  * @param[in] SPI_BASE              base address
  */
-void apSSP_ReadFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data[], uint16_t Len);
+void apSSP_ReadFIFO(SSP_TypeDef *SPI_BASE, uint32_t *Data);
 
 /**
  * @brief Get data in command register
- *
- * @param[in] SPI_BASE              base address
- *//**
- * @brief Get FIFO data
  *
  * @param[in] SPI_BASE              base address
  */
@@ -449,7 +601,6 @@ uint32_t apSSP_ReadCommand(SSP_TypeDef *SPI_BASE);
  */
 uint8_t apSSP_GetDataNumInTxFifo(SSP_TypeDef *SPI_BASE);
 uint8_t apSSP_GetDataNumInRxFifo(SSP_TypeDef *SPI_BASE);
-
 /**
  * @brief Write Cmd and Address and Trigger the data transfer
  *
@@ -464,7 +615,40 @@ void apSSP_WriteCmd(SSP_TypeDef *SPI_BASE, uint32_t Addr, uint32_t Cmd);
  * @param[in] SCLK_DIV              SCLK period = (SCLK_DIV+1)*2*(Period of the SPI clock source)
  */
 void apSSP_SetTimingSclkDiv(SSP_TypeDef *SPI_BASE, uint8_t sclk_div);
-void apSSP_SetTimingCs2Sclk(SSP_TypeDef *SPI_BASE, uint8_t cs2sclk);
+
+/**
+ * @brief Set fifo threshold for fifo interrupt
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] thres                 bit width is 8 bit
+ */
+void apSSP_SetTxThres(SSP_TypeDef *SPI_BASE, uint8_t thres);
+void apSSP_SetRxThres(SSP_TypeDef *SPI_BASE, uint8_t thres);
+
+/**
+ * @brief Enable spi dma
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] en                    enable: 1; disable: 0
+ */
+void apSSP_SetTxDmaEn(SSP_TypeDef *SPI_BASE, uint8_t en);
+void apSSP_SetRxDmaEn(SSP_TypeDef *SPI_BASE, uint8_t en);
+
+/**
+ * @brief Only for slave, to get data cnt info
+ *
+ * @param[in] SPI_BASE              base address
+ */
+uint16_t apSSP_GetSlaveTxDataCnt(SSP_TypeDef *SPI_BASE);
+uint16_t apSSP_GetSlaveRxDataCnt(SSP_TypeDef *SPI_BASE);
+
+/**
+ * @brief Get FIFO depth, return is fixed 8 words
+ *
+ * @param[in] SPI_BASE              base address
+ */
+uint8_t apSSP_GetTxFifoDepthWords(SSP_TypeDef *SPI_BASE);
+uint8_t apSSP_GetRxFifoDepthWords(SSP_TypeDef *SPI_BASE);
 
 #endif
 
