@@ -51,8 +51,8 @@ typedef enum
 
 typedef enum
 {
-  IR_txrx_mode_rx_mode,
-  IR_txrx_mode_tx_mode
+  IR_TXRX_MODE_RX_MODE,
+  IR_TXRX_MODE_TX_MODE
 } IR_TxRxMode_e;
 
 /**
