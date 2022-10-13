@@ -85,19 +85,19 @@ void EFUSE_WriteEfuseDataWord(EFUSE_TypeDef* EFUSE_BASE, EFUSE_ProgramWordCnt in
   
    switch (index)
    {
-     case 0:
+     case EFUSE_PROGRAMWORDCNT_0:
      {
        EFUSE_BASE->Efuse_cfg1 = data;
      }break;
-     case 1:
+     case EFUSE_PROGRAMWORDCNT_1:
      {
        EFUSE_BASE->Efuse_cfg2 = data;
      }break;
-     case 2:
+     case EFUSE_PROGRAMWORDCNT_2:
      {
        EFUSE_BASE->Efuse_cfg3 = data;
      }break;
-     case 3:
+     case EFUSE_PROGRAMWORDCNT_3:
      {
        EFUSE_BASE->Efuse_cfg4 = data;
      }break;
