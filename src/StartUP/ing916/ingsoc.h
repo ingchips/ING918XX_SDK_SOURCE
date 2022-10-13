@@ -298,13 +298,13 @@ typedef struct
     __IO uint32_t Efuse_cfg2;         //0x8
     __IO uint32_t Efuse_cfg3;         //0xC
     __IO uint32_t Reserved0[3];       //0x10
-    __IO uint32_t efuse_cfg4;         //0x1C
-    __IO uint32_t efuse_dly_cfg0;     //0x20
-    __IO uint32_t efuse_dly_cfg1;     //0x24
+    __IO uint32_t Efuse_cfg4;         //0x1C
+    __IO uint32_t Efuse_dly_cfg0;     //0x20
+    __IO uint32_t Efuse_dly_cfg1;     //0x24
     __IO uint32_t Reserved1[2];       //0x28
-    __IO uint32_t efuse_status;       //0x30
+    __IO uint32_t Efuse_status;       //0x30
     __IO uint32_t Reserved2[3];       //0x34
-    __IO uint32_t efuse_rdata[4];     //0x40
+    __IO uint32_t Efuse_rdata[4];     //0x40
 } EFUSE_TypeDef;
 
 typedef struct

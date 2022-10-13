@@ -45,6 +45,13 @@ extern "C" {	/* allow C++ to use these headers */
 #define EFUSE_REG_WORD_NUM (4)
 #define EFUSE_UNLOCK_FLAG (0xef5e)
 
+typedef enum
+{
+  EFUSE_PROGRAMWORDCNT_0,//0 ~ 31bit
+  EFUSE_PROGRAMWORDCNT_1,//32 ~ 63bit
+  EFUSE_PROGRAMWORDCNT_2,//64 - 95bit
+  EFUSE_PROGRAMWORDCNT_3//96 - 127bit
+}EFUSE_ProgramWordCnt;
 
 void EFUSE_SetCfg0(EFUSE_TypeDef* EFUSE_BASE, uint32_t val);
 
@@ -54,7 +61,7 @@ void EFUSE_SetCfg0(EFUSE_TypeDef* EFUSE_BASE, uint32_t val);
  * @param[in] EFUSE_BASE              base address
  * @param[in] index                   from 0 to 3(each represent 32bit)
  */
-uint32_t EFUSE_GetEfuseData(EFUSE_TypeDef* EFUSE_BASE, uint8_t index);
+uint32_t EFUSE_GetEfuseData(EFUSE_TypeDef* EFUSE_BASE, EFUSE_ProgramWordCnt index);
 
 /**
  * @brief Set EFUSE data per bit
@@ -80,6 +87,15 @@ uint8_t EFUSE_GetDataValidFlag(EFUSE_TypeDef* EFUSE_BASE);
  * @param[in] EFUSE_BASE              base address
  */
 void EFUSE_SetRdFlag(EFUSE_TypeDef* EFUSE_BASE);
+
+/**
+ * @brief Set EFUSE data per word
+ *
+ * @param[in] EFUSE_BASE              base address
+ * @param[in] index                   from 0 to 3
+ * @param[in] data                    data to program
+ */
+void EFUSE_WriteEfuseDataWord(EFUSE_TypeDef* EFUSE_BASE, EFUSE_ProgramWordCnt index, uint32_t data);
 
 #endif
 
