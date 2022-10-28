@@ -28,13 +28,13 @@ void EFUSE_SetCfg0(EFUSE_TypeDef* EFUSE_BASE, uint32_t val)
 /*====================================================================*/
 uint8_t EFUSE_GetStatusBusy(EFUSE_TypeDef* EFUSE_BASE)
 {
-    return (uint8_t)((EFUSE_BASE->efuse_status >> bsEFUSE_STATUS_BUSY) & BW2M(bwEFUSE_STATUS_BUSY));
+    return (uint8_t)((EFUSE_BASE->Efuse_status >> bsEFUSE_STATUS_BUSY) & BW2M(bwEFUSE_STATUS_BUSY));
 }
 
 /*====================================================================*/
 uint8_t EFUSE_GetStatusState(EFUSE_TypeDef* EFUSE_BASE)
 {
-    return (uint8_t)((EFUSE_BASE->efuse_status >> bsEFUSE_STATUS_STATE) & BW2M(bwEFUSE_STATUS_STATE));
+    return (uint8_t)((EFUSE_BASE->Efuse_status >> bsEFUSE_STATUS_STATE) & BW2M(bwEFUSE_STATUS_STATE));
 }
 
 /*====================================================================*/
@@ -50,13 +50,13 @@ void EFUSE_SetRdFlag(EFUSE_TypeDef* EFUSE_BASE)
 }
 
 /*====================================================================*/
-uint32_t EFUSE_GetEfuseData(EFUSE_TypeDef* EFUSE_BASE, uint8_t index)
+uint32_t EFUSE_GetEfuseData(EFUSE_TypeDef* EFUSE_BASE, EFUSE_ProgramWordCnt index)
 {
    uint32_t rdata = 0;
   
    if(index < EFUSE_REG_WORD_NUM)
    {
-    rdata = (EFUSE_BASE->efuse_rdata[index]);
+    rdata = (EFUSE_BASE->Efuse_rdata[index]);
    }
    return rdata;
 }
@@ -75,6 +75,36 @@ void EFUSE_UnLock(EFUSE_TypeDef* EFUSE_BASE, uint16_t data)
 {
    EFUSE_BASE->Efuse_cfg0 &= (~(BW2M(bwEFUSE_CFG0_EFUSE_LOCK) << bsEFUSE_CFG0_EFUSE_LOCK));
    EFUSE_BASE->Efuse_cfg0 |= (data << bsEFUSE_CFG0_EFUSE_LOCK);
+}
+
+/*====================================================================*/
+void EFUSE_WriteEfuseDataWord(EFUSE_TypeDef* EFUSE_BASE, EFUSE_ProgramWordCnt index, uint32_t data)
+{
+   EFUSE_BASE->Efuse_cfg0 &= (~(BW2M(bwEFUSE_CFG0_PROM_MODE) << bsEFUSE_CFG0_PROM_MODE));
+   EFUSE_BASE->Efuse_cfg0 |= 0x1 << bsEFUSE_CFG0_PROM_MODE;
+  
+   switch (index)
+   {
+     case EFUSE_PROGRAMWORDCNT_0:
+     {
+       EFUSE_BASE->Efuse_cfg1 = data;
+     }break;
+     case EFUSE_PROGRAMWORDCNT_1:
+     {
+       EFUSE_BASE->Efuse_cfg2 = data;
+     }break;
+     case EFUSE_PROGRAMWORDCNT_2:
+     {
+       EFUSE_BASE->Efuse_cfg3 = data;
+     }break;
+     case EFUSE_PROGRAMWORDCNT_3:
+     {
+       EFUSE_BASE->Efuse_cfg4 = data;
+     }break;
+   }
+   
+   EFUSE_UnLock(EFUSE_BASE, EFUSE_UNLOCK_FLAG);
+   EFUSE_BASE->Efuse_cfg0 |= 0x1 << bsEFUSE_CFG0_PG_EFUSE;
 }
 
 
