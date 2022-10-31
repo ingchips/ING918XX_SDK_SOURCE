@@ -5,13 +5,9 @@
 extern "C" {
 #endif
 
-/*添加SIMULATION类型开关，添加随机数模拟传感器*/
+void get_temperature(struct bme280_data comp_data);
 
-void get_temperature();
-
-void get_humidity();
-
-void get_acc_xyz();
+void get_acc_xyz(struct bma2x2_accel_data accel);
 
 void set_rgb(uint8_t r, uint8_t g, uint8_t b);
 

@@ -1,6 +1,3 @@
-/*将所有传感器以及LED驱动进行集中处理*/
-/*添加SIMULATION开关*/
-
 #include "board.h"
 #include "ingsoc.h"
 
