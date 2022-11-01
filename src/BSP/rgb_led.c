@@ -11,7 +11,7 @@
 
 //default old driver:tlc59731
 #ifndef RGB_LED
-#define RGB_LED     LED_TLC59731
+#define RGB_LED     LED_WS2881
 #endif
 
 // CPU clok: PLL_CLK_FREQ  48000000

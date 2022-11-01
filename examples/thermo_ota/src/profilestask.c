@@ -10,11 +10,13 @@
 #include "ota_service.h"
 
 #include "att_db_util.h"
-#include "bme280.h"
+//#include "bme280.h"
 #include "iic.h"
 
 #include "FreeRTOS.h"
 #include "timers.h"
+
+#include "board.c"
 
 extern void ota_connected(void);
 
@@ -77,12 +79,17 @@ struct bme280_data comp_data;
 static void read_temperature(void)
 {
 #ifndef SIMULATION
-    if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
+    if (bme280_get_sensor_data3(BME280_ALL, &comp_data, &bme280_data) < 0)
         return;
+    // if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
+    //     return;
 #ifdef PRINT_ALL
-    platform_printf("T: %04d * 0.01 Deg\n", comp_data.temperature);
-    platform_printf("H: %04d / 1024 %%\n", comp_data.humidity);
-    platform_printf("P: %08d Pascal \n", comp_data.pressure);
+    // platform_printf("T: %04d * 0.01 Deg\n", comp_data.temperature);
+    // platform_printf("H: %04d / 1024 %%\n", comp_data.humidity);
+    // platform_printf("P: %08d Pascal \n", comp_data.pressure);
+    platform_printf("T: %04d * 0.01 Deg\n", get_temperature(&comp_data));
+    platform_printf("H: %04d / 1024 %%\n", get_humidity(&comp_data));
+    platform_printf("P: %08d Pascal \n", get_pressure(&comp_data));
 #endif
     int32_t bme280_temperature = comp_data.temperature;
     temperature_value[3]=(uint8_t)(bme280_temperature>>16);
@@ -359,15 +366,17 @@ uint32_t setup_profile(void *data, void *user_data)
 
     i2c_init(I2C_PORT);
 
-    printf("sensor init...");
-    if (bme280_init(&bme280_data) != BME280_OK)
-        printf("failed\n");
-    else
-    {
-        printf("OK\n");
-        bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
-        bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
-    }
+    // printf("sensor init...");
+    // if (bme280_init(&bme280_data) != BME280_OK)
+    //     printf("failed\n");
+    // else
+    // {
+    //     printf("OK\n");
+    //     bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
+    //     bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
+    // }
+
+    bme280_sensor_init(&bme280_data);
 #endif
 
     return 0;

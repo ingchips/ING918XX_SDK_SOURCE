@@ -40,7 +40,8 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-#include "impl_led.c"
+//#include "impl_led.c"
+#include "board.c"
 
 void setup_peripherals(void)
 {
@@ -50,7 +51,7 @@ void setup_peripherals(void)
 }
 
 const static rgb_t rgb0 = { .r = 0, .g = 0, .b = 0 };
-const static rgb_t rgb1 = { .r = 50, .g = 0, .b = 0 };
+const static rgb_t rgb1 = { .r = 0, .g = 50, .b = 0 };
 
 void set_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
