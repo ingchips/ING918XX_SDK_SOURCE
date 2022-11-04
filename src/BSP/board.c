@@ -2,6 +2,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "peripheral_pwm.h"
+#include "peripheral_sysctrl.h"
+#include "peripheral_pinctrl.h"
+
 
 /* RGB_LED灯驱动整理*/
 #ifndef PWM_LED
@@ -208,3 +212,56 @@ double get_pressure(struct bme280_data *comp_data)
 
 
 /* accelerometer 驱动整理 */
+#include
+int setup_accelerometer(void)
+{
+
+}
+
+void get_acc_xyz(float *x, float *y, float *z)
+{
+
+}
+
+
+
+/* buzzer 相关驱动整理 */
+#ifndef PIN_BUZZER
+#define PIN_BUZZER 8
+#endif
+
+void setup_buzzer(void)
+{
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    PINCTRL_SetGeneralPadMode(PIN_BUZZER, IO_MODE_PWM, 4, 0);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_PWM6_B);
+#else
+    #error unknown or unsupported chip family
+#endif
+}
+
+void set_buzzer_freq0(uint8_t channel_index, uint16_t freq)
+{
+    uint32_t pera = PWM_CLOCK_FREQ / freq;
+    PWM_HaltCtrlEnable(channel_index, 1);
+    PWM_Enable(channel_index, 0);
+    if (freq > 0)
+    {
+        PWM_SetPeraThreshold(channel_index, pera);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+        PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
+#endif
+        PWM_SetHighThreshold(channel_index, 0, pera >> 1);
+        PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
+        PWM_SetMask(channel_index, 0, 0);
+        PWM_Enable(channel_index, 1);
+        PWM_HaltCtrlEnable(channel_index, 0);
+    }
+}
+
+void set_buzzer_freq(uint16_t freq)
+{
+    set_buzzer_freq0(PIN_BUZZER >> 1, freq);
+}
