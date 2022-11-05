@@ -120,7 +120,6 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name></Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -148,7 +147,136 @@
           <Name>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0NEW_DEVICE -FS00 -FL040000 -FP0($$Device:ARMCM3$Device\ARM\Flash\NEW_DEVICE.FLM))</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint>
+        <Bp>
+          <Number>0</Number>
+          <Type>0</Type>
+          <LineNumber>481</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>171470</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\..\src\Tools\gatt_client_util.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\uart_console\../../src/Tools/gatt_client_util.c\481</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>132</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>166990</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\src\main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\uart_console\src/main.c\132</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>11</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>167606</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\src\main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\uart_console\src/main.c\11</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>1136</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>176062</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\src\profile.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\uart_console\src/profile.c\1136</Expression>
+        </Bp>
+        <Bp>
+          <Number>4</Number>
+          <Type>0</Type>
+          <LineNumber>106</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>167686</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\..\src\Tools\trace.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\uart_console\../../src/Tools/trace.c\106</Expression>
+        </Bp>
+        <Bp>
+          <Number>5</Number>
+          <Type>0</Type>
+          <LineNumber>119</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>167714</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\..\src\Tools\trace.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\uart_console\../../src/Tools/trace.c\119</Expression>
+        </Bp>
+        <Bp>
+          <Number>6</Number>
+          <Type>0</Type>
+          <LineNumber>768</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>178084</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\src\profile.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\uart_console\src/profile.c\768</Expression>
+        </Bp>
+        <Bp>
+          <Number>7</Number>
+          <Type>0</Type>
+          <LineNumber>771</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>178096</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\src\profile.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\uart_console\src/profile.c\771</Expression>
+        </Bp>
+      </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
@@ -393,6 +521,18 @@
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\Tools\gatt_client_util.c</PathWithFileName>
       <FilenameWithoutPath>gatt_client_util.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>13</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\src\Tools\btstack_mt.c</PathWithFileName>
+      <FilenameWithoutPath>btstack_mt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

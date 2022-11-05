@@ -9,6 +9,11 @@
 #include "bluetooth.h"
 #include "sm.h"
 
+#include "btstack_mt.h"
+#include "port_gen_os_driver.h"
+
+#define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
+
 #ifdef TRACE_TO_FLASH
 #include "trace.h"
 #endif
@@ -571,6 +576,7 @@ show_help:
 
 typedef struct
 {
+    uint8_t busy;
     uint16_t size;
     char buf[712];
 } str_buf_t;
@@ -598,8 +604,37 @@ static void append_data(str_buf_t *buf, const char *d, const uint16_t len)
     }
 }
 
+static gen_handle_t cmd_event = NULL;
+
+static void console_task_entry(void *_)
+{
+    while (1)
+    {
+        GEN_OS->event_wait(cmd_event);
+
+        handle_command(input.buf);
+        input.size = 0;
+        input.busy = 0;
+    }
+}
+
+void uart_console_start(void)
+{
+    cmd_event = GEN_OS->event_create();
+    GEN_OS->task_create("console",
+        console_task_entry,
+        NULL,
+        1024,
+        GEN_TASK_PRIORITY_LOW);
+}
+
 void console_rx_data(const char *d, uint8_t len)
 {
+    if (input.busy)
+    {
+        return;
+    }
+
     if (0 == input.size)
     {
         while ((len > 0) && ((*d == '\r') || (*d == '\n')))
@@ -618,8 +653,8 @@ void console_rx_data(const char *d, uint8_t len)
         int16_t t = input.size - 2;
         while ((t > 0) && ((input.buf[t] == '\r') || (input.buf[t] == '\n'))) t--;
         input.buf[t + 1] = '\0';
-        handle_command(input.buf);
-        input.size = 0;
+        input.busy = 1;
+        GEN_OS->event_set(cmd_event);
     }
 }
 

@@ -2,11 +2,10 @@
 #include "uart_driver.h"
 #include "peripheral_uart.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#include "queue.h"
+#include "port_gen_os_driver.h"
 #include "platform_api.h"
+
+#define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
 
 #ifndef UART_BUFF_SIZE
 #define UART_BUFF_SIZE         (1024)  // must be 2^n
@@ -19,9 +18,8 @@ typedef struct
     uint8_t           buffer[UART_BUFF_SIZE];
     uint16_t          write_next;
     uint16_t          read_next;
-    TaskHandle_t      handle;
-    SemaphoreHandle_t tx_sem;
-    SemaphoreHandle_t mutex;
+    gen_handle_t      handle;
+    gen_handle_t      tx_sem;
     UART_TypeDef     *port;
     f_uart_rx_byte    rx_byte_cb;
     void             *user_data;
@@ -29,12 +27,13 @@ typedef struct
 
 static uart_driver_ctx_t ctx = {0};
 
-void uart_driver_task(uart_driver_ctx_t *ctx)
+void uart_driver_task(void *data)
 {
+    uart_driver_ctx_t *ctx = (uart_driver_ctx_t *)data;
     for (;;)
     {
 wait:
-        xSemaphoreTake(ctx->tx_sem, portMAX_DELAY);
+        if (GEN_OS->event_wait(ctx->tx_sem) != 0) continue;
 
         while (ctx->read_next != ctx->write_next)
         {
@@ -51,14 +50,7 @@ wait:
 
 void driver_trigger_output(uart_driver_ctx_t *ctx)
 {
-    if (IS_IN_INTERRUPT())
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(ctx->tx_sem, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    }
-    else
-        xSemaphoreGive(ctx->tx_sem);
+    GEN_OS->event_set(ctx->tx_sem);
 }
 
 uint32_t uart_driver_isr(void *user_data)
@@ -126,7 +118,7 @@ uint32_t driver_append_tx_data(const void *data, int len)
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
     if (use_mutex)
-        xSemaphoreTake(ctx.mutex, portMAX_DELAY);
+        GEN_OS->enter_critical();
 
     next = ctx.write_next;
     free_size = ctx.read_next - ctx.write_next;
@@ -136,7 +128,7 @@ uint32_t driver_append_tx_data(const void *data, int len)
     if (len > free_size)
     {
         if (use_mutex)
-            xSemaphoreGive(ctx.mutex);
+            GEN_OS->leave_critical();
         driver_trigger_output(&ctx);
         return 1;
     }
@@ -145,7 +137,8 @@ uint32_t driver_append_tx_data(const void *data, int len)
 
     ctx.write_next = next;
 
-    if (use_mutex) xSemaphoreGive(ctx.mutex);
+    if (use_mutex)
+        GEN_OS->leave_critical();
 
     driver_trigger_output(&ctx);
     return 0;
@@ -153,15 +146,14 @@ uint32_t driver_append_tx_data(const void *data, int len)
 
 void uart_driver_init(UART_TypeDef *port, void *user_data, f_uart_rx_byte rx_byte_cb)
 {
-    ctx.tx_sem = xSemaphoreCreateBinary();
-    ctx.mutex = xSemaphoreCreateMutex();
+    ctx.tx_sem = GEN_OS->event_create();
     ctx.port = port;
     ctx.rx_byte_cb = rx_byte_cb;
     ctx.user_data = user_data;
-    xTaskCreate((TaskFunction_t)uart_driver_task,
-               "trace",
-               configMINIMAL_STACK_SIZE,
-               &ctx,
-               (configMAX_PRIORITIES - 1),
-               &ctx.handle);
+
+    GEN_OS->task_create("uart",
+                        uart_driver_task,
+                        &ctx,
+                        512,
+                        GEN_TASK_PRIORITY_LOW);
 }

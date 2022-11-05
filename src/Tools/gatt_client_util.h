@@ -142,7 +142,6 @@ void gatt_client_util_print_properties(uint16_t v);
 
 struct gatt_client_synced_runner;
 typedef void (* f_gatt_client_synced_runnable)(void *user_data);
-typedef void (* f_gatt_client_synced_push_user_msg)(struct gatt_client_synced_runner *runner, uint8_t msg_id);
 
 #ifndef GATT_CLIENT_SYNC_RUNNER_STACK_SIZE
 #define GATT_CLIENT_SYNC_RUNNER_STACK_SIZE  1024
@@ -162,7 +161,7 @@ typedef void (* f_gatt_client_synced_push_user_msg)(struct gatt_client_synced_ru
  * @return                          synced
  ****************************************************************************************
  */
-struct gatt_client_synced_runner *gatt_client_create_sync_runner(f_gatt_client_synced_push_user_msg push_user_msg);
+struct gatt_client_synced_runner *gatt_client_create_sync_runner(void);
 
 /**
  ****************************************************************************************
@@ -177,18 +176,6 @@ struct gatt_client_synced_runner *gatt_client_create_sync_runner(f_gatt_client_s
  ****************************************************************************************
  */
 int gatt_client_sync_run(struct gatt_client_synced_runner *runner, f_gatt_client_synced_runnable runnable, void *user_data);
-
-/**
- ****************************************************************************************
- * @brief Message handler for synchronized runner
- *
- * Note: call this from BLE stack to handle message sent by `push_user_msg`.
- *
- * @param[in]   runner              the runner
- * @param[in]   msg_id              message id
- ****************************************************************************************
- */
-void gatt_client_sync_handle_msg(struct gatt_client_synced_runner *runner, uint8_t msg_id);
 
 /**
  ****************************************************************************************

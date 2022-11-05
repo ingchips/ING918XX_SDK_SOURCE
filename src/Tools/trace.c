@@ -10,12 +10,15 @@
 #include "btstack_event.h"
 #include "att_db.h"
 
-static void trace_task(trace_uart_t *ctx)
+#define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
+
+static void trace_task(void *data)
 {
+    trace_uart_t *ctx = (trace_uart_t *)data;
     for (;;)
     {
 wait:
-        xSemaphoreTake(ctx->tx_sem, portMAX_DELAY);
+        if (GEN_OS->event_wait(ctx->tx_sem) != 0) continue;
 
         while (ctx->read_next != ctx->write_next)
         {
@@ -61,14 +64,7 @@ static int trace_add_buffer(uint8_t *ctx_buffer, const uint8_t *buffer, int size
 
 static void trace_trigger_output(trace_uart_t *ctx)
 {
-    if (IS_IN_INTERRUPT())
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(ctx->tx_sem, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    }
-    else
-        xSemaphoreGive(ctx->tx_sem);
+    GEN_OS->event_set(ctx->tx_sem);
 }
 
 uint32_t cb_trace_uart(const platform_evt_trace_t *trace, trace_uart_t *ctx)
@@ -78,7 +74,7 @@ uint32_t cb_trace_uart(const platform_evt_trace_t *trace, trace_uart_t *ctx)
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
     if (use_mutex)
-        xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+        GEN_OS->enter_critical();
 
     next = ctx->write_next;
     free_size = ctx->read_next - ctx->write_next;
@@ -86,21 +82,19 @@ uint32_t cb_trace_uart(const platform_evt_trace_t *trace, trace_uart_t *ctx)
     if (free_size > 0) free_size--;
 
     if ((trace->len1 + trace->len2) > free_size)
-    {
-        if (use_mutex)
-            xSemaphoreGive(ctx->mutex);
-        trace_trigger_output(ctx);
-        return 0;
-    }
+        goto exit;
 
     next = trace_add_buffer(ctx->buffer, (const uint8_t *)trace->data1, trace->len1, next) & TRACE_BUFF_SIZE_MASK;
     next = trace_add_buffer(ctx->buffer, (const uint8_t *)trace->data2, trace->len2, next) & TRACE_BUFF_SIZE_MASK;
 
     ctx->write_next = next;
 
-    if (use_mutex) xSemaphoreGive(ctx->mutex);
+exit:
 
+    if (use_mutex)
+        GEN_OS->leave_critical();
     trace_trigger_output(ctx);
+
     return 0;
 }
 
@@ -109,7 +103,8 @@ uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx)
     int free_size;
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
-    if (use_mutex) xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+    if (use_mutex)
+        GEN_OS->enter_critical();
 
     free_size = SEGGER_RTT_GetAvailWriteSpace(0);
     if (trace->len1 + trace->len2 < free_size)
@@ -118,7 +113,8 @@ uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx)
         SEGGER_RTT_Write(0, trace->data2, trace->len2);
     }
 
-    if (use_mutex) xSemaphoreGive(ctx->mutex);
+    if (use_mutex)
+        GEN_OS->leave_critical();
 
     return 0;
 }
@@ -198,37 +194,35 @@ uint32_t cb_trace_flash(const platform_evt_trace_t *trace, trace_flash_t *ctx)
 
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
-    if (use_mutex) xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+    if (use_mutex)
+        GEN_OS->enter_critical();
 
     flash_trace_append(ctx, trace->data1, trace->len1);
     flash_trace_append(ctx, trace->data2, trace->len2);
 
-    if (use_mutex) xSemaphoreGive(ctx->mutex);
+    if (use_mutex)
+        GEN_OS->leave_critical();
 
     return 0;
 }
 
 void trace_uart_init(trace_uart_t *ctx)
 {
-    ctx->tx_sem = xSemaphoreCreateBinary();
-    ctx->mutex = xSemaphoreCreateMutex();
-    xTaskCreate((TaskFunction_t)trace_task,
-               "trace",
-               configMINIMAL_STACK_SIZE,
-               ctx,
-               (configMAX_PRIORITIES - 1),
-               &ctx->handle);
+    ctx->tx_sem = GEN_OS->event_create();
+    GEN_OS->task_create("trace",
+                        trace_task,
+                        ctx,
+                        512,
+                        GEN_TASK_PRIORITY_LOW);
 }
 
 void trace_rtt_init(trace_rtt_t *ctx)
 {
     SEGGER_RTT_Init();
-    ctx->mutex = xSemaphoreCreateMutex();
 }
 
 void trace_flash_init(trace_flash_t *ctx, uint32_t flash_start_addr, uint32_t total_size)
 {
-    ctx->mutex = xSemaphoreCreateMutex();
     ctx->enable = 0;
     ctx->offset_in_page = EFLASH_PAGE_SIZE;
     ctx->start_addr = flash_start_addr;
@@ -262,7 +256,6 @@ uint32_t trace_uart_isr(trace_uart_t *ctx)
 
 void trace_air_init(trace_air_t *ctx, uint32_t msg_id, uint8_t req_thres)
 {
-    ctx->mutex = xSemaphoreCreateMutex();
     ctx->msg_id = msg_id;
     ctx->req_thres = TRACE_BUFF_SIZE - req_thres;
 }
@@ -352,7 +345,7 @@ uint32_t cb_trace_air(const platform_evt_trace_t *trace, trace_air_t *ctx)
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
     if (use_mutex)
-        xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+        GEN_OS->enter_critical();
 
     next = ctx->write_next;
     free_size = ctx->read_next - ctx->write_next;
@@ -364,7 +357,7 @@ uint32_t cb_trace_air(const platform_evt_trace_t *trace, trace_air_t *ctx)
     if (free_size < 0)
     {
         if (use_mutex)
-            xSemaphoreGive(ctx->mutex);
+            GEN_OS->leave_critical();
         trace_air_send_req(ctx);
         return 0;
     }
@@ -374,7 +367,8 @@ uint32_t cb_trace_air(const platform_evt_trace_t *trace, trace_air_t *ctx)
 
     ctx->write_next = next;
 
-    if (use_mutex) xSemaphoreGive(ctx->mutex);
+    if (use_mutex)
+        GEN_OS->leave_critical();
 
     if (free_size < ctx->req_thres)
         trace_air_send_req(ctx);

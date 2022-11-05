@@ -133,6 +133,7 @@
         "platform_init_controller", 
         "platform_controller_run", 
         "platform_set_timer", 
+        "platform_get_gen_os_driver", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -156,6 +157,7 @@
         "uuid_has_bluetooth_prefix", 
         "btstack_config", 
         "btstack_push_user_msg", 
+        "btstack_push_user_runnable", 
         "l2cap_register_fixed_channel", 
         "l2cap_can_send_fixed_channel_packet_now", 
         "l2cap_request_can_send_fix_channel_now_event", 
@@ -234,7 +236,7 @@
         "ll_query_timing_info"
     ], 
     "app": {
-        "base": 147456
+        "base": 139264
     }, 
     "ram": {
         "base": 536870912, 
@@ -242,11 +244,11 @@
     }, 
     "rom": {
         "base": 16384, 
-        "size": 123608
+        "size": 122784
     }, 
     "version": [
         1, 
-        7, 
-        28
+        8, 
+        0
     ]
 }

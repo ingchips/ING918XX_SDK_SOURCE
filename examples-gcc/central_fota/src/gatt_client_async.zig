@@ -328,7 +328,7 @@ const ValueOfCharacteristicReader = struct {
     value: ?[*c] const u8,
 
     fn callback(packet_type: u8, _: u16, packet: [*c] const u8, size: u16) callconv(.C) void {
-        _ = size; _= packet_type;
+        _ = packet_type;
         switch (packet[0]) {
             GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT => {
                 value_of_characteristic_reader.value = gatt_helper_value_query_result_parse(packet, size,

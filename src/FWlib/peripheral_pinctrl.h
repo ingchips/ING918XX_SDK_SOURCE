@@ -279,7 +279,7 @@ typedef enum
 typedef enum
 {
     PINCTRL_DRIVE_DUMMY,
-DUMMY} pinctrl_drive_strenght_t;
+} pinctrl_drive_strenght_t;
 
 /**
  * @brief Select SWD input IOs

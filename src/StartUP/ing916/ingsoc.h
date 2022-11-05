@@ -356,8 +356,9 @@ typedef struct
 #define APB_EFUSE_BASE     (APB_BASE + 0x17000)
 
 #define AON_APB_BASE       ((uint32_t)0x40100000UL)
-#define AON_CTRL_BASE      (AON_APB_BASE + 0x0000)
+#define AON2_CTRL_BASE     (AON_APB_BASE + 0x0000)
 #define AON_RTC_BASE       (AON_APB_BASE + 0x1000)
+#define AON1_CTRL_BASE     (AON_APB_BASE + 0x2000)
 
 #define AHB_QSPI_BASE      ((uint32_t)0x40160000UL)
 

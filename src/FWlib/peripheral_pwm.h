@@ -33,14 +33,17 @@ typedef enum
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     PWM_WORK_MODE_DMA                           = 0x5,
 #endif
-} PWM_WordMode_t;
+} PWM_WorkMode_t;
+
+// compatibility for the typo
+#define PWM_WordMode_t  PWM_WorkMode_t
 
 void PWM_Enable(const uint8_t channel_index, const uint8_t enable);
 void PWM_EnableMulti(uint32_t channel_mask, const uint8_t enable);
 
 void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_t mask_b);
 
-void PWM_SetMode(const uint8_t channel_index, const PWM_WordMode_t mode);
+void PWM_SetMode(const uint8_t channel_index, const PWM_WorkMode_t mode);
 
 // PMW Halt Mode
 // When the register HALT_ENABLE is set to 1, PWM will controlled by HALT_CONFIG registers.

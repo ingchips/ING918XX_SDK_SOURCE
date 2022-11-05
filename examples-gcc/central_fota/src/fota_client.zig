@@ -206,7 +206,7 @@ const Client = struct {
             driver.sign.?(&self.ecc_driver.?.session_sk[0], @ptrCast([*c] u8, &self.sig_meta.entry), @intCast(u16, cnt * 12 + 4),
                         &self.sig_meta.sig[0]);
             self.encrypt(@ptrCast([*c] u8, &self.sig_meta.entry), @intCast(usize, cnt * 12 + 4));
-            total = @sizeOf(FullSigMeta) - ingble.MAX_UPDATE_BLOCKS * @sizeOf(ingble.fota_update_block_t) +cnt * 12;
+            total = @sizeOf(FullSigMeta) - ingble.MAX_UPDATE_BLOCKS * @sizeOf(ingble.fota_update_block_t) + cnt * 12;
             p = @ptrCast([*c] u8, &self.sig_meta);
 
         } else {

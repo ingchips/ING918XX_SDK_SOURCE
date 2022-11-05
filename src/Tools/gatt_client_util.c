@@ -9,10 +9,7 @@
 #include "btstack_defines.h"
 #include "sig_uuid.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
+#include "port_gen_os_driver.h"
 
 #ifndef iprintf
 #define iprintf(...)
@@ -447,22 +444,10 @@ struct gatt_msg_write_value
     int err_code;
 };
 
-enum gatt_msg_id
-{
-    MSG_ENQUE_RUNNABLE,
-    MSG_DISCOVER_ALL,
-    MSG_READ_CHAR_VALUE,
-    MSG_READ_DISCRIPTOR,
-    MSG_WRITE_CHAR_VALUE,
-    MSG_WRITE_CHAR_VALUE_WO_RSP,
-    MSG_WRITE_DISCRIPTOR,
-};
-
 struct gatt_client_synced_runner
 {
-    f_gatt_client_synced_push_user_msg push_user_msg;
-    QueueHandle_t msg_queue;
-    SemaphoreHandle_t done_sem;
+    gen_handle_t msg_queue;
+    gen_handle_t done_evt;
 
     struct gatt_msg_discover_all    discover_all;
     struct gatt_msg_read_value      read_value;
@@ -476,30 +461,30 @@ typedef struct gatt_synced_msg
     struct gatt_msg_enque_runnable  runnable;
 } gatt_synced_msg_t;
 
-static void synced_runner_task(struct gatt_client_synced_runner *runner)
+#define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
+
+static void synced_runner_task(void *data)
 {
+    struct gatt_client_synced_runner *runner = (struct gatt_client_synced_runner *)data;
     for (;;)
     {
         gatt_synced_msg_t msg;
-        if (xQueueReceive(runner->msg_queue, &msg, portMAX_DELAY) != pdPASS) continue;
+        if (GEN_OS->queue_recv_msg(runner->msg_queue, &msg) != 0) continue;
         msg.runnable.runnable(msg.runnable.user_data);
     }
 }
 
-struct gatt_client_synced_runner *gatt_client_create_sync_runner(f_gatt_client_synced_push_user_msg push_user_msg)
+struct gatt_client_synced_runner *gatt_client_create_sync_runner(void)
 {
     struct gatt_client_synced_runner *runner =
-        (struct gatt_client_synced_runner *)malloc(sizeof(struct gatt_client_synced_runner));
+        (struct gatt_client_synced_runner *)GEN_OS->malloc(sizeof(struct gatt_client_synced_runner));
     memset(runner, 0, sizeof(*runner));
-    runner->push_user_msg = push_user_msg;
-    runner->msg_queue = xQueueCreate(1, sizeof(gatt_synced_msg_t));
-    runner->done_sem = xSemaphoreCreateBinary();
-    xTaskCreate((TaskFunction_t)synced_runner_task,
-               "b",
+    runner->msg_queue = GEN_OS->queue_create(1, sizeof(gatt_synced_msg_t));
+    runner->done_evt = GEN_OS->event_create();
+    GEN_OS->task_create("b",
+               synced_runner_task, runner,
                GATT_CLIENT_SYNC_RUNNER_STACK_SIZE,
-               runner,
-               5,
-               NULL);
+               GEN_TASK_PRIORITY_LOW);
     return runner;
 }
 
@@ -513,32 +498,17 @@ int gatt_client_sync_run(struct gatt_client_synced_runner *runner, f_gatt_client
             .user_data = user_data
         }
     };
-    if (IS_IN_INTERRUPT())
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        return xQueueSendToBackFromISR(runner->msg_queue, &msg, &xHigherPriorityTaskWoken) == pdTRUE ? 0 : 1;
-    }
-    else
-        return xQueueSendToBack(runner->msg_queue, &msg, portMAX_DELAY) == pdTRUE ? 0 : 1;
+    return GEN_OS->queue_send_msg(runner->msg_queue, &msg);
 }
 
 static int gatt_client_sync_wait_done(struct gatt_client_synced_runner *runner)
 {
-    int8_t err;
-    if (IS_IN_INTERRUPT())
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        err = xSemaphoreTakeFromISR(runner->done_sem, &xHigherPriorityTaskWoken);
-
-    }
-    else
-        err = xSemaphoreTake(runner->done_sem, portMAX_DELAY);
-    return err == pdTRUE ? 0 : 1;
+    return GEN_OS->event_wait(runner->done_evt);
 }
 
 static void gatt_client_sync_mark_done(struct gatt_client_synced_runner *runner)
 {
-    xSemaphoreGive(runner->done_sem);
+    GEN_OS->event_set(runner->done_evt);
 }
 
 static void gatt_client_sync_disovered(service_node_t *first, void *user_data, int err_code)
@@ -587,73 +557,77 @@ void write_value_callback(uint8_t packet_type, uint16_t con_handle, const uint8_
     }
 }
 
-void gatt_client_sync_handle_msg(struct gatt_client_synced_runner *runner, uint8_t msg_id)
+static void discover_all(struct gatt_client_synced_runner *runner, uint16_t _)
 {
-    switch (msg_id)
-    {
-    case MSG_DISCOVER_ALL:
-        runner->discover_all.r = gatt_client_util_discover_all(runner->discover_all.con_handle,
-                                    gatt_client_sync_disovered, runner);
-        break;
-    case MSG_READ_CHAR_VALUE:
-        runners[runner->discover_all.con_handle] = runner;
-        runner->read_value.err_code = gatt_client_read_value_of_characteristic_using_value_handle(
-                read_value_callback,
-                runner->discover_all.con_handle,
-                runner->read_value.handle);
-        if (runner->read_value.err_code)
-            gatt_client_sync_mark_done(runner);
-        break;
-    case MSG_READ_DISCRIPTOR:
-        runners[runner->discover_all.con_handle] = runner;
-        runner->read_value.err_code = gatt_client_read_characteristic_descriptor_using_descriptor_handle(
-                read_value_callback,
-                runner->discover_all.con_handle,
-                runner->read_value.handle);
-        if (runner->read_value.err_code)
-            gatt_client_sync_mark_done(runner);
-        break;
-    case MSG_WRITE_CHAR_VALUE:
-        runners[runner->discover_all.con_handle] = runner;
-        runner->write_value.err_code = gatt_client_write_value_of_characteristic(
-                write_value_callback,
-                runner->discover_all.con_handle,
-                runner->write_value.handle,
-                runner->write_value.length,
-                runner->write_value.data);
-        if (runner->read_value.err_code)
-            gatt_client_sync_mark_done(runner);
-        break;
-    case MSG_WRITE_CHAR_VALUE_WO_RSP:
-        runner->write_value.err_code = gatt_client_write_value_of_characteristic_without_response(
-                runner->discover_all.con_handle,
-                runner->write_value.handle,
-                runner->write_value.length,
-                runner->write_value.data);
-        gatt_client_sync_mark_done(runner);
-        break;
-
-    case MSG_WRITE_DISCRIPTOR:
-        runners[runner->discover_all.con_handle] = runner;
-        runner->write_value.err_code = gatt_client_write_characteristic_descriptor_using_descriptor_handle(
-                write_value_callback,
-                runner->discover_all.con_handle,
-                runner->write_value.handle,
-                runner->write_value.length,
-                (uint8_t *)runner->write_value.data);
-        if (runner->read_value.err_code)
-            gatt_client_sync_mark_done(runner);
-        break;
-    }
+    runner->discover_all.r = gatt_client_util_discover_all(runner->discover_all.con_handle,
+            gatt_client_sync_disovered, runner);
 }
 
+static void read_value(struct gatt_client_synced_runner *runner, uint16_t _)
+{
+    runners[runner->discover_all.con_handle] = runner;
+    runner->read_value.err_code = gatt_client_read_value_of_characteristic_using_value_handle(
+            read_value_callback,
+            runner->discover_all.con_handle,
+            runner->read_value.handle);
+    if (runner->read_value.err_code)
+        gatt_client_sync_mark_done(runner);
+}
+
+static void read_discriptor(struct gatt_client_synced_runner *runner, uint16_t _)
+{
+    runners[runner->discover_all.con_handle] = runner;
+    runner->read_value.err_code = gatt_client_read_characteristic_descriptor_using_descriptor_handle(
+            read_value_callback,
+            runner->discover_all.con_handle,
+            runner->read_value.handle);
+    if (runner->read_value.err_code)
+        gatt_client_sync_mark_done(runner);
+}
+
+static void write_value(struct gatt_client_synced_runner *runner, uint16_t _)
+{
+    runners[runner->discover_all.con_handle] = runner;
+    runner->write_value.err_code = gatt_client_write_value_of_characteristic(
+            write_value_callback,
+            runner->discover_all.con_handle,
+            runner->write_value.handle,
+            runner->write_value.length,
+            runner->write_value.data);
+    if (runner->read_value.err_code)
+        gatt_client_sync_mark_done(runner);
+}
+
+static void write_value_wo_response(struct gatt_client_synced_runner *runner, uint16_t _)
+{
+    runner->write_value.err_code = gatt_client_write_value_of_characteristic_without_response(
+            runner->discover_all.con_handle,
+            runner->write_value.handle,
+            runner->write_value.length,
+            runner->write_value.data);
+    gatt_client_sync_mark_done(runner);
+}
+
+static void write_descriptor(struct gatt_client_synced_runner *runner, uint16_t _)
+{
+    runners[runner->discover_all.con_handle] = runner;
+    runner->write_value.err_code = gatt_client_write_characteristic_descriptor_using_descriptor_handle(
+            write_value_callback,
+            runner->discover_all.con_handle,
+            runner->write_value.handle,
+            runner->write_value.length,
+            (uint8_t *)runner->write_value.data);
+    if (runner->read_value.err_code)
+        gatt_client_sync_mark_done(runner);
+}
 struct gatt_client_discoverer * gatt_client_sync_discover_all(struct gatt_client_synced_runner *runner,
     hci_con_handle_t con_handle, int *err_code)
 {
     runner->discover_all.con_handle = con_handle;
     runner->discover_all.err_code = err_code;
     runner->discover_all.r = NULL;
-    runner->push_user_msg(runner, MSG_DISCOVER_ALL);
+
+    btstack_push_user_runnable((f_btstack_user_runnable)discover_all, runner, 0);
 
     if (gatt_client_sync_wait_done(runner) != 0)
     {
@@ -666,6 +640,7 @@ struct gatt_client_discoverer * gatt_client_sync_discover_all(struct gatt_client
     return runner->discover_all.r;
 }
 
+
 int gatt_client_sync_read_value_of_characteristic(struct gatt_client_synced_runner *runner,
     hci_con_handle_t con_handle,
     uint16_t characteristic_value_handle, uint8_t *data, uint16_t *length)
@@ -674,10 +649,12 @@ int gatt_client_sync_read_value_of_characteristic(struct gatt_client_synced_runn
     runner->read_value.handle = characteristic_value_handle;
     runner->read_value.data = data;
     runner->read_value.length = length;
-    runner->push_user_msg(runner, MSG_READ_CHAR_VALUE);
+    btstack_push_user_runnable((f_btstack_user_runnable)read_value, runner, 0);
 
     return gatt_client_sync_wait_done(runner) ? GATT_CLIENT_SYNCED_ERROR_RTOS : runner->read_value.err_code;
 }
+
+
 
 int gatt_client_sync_read_characteristic_descriptor(struct gatt_client_synced_runner *runner,
     hci_con_handle_t con_handle,
@@ -687,7 +664,7 @@ int gatt_client_sync_read_characteristic_descriptor(struct gatt_client_synced_ru
     runner->read_value.handle = descriptor_handle;
     runner->read_value.data = data;
     runner->read_value.length = length;
-    runner->push_user_msg(runner, MSG_READ_DISCRIPTOR);
+    btstack_push_user_runnable((f_btstack_user_runnable)read_discriptor, runner, 0);
 
     return gatt_client_sync_wait_done(runner) ? GATT_CLIENT_SYNCED_ERROR_RTOS : runner->read_value.err_code;
 }
@@ -700,7 +677,7 @@ int gatt_client_sync_write_value_of_characteristic(struct gatt_client_synced_run
     runner->write_value.handle = characteristic_value_handle;
     runner->write_value.data = data;
     runner->write_value.length = length;
-    runner->push_user_msg(runner, MSG_WRITE_CHAR_VALUE);
+    btstack_push_user_runnable((f_btstack_user_runnable)write_value, runner, 0);
 
     return gatt_client_sync_wait_done(runner) ? GATT_CLIENT_SYNCED_ERROR_RTOS : runner->write_value.err_code;
 }
@@ -713,7 +690,7 @@ int gatt_client_sync_write_value_of_characteristic_without_response(struct gatt_
     runner->write_value.handle = characteristic_value_handle;
     runner->write_value.data = data;
     runner->write_value.length = length;
-    runner->push_user_msg(runner, MSG_WRITE_CHAR_VALUE_WO_RSP);
+    btstack_push_user_runnable((f_btstack_user_runnable)write_value_wo_response, runner, 0);
 
     return gatt_client_sync_wait_done(runner) ? GATT_CLIENT_SYNCED_ERROR_RTOS : runner->write_value.err_code;
 }
@@ -726,7 +703,7 @@ int gatt_client_sync_write_characteristic_descriptor(struct gatt_client_synced_r
     runner->write_value.handle = descriptor_handle;
     runner->write_value.data = data;
     runner->write_value.length = length;
-    runner->push_user_msg(runner, MSG_WRITE_DISCRIPTOR);
+    btstack_push_user_runnable((f_btstack_user_runnable)write_descriptor, runner, 0);
 
     return gatt_client_sync_wait_done(runner) ? GATT_CLIENT_SYNCED_ERROR_RTOS : runner->write_value.err_code;
 }

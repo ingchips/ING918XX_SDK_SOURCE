@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "trace.h"
 #include "eflash.h"
+#include "uart_console.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -128,6 +129,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     setup_peripherals();
+    uart_console_start();
     printf("system started, type ? for help\n");
 
 #if (defined TRACE_TO_AIR)

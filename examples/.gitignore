@@ -13,3 +13,4 @@ ble_rpc/
 dual_i2c/
 music_player/
 mesh_prov/
+direct_conn/

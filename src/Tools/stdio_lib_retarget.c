@@ -71,3 +71,15 @@ char *_sys_command_string(char *cmd, int len)
 {
     return (char *)0;
 }
+
+#if (__ARMCC_VERSION >= 6000000)
+__asm(".global __ARM_use_no_argv\n\t");
+#else
+#warning check things like __ARM_get_argv in your IDE/toolchain:
+// __asm void __ARM_get_argv(void)
+// {
+//    mov r0, #0
+//    mov r1, #0
+//    bx lr
+// }
+#endif

@@ -128,6 +128,7 @@
         "platform_read_persistent_reg", 
         "platform_config", 
         "platform_read_info", 
+        "platform_32k_rc_tune", 
         "platform_hrng", 
         "platform_rand", 
         "platform_get_us_time", 
@@ -139,6 +140,9 @@
         "platform_patch_rf_init_data", 
         "platform_get_task_handle", 
         "platform_set_timer", 
+        "platform_install_task_stack", 
+        "platform_get_gen_os_driver", 
+        "platform_get_current_task", 
         "big_endian_read_16", 
         "big_endian_read_32", 
         "big_endian_store_16", 
@@ -162,6 +166,7 @@
         "uuid_has_bluetooth_prefix", 
         "btstack_config", 
         "btstack_push_user_msg", 
+        "btstack_push_user_runnable", 
         "l2cap_register_fixed_channel", 
         "l2cap_can_send_fixed_channel_packet_now", 
         "l2cap_request_can_send_fix_channel_now_event", 
@@ -323,11 +328,11 @@
     }, 
     "ram": {
         "base": 536870912, 
-        "size": 22580
+        "size": 22572
     }, 
     "rom": {
         "base": 33554432, 
-        "size": 148176
+        "size": 148228
     }, 
     "version": [
         2, 

@@ -2,11 +2,13 @@
 
 #if (HEAP_OVERRIDE_TYPE == 0)
 
-#include "FreeRTOSConfig.h"
-#include "FreeRTOS.h"
+#include "platform_api.h"
+#include "port_gen_os_driver.h"
 
-#define _override_malloc    pvPortMalloc
-#define _override_free      vPortFree
+#define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
+
+#define _override_malloc    GEN_OS->malloc
+#define _override_free      GEN_OS->free
 
 #elif (HEAP_OVERRIDE_TYPE == 1)
 
