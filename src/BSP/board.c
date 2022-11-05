@@ -1,6 +1,7 @@
 #include "ingsoc.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "board.h"
 
 #include "peripheral_pwm.h"
 #include "peripheral_sysctrl.h"
@@ -11,6 +12,27 @@
 #ifndef PWM_LED
 
 #include "rgb_led.c"
+
+void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
+{
+    uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
+#if(RGB_LED == LED_TLC59731)
+    tlc59731_write(cmd);
+#elif(RGB_LED == LED_WS2881)
+    ws2881_write(cmd);
+#endif
+}
+
+void setup_rgb_led()
+{
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO0) | (1 << SYSCTRL_ClkGate_APB_GPIO1));
+    PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_GPIO);
+
+    GIO_SetDirection(PIN_RGB_LED, GIO_DIR_OUTPUT);
+    GIO_WriteValue(PIN_RGB_LED, 0);
+
+    set_rgb_led_color(50, 50, 50);
+}
 
 #else
 
@@ -70,21 +92,8 @@ void setup_rgb_led()
 
 #endif
 
-typedef struct
-{
-    union
-    {
-        struct {uint8_t r, g, b;};
-        uint32_t value;
-    };
-} rgb_t;
+breathing_t breathing_info;
 
-struct
-{
-    rgb_t rgb0, rgb1, cur;
-    int dir;
-} breathing_info = {};
-    
 static uint8_t value_step(uint8_t cur, uint8_t target, uint8_t step)
 {
     int offset = (int)target - cur;
@@ -143,6 +152,7 @@ void set_rbg_breathing(rgb_t rgb0, rgb_t rgb1)
 }
 
 
+
 /* themometor 驱动整理 */
 #include "bme280.h"
 
@@ -153,17 +163,30 @@ void set_rbg_breathing(rgb_t rgb0, rgb_t rgb1)
 #define TEMP_SENSOR_CHIP    BME2800_SENSOR_CHIP
 #endif
 
+void setup_env_sensor()
+{
+    // printf("sensor init...");
+    // if (bme280_init(dev) != BME280_OK)
+    //     printf("failed\n");
+    // else
+    // {
+    //     printf("OK\n");
+    //     bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, dev);
+    //     bme280_set_sensor_mode(BME280_NORMAL_MODE, dev);
+    // }
+}
+
 void bme280_sensor_init(struct bme280_dev *dev)
 {
-    printf("sensor init...");
-    if (bme280_init(dev) != BME280_OK)
-        printf("failed\n");
-    else
-    {
-        printf("OK\n");
-        bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, dev);
-        bme280_set_sensor_mode(BME280_NORMAL_MODE, dev);
-    }
+    // printf("sensor init...");
+    // if (bme280_init(dev) != BME280_OK)
+    //     printf("failed\n");
+    // else
+    // {
+    //     printf("OK\n");
+    //     bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, dev);
+    //     bme280_set_sensor_mode(BME280_NORMAL_MODE, dev);
+    // }
 }
 
 int8_t bme280_get_sensor_data3(uint8_t sensor_comp, struct bme280_data *comp_data, struct bme280_dev *dev)
@@ -171,11 +194,11 @@ int8_t bme280_get_sensor_data3(uint8_t sensor_comp, struct bme280_data *comp_dat
     return bme280_get_sensor_data(BME280_ALL, comp_data, dev);
 }
 
-double get_temperature(struct bme280_data *comp_data)
+double get_temperature()
 {
 #if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
 
-    return comp_data->temperature;
+    //return comp_data->temperature;
 
 #elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
 
@@ -184,11 +207,11 @@ double get_temperature(struct bme280_data *comp_data)
 #endif
 }
 
-double get_humidity(struct bme280_data *comp_data)
+double get_humidity()
 {
 #if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
 
-    return comp_data->humidity;
+    //return comp_data->humidity;
 
 #elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
 
@@ -197,11 +220,11 @@ double get_humidity(struct bme280_data *comp_data)
 #endif
 }
 
-double get_pressure(struct bme280_data *comp_data)
+double get_pressure()
 {
 #if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
 
-    return comp_data->humidity;
+    //return comp_data->humidity;
 
 #elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
 
@@ -212,7 +235,6 @@ double get_pressure(struct bme280_data *comp_data)
 
 
 /* accelerometer 驱动整理 */
-#include
 int setup_accelerometer(void)
 {
 

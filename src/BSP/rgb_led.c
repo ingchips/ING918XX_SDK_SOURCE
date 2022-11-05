@@ -80,24 +80,3 @@ static void ws2881_write(uint32_t value)
     }
     delay(100 * 8);
 }
-
-void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
-{
-    uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
-#if(RGB_LED == LED_TLC59731)
-    tlc59731_write(cmd);
-#elif(RGB_LED == LED_WS2881)
-    ws2881_write(cmd);
-#endif
-}
-
-void setup_rgb_led()
-{
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO0) | (1 << SYSCTRL_ClkGate_APB_GPIO1));
-    PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_GPIO);
-
-    GIO_SetDirection(PIN_RGB_LED, GIO_DIR_OUTPUT);
-    GIO_WriteValue(PIN_RGB_LED, 0);
-
-    set_rgb_led_color(50, 50, 50);
-}

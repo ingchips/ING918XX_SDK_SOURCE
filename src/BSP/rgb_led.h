@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b);
-void setup_rgb_led(void);
+static void tlc59731_write(uint32_t value);
+static void ws2881_write(uint32_t value);
 
 #ifdef __cplusplus
 }

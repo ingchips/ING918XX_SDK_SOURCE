@@ -14,14 +14,30 @@
 extern "C" {
 #endif
 
+typedef struct
+{
+    union
+    {
+        struct {uint8_t r, g, b;};
+        uint32_t value;
+    };
+} rgb_t;
 
-int setup_rgb_led(void);
-int set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b);
+typedef struct 
+{
+    rgb_t rgb0, rgb1, cur;
+    int dir;
+} breathing_t;
 
-int setup_env_sensor(void);
-int get_temperature(void);
-int get_humidity(void);
-int get_pressure();
+void setup_rgb_led(void);
+void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b);
+void setup_rgb_breathing(void);
+void set_rbg_breathing(rgb_t rgb0, rgb_t rgb1);
+
+void setup_env_sensor(void);
+double get_temperature(void);
+double get_humidity(void);
+double get_pressure();
 
 int setup_accelerometer(void);
 void get_acc_xyz(float *x, float *y, float *z);

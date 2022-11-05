@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "rf_util.h"
 
+#include "board.h"
+
 #define PRINT_PORT    APB_UART0
 
 uint32_t cb_putc(char *c, void *dummy)
@@ -40,9 +42,6 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-//#include "impl_led.c"
-#include "board.c"
-
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
@@ -51,7 +50,7 @@ void setup_peripherals(void)
 }
 
 const static rgb_t rgb0 = { .r = 0, .g = 0, .b = 0 };
-const static rgb_t rgb1 = { .r = 0, .g = 50, .b = 0 };
+const static rgb_t rgb1 = { .r = 0, .g = 0, .b = 50 };
 
 void set_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
