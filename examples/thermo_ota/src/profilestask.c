@@ -10,13 +10,14 @@
 #include "ota_service.h"
 
 #include "att_db_util.h"
-//#include "bme280.h"
+#include "board.h"
+#include "bme280.h"
 #include "iic.h"
 
 #include "FreeRTOS.h"
 #include "timers.h"
 
-#include "board.c"
+
 
 extern void ota_connected(void);
 
@@ -31,7 +32,7 @@ static int temperture_indicate_enable=0;
 #ifndef SIMULATION
 
 #define I2C_PORT        I2C_PORT_0
-#define BME280_ADDR     BME280_I2C_ADDR_PRIM
+
 
 BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
@@ -53,45 +54,18 @@ void user_delay_us(uint32_t period, void *intf_ptr)
     vTaskDelay(pdMS_TO_TICKS(ms));
 }
 
-uint8_t dev_addr = BME280_ADDR;
-struct bme280_dev bme280_data =
-{
-    .intf_ptr = &dev_addr,
-    .intf = BME280_I2C_INTF,
-    .read = user_i2c_read,
-    .write = user_i2c_write,
-    .delay_us = user_delay_us,
-    /* Recommended mode of operation: Indoor navigation */
-    .settings =
-    {
-        .osr_h = BME280_OVERSAMPLING_1X,
-        .osr_p = BME280_OVERSAMPLING_16X,
-        .osr_t = BME280_OVERSAMPLING_2X,
-        .filter = BME280_FILTER_COEFF_16,
-        .standby_time = BME280_STANDBY_TIME_62_5_MS,
-    },
-};
-
-struct bme280_data comp_data;
-
 #endif
 
 static void read_temperature(void)
 {
 #ifndef SIMULATION
-    if (bme280_get_sensor_data3(BME280_ALL, &comp_data, &bme280_data) < 0)
-        return;
-    // if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
-    //     return;
+
 #ifdef PRINT_ALL
-    // platform_printf("T: %04d * 0.01 Deg\n", comp_data.temperature);
-    // platform_printf("H: %04d / 1024 %%\n", comp_data.humidity);
-    // platform_printf("P: %08d Pascal \n", comp_data.pressure);
-    platform_printf("T: %04d * 0.01 Deg\n", get_temperature(&comp_data));
-    platform_printf("H: %04d / 1024 %%\n", get_humidity(&comp_data));
-    platform_printf("P: %08d Pascal \n", get_pressure(&comp_data));
+    platform_printf("T: %04d * 0.01 Deg\n", get_temperature());
+    platform_printf("H: %04d / 1024 %%\n", get_humidity());
+    platform_printf("P: %08d Pascal \n", get_pressure());
 #endif
-    int32_t bme280_temperature = comp_data.temperature;
+    int32_t bme280_temperature = get_temperature();
     temperature_value[3]=(uint8_t)(bme280_temperature>>16);
     temperature_value[2]=(uint8_t)(bme280_temperature>>8);
     temperature_value[1]=(uint8_t)bme280_temperature;
@@ -365,18 +339,9 @@ uint32_t setup_profile(void *data, void *user_data)
 #endif
 
     i2c_init(I2C_PORT);
+    regist_init(user_i2c_read, user_i2c_write, user_delay_us);
+    setup_env_sensor();
 
-    // printf("sensor init...");
-    // if (bme280_init(&bme280_data) != BME280_OK)
-    //     printf("failed\n");
-    // else
-    // {
-    //     printf("OK\n");
-    //     bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
-    //     bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
-    // }
-
-    bme280_sensor_init(&bme280_data);
 #endif
 
     return 0;

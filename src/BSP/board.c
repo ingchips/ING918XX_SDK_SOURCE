@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "ingsoc.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -163,42 +164,52 @@ void set_rbg_breathing(rgb_t rgb0, rgb_t rgb1)
 #define TEMP_SENSOR_CHIP    BME2800_SENSOR_CHIP
 #endif
 
+uint8_t dev_addr = BME280_ADDR;
+struct bme280_dev bme280_data =
+{
+    .intf_ptr = &dev_addr,
+    .intf = BME280_I2C_INTF,
+    /* Recommended mode of operation: Indoor navigation */
+    .settings =
+    {
+        .osr_h = BME280_OVERSAMPLING_1X,
+        .osr_p = BME280_OVERSAMPLING_16X,
+        .osr_t = BME280_OVERSAMPLING_2X,
+        .filter = BME280_FILTER_COEFF_16,
+        .standby_time = BME280_STANDBY_TIME_62_5_MS,
+    },
+};
+
+struct bme280_data comp_data;
+
 void setup_env_sensor()
 {
-    // printf("sensor init...");
-    // if (bme280_init(dev) != BME280_OK)
-    //     printf("failed\n");
-    // else
-    // {
-    //     printf("OK\n");
-    //     bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, dev);
-    //     bme280_set_sensor_mode(BME280_NORMAL_MODE, dev);
-    // }
+    printf("sensor init...");
+    if (bme280_init(&bme280_data) != BME280_OK)
+        printf("failed\n");
+    else
+    {
+        printf("OK\n");
+        bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
+        bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
+    }
 }
 
-void bme280_sensor_init(struct bme280_dev *dev)
+void regist_init(BME280_INTF_RET_TYPE *read, BME280_INTF_RET_TYPE *write, void *delay_us)
 {
-    // printf("sensor init...");
-    // if (bme280_init(dev) != BME280_OK)
-    //     printf("failed\n");
-    // else
-    // {
-    //     printf("OK\n");
-    //     bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, dev);
-    //     bme280_set_sensor_mode(BME280_NORMAL_MODE, dev);
-    // }
+    bme280_data.read = read;
+    bme280_data.write = write;
+    bme280_data.delay_us = delay_us;
+
 }
 
-int8_t bme280_get_sensor_data3(uint8_t sensor_comp, struct bme280_data *comp_data, struct bme280_dev *dev)
-{  
-    return bme280_get_sensor_data(BME280_ALL, comp_data, dev);
-}
 
 double get_temperature()
 {
 #if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
-
-    //return comp_data->temperature;
+    if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
+        return -1;
+    return comp_data.temperature;
 
 #elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
 
@@ -210,8 +221,9 @@ double get_temperature()
 double get_humidity()
 {
 #if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
-
-    //return comp_data->humidity;
+    if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
+        return -1;
+    return comp_data.humidity;
 
 #elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
 
@@ -223,8 +235,9 @@ double get_humidity()
 double get_pressure()
 {
 #if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
-
-    //return comp_data->humidity;
+    if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
+        return -1;
+    return comp_data.humidity;
 
 #elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
 
