@@ -37,13 +37,12 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b);
 void setup_rgb_breathing(void);
 void set_rbg_breathing(rgb_t rgb0, rgb_t rgb1);
 
-void setup_env_sensor(void);
-void regist_init(BME280_INTF_RET_TYPE *read,BME280_INTF_RET_TYPE *write, void *delay);
+void setup_env_sensor(BME280_INTF_RET_TYPE *read,BME280_INTF_RET_TYPE *write, void *delay);
 double get_temperature(void);
 double get_humidity(void);
-double get_pressure();
+double get_pressure(void);
 
-int setup_accelerometer(void);
+void setup_accelerometer(void);
 void get_acc_xyz(float *x, float *y, float *z);
 
 void setup_buzzer(void);

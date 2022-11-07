@@ -339,8 +339,7 @@ uint32_t setup_profile(void *data, void *user_data)
 #endif
 
     i2c_init(I2C_PORT);
-    regist_init(user_i2c_read, user_i2c_write, user_delay_us);
-    setup_env_sensor();
+    setup_env_sensor(user_i2c_read, user_i2c_write, user_delay_us);
 
 #endif
 

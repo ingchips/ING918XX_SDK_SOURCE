@@ -182,8 +182,12 @@ struct bme280_dev bme280_data =
 
 struct bme280_data comp_data;
 
-void setup_env_sensor()
+void setup_env_sensor(BME280_INTF_RET_TYPE *read, BME280_INTF_RET_TYPE *write, void *delay_us)
 {
+    bme280_data.read = read;
+    bme280_data.write = write;
+    bme280_data.delay_us = delay_us;
+
     printf("sensor init...");
     if (bme280_init(&bme280_data) != BME280_OK)
         printf("failed\n");
@@ -194,15 +198,6 @@ void setup_env_sensor()
         bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
     }
 }
-
-void regist_init(BME280_INTF_RET_TYPE *read, BME280_INTF_RET_TYPE *write, void *delay_us)
-{
-    bme280_data.read = read;
-    bme280_data.write = write;
-    bme280_data.delay_us = delay_us;
-
-}
-
 
 double get_temperature()
 {
@@ -248,16 +243,32 @@ double get_pressure()
 
 
 /* accelerometer 驱动整理 */
-int setup_accelerometer(void)
-{
+#ifdef ACCELEROMETER
+#include "bma2x2.h"
 
+static struct bma2x2_accel_data sample_xyz = {0};
+
+extern s32 bma2x2_power_on(void);
+
+void setup_accelerometer(void)
+{
+#ifndef SIMULATION
+    printf("bma2x2_power_on...");
+    if (bma2x2_power_on()==0)
+        printf("success!!\n");
+    else
+        printf("faild!!\n");
+#endif
 }
 
 void get_acc_xyz(float *x, float *y, float *z)
 {
-
+    bma2x2_read_accel_xyz(&sample_xyz);
+    *x = sample_xyz.x;
+    *y = sample_xyz.y;
+    *z = sample_xyz.z;
 }
-
+#endif
 
 
 /* buzzer 相关驱动整理 */
