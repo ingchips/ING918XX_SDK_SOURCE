@@ -63,6 +63,15 @@ enum
     SYSCTRL_LDO_OUPUT_2V50 = 0x1f,  // Recommended for Vbat = 3.3V
 };
 
+enum
+{
+    SYSCTRL_BOR_0V85 = 0x06,        // BOR Vdd threshold = 0.85V
+    SYSCTRL_BOR_0V90 = 0x07,        // BOR Vdd threshold = 0.90V
+    SYSCTRL_BOR_0V95 = 0x09,        // BOR Vdd threshold = 0.95V
+    SYSCTRL_BOR_1V00 = 0x09,        // BOR Vdd threshold = 1.00V
+    SYSCTRL_BOR_1V05 = 0x0A,        // BOR Vdd threshold = 1.05V
+};
+
 /**
  * \brief Set clock gating state of all components
  * \param data      clock gating state of each component
@@ -372,6 +381,21 @@ void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item);
  * @param[in] level         output level
  */
 void SYSCTRL_SetLDOOutput(int level);
+
+/**
+ * @brief Config BOR (Brownout Reset) functionality
+ *
+ * Note:
+ *
+ * Power consumption is larger when enabled, it's not recommended to enable for sleep mode.
+ *
+ * @param[in] threshold         Threshold (available values see `SYSCTRL_BOR_...`)
+ * @param[in] enable_active     Enable(1)/Disable(0) for active mode
+ *                              default: DISABLED
+ * @param[in] enable_sleep      Enable(1)/Disable(0) for sleep mode
+ *                              default: DISABLED
+ */
+void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
 
 /**
  * @brief Wait for LDO state ready
