@@ -63,6 +63,15 @@ void SYSCTRL_WaitForLDO(void)
     while ((io_read(0x40040088) & (0x7 << 14)) != (0x7 << 14)) ;
 }
 
+void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep)
+{
+    #define RTC_POR0 (APB_RTC_BASE + 0x70)
+    #define RTC_POR1 (APB_RTC_BASE + 0x74)
+
+    io_write(RTC_POR1, (io_read(RTC_POR1) & ~0x1f) | threshold);
+    io_write(RTC_POR0, (io_read(RTC_POR0) & ~0x3ul) | (enable_active << 1) | enable_sleep);
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
