@@ -790,12 +790,22 @@ typedef struct event_command_complete_return_param_read_rssi
     int8_t           rssi;      // in dB
 } event_command_complete_return_param_read_rssi_t;
 
-typedef struct event_command_complete_return_param_read_tx_power
+typedef struct event_command_complete_return_param_read_phy
 {
     uint8_t          status;
     hci_con_handle_t conn_handle;
-    int8_t           rssi;      // in dB
-} event_command_complete_return_param_read_tx_power_t;
+    phy_type_t       tx_phy;
+    phy_type_t       rx_phy;
+} event_command_complete_return_param_read_phy_t;
+
+typedef struct event_command_complete_return_param_read_antenna_info
+{
+    uint8_t          status;
+    uint8_t          supported_switching_rates;
+    uint8_t          num_antennae;
+    uint8_t          max_switching_pattern_len;
+    uint8_t          max_cte_length;
+} event_command_complete_return_param_read_antenna_info_t;
 
 typedef struct event_conn_packets
 {

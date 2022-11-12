@@ -53,8 +53,8 @@
 --defsym:gap_read_antenna_info=0x00007add
 --defsym:gap_read_periodic_adv_list_size=0x00007aed
 --defsym:gap_read_phy=0x00007afd
---defsym:gap_read_remote_info=0x00007b11
---defsym:gap_read_remote_used_features=0x00007b25
+--defsym:gap_read_remote_used_features=0x00007b11
+--defsym:gap_read_remote_version=0x00007b25
 --defsym:gap_read_rssi=0x00007b39
 --defsym:gap_remove_whitelist=0x00007b4d
 --defsym:gap_rmv_adv_set=0x00007bd1

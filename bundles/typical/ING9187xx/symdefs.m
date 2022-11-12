@@ -49,8 +49,8 @@
 0x00007861 T gap_periodic_adv_term_sync
 0x000078f5 T gap_read_periodic_adv_list_size
 0x00007905 T gap_read_phy
-0x00007919 T gap_read_remote_info
-0x0000792d T gap_read_remote_used_features
+0x00007919 T gap_read_remote_used_features
+0x0000792d T gap_read_remote_version
 0x00007941 T gap_read_rssi
 0x00007955 T gap_remove_whitelist
 0x000079d9 T gap_rmv_adv_set

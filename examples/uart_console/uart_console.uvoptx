@@ -119,10 +119,6 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>ARMRTXEVENTFLAGS</Key>
           <Name>-L70 -Z18 -C0 -M0 -T1</Name>
         </SetRegEntry>
@@ -151,6 +147,38 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
+          <LineNumber>772</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\src\profile.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>769</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\src\profile.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
           <LineNumber>481</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>171470</Address>
@@ -165,7 +193,7 @@
           <Expression>\\uart_console\../../src/Tools/gatt_client_util.c\481</Expression>
         </Bp>
         <Bp>
-          <Number>1</Number>
+          <Number>3</Number>
           <Type>0</Type>
           <LineNumber>132</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -181,7 +209,7 @@
           <Expression>\\uart_console\src/main.c\132</Expression>
         </Bp>
         <Bp>
-          <Number>2</Number>
+          <Number>4</Number>
           <Type>0</Type>
           <LineNumber>11</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -197,7 +225,7 @@
           <Expression>\\uart_console\src/main.c\11</Expression>
         </Bp>
         <Bp>
-          <Number>3</Number>
+          <Number>5</Number>
           <Type>0</Type>
           <LineNumber>1136</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -213,7 +241,7 @@
           <Expression>\\uart_console\src/profile.c\1136</Expression>
         </Bp>
         <Bp>
-          <Number>4</Number>
+          <Number>6</Number>
           <Type>0</Type>
           <LineNumber>106</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -229,7 +257,7 @@
           <Expression>\\uart_console\../../src/Tools/trace.c\106</Expression>
         </Bp>
         <Bp>
-          <Number>5</Number>
+          <Number>7</Number>
           <Type>0</Type>
           <LineNumber>119</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -245,36 +273,52 @@
           <Expression>\\uart_console\../../src/Tools/trace.c\119</Expression>
         </Bp>
         <Bp>
-          <Number>6</Number>
+          <Number>8</Number>
           <Type>0</Type>
-          <LineNumber>768</LineNumber>
+          <LineNumber>770</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>178084</Address>
+          <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
+          <BreakIfRCount>0</BreakIfRCount>
           <Filename>.\src\profile.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\uart_console\src/profile.c\768</Expression>
+          <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>7</Number>
+          <Number>9</Number>
           <Type>0</Type>
-          <LineNumber>771</LineNumber>
+          <LineNumber>773</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>178096</Address>
+          <Address>0</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
+          <BreakIfRCount>0</BreakIfRCount>
           <Filename>.\src\profile.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\uart_console\src/profile.c\771</Expression>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>10</Number>
+          <Type>0</Type>
+          <LineNumber>1137</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\src\profile.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -533,6 +577,18 @@
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\Tools\btstack_mt.c</PathWithFileName>
       <FilenameWithoutPath>btstack_mt.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>14</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\src\Tools\btstack_sync.c</PathWithFileName>
+      <FilenameWithoutPath>btstack_sync.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

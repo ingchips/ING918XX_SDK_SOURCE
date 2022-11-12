@@ -477,6 +477,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\btstack_mt.c</FilePath>
             </File>
+            <File>
+              <FileName>btstack_sync.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\btstack_sync.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

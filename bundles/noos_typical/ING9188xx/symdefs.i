@@ -52,8 +52,8 @@
 --define_symbol gap_read_antenna_info=0x000079a5
 --define_symbol gap_read_periodic_adv_list_size=0x000079b5
 --define_symbol gap_read_phy=0x000079c5
---define_symbol gap_read_remote_info=0x000079d9
---define_symbol gap_read_remote_used_features=0x000079ed
+--define_symbol gap_read_remote_used_features=0x000079d9
+--define_symbol gap_read_remote_version=0x000079ed
 --define_symbol gap_read_rssi=0x00007a01
 --define_symbol gap_remove_whitelist=0x00007a15
 --define_symbol gap_rmv_adv_set=0x00007a99

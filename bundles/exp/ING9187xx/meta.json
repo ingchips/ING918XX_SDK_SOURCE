@@ -60,7 +60,7 @@
         "gap_clear_white_lists", 
         "gap_read_rssi", 
         "gap_read_remote_used_features", 
-        "gap_read_remote_info", 
+        "gap_read_remote_version", 
         "gap_le_read_channel_map", 
         "gap_read_phy", 
         "gap_set_def_phy", 
@@ -354,6 +354,6 @@
     "version": [
         1, 
         8, 
-        0
+        1
     ]
 }

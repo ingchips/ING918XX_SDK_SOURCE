@@ -47,8 +47,8 @@
 --defsym:gap_periodic_adv_term_sync=0x00007709
 --defsym:gap_read_periodic_adv_list_size=0x0000779d
 --defsym:gap_read_phy=0x000077ad
---defsym:gap_read_remote_info=0x000077c1
---defsym:gap_read_remote_used_features=0x000077d5
+--defsym:gap_read_remote_used_features=0x000077c1
+--defsym:gap_read_remote_version=0x000077d5
 --defsym:gap_read_rssi=0x000077e9
 --defsym:gap_remove_whitelist=0x000077fd
 --defsym:gap_rmv_adv_set=0x00007881

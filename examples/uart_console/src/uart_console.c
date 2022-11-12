@@ -66,7 +66,7 @@ static const char help[] =  "commands:\n"
                             "pwrctl delta                        adjust peer tx power in dB\n"
                             "auto   0/1                          enable/disable auto power control\n"
                             "subr   factor                       subrate with factor\n"
-                            "rssi                                read RX RSSI\n"
+                            "syncgap                             demo sync GAP APIs\n"
                             ;
 
 void cmd_help(const char *param)
@@ -74,10 +74,10 @@ void cmd_help(const char *param)
     tx_data(help, strlen(help) + 1);
 }
 
-void cmd_rssi(const char *param)
+void cmd_sync_gap(const char *param)
 {
-    extern void ble_read_rssi(void);
-    ble_read_rssi();
+    extern void ble_sync_gap(void);
+    ble_sync_gap();
 }
 
 void cmd_auto(const char *param)
@@ -545,8 +545,8 @@ static cmd_t cmds[] =
         .handler = cmd_auto
     },
     {
-        .cmd = "rssi",
-        .handler = cmd_rssi
+        .cmd = "syncgap",
+        .handler = cmd_sync_gap
     }
 };
 

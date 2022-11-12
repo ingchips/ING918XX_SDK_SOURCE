@@ -18,6 +18,7 @@
 
 #include "uart_console.h"
 #include "gatt_client_util.h"
+#include "btstack_sync.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -51,7 +52,7 @@ int is_targeted_scan = 0;
 uint64_t last_seen = 0;
 
 struct gatt_client_discoverer *discoverer = NULL;
-struct gatt_client_synced_runner *synced_runner = NULL;
+struct btstack_synced_runner *synced_runner = NULL;
 
 #define find_char(handle)   gatt_client_util_find_char(discoverer, handle)
 #define find_config_desc    gatt_client_util_find_config_desc
@@ -217,8 +218,11 @@ static void demo_synced_api(void *user_data)
                 mas_conn_handle, handle,
                 data,
                 &length);
-        iprintf("[%d]: err = %d:\n", n, err);
-        if (err) break;
+        if (err)
+        {
+            iprintf("[%d]: err = %d:\n", n, err);
+            break;
+        }
         print_hex_table(data, length, print_fun);
         iprintf("wait for 200ms...\n", n, err);
         vTaskDelay(pdMS_TO_TICKS(200));
@@ -527,7 +531,7 @@ void sync_read_value_of_char(int handle)
         return;
     }
 
-    gatt_client_sync_run(synced_runner, demo_synced_api, (void *)(uintptr_t)c->chara.value_handle);
+    btstack_sync_run(synced_runner, demo_synced_api, (void *)(uintptr_t)c->chara.value_handle);
 }
 
 void write_value_of_char(int handle, block_value_t *value)
@@ -604,10 +608,81 @@ void ble_set_auto_power_control(int enable)
     iprintf("Auto power control %s.\n", enable ? "enabled" : "disabled");
 }
 
-void ble_read_rssi(void)
+static void demo_synced_gap_apis(void *user_data)
 {
-    mt_gap_read_rssi(
-        mas_conn_handle != INVALID_HANDLE ? mas_conn_handle : sla_conn_handle);
+    int err;
+    uint16_t handle = (uint16_t)(uintptr_t)user_data;
+
+    {
+        iprintf("Read channel map:\n");
+        uint8_t map[5];
+        if ((err = gap_sync_le_read_channel_map(synced_runner, handle, map)) != 0)
+        {
+            iprintf("[%d]: err = %d:\n", err);
+            return;
+        }
+
+        print_hex_table(map, sizeof(map), print_fun);
+        iprintf("\n");
+    }
+
+    {
+        iprintf("Read PHY: ");
+        static const char phys[][6] = {"1M", "2M", "Coded"};
+        phy_type_t tx_phy;
+        phy_type_t rx_phy;
+        if ((err = gap_sync_read_phy(synced_runner, handle, &tx_phy, &rx_phy)) != 0)
+        {
+            iprintf("[%d]: err = %d:\n", err);
+            return;
+        }
+
+        iprintf("Tx = %s, Rx = %s\n", phys[tx_phy], phys[rx_phy]);
+    }
+
+    int n = 5;
+    iprintf("\nsynced read RSSI for %d times:\n", n);
+
+    for (; n > 0; n--)
+    {
+        int8_t rssi;
+        if ((err = gap_sync_read_rssi(synced_runner, handle, &rssi)) != 0)
+        {
+            iprintf("[%d]: err = %d:\n", n, err);
+            break;
+        }
+        iprintf("RSSI: %ddBm\n", rssi);
+        iprintf("wait for 200ms...\n", n, err);
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+
+    iprintf("done\n\n");
+}
+
+static void synced_power_control(void *user_data)
+{
+    uint16_t handle = (uint16_t)(uintptr_t)user_data;
+    int8_t rssi;
+    int err;
+    if ((err = gap_sync_read_rssi(synced_runner, handle, &rssi)) != 0)
+    {
+        iprintf("err = %d:\n", err);
+        return;
+    }
+
+    int delta = 0;
+    if (rssi > RX_GOLDEN_RAGE_MAX)
+        delta = RX_GOLDEN_RAGE_MAX - rssi;
+    else if (rssi < RX_GOLDEN_RAGE_MIN)
+        delta = RX_GOLDEN_RAGE_MIN - rssi;
+    if (delta != 0)
+        ll_adjust_conn_peer_tx_power(handle, delta);
+}
+
+void ble_sync_gap(void)
+{
+    btstack_sync_run(synced_runner, demo_synced_gap_apis,
+        (void *)(mas_conn_handle != INVALID_HANDLE ? mas_conn_handle : sla_conn_handle));
 }
 
 void change_conn_param(int interval, int latency, int timeout)
@@ -768,7 +843,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
 
-        synced_runner = gatt_client_create_sync_runner();
+        synced_runner = btstack_create_sync_runner(1);
 
         platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, 1500);
         ll_set_tx_power_range(-30, 10);
@@ -855,7 +930,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 }
 
 
-                gap_read_remote_info(complete->handle);
+                gap_read_remote_version(complete->handle);
             }
             break;
         case HCI_SUBEVENT_LE_READ_REMOTE_USED_FEATURES_COMPLETE:
@@ -905,7 +980,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 rpt->current_path_loss,
                                 decode_zone(rpt->zone_entered));
                 if (auto_power_ctrl)
-                    gap_read_rssi(rpt->conn_handle);
+                    btstack_sync_run(synced_runner, synced_power_control,
+                        (void *)(uintptr_t)rpt->conn_handle);
             }
             break;
         case HCI_SUBEVENT_LE_TRANSMIT_POWER_REPORTING:
@@ -989,31 +1065,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_COMMAND_COMPLETE:
         {
-            const event_command_complete_return_param_read_rssi_t *
-                read_rssi;
             const uint8_t *returns = hci_event_command_complete_get_return_parameters(packet);
             if (*returns != 0)
             {
                 platform_printf("COMMAND_COMPLETE: 0x%02x for OPCODE %04X\n",
                     *returns, hci_event_command_complete_get_command_opcode(packet));
-                break;
-            }
-
-            switch (hci_event_command_complete_get_command_opcode(packet))
-            {
-            case OPCODE_READ_RSSI:
-                read_rssi = (const event_command_complete_return_param_read_rssi_t *)returns;
-                iprintf("RSSI: %d dBm\n", read_rssi->rssi);
-                if (auto_power_ctrl)
-                {
-                    int delta = 0;
-                    if (read_rssi->rssi > RX_GOLDEN_RAGE_MAX)
-                        delta = RX_GOLDEN_RAGE_MAX - read_rssi->rssi;
-                    else if (read_rssi->rssi < RX_GOLDEN_RAGE_MIN)
-                        delta = RX_GOLDEN_RAGE_MIN - read_rssi->rssi;
-                    if (delta != 0)
-                        ll_adjust_conn_peer_tx_power(read_rssi->conn_handle, delta);
-                }
                 break;
             }
         }

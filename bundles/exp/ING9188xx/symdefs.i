@@ -54,9 +54,9 @@
 --define_symbol gap_read_local_tx_power_level=0x00007b31
 --define_symbol gap_read_periodic_adv_list_size=0x00007b45
 --define_symbol gap_read_phy=0x00007b55
---define_symbol gap_read_remote_info=0x00007b69
---define_symbol gap_read_remote_tx_power_level=0x00007b7d
---define_symbol gap_read_remote_used_features=0x00007b91
+--define_symbol gap_read_remote_tx_power_level=0x00007b69
+--define_symbol gap_read_remote_used_features=0x00007b7d
+--define_symbol gap_read_remote_version=0x00007b91
 --define_symbol gap_read_rssi=0x00007ba5
 --define_symbol gap_remove_whitelist=0x00007bb9
 --define_symbol gap_rmv_adv_set=0x00007c3d

@@ -48,8 +48,8 @@
 --define_symbol gap_periodic_adv_term_sync=0x00007861
 --define_symbol gap_read_periodic_adv_list_size=0x000078f5
 --define_symbol gap_read_phy=0x00007905
---define_symbol gap_read_remote_info=0x00007919
---define_symbol gap_read_remote_used_features=0x0000792d
+--define_symbol gap_read_remote_used_features=0x00007919
+--define_symbol gap_read_remote_version=0x0000792d
 --define_symbol gap_read_rssi=0x00007941
 --define_symbol gap_remove_whitelist=0x00007955
 --define_symbol gap_rmv_adv_set=0x000079d9

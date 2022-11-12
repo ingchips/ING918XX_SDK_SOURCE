@@ -89,7 +89,7 @@ uint8_t mt_gap_read_rssi(
 uint8_t mt_gap_read_remote_used_features(
     hci_con_handle_t handle);
 
-uint8_t mt_gap_read_remote_info(
+uint8_t mt_gap_read_remote_version(
     hci_con_handle_t handle);
 
 uint8_t mt_gap_le_read_channel_map(
@@ -232,7 +232,7 @@ uint8_t mt_gap_set_connectionless_cte_tx_param(
     const cte_type_t cte_type,
     const uint8_t cte_count,
     const uint8_t switching_pattern_len,
-    const uint8_t      * antenna_ids);
+    const uint8_t      *antenna_ids);
 
 uint8_t mt_gap_set_connectionless_cte_tx_enable(
     const uint8_t adv_handle,
@@ -378,7 +378,7 @@ uint8_t mt_gap_rx_test_v3(
     uint8_t expected_cte_type,
     uint8_t slot_durations,
     uint8_t switching_pattern_length,
-    uint8_t antenna_ids);
+    uint8_t *antenna_ids);
 
 uint8_t mt_gap_tx_test_v2(
     uint8_t tx_channel,
@@ -394,7 +394,7 @@ uint8_t mt_gap_tx_test_v4(
     uint8_t cte_length,
     uint8_t cte_type,
     uint8_t switching_pattern_length,
-    uint8_t antenna_ids,
+    uint8_t *antenna_ids,
     int8_t tx_power_level);
 
 uint8_t mt_gap_test_end(

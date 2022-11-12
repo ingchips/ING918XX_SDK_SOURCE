@@ -49,9 +49,9 @@
 --defsym:gap_read_local_tx_power_level=0x00007929
 --defsym:gap_read_periodic_adv_list_size=0x0000793d
 --defsym:gap_read_phy=0x0000794d
---defsym:gap_read_remote_info=0x00007961
---defsym:gap_read_remote_tx_power_level=0x00007975
---defsym:gap_read_remote_used_features=0x00007989
+--defsym:gap_read_remote_tx_power_level=0x00007961
+--defsym:gap_read_remote_used_features=0x00007975
+--defsym:gap_read_remote_version=0x00007989
 --defsym:gap_read_rssi=0x0000799d
 --defsym:gap_remove_whitelist=0x000079b1
 --defsym:gap_rmv_adv_set=0x00007a35

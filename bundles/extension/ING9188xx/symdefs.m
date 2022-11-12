@@ -54,8 +54,8 @@
 0x00007af1 T gap_read_antenna_info
 0x00007b01 T gap_read_periodic_adv_list_size
 0x00007b11 T gap_read_phy
-0x00007b25 T gap_read_remote_info
-0x00007b39 T gap_read_remote_used_features
+0x00007b25 T gap_read_remote_used_features
+0x00007b39 T gap_read_remote_version
 0x00007b4d T gap_read_rssi
 0x00007b61 T gap_remove_whitelist
 0x00007be5 T gap_rmv_adv_set

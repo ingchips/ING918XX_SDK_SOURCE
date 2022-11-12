@@ -50,9 +50,9 @@
 0x00007929 T gap_read_local_tx_power_level
 0x0000793d T gap_read_periodic_adv_list_size
 0x0000794d T gap_read_phy
-0x00007961 T gap_read_remote_info
-0x00007975 T gap_read_remote_tx_power_level
-0x00007989 T gap_read_remote_used_features
+0x00007961 T gap_read_remote_tx_power_level
+0x00007975 T gap_read_remote_used_features
+0x00007989 T gap_read_remote_version
 0x0000799d T gap_read_rssi
 0x000079b1 T gap_remove_whitelist
 0x00007a35 T gap_rmv_adv_set
