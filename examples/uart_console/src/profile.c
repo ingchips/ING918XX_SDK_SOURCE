@@ -450,6 +450,29 @@ void update_addr()
             sm_persistent.identity_addr[4], sm_persistent.identity_addr[5]);
 }
 
+void demo_synced_create_conn(void *_)
+{
+    printf("synced create connection (timeout 5s)...");
+    le_meta_event_enh_create_conn_complete_t complete = {0};
+    int r = gap_sync_ext_create_connection(synced_runner,
+                                    INITIATING_ADVERTISER_FROM_PARAM,
+                                    BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
+                                    slave_addr_type,                  // Peer_Address_Type,
+                                    slave_addr,                       // Peer_Address,
+                                    sizeof(phy_configs) / sizeof(phy_configs[0]),
+                                    phy_configs,
+                                    5000,
+                                    &complete);
+    printf(r == 0 ? "Succeed\n" : "Failed\n");
+}
+
+void sync_conn_to_slave()
+{
+    peer_feature_power_control = 0;
+    peer_feature_subrate = 0;
+    btstack_sync_run(synced_runner, demo_synced_create_conn, NULL);
+}
+
 void conn_to_slave()
 {
     printf("create connection...\n");

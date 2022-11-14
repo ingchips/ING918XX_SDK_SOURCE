@@ -47,6 +47,7 @@ static const char help[] =  "commands:\n"
                             "conpar interval latency timeout     set connection parameters\n"
                             "pat    0/1                          peer address type\n"
                             "conn   xx:xx:xx:xx:xx:xx            connect to dev and discover services\n"
+                            "sconn  xx:xx:xx:xx:xx:xx            connect to dev using synced API\n"
                             "cancel                              cancel create connection\n"
                             "scan                                passive scan for all adv\n"
                             "scan   xx:xx:xx:xx:xx:xx            scan for adv from a device\n"
@@ -195,6 +196,7 @@ extern bd_addr_type_t slave_addr_type;
 
 void update_addr(void);
 void conn_to_slave(void);
+void sync_conn_to_slave(void);
 void cancel_create_conn(void);
 void read_value_of_char(int handle);
 void sync_read_value_of_char(int handle);
@@ -226,6 +228,12 @@ void cmd_conn(const char *param)
 {
     if (0 == parse_addr(slave_addr, param))
         conn_to_slave();
+}
+
+void cmd_sconn(const char *param)
+{
+    if (0 == parse_addr(slave_addr, param))
+        sync_conn_to_slave();
 }
 
 void cmd_scan(const char *param)
@@ -467,6 +475,10 @@ static cmd_t cmds[] =
     {
         .cmd = "conn",
         .handler = cmd_conn
+    },
+    {
+        .cmd = "sconn",
+        .handler = cmd_sconn
     },
     {
         .cmd = "pat",

@@ -67,6 +67,18 @@ typedef struct gatt_synced_msg
     struct btstack_enqueue_runnable  runnable;
 } gatt_synced_msg_t;
 
+struct gap_synced_create_conn
+{
+    gen_handle_t timer;
+    initiating_filter_policy_t filter_policy;
+    bd_addr_type_t own_addr_type;
+    bd_addr_type_t peer_addr_type;
+    const uint8_t *peer_addr;
+    uint8_t initiating_phy_num;
+    const initiating_phy_config_t *phy_configs;
+    le_meta_event_enh_create_conn_complete_t *complete;
+};
+
 struct gap_synced_ctx
 {
     uint8_t buffer[100];
@@ -75,6 +87,7 @@ struct gap_synced_ctx
     uint16_t wait_subevent;
     uint8_t wait_event;
     gen_handle_t done_evt;
+    struct gap_synced_create_conn create_conn;
 } * gap_synced_ctx = NULL;
 
 #define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
@@ -127,6 +140,22 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             gap_synced_ctx->wait_subevent = 0xff;
             gap_synced_ctx->conn_handle = INVALID_HANDLE;
             GEN_OS->event_set(gap_synced_ctx->done_evt);
+        }
+
+        switch (hci_event_le_meta_get_subevent_code(packet))
+        {
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            if (gap_synced_ctx->create_conn.complete)
+            {
+                const le_meta_event_enh_create_conn_complete_t * complete =
+                    decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
+                GEN_OS->timer_stop(gap_synced_ctx->create_conn.timer);
+                memcpy(gap_synced_ctx->create_conn.complete, complete, sizeof(*complete));
+                GEN_OS->event_set(gap_synced_ctx->done_evt);
+            }
+            break;
+        default:
+            break;
         }
         break;
     case HCI_EVENT_COMMAND_COMPLETE:
@@ -400,10 +429,71 @@ int gatt_client_sync_write_characteristic_descriptor(struct btstack_synced_runne
 
 #define OPCODE(ogf, ocf)            (ocf | ogf << 10)
 
+static void create_connection(struct btstack_synced_runner *runner, uint16_t _)
+{
+    struct gap_synced_create_conn *create = &gap_synced_ctx->create_conn;
+    runner->gap_err_code = gap_ext_create_connection(
+        create->filter_policy,
+        create->own_addr_type,
+        create->peer_addr_type,
+        create->peer_addr,
+        create->initiating_phy_num,
+        create->phy_configs);
+    if (runner->gap_err_code)
+        gatt_client_sync_mark_done(runner);
+}
+
+static void cancel_create(void *_, uint16_t __)
+{
+    gap_create_connection_cancel();
+}
+
+static void create_connection_timeout(void *_)
+{
+    btstack_push_user_runnable(cancel_create, NULL, 0);
+}
+
+int gap_sync_ext_create_connection(struct btstack_synced_runner *runner,
+                                  const initiating_filter_policy_t filter_policy,
+                                  const bd_addr_type_t own_addr_type,
+	                              const bd_addr_type_t peer_addr_type,
+	                              const uint8_t *peer_addr,
+                                  const uint8_t initiating_phy_num,
+                                  const initiating_phy_config_t *phy_configs,
+                                  uint32_t timeout_ms,
+                                  le_meta_event_enh_create_conn_complete_t *complete)
+{
+    struct gap_synced_create_conn *create = &gap_synced_ctx->create_conn;
+    create->timer = GEN_OS->timer_create(timeout_ms, NULL, create_connection_timeout);
+    GEN_OS->timer_start(create->timer);
+
+    create->filter_policy = filter_policy;
+    create->own_addr_type = own_addr_type;
+    create->peer_addr_type = peer_addr_type;
+    create->peer_addr = peer_addr;
+    create->initiating_phy_num = initiating_phy_num;
+    create->phy_configs = phy_configs;
+    create->complete = complete;
+    btstack_push_user_runnable((f_btstack_user_runnable)create_connection, runner, 0);
+
+    int t = gatt_client_sync_wait_done(runner);
+
+    GEN_OS->timer_delete(create->timer);
+    create->timer = NULL;
+    create->complete = NULL;
+
+    if (t) return BTSTACK_SYNCED_ERROR_RTOS;
+
+    if (runner->gap_err_code == 0)
+        runner->gap_err_code = complete->status;
+
+    return runner->gap_err_code;
+}
+
 static void le_read_channel_map(struct btstack_synced_runner *runner, uint16_t con_handle)
 {
     runner->gap_err_code = gap_le_read_channel_map(con_handle);
-    if (runner->read_value.err_code)
+    if (runner->gap_err_code)
         gatt_client_sync_mark_done(runner);
 }
 
@@ -429,7 +519,7 @@ int gap_sync_le_read_channel_map(struct btstack_synced_runner *runner,
 static void read_rssi(struct btstack_synced_runner *runner, uint16_t con_handle)
 {
     runner->gap_err_code = gap_read_rssi(con_handle);
-    if (runner->read_value.err_code)
+    if (runner->gap_err_code)
         gatt_client_sync_mark_done(runner);
 }
 
@@ -459,7 +549,7 @@ int gap_sync_read_rssi(struct btstack_synced_runner *runner,
 static void read_phy(struct btstack_synced_runner *runner, uint16_t con_handle)
 {
     runner->gap_err_code = gap_read_phy(con_handle);
-    if (runner->read_value.err_code)
+    if (runner->gap_err_code)
         gatt_client_sync_mark_done(runner);
 }
 
@@ -489,7 +579,7 @@ int gap_sync_read_phy(struct btstack_synced_runner *runner,
 static void read_remote_version(struct btstack_synced_runner *runner, uint16_t con_handle)
 {
     runner->gap_err_code = gap_read_remote_version(con_handle);
-    if (runner->read_value.err_code)
+    if (runner->gap_err_code)
         gatt_client_sync_mark_done(runner);
 }
 
@@ -531,7 +621,7 @@ int gap_sync_read_remote_version(struct btstack_synced_runner *runner,
 static void read_remote_features(struct btstack_synced_runner *runner, uint16_t con_handle)
 {
     runner->gap_err_code = gap_read_remote_used_features(con_handle);
-    if (runner->read_value.err_code)
+    if (runner->gap_err_code)
         gatt_client_sync_mark_done(runner);
 }
 

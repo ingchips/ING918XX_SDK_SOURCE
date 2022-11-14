@@ -2,6 +2,7 @@
 #define _btstack_sync_h
 
 #include "btstack_defines.h"
+#include "btstack_event.h"
 #include "gap.h"
 #include "att_db.h"
 
@@ -31,6 +32,7 @@ typedef void (* f_btstack_synced_runnable)(void *user_data);
 
 #define BTSTACK_SYNCED_ERROR_RTOS                   (-1)
 #define BTSTACK_SYNCED_ERROR_BUFFER_TOO_SMALL       (-2)
+#define BTSTACK_SYNCED_ERROR_OUT_OF_MEM             (-3)
 
 /**
  ****************************************************************************************
@@ -158,6 +160,35 @@ int gatt_client_sync_write_value_of_characteristic_without_response(struct btsta
 int gatt_client_sync_write_characteristic_descriptor(struct btstack_synced_runner *runner,
     hci_con_handle_t con_handle,
     uint16_t descriptor_handle, const uint8_t *data, uint16_t length);
+
+/**
+ ****************************************************************************************
+ * @brief SYNC CALL API: LE Extended Create Connection command
+ *
+ * Note: when timed out, `gap_create_connection_cancel` is called to cancel the initiating
+ * procedure.
+ *
+ * @param[in]       runner                          the runner
+ * @param[in]       filter_policy                   see `gap_ext_create_connection(...)`
+ * @param[in]       own_addr_type                   see `gap_ext_create_connection(...)`
+ * @param[in]       peer_addr_type                  see `gap_ext_create_connection(...)`
+ * @param[in]       peer_addr                       see `gap_ext_create_connection(...)`
+ * @param[in]       initiating_phy_num              see `gap_ext_create_connection(...)`
+ * @param[in]       phy_configs                     see `gap_ext_create_connection(...)`
+ * @param[in]       timeout_ms                      time waiting for connection in milliseconds
+ * @param[out]      complete                        the complete event
+ * @return                                          error code (0: OK)
+ ****************************************************************************************
+ */
+int gap_sync_ext_create_connection(struct btstack_synced_runner *runner,
+                                  const initiating_filter_policy_t filter_policy,
+                                  const bd_addr_type_t own_addr_type,
+	                              const bd_addr_type_t peer_addr_type,
+	                              const uint8_t *peer_addr,
+                                  const uint8_t initiating_phy_num,
+                                  const initiating_phy_config_t *phy_configs,
+                                  uint32_t timeout_ms,
+                                  le_meta_event_enh_create_conn_complete_t *complete);
 
 /**
  ****************************************************************************************
