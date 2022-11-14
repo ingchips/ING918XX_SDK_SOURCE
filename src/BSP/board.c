@@ -8,7 +8,6 @@
 #include "peripheral_sysctrl.h"
 #include "peripheral_pinctrl.h"
 
-
 /* RGB_LED灯驱动整理*/
 #ifndef PWM_LED
 
@@ -17,9 +16,9 @@
 void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
     uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
-#if(RGB_LED == LED_TLC59731)
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
     tlc59731_write(cmd);
-#elif(RGB_LED == LED_WS2881)
+#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
     ws2881_write(cmd);
 #endif
 }
@@ -93,66 +92,6 @@ void setup_rgb_led()
 
 #endif
 
-breathing_t breathing_info;
-
-static uint8_t value_step(uint8_t cur, uint8_t target, uint8_t step)
-{
-    int offset = (int)target - cur;
-    if (offset > step)
-    {
-        return cur + step;
-    }
-    else if (offset < -(int)step)
-    {
-        return cur - step;
-    }
-    else
-        return target;
-}
-
-static void breathing_task(void *pdata)
-{
-    #define STEP 2
-    for (;;)
-    {
-        vTaskDelay(pdMS_TO_TICKS(30));
-        if (breathing_info.rgb0.value == breathing_info.rgb1.value)
-            continue;
-        rgb_t *target = breathing_info.dir ? &breathing_info.rgb0 : &breathing_info.rgb1;
-        breathing_info.cur.r = value_step(breathing_info.cur.r,
-                                          target->r, STEP);
-        breathing_info.cur.g = value_step(breathing_info.cur.g,
-                                          target->g, STEP);
-        breathing_info.cur.b = value_step(breathing_info.cur.b,
-                                          target->b, STEP);
-        set_rgb_led_color(breathing_info.cur.r, breathing_info.cur.g, breathing_info.cur.b);
-        if (breathing_info.cur.value == breathing_info.rgb1.value)
-            breathing_info.dir = 1;
-        else if (breathing_info.cur.value == breathing_info.rgb0.value)
-            breathing_info.dir = 0;
-    }
-}
-
-void setup_rgb_breathing()
-{
-    xTaskCreate(breathing_task,
-               "d",
-               configMINIMAL_STACK_SIZE,
-               NULL,
-               (configMAX_PRIORITIES - 1),
-               NULL);
-}
-
-void set_rbg_breathing(rgb_t rgb0, rgb_t rgb1)
-{
-    breathing_info.rgb0 = rgb0;
-    breathing_info.rgb1 = rgb1;
-    breathing_info.dir = 0;
-    breathing_info.cur = breathing_info.rgb0;
-    set_rgb_led_color(breathing_info.cur.r, breathing_info.cur.g, breathing_info.cur.b);
-}
-
-
 
 /* themometor 驱动整理 */
 #include "bme280.h"
@@ -184,6 +123,7 @@ struct bme280_data comp_data;
 
 void setup_env_sensor(BME280_INTF_RET_TYPE *read, BME280_INTF_RET_TYPE *write, void *delay_us)
 {
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
     bme280_data.read = read;
     bme280_data.write = write;
     bme280_data.delay_us = delay_us;
@@ -197,46 +137,55 @@ void setup_env_sensor(BME280_INTF_RET_TYPE *read, BME280_INTF_RET_TYPE *write, v
         bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
         bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
     }
+#elif(BOARD_ID == BOARD_ING91881B_02_02_05)
+#endif
 }
+
+#define I2C_PORT        I2C_PORT_0
 
 double get_temperature()
 {
-#if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
     if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
         return -1;
     return comp_data.temperature;
 
-#elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
+#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+    uint8_t cmd[2]={(uint8_t)(CONVERT_T >>8), (uint8_t)(CONVERT_T & 0xFF)};
+    uint8_t reg_data[3] = {0}; 
+    //uint8_t sta = MTS01B_E_COMM_FAIL;
+    //读取温度数据
+    i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, sizeof(reg_data));
 
-#error unknown or unsupported chip family
-
+    //计算温度数据  T = 40 + 数据位高位值
+    int T =  40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1))
 #endif
 }
 
 double get_humidity()
 {
-#if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
     if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
         return -1;
     return comp_data.humidity;
 
-#elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
+#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
 
-#error unknown or unsupported chip family
+#error unknown or unsupported chip family.
 
 #endif
 }
 
 double get_pressure()
 {
-#if (TEMP_SENSOR_CHIP == BME2800_SENSOR_CHIP)
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
     if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
         return -1;
     return comp_data.humidity;
 
-#elif (TEMP_SENSOR_CHIP == MTS001B_SENSOR_CHIP)
+#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
 
-#error unknown or unsupported chip family
+#error unknown or unsupported chip family.
 
 #endif
 }

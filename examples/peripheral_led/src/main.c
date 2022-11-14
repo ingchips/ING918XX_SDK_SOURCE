@@ -3,7 +3,7 @@
 #include "platform_api.h"
 #include <stdio.h>
 #include "rf_util.h"
-
+ 
 #include "board.h"
 
 #define PRINT_PORT    APB_UART0
@@ -48,6 +48,8 @@ void setup_peripherals(void)
     
     setup_rgb_led();
 }
+
+#include "impl_led.c"
 
 const static rgb_t rgb0 = { .r = 0, .g = 0, .b = 0 };
 const static rgb_t rgb1 = { .r = 0, .g = 0, .b = 50 };
