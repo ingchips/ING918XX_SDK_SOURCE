@@ -161,6 +161,10 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
     case SYSCTRL_ITEM_APB_EFUSE     :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 23);
         break;
+    case SYSCTRL_ITEM_APB_USB:
+        set_reg_bit(&APB_SYSCTRL->USBCfg, v, 5);
+        set_reg_bit(&APB_SYSCTRL->USBCfg, v, 7);
+        break;
     default:
         break;
     }
@@ -295,9 +299,40 @@ void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item)
     SYSCTRL_ResetBlockCtrl(item, 1);
 }
 
-void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_TimerClkMode mode)
+void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode)
 {
-    set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, 15 + port);
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (mode == 0) ? 1 : 0, 15 + port);
+    if (mode >= SYSCTRL_CLK_OSC_DIV_1)
+    {
+        set_reg_bits(&APB_SYSCTRL->CguCfg8, mode, 4, 20);
+        set_reg_bit(&APB_SYSCTRL->CguCfg8, 1, 24);
+    }
+}
+
+void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode)
+{
+    set_reg_bit(&APB_SYSCTRL->CguCfg8, (mode == 0) ? 1 : 0, 15);
+    if (mode >= SYSCTRL_CLK_OSC_DIV_1)
+    {
+        set_reg_bits(&APB_SYSCTRL->CguCfg8, mode, 4, 27);
+        set_reg_bit(&APB_SYSCTRL->CguCfg8, 1, 31);
+    }
+}
+
+void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
+{
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (mode == 0) ? 1 : 0, 13);
+    if (mode >= SYSCTRL_CLK_OSC_DIV_1)
+    {
+        set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 24);
+        set_reg_bit(APB_SYSCTRL->CguCfg, 1, 31);
+    }
+}
+
+void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode)
+{
+    set_reg_bits(&APB_SYSCTRL->CguCfg8, (1 << 6) | mode, 12, 0);
+    set_reg_bit(&APB_SYSCTRL->CguCfg8, 1, 12);
 }
 
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
@@ -309,6 +344,7 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
         if (mode >= SYSCTRL_CLK_PLL_DIV_1)
         {
             set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 20);
+            set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
         }
         break;
     case SPI_PORT_1:
@@ -321,17 +357,7 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
 
 void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode)
 {
-    switch (port)
-    {
-    case UART_PORT_0:
-        set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, 19);
-        break;
-    case UART_PORT_1:
-        set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, 20);
-        break;
-    default:
-        break;
-    }
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, port == UART_PORT_0 ? 19 : 20);
 }
 
 void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode)
@@ -354,15 +380,27 @@ void SYSCTRL_SelectHClk(SYSCTRL_ClkMode mode)
     }
 }
 
-static int get_safe_divider(int offset)
+void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode)
 {
-    int r = (APB_SYSCTRL->CguCfg[0] >> offset) & 0xf;
+    set_reg_bits(&APB_SYSCTRL->USBCfg, mode, 4, 0);
+    set_reg_bit(&APB_SYSCTRL->USBCfg, 1, 4);
+}
+
+static int get_safe_divider(int reg_offset, int offset)
+{
+    int r = (*(APB_SYSCTRL->CguCfg + reg_offset) >> offset) & 0xf;
+    return r == 0 ? 1 : r;
+}
+
+static int get_safe_divider6(int reg_offset, int offset)
+{
+    int r = (*(APB_SYSCTRL->CguCfg + reg_offset) >> offset) & 0x2f;
     return r == 0 ? 1 : r;
 }
 
 uint32_t SYSCTRL_GetPLLClk()
 {
-    if (APB_SYSCTRL->PllCtrl & 1)
+    if (io_read(AON2_CTRL_BASE + 0x1A8) & (1ul << 20))
     {
         uint32_t div = ((APB_SYSCTRL->PllCtrl >> 1) & 0x3f) * ((APB_SYSCTRL->PllCtrl >> 15) & 0x3f);
         return OSC_CLK_FREQ / div * ((APB_SYSCTRL->PllCtrl >> 7) & 0xff);
@@ -397,15 +435,16 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
 
     uint32_t t = APB_SYSCTRL->PllCtrl;
     t &= ~(0xfffffful);
-    t |= 1 | (div_pre << 1) | (loop << 7) | (div_output << 15) | (vco << 21) ;
+    t |= (div_pre << 1) | (loop << 7) | (div_output << 15) | (vco << 21);
     APB_SYSCTRL->PllCtrl = t;
+    io_write(AON2_CTRL_BASE + 0x1A8, io_read(AON2_CTRL_BASE + 0x1A8) | (1ul << 20));
     return 0;
 }
 
 uint32_t SYSCTRL_GetHClk()
 {
     if (APB_SYSCTRL->CguCfg[1] & (1 << 14))
-        return SYSCTRL_GetPLLClk() / get_safe_divider(0);
+        return SYSCTRL_GetPLLClk() / get_safe_divider(0, 0);
     else
         return OSC_CLK_FREQ;
 }
@@ -418,7 +457,7 @@ void SYSCTRL_SetPClkDiv(uint8_t div)
 
 uint32_t SYSCTRL_GetPClk()
 {
-    return SYSCTRL_GetHClk() / get_safe_divider(4);
+    return SYSCTRL_GetHClk() / get_safe_divider(0, 4);
 }
 
 uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
@@ -431,10 +470,22 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
         if (APB_SYSCTRL->CguCfg[1] & (1 << (15 + item - SYSCTRL_ITEM_APB_TMR0)))
             return RTC_CLK_FREQ;
         else
-            return OSC_CLK_FREQ / 4;
+            return OSC_CLK_FREQ / get_safe_divider(11, 20);
+    case SYSCTRL_ITEM_APB_PDM:
+        return OSC_CLK_FREQ * get_safe_divider6(22, 6) / get_safe_divider6(22, 0);
+    case SYSCTRL_ITEM_APB_PWM:
+        if (APB_SYSCTRL->CguCfg8 & (1 << 15))
+            return RTC_CLK_FREQ;
+        else
+            return OSC_CLK_FREQ / get_safe_divider(11, 27);
+    case SYSCTRL_ITEM_APB_KeyScan:
+        if (APB_SYSCTRL->CguCfg[1] & (1 << 13))
+            return RTC_CLK_FREQ;
+        else
+            return OSC_CLK_FREQ / get_safe_divider(0, 24);
     case SYSCTRL_ITEM_AHB_SPI0:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 21))
-            return SYSCTRL_GetPLLClk() / get_safe_divider(20);
+            return SYSCTRL_GetPLLClk() / get_safe_divider(0, 20);
         else
             return OSC_CLK_FREQ;
     case SYSCTRL_ITEM_APB_SPI1:
@@ -444,23 +495,13 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return OSC_CLK_FREQ;
     case SYSCTRL_ITEM_APB_I2S:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 23))
-            return SYSCTRL_GetPLLClk() / get_safe_divider(12);
+            return SYSCTRL_GetPLLClk() / get_safe_divider(0, 12);
         else
             return OSC_CLK_FREQ;
     case SYSCTRL_ITEM_APB_UART0:
     case SYSCTRL_ITEM_APB_UART1:
         if (APB_SYSCTRL->CguCfg[1] & (1 << (19 + item - SYSCTRL_ITEM_APB_UART0)))
             return SYSCTRL_GetHClk();
-        else
-            return OSC_CLK_FREQ;
-    case SYSCTRL_ITEM_APB_PDM:
-        if (APB_SYSCTRL->CguCfg8 & (1 << 14))
-            return SYSCTRL_GetAdcClkDiv();
-        else
-            return OSC_CLK_FREQ;
-    case SYSCTRL_ITEM_APB_PWM:
-        if (APB_SYSCTRL->CguCfg8 & (1 << 15))
-            return SYSCTRL_GetAdcClkDiv();
         else
             return OSC_CLK_FREQ;
     case SYSCTRL_ITEM_APB_IR:
@@ -478,6 +519,8 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetAdcClkDiv();
         else
             return OSC_CLK_FREQ;
+    case SYSCTRL_ITEM_APB_USB:
+        return SYSCTRL_GetPLLClk() / get_safe_divider(0x20, 0);
     default:
         // TODO
         return OSC_CLK_FREQ;

@@ -123,6 +123,7 @@ typedef enum
     SYSCTRL_ITEM_APB_SysCtrl   ,
     SYSCTRL_ITEM_APB_PinCtrl   ,
     SYSCTRL_ITEM_APB_EFUSE     ,
+    SYSCTRL_ITEM_APB_USB       ,
     SYSCTRL_ITEM_NUMBER,
 } SYSCTRL_Item;
 
@@ -163,35 +164,78 @@ enum
 
 typedef enum
 {
-    SYSCTRL_TMR_CLK_OSC_DIV_4,      // use RF OSC clock div 4
-    SYSCTRL_TMR_CLK_32k             // use 32k clock
-} SYSCTRL_TimerClkMode;
-
-/**
- * \brief Select timer clock mode
- * \param port          the timer
- * \param mode          clock mode
- */
-void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_TimerClkMode mode);
-
-typedef enum
-{
     SYSCTRL_CLK_OSC,                            // use RF OSC clock
+    SYSCTRL_CLK_32k = SYSCTRL_CLK_OSC,          // use 32k clock
     SYSCTRL_CLK_HCLK,                           // use HCLK (same as MCU)
     SYSCTRL_CLK_ADC_DIV = SYSCTRL_CLK_HCLK,     // use clock from ADC divider
+
     SYSCTRL_CLK_PLL_DIV_1 = SYSCTRL_CLK_HCLK,   // use (PLL clock div 1)
                                                 // SYSCTRL_TMR_CLK_PLL_DIV_1 + 1: use (PLL clock div 2)
                                                 // ..
                                                 // SYSCTRL_TMR_CLK_PLL_DIV_1 + 14: use (PLL clock div 15)
+
+    SYSCTRL_CLK_OSC_DIV_1 = SYSCTRL_CLK_HCLK,   // use RF OSC clock div 1
+                                                // SYSCTRL_CLK_OSC_DIV_1 + 1: use (RF OSC clock div 2)
+                                                // ..
 } SYSCTRL_ClkMode;
+
+#define SYSCTRL_TMR_CLK_OSC_DIV_4       (SYSCTRL_CLK_OSC_DIV_1 + 3)
+
+/**
+ * \brief Select clock mode of TIMER
+ *
+ * All timers share the same clock divider, which means that if timer K is
+ * set to use (SYSCTRL_CLK_OSC_DIV_1 + X), all previously configures timers that
+ * uses (SYSCTRL_CLK_OSC_DIV_1 + ...) are overwritten by (SYSCTRL_CLK_OSC_DIV_1 + X).
+ *
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_OSC_DIV_1` + N, where N = 0..14;
+ *
+ * \param port          the timer
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode);
+
+/**
+ * \brief Select clock mode of PWM
+ *
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_OSC_DIV_1` + N, where N = 0..14;
+ *
+ * \param port          the timer
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode);
+
+/**
+ * \brief Select clock mode of KeyScan
+ *
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_OSC_DIV_1` + N, where N = 0..14;
+ *
+ * \param port          the timer
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
+
+/**
+ * \brief Select clock mode of PDM
+ *
+ * `mode` should be `SYSCTRL_CLK_OSC_DIV_1` + N, where N = 0..62;
+ *
+ * \param port          the timer
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode);
 
 /**
  * \brief Select SPI clock mode
  * \param port          the port
  * \param mode          clock mode
  *
- * Note: For SPI0: mode should be SYSCTRL_CLK_OSC, or SYSCTRL_CLK_PLL_DIV_1 + N, where N = 0..14;
- *       For SPI1: mode should be SYSCTRL_CLK_OSC or SYSCTRL_CLK_HCLK.
+ * Note: For SPI0: mode should be `SYSCTRL_CLK_OSC`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ *       For SPI1: mode should be `SYSCTRL_CLK_OSC` or `SYSCTRL_CLK_HCLK`.
  */
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
 
@@ -288,10 +332,21 @@ uint32_t SYSCTRL_GetAdcClkDiv(void);
 
 /**
  * \brief Select Clk mode for a type of items
- * \param item          item of type A (PDM/PWM/IR/ADC/EFUSE)
+ * \param item          item of type A (IR/ADC/EFUSE)
  * \param mode          clock mode ({SYSCTRL_CLK_OSC, SYSCTRL_CLK_ADC_DIV})
  */
 void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode);
+
+/**
+ * \brief Select clock mode of USB
+ *
+ * `mode` should be `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ *
+ * \param port          the timer
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 
 typedef enum
 {
