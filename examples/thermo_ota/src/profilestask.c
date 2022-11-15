@@ -10,14 +10,14 @@
 #include "ota_service.h"
 
 #include "att_db_util.h"
-#include "board.h"
 #include "bme280.h"
 #include "iic.h"
 
 #include "FreeRTOS.h"
 #include "timers.h"
 
-
+#include "peripheral_sysctrl.h"
+#include "board.h"
 
 extern void ota_connected(void);
 
@@ -32,7 +32,7 @@ static int temperture_indicate_enable=0;
 #ifndef SIMULATION
 
 #define I2C_PORT        I2C_PORT_0
-
+#define BME280_ADDR     BME280_I2C_ADDR_PRIM
 
 BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
@@ -54,21 +54,46 @@ void user_delay_us(uint32_t period, void *intf_ptr)
     vTaskDelay(pdMS_TO_TICKS(ms));
 }
 
+uint8_t regrd[3] = {0};
+
+// uint8_t dev_addr = BME280_ADDR;
+// struct bme280_dev bme280_data =
+// {
+//     .intf_ptr = &dev_addr,
+//     .intf = BME280_I2C_INTF,
+//     .read = user_i2c_read,
+//     .write = user_i2c_write,
+//     .delay_us = user_delay_us,
+//     /* Recommended mode of operation: Indoor navigation */
+//     .settings =
+//     {
+//         .osr_h = BME280_OVERSAMPLING_1X,
+//         .osr_p = BME280_OVERSAMPLING_16X,
+//         .osr_t = BME280_OVERSAMPLING_2X,
+//         .filter = BME280_FILTER_COEFF_16,
+//         .standby_time = BME280_STANDBY_TIME_62_5_MS,
+//     },
+// };
+
+// struct bme280_data comp_data;
+
 #endif
 
 static void read_temperature(void)
 {
+    double temp, humi, pres;
 #ifndef SIMULATION
-
+    if ((temp = get_temperature()) < 0)
+        return;
 #ifdef PRINT_ALL
-    platform_printf("T: %04d * 0.01 Deg\n", get_temperature());
-    platform_printf("H: %04d / 1024 %%\n", get_humidity());
-    platform_printf("P: %08d Pascal \n", get_pressure());
+    // platform_printf("T: %04d * 0.01 Deg\n", comp_data.temperature);
+    // platform_printf("H: %04d / 1024 %%\n", comp_data.humidity);
+    // platform_printf("P: %08d Pascal \n", comp_data.pressure);
 #endif
-    int32_t bme280_temperature = get_temperature();
-    temperature_value[3]=(uint8_t)(bme280_temperature>>16);
-    temperature_value[2]=(uint8_t)(bme280_temperature>>8);
-    temperature_value[1]=(uint8_t)bme280_temperature;
+    int32_t sensor_temperature = get_temperature();
+    temperature_value[3]=(uint8_t)(sensor_temperature>>16);
+    temperature_value[2]=(uint8_t)(sensor_temperature>>8);
+    temperature_value[1]=(uint8_t)sensor_temperature;
     
 #else
     temperature_value[2] = 10;
@@ -123,7 +148,7 @@ const uint8_t adv_data[]={
     0x02,0x01,0x06,
 
     // Name
-    0x10, 0x09, 'I', 'N', 'G', ' ', 'T', 'h', 'e', 'r', 'm', 'o', 'm', 'e', 't', 'e', 'r',
+    0x10, 0x09, 'I','N','G', ' ', 'T', 'h', 'e', 'r', 'm', 'o', 'm', 'e', 't', 'e', 'r',
 
     //slave connection Interval range
     0x05, 0x12, 0x12,0x00,0x20,0x00,
@@ -188,7 +213,7 @@ uint8_t *init_service(void);
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
-    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3e};    // TODO: random address generation
+    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x37};    // TODO: random address generation
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -339,7 +364,9 @@ uint32_t setup_profile(void *data, void *user_data)
 #endif
 
     i2c_init(I2C_PORT);
-    setup_env_sensor(user_i2c_read, user_i2c_write, user_delay_us);
+    
+    //初始化传感器
+    setup_env_sensor();
 
 #endif
 

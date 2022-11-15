@@ -8,7 +8,13 @@
 #include "peripheral_sysctrl.h"
 #include "peripheral_pinctrl.h"
 
-/* RGB_LED灯驱动整理*/
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
+
+#elif (BOARD_ID == BOARD_ING91881B_02_02_05)
+
+#endif
+
+//-------------------------------------------------RGB_LED驱动整理-------------------------------------------------
 #ifndef PWM_LED
 
 #include "rgb_led.c"
@@ -93,41 +99,37 @@ void setup_rgb_led()
 #endif
 
 
-/* themometor 驱动整理 */
-#include "bme280.h"
+//-------------------------------------------------温度计驱动整理-------------------------------------------------
 
-#define BME2800_SENSOR_CHIP     0
-#define MTS001B_SENSOR_CHIP     1
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
+    #include "bme280.h"
 
-#ifndef TEMP_SENSOR_CHIP    
-#define TEMP_SENSOR_CHIP    BME2800_SENSOR_CHIP
+    uint8_t dev_addr = BME280_ADDR;
+    struct bme280_dev bme280_data =
+    {
+        .intf_ptr = &dev_addr,
+        .intf = BME280_I2C_INTF,
+        .read = user_i2c_read,
+        .write = user_i2c_write,
+        .delay_us = user_delay_us,
+        /* Recommended mode of operation: Indoor navigation */
+        .settings =
+        {
+            .osr_h = BME280_OVERSAMPLING_1X,
+            .osr_p = BME280_OVERSAMPLING_16X,
+            .osr_t = BME280_OVERSAMPLING_2X,
+            .filter = BME280_FILTER_COEFF_16,
+            .standby_time = BME280_STANDBY_TIME_62_5_MS,
+        },
+    };
+    struct bme280_data comp_data;
+#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
+#error unknown or unsupported chip family.
 #endif
 
-uint8_t dev_addr = BME280_ADDR;
-struct bme280_dev bme280_data =
-{
-    .intf_ptr = &dev_addr,
-    .intf = BME280_I2C_INTF,
-    /* Recommended mode of operation: Indoor navigation */
-    .settings =
-    {
-        .osr_h = BME280_OVERSAMPLING_1X,
-        .osr_p = BME280_OVERSAMPLING_16X,
-        .osr_t = BME280_OVERSAMPLING_2X,
-        .filter = BME280_FILTER_COEFF_16,
-        .standby_time = BME280_STANDBY_TIME_62_5_MS,
-    },
-};
-
-struct bme280_data comp_data;
-
-void setup_env_sensor(BME280_INTF_RET_TYPE *read, BME280_INTF_RET_TYPE *write, void *delay_us)
+void setup_env_sensor()
 {
 #if(BOARD_ID == BOARD_ING91881B_02_02_05)
-    bme280_data.read = read;
-    bme280_data.write = write;
-    bme280_data.delay_us = delay_us;
-
     printf("sensor init...");
     if (bme280_init(&bme280_data) != BME280_OK)
         printf("failed\n");
@@ -141,8 +143,6 @@ void setup_env_sensor(BME280_INTF_RET_TYPE *read, BME280_INTF_RET_TYPE *write, v
 #endif
 }
 
-#define I2C_PORT        I2C_PORT_0
-
 double get_temperature()
 {
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
@@ -151,14 +151,26 @@ double get_temperature()
     return comp_data.temperature;
 
 #elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+    
+#include "peripheral_sysctrl.h"
+
+#define I2C_PORT        I2C_PORT_0
+#define MTS01B_OK           0
+#define MTS01B_E_COMM_FAIL  1
+
     uint8_t cmd[2]={(uint8_t)(CONVERT_T >>8), (uint8_t)(CONVERT_T & 0xFF)};
     uint8_t reg_data[3] = {0}; 
     //uint8_t sta = MTS01B_E_COMM_FAIL;
     //读取温度数据
-    i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, sizeof(reg_data));
-
-    //计算温度数据  T = 40 + 数据位高位值
-    int T =  40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1))
+    uint8_t sta = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, sizeof(reg_data));
+    if(sta == MTS01B_E_COMM_FAIL){
+        SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
+        SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+        i2c_init(I2C_PORT);
+        platform_printf("i2c rst \n");
+    }else {
+        return (double)(40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1)));
+    }
 #endif
 }
 
@@ -191,7 +203,7 @@ double get_pressure()
 }
 
 
-/* accelerometer 驱动整理 */
+//-------------------------------------------------加速度计驱动整理-------------------------------------------------
 #ifdef ACCELEROMETER
 #include "bma2x2.h"
 
@@ -220,7 +232,7 @@ void get_acc_xyz(float *x, float *y, float *z)
 #endif
 
 
-/* buzzer 相关驱动整理 */
+//-------------------------------------------------蜂鸣器驱动整理-------------------------------------------------
 #ifndef PIN_BUZZER
 #define PIN_BUZZER 8
 #endif
