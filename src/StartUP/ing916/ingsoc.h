@@ -275,15 +275,25 @@ typedef struct{
     __IO uint32_t RstuCfg[2];          // 0x20
     __IO uint32_t SysCtrl;             // 0x28
     __IO uint32_t CguCfg8;             // 0x2c
-    __IO uint32_t DmaCtrl[4];          // 0x30
+    __IO uint32_t DmaCtrl[2];          // 0x30
+    __IO uint32_t Reserved3[2];
     __IO uint32_t PllCtrl;             // 0x40
-    __IO uint32_t Reserved1[3];
+    __IO uint32_t AnaCtrl;             // 0x44
+    __IO uint32_t Reserved1[2];
     __IO uint32_t PdmI2sCtrl;          // 0x50
-    __IO uint32_t Reserved2[3];
+    __IO uint32_t QdecCfg;             // 0x54
+    __IO uint32_t CguCfg9;             // 0x58
+    __IO uint32_t Reserved2[1];
     __IO uint32_t SysIoStatus;         // 0x60
     __IO uint32_t SysIoWkSource;       // 0x64
     __IO uint32_t SysIoInStatus;       // 0x68
+    __IO uint32_t Reserved4[5];
+    __IO uint32_t USBCfg;              // 0x80
 } SYSCTRL_TypeDef;
+
+typedef struct{
+    __IO uint32_t Ctrl[4][2];
+} SYSCTRL_PTE_TypeDef;
 
 typedef struct
 {
@@ -384,6 +394,7 @@ typedef struct
 #define APB_PINC_BASE      APB_IOMUX_BASE
 
 #define APB_SYSCTRL        ((SYSCTRL_TypeDef *)APB_SYSCTRL_BASE)
+#define APB_SYSCTRL_PTE    ((SYSCTRL_PTE_TypeDef *)(APB_SYSCTRL_BASE + 0x1a0))
 #define APB_WDT            ((WDT_TypeDef *)APB_WDT_BASE)
 #define APB_TMR0           ((TMR_TypeDef *)APB_TMR0_BASE)
 #define APB_TMR1           ((TMR_TypeDef *)APB_TMR1_BASE)
