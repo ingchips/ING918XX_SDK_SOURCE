@@ -408,6 +408,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\audio_input.c</FilePath>
             </File>
+            <File>
+              <FileName>audio_service_sbc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\audio_service_sbc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

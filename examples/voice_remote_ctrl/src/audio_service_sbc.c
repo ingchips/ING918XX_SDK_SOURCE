@@ -824,19 +824,19 @@ static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len)
 		crc_pos += frame->subbands;
 	}
 
-	printf("scale_factor[][]\r\n");
+	platform_printf("scale_factor[][]\r\n");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
 			data[produced >> 3] <<= 4;
 			crc_header[crc_pos >> 3] <<= 4;
 			data[produced >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
-			printf("%d ", frame->scale_factor[ch][sb]);
+			platform_printf("%d ", frame->scale_factor[ch][sb]);
 			crc_header[crc_pos >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
 
 			produced += 4;
 			crc_pos += 4;
 		}
-		printf("\r\n");
+		platform_printf("\r\n");
 	}
 
 	/* align the last crc byte */
@@ -846,14 +846,14 @@ static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len)
 	data[3] = sbc_crc8(crc_header, crc_pos);
 
 	sbc_calculate_bits(frame, bits);
-	printf("bits\r\n");
+	platform_printf("bits\r\n");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
-			printf("%d ", bits[ch][sb]);
+			platform_printf("%d ", bits[ch][sb]);
 		}
-		printf("\r\n");
+		platform_printf("\r\n");
 	}
-	printf("\r\n");
+	platform_printf("\r\n");
 
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++)
@@ -861,14 +861,14 @@ static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len)
 	//	printf("le %d ",levels);
 	}
 
-	printf("levels\r\n");
+	platform_printf("levels\r\n");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
-			printf("%d ", levels[ch][sb]);
+			platform_printf("%d ", levels[ch][sb]);
 		}
-		printf("\r\n");
+		platform_printf("\r\n");
 	}
-	printf("\r\n");
+	platform_printf("\r\n");
 
 	for (blk = 0; blk < frame->blocks; blk++) {
 		// printf(" blk= %d \n",blk);
@@ -1111,18 +1111,18 @@ SBC_EXPORT int sbc_encode(sbc_t *sbc, void *input, int input_len,
 		for (ch = 0; ch < sbc->channels; ch++) {
 			int16_t s;
 
-			//printf("[%x][%x] ", ptr[0], ptr[1]);
+			platform_printf("[%x][%x] ", ptr[0], ptr[1]);
 			//sbc->swap参数决定是大端序(BE)还是小端序(LE)
 			if (sbc->endian == SBC_LE)
 				s = (ptr[0] & 0xff) | (ptr[1] & 0xff) << 8 ;
 			else
 				s = (ptr[0] & 0xff) << 8 | (ptr[1] & 0xff);
 			ptr += 2;
-			//printf("%x  ",s);
+			platform_printf("%x  ",s);
 			//按字节交替分通道
 			priv->frame.pcm_sample[ch][i] = s;
 		}
-		//printf("\r\n");
+		platform_printf("\r\n");
 	}
 
 	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
