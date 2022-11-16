@@ -91,11 +91,13 @@ typedef enum
 
 typedef struct
 {
-    __IO uint32_t OUT_CTRL[16];     // 0x00
-    __IO uint32_t IN_CTRL[16];      // 0x40
+    __IO uint32_t OUT_CTRL[7];      // 0x00
+         uint32_t Reserved0[9];
+    __IO uint32_t IN_CTRL[11];      // 0x40
+         uint32_t Reserved1[5];
     __IO uint32_t PE_CTRL[2];       // 0x80
     __IO uint32_t PS_CTRL[2];       // 0x88
-    __IO uint32_t Reserved0[28];
+    __IO uint32_t Reserved2[28];
     __IO uint32_t IS_CTRL[2];       // 0x100
     __IO uint32_t DR_CTRL[3];       // 0x108
     __IO uint32_t SPI_CFG0;         // 0x114
