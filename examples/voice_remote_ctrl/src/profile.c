@@ -82,15 +82,25 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         switch (buffer[0])
         {
         case CMD_DIGITAL_GAIN:
+            platform_printf("CMD_DIGITAL_GAIN事件::");
             mic_dig_gain = (int8_t)buffer[1];
+            platform_printf("mic_dia_gain=%d ",mic_dig_gain);
+            platform_printf("...OK\r\n\n");
             break;
         case CMD_MIC_OPEN:
             next_block = 0;
             if (audio_notify_enable)
-                audio_start();
+                platform_printf("CMD_MIC_OPEN事件::");
+                platform_printf("函数地址：[%x]\r\n",audio_t.audio_dev_start);
+                audio_t.audio_dev_start();
+				//audio_start();
+                platform_printf("...OK\r\n\n");
             break;
         case CMD_MIC_CLOSE:
-            audio_stop();
+            platform_printf("CMD_MIC_CLOSE事件::");
+            audio_t.audio_dev_stop();
+            platform_printf("...OK\r\n\n");  
+            //audio_stop();
             break;
         }
         
@@ -105,7 +115,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         else
         {
             audio_notify_enable = 0;
-            audio_stop();
+            audio_t.audio_dev_stop();
         }
         return 0;
 
@@ -139,7 +149,7 @@ static void send_audio_data()
 }
 
 static void setup_adv(void);
-const bd_addr_t rand_addr = {0xC3, 0x8E,0x05,0x3E,0x7E,0xA2};
+const bd_addr_t rand_addr = {0xC3, 0x8E,0x05,0x3E,0x7E,0xA8};
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
@@ -211,7 +221,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         audio_notify_enable = 0;
-        audio_stop();
+        audio_t.audio_dev_stop();
         handle_send = INVALID_HANDLE;
         setup_adv();
         break;

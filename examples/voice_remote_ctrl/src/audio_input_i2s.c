@@ -55,10 +55,8 @@ static uint32_t DMA_cb_isr(void *user_data)
 
 	uint32_t *rr = (PingPang.status == PING_WRITE) ? (PingPang.pang) : (PingPang.ping);
     int i = sample_counter;
-    platform_printf("transWordsNum = %d\r\n", transWordsNum);
     while (i < transWordsNum) {
         audio_rx_sample((pcm_sample_t)(rr[i] >> 8));
-        platform_printf("rr[%d] = %.2f\r\n", i, rr[i] >> 8);
         i += 2;
     }
     
