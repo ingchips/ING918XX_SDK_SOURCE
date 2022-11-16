@@ -356,7 +356,7 @@ typedef enum
     SYSCTRL_DMA_SPI1_TX  = 3,
     SYSCTRL_DMA_I2C0     = 4,
     SYSCTRL_DMA_QDEC0    = 5,
-    SYSCTRL_DMA_QDEC1    = 6,
+    SYSCTRL_DMA_PWM1     = 6,
     SYSCTRL_DMA_I2S_RX   = 7,
     SYSCTRL_DMA_PDM      = 8,
     SYSCTRL_DMA_ADC      = 9,
@@ -366,11 +366,13 @@ typedef enum
     SYSCTRL_DMA_SPI0_RX  = 0x12,
     SYSCTRL_DMA_SPI1_RX  = 0x13,
     SYSCTRL_DMA_I2C1     = 0x14,
-    SYSCTRL_DMA_QDEC2    = 0x15,
+    SYSCTRL_DMA_QDEC1    = 0x15,
     SYSCTRL_DMA_KeyScan  = 0x16,
     SYSCTRL_DMA_I2S_TX   = 0x17,
-    SYSCTRL_DMA_PWM      = 0x19,
-    SYSCTRL_DMA_LAST     = SYSCTRL_DMA_PWM,
+    SYSCTRL_DMA_PWM0     = 0x18,
+    SYSCTRL_DMA_PWM2     = 0x19,
+    SYSCTRL_DMA_QDEC2    = 0x1A,
+    SYSCTRL_DMA_LAST     = SYSCTRL_DMA_QDEC2,
 } SYSCTRL_DMA;
 
 /**
