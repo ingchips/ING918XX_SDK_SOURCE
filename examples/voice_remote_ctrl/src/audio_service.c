@@ -69,7 +69,7 @@ void enc_output_cb(uint8_t output, void *param)
     byte_index++;
     if (byte_index >= VOICE_BUF_BLOCK_SIZE)
     {
-        platform_printf("byte_index = %d  send_trigger()\r\n", byte_index);
+        platform_printf("block = %d  send_trigger()\r\n", block_index);
         block_index++;
         audio_trigger_send();
         if (block_index >= VOICE_BUF_BLOCK_NUM)
@@ -224,6 +224,8 @@ static void audio_sbc_task(void *pdata)
         //若此次无数据，则进入下一次循环
         if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
             continue;
+        if (xQueueIsQueueFullFromISR(xSampleQueue) != pdFALSE)
+            platform_printf("Full                  \r\n");
         
         inp = (sbc_sample_t *)(sample_buf[index]);    //获取单行数首地址        
         
@@ -358,9 +360,9 @@ void audio_init(void)
                                  &xStaticSampleQueue); 
     xTaskCreate(audio_enc_task,
                "b",
-               150,
+               1024,
                NULL,
-               (configMAX_PRIORITIES - 1),
+               (configMAX_PRIORITIES - 14),
                NULL);
     
     audio_input_setup();
