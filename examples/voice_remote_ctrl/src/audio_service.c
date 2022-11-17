@@ -14,7 +14,7 @@
 //音频算法选择
 #define AUDIO_CODEC_ALGORITHM_ADPCM    0
 #define AUDIO_CODEC_ALGORITHM_SBC   1
-#define AUDIO_CODEC_ALGORITHM   AUDIO_CODEC_ALGORITHM_SBC
+#define AUDIO_CODEC_ALGORITHM   AUDIO_CODEC_ALGORITHM_ADPCM
 
 extern void audio_input_setup(void);
 extern void audio_input_start(void);
