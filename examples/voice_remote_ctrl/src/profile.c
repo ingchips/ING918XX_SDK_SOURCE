@@ -134,12 +134,14 @@ void audio_trigger_send(void)
 
 static void send_audio_data()
 {
+    platform_printf("send_audio_data()\r\n");
     if (!audio_notify_enable)
         return;
 
     uint16_t curr = audio_get_curr_block();
     if (next_block != curr)
     {
+        platform_printf("att_server_notify()\r\n");       
         att_server_notify(handle_send, HANDLE_VOICE_OUTPUT, audio_get_block_buff(next_block), VOICE_BUF_BLOCK_SIZE);
         next_block++;
         if (next_block >= VOICE_BUF_BLOCK_NUM) next_block = 0;

@@ -652,46 +652,6 @@ static SBC_ALWAYS_INLINE int sbc_pack_frame_internal(uint8_t *data,
 //SBC编码数据组帧
 static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len)
 {
-/* 	int frame_subbands = 4;
-
-	data[0] = SBC_SYNCWORD;
-
-	data[1] = (frame->frequency & 0x03) << 6;
-	data[1] |= (frame->block_mode & 0x03) << 4;
-	data[1] |= (frame->mode & 0x03) << 2;
-	data[1] |= (frame->allocation & 0x01) << 1;
-
-	data[2] = frame->bitpool;
-
-	if (frame->subbands != 4)
-		frame_subbands = 8;
-
-	if ((frame->mode == MONO || frame->mode == DUAL_CHANNEL) &&
-			frame->bitpool > frame_subbands << 4)
-		return -5;
-
-	if ((frame->mode == STEREO || frame->mode == JOINT_STEREO) &&
-			frame->bitpool > frame_subbands << 5)
-		return -5;
-
-	if (frame->subbands == 4) {
-		if (frame->channels == 1)
-			return sbc_pack_frame_internal(
-				data, frame, len, 4, 1, joint);
-		else
-			return sbc_pack_frame_internal(
-				data, frame, len, 4, 2, joint);
-	} else {
-		data[1] |= 0x01;
-		if (frame->channels == 1)
-			return sbc_pack_frame_internal(
-				data, frame, len, 8, 1, joint);
-		else
-			return sbc_pack_frame_internal(
-				data, frame, len, 8, 2, joint);
-	} */
-
-
 	int produced;
 	/* Will copy the header parts for CRC-8 calculation here */
 	uint8_t crc_header[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -745,164 +705,164 @@ static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len)
 	crc_header[1] = data[2];
 	crc_pos = 16;
 
-	//scale_factor计算结果相对于官方编码多了7
-	for (ch = 0; ch < frame->channels; ch++) {
-		for (sb = 0; sb < frame->subbands; sb++) {
-			frame->scale_factor[ch][sb] = 0;
-			scalefactor[ch][sb] = 2;
-			for (blk = 0; blk < frame->blocks; blk++) {
-				while (scalefactor[ch][sb] < fabs(frame->sb_sample_f[blk][ch][sb])) {
-					frame->scale_factor[ch][sb]++;
-					scalefactor[ch][sb] *= 2;
-				}
-			}
-			//+
-			//frame->scale_factor[ch][sb] -= 7;
-		}
-	}
+	// //scale_factor计算结果相对于官方编码多了7
+	// for (ch = 0; ch < frame->channels; ch++) {
+	// 	for (sb = 0; sb < frame->subbands; sb++) {
+	// 		frame->scale_factor[ch][sb] = 0;
+	// 		scalefactor[ch][sb] = 2;
+	// 		for (blk = 0; blk < frame->blocks; blk++) {
+	// 			while (scalefactor[ch][sb] < fabs(frame->sb_sample_f[blk][ch][sb])) {
+	// 				frame->scale_factor[ch][sb]++;
+	// 				scalefactor[ch][sb] *= 2;
+	// 			}
+	// 		}
+	// 		//+
+	// 		//frame->scale_factor[ch][sb] -= 7;
+	// 	}
+	// }
 
-	if (frame->mode == SBC_MODE_JOINT_STEREO) {
-		/* like frame->sb_sample but joint stereo */
-		int32_t sb_sample_j[16][2];
-		/* scalefactor and scale_factor in joint case */
-		uint32_t scalefactor_j[2];
-		uint8_t scale_factor_j[2];
+	// if (frame->mode == SBC_MODE_JOINT_STEREO) {
+	// 	/* like frame->sb_sample but joint stereo */
+	// 	int32_t sb_sample_j[16][2];
+	// 	/* scalefactor and scale_factor in joint case */
+	// 	uint32_t scalefactor_j[2];
+	// 	uint8_t scale_factor_j[2];
 
-		frame->joint = 0;
+	// 	frame->joint = 0;
 
-		for (sb = 0; sb < frame->subbands - 1; sb++) {
-			scale_factor_j[0] = 0;
-			scalefactor_j[0] = 2;
-			scale_factor_j[1] = 0;
-			scalefactor_j[1] = 2;
+	// 	for (sb = 0; sb < frame->subbands - 1; sb++) {
+	// 		scale_factor_j[0] = 0;
+	// 		scalefactor_j[0] = 2;
+	// 		scale_factor_j[1] = 0;
+	// 		scalefactor_j[1] = 2;
 
-			for (blk = 0; blk < frame->blocks; blk++) {
-				/* Calculate joint stereo signal */
-				sb_sample_j[blk][0] =
-					(frame->sb_sample_f[blk][0][sb] +
-						frame->sb_sample_f[blk][1][sb]) >> 1;
-				sb_sample_j[blk][1] =
-					(frame->sb_sample_f[blk][0][sb] -
-						frame->sb_sample_f[blk][1][sb]) >> 1;
+	// 		for (blk = 0; blk < frame->blocks; blk++) {
+	// 			/* Calculate joint stereo signal */
+	// 			sb_sample_j[blk][0] =
+	// 				(frame->sb_sample_f[blk][0][sb] +
+	// 					frame->sb_sample_f[blk][1][sb]) >> 1;
+	// 			sb_sample_j[blk][1] =
+	// 				(frame->sb_sample_f[blk][0][sb] -
+	// 					frame->sb_sample_f[blk][1][sb]) >> 1;
 
-				/* calculate scale_factor_j and scalefactor_j for joint case */
-				while (scalefactor_j[0] < fabs(sb_sample_j[blk][0])) {
-					scale_factor_j[0]++;
-					scalefactor_j[0] *= 2;
-				}
-				while (scalefactor_j[1] < fabs(sb_sample_j[blk][1])) {
-					scale_factor_j[1]++;
-					scalefactor_j[1] *= 2;
-				}
-			}
+	// 			/* calculate scale_factor_j and scalefactor_j for joint case */
+	// 			while (scalefactor_j[0] < fabs(sb_sample_j[blk][0])) {
+	// 				scale_factor_j[0]++;
+	// 				scalefactor_j[0] *= 2;
+	// 			}
+	// 			while (scalefactor_j[1] < fabs(sb_sample_j[blk][1])) {
+	// 				scale_factor_j[1]++;
+	// 				scalefactor_j[1] *= 2;
+	// 			}
+	// 		}
 
-			/* decide whether to join this subband */
-			if ((scalefactor[0][sb] + scalefactor[1][sb]) >
-					(scalefactor_j[0] + scalefactor_j[1]) ) {
-				/* use joint stereo for this subband */
-				frame->joint |= 1 << sb;
-				frame->scale_factor[0][sb] = scale_factor_j[0];
-				frame->scale_factor[1][sb] = scale_factor_j[1];
-				scalefactor[0][sb] = scalefactor_j[0];
-				scalefactor[1][sb] = scalefactor_j[1];
-				for (blk = 0; blk < frame->blocks; blk++) {
-					frame->sb_sample_f[blk][0][sb] =
-							sb_sample_j[blk][0];
-					frame->sb_sample_f[blk][1][sb] =
-							sb_sample_j[blk][1];
-				}
-			}
-		}
+	// 		/* decide whether to join this subband */
+	// 		if ((scalefactor[0][sb] + scalefactor[1][sb]) >
+	// 				(scalefactor_j[0] + scalefactor_j[1]) ) {
+	// 			/* use joint stereo for this subband */
+	// 			frame->joint |= 1 << sb;
+	// 			frame->scale_factor[0][sb] = scale_factor_j[0];
+	// 			frame->scale_factor[1][sb] = scale_factor_j[1];
+	// 			scalefactor[0][sb] = scalefactor_j[0];
+	// 			scalefactor[1][sb] = scalefactor_j[1];
+	// 			for (blk = 0; blk < frame->blocks; blk++) {
+	// 				frame->sb_sample_f[blk][0][sb] =
+	// 						sb_sample_j[blk][0];
+	// 				frame->sb_sample_f[blk][1][sb] =
+	// 						sb_sample_j[blk][1];
+	// 			}
+	// 		}
+	// 	}
 
-		data[4] = 0;
-		for (sb = 0; sb < frame->subbands - 1; sb++)
-			data[4] |= ((frame->joint >> sb) & 0x01) << (frame->subbands - 1 - sb);
+	// 	data[4] = 0;
+	// 	for (sb = 0; sb < frame->subbands - 1; sb++)
+	// 		data[4] |= ((frame->joint >> sb) & 0x01) << (frame->subbands - 1 - sb);
 
-		crc_header[crc_pos >> 3] = data[4];
+	// 	crc_header[crc_pos >> 3] = data[4];
 
-		produced += frame->subbands;
-		crc_pos += frame->subbands;
-	}
+	// 	produced += frame->subbands;
+	// 	crc_pos += frame->subbands;
+	// }
 
-	platform_printf("scale_factor[][]\r\n");
-	for (ch = 0; ch < frame->channels; ch++) {
-		for (sb = 0; sb < frame->subbands; sb++) {
-			data[produced >> 3] <<= 4;
-			crc_header[crc_pos >> 3] <<= 4;
-			data[produced >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
-			platform_printf("%d ", frame->scale_factor[ch][sb]);
-			crc_header[crc_pos >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
+	// platform_printf("scale_factor[][]\r\n");
+	// for (ch = 0; ch < frame->channels; ch++) {
+	// 	for (sb = 0; sb < frame->subbands; sb++) {
+	// 		data[produced >> 3] <<= 4;
+	// 		crc_header[crc_pos >> 3] <<= 4;
+	// 		data[produced >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
+	// 		platform_printf("%d ", frame->scale_factor[ch][sb]);
+	// 		crc_header[crc_pos >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
 
-			produced += 4;
-			crc_pos += 4;
-		}
-		platform_printf("\r\n");
-	}
+	// 		produced += 4;
+	// 		crc_pos += 4;
+	// 	}
+	// 	platform_printf("\r\n");
+	// }
 
-	/* align the last crc byte */
-	if (crc_pos % 8)
-		crc_header[crc_pos >> 3] <<= 8 - (crc_pos % 8);
+	// /* align the last crc byte */
+	// if (crc_pos % 8)
+	// 	crc_header[crc_pos >> 3] <<= 8 - (crc_pos % 8);
 
-	data[3] = sbc_crc8(crc_header, crc_pos);
+	// data[3] = sbc_crc8(crc_header, crc_pos);
 
-	sbc_calculate_bits(frame, bits);
-	platform_printf("bits\r\n");
-	for (ch = 0; ch < frame->channels; ch++) {
-		for (sb = 0; sb < frame->subbands; sb++) {
-			platform_printf("%d ", bits[ch][sb]);
-		}
-		platform_printf("\r\n");
-	}
-	platform_printf("\r\n");
+	// sbc_calculate_bits(frame, bits);
+	// platform_printf("bits\r\n");
+	// for (ch = 0; ch < frame->channels; ch++) {
+	// 	for (sb = 0; sb < frame->subbands; sb++) {
+	// 		platform_printf("%d ", bits[ch][sb]);
+	// 	}
+	// 	platform_printf("\r\n");
+	// }
+	// platform_printf("\r\n");
 
-	for (ch = 0; ch < frame->channels; ch++) {
-		for (sb = 0; sb < frame->subbands; sb++)
-			levels[ch][sb] = (1 << bits[ch][sb]) - 1;
-	//	printf("le %d ",levels);
-	}
+	// for (ch = 0; ch < frame->channels; ch++) {
+	// 	for (sb = 0; sb < frame->subbands; sb++)
+	// 		levels[ch][sb] = (1 << bits[ch][sb]) - 1;
+	// //	printf("le %d ",levels);
+	// }
 
-	platform_printf("levels\r\n");
-	for (ch = 0; ch < frame->channels; ch++) {
-		for (sb = 0; sb < frame->subbands; sb++) {
-			platform_printf("%d ", levels[ch][sb]);
-		}
-		platform_printf("\r\n");
-	}
-	platform_printf("\r\n");
+	// platform_printf("levels\r\n");
+	// for (ch = 0; ch < frame->channels; ch++) {
+	// 	for (sb = 0; sb < frame->subbands; sb++) {
+	// 		platform_printf("%d ", levels[ch][sb]);
+	// 	}
+	// 	platform_printf("\r\n");
+	// }
+	// platform_printf("\r\n");
 
-	for (blk = 0; blk < frame->blocks; blk++) {
-		// printf(" blk= %d \n",blk);
-		for (ch = 0; ch < frame->channels; ch++) {
-         // printf(" ch=%d ",ch);
-			for (sb = 0; sb < frame->subbands; sb++) {
-			//	printf("sb=%d",sb);
-				if (levels[ch][sb] > 0) {
-				audio_sample =
-					(uint16_t) ((((frame->sb_sample_f[blk][ch][sb]*levels[ch][sb]) >>
-									(frame->scale_factor[ch][sb] + 1)) +
-								levels[ch][sb]) >> 1);
-					  //audio_sample = 
-						//  (uint16_t) ((frame->sb_sample_f[blk][ch][sb]>>(frame->scale_factor[ch][sb] + 1)) *(levels[ch][sb]>>1) +levels[ch][sb]/2);
-				//	printf(" a_s %d ", audio_sample);
-					audio_sample <<= 16 - bits[ch][sb];
-					for (bit = 0; bit < bits[ch][sb]; bit++) {
-						data[produced >> 3] <<= 1;
-						if (audio_sample & 0x8000)
-							data[produced >> 3] |= 0x1;
-						audio_sample <<= 1;
-						produced++;
-					}
-				}
-			}
-		}
-	}
+	// for (blk = 0; blk < frame->blocks; blk++) {
+	// 	// printf(" blk= %d \n",blk);
+	// 	for (ch = 0; ch < frame->channels; ch++) {
+    //      // printf(" ch=%d ",ch);
+	// 		for (sb = 0; sb < frame->subbands; sb++) {
+	// 		//	printf("sb=%d",sb);
+	// 			if (levels[ch][sb] > 0) {
+	// 			audio_sample =
+	// 				(uint16_t) ((((frame->sb_sample_f[blk][ch][sb]*levels[ch][sb]) >>
+	// 								(frame->scale_factor[ch][sb] + 1)) +
+	// 							levels[ch][sb]) >> 1);
+	// 				  //audio_sample = 
+	// 					//  (uint16_t) ((frame->sb_sample_f[blk][ch][sb]>>(frame->scale_factor[ch][sb] + 1)) *(levels[ch][sb]>>1) +levels[ch][sb]/2);
+	// 			//	printf(" a_s %d ", audio_sample);
+	// 				audio_sample <<= 16 - bits[ch][sb];
+	// 				for (bit = 0; bit < bits[ch][sb]; bit++) {
+	// 					data[produced >> 3] <<= 1;
+	// 					if (audio_sample & 0x8000)
+	// 						data[produced >> 3] |= 0x1;
+	// 					audio_sample <<= 1;
+	// 					produced++;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	/* align the last byte */
-	if (produced % 8) {
-		data[produced >> 3] <<= 8 - (produced % 8);
-	}
+	// /* align the last byte */
+	// if (produced % 8) {
+	// 	data[produced >> 3] <<= 8 - (produced % 8);
+	// }
 
-	return (produced + 7) >> 3;
+	// return (produced + 7) >> 3;
 }
 
 
@@ -1111,32 +1071,39 @@ SBC_EXPORT int sbc_encode(sbc_t *sbc, void *input, int input_len,
 		for (ch = 0; ch < sbc->channels; ch++) {
 			int16_t s;
 
-			platform_printf("[%x][%x] ", ptr[0], ptr[1]);
+			//platform_printf("[%x][%x] ", ptr[0], ptr[1]);
 			//sbc->swap参数决定是大端序(BE)还是小端序(LE)
 			if (sbc->endian == SBC_LE)
 				s = (ptr[0] & 0xff) | (ptr[1] & 0xff) << 8 ;
 			else
 				s = (ptr[0] & 0xff) << 8 | (ptr[1] & 0xff);
 			ptr += 2;
-			platform_printf("%x  ",s);
+			//platform_printf("%x  ",s);
 			//按字节交替分通道
 			priv->frame.pcm_sample[ch][i] = s;
 		}
-		platform_printf("\r\n");
+		//platform_printf("\r\n");
 	}
 
 	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
+	//samples = 64;
 
 
 	//如果是sbc编码而非msbc
 	//priv->pack_frame指的是
 	//static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len,
 	//							int joint)
-	framelen = sbc_pack_frame(output,&priv->frame, output_len);
+	sbc_pack_frame(output,&priv->frame, output_len);
+	framelen = 24;
 
-	printf("codesize = %d length = %d\r\n", priv->frame.codesize, priv->frame.length);
-	printf("samples = %d framelen = %d\r\n", samples, framelen);
-	//但会
+	for(int i=0; i<framelen; i++)
+	{
+		*(((uint8_t *)output) + i) = i;
+	}
+
+	//printf("codesize = %d length = %d\r\n", priv->frame.codesize, priv->frame.length);
+	//printf("samples = %d framelen = %d\r\n", samples, framelen);
+
 	if (written)
 		*written = framelen;
 

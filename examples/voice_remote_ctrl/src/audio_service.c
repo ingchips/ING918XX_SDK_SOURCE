@@ -14,7 +14,7 @@
 //音频算法选择
 #define AUDIO_CODEC_ALGORITHM_ADPCM    0
 #define AUDIO_CODEC_ALGORITHM_SBC   1
-#define AUDIO_CODEC_ALGORITHM   AUDIO_CODEC_ALGORITHM_ADPCM
+#define AUDIO_CODEC_ALGORITHM   AUDIO_CODEC_ALGORITHM_SBC
 
 extern void audio_input_setup(void);
 extern void audio_input_start(void);
@@ -69,6 +69,7 @@ void enc_output_cb(uint8_t output, void *param)
     byte_index++;
     if (byte_index >= VOICE_BUF_BLOCK_SIZE)
     {
+        platform_printf("byte_index = %d  send_trigger()\r\n", byte_index);
         block_index++;
         audio_trigger_send();
         if (block_index >= VOICE_BUF_BLOCK_NUM)
@@ -240,13 +241,17 @@ static void audio_sbc_task(void *pdata)
                 sample = fir_push_run(&fir, sample);
 #endif
         }
-        platform_printf("3\r\n");
+        //platform_printf("3\r\n");
         encodelen = sbc_encode(&sbc, inp, codesize, outp, framelen, &encoded);
-        platform_printf("4\r\n");
-        if(encodelen == framelen)
-            for (int i=0; i<encodelen; i++) {
+        //platform_printf("4\r\n");
+        if(encodelen == codesize) 
+        {
+            //platform_printf("OK!!!\r\n");
+            for (int i=0; i<framelen; i++) {
                 enc_output_cb((uint8_t)(*(outp + i)), 0); 
-            }  
+            } 
+        }
+ 
     }
 }
 
