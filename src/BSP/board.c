@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "ingsoc.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -8,13 +9,11 @@
 #include "peripheral_sysctrl.h"
 #include "peripheral_pinctrl.h"
 
-#if(BOARD_ID == BOARD_ING91881B_02_02_05)
-
-#elif (BOARD_ID == BOARD_ING91881B_02_02_05)
-
-#endif
+#include "platform_api.h"
 
 //-------------------------------------------------RGB_LED驱动整理-------------------------------------------------
+#if (MACRO_SWITCH_RGB_LED == MACRO_SWITCH_RGB_LED_ON)
+
 #ifndef PWM_LED
 
 #include "rgb_led.c"
@@ -41,6 +40,8 @@ void setup_rgb_led()
 }
 
 #else
+
+//#include "peripheral_pwm.h"
 
 #define PIN_RED     4
 #define PIN_GREEN   0
@@ -98,11 +99,42 @@ void setup_rgb_led()
 
 #endif
 
+#endif
+
 
 //-------------------------------------------------温度计驱动整理-------------------------------------------------
+#if (MACRO_SWITCH_THERMO == MACRO_SWITCH_THERMO_ON)
+
+#ifndef I2C_PORT
+#define I2C_PORT        I2C_PORT_0
+#endif
+#include "iic.h"
 
 #if(BOARD_ID == BOARD_ING91881B_02_02_05)
-    #include "bme280.h"
+
+#include "bme280.h"
+
+#define BME280_ADDR     BME280_I2C_ADDR_PRIM
+
+BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
+{
+    return i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
+}
+
+BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
+                                                    void *intf_ptr)
+{
+    uint8_t data[len + 1];
+    data[0] = reg_addr;
+    memcpy(data + 1, reg_data, len);
+    return i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data)) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
+}
+
+void user_delay_us(uint32_t period, void *intf_ptr)
+{
+    uint32_t ms = (period + 999) / 1000;
+    vTaskDelay(pdMS_TO_TICKS(ms));
+}
 
     uint8_t dev_addr = BME280_ADDR;
     struct bme280_dev bme280_data =
@@ -124,13 +156,13 @@ void setup_rgb_led()
     };
     struct bme280_data comp_data;
 #elif(BOARD_ID == BOARD_ING91881B_02_02_06)
-#error unknown or unsupported chip family.
+//#error unknown or unsupported chip family.
 #endif
 
 void setup_env_sensor()
 {
 #if(BOARD_ID == BOARD_ING91881B_02_02_05)
-    printf("sensor init...");
+    printf("sensor BME280 init...");
     if (bme280_init(&bme280_data) != BME280_OK)
         printf("failed\n");
     else
@@ -140,16 +172,19 @@ void setup_env_sensor()
         bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
     }
 #elif(BOARD_ID == BOARD_ING91881B_02_02_05)
+    printf("sensor MTS01B init...");
 #endif
 }
 
-double get_temperature()
+float get_temperature()
 {
+#ifndef SIMULATION
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
-    if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
-        return -1;
-    return comp_data.temperature;
 
+
+    if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
+        return 0.0;
+    return comp_data.temperature;
 #elif (BOARD_ID == BOARD_ING91881B_02_02_06)
     
 #include "peripheral_sysctrl.h"
@@ -161,7 +196,7 @@ double get_temperature()
     uint8_t cmd[2]={(uint8_t)(CONVERT_T >>8), (uint8_t)(CONVERT_T & 0xFF)};
     uint8_t reg_data[3] = {0}; 
     //uint8_t sta = MTS01B_E_COMM_FAIL;
-    //读取温度数据
+    //Read temperature data
     uint8_t sta = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, sizeof(reg_data));
     if(sta == MTS01B_E_COMM_FAIL){
         SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
@@ -169,43 +204,52 @@ double get_temperature()
         i2c_init(I2C_PORT);
         platform_printf("i2c rst \n");
     }else {
-        return (double)(40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1)));
+        platform_printf("[%x][%x][%x]\n", reg_data[0], reg_data[1], reg_data[2]);
+        return (float)((40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1))) * 100);
     }
 #endif
+#else
+    return rand() & 0x1f;
+#endif
 }
 
-double get_humidity()
+float get_humidity()
 {
+#ifndef SIMULATION
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
     if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
-        return -1;
+        return 0.0;
     return comp_data.humidity;
 
 #elif (BOARD_ID == BOARD_ING91881B_02_02_06)
-
-#error unknown or unsupported chip family.
-
+    return 0.0;
+#endif
+#else
+    return rand() & 0x1f;
 #endif
 }
 
-double get_pressure()
+float get_pressure()
 {
+#ifndef SIMULATION
 #if(BOARD_ID == BOARD_ING91881B_02_02_05)
     if(bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
-        return -1;
+        return 0.0;
     return comp_data.humidity;
 
 #elif (BOARD_ID == BOARD_ING91881B_02_02_06)
-
-#error unknown or unsupported chip family.
-
+    return 0.0;
+#endif
+#else
+    return rand() & 0x1f;
 #endif
 }
 
+#endif
 
+//该如何调整，是否存在适合的驱动文件
 //-------------------------------------------------加速度计驱动整理-------------------------------------------------
-//加速度计无需修改，直接使用即可
-#ifdef ACCELEROMETER
+#if (MACRO_SWITCH_ACCEL == MACRO_SWITCH_ACCEL_ON)
 #include "bma2x2.h"
 
 static struct bma2x2_accel_data sample_xyz = {0};
@@ -214,13 +258,11 @@ extern s32 bma2x2_power_on(void);
 
 void setup_accelerometer(void)
 {
-#ifndef SIMULATION
     printf("bma2x2_power_on...");
     if (bma2x2_power_on()==0)
         printf("success!!\n");
     else
         printf("faild!!\n");
-#endif
 }
 
 void get_acc_xyz(float *x, float *y, float *z)
@@ -230,46 +272,33 @@ void get_acc_xyz(float *x, float *y, float *z)
     *y = sample_xyz.y;
     *z = sample_xyz.z;
 }
+
 #endif
 
-
+//OK
 //-------------------------------------------------蜂鸣器驱动整理-------------------------------------------------
-#ifndef PIN_BUZZER
-#define PIN_BUZZER 8
-#endif
-
-void setup_buzzer(void)
+#if (MACRO_SWITCH_BUZZER == MACRO_SWITCH_BUZZER_ON)
+uint8_t Pin_Buzz = 0;
+void setup_buzzer(const uint8_t buzz_pin, const uint8_t pwm_channel)
 {
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
+    Pin_Buzz = buzz_pin;
+    //SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    PINCTRL_SetGeneralPadMode(PIN_BUZZER, IO_MODE_PWM, 4, 0);
+    PINCTRL_SetGeneralPadMode(buzz_pin, IO_MODE_PWM, pwm_channel, 0);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(buzz_pin, IO_SOURCE_PWM6_B);
 #else
     #error unknown or unsupported chip family
 #endif
 }
 
-void set_buzzer_freq0(uint8_t channel_index, uint16_t freq)
+void set_buzzer_freq(uint32_t freq)
 {
-    uint32_t pera = PWM_CLOCK_FREQ / freq;
-    PWM_HaltCtrlEnable(channel_index, 1);
-    PWM_Enable(channel_index, 0);
-    if (freq > 0)
-    {
-        PWM_SetPeraThreshold(channel_index, pera);
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-        PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
-#endif
-        PWM_SetHighThreshold(channel_index, 0, pera >> 1);
-        PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
-        PWM_SetMask(channel_index, 0, 0);
-        PWM_Enable(channel_index, 1);
-        PWM_HaltCtrlEnable(channel_index, 0);
-    }
+    PWM_SetupSimple(Pin_Buzz >> 1, freq, 50);
 }
 
-void set_buzzer_freq(uint16_t freq)
-{
-    set_buzzer_freq0(PIN_BUZZER >> 1, freq);
-}
+#endif
+
+
+
+//-------------------------------------------------按键配置驱动整理-------------------------------------------------

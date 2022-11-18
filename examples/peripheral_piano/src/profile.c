@@ -43,7 +43,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     switch (att_handle)
     {
     case HANDLE_KEY_INPUT:
-        set_buzzer_freq(*(uint16_t *)buffer);
+        set_buzzer_freq(*(uint32_t *)buffer);
         return 0;
 
     default:

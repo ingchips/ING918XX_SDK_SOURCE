@@ -1,0 +1,10 @@
+#ifndef __BOARD_MACRO_CTRL_H
+#define __BOARD_MACRO_CTRL_H
+
+
+#define MACRO_SWITCH_BUZZER_OFF     0
+#define MACRO_SWITCH_BUZZER_ON      1
+
+#define MACRO_SWITCH_BUZZER     MACRO_SWITCH_BUZZER_ON
+
+#endif

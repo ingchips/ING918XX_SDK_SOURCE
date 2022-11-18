@@ -40,10 +40,13 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#define PIN_BUZZER 8
+
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    setup_buzzer();
+    SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ClkGate_APB_PWM);
+    setup_buzzer(PIN_BUZZER, 4); //choose channel 4
     set_buzzer_freq(0);
 }
 
