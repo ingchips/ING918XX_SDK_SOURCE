@@ -484,20 +484,10 @@ int PINCTRL_SelPCAPIn(int index, uint8_t io_pin)
 }
 
 int PINCTRL_SelQDECIn(uint8_t phase_a,
-                      uint8_t phase_b,
-                      uint8_t index,
-                      uint8_t ext_clk,
-                      uint8_t ext_1a,
-                      uint8_t ext_2a,
-                      uint8_t ext_2b)
+                      uint8_t phase_b)
 {
     if (PINCTRL_SelInput(phase_a, IO_SOURCE_QDEC_PHASEA, 9, 5, 5)) return -1;
-    if (PINCTRL_SelInput(phase_b, IO_SOURCE_QDEC_PHASEB, 9, 5, 10)) return -1;
-    if (PINCTRL_SelInput(index,   IO_SOURCE_QDEC_INDEX, 9, 5, 15)) return -1;
-    if (PINCTRL_SelInput(ext_clk, IO_SOURCE_QDEC_EXT_IN_CLK, 9, 2, 20)) return -1;
-    if (PINCTRL_SelInput(ext_1a,  IO_SOURCE_QDEC_TIMER_EXT_IN1_A, 9, 2, 22)) return -1;
-    if (PINCTRL_SelInput(ext_2a,  IO_SOURCE_QDEC_TIMER_EXT_IN2_A, 9, 2, 24)) return -1;
-    if (PINCTRL_SelInput(ext_2b,  IO_SOURCE_QDEC_TIMER_EXT_IN2_B, 9, 2, 26)) return -1;
+    if (PINCTRL_SelInput(phase_b, IO_SOURCE_QDEC_PHASEB, 9, 5, 10)) return -2;
     return 0;
 }
 
