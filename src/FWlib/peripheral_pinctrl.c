@@ -218,7 +218,7 @@ void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_st
 {
     volatile uint32_t *ds0= (volatile uint32_t *)(APB_PINC_BASE + 0x28);
     volatile uint32_t *ds1= (volatile uint32_t *)(APB_PINC_BASE + 0x30);
-    if (((int)strenght) & 1)
+    if (((int)strength) & 1)
     {
         *ds0 = *ds0 | (1 << io_pin_index);
     }
@@ -227,7 +227,7 @@ void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_st
         *ds0 = *ds0 & ~(1 << io_pin_index);
     }
 
-    if (((int)strenght) & 2)
+    if (((int)strength) & 2)
     {
         *ds1 = *ds1 | (1 << io_pin_index);
     }

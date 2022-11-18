@@ -204,7 +204,7 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
     }
 }
 
-static void demo_synced_api(void *user_data)
+static void demo_synced_api(struct btstack_synced_runner *runner, void *user_data)
 {
     uint16_t handle = (uint16_t)(uintptr_t)user_data;
     static uint8_t data[255];
@@ -450,7 +450,7 @@ void update_addr()
             sm_persistent.identity_addr[4], sm_persistent.identity_addr[5]);
 }
 
-void demo_synced_create_conn(void *_)
+void demo_synced_create_conn(struct btstack_synced_runner *runner, void *_)
 {
     printf("synced create connection (timeout 5s)...");
     le_meta_event_enh_create_conn_complete_t complete = {0};
@@ -631,7 +631,7 @@ void ble_set_auto_power_control(int enable)
     iprintf("Auto power control %s.\n", enable ? "enabled" : "disabled");
 }
 
-static void demo_synced_gap_apis(void *user_data)
+static void demo_synced_gap_apis(struct btstack_synced_runner *runner, void *user_data)
 {
     int err;
     uint16_t handle = (uint16_t)(uintptr_t)user_data;
@@ -682,7 +682,7 @@ static void demo_synced_gap_apis(void *user_data)
     iprintf("done\n\n");
 }
 
-static void synced_power_control(void *user_data)
+static void synced_power_control(struct btstack_synced_runner *runner, void *user_data)
 {
     uint16_t handle = (uint16_t)(uintptr_t)user_data;
     int8_t rssi;

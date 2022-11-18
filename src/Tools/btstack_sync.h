@@ -24,7 +24,7 @@ extern "C" {
  */
 
 struct btstack_synced_runner;
-typedef void (* f_btstack_synced_runnable)(void *user_data);
+typedef void (* f_btstack_synced_runnable)(struct btstack_synced_runner * runner, void *user_data);
 
 #ifndef BTSTACK_SYNC_RUNNER_STACK_SIZE
 #define BTSTACK_SYNC_RUNNER_STACK_SIZE  1024

@@ -99,7 +99,7 @@ static void synced_runner_task(void *data)
     {
         gatt_synced_msg_t msg;
         if (GEN_OS->queue_recv_msg(runner->msg_queue, &msg) != 0) continue;
-        msg.runnable.runnable(msg.runnable.user_data);
+        msg.runnable.runnable(runner, msg.runnable.user_data);
     }
 }
 
