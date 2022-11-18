@@ -17,6 +17,7 @@
 #include "timers.h"
 
 #include "peripheral_sysctrl.h"
+#include "profilestask.h"
 #include "board.h"
 
 extern void ota_connected(void);
@@ -29,72 +30,23 @@ uint8_t temperature_value[]={0x00,0x00,0x00,0x00,0xFE};
 static int temperture_notify_enable=0;
 static int temperture_indicate_enable=0;
 
-#ifndef SIMULATION
-
 #define I2C_PORT        I2C_PORT_0
-#define BME280_ADDR     BME280_I2C_ADDR_PRIM
-
-BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
-{
-    return i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
-}
-
-BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
-                                                    void *intf_ptr)
-{
-    uint8_t data[len + 1];
-    data[0] = reg_addr;
-    memcpy(data + 1, reg_data, len);
-    return i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data)) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
-}
-
-void user_delay_us(uint32_t period, void *intf_ptr)
-{
-    uint32_t ms = (period + 999) / 1000;
-    vTaskDelay(pdMS_TO_TICKS(ms));
-}
-
-uint8_t regrd[3] = {0};
-
-// uint8_t dev_addr = BME280_ADDR;
-// struct bme280_dev bme280_data =
-// {
-//     .intf_ptr = &dev_addr,
-//     .intf = BME280_I2C_INTF,
-//     .read = user_i2c_read,
-//     .write = user_i2c_write,
-//     .delay_us = user_delay_us,
-//     /* Recommended mode of operation: Indoor navigation */
-//     .settings =
-//     {
-//         .osr_h = BME280_OVERSAMPLING_1X,
-//         .osr_p = BME280_OVERSAMPLING_16X,
-//         .osr_t = BME280_OVERSAMPLING_2X,
-//         .filter = BME280_FILTER_COEFF_16,
-//         .standby_time = BME280_STANDBY_TIME_62_5_MS,
-//     },
-// };
-
-// struct bme280_data comp_data;
-
-#endif
 
 static void read_temperature(void)
 {
-    double temp, humi, pres;
+    float temp;
 #ifndef SIMULATION
     if ((temp = get_temperature()) < 0)
         return;
 #ifdef PRINT_ALL
-    // platform_printf("T: %04d * 0.01 Deg\n", comp_data.temperature);
-    // platform_printf("H: %04d / 1024 %%\n", comp_data.humidity);
-    // platform_printf("P: %08d Pascal \n", comp_data.pressure);
+    platform_printf("T: %04d * 0.01 Deg\n", temp);
+    platform_printf("H: %04d / 1024 %%\n", get_humidity());
+    platform_printf("P: %08d Pascal \n", get_pressure());
 #endif
-    int32_t sensor_temperature = get_temperature();
+    int32_t sensor_temperature = temp;
     temperature_value[3]=(uint8_t)(sensor_temperature>>16);
     temperature_value[2]=(uint8_t)(sensor_temperature>>8);
-    temperature_value[1]=(uint8_t)sensor_temperature;
-    
+    temperature_value[1]=(uint8_t)sensor_temperature;  
 #else
     temperature_value[2] = 10;
     temperature_value[1] = (rand() & 0x1f);
@@ -363,10 +315,10 @@ uint32_t setup_profile(void *data, void *user_data)
     #error unknown or unsupported chip family
 #endif
 
-    i2c_init(I2C_PORT);
-    
-    //初始化传感器
+    i2c_init(I2C_PORT);  
+#ifndef SIMULATION
     setup_env_sensor();
+#endif
 
 #endif
 

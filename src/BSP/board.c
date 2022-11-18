@@ -171,7 +171,7 @@ void setup_env_sensor()
         bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
         bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
     }
-#elif(BOARD_ID == BOARD_ING91881B_02_02_05)
+#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
     printf("sensor MTS01B init...");
 #endif
 }

@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,BME280_32BIT_ENABLE,PRINT_ALL,V1</Define>
               <Undefine></Undefine>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src;.\src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -438,6 +438,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\BSP\eflash.c</FilePath>
             </File>
+            <File>
+              <FileName>board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\board.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -462,11 +467,6 @@
               <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
-            </File>
-            <File>
-              <FileName>peripheral_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>
             </File>
           </Files>
         </Group>

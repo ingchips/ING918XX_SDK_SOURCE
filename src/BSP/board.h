@@ -4,9 +4,15 @@
 #include <stdint.h>
 #include "board_macro_ctrl.h"
 
+#ifndef BOARD_ING91881B_02_02_04
 #define BOARD_ING91881B_02_02_04        1
+#endif
+#ifndef BOARD_ING91881B_02_02_05
 #define BOARD_ING91881B_02_02_05        2
+#endif
+#ifndef BOARD_ING91881B_02_02_06
 #define BOARD_ING91881B_02_02_06        3
+#endif
 //#define BOARD_......
 
 #ifndef BOARD_ID
