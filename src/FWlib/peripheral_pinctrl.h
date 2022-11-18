@@ -460,20 +460,10 @@ int PINCTRL_SelPCAPIn(int index, uint8_t io_pin);
  *
  * @param[in] phase_a           Phase A
  * @param[in] phase_b           Phase B
- * @param[in] index             index
- * @param[in] ext_clk           external clock
- * @param[in] ext_1a            external 1A
- * @param[in] ext_2a            external 2A
- * @param[in] ext_2b            external 2B
  * @return                      0 if successful else non-0
  */
 int PINCTRL_SelQDECIn(uint8_t phase_a,
-                      uint8_t phase_b,
-                      uint8_t index,
-                      uint8_t ext_clk,
-                      uint8_t ext_1a,
-                      uint8_t ext_2a,
-                      uint8_t ext_2b);
+                      uint8_t phase_b);
 
 /**
  * @brief Set pull mode of a IO source
