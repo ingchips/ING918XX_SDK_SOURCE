@@ -12,7 +12,7 @@
 #include "platform_api.h"
 
 //-------------------------------------------------RGB_LED驱动整理-------------------------------------------------
-#if (MACRO_SWITCH_RGB_LED == MACRO_SWITCH_RGB_LED_ON)
+#ifdef BOARD_SENSOR_RGBLED
 
 #ifndef PWM_LED
 
@@ -103,7 +103,7 @@ void setup_rgb_led()
 
 
 //-------------------------------------------------温度计驱动整理-------------------------------------------------
-#if (MACRO_SWITCH_THERMO == MACRO_SWITCH_THERMO_ON)
+#ifdef BOARD_SENSOR_THERMO
 
 #ifndef I2C_PORT
 #define I2C_PORT        I2C_PORT_0
@@ -249,7 +249,7 @@ float get_pressure()
 
 //该如何调整，是否存在适合的驱动文件
 //-------------------------------------------------加速度计驱动整理-------------------------------------------------
-#if (MACRO_SWITCH_ACCEL == MACRO_SWITCH_ACCEL_ON)
+#ifdef BOARD_SENSOR_ACCEL
 #include "bma2x2.h"
 
 static struct bma2x2_accel_data sample_xyz = {0};
@@ -277,16 +277,21 @@ void get_acc_xyz(float *x, float *y, float *z)
 
 //OK
 //-------------------------------------------------蜂鸣器驱动整理-------------------------------------------------
-#if (MACRO_SWITCH_BUZZER == MACRO_SWITCH_BUZZER_ON)
-uint8_t Pin_Buzz = 0;
-void setup_buzzer(const uint8_t buzz_pin, const uint8_t pwm_channel)
+#ifdef BOARD_SENSOR_BUZZER
+#if (BOARD_ID == BOARD_ING91881B_02_02_04)
+#define BUZZ_PIN        GIO_GPIO_8
+#elif (BOARD_ID == BOARD_ING91881B_02_02_05)
+#define BUZZ_PIN        GIO_GPIO_8
+#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+#define BUZZ_PIN        GIO_GPIO_8
+#endif
+void setup_buzzer()
 {
-    Pin_Buzz = buzz_pin;
-    //SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    PINCTRL_SetGeneralPadMode(buzz_pin, IO_MODE_PWM, pwm_channel, 0);
+    PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, 4, 0);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_SetPadMux(buzz_pin, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM6_B);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -294,7 +299,7 @@ void setup_buzzer(const uint8_t buzz_pin, const uint8_t pwm_channel)
 
 void set_buzzer_freq(uint32_t freq)
 {
-    PWM_SetupSimple(Pin_Buzz >> 1, freq, 50);
+    PWM_SetupSimple(BUZZ_PIN >> 1, freq, 50);
 }
 
 #endif

@@ -46,7 +46,7 @@ void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ClkGate_APB_PWM);
-    setup_buzzer(PIN_BUZZER, 4); //choose channel 4
+    setup_buzzer(); //choose channel 4
     set_buzzer_freq(0);
 }
 

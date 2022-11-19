@@ -68,8 +68,9 @@ void setup_peripherals(void)
 
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
 
-    setup_buzzer(LED_IO, 4);
-    setup_buzzer(BUZZ_IO, 4);
+    PINCTRL_SetPadMux(LED_IO, IO_SOURCE_GENERAL);
+    PINCTRL_SetPadPwmSel(LED_IO, 1);
+    setup_buzzer();//default  GIO_GPIO_8
 
 }
 

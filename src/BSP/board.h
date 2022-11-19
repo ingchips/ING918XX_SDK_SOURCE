@@ -2,67 +2,16 @@
 #define __BOARD_H
 
 #include <stdint.h>
-#include "board_macro_ctrl.h"
 
-#ifndef BOARD_ING91881B_02_02_04
 #define BOARD_ING91881B_02_02_04        1
-#endif
-#ifndef BOARD_ING91881B_02_02_05
 #define BOARD_ING91881B_02_02_05        2
-#endif
-#ifndef BOARD_ING91881B_02_02_06
 #define BOARD_ING91881B_02_02_06        3
-#endif
+
 //#define BOARD_......
 
 #ifndef BOARD_ID
 #define BOARD_ID       BOARD_ING91881B_02_02_05
 #endif
-
-//LED宏开关
-#ifndef MACRO_SWITCH_RGB_LED_OFF
-#define MACRO_SWITCH_RGB_LED_OFF        0
-#endif
-#ifndef MACRO_SWITCH_RGB_LED_ON
-#define MACRO_SWITCH_RGB_LED_ON         1
-#endif
-#ifndef MACRO_SWITCH_RGB_LED
-#define MACRO_SWITCH_RGB_LED    MACRO_SWITCH_RGB_LED_OFF
-#endif
-
-//温度计宏开关
-#ifndef MACRO_SWITCH_THERMO_OFF
-#define MACRO_SWITCH_THERMO_OFF     0
-#endif
-#ifndef MACRO_SWITCH_THERMO_ON
-#define MACRO_SWITCH_THERMO_ON      1
-#endif
-#ifndef MACRO_SWITCH_THERMO
-#define MACRO_SWITCH_THERMO     MACRO_SWITCH_THERMO_OFF
-#endif
-
-//加速度计宏开关
-#ifndef MACRO_SWITCH_ACCEL_OFF
-#define MACRO_SWITCH_ACCEL_OFF      0
-#endif
-#ifndef MACRO_SWITCH_ACCEL_ON
-#define MACRO_SWITCH_ACCEL_ON       1
-#endif
-#ifndef MACRO_SWITCH_ACCEL
-#define MACRO_SWITCH_ACCEL      MACRO_SWITCH_ACCEL_OFF
-#endif
-
-//蜂鸣器宏开关
-#ifndef MACRO_SWITCH_BUZZER_OFF
-#define MACRO_SWITCH_BUZZER_OFF     0
-#endif
-#ifndef MACRO_SWITCH_BUZZER_ON
-#define MACRO_SWITCH_BUZZER_ON      1
-#endif
-#ifndef MACRO_SWITCH_BUZZER
-#define MACRO_SWITCH_BUZZER     MACRO_SWITCH_BUZZER_OFF
-#endif
-
 
 #define BME280_ADDR     BME280_I2C_ADDR_PRIM
 #define BME280_INTF_RET_TYPE        int8_t
@@ -102,7 +51,7 @@ float get_pressure(void);
 void setup_accelerometer(void);
 void get_acc_xyz(float *x, float *y, float *z);
 
-void setup_buzzer(const uint8_t buzz_pin, const uint8_t pwm_channel);
+void setup_buzzer();
 void set_buzzer_freq(uint32_t freq);
 
 #ifdef __cplusplus

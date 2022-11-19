@@ -65,7 +65,7 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_UART, &UART_0, 0);
 }
 
-#include "../../peripheral_led/src/impl_led.c"
+#include "board.h"
 
 void setup_peripherals(void)
 {
