@@ -6,6 +6,7 @@
 #include "timers.h"
 #include <stdio.h>
 #include "blink.h"
+#include "board.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -67,10 +68,9 @@ void setup_peripherals(void)
 
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
 
-    PINCTRL_SetPadMux(LED_IO, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(LED_IO, 1);
-    PINCTRL_SetPadPwmSel(BUZZ_IO, 1);
+    setup_buzzer(LED_IO, 4);
+    setup_buzzer(BUZZ_IO, 4);
+
 }
 
 void scan_received()
@@ -82,7 +82,7 @@ void scan_received()
 
 void vTimerCallback(TimerHandle_t _)
 {    
-    PWM_SetupSimple(BUZZ_IO >> 1, 500, 50);
+    set_buzzer_freq(500);
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
