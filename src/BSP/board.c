@@ -267,10 +267,16 @@ void setup_accelerometer(void)
 
 void get_acc_xyz(float *x, float *y, float *z)
 {
+#ifndef SIMULATION
     bma2x2_read_accel_xyz(&sample_xyz);
     *x = sample_xyz.x;
     *y = sample_xyz.y;
     *z = sample_xyz.z;
+#else
+    *x = 0;
+    *y = 0;
+    *z = 0;
+#endif
 }
 
 #endif
@@ -307,3 +313,20 @@ void set_buzzer_freq(uint32_t freq)
 
 
 //-------------------------------------------------按键配置驱动整理-------------------------------------------------
+#ifdef BOARD_KEY_CONFIG
+
+#define ARRAY_LEN(x)    (sizeof(x)/sizeof(x[0]))
+
+void config_key(const uint8_t *key_pins, int key_num, const GIO_Direction_t dir)
+{
+    for (int i = 0; i < key_num; i++)
+    {
+        if (key_pins[i] == IO_NOT_A_PIN) continue;
+        PINCTRL_SetPadMux(key_pins[i], IO_SOURCE_GPIO);
+        GIO_SetDirection((GIO_Index_t)key_pins[i], dir);
+        GIO_ConfigIntSource((GIO_Index_t)key_pins[i],
+                            GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
+                            GIO_INT_EDGE);
+    }
+}
+#endif

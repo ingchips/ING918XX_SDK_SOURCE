@@ -6,7 +6,7 @@
 #include "task.h"
 #include "profile.h"
 #include "container.h"
-#include "rgb_led.h"
+#include "board.h"
 #include "rom_tools.h"
 #include "eflash.h"
 
@@ -70,18 +70,15 @@ void config_uart(uint32_t freq, uint32_t baud, uint32_t int_mask)
     apUART_Initialize(PRINT_PORT, &config, int_mask);
 }
 
-#define BOARD_ID_020205        0x020205
-#define BOARD_ID_020204        0x020204
-
 #ifndef BOARD_ID
-#define BOARD_ID        BOARD_ID_020205
+#define BOARD_ID        BOARD_ING91881B_02_02_05
 #endif
 
 #define ARRAY_LEN(x)    (sizeof(x)/sizeof(x[0]))
 
-#if (BOARD_ID == BOARD_ID_020205)
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
 
-const static uint8_t led_pins[] = {
+const static uint8_t  led_pins[] = {
     GIO_GPIO_19, GIO_GPIO_18, GIO_GPIO_17, GIO_GPIO_16,
     GIO_GPIO_13, GIO_GPIO_12, GIO_GPIO_9, GIO_GPIO_6,
 };
@@ -100,7 +97,7 @@ const static uint8_t key_pins[] = {
 #define IIC_SCL_PIN     GIO_GPIO_10
 #define IIC_SDA_PIN     GIO_GPIO_11
 
-#elif (BOARD_ID == BOARD_ID_020204)
+#elif (BOARD_ID == BOARD_ING91881B_02_02_04)
 
 const static uint8_t led_pins[] = {
     GIO_GPIO_19, GIO_GPIO_18, GIO_GPIO_17, GIO_GPIO_16,
@@ -207,7 +204,7 @@ void hsl_to_rgb(float H, float S, float L,
     *G = HUE2RGB(p, q, H);
     *B = HUE2RGB(p, q, H - 1/3.);
 }
-
+ 
 void set_led_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
     __disable_irq();
@@ -273,22 +270,15 @@ void setup_peripherals(void)
         GIO_WriteValue((GIO_Index_t)led_pins[i], LED_OFF);
     }
 
-    for (i = 0; i < ARRAY_LEN(key_pins); i++)
-    {
-        if (key_pins[i] == IO_NOT_A_PIN) continue;
-        PINCTRL_SetPadMux(key_pins[i], IO_SOURCE_GPIO);
-        GIO_SetDirection((GIO_Index_t)key_pins[i], GIO_DIR_INPUT);
-        GIO_ConfigIntSource((GIO_Index_t)key_pins[i],
-                            GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                            GIO_INT_EDGE);
-    }
+    config_key(key_pins, ARRAY_LEN(key_pins), GIO_DIR_INPUT);
 
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
     setup_rgb_led();
     set_rgb_led_color(0, 0, 0);
 
-    PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, 0, 0);
-    buzz(0);
+    setup_buzzer();
+    //PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, 0, 0);
+    set_buzzer_freq(0);
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetPadMux(IIC_SCL_PIN, IO_SOURCE_I2C0_SCL_O);

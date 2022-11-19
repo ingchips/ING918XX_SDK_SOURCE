@@ -9,6 +9,7 @@
 
 #include "eflash.h"
 #include <string.h>
+#include "board.h"
 
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
@@ -77,6 +78,12 @@ void config_uart(uint32_t freq, uint32_t baud)
 #define KB_KEY_2        GIO_GPIO_5
 #define KB_KEY_3        GIO_GPIO_7
 
+#define ARRAY_LEN(x)    (sizeof(x)/sizeof(x[0]))
+
+const static uint8_t key_pins[] = {
+    KB_KEY_1, KB_KEY_2, KB_KEY_3,
+};
+
 #define KEY_MASK        ((1 << KB_KEY_1) | (1 << KB_KEY_2) | (1 << KB_KEY_3))
 
 #define LED_PIN         GIO_GPIO_9
@@ -94,18 +101,7 @@ void setup_peripherals(void)
 
     // setup GPIOs for keys
     PINCTRL_DisableAllInputs();
-    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GPIO);
-    GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_2, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_3, GIO_DIR_INPUT);
-    GIO_ConfigIntSource(KB_KEY_1, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_2, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_3, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
+    config_key(key_pins, ARRAY_LEN(key_pins), GIO_DIR_INPUT);
     
     // LED
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GPIO);

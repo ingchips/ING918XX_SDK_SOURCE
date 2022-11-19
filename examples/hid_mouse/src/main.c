@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "blink.h"
+#include "board.h"
 
 #include "../../peripheral_console/src/key_detector.h"
 
@@ -92,6 +93,10 @@ void show_app_state(enum app_state state)
     }
 }
 
+const static uint8_t key_pins[] = {
+    KEY_PIN,
+};
+
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
@@ -101,6 +106,7 @@ void setup_peripherals(void)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                               | (1 << SYSCTRL_ClkGate_APB_PWM));
 
+    config_key(key_pins, 1, GIO_DIR_INPUT);
     PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
     GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE, GIO_INT_EDGE);

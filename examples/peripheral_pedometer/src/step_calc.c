@@ -18,6 +18,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "board.h"
+
 #ifndef SIMULATION
 #include <stdlib.h>
 #endif
@@ -223,11 +225,7 @@ void pedometer_init(void)
     peak.oldmax = peak.newmax;
 
 #ifndef SIMULATION
-    printf("bma2x2_power_on...");
-    if (bma2x2_power_on()==0)
-        printf("success!!\n");
-    else
-        printf("faild!!\n");
+    setup_accelerometer();
 #endif
 }
 
@@ -284,7 +282,8 @@ void accelarator_sample(void)
     result.temp_sample_cnt++;
 
 #ifndef SIMULATION
-    bma2x2_read_accel_xyz(&sample_xyz);
+    //bma2x2_read_accel_xyz(&sample_xyz);
+    get_acc_xyz(&(sample_xyz.x), &(sample_xyz.y), &(sample_xyz.z));
     //printf("%d,%d,%d\n", sample_xyz.x, sample_xyz.y, sample_xyz.z);
     filter(&cur_sample, &sample_xyz);
 

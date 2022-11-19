@@ -22,7 +22,7 @@
 
 extern "C" void led_ctrl(int id, int state);
 extern "C" void led_toggle(int id);
-extern "C" void buzz(int freq);
+extern "C" void set_buzzer_freq(int freq);
 extern "C" float get_temperature(void);
 extern "C" float get_humidity(void);
 extern "C" float get_pressure(void);
@@ -38,10 +38,24 @@ extern "C" void get_acc_xyz(float *x, float *y, float *z);
 #define M_PI 3.14159265358979323846
 #endif
 
+/*! Earth's gravity in m/s^2 */
+#define GRAVITY_EARTH  (9.80665f)
+
+static float lsb_to_ms2(int16_t val, float g_range, uint8_t bit_width)
+{
+    float half_scale = ((float)(1 << bit_width) / 2.0f);
+
+    return (GRAVITY_EARTH * val * g_range) / half_scale;
+}
+
+#define TO_MS2(v) lsb_to_ms2(v, 2, 14)
+
 float get_pitch(void)
 {
     float X, Y, Z;
     get_acc_xyz(&X, &Y, &Z);
+    Y =TO_MS2(Y);
+    Z =TO_MS2(Z);
     return -180 * atan (X /sqrt(Y * Y + Z * Z)) / M_PI;
 }
 
@@ -49,6 +63,8 @@ float get_roll(void)
 {
     float X, Y, Z;
     get_acc_xyz(&X, &Y, &Z);
+    X = TO_MS2(X);
+    Z = TO_MS2(Z);
     return 180 * atan (Y/sqrt(X * X + Z * Z))/M_PI;
 }
 
@@ -421,9 +437,9 @@ void play(const char *program)
         char c = *program++;
         if (('1' <= c) && (c <= '7'))
         {
-            buzz(0);
+            set_buzzer_freq(0);
             sleep(20);
-            buzz(note_freqs[c - '1']);
+            set_buzzer_freq(note_freqs[c - '1']);
 
         }
         else if (c == '-')
@@ -431,10 +447,10 @@ void play(const char *program)
         else if (c == ' ')
             continue;
         else
-            buzz(0);
+            set_buzzer_freq(0);
         sleep(200);
     }
-    buzz(0);
+    set_buzzer_freq(0);
 }
 
 const char *strfinddig(const char *str)
@@ -554,10 +570,10 @@ int 执行英语指令(const char *指令)
             }
         }
     }
-    else if (spliter.Has("sound") || HAS_VERB("buzz"))
+    else if (spliter.Has("sound") || HAS_VERB("set_buzzer_freq"))
     {
         int i = strtoi(指令);
-        buzz(i > 0 ? i : 0);
+        set_buzzer_freq(i > 0 ? i : 0);
     }
     else if (spliter.Has("wait") || spliter.Has("delay") || spliter.Has("sleep"))
     {
@@ -635,7 +651,7 @@ int 执行(const char *指令)
     else if (strstr(指令, "声") || strstr(指令, "音") || strstr(指令, "鸣"))
     {
         int i = strtoi(指令);
-        buzz(i > 0 ? i : 0);
+        set_buzzer_freq(i > 0 ? i : 0);
     }
     else if (strstr(指令, "唱") || strstr(指令, "播") || strstr(指令, "奏"))
     {
