@@ -106,7 +106,7 @@ _INGChips Console_ 服务。输入几个命令，查看结果：
 
 <img src="./img/shell.png" width="350px" />
 
-### _conn_test__
+### _conn_test_
 
 
 这个例子对一个指定的设备 (_Thermometer with FOTA_) 多次进行连接测试，并生成测试报告。编译：

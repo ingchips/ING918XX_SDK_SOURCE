@@ -76,64 +76,64 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
-static void PWM_SetRegBit(uint32_t addr_offset, const uint8_t offset, const uint8_t v, const uint8_t bit_width)
+static void PWM_SetRegBit(const uint8_t channel_index, uint32_t addr_offset, const uint8_t offset, const uint8_t v, const uint8_t bit_width)
 {
-    volatile uint32_t *reg = (volatile uint32_t *)(APB_PWM_BASE + addr_offset);
+    volatile uint32_t *reg = (volatile uint32_t *)((uintptr_t)(&APB_PWM->Channels[channel_index]) + addr_offset);
     uint32_t mask = ((1 << bit_width) - 1) << offset;
     *reg = (*reg & ~mask) | (v << offset);
 }
 
 void PWM_Enable(const uint8_t channel_index, const uint8_t enable)
 {
-    PWM_SetRegBit(0x00, 5, enable & 1, 1);
+    PWM_SetRegBit(channel_index, 0x00, 5, enable & 1, 1);
 }
 
 void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_t mask_b)
 {
-    PWM_SetRegBit(0x00, 0, (mask_b << 1) | mask_a, 2);
+    PWM_SetRegBit(channel_index, 0x00, 0, (mask_b << 1) | mask_a, 2);
 }
 
 void PWM_SetInvertOutput(const uint8_t channel_index, const uint8_t inv_a, const uint8_t inv_b)
 {
-    PWM_SetRegBit(0x00, 9, (inv_b << 1) | inv_a, 2);
+    PWM_SetRegBit(channel_index, 0x00, 9, (inv_b << 1) | inv_a, 2);
 }
 
 void PWM_SetMode(const uint8_t channel_index, const PWM_WordMode_t mode)
 {
-    PWM_SetRegBit(0x00, 6, mode, 3);
+    PWM_SetRegBit(channel_index, 0x00, 6, mode, 3);
 }
 
 void PWM_HaltCtrlEnable(const uint8_t channel_index, const uint8_t enable)
 {
-    PWM_SetRegBit(0x00, 2, enable, 1);
+    PWM_SetRegBit(channel_index, 0x00, 2, enable, 1);
 }
 
 void PWM_HaltCtrlCfg(const uint8_t channel_index, const uint8_t out_a, const uint8_t out_b)
 {
-    PWM_SetRegBit(0x00, 3, (out_b << 1) | out_a, 2);
+    PWM_SetRegBit(channel_index, 0x00, 3, (out_b << 1) | out_a, 2);
 }
 
 void PWM_SetPeraThreshold(const uint8_t channel_index, const uint32_t threshold)
 {
-    APB_PWM->PeraTh = threshold;
+    APB_PWM->Channels[channel_index].PeraTh = threshold;
 }
 
 void PWM_SetDiedZoneThreshold(const uint8_t channel_index, const uint32_t threshold)
 {
-    APB_PWM->DZoneTh = threshold;
+    APB_PWM->Channels[channel_index].DZoneTh = threshold;
 }
 
 void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_index, const uint32_t threshold)
 {
-    APB_PWM->HighTh = threshold;
+    APB_PWM->Channels[channel_index].HighTh = threshold;
 }
 
 void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable)
 {
-    uint32_t mask = APB_PWM->Ctrl0 & ~(0x1ful << 18);
+    uint32_t mask = APB_PWM->Channels[channel_index].Ctrl0 & ~(0x1ful << 18);
     mask |= (enable ? 0x3 : 0x0) << 18;
     mask |= (trig_cfg & 0x7) << 20;
-    APB_PWM->Ctrl0 = mask;
+    APB_PWM->Channels[channel_index].Ctrl0 = mask;
 }
 
 #endif

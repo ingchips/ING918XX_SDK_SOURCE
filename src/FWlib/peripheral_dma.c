@@ -57,7 +57,9 @@ static int DMA_GetPeripheralWidth(SYSCTRL_DMA src)
     case SYSCTRL_DMA_SPI0_RX:
     case SYSCTRL_DMA_SPI1_RX:
     case SYSCTRL_DMA_I2S_TX:
-    case SYSCTRL_DMA_PWM:
+    case SYSCTRL_DMA_PWM0:
+    case SYSCTRL_DMA_PWM1:
+    case SYSCTRL_DMA_PWM2:
     case SYSCTRL_DMA_KeyScan:
     case SYSCTRL_DMA_QDEC0:
     case SYSCTRL_DMA_QDEC1:
@@ -109,8 +111,12 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
         return 0;
     case SYSCTRL_DMA_I2S_TX:
         return 0;
-    case SYSCTRL_DMA_PWM:
-        return &APB_PWM->DmaData;
+    case SYSCTRL_DMA_PWM0:
+        return &APB_PWM->Channels[0].DmaData;
+    case SYSCTRL_DMA_PWM1:
+        return &APB_PWM->Channels[1].DmaData;
+    case SYSCTRL_DMA_PWM2:
+        return &APB_PWM->Channels[2].DmaData;
 
     default:
         return 0;

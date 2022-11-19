@@ -19,7 +19,7 @@ extern "C" {	/* allow C++ to use these headers */
 
 #define PWM_CLOCK_FREQ          SYSCTRL_GetClk(SYSCTRL_ITEM_APB_PWM)
 
-#define PWM_CHANNEL_NUMBER      1
+#define PWM_CHANNEL_NUMBER      3
 
 #endif
 

@@ -173,7 +173,7 @@ typedef struct
     __IO uint32_t St;                   // 0x1c
 } WDT_TypeDef;
 
-// dedicated PWM
+
 typedef struct
 {
     __IO uint32_t Ctrl0;                // 0x00
@@ -183,6 +183,13 @@ typedef struct
     __IO uint32_t HighTh;               // 0x14
     __IO uint32_t DZoneTh;              // 0x18
     __IO uint32_t DmaData;              // 0x1c
+} PWM_ChannelDef;
+
+
+// dedicated PWM
+typedef struct
+{
+    PWM_ChannelDef Channels[3];
 } PWM_TypeDef;
 
 // I2S

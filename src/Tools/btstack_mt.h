@@ -40,6 +40,8 @@ struct btstack_mt_event *btstack_mt_event_alloc(void);
 /**
  * @brief Free an event object
  *
+ * The event to be freed must be in un-signaled state.
+ *
  * @param[in] event     the event object
 */
 void btstack_mt_event_free(struct btstack_mt_event * event);

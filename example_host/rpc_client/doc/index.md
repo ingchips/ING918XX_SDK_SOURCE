@@ -109,7 +109,7 @@ the _INGChips Console Service_. Type some commands and check the results:
 
 <img src="./img/shell.png" width="250px" />
 
-### _conn_test__
+### _conn_test_
 
 This example performs a batch of connection tests to a specific device,
 and generates reports. To build it:
