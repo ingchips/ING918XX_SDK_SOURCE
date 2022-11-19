@@ -3,7 +3,7 @@
 
 #include "btstack_defines.h"
 #include "gap.h"
-#include "att_db.h"
+#include "gatt_client.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -234,7 +234,7 @@ uint8_t mt_gap_set_connectionless_cte_tx_param(
     const cte_type_t cte_type,
     const uint8_t cte_count,
     const uint8_t switching_pattern_len,
-    const uint8_t      *antenna_ids);
+    const uint8_t * antenna_ids);
 
 uint8_t mt_gap_set_connectionless_cte_tx_enable(
     const uint8_t adv_handle,
@@ -246,20 +246,20 @@ uint8_t mt_gap_set_connectionless_iq_sampling_enable(
     const cte_slot_duration_type_t slot_durations,
     const uint8_t max_sampled_ctes,
     const uint8_t switching_pattern_len,
-    const uint8_t      * antenna_ids);
+    const uint8_t * antenna_ids);
 
 uint8_t mt_gap_set_connection_cte_rx_param(
     const hci_con_handle_t conn_handle,
     const uint8_t sampling_enable,
     const cte_slot_duration_type_t slot_durations,
     const uint8_t switching_pattern_len,
-    const uint8_t          * antenna_ids);
+    const uint8_t * antenna_ids);
 
 uint8_t mt_gap_set_connection_cte_tx_param(
     const hci_con_handle_t conn_handle,
     const uint8_t cte_types,
     const uint8_t switching_pattern_len,
-    const uint8_t          * antenna_ids);
+    const uint8_t * antenna_ids);
 
 uint8_t mt_gap_set_connection_cte_request_enable(
     const hci_con_handle_t conn_handle,
@@ -380,7 +380,7 @@ uint8_t mt_gap_rx_test_v3(
     uint8_t expected_cte_type,
     uint8_t slot_durations,
     uint8_t switching_pattern_length,
-    uint8_t *antenna_ids);
+    uint8_t * antenna_ids);
 
 uint8_t mt_gap_tx_test_v2(
     uint8_t tx_channel,
@@ -396,7 +396,7 @@ uint8_t mt_gap_tx_test_v4(
     uint8_t cte_length,
     uint8_t cte_type,
     uint8_t switching_pattern_length,
-    uint8_t *antenna_ids,
+    uint8_t * antenna_ids,
     int8_t tx_power_level);
 
 uint8_t mt_gap_test_end(
@@ -418,6 +418,223 @@ uint8_t mt_gap_start_ccm(
     uint8_t * msg,
     uint8_t * aad,
     uint8_t * out_msg);
+
+int mt_att_server_deferred_read_response(
+    hci_con_handle_t con_handle,
+    uint16_t attribute_handle,
+    const uint8_t * value,
+    uint16_t value_len);
+
+int mt_att_server_notify(
+    hci_con_handle_t con_handle,
+    uint16_t attribute_handle,
+    uint8_t * value,
+    uint16_t value_len);
+
+int mt_att_server_indicate(
+    hci_con_handle_t con_handle,
+    uint16_t attribute_handle,
+    uint8_t * value,
+    uint16_t value_len);
+
+uint16_t mt_att_server_get_mtu(
+    hci_con_handle_t con_handle);
+
+uint8_t mt_gatt_client_discover_primary_services(
+    user_packet_handler_t callback,
+    hci_con_handle_t con_handle);
+
+uint8_t mt_gatt_client_discover_primary_services_by_uuid16(
+    user_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t uuid16);
+
+uint8_t mt_gatt_client_discover_primary_services_by_uuid128(
+    user_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    const uint8_t * uuid128);
+
+uint8_t mt_gatt_client_find_included_services_for_service(
+    user_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    const uint16_t start_group_handle,
+    const uint16_t end_group_handle);
+
+uint8_t mt_gatt_client_discover_characteristics_for_service(
+    user_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    const uint16_t start_group_handle,
+    const uint16_t end_group_handle);
+
+uint8_t mt_gatt_client_discover_characteristics_for_handle_range_by_uuid16(
+    btstack_packet_handler_t callback,
+    const hci_con_handle_t con_handle,
+    const uint16_t start_handle,
+    const uint16_t end_handle,
+    const uint16_t uuid16);
+
+uint8_t mt_gatt_client_discover_characteristics_for_handle_range_by_uuid128(
+    btstack_packet_handler_t callback,
+    const hci_con_handle_t con_handle,
+    const uint16_t start_handle,
+    const uint16_t end_handle,
+    const uint8_t * uuid128);
+
+uint8_t mt_gatt_client_discover_characteristic_descriptors(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    gatt_client_characteristic_t * characteristic);
+
+uint8_t mt_gatt_client_read_value_of_characteristic_using_value_handle(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t characteristic_value_handle);
+
+uint8_t mt_gatt_client_read_value_of_characteristics_by_uuid16(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t start_handle,
+    uint16_t end_handle,
+    uint16_t uuid16);
+
+uint8_t mt_gatt_client_read_value_of_characteristics_by_uuid128(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t start_handle,
+    uint16_t end_handle,
+    uint8_t * uuid128);
+
+uint8_t mt_gatt_client_read_long_value_of_characteristic_using_value_handle(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t characteristic_value_handle);
+
+uint8_t mt_gatt_client_read_long_value_of_characteristic_using_value_handle_with_offset(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t characteristic_value_handle,
+    uint16_t offset);
+
+uint8_t mt_gatt_client_read_multiple_characteristic_values(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    int num_value_handles,
+    uint16_t * value_handles);
+
+uint8_t mt_gatt_client_write_value_of_characteristic_without_response(
+    hci_con_handle_t con_handle,
+    uint16_t characteristic_value_handle,
+    uint16_t length,
+    const uint8_t * data);
+
+uint8_t mt_gatt_client_signed_write_without_response(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t handle,
+    uint16_t message_len,
+    const uint8_t * message);
+
+uint8_t mt_gatt_client_write_value_of_characteristic(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t characteristic_value_handle,
+    uint16_t length,
+    const uint8_t * data);
+
+uint8_t mt_gatt_client_write_long_value_of_characteristic(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t characteristic_value_handle,
+    uint16_t length,
+    const uint8_t * data);
+
+uint8_t mt_gatt_client_write_long_value_of_characteristic_with_offset(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t characteristic_value_handle,
+    uint16_t offset,
+    uint16_t length,
+    const uint8_t * data);
+
+uint8_t mt_gatt_client_reliable_write_long_value_of_characteristic(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t characteristic_value_handle,
+    uint16_t length,
+    const uint8_t * data);
+
+uint8_t mt_gatt_client_read_characteristic_descriptor_using_descriptor_handle(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t descriptor_handle);
+
+uint8_t mt_gatt_client_read_long_characteristic_descriptor_using_descriptor_handle(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t descriptor_handle);
+
+uint8_t mt_gatt_client_read_long_characteristic_descriptor_using_descriptor_handle_with_offset(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t descriptor_handle,
+    uint16_t offset);
+
+uint8_t mt_gatt_client_write_characteristic_descriptor_using_descriptor_handle(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t descriptor_handle,
+    uint16_t length,
+    uint8_t * data);
+
+uint8_t mt_gatt_client_write_long_characteristic_descriptor_using_descriptor_handle(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t descriptor_handle,
+    uint16_t length,
+    uint8_t * data);
+
+uint8_t mt_gatt_client_write_long_characteristic_descriptor_using_descriptor_handle_with_offset(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t descriptor_handle,
+    uint16_t offset,
+    uint16_t length,
+    uint8_t * data);
+
+uint8_t mt_gatt_client_write_client_characteristic_configuration(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    gatt_client_characteristic_t * characteristic,
+    uint16_t configuration);
+
+uint8_t mt_gatt_client_prepare_write(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle,
+    uint16_t attribute_handle,
+    uint16_t offset,
+    uint16_t length,
+    uint8_t * data);
+
+uint8_t mt_gatt_client_execute_write(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle);
+
+uint8_t mt_gatt_client_cancel_write(
+    btstack_packet_handler_t callback,
+    hci_con_handle_t con_handle);
+
+int mt_gatt_client_is_ready(
+    hci_con_handle_t con_handle);
+
+uint8_t mt_gatt_client_get_mtu(
+    hci_con_handle_t con_handle,
+    uint16_t * mtu);
+
+void mt_gatt_client_listen_for_characteristic_value_updates(
+    gatt_client_notification_t * notification,
+    btstack_packet_handler_t packet_handler,
+    hci_con_handle_t con_handle,
+    uint16_t value_handle);
 
 #ifdef __cplusplus
 }
