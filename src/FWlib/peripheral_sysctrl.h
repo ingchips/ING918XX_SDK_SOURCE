@@ -32,7 +32,6 @@ typedef enum
 
 typedef enum
 {
-    SYSCTRL_Reset_AHB_DMA                 =  0,
     SYSCTRL_Reset_AHB_LLE                 =  1,
     SYSCTRL_Reset_AHB_IOC                 =  2,
     SYSCTRL_Reset_APB_I2C0                =  3,
