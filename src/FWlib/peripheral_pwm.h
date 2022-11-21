@@ -72,9 +72,24 @@ void PWM_SetMultiDutyCycleCtrl(const uint8_t channel_index, const uint8_t comp_n
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 /**
+ * @brief Enable PWM halt control
+ *
+ * When the register HALT_ENABLE is set to 1 for an output,
+ * PWM will controlled by HALT_CONFIG registers.
+ *
+ * Note: `PWM_HaltCtrlEnable(channel, enable)` is an short-cut for
+ * `PWM_HaltCtrlEnable2(channel, enable, enable)`.
+ *
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ * @param[in] enable_a          enable halt control on out A
+ * @param[in] enable_a          enable halt control on out B
+*/
+void PWM_HaltCtrlEnable2(const uint8_t channel_index, const uint8_t enable_a, const uint8_t enable_b);
+
+/**
  * @brief Control output phase
  *
- * @param[in] channel_index     channel index (must be 0)
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
  * @param[in] inv_a             invert output A (1) or not (0)
  * @param[in] inv_b             invert output B (1) or not (0)
  */
@@ -83,11 +98,90 @@ void PWM_SetInvertOutput(const uint8_t channel_index, const uint8_t inv_a, const
 /**
  * @brief Enable/Disable DMA transfer
  *
- * @param[in] channel_index     channel index (must be 0)
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
  * @param[in] trig_cfg          DMA trigger configure
  * @param[in] enable            enable(1)/disable(0)
  */
 void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable);
+
+enum PCAP_PULSE_EVENT
+{
+    PCAP_PULSE_RISING_EDGE  = 0x1,
+    PCAP_PULSE_FALLING_EDGE = 0x2,
+};
+
+/**
+ * @brief Enable detection of events on each inputs
+ *
+ * `events_on_x` are bit combinations of `PCAP_PULSE_EVENT`, such as,
+ * `PCAP_PULSE_RISING_EDGE | PCAP_PULSE_FALLING_EDGE`.
+ *
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ * @param[in] events_on_0       events to be detected and reported on input 0
+ * @param[in] events_on_1       events to be detected and reported on input 1
+ */
+void PCAP_EnableEvents(const uint8_t channel_index,
+                       uint8_t events_on_0,
+                       uint8_t events_on_1);
+
+/**
+ * @brief Enable/Disable PCAP
+ *
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ */
+void PCAP_Enable(const uint8_t channel_index);
+
+/**
+ * @brief Enable/Disable DMA transfer
+ *
+ * see `PWM_DmaEnable`
+ */
+#define PCAP_DmaEnable PWM_DmaEnable
+
+/**
+ * @brief Enable/Disable PCAP counter
+ *
+ * All PCAP channels use the same counter.
+ *
+ * @param[in] enable        Enable (1) or disable (0)
+ */
+void PCAP_CounterEnable(uint8_t enable);
+
+/**
+ * @brief Read a PCAP data
+ *
+ * PCAP output are generally re-directed to DMA, this function may be used for
+ * debugging.
+ *
+ * ```c
+ *     struct data0
+ *     {
+ *         uint32_t cnt_high:12;
+ *         uint32_t p_cap_0_p:1; // rising  edge on input 0 (A) is detected
+ *         uint32_t p_cap_0_n:1; // falling edge on input 0 (A) is detected
+ *         uint32_t p_cap_1_p:1; // rising  edge on input 1 (B) is detected
+ *         uint32_t p_cap_1_n:1; // falling edge on input 1 (B) is detected
+ *         uint32_t tag:4;
+ *         uint32_t padding:12;
+ *     };
+ *     struct data1
+ *     {
+ *         uint32_t cnt_low:20;
+ *         uint32_t padding:12;
+ *     };
+ * ```
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ * @return                      data0 for the (0/2/4/..)th reading;
+ *                              data1 for the (1/3/5/..)th reading.
+ */
+uint32_t PCAP_ReadData(const uint8_t channel_index);
+
+/**
+ * @brief Read the PCAP counter
+ *
+ * @return  counter value
+ */
+uint32_t PCAP_ReadCounter(void);
 
 #endif
 

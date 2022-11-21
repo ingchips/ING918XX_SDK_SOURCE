@@ -46,6 +46,12 @@ typedef enum
     GIO_GPIO_33 ,
     GIO_GPIO_34 ,
     GIO_GPIO_35 ,
+    GIO_GPIO_36 ,
+    GIO_GPIO_37 ,
+    GIO_GPIO_38 ,
+    GIO_GPIO_39 ,
+    GIO_GPIO_40 ,
+    GIO_GPIO_41 ,
 #endif
 } GIO_Index_t;
 

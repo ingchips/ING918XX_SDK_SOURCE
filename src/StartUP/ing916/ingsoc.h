@@ -185,11 +185,20 @@ typedef struct
     __IO uint32_t DmaData;              // 0x1c
 } PWM_ChannelDef;
 
+typedef struct
+{
+    __IO uint32_t Ctrl0;                // 0x00
+    __IO uint32_t Ctrl1;                // 0x04
+    __IO uint32_t Reserved[2];
+} PCAP_ChannelDef;
 
 // dedicated PWM
 typedef struct
 {
-    PWM_ChannelDef Channels[3];
+    PWM_ChannelDef Channels[3];         // 0x00
+    PCAP_ChannelDef PCAPChannels[3];    // 0x60
+    __IO uint32_t CapCntEn;             // 0x90
+    __IO uint32_t CapCounter;           // 0x94
 } PWM_TypeDef;
 
 // I2S

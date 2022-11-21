@@ -55,7 +55,7 @@ proc SYSCTRL_ReadClkGate*(): uint32 {.importc: "SYSCTRL_ReadClkGate",
                                    header: "peripheral_sysctrl.h".}
 type
   SYSCTRL_ResetItem* {.size: sizeof(cint).} = enum
-    SYSCTRL_Reset_AHB_DMA = 0, SYSCTRL_Reset_AHB_LLE = 1, SYSCTRL_Reset_AHB_IOC = 2,
+    SYSCTRL_Reset_AHB_LLE = 1, SYSCTRL_Reset_AHB_IOC = 2,
     SYSCTRL_Reset_APB_I2C0 = 3, SYSCTRL_Reset_APB_SPI1 = 4,
     SYSCTRL_Reset_APB_TMR0 = 5, SYSCTRL_Reset_APB_TMR1 = 6,
     SYSCTRL_Reset_APB_TMR2 = 7, SYSCTRL_Reset_APB_SCI0 = 8,

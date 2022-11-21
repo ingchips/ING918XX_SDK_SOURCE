@@ -29,7 +29,7 @@ void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_
     PWM_SetRegBit(0x00, channel_index, (mask_b << 1) | mask_a, 2);
 }
 
-void PWM_SetMode(const uint8_t channel_index, const PWM_WordMode_t mode)
+void PWM_SetMode(const uint8_t channel_index, const PWM_WorkMode_t mode)
 {
     PWM_SetRegBit(0x14, channel_index, mode, 3);
 }
@@ -85,7 +85,7 @@ static void PWM_SetRegBit(const uint8_t channel_index, uint32_t addr_offset, con
 
 void PWM_Enable(const uint8_t channel_index, const uint8_t enable)
 {
-    PWM_SetRegBit(channel_index, 0x00, 5, enable & 1, 1);
+    PWM_SetRegBit(channel_index, 0x00, 6, enable & 1, 1);
 }
 
 void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_t mask_b)
@@ -95,22 +95,27 @@ void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_
 
 void PWM_SetInvertOutput(const uint8_t channel_index, const uint8_t inv_a, const uint8_t inv_b)
 {
-    PWM_SetRegBit(channel_index, 0x00, 9, (inv_b << 1) | inv_a, 2);
+    PWM_SetRegBit(channel_index, 0x00, 10, (inv_b << 1) | inv_a, 2);
 }
 
-void PWM_SetMode(const uint8_t channel_index, const PWM_WordMode_t mode)
+void PWM_SetMode(const uint8_t channel_index, const PWM_WorkMode_t mode)
 {
-    PWM_SetRegBit(channel_index, 0x00, 6, mode, 3);
+    PWM_SetRegBit(channel_index, 0x00, 7, mode, 3);
+}
+
+void PWM_HaltCtrlEnable2(const uint8_t channel_index, const uint8_t enable_a, const uint8_t enable_b)
+{
+    PWM_SetRegBit(channel_index, 0x00, 2, (enable_b << 1) | enable_a, 2);
 }
 
 void PWM_HaltCtrlEnable(const uint8_t channel_index, const uint8_t enable)
 {
-    PWM_SetRegBit(channel_index, 0x00, 2, enable, 1);
+    PWM_HaltCtrlEnable2(channel_index, enable, enable);
 }
 
 void PWM_HaltCtrlCfg(const uint8_t channel_index, const uint8_t out_a, const uint8_t out_b)
 {
-    PWM_SetRegBit(channel_index, 0x00, 3, (out_b << 1) | out_a, 2);
+    PWM_SetRegBit(channel_index, 0x00, 4, (out_b << 1) | out_a, 2);
 }
 
 void PWM_SetPeraThreshold(const uint8_t channel_index, const uint32_t threshold)
@@ -130,10 +135,38 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 
 void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable)
 {
-    uint32_t mask = APB_PWM->Channels[channel_index].Ctrl0 & ~(0x1ful << 18);
-    mask |= (enable ? 0x3 : 0x0) << 18;
-    mask |= (trig_cfg & 0x7) << 20;
+    uint32_t mask = APB_PWM->Channels[channel_index].Ctrl0 & ~(0x1ful << 20);
+    mask |= (enable ? 0x3 : 0x0) << 20;
+    mask |= (trig_cfg & 0x7) << 21;
     APB_PWM->Channels[channel_index].Ctrl0 = mask;
+}
+
+void PCAP_Enable(const uint8_t channel_index)
+{
+    PWM_SetMode(channel_index, (PWM_WorkMode_t)6);
+    PWM_Enable(channel_index, 1);
+}
+
+void PCAP_EnableEvents(const uint8_t channel_index,
+                       uint8_t events_on_0,
+                       uint8_t events_on_1)
+{
+    APB_PWM->PCAPChannels[channel_index].Ctrl0 = events_on_0 | (events_on_1 << 2);
+}
+
+uint32_t PCAP_ReadData(const uint8_t channel_index)
+{
+    return APB_PWM->PCAPChannels[channel_index].Ctrl1;
+}
+
+void PCAP_CounterEnable(uint8_t enable)
+{
+    APB_PWM->CapCntEn = enable;
+}
+
+uint32_t PCAP_ReadCounter(void)
+{
+    return APB_PWM->CapCounter;
 }
 
 #endif
