@@ -168,146 +168,24 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #include "rom_tools.h"
 
-#define __RAM_CODE    __attribute__((section(".data")))
-
-__RAM_CODE static void ram_rase_sector(uint32_t addr)
-{
-    FlashSectorErase(addr);
-    FlashWriteDisable();
-}
-
-__RAM_CODE static void ram_prog_page(uint32_t addr, const uint8_t *data, uint32_t len)
-{
-    FlashPageProgram(addr, data, len);
-    FlashWriteDisable();
-}
-
 int erase_flash_sector(const uint32_t addr)
 {
-    if (addr & (EFLASH_SECTOR_SIZE - 1)) return -1;
-    ram_rase_sector(addr);
-    return 0;
+    return ROM_erase_flash_sector(addr);
 }
-
-#define FLASH_PRE_OPS()                     \
-    uint32_t prim = __get_PRIMASK();        \
-    __disable_irq();                        \
-    FlashDisableContinuousMode();
-
-#define FLASH_POST_OPS()                    \
-    DCacheFlush();                          \
-    FlashEnableContinuousMode();            \
-    if (!prim) __enable_irq()
 
 int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-    if (dest_addr & (EFLASH_SECTOR_SIZE - 1)) return -1;
-
-    FLASH_PRE_OPS();
-    {
-        while (size > 0)
-        {
-            uint32_t remain = EFLASH_SECTOR_SIZE;
-            
-            ram_rase_sector(dest_addr);
-
-            while ((remain > 0) && (size > 0))
-            {
-                uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
-                cnt = cnt > remain ? remain : cnt;
-                ram_prog_page(dest_addr, buffer, cnt);
-                dest_addr += cnt;
-                buffer += cnt;
-                remain -= cnt;
-                size -= cnt;
-            }
-        }
-    }
-    FLASH_POST_OPS();
-
-    return 0;
+    return ROM_program_flash(dest_addr, buffer, size);
 }
 
 int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-    FLASH_PRE_OPS();
-    {
-        while (size > 0)
-        {
-            uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
-            int i;
-            for (i = 0; i < cnt; i++)
-                if (*(const uint8_t *)(dest_addr + i) != 0xff) return -1;
-
-            ram_prog_page(dest_addr, buffer, cnt);
-            dest_addr += cnt;
-            buffer += cnt;
-            size -= cnt;
-        }
-    }
-    FLASH_POST_OPS();
-
-    return 0;
-}
-
-__RAM_CODE static void ram_flash_do_update(const int block_num, const fota_update_block_t *blocks,
-    uint8_t *page_buffer)
-{
-    int i;   
-
-    for (i = 0; i < block_num; i++)
-    {
-        {
-            uint32_t dest_addr = blocks[i].dest;
-            const uint8_t *buffer = (const uint8_t *)blocks[i].src;
-            int size = blocks[i].size;
-
-            while (size > 0)
-            {
-                uint32_t remain = EFLASH_SECTOR_SIZE;
-
-                FlashSectorErase(dest_addr);
-                FlashWriteDisable();
-
-                while ((remain > 0) && (size > 0))
-                {
-                    int j;
-                    uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
-                    cnt = cnt > remain ? remain : cnt;
-
-                    for (j = 0; j < cnt; j++)
-                        page_buffer[j] = buffer[j];
-
-                    FlashPageProgram(dest_addr, page_buffer, cnt);
-                    FlashWriteDisable();
-
-                    dest_addr += cnt;
-                    buffer += cnt;
-                    remain -= cnt;
-                    size -= cnt;
-                }
-            }
-        }
-    }
-    APB_SYSCTRL->CguCfg[1] &= ~((1ul << 14) | (1ul << 18));
-    ROM_NVIC_SystemReset();
+    return ROM_write_flash(dest_addr, buffer, size);
 }
 
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
 {
-    int i;
-
-    if (block_num < 1) return -2;
-
-    for (i = 0; i < block_num; i++)
-    {
-        if (blocks[i].dest & (EFLASH_SECTOR_SIZE - 1)) return -1;
-    }
-
-    FLASH_PRE_OPS();
-    ram_flash_do_update(block_num, blocks, page_buffer);
-
-    return 0;
+    return ROM_flash_do_update(block_num, blocks, page_buffer);
 }
 
 #endif

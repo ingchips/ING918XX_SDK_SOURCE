@@ -27,14 +27,13 @@
 
 #ifndef SEC_FOTA_APP_ADDR
 #define SEC_FOTA_APP_ADDR 0x2040000
+#endif
+
+#define PAGE_SIZE (EFLASH_SECTOR_SIZE)
 
 #else
 
 #error unknown or unsupported chip family
-
-#endif
-
-#define PAGE_SIZE (EFLASH_SECTOR_SIZE)
 
 #endif
 

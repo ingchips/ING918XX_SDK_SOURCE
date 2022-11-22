@@ -5,7 +5,7 @@
 This is the RPC _Client_ for the [_Server_](../../../examples/ble_rpc/doc/index.md).
 The _Client_ is a program runs natively on a host computer, such as a PC, in which,
 
-* Most of BLE APIs are available: the program looks like an app running on INGCHIPS BLE SoC;
+* Most of BLE APIs are available: the program looks like an app running on BLE SoC;
 * All APIs of the host OS are available: the program is native.
 
 Developers can use this client to:
@@ -94,7 +94,9 @@ python tcp_serial_redirect.py COM3 115200 -P 8888
 ## Test
 
 Several examples are provided. Download _BLE RPC_ to a Dev-Board, and start UART to TCP daemon.
-Assuming the Dev-Board running _BLE RPC_ is connected to the PC running _Client_.
+If the Dev-Board is connected to the PC running _Client_, `rpc.exe` can be launched
+without any parameters. If the Dev-Board is connected to another PC, assuming its IPv4
+is AA:BB:CC:DD, then use the command line `rpc.exe -addr AA:BB:CC:DD` to launch it.
 
 ### _shell_
 

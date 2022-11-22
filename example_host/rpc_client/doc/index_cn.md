@@ -5,7 +5,7 @@
 这是与 BLE RPC [_服务器_](../../../examples/ble_rpc/doc/index.md) 相对应的 _客户端_.
 _客户端_ 程序运行于上位机（通常为 PC），具有以下特点：
 
-* 可以使用绝大部分 BLE API：这个程序看起来就像是运行在 INGCHIPS BLE SoC;
+* 可以使用绝大部分 BLE API：这个程序看起来就像是运行于 BLE SoC;
 * 可以使用上位机操作系统提供的所有 API：这是本地程序。
 
 开发者可以使用这种 _客户端_ 的方式来：
@@ -91,7 +91,9 @@ python tcp_serial_redirect.py COM3 115200 -P 8888
 ## 测试
 
 这里提供了几个例子。将 _BLE RPC_ 下载到开发板，启动 UART/TCP 桥接程序。
-假定这个开发板直接连接到了运行 _客户端_ 的 PC 上。
+如果这个开发板直接连接到了运行 _客户端_ 的 PC 上，那么运行 `rpc.exe` 时不需要附加参数；
+如果开发板、_客户端_ 处于不同的 PC 上，设开发板所在 PC 的 IPv4 地址为 AA:BB:CC:DD，
+那么通过命令行 `rpc.exe -addr AA:BB:CC:DD` 运行 `rpc.exe` 。
 
 ### _shell_
 
