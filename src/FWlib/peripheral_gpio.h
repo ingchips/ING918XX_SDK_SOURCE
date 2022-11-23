@@ -174,6 +174,19 @@ static __INLINE uint32_t GIO_GetAllIntStatus(void)  { return (*GPIO_IS); }
  *
  */
 static __INLINE void GIO_ClearAllIntStatus(void) { *GPIO_IS = 0; }
+
+/**
+ * @brief Set some or all of 32 GPIO to 1
+ * 
+ */
+static __INLINE void GIO_SetBits(const uint64_t index_mask){ (*GPIO_DO) |= index_mask;}
+
+/**
+ * @brief Clear some or all of 32 GPIO to 0
+ * 
+ */
+static __INLINE void GIO_ClearBits(const uint64_t index_mask){ (*GPIO_DO) &= (~index_mask);}
+                                       
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum

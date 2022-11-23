@@ -58,6 +58,8 @@ static TimerHandle_t timer;
 #define BUZZ_IO     8
 #define LED_IO      9
 
+#include "board.h"
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 void setup_peripherals(void)
 {
@@ -67,9 +69,9 @@ void setup_peripherals(void)
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
 
     PINCTRL_SetPadMux(LED_IO, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(LED_IO, 1);
-    PINCTRL_SetPadPwmSel(BUZZ_IO, 1);
+
+    setup_buzzer();
 }
 
 void adv_received()
@@ -81,7 +83,7 @@ void adv_received()
 
 void vTimerCallback(TimerHandle_t _)
 {    
-    PWM_SetupSimple(BUZZ_IO >> 1, 500, 50);
+    set_buzzer_freq(500);
 }
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 void setup_peripherals(void)

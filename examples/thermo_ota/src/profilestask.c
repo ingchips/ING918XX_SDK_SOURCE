@@ -16,6 +16,8 @@
 #include "FreeRTOS.h"
 #include "timers.h"
 
+#include "board.h"
+
 extern void ota_connected(void);
 
 uint16_t att_temp_value_handle = 0;
@@ -27,68 +29,24 @@ static int temperture_notify_enable=0;
 static int temperture_indicate_enable=0;
 
 #ifndef SIMULATION
-
 #define I2C_PORT        I2C_PORT_0
-#define BME280_ADDR     BME280_I2C_ADDR_PRIM
-
-BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
-{
-    return i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
-}
-
-BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
-                                                    void *intf_ptr)
-{
-    uint8_t data[len + 1];
-    data[0] = reg_addr;
-    memcpy(data + 1, reg_data, len);
-    return i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data)) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
-}
-
-void user_delay_us(uint32_t period, void *intf_ptr)
-{
-    uint32_t ms = (period + 999) / 1000;
-    vTaskDelay(pdMS_TO_TICKS(ms));
-}
-
-uint8_t dev_addr = BME280_ADDR;
-struct bme280_dev bme280_data =
-{
-    .intf_ptr = &dev_addr,
-    .intf = BME280_I2C_INTF,
-    .read = user_i2c_read,
-    .write = user_i2c_write,
-    .delay_us = user_delay_us,
-    /* Recommended mode of operation: Indoor navigation */
-    .settings =
-    {
-        .osr_h = BME280_OVERSAMPLING_1X,
-        .osr_p = BME280_OVERSAMPLING_16X,
-        .osr_t = BME280_OVERSAMPLING_2X,
-        .filter = BME280_FILTER_COEFF_16,
-        .standby_time = BME280_STANDBY_TIME_62_5_MS,
-    },
-};
-
-struct bme280_data comp_data;
-
 #endif
 
 static void read_temperature(void)
 {
+    float temp;
 #ifndef SIMULATION
-    if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
+    if ((temp = get_temperature()) < 0)
         return;
 #ifdef PRINT_ALL
-    platform_printf("T: %04d * 0.01 Deg\n", comp_data.temperature);
-    platform_printf("H: %04d / 1024 %%\n", comp_data.humidity);
-    platform_printf("P: %08d Pascal \n", comp_data.pressure);
+    platform_printf("T: %04d * 0.01 Deg\n", temp);
+    platform_printf("H: %04d / 1024 %%\n", get_humidity());
+    platform_printf("P: %08d Pascal \n", get_pressure());
 #endif
-    int32_t bme280_temperature = comp_data.temperature;
-    temperature_value[3]=(uint8_t)(bme280_temperature>>16);
-    temperature_value[2]=(uint8_t)(bme280_temperature>>8);
-    temperature_value[1]=(uint8_t)bme280_temperature;
-    
+    int32_t sensor_temperature = temp;
+    temperature_value[3]=(uint8_t)(sensor_temperature>>16);
+    temperature_value[2]=(uint8_t)(sensor_temperature>>8);
+    temperature_value[1]=(uint8_t)sensor_temperature;  
 #else
     temperature_value[2] = 10;
     temperature_value[1] = (rand() & 0x1f);
@@ -207,7 +165,7 @@ uint8_t *init_service(void);
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
-    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3e};    // TODO: random address generation
+    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3f};    // TODO: random address generation
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -359,15 +317,7 @@ uint32_t setup_profile(void *data, void *user_data)
 
     i2c_init(I2C_PORT);
 
-    printf("sensor init...");
-    if (bme280_init(&bme280_data) != BME280_OK)
-        printf("failed\n");
-    else
-    {
-        printf("OK\n");
-        bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
-        bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
-    }
+    setup_env_sensor();
 #endif
 
     return 0;

@@ -7,7 +7,7 @@
 #include "task.h"
 #include "trace.h"
 #include "blink.h"
-#include "rgb_led.h"
+#include "board.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {

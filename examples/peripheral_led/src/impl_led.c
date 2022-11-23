@@ -2,67 +2,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#ifndef PWM_LED
-
-#include "rgb_led.c"
-
-#else
-
-#define PIN_RED     4
-#define PIN_GREEN   0
-#define PIN_BLUE    6
-
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-
-#define PERA_THRESHOLD (OSC_CLK_FREQ / 1000)
-
-void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
-{
-#define TO_PERCENT(v) (((uint32_t)(v) * 100) >> 8)
-
-    PWM_SetHighThreshold(PIN_RED   >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(r));
-    PWM_SetHighThreshold(PIN_GREEN >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(g >> 1));  // GREEN & BLUE led seems too bright
-    PWM_SetHighThreshold(PIN_BLUE  >> 1, 0, PERA_THRESHOLD / 100 * TO_PERCENT(b >> 1));
-}
-
-static void setup_channel(uint8_t channel_index)
-{
-    PWM_HaltCtrlEnable(channel_index, 1);
-    PWM_Enable(channel_index, 0);
-    PWM_SetPeraThreshold(channel_index, PERA_THRESHOLD);
-    PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
-    PWM_SetHighThreshold(channel_index, 0, PERA_THRESHOLD / 2);
-    PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
-    PWM_SetMask(channel_index, 0, 0);
-    PWM_Enable(channel_index, 1); 
-    PWM_HaltCtrlEnable(channel_index, 0);
-}
-
-void setup_rgb_led()
-{
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
-                              | (1 << SYSCTRL_ClkGate_APB_PWM));
-    PINCTRL_SetPadMux(PIN_RED, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(PIN_RED, 1);
-    PINCTRL_SetPadMux(PIN_GREEN, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(PIN_GREEN, 1);
-    PINCTRL_SetPadMux(PIN_BLUE, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(PIN_BLUE, 1);
-
-    setup_channel(PIN_RED   >> 1);
-    setup_channel(PIN_GREEN >> 1);
-    setup_channel(PIN_BLUE  >> 1);
-    
-    set_led_color(50, 50, 50);
-}
-
-#else
-
-#error unknown or unsupported chip family
-
-#endif
-
-#endif
+#include "board.h"
 
 typedef struct
 {
@@ -135,4 +75,3 @@ void set_rbg_breathing(rgb_t rgb0, rgb_t rgb1)
     breathing_info.cur = breathing_info.rgb0;
     set_rgb_led_color(breathing_info.cur.r, breathing_info.cur.g, breathing_info.cur.b);
 }
-

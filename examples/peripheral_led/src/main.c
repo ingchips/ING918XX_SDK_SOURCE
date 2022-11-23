@@ -3,6 +3,7 @@
 #include "platform_api.h"
 #include <stdio.h>
 #include "rf_util.h"
+#include "board.h"
 
 #define PRINT_PORT    APB_UART0
 
