@@ -124,15 +124,20 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_IR        :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 11);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 11);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 16);
         break;
     case SYSCTRL_ITEM_APB_DMA       :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 12);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 2, v, 0);
         break;
     case SYSCTRL_ITEM_AHB_SPI0      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 13);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 6);
         break;
     case SYSCTRL_ITEM_APB_SPI1      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 14);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 7);
         break;
     case SYSCTRL_ITEM_APB_ADC       :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 15);

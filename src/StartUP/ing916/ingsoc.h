@@ -458,6 +458,7 @@ typedef struct
     #include "peripheral_adc.h"
     #include "peripheral_efuse.h"
     #include "peripheral_dma.h"
+    #include "peripheral_ir.h"
 #endif
 
 #define OSC_CLK_FREQ  24000000UL

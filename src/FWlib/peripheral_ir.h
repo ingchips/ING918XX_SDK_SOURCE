@@ -219,7 +219,7 @@ uint8_t IR_FsmGetIrDatacodeVerify(IR_TypeDef* IR_BASE);
 uint8_t IR_FsmGetIrRepeat(IR_TypeDef* IR_BASE);
 uint8_t IR_FsmGetIrTransmitOk(IR_TypeDef* IR_BASE);
 uint8_t IR_FsmGetIrTxRepeat(IR_TypeDef* IR_BASE);
-
+void IR_FsmClearIrInt(IR_TypeDef* IR_BASE);
 
 #endif
 
