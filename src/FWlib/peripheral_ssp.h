@@ -260,6 +260,7 @@ typedef enum
  * Bit shifts and widths for Transfer Control Register "TransCtrl"
  */
 #define bsSPI_TRANSCTRL_RDTRANCNT         0
+#define bsSPI_TRANSCTRL_DUMMYCNT          9
 #define bsSPI_TRANSCTRL_WRTRANCNT         12
 /* SPI_TransCtrl_DualQuad_e */
 #define bsSPI_TRANSCTRL_DUALQUAD          22
@@ -269,6 +270,7 @@ typedef enum
 #define bsSPI_TRANSCTRL_CMDEN             30
 #define bsSPI_TRANSCTRL_SLVDATAONLY       31
 
+#define bwSPI_TRANSCTRL_DUMMYCNT          2
 #define bwSPI_TRANSCTRL_RDTRANCNT         9
 #define bwSPI_TRANSCTRL_WRTRANCNT         9
 #define bwSPI_TRANSCTRL_DUALQUAD          2
@@ -295,7 +297,13 @@ typedef enum
 {
   SPI_TRANSMODE_WRITE_READ_SAME_TIME = 0,
   SPI_TRANSMODE_WRITE_ONLY = 1,
-  SPI_TRANSMODE_READ_ONLY = 2
+  SPI_TRANSMODE_READ_ONLY = 2,
+  SPI_TRANSMODE_WRITE_READ = 3,
+  SPI_TRANSMODE_READ_WRITE = 4,
+  SPI_TRANSMODE_WRITE_DUMMY_READ = 5,
+  SPI_TRANSMODE_READ_DUMMY_WRITE = 6,
+  SPI_TRANSMODE_DUMMY_WRITE = 8,
+  SPI_TRANSMODE_DUMMY_READ = 9
 }SPI_TransCtrl_TransMode_e;
 
 /* SPI address phase enable (Master mode only) 0x0: Disable the address phase
@@ -435,13 +443,25 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
 #define bwSPI_TIMING_CS2SCLK             2
 
 /* several options of spi clock */
-#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_24M   (0xFF)
-#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_12M   (0)
+
+/* default clk config 
+   for default, spi interface clock is 24M, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   for example, "eSclkDiv == 1" means 24M/(2*(1+1)) = 6M(spi clk speed)*/
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_6M    (1)
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_4M    (2)
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_3M    (3)
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M4   (4)
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M    (5)
+
+/* hclk config 
+   for hclk, use SYSCTRL_SelectHClk() and SYSCTRL_SelectSpiClk() to increase spi interface clock
+   for instance, below config would setup a spi interface clock for 96M, use SYSCTRL_GetClk() to confirm
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);
+    SYSCTRL_SelectSpiClk(SPI_PORT_1,SYSCTRL_CLK_HCLK);
+   again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   for example, "eSclkDiv == 1" means 96M/(2*(1+1)) = 24M(spi clk speed)*/
+#define SPI_INTERFACETIMINGSCLKDIV_HCLK_24M    (1)
+#define SPI_INTERFACETIMINGSCLKDIV_HCLK_12M    (3)
 
 typedef uint8_t  SPI_InterfaceTimingSclkDiv;// spi interface clock / (2 * (eSclkDiv + 1))
 

@@ -188,4 +188,10 @@ uint8_t IR_FsmGetIrTxRepeat(IR_TypeDef* IR_BASE)
   return (uint8_t) ((IR_BASE->ir_fsm >> bsIR_IR_FSM_IR_TX_REPEAT) & BW2M(bwIR_IR_FSM_IR_TX_REPEAT));
 }
 
+void IR_FsmClearIrInt(IR_TypeDef* IR_BASE)
+{
+  IR_BASE->ir_fsm |= (1 << bsIR_IR_FSM_IR_RECEIVED_OK) | (1 << bsIR_IR_FSM_IR_REPEAT) 
+                      | (1 << bsIR_IR_FSM_IR_TRANSMIT_OK) | (1 << bsIR_IR_FSM_IR_TX_REPEAT);
+}
+
 #endif
