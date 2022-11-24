@@ -123,6 +123,7 @@ typedef enum
     SYSCTRL_ITEM_APB_PinCtrl   ,
     SYSCTRL_ITEM_APB_EFUSE     ,
     SYSCTRL_ITEM_APB_USB       ,
+    SYSCTRL_ITEM_APB_LPC       ,
     SYSCTRL_ITEM_NUMBER,
 } SYSCTRL_Item;
 
