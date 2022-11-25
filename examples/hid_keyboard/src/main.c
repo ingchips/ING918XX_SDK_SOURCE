@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include "trace.h"
 
+#include "board.h"
+
 #define PRINT_UART    APB_UART0
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
@@ -75,18 +77,7 @@ void setup_peripherals(void)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
 
     // setup GPIOs for keys
-    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GPIO);
-    GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_2, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_3, GIO_DIR_INPUT);
-    GIO_ConfigIntSource(KB_KEY_1, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_2, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_3, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
+    setup_keyconfigure();
 }
 
 extern void kb_state_changed(uint16_t key_state);

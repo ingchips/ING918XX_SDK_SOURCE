@@ -18,6 +18,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "board.h"
+
 #ifndef SIMULATION
 #include <stdlib.h>
 #endif
@@ -35,6 +37,7 @@ typedef struct {
 	axis_info_t oldmin;
 }peak_value_t;
 
+//Linear shift register for filtering high frequency noise
 typedef struct slid_reg{
 	axis_info_t new_sample;
 	axis_info_t old_sample;
@@ -57,11 +60,11 @@ static pedometer_info_t result =
 #define MOST_ACTIVE_X                     1
 #define MOST_ACTIVE_Y                     2
 #define MOST_ACTIVE_Z                     3
-#define ACTIVE_PRECISION                  500
+#define ACTIVE_PRECISION    10
 
 #define ABS(a) (0 - (a)) > 0 ? (-(a)) : (a)
 
-#define DYNAMIC_PRECISION                 200
+#define DYNAMIC_PRECISION                 0
 
 #define FILTER_CNT            3
 #define PEAK_UPDATE_PERIOD    ACC_SAMPLING_RATE
@@ -69,26 +72,35 @@ static pedometer_info_t result =
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-void filter(axis_info_t *sample, struct bma2x2_accel_data *sample_xyz)
+uint8_t filter(axis_info_t *sample, struct bma2x2_accel_data *sample_xyz)
 {
+    uint8_t i;
     static uint8_t counter = 0;
     static struct bma2x2_accel_data buffer[FILTER_CNT] = {0};
-    uint8_t i;
+    int16_t x_sum = 0, y_sum = 0, z_sum = 0;
 
-    buffer[counter].x = sample_xyz->x >> 2;
-    buffer[counter].y = sample_xyz->y >> 2;
-    buffer[counter].z = sample_xyz->z >> 2;
+    buffer[counter].x = sample_xyz->x;
+    buffer[counter].y = sample_xyz->y;
+    buffer[counter].z = sample_xyz->z;
     counter++;
+
     if (counter == FILTER_CNT)
+    {
         counter = 0;
 
-    sample->x = 0; sample->y = 0; sample->z = 0;
-    for (i = 0; i < FILTER_CNT; i++)
-    {
-        sample->x += buffer[i].x;
-        sample->y += buffer[i].y;
-        sample->z += buffer[i].z;
-    }
+        for (i = 0; i < FILTER_CNT; i++)
+        {
+            x_sum += buffer[i].x;
+            y_sum += buffer[i].y;
+            z_sum += buffer[i].z;
+        }
+
+        sample->x = x_sum / FILTER_CNT;
+        sample->y = y_sum / FILTER_CNT;
+        sample->z = z_sum / FILTER_CNT; 
+    } 
+
+    return counter;
 }
 
 static void axis_value_init(axis_info_t *info, int16_t value)
@@ -100,8 +112,10 @@ static void axis_value_init(axis_info_t *info, int16_t value)
 
 static void peak_value_init(peak_value_t *peak)
 {
-    axis_value_init(&peak->newmin, 0x7fff);
-    axis_value_init(&peak->newmax, 0x8000);
+    // axis_value_init(&peak->newmin, 0x7fff);
+    // axis_value_init(&peak->newmax, 0x8000);
+    axis_value_init(&peak->newmin, 0x0);
+    axis_value_init(&peak->newmax, 0x0);
 }
 
 static void update_peak(peak_value_t *peak, axis_info_t *cur_sample)
@@ -116,9 +130,14 @@ static void update_peak(peak_value_t *peak, axis_info_t *cur_sample)
     peak->newmin.y = MIN(peak->newmin.y, cur_sample->y);
     peak->newmin.z = MIN(peak->newmin.z, cur_sample->z);
 
+    printf("peak_max.x = %d, peak_min.x = %d\n", peak->newmax.x, peak->newmin.x);
+    printf("peak_max.y = %d, peak_min.y = %d\n", peak->newmax.y, peak->newmin.y);
+    printf("peak_max.z = %d, peak_min.z = %d\n", peak->newmax.z, peak->newmin.z);
+
     sample_size++;
     if (sample_size >= PEAK_UPDATE_PERIOD)
     {
+        while(1){};
         sample_size = 0;
         peak->oldmax = peak->newmax;
         peak->oldmin = peak->newmin;
@@ -144,7 +163,7 @@ static char update_slid(slid_reg_t *slid, axis_info_t *cur_sample)
         res = 1;
     }
 
-    if (ABS((cur_sample->z - slid->new_sample.z)) > DYNAMIC_PRECISION)
+    if (ABS((cur_sample->z - slid->new_sample.z)) > DYNAMIC_PRECISION + 4)
     {
         slid->new_sample.z = cur_sample->z;
         res = 1;
@@ -223,11 +242,7 @@ void pedometer_init(void)
     peak.oldmax = peak.newmax;
 
 #ifndef SIMULATION
-    printf("bma2x2_power_on...");
-    if (bma2x2_power_on()==0)
-        printf("success!!\n");
-    else
-        printf("faild!!\n");
+setup_accelerometer();
 #endif
 }
 
@@ -278,19 +293,29 @@ void accelarator_sample_sim(void)
     }
 }
 
+//Round data of type float to round
+#define INT16_T(x) ((x) > 0 ? (int16_t)(x + 0.5) : (int16_t)(x - 0.5))
+
 void accelarator_sample(void)
 {
     result.total_sample_cnt++;
     result.temp_sample_cnt++;
 
 #ifndef SIMULATION
-    bma2x2_read_accel_xyz(&sample_xyz);
-    //printf("%d,%d,%d\n", sample_xyz.x, sample_xyz.y, sample_xyz.z);
-    filter(&cur_sample, &sample_xyz);
+    float x,y,z;
+    get_acc_xyz(&x, &y, &z);
 
-    update_peak(&peak, &cur_sample);
-    if (update_slid(&slid_sample, &cur_sample))
-        detect_step(&peak,&slid_sample);
+    sample_xyz.x = INT16_T(x);
+    sample_xyz.y = INT16_T(y);
+    sample_xyz.z = INT16_T(z);
+
+    if(filter(&cur_sample, &sample_xyz) == 0)
+    {
+        update_peak(&peak, &cur_sample);
+        if (update_slid(&slid_sample, &cur_sample))
+            detect_step(&peak,&slid_sample);
+    }
+
 #else
     if ((result.temp_sample_cnt % ACC_SAMPLING_RATE) == 0)
     {

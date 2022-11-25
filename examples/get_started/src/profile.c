@@ -14,6 +14,9 @@
 #include "FreeRTOS.h"
 #include "timers.h"
 
+#include "board.h"
+#include "peripheral_pinctrl.h"
+
 uint8_t adv_data[31] = {0};
 uint8_t adv_data_len = 0;
 
@@ -25,112 +28,6 @@ const static uint8_t scan_data[] = {
 
 #include "../data/scan_response.const"
 
-#ifndef SIMULATION
-
-#define BME280_ADDR     BME280_I2C_ADDR_PRIM
-
-BME280_INTF_RET_TYPE user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
-{
-    return i2c_read(I2C_PORT, BME280_ADDR, &reg_addr, 1, reg_data, len) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
-}
-
-BME280_INTF_RET_TYPE user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
-                                                    void *intf_ptr)
-{
-    uint8_t data[len + 1];
-    data[0] = reg_addr;
-    memcpy(data + 1, reg_data, len);
-    return i2c_write(I2C_PORT, BME280_ADDR, data, sizeof(data)) == 0 ? BME280_OK : BME280_E_COMM_FAIL;
-}
-
-void user_delay_us(uint32_t period, void *intf_ptr)
-{
-    uint32_t ms = (period + 999) / 1000;
-    vTaskDelay(pdMS_TO_TICKS(ms));
-}
-
-uint8_t dev_addr = BME280_ADDR;
-struct bme280_dev bme280_data =
-{
-    .intf_ptr = &dev_addr,
-    .intf = BME280_I2C_INTF,
-    .read = user_i2c_read,
-    .write = user_i2c_write,
-    .delay_us = user_delay_us,
-    /* Recommended mode of operation: Indoor navigation */
-    .settings =
-    {
-        .osr_h = BME280_OVERSAMPLING_1X,
-        .osr_p = BME280_OVERSAMPLING_16X,
-        .osr_t = BME280_OVERSAMPLING_2X,
-        .filter = BME280_FILTER_COEFF_16,
-        .standby_time = BME280_STANDBY_TIME_62_5_MS,
-    },
-};
-
-struct bme280_data comp_data;
-
-#endif
-
-float get_temperature(void)
-{
-#ifndef SIMULATION
-    if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
-        return 0.0;
-    return comp_data.temperature;
-#else
-    return rand() & 0x1f;
-#endif
-}
-
-float get_humidity(void)
-{
-#ifndef SIMULATION
-    if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
-        return 0.0;
-    return comp_data.humidity;
-#else
-    return rand() & 0x1f;
-#endif
-}
-
-float get_pressure(void)
-{
-#ifndef SIMULATION
-    if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
-        return 0;
-    return comp_data.pressure;
-#else
-    return rand() & 0x1f;
-#endif
-}
-
-/*! Earth's gravity in m/s^2 */
-#define GRAVITY_EARTH  (9.80665f)
-
-static float lsb_to_ms2(int16_t val, float g_range, uint8_t bit_width)
-{
-    float half_scale = ((float)(1 << bit_width) / 2.0f);
-
-    return (GRAVITY_EARTH * val * g_range) / half_scale;
-}
-
-#define TO_MS2(v) lsb_to_ms2(v, 2, 14)
-
-void get_acc_xyz(float *x, float *y, float *z)
-{
-#ifndef SIMULATION
-    struct bma2x2_accel_data sample_xyz;
-    bma2x2_read_accel_xyz(&sample_xyz);
-    *x = TO_MS2(sample_xyz.x);
-    *y = TO_MS2(sample_xyz.y);
-    *z = TO_MS2(sample_xyz.z);
-#else
-    *x = 0;
-    *y = 0;
-    *z = 0;
-#endif
-}
 
 extern uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size);
@@ -229,6 +126,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
+#define I2C_PORT I2C_PORT_0
+
 uint32_t setup_profile(void *data, void *user_data)
 {
     platform_printf("setup profile\n");
@@ -238,15 +137,7 @@ uint32_t setup_profile(void *data, void *user_data)
 
     i2c_init(I2C_PORT);
 
-    platform_printf("sensor init...");
-    if (bme280_init(&bme280_data) != BME280_OK)
-        printf("failed\n");
-    else
-    {
-        printf("OK\n");
-        bme280_set_sensor_settings(BME280_ALL_SETTINGS_SEL, &bme280_data);
-        bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
-    }
+    setup_env_sensor();
 
     if (bma2x2_power_on()==0)
         printf("success!!\n");
