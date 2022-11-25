@@ -86,14 +86,11 @@ static void ws2881_write(uint32_t value)
     {
         uint32_t bit = value & ( 0x00800000 >> i);
 
-        if (bit)
-        {   
+        if (bit){   
             GIO_SetBits(GPIO_MASK);
             GIO_ClearBits(GPIO_MASK);
-        }
-        else
-        {       
-		    GIO_SetQuicPulse(GPIO_MASK);
+        } else {
+            GIO_SetQuicPulse(GPIO_MASK);
         }
     }
     delay(100 * 8);
