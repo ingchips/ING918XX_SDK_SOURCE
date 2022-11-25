@@ -93,7 +93,7 @@ static void ws2881_write(uint32_t value)
         }
         else
         {       
-			GIO_SetQuicPulse(GPIO_MASK);
+		    GIO_SetQuicPulse(GPIO_MASK);
         }
     }
     delay(100 * 8);

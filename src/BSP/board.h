@@ -61,7 +61,7 @@ void setup_env_sensor();
  * Note:To use the thermometer, you need to add the macro 'BOARD_SENSOR_THERMO'definition 
  * to the keil project.
  * 
- * @return Temperature measurement value with float type.（unit is 100°C）
+ * @return Temperature measurement value with float type.（unit is 0.01°C）
  ****************************************************************************************
  */
 float get_temperature(void);

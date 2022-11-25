@@ -309,7 +309,7 @@ void accelarator_sample(void)
     sample_xyz.y = INT16_T(y);
     sample_xyz.z = INT16_T(z);
 
-    if(!filter(&cur_sample, &sample_xyz))
+    if(filter(&cur_sample, &sample_xyz) == 0)
     {
         update_peak(&peak, &cur_sample);
         if (update_slid(&slid_sample, &cur_sample))
