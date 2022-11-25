@@ -4,7 +4,7 @@
 #include "peripheral_gpio.h"
 
 #ifndef KEY_PIN
-#define KEY_PIN     GIO_GPIO_1
+#define KEY_PIN     GIO_GPIO_9
 #endif
 
 #ifndef VALUE_PRESSED

@@ -179,13 +179,25 @@ static __INLINE void GIO_ClearAllIntStatus(void) { *GPIO_IS = 0; }
  * @brief Set some or all of 32 GPIO to 1
  * 
  */
-static __INLINE void GIO_SetBits(const uint64_t index_mask){ (*GPIO_DO) |= index_mask;}
+static __INLINE void GIO_SetBits(const uint64_t index_mask){ *GPIO_DO = (*GPIO_DO) | index_mask;}
 
 /**
  * @brief Clear some or all of 32 GPIO to 0
  * 
  */
-static __INLINE void GIO_ClearBits(const uint64_t index_mask){ (*GPIO_DO) &= (~index_mask);}
+static __INLINE void GIO_ClearBits(const uint64_t index_mask){ *GPIO_DO = (*GPIO_DO) & (~index_mask);}
+
+/**
+ * @brief Send a pulse of duration 200~380ns to GPIO
+ * 
+ * Note:The running time is 200ns less than using GIO_SetBits with GIO_ClearBits to generate a pulse.
+ */
+static __INLINE void GIO_SetQuicPulse(const uint64_t index_mask){ 
+    uint32_t tmp_set = (*GPIO_DO)|index_mask;
+    uint32_t tmp_clear = (*GPIO_DO)&(~index_mask);
+    *GPIO_DO = tmp_set;
+    *GPIO_DO = tmp_clear;
+}
                                        
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 

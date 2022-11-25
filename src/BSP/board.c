@@ -8,6 +8,7 @@
 #include "peripheral_pwm.h"
 #include "peripheral_sysctrl.h"
 #include "peripheral_pinctrl.h"
+#include "peripheral_gpio.h"
 
 #include "platform_api.h"
 
@@ -92,12 +93,7 @@ static void ws2881_write(uint32_t value)
         }
         else
         {       
-            //This part cannot be replaced by GIO_SetBits(GPIO_MASK),otherwise 
-            //it does not satisfy the timing requirement.
-            uint32_t tmp2 = (*((__IO uint32_t *)APB_BASE_test))&(~0x1);    
-            GIO_SetBits(GPIO_MASK);
-            (*((__IO uint32_t *)APB_BASE_test)) = tmp2;
-
+			GIO_SetQuicPulse(GPIO_MASK);
         }
     }
     delay(100 * 8);

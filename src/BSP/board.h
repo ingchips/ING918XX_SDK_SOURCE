@@ -61,7 +61,7 @@ void setup_env_sensor();
  * Note:To use the thermometer, you need to add the macro 'BOARD_SENSOR_THERMO'definition 
  * to the keil project.
  * 
- * @return Temperature measurement value with float type
+ * @return Temperature measurement value with float type.（unit is 100°C）
  ****************************************************************************************
  */
 float get_temperature(void);
@@ -70,7 +70,7 @@ float get_temperature(void);
  ****************************************************************************************
  * @brief Get the humidity
  * 
- * @return Humidity measurement value with float type
+ * @return Humidity measurement value with float type.（unit is %）
  ****************************************************************************************
  */
 float get_humidity(void);
@@ -79,7 +79,7 @@ float get_humidity(void);
  ****************************************************************************************
  * @brief Get the pressure
  * 
- * @return Pressure measurement value with float type
+ * @return Pressure measurement value with float type.（unit is 1Pascal）
  ****************************************************************************************
  */
 float get_pressure(void);

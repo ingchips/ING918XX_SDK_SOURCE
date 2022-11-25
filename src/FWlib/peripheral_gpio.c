@@ -60,13 +60,6 @@ void GIO_ClearIntStatus(const GIO_Index_t io_index)
     GIO_MaskedWrite(GPIO_IS, io_index, 0);
 }
 
-// void GIO_ClearBits1(void)
-// {
-//     uint32_t tmp2 = (*((__IO uint32_t *)(APB_GIO_BASE+0x10)))&(~0x1);
-
-//     *((__IO uint32_t *)(APB_GIO_BASE+0x10)) = tmp2;
-// }
-
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #define START_OF_GPIO1          GIO_GPIO_21

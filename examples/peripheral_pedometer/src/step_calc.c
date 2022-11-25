@@ -60,7 +60,6 @@ static pedometer_info_t result =
 #define MOST_ACTIVE_X                     1
 #define MOST_ACTIVE_Y                     2
 #define MOST_ACTIVE_Z                     3
-//#define ACTIVE_PRECISION                  500
 #define ACTIVE_PRECISION    10
 
 #define ABS(a) (0 - (a)) > 0 ? (-(a)) : (a)
@@ -73,34 +72,35 @@ static pedometer_info_t result =
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-typedef struct filter_avg{
-    axis_info_t buffer[FILTER_CNT];
-    uint8_t counter;
-}filter_avg_t;
-
-filter_avg_t filter_avg_sample = {
-    .buffer = {0},
-    .counter = 0,
-};
-
-void filter(axis_info_t *sample, filter_avg_t *filter)
+uint8_t filter(axis_info_t *sample, struct bma2x2_accel_data *sample_xyz)
 {
     uint8_t i;
+    static uint8_t counter = 0;
+    static struct bma2x2_accel_data buffer[FILTER_CNT] = {0};
     int16_t x_sum = 0, y_sum = 0, z_sum = 0;
 
-    filter_avg_sample.counter = 0;
+    buffer[counter].x = sample_xyz->x;
+    buffer[counter].y = sample_xyz->y;
+    buffer[counter].z = sample_xyz->z;
+    counter++;
 
-    for (i = 0; i < FILTER_CNT; i++)
+    if (counter == FILTER_CNT)
     {
-        x_sum += filter->buffer[i].x;
-        y_sum += filter->buffer[i].y;
-        z_sum += filter->buffer[i].z;
-    }
+        counter = 0;
 
-    sample->x = x_sum / FILTER_CNT;
-    sample->y = y_sum / FILTER_CNT;
-    sample->z = z_sum / FILTER_CNT;   
+        for (i = 0; i < FILTER_CNT; i++)
+        {
+            x_sum += buffer[i].x;
+            y_sum += buffer[i].y;
+            z_sum += buffer[i].z;
+        }
 
+        sample->x = x_sum / FILTER_CNT;
+        sample->y = y_sum / FILTER_CNT;
+        sample->z = z_sum / FILTER_CNT; 
+    } 
+
+    return counter;
 }
 
 static void axis_value_init(axis_info_t *info, int16_t value)
@@ -309,19 +309,13 @@ void accelarator_sample(void)
     sample_xyz.y = INT16_T(y);
     sample_xyz.z = INT16_T(z);
 
-    //Every FILTER_CNT times of data collection, feed into the filter for processing
-    while(filter_avg_sample.counter < FILTER_CNT)
+    if(!filter(&cur_sample, &sample_xyz))
     {
-        filter_avg_sample.buffer[filter_avg_sample.counter].x =  sample_xyz.x;
-        filter_avg_sample.buffer[filter_avg_sample.counter].y =  sample_xyz.y;
-        filter_avg_sample.buffer[filter_avg_sample.counter].z =  sample_xyz.z;
-        filter_avg_sample.counter++;
+        update_peak(&peak, &cur_sample);
+        if (update_slid(&slid_sample, &cur_sample))
+            detect_step(&peak,&slid_sample);
     }
 
-    filter(&cur_sample, &filter_avg_sample);
-    update_peak(&peak, &cur_sample);
-    if (update_slid(&slid_sample, &cur_sample))
-        detect_step(&peak,&slid_sample);
 #else
     if ((result.temp_sample_cnt % ACC_SAMPLING_RATE) == 0)
     {
