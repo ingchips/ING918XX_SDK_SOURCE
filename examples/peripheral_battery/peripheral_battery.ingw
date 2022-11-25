@@ -1,11 +1,11 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133512,
+   "size": 133528,
    "base": 16384
   },
   "ram": {
-   "size": 22488,
+   "size": 30988,
    "base": 536870912
   },
   "app": {
@@ -28,7 +28,7 @@
  "ota_ver_major": "0",
  "ble_50": false,
  "template": "C:\\projects\\ingWizard\\templates\\typical\\peripheral",
- "series": "ING9185xx",
+ "series": "ING9187xx",
  "proj_name": "peripheral_battery",
  "sdk_release_path": "..\/..",
  "adv_data": "\/\/ 0x09 - \ufffd\ufffdComplete Local Name\ufffd\ufffd\r\n13, 0x09,\r\n0x62, 0x61, 0x74, 0x74, 0x65, 0x72, 0x79, 0x5F, \r\n0x64, 0x65, 0x6D, 0x6F, \r\n\r\n\/\/ 0x03 - \ufffd\ufffdComplete List of 16-bit Service Class UUIDs\ufffd\ufffd\r\n3, 0x03,\r\n0x0F, 0x18, \r\n\r\n\/\/ Total size = 18 bytes\r\n",
@@ -38,7 +38,7 @@
  "deep_sleep": true,
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\peripheral_battery",
  "bundle": "typical",
- "app_rom_size": "122880",
+ "app_rom_size": "385024",
  "app_rom_addr": "155648",
  "family": "ing918",
  "role": "peripheral",
@@ -50,8 +50,8 @@
  },
  "keil": true,
  "cmsis": "",
- "app_ram_size": 10280,
- "app_ram_addr": 536893400,
+ "app_ram_size": 34544,
+ "app_ram_addr": 536901904,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n"

@@ -7,9 +7,7 @@
 #include "btstack_defines.h"
 #include "att_db_util.h"
 
-#include "bme280.h"
 #include "iic.h"
-#include "bma2x2.h"
 
 #include "FreeRTOS.h"
 #include "timers.h"
@@ -133,16 +131,11 @@ uint32_t setup_profile(void *data, void *user_data)
     platform_printf("setup profile\n");
 
 #ifndef SIMULATION
-    extern s32 bma2x2_power_on(void);
-
     i2c_init(I2C_PORT);
 
     setup_env_sensor();
 
-    if (bma2x2_power_on()==0)
-        printf("success!!\n");
-    else
-        printf("failed!!\n");
+    setup_accelerometer();
 #endif
     att_db_util_init(att_db_storage, sizeof(att_db_storage));
     att_server_init(att_read_callback, att_write_callback);

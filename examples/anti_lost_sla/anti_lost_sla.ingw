@@ -2,11 +2,11 @@
  "watchdog": false,
  "bundle_meta": {
   "rom": {
-   "size": 133512,
+   "size": 133528,
    "base": 16384
   },
   "ram": {
-   "size": 22488,
+   "size": 30988,
    "base": 536870912
   },
   "app": {
@@ -31,7 +31,7 @@
  "ota_ver_minor": "0",
  "ota_ver_major": "0",
  "template": "C:\\projects\\ingWizard\\templates\\typical\\peripheral",
- "series": "ING9185xx",
+ "series": "ING9187xx",
  "proj_name": "anti_lost_sla",
  "sdk_release_path": "..\/..",
  "security": false,
@@ -46,7 +46,7 @@
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\anti_lost_sla",
  "power_saving": false,
  "bundle": "typical",
- "app_rom_size": "122880",
+ "app_rom_size": "385024",
  "app_rom_addr": "155648",
  "family": "ing918",
  "vcode": false,
@@ -60,8 +60,8 @@
  },
  "keil": true,
  "cmsis": "",
- "app_ram_size": 10280,
- "app_ram_addr": 536893400,
+ "app_ram_size": 34544,
+ "app_ram_addr": 536901904,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",

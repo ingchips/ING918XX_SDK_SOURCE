@@ -20,9 +20,8 @@
 
 #include "board.h"
 
-#ifndef SIMULATION
 #include <stdlib.h>
-#endif
+
 
 typedef struct {
   int16_t x;
@@ -72,7 +71,9 @@ static pedometer_info_t result =
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-uint8_t filter(axis_info_t *sample, struct bma2x2_accel_data *sample_xyz)
+#ifndef SIMULATION
+
+static uint8_t filter(axis_info_t *sample, struct bma2x2_accel_data *sample_xyz)
 {
     uint8_t i;
     static uint8_t counter = 0;
@@ -97,8 +98,8 @@ uint8_t filter(axis_info_t *sample, struct bma2x2_accel_data *sample_xyz)
 
         sample->x = x_sum / FILTER_CNT;
         sample->y = y_sum / FILTER_CNT;
-        sample->z = z_sum / FILTER_CNT; 
-    } 
+        sample->z = z_sum / FILTER_CNT;
+    }
 
     return counter;
 }
@@ -112,8 +113,6 @@ static void axis_value_init(axis_info_t *info, int16_t value)
 
 static void peak_value_init(peak_value_t *peak)
 {
-    // axis_value_init(&peak->newmin, 0x7fff);
-    // axis_value_init(&peak->newmax, 0x8000);
     axis_value_init(&peak->newmin, 0x0);
     axis_value_init(&peak->newmax, 0x0);
 }
@@ -130,14 +129,9 @@ static void update_peak(peak_value_t *peak, axis_info_t *cur_sample)
     peak->newmin.y = MIN(peak->newmin.y, cur_sample->y);
     peak->newmin.z = MIN(peak->newmin.z, cur_sample->z);
 
-    printf("peak_max.x = %d, peak_min.x = %d\n", peak->newmax.x, peak->newmin.x);
-    printf("peak_max.y = %d, peak_min.y = %d\n", peak->newmax.y, peak->newmin.y);
-    printf("peak_max.z = %d, peak_min.z = %d\n", peak->newmax.z, peak->newmin.z);
-
     sample_size++;
     if (sample_size >= PEAK_UPDATE_PERIOD)
     {
-        while(1){};
         sample_size = 0;
         peak->oldmax = peak->newmax;
         peak->oldmin = peak->newmin;
@@ -163,7 +157,7 @@ static char update_slid(slid_reg_t *slid, axis_info_t *cur_sample)
         res = 1;
     }
 
-    if (ABS((cur_sample->z - slid->new_sample.z)) > DYNAMIC_PRECISION + 4)
+    if (ABS((cur_sample->z - slid->new_sample.z)) > DYNAMIC_PRECISION)
     {
         slid->new_sample.z = cur_sample->z;
         res = 1;
@@ -188,7 +182,7 @@ static char is_most_active(peak_value_t *peak)
     return res;
 }
 
-void detect_step(peak_value_t *peak, slid_reg_t *slid)
+static void detect_step(peak_value_t *peak, slid_reg_t *slid)
 {
     int16_t threshold;
     int16_t old_sample;
@@ -233,64 +227,18 @@ static axis_info_t cur_sample = {0};
 static peak_value_t     peak = {0};
 static slid_reg_t       slid_sample = {0};
 
-extern s32 bma2x2_power_on(void);
+#endif
+
 
 void pedometer_init(void)
 {
+#ifndef SIMULATION    
     peak_value_init(&peak);
     peak.oldmin = peak.newmin;
     peak.oldmax = peak.newmax;
 
-#ifndef SIMULATION
-setup_accelerometer();
+    setup_accelerometer();
 #endif
-}
-
-#ifdef SIMULATION
-void simulate_read_accel_xyz(struct bma2x2_accel_data *sample_xyz)
-{
-    static uint16_t sim_cnt = 0;
-    sim_cnt++;
-    sample_xyz->x = 0;
-    sample_xyz->y = 0;
-    sample_xyz->z = 0;
-    if (sim_cnt < ACC_SAMPLING_RATE - 10)
-        return;
-    if (sim_cnt >= ACC_SAMPLING_RATE)
-    {
-        sim_cnt = 0;
-        return;
-    }
-
-    if (sim_cnt < ACC_SAMPLING_RATE - 5)
-        sample_xyz->x = (sim_cnt + 5 - (ACC_SAMPLING_RATE - 5)) * 200;
-    else
-        sample_xyz->x = (ACC_SAMPLING_RATE - sim_cnt) * 200;
-}
-#endif
-
-void accelarator_sample_sim(void)
-{
-    result.total_sample_cnt++;
-    result.temp_sample_cnt++;
-
-    if ((result.temp_sample_cnt % ACC_SAMPLING_RATE) == 0)
-    {
-        int8_t i = rand() & 0x3;
-        result.total_steps += i;
-        result.temp_steps += i;
-    }
-
-    // update speed estimations
-    if (result.temp_sample_cnt >= ACC_SAMPLING_RATE * 1)
-    {
-        result.cadence = result.temp_steps * 60;
-        result.speed = ((uint32_t)(result.stride_length * result.temp_steps) << 8) / (100);
-        result.total_distance = result.stride_length * result.total_steps / 10;
-
-        result.temp_steps = 0;
-        result.temp_sample_cnt = 0;
-    }
 }
 
 //Round data of type float to round

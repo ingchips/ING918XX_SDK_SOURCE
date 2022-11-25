@@ -95,8 +95,8 @@ void setup_peripherals(void)
 
     // setup GPIOs for keys
     PINCTRL_DisableAllInputs();
-    setup_keyconfigure();
-    
+    setup_keys();
+
     // LED
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(LED_PIN, GIO_DIR_OUTPUT);

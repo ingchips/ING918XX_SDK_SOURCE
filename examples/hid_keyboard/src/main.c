@@ -71,18 +71,18 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    
+
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
-                              | (1 << SYSCTRL_ClkGate_APB_GPIO1) 
+                              | (1 << SYSCTRL_ClkGate_APB_GPIO1)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
 
     // setup GPIOs for keys
-    setup_keyconfigure();
+    setup_keys();
 }
 
 extern void kb_state_changed(uint16_t key_state);
 extern void kb_input_char(char c);
-    
+
 uint32_t gpio_isr(void *user_data)
 {
     uint32_t current = ~GIO_ReadAll();

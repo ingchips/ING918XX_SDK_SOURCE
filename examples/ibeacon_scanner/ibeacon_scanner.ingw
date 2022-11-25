@@ -1,11 +1,11 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133512,
+   "size": 133528,
    "base": 16384
   },
   "ram": {
-   "size": 22488,
+   "size": 30988,
    "base": 536870912
   },
   "app": {
@@ -29,7 +29,7 @@
  "ota_ver_major": "0",
  "ble_50": false,
  "template": "C:\\projects\\ingWizard\\templates\\typical\\central",
- "series": "ING9185xx",
+ "series": "ING9187xx",
  "proj_name": "ibeacon_scanner",
  "sdk_release_path": "..\/..",
  "adv_data": "0\r\n",
@@ -38,15 +38,15 @@
  "deep_sleep": false,
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\ibeacon_scanner",
  "bundle": "typical",
- "app_rom_size": "122880",
+ "app_rom_size": "385024",
  "app_rom_addr": "155648",
  "family": "ing918",
  "arm_inc": "C:\/keil\/ARM\/ARMCC\/include",
  "role": "central",
  "keil": true,
  "cmsis": "",
- "app_ram_size": 10280,
- "app_ram_addr": 536893400,
+ "app_ram_size": 34544,
+ "app_ram_addr": 536901904,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",

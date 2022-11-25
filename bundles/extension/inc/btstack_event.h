@@ -88,7 +88,9 @@ typedef void (*f_btstack_user_runnable)(void *, uint16_t);
  * @param user_value    another user data
  * @return 0 if success; else error occurred
  */
-uint32_t btstack_push_user_runnable(f_btstack_user_runnable fun, void *data, const uint16_t user_value);
+// uint32_t btstack_push_user_runnable(f_btstack_user_runnable fun, void *data, const uint16_t user_value);
+// WARNING: ^^^ this API is not available in this release
+
 
 /***
  * @brief Get subevent code for le event

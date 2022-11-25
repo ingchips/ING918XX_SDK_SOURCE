@@ -10,7 +10,6 @@
 #include "ota_service.h"
 
 #include "att_db_util.h"
-#include "bme280.h"
 #include "iic.h"
 
 #include "FreeRTOS.h"
@@ -46,7 +45,7 @@ static void read_temperature(void)
     int32_t sensor_temperature = temp;
     temperature_value[3]=(uint8_t)(sensor_temperature>>16);
     temperature_value[2]=(uint8_t)(sensor_temperature>>8);
-    temperature_value[1]=(uint8_t)sensor_temperature;  
+    temperature_value[1]=(uint8_t)sensor_temperature;
 #else
     temperature_value[2] = 10;
     temperature_value[1] = (rand() & 0x1f);
@@ -74,7 +73,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 hci_con_handle_t handle_send;
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     handle_send = connection_handle;
@@ -177,7 +176,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             break;
 
         gap_set_adv_set_random_addr(0, (uint8_t *)rand_addr);
-        gap_set_ext_adv_para(0, 
+        gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -243,7 +242,7 @@ static uint8_t att_db_storage[800];
 
 //#define V2
 
-prog_ver_t prog_ver = 
+prog_ver_t prog_ver =
 #ifdef V2
     { .major = 1, .minor = 2, .patch = 0 }
 #else
@@ -277,7 +276,7 @@ uint8_t *init_service()
         temperature_value, sizeof(temperature_value));
     att_db_util_add_characteristic_uuid16(gatt_characteristic_temperature_type,
         ATT_PROPERTY_READ, &temp_value_type, sizeof(temp_value_type));
-        
+
     att_client_desc_value_handle = att_temp_value_handle + 1;
 
     printf("att_temp_value_handle         = %d\n"

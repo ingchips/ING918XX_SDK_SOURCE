@@ -50,7 +50,7 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-    setup_keyconfigure();
+    setup_keys();
     loopback_mode = GIO_ReadValue(KB_KEY_1) ? 0 : 1;
 }
 

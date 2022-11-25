@@ -244,7 +244,7 @@ uint32_t uart_isr(void *user_data)
         __set_MSP(*(uint32_t *)(BOOT_ADDR));
         ((pFunction)(*(uint32_t *) (BOOT_ADDR + 4)))();
     }
-    
+
     return 0;
 }
 
@@ -267,7 +267,7 @@ void setup_peripherals(void)
         GIO_WriteValue((GIO_Index_t)led_pins[i], LED_OFF);
     }
 
-    setup_keyconfigure();   
+    setup_keys();
 
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
     setup_rgb_led();

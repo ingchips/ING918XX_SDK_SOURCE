@@ -1,11 +1,11 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133512,
+   "size": 133528,
    "base": 16384
   },
   "ram": {
-   "size": 22488,
+   "size": 30988,
    "base": 536870912
   },
   "app": {
@@ -22,17 +22,17 @@
  "ide": "keil",
  "arm_cc": "C:\/keil\/ARM\/ARMCC",
  "kei_uv_exe": "c:\\keil\\UV4\\UV4.exe",
- "series": "ING9185xx",
+ "series": "ING9187xx",
  "proj_name": "thermo_ota",
  "sdk_release_path": "..\/..",
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\thermo_ota",
  "sdk_release_dir": "",
  "bundle": "typical",
- "app_rom_size": "122880",
+ "app_rom_size": "385024",
  "app_rom_addr": "155648",
  "family": "ing918",
  "arm_inc": "C:\/keil\/ARM\/ARMCC\/include",
  "cmsis": "",
- "app_ram_size": 10280,
- "app_ram_addr": 536893400
+ "app_ram_size": 34544,
+ "app_ram_addr": 536901904
 }

@@ -112,7 +112,9 @@ uint8_t gap_read_remote_used_features(hci_con_handle_t handle);
  *
  * @return             0: message sent out  others: failed
  */
-uint8_t gap_read_remote_version(hci_con_handle_t handle);
+// uint8_t gap_read_remote_version(hci_con_handle_t handle);
+// WARNING: ^^^ this API is not available in this release
+
 
 #define gap_read_remote_info gap_read_remote_version
 
@@ -1299,11 +1301,13 @@ uint8_t gap_tx_test_v2(uint8_t tx_channel, uint8_t test_data_length,
  *                              Range: -127 to +20 Units: dBm
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
-uint8_t gap_tx_test_v4(uint8_t tx_channel, uint8_t test_data_length,
-                        uint8_t packet_payload, uint8_t phy,
-                        uint8_t cte_length, uint8_t cte_type,
-                        uint8_t switching_pattern_length, uint8_t *antenna_ids,
-                        int8_t tx_power_level);
+// uint8_t gap_tx_test_v4(uint8_t tx_channel, uint8_t test_data_length,
+//                         uint8_t packet_payload, uint8_t phy,
+//                         uint8_t cte_length, uint8_t cte_type,
+//                         uint8_t switching_pattern_length, uint8_t *antenna_ids,
+//                         int8_t tx_power_level);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief  Stop any test which is in progress
