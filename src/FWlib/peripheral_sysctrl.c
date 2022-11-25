@@ -170,6 +170,9 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         set_reg_bit(&APB_SYSCTRL->USBCfg, v, 5);
         set_reg_bit(&APB_SYSCTRL->USBCfg, v, 7);
         break;
+    case SYSCTRL_ITEM_APB_LPC:
+        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 25);
+        break;
     default:
         break;
     }

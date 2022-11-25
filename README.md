@@ -3,8 +3,8 @@
 This repository contains ING918XX/ING9186XX SDK source code, including platform header files,
 bundle binaries, and examples.
 
-ING918xx is a fully integrated Bluetooth Low Energy wireless communication SoC targeting Bluetooth
-5.1 specification.
+ING918XX/ING9186XX are fully integrated Bluetooth Low Energy wireless communication SoC(s)
+targeting Bluetooth 5.1 and 5.3 specification.
 
 ## Get Started
 
@@ -17,9 +17,12 @@ but also GUI tools and documentation.
 
 1. Install Gnu Arm toolchain;
 1. Install CMSIS;
+1. Clone or download this repository;
+1. Run [gen_files](tools/README.md) to prepare files;
 1. Browse to examples in [examples for Gnu Arm toolchain](examples-gcc);
 1. Set environment variable `CMSIS_BASE` to the full path of CMSIS;
-1. Run `make`.
+1. Run `make`;
+1. Use [Flash Downloader](tools/README.md) to download programs.
 
 ## Branches
 
