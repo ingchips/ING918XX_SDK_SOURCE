@@ -199,4 +199,57 @@ void GIO_ClearAllIntStatus(void)
     APB_GPIO1->IntStatus = (uint32_t)-1;
 }
 
+void GIO_EnableRetentionGroupA(uint8_t enable)
+{
+    #define AON1_REG4       (AON1_CTRL_BASE + 0x10)
+    #define AON2_STATUS0    (AON2_CTRL_BASE + 0x100)
+
+    GIO_MaskedWrite((volatile uint32_t *)AON1_REG4, 7, enable);
+    while (((io_read(AON2_STATUS0) >> 19) & 1) != enable);
+}
+
+#define AON2_SLEEP_CTRL     (AON2_CTRL_BASE + 0x1A8)
+
+#ifdef __GNUC__
+#define nop(n) do { int i = n; while (i--) __asm("NOP"); } while (0)
+#else
+#define nop(n) do { int i = n; while (i--) __nop(); } while (0)
+#endif
+
+void GIO_EnableRetentionGroupB(uint8_t enable)
+{
+    if (enable)
+    {
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 1);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 1);
+        nop(10);
+    }
+    else
+    {
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 0);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 0);
+        nop(10);
+    }
+}
+
+void GIO_EnableHighZGroupB(uint8_t enable)
+{
+    if (enable)
+    {
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 1);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 1);
+        nop(10);
+    }
+    else
+    {
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 0);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 0);
+        nop(10);
+    }
+}
+
 #endif

@@ -100,27 +100,35 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_TMR0      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 2);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 0);
         break;
     case SYSCTRL_ITEM_APB_TMR1      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 3);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 1);
         break;
     case SYSCTRL_ITEM_APB_TMR2      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 4);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 2);
         break;
     case SYSCTRL_ITEM_APB_WDT       :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 1);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 17);
         break;
     case SYSCTRL_ITEM_APB_PWM       :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 5);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 10);
         break;
     case SYSCTRL_ITEM_APB_PDM       :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 8);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 9);
         break;
     case SYSCTRL_ITEM_APB_QDEC      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 9);
         break;
     case SYSCTRL_ITEM_APB_KeyScan   :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 10);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 19);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 20);
         break;
     case SYSCTRL_ITEM_APB_IR        :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 11);
@@ -141,15 +149,19 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_ADC       :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 15);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 12);
         break;
     case SYSCTRL_ITEM_APB_I2S       :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 16);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 8);
         break;
     case SYSCTRL_ITEM_APB_UART0     :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 17);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 4);
         break;
     case SYSCTRL_ITEM_APB_UART1     :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 18);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 5);
         break;
     case SYSCTRL_ITEM_APB_I2C0      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 19);
@@ -165,6 +177,7 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_EFUSE     :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 23);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 14);
         break;
     case SYSCTRL_ITEM_APB_USB:
         set_reg_bit(&APB_SYSCTRL->USBCfg, v, 5);

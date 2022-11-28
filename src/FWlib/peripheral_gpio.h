@@ -177,28 +177,28 @@ static __INLINE void GIO_ClearAllIntStatus(void) { *GPIO_IS = 0; }
 
 /**
  * @brief Set some or all of 32 GPIO to 1
- * 
+ *
  */
 static __INLINE void GIO_SetBits(const uint64_t index_mask){ *GPIO_DO = (*GPIO_DO) | index_mask;}
 
 /**
  * @brief Clear some or all of 32 GPIO to 0
- * 
+ *
  */
 static __INLINE void GIO_ClearBits(const uint64_t index_mask){ *GPIO_DO = (*GPIO_DO) & (~index_mask);}
 
 /**
  * @brief Send a pulse of duration 200~380ns to GPIO
- * 
+ *
  * Note:The running time is 200ns less than using GIO_SetBits with GIO_ClearBits to generate a pulse.
  */
-static __INLINE void GIO_SetQuicPulse(const uint64_t index_mask){ 
+static __INLINE void GIO_SetQuicPulse(const uint64_t index_mask){
     uint32_t tmp_set = (*GPIO_DO)|index_mask;
     uint32_t tmp_clear = (*GPIO_DO)&(~index_mask);
     *GPIO_DO = tmp_set;
     *GPIO_DO = tmp_clear;
 }
-                                       
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
@@ -252,6 +252,49 @@ uint64_t GIO_GetAllIntStatus(void);
  *
  */
 void GIO_ClearAllIntStatus(void);
+
+/**
+ * @brief Enable or disable retention of GPIO Group A
+ *
+ * Group A = {0, 5, 6, 21, 22, 23, 36, 37}.
+ *
+ * Once enabled, GPIO configuration (and their value) are
+ * all latched and kept even in power saving modes.
+ *
+ * After enabled, all other GPIO configuration will not take
+ * effect until retention is disabled.
+ *
+ * @param[in] enable    Enable(1)/disable(0)
+ */
+void GIO_EnableRetentionGroupA(uint8_t enable);
+
+/**
+ * @brief Enable or disable retention of GPIO Group B
+ *
+ * Group B = All GPIOs - Group A.
+ *
+ * Once enabled, GPIO configuration (and their value) are
+ * all latched and kept even in power saving modes.
+ *
+ * After enabled, all other GPIO configuration will not take
+ * effect until retention is disabled.
+ *
+ * @param[in] enable    Enable(1)/disable(0)
+ */
+void GIO_EnableRetentionGroupB(uint8_t enable);
+
+/**
+ * @brief Enable or disable HighZ mode of GPIO Group B
+ *
+ * Once enabled, all GPIO in group B are kept in HighZ mode
+ * even in power saving modes.
+ *
+ * After enabled, all other GPIO configuration will not take
+ * effect until HighZ is released (i.e. disabled).
+ *
+ * @param[in] enable    Enable(1)/disable(0)
+ */
+void GIO_EnableHighZGroupB(uint8_t enable);
 
 #endif
 
