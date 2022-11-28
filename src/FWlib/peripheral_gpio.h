@@ -142,6 +142,9 @@ void GIO_ClearIntStatus(const GIO_Index_t io_index);
 
 #define GPIO_DI  ((__IO uint32_t *)(APB_GIO_BASE+0x00))
 #define GPIO_DO  ((__IO uint32_t *)(APB_GIO_BASE+0x10))
+#define GPIO_DOS ((__IO uint32_t *)(APB_GIO_BASE+0x14))
+#define GPIO_DOC ((__IO uint32_t *)(APB_GIO_BASE+0x18))
+#define GPIO_DOT ((__IO uint32_t *)(APB_GIO_BASE+0x1C))
 #define GPIO_OEB ((__IO uint32_t *)(APB_GIO_BASE+0x20))
 #define GPIO_IS  ((__IO uint32_t *)(APB_GIO_BASE+0x40)) // interrupt status
 #define GPIO_LV  ((__IO uint32_t *)(APB_GIO_BASE+0x50)) // interrupt type 0-edge 1-level
@@ -179,13 +182,19 @@ static __INLINE void GIO_ClearAllIntStatus(void) { *GPIO_IS = 0; }
  * @brief Set some or all of 32 GPIO to 1
  *
  */
-static __INLINE void GIO_SetBits(const uint64_t index_mask){ *GPIO_DO = (*GPIO_DO) | index_mask;}
+static __INLINE void GIO_SetBits(const uint32_t index_mask){ *GPIO_DOS = index_mask;}
 
 /**
  * @brief Clear some or all of 32 GPIO to 0
  *
  */
-static __INLINE void GIO_ClearBits(const uint64_t index_mask){ *GPIO_DO = (*GPIO_DO) & (~index_mask);}
+static __INLINE void GIO_ClearBits(const uint32_t index_mask){ *GPIO_DOC = index_mask;}
+
+/**
+ * @brief Toggle some or all of 32 GPIO to 0
+ *
+ */
+static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = index_mask;}
 
 /**
  * @brief Send a pulse of duration 200~380ns to GPIO
