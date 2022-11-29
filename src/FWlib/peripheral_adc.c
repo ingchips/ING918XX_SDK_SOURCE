@@ -118,4 +118,302 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+static SADC_adcCal_t ADC_adcCal;
+
+static void ADC_RegClr(SADC_adcReg reg, uint8_t s, uint32_t b)
+{
+    REG_CLR(reg, b, s);
+}
+static void ADC_RegWr(SADC_adcReg reg, uint32_t v, uint8_t s)
+{
+    REG_WR(reg, v, s);
+}
+static void ADC_RegWrBits(SADC_adcReg reg, uint32_t v, uint8_t s, uint8_t b)
+{
+    REG_CLR(reg, b, s);
+    REG_WR(reg, v, s);
+}
+static uint32_t ADC_RegRd(SADC_adcReg reg, uint8_t s, uint8_t b)
+{
+    return REG_RD(reg, b, s);
+}
+
+static float ADC_CalWithPga(uint16_t data)
+{
+    float gain = (float)ADC_PgaGainGet();
+    return (2.f / gain) * ADC_adcCal.vref_gap * (((float)data / 16383.f) + 0.5f - (1.f / gain));
+}
+static float ADC_CalWithoutPga(uint16_t data)
+{
+    return ADC_adcCal.vref_gap * (2.f * (float)data / 16383.f - 0.5f);
+}
+
+void ADC_ClkCfg(SADC_adcClk clk)
+{
+    switch (clk) {
+    case SADC_CLK_1M:
+    case SADC_CLK_2M:
+    case SADC_CLK_4M:
+    case SADC_CLK_6M:
+        APB_SYSCTRL->CguCfg[3] |= 1 << 15;
+        APB_SYSCTRL->CguCfg[5] |= 1 << 12;
+        SYSCTRL_SetAdcClkDiv(clk, 1);
+        SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
+    }
+}
+
+void ADC_EnableCtrlSignal(void)
+{
+    ADC_RegWr(SADC_CFG_0, 1, 9);
+    ADC_RegWr(SADC_CFG_0, 1, 5);
+}
+void ADC_ResetCtrlSignal(void)
+{
+    ADC_RegClr(SADC_CFG_0, 5, 1);
+    ADC_RegClr(SADC_CFG_0, 9, 1);
+}
+
+void ADC_SetAdcMode(SADC_adcMode mode)
+{
+    ADC_RegClr(SADC_CFG_0, 0, 1);
+    if (mode)
+        ADC_RegWr(SADC_CFG_0, mode, 0);
+}
+SADC_adcMode ADC_GetAdcMode(void)
+{
+    return ADC_RegRd(SADC_CFG_0, 0, 1);
+}
+
+static void ADC_SetCalrpt(SADC_adcCalrpt value)
+{
+    switch (value) {
+    case CALRPT_32  :
+    case CALRPT_1   :
+    case CALRPT_256 :
+    case CALRPT_1024:
+        ADC_RegWrBits(SADC_CFG_0, value, 6, 2);
+    }
+}
+
+void ADC_SetAdcCtrlMode(SADC_adcCtrlMode mode)
+{
+    ADC_RegClr(SADC_CFG_2, 0, 1);
+    if (mode)
+        ADC_RegWr(SADC_CFG_2, mode, 0);
+}
+
+void ADC_EnableChannel(SADC_channelId ch, uint8_t enable)
+{
+    if (ch < ADC_CH_0 || ch > ADC_CH_11) return;
+    if (enable)
+        ADC_RegWr(SADC_CFG_2, 1, (ch + 3));
+    else
+        ADC_RegClr(SADC_CFG_2, (ch + 3), 1);
+}
+
+void ADC_IntEnable(uint8_t enable)
+{
+    ADC_RegClr(SADC_INT_MAKS, 3, 1);
+    if (enable)
+        ADC_RegWr(SADC_INT_MAKS, 1, 3);
+}
+void ADC_SetIntTrig(uint8_t num)
+{
+    if (num > 0xf)
+        return;
+    ADC_RegWrBits(SADC_CFG_2, num, 20, 4);
+    ADC_DmaEnable(0);
+}
+void ADC_DmaEnable(uint8_t enable)
+{
+    ADC_RegClr(SADC_CFG_2, 15, 1);
+    if (enable)
+        ADC_RegWr(SADC_CFG_2, 1, 15);
+}
+void ADC_SetDmaTrig(uint8_t num)
+{
+    if (num > 0xf)
+        return;
+    ADC_RegWrBits(SADC_CFG_2, num, 16, 4);
+    ADC_IntEnable(0);
+}
+
+void ADC_ClrFifo(void)
+{
+    ADC_RegWr(SADC_STATUS, 1, 22);
+}
+
+uint8_t ADC_GetBusyStatus(void)
+{
+    return ADC_RegRd(SADC_STATUS, 23, 1);
+}
+
+void ADC_SetIputMode(SADC_adcIputMode mode)
+{
+    ADC_RegClr(SADC_CFG_0, 8, 1);
+    if (mode)
+        ADC_RegWr(SADC_CFG_0, mode, 8);
+}
+
+void ADC_PgaGainSet(SADC_adcPgaGain gain)
+{
+    if (gain < PGA_GAIN_1 || gain > PGA_GAIN_128) return;
+
+    ADC_RegWrBits(SADC_CFG_0, gain, 2, 3);
+    if (!ADC_adcCal.cb)
+        ADC_adcCal.cb = ADC_CalWithPga;
+}
+SADC_adcPgaGain ADC_PgaGainGet(void)
+{
+    return 1 << ADC_RegRd(SADC_CFG_0, 2, 3);
+}
+void ADC_PgaEnable(uint8_t enable)
+{
+    ADC_RegClr(SADC_CFG_0, 1, 1);
+    // if (enable)
+    ADC_RegWr(SADC_CFG_0, 1, 1);
+}
+
+uint8_t ADC_GetPgaStatus(void)
+{
+    return ADC_RegRd(SADC_CFG_0, 1, 1);
+}
+
+void ADC_SetLoopDelay(uint32_t delay)
+{
+    ADC_RegWrBits(SADC_CFG_1, delay, 0, 32);
+}
+
+uint8_t ADC_GetIntStatus(void)
+{
+    return ADC_RegRd(SADC_INT, 3, 1);
+}
+
+uint32_t ADC_PopFifoData(void)
+{
+    return ADC_RegRd(SADC_DATA, 0, 18);
+}
+SADC_channelId ADC_GetDataChannel(uint32_t data)
+{
+    return (SADC_channelId)(RIGHT_SHIFT(data, 14) & MK_MASK(4));
+}
+uint16_t ADC_GetData(uint32_t data)
+{
+    return (data & MK_MASK(14));
+}
+uint16_t ADC_ReadChannelData(const uint8_t channel_id)
+{
+    uint32_t data = ADC_PopFifoData();
+    if (ADC_GetDataChannel(data) == channel_id)
+        return ADC_GetData(data);
+    return 0;
+}
+
+void ADC_Start(uint8_t start)
+{
+    if (start)
+        ADC_RegWr(SADC_CFG_2, 1, 2);
+    else
+        ADC_RegClr(SADC_CFG_2, 2, 1);
+}
+
+static void ADC_VrefRegister(float VP, float VN)
+{
+    if (VP < VN) return;
+	ADC_adcCal.vref_P = VP;
+	ADC_adcCal.vref_N = VN;
+    ADC_adcCal.vref_gap = VP - VN;
+    if (ADC_GetPgaStatus())
+        ADC_adcCal.cb = ADC_CalWithPga;
+    else
+        ADC_adcCal.cb = ADC_CalWithPga;
+        // ADC_adcCal.cb = ADC_CalWithoutPga;
+}
+
+void ADC_VrefCalibration(void)
+{
+    ADC_ConvCfg(SINGLE_MODE, PGA_GAIN_2, 1, ADC_CH_9, 1, 0, SINGLE_END_MODE, 0);
+    ADC_Start(1);
+    while (!ADC_GetIntStatus());
+    uint32_t data = ADC_PopFifoData();
+    ADC_VrefRegister(19659.6f / (float)ADC_GetData(data), 0.f);
+}
+
+float ADC_GetVol(uint16_t data)
+{
+    if (!ADC_adcCal.cb || !ADC_adcCal.vref_gap)
+        return 0;
+    float vol = ADC_adcCal.cb(data);
+	if (vol > ADC_adcCal.vref_P) return ADC_adcCal.vref_P;
+	if (vol < ADC_adcCal.vref_N) return ADC_adcCal.vref_N;
+    return vol;
+}
+
+void ADC_Reset(void)
+{
+    ADC_RegWrBits(SADC_CFG_0, 2 << 6, 0, 32);
+    ADC_RegWrBits(SADC_CFG_1, 0x100, 0, 32);
+    ADC_RegWrBits(SADC_CFG_2, 4 << 16 | 4 << 20 | 0xa << 24, 0, 32);
+    ADC_ClrFifo();
+    ADC_RegClr(SADC_STATUS  , 0, 32);
+    ADC_RegClr(SADC_INT_MAKS, 0, 32);
+}
+
+void ADC_AdcClose(void)
+{
+    ADC_Start(0);
+    ADC_IntEnable(0);
+    while (ADC_GetBusyStatus());
+    ADC_ResetCtrlSignal();
+    ADC_DmaEnable(0);
+    ADC_ClrFifo();
+}
+
+void ADC_Calibration(SADC_adcIputMode mode)
+{
+    ADC_Reset();
+    ADC_SetAdcMode(CALIBRATION_MODE);
+    ADC_SetAdcCtrlMode(SINGLE_MODE);
+    ADC_EnableChannel(ADC_CH_0, 1);
+    ADC_SetIntTrig(1);
+    ADC_SetCalrpt(CALRPT_256);
+    ADC_SetIputMode(mode);
+    ADC_IntEnable(1);
+    ADC_EnableCtrlSignal();
+    ADC_Start(1);
+    while (!ADC_GetIntStatus());
+    ADC_Start(0);
+    ADC_ResetCtrlSignal();
+    ADC_IntEnable(0);
+    ADC_ClrFifo();
+    ADC_SetAdcMode(CONVERSION_MODE);
+}
+
+void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, 
+                 SADC_adcPgaGain pgaGain,
+                 uint8_t pgaEnable,
+                 SADC_channelId ch, 
+                 uint8_t enNum, 
+                 uint8_t dmaEnNum, 
+                 SADC_adcIputMode inputMode, 
+                 uint32_t loopDelay)
+{
+    ADC_Reset();
+    ADC_SetAdcMode(CONVERSION_MODE);
+    ADC_SetAdcCtrlMode(ctrlMode);
+    ADC_PgaGainSet(pgaGain);
+    ADC_PgaEnable(pgaEnable);
+    ADC_EnableChannel(ch, 1);
+    if (enNum) {
+        ADC_IntEnable(1);
+        ADC_SetIntTrig(enNum);
+    } else if (dmaEnNum) {
+        ADC_DmaEnable(1);
+        ADC_SetDmaTrig(dmaEnNum);
+    }
+    ADC_SetIputMode(inputMode);
+    ADC_SetLoopDelay(loopDelay);
+    ADC_EnableCtrlSignal();
+}
+
 #endif
