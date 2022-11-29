@@ -157,15 +157,33 @@ typedef SYSCTRL_Item SYSCTRL_ResetItem;
 
 enum
 {
-    SYSCTRL_LDO_OUPUT_1V60 = 0x13,  // Recommended for Vbat = 1.8V
-    SYSCTRL_LDO_OUPUT_1V80 = 0x16,  // Recommended for Vbat = 2.5V
-    SYSCTRL_LDO_OUPUT_2V50 = 0x1f,  // Recommended for Vbat = 3.3V
+    SYSCTRL_LDO_OUPUT_CORE_1V000 = 0x0,     // LDO Core Output: 1.000V
+                                            // Range: [1.000, 1.300]V
+                                            // Step: 20mV
+                                            // 1.300V = SYSCTRL_LDO_OUPUT_1V000
+                                            //          + 15 * SYSCTRL_LDO_OUPUT_CORE_STEP_0V020
+    SYSCTRL_LDO_OUPUT_FLASH_1V600  = 0x0,   // LDO Flash Output: 1.600V
+                                            // Range: [1.600, 3.100]V
+                                            // Step: 100mV
+                                            // 3.100V = SYSCTRL_LDO_OUPUT_FLASH_1V600
+                                            //          + 15 * SYSCTRL_LDO_OUPUT_FLASH_STEP_0V100
 };
+
+#define SYSCTRL_LDO_OUPUT_CORE_STEP_0V020           1   // step: 20mV
+#define SYSCTRL_LDO_OUPUT_FLASH_STEP_0V100          1   // step: 100mV
+enum
+{
+    SYSCTRL_BOR_1V5 = 0x0,          // BOR Threshold on VBAT: 1.5V
+                                    // Range: [1.5, 3]V
+                                    // 3V = SYSCTRL_BOR_1V5 + 15 * SYSCTRL_BOR_STEP_0V1
+};
+
+#define SYSCTRL_BOR_STEP_0V1                1   // step: 0.1V
 
 typedef enum
 {
-    SYSCTRL_CLK_OSC,                            // use RF OSC clock
-    SYSCTRL_CLK_32k = SYSCTRL_CLK_OSC,          // use 32k clock
+    SYSCTRL_CLK_24M,                            // use 24MHz clock
+    SYSCTRL_CLK_32k = SYSCTRL_CLK_24M,          // use 32kHz clock
     SYSCTRL_CLK_HCLK,                           // use HCLK (same as MCU)
     SYSCTRL_CLK_ADC_DIV = SYSCTRL_CLK_HCLK,     // use clock from ADC divider
 
@@ -174,21 +192,19 @@ typedef enum
                                                 // ..
                                                 // SYSCTRL_TMR_CLK_PLL_DIV_1 + 14: use (PLL clock div 15)
 
-    SYSCTRL_CLK_OSC_DIV_1 = SYSCTRL_CLK_HCLK,   // use RF OSC clock div 1
-                                                // SYSCTRL_CLK_OSC_DIV_1 + 1: use (RF OSC clock div 2)
+    SYSCTRL_CLK_24M_DIV_1 = SYSCTRL_CLK_HCLK,   // use RF OSC clock div 1
+                                                // SYSCTRL_CLK_24M_DIV_1 + 1: use (RF OSC clock div 2)
                                                 // ..
 } SYSCTRL_ClkMode;
-
-#define SYSCTRL_TMR_CLK_OSC_DIV_4       (SYSCTRL_CLK_OSC_DIV_1 + 3)
 
 /**
  * \brief Select clock mode of TIMER
  *
  * All timers share the same clock divider, which means that if timer K is
- * set to use (SYSCTRL_CLK_OSC_DIV_1 + X), all previously configures timers that
- * uses (SYSCTRL_CLK_OSC_DIV_1 + ...) are overwritten by (SYSCTRL_CLK_OSC_DIV_1 + X).
+ * set to use (SYSCTRL_CLK_24M_DIV_1 + X), all previously configures timers that
+ * uses (SYSCTRL_CLK_24M_DIV_1 + ...) are overwritten by (SYSCTRL_CLK_24M_DIV_1 + X).
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_OSC_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_24M_DIV_1` + N, where N = 0..14;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -199,7 +215,7 @@ void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of PWM
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_OSC_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_24M_DIV_1` + N, where N = 0..14;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -210,7 +226,7 @@ void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of KeyScan
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_OSC_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_24M_DIV_1` + N, where N = 0..14;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -221,7 +237,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of PDM
  *
- * `mode` should be `SYSCTRL_CLK_OSC_DIV_1` + N, where N = 0..62;
+ * `mode` should be `SYSCTRL_CLK_24M_DIV_1` + N, where N = 0..62;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -234,15 +250,15 @@ void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode);
  * \param port          the port
  * \param mode          clock mode
  *
- * Note: For SPI0: mode should be `SYSCTRL_CLK_OSC`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
- *       For SPI1: mode should be `SYSCTRL_CLK_OSC` or `SYSCTRL_CLK_HCLK`.
+ * Note: For SPI0: mode should be `SYSCTRL_CLK_24M`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ *       For SPI1: mode should be `SYSCTRL_CLK_24M`, or `SYSCTRL_CLK_HCLK`.
  */
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
 
 /**
  * \brief Select UART clock mode
  * \param port          the port
- * \param mode          clock mode (SYSCTRL_CLK_OSC, or SYSCTRL_CLK_HCLK)
+ * \param mode          clock mode (SYSCTRL_CLK_24M, or SYSCTRL_CLK_HCLK)
  */
 void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
 
@@ -250,7 +266,7 @@ void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
  * \brief Select I2S clock mode
  * \param mode          clock mode
  *
- * Note: mode should be SYSCTRL_CLK_OSC, or SYSCTRL_CLK_PLL_DIV_1 + N, where N = 0..14.
+ * Note: mode should be SYSCTRL_CLK_24M, or SYSCTRL_CLK_PLL_DIV_1 + N, where N = 0..14.
  */
 void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode);
 
@@ -286,7 +302,10 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output);
  * \brief Select HClk clock mode
  * \param mode          clock mode
  *
- * Note: mode should be SYSCTRL_CLK_OSC, or SYSCTRL_CLK_PLL_DIV_1 + N, where N = 0..14.
+ * Note: mode should be SYSCTRL_CLK_24M, or SYSCTRL_CLK_PLL_DIV_1 + N,
+ *       where N = 0..14.
+ *
+ * Note: While changing, both clocks (OSC & PLL) must be running.
  */
 void SYSCTRL_SelectHClk(SYSCTRL_ClkMode mode);
 
@@ -333,7 +352,7 @@ uint32_t SYSCTRL_GetAdcClkDiv(void);
 /**
  * \brief Select Clk mode for a type of items
  * \param item          item of type A (IR/ADC/EFUSE)
- * \param mode          clock mode ({SYSCTRL_CLK_OSC, SYSCTRL_CLK_ADC_DIV})
+ * \param mode          clock mode ({SYSCTRL_CLK_24M, SYSCTRL_CLK_ADC_DIV})
  */
 void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode);
 
@@ -342,11 +361,55 @@ void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode);
  *
  * `mode` should be `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
  *
- * \param port          the timer
  * \param mode          clock mode
  *
  */
 void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
+
+/**
+ * \brief Select clock mode of Flash
+ *
+ * `mode` should be `SYSCTRL_CLK_24M`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ *
+ * Default mode: `SYSCTRL_CLK_PLL_DIV_1` + 1.
+ *
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
+
+typedef enum
+{
+    SYSCTRL_24M_RC_CLK = 0,     // 24MHz RC clock (which is tunnable)
+    SYSCTRL_24M_RF_CLK = 1,     // 24MHz RF clock
+} SYSCTRL_24MClkMode;
+
+/**
+ * \brief Select clock source of 24M clock
+ *
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_Select24MClk(SYSCTRL_24MClkMode mode);
+
+/**
+ * \brief Enable/Disable PLL
+ *
+ * Caution: Before turning off PLL, all parts (such as Flash) using PLL clock
+ * must be switched to other clocks.
+ *
+ * \param enable        Enable(1)/Disable(0)
+ *
+ */
+void SYSCTRL_EnablePLL(uint8_t enable);
+
+/**
+ * \brief Enable/Disable 24 RC clock
+ *
+ * \param enable        Enable(1)/Disable(0)
+ *
+ */
+void SYSCTRL_Enable24MRC(uint8_t enable);
 
 typedef enum
 {
@@ -394,6 +457,14 @@ int SYSCTRL_SelectUsedDmaItems(uint32_t items);
  */
 int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 
+
+/**
+ * @brief Set LDO output level for Flash
+ *
+ * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH...`)
+ */
+void SYSCTRL_SetLDOOutputFlash(int level);
+
 #endif
 
 /**
@@ -433,9 +504,9 @@ void SYSCTRL_ResetBlock(SYSCTRL_ResetItem item);
 void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item);
 
 /**
- * @brief Set LDO output level
+ * @brief Set LDO Core output level
  *
- * @param[in] level         output level
+ * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT...`)
  */
 void SYSCTRL_SetLDOOutput(int level);
 
@@ -444,9 +515,14 @@ void SYSCTRL_SetLDOOutput(int level);
  *
  * Note:
  *
- * Power consumption is larger when enabled, it's not recommended to enable for sleep mode.
+ * ING918: Power consumption is larger when enabled, so it's not recommended to
+ *         enable for sleep mode.
+ *
+ * ING916: `enable_active` and `enable_sleep` should be the same.
  *
  * @param[in] threshold         Threshold (available values see `SYSCTRL_BOR_...`)
+ *                              default: 0.95V (ING918)
+ *                                       2.30V (ING916)
  * @param[in] enable_active     Enable(1)/Disable(0) for active mode
  *                              default: DISABLED
  * @param[in] enable_sleep      Enable(1)/Disable(0) for sleep mode

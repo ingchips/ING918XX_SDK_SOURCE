@@ -323,7 +323,7 @@ void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item)
 void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode)
 {
     set_reg_bit(APB_SYSCTRL->CguCfg + 1, (mode == 0) ? 1 : 0, 15 + port);
-    if (mode >= SYSCTRL_CLK_OSC_DIV_1)
+    if (mode >= SYSCTRL_CLK_24M_DIV_1)
     {
         set_reg_bits(&APB_SYSCTRL->CguCfg8, mode, 4, 20);
         set_reg_bit(&APB_SYSCTRL->CguCfg8, 1, 24);
@@ -333,7 +333,7 @@ void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode)
 void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode)
 {
     set_reg_bit(&APB_SYSCTRL->CguCfg8, (mode == 0) ? 1 : 0, 15);
-    if (mode >= SYSCTRL_CLK_OSC_DIV_1)
+    if (mode >= SYSCTRL_CLK_24M_DIV_1)
     {
         set_reg_bits(&APB_SYSCTRL->CguCfg8, mode, 4, 27);
         set_reg_bit(&APB_SYSCTRL->CguCfg8, 1, 31);
@@ -343,7 +343,7 @@ void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode)
 void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
 {
     set_reg_bit(APB_SYSCTRL->CguCfg + 1, (mode == 0) ? 1 : 0, 13);
-    if (mode >= SYSCTRL_CLK_OSC_DIV_1)
+    if (mode >= SYSCTRL_CLK_24M_DIV_1)
     {
         set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 24);
         set_reg_bit(APB_SYSCTRL->CguCfg, 1, 31);
@@ -405,6 +405,40 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode)
 {
     set_reg_bits(&APB_SYSCTRL->USBCfg, mode, 4, 0);
     set_reg_bit(&APB_SYSCTRL->USBCfg, 1, 4);
+}
+
+void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode)
+{
+    if (mode >= SYSCTRL_CLK_PLL_DIV_1)
+        set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 6);
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode == 0 ? 0 : 1, 18);
+}
+
+void SYSCTRL_Select24MClk(SYSCTRL_24MClkMode mode)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), mode, 8);
+    volatile uint32_t *reg = (volatile uint32_t *)(APB_SYSCTRL_BASE + 0x1c8);
+    if (mode == SYSCTRL_24M_RC_CLK)
+    {
+        while ((*reg & (1 << 2)) == 0);
+        while ((*reg & (1 << 3)) != 0);
+    }
+    else
+    {
+        while ((*reg & (1 << 2)) != 0);
+        while ((*reg & (1 << 3)) == 0);
+    }
+}
+
+void SYSCTRL_EnablePLL(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x1A8), enable, 20);
+}
+
+void SYSCTRL_Enable24MRC(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), enable, 1);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 1, 0);
 }
 
 static int get_safe_divider(int reg_offset, int offset)
@@ -639,8 +673,24 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item)
     return -1;
 }
 
+void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep)
+{
+    uint8_t enable = enable_active || enable_sleep;
+
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), threshold, 4, 0);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), enable, 17);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), enable ^ 0x1, 5);
+}
+
+void SYSCTRL_SetLDOOutputFlash(int level)
+{
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), level & 0xf, 4, 11);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), 1, 31);
+}
+
 void SYSCTRL_SetLDOOutput(int level)
 {
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x0), level & 0xf, 4, 1);
 }
 
 void SYSCTRL_WaitForLDO(void)
