@@ -11,21 +11,24 @@ extern "C" {
  ****************************************************************************************
  * @brief A simple yet efficient ring buffer
  *
- * Thread safety: 
+ * Thread safety:
  *
- * Call `ring_buf_write_data` only in thread A; `ring_buf_peek_data` in 
- * thread B. A and B can be the same or different.            
- * 
+ * Call `ring_buf_write_data` only in thread A; `ring_buf_peek_data` in
+ * thread B. A and B can be the same or different.
+ *
  ****************************************************************************************
  */
 
-#define RING_BUF_OBJ_SIZE   (12)
+#define RING_BUF_OBJ_SIZE   (32)
 
 struct ring_buf;
 
 /**
  ****************************************************************************************
  * @brief Create a ring buffer
+ *
+ * Note: a `struct ring_buf` variable of `RING_BUF_OBJ_SIZE` bytes occupies the beginning
+ *       of `buf`.
  *
  * @param[in] buf           buffer
  * @param[in] total_size    total size fo buffer in bytes
@@ -42,7 +45,7 @@ struct ring_buf *ring_buf_init(void *buf, int total_size, void (*highwater_cb)(s
  ****************************************************************************************
  */
 void ring_buf_reset(struct ring_buf *buf);
-    
+
 typedef int (*f_ring_peek_data)(const void *data, int len, int has_more, void *extra);
 
 /**
