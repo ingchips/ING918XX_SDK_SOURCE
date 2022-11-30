@@ -135,6 +135,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 uint16_t read_adc(uint8_t channel)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_WaitForLDO();
 
     ADC_Reset();
@@ -157,6 +158,12 @@ uint16_t read_adc(uint8_t channel)
     ADC_PowerCtrl(0);
 
     return adc_calibrate(ADC_SAMPLE_MODE_SLOW, channel, voltage);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    ADC_ConvCfg(SINGLE_MODE, PGA_GAIN_2, 1, channel, 1, 0, SINGLE_END_MODE, 0);
+    ADC_Start(1);
+    while (!ADC_GetIntStatus()) ;
+    return ADC_ReadChannelData(channel);
+#endif
 }
 
 uint8_t *battery_level = NULL;
@@ -246,7 +253,9 @@ uint32_t timer_isr(void *user_data)
 uint32_t setup_profile(void *data, void *user_data)
 {
     platform_printf("setup_profile\n");
-    
+	while(1){
+    printf("setup_profile\n");
+	}
     battery_level = profile_data + HANDLE_BATTERY_LEVEL_OFFSET;
 
 #ifdef DEMO_TASK_DELAY_UNTIL
