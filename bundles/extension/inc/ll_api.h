@@ -154,12 +154,10 @@ void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
-//                              uint8_t cte_len,
-//                              uint8_t switching_pattern_len,
-//                              const uint8_t *switching_pattern);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
+                             uint8_t cte_len,
+                             uint8_t switching_pattern_len,
+                             const uint8_t *switching_pattern);
 
 /**
  ****************************************************************************************
