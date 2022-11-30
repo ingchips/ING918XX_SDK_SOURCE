@@ -309,9 +309,21 @@ typedef struct{
     __IO uint32_t USBCfg;              // 0x80
 } SYSCTRL_TypeDef;
 
+// PTE
+typedef struct
+{
+    __IO uint32_t En         :1;            // +0x00
+    __IO uint32_t Int        :1;
+    __IO uint32_t InMask     :24;  
+    __IO uint32_t IntMask    :1;   
+    __IO uint32_t Reserved1  :5;   
+    __IO uint32_t OutMask    :16;           // +0x04
+    __IO uint32_t Reserved2  :16;   
+} PTE_ChannelCtrlReg;
+
 typedef struct{
-    __IO uint32_t Ctrl[4][2];
-} SYSCTRL_PTE_TypeDef;
+    __IO PTE_ChannelCtrlReg Channels[4];    // 0x1a0
+} PTE_TypeDef;
 
 typedef struct
 {
@@ -368,6 +380,15 @@ typedef struct
     __IO uint32_t ir_fsm;                 //0x28
 } IR_TypeDef;
 
+typedef struct{
+    __IO uint32_t sadc_cfg[3];            // 0x0
+    __IO uint32_t sadc_data;              // 0x0c
+    __IO uint32_t sadc_status;            // 0x10
+    __IO uint32_t Reserved[7];            // 0x14
+    __IO uint32_t sadc_int_mask;          // 0x30
+    __IO uint32_t sadc_int;               // 0x34
+} SADC_TypeDef;
+
 /******************************************************************************/
 /*                         memory map                                         */
 /******************************************************************************/
@@ -412,13 +433,14 @@ typedef struct
 #define APB_PINC_BASE      APB_IOMUX_BASE
 
 #define APB_SYSCTRL        ((SYSCTRL_TypeDef *)APB_SYSCTRL_BASE)
-#define APB_SYSCTRL_PTE    ((SYSCTRL_PTE_TypeDef *)(APB_SYSCTRL_BASE + 0x1a0))
+#define APB_PTE            ((PTE_TypeDef *)(APB_SYSCTRL_BASE + 0x1a0))
 #define APB_WDT            ((WDT_TypeDef *)APB_WDT_BASE)
 #define APB_TMR0           ((TMR_TypeDef *)APB_TMR0_BASE)
 #define APB_TMR1           ((TMR_TypeDef *)APB_TMR1_BASE)
 #define APB_TMR2           ((TMR_TypeDef *)APB_TMR2_BASE)
 #define APB_PWM            ((PWM_TypeDef *)APB_PWM_BASE)
 #define APB_I2S            ((I2S_TypeDef *)APB_I2S_BASE)
+#define APB_SADC           ((SADC_TypeDef *)APB_SARADC_BASE)
 #define APB_PDM            ((PDM_TypeDef *)APB_PDM_BASE)
 #define APB_PINCTRL        ((PINCTRL_TypeDef *)APB_PINC_BASE)
 #define APB_UART0          ((UART_TypeDef *)APB_UART0_BASE)
