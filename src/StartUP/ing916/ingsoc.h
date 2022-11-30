@@ -312,17 +312,17 @@ typedef struct{
 // PTE
 typedef struct
 {
-    uint32_t En         :1;            // +0x00
-    uint32_t Int        :1;
-    uint32_t InMask     :24;  
-    uint32_t IntMask    :1;   
-    uint32_t Reserved1  :5;   
-    uint32_t OutMask    :16;           // +0x04
-    uint32_t Reserved2  :16;   
+    __IO uint32_t En         :1;            // +0x00
+    __IO uint32_t Int        :1;
+    __IO uint32_t InMask     :24;  
+    __IO uint32_t IntMask    :1;   
+    __IO uint32_t Reserved1  :5;   
+    __IO uint32_t OutMask    :16;           // +0x04
+    __IO uint32_t Reserved2  :16;   
 } PTE_ChannelCtrlReg;
 
 typedef struct{
-    PTE_ChannelCtrlReg Channels[4];    // 0x1a0
+    __IO PTE_ChannelCtrlReg Channels[4];    // 0x1a0
 } PTE_TypeDef;
 
 typedef struct
