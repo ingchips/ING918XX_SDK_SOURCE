@@ -292,11 +292,12 @@ typedef enum
     PLATFORM_CFG_RC32K_EN,      // Enable/Disable RC 32k clock. Default: Enable
     PLATFORM_CFG_OSC32K_EN,     // Enable/Disable 32k crystal oscillator. Default: Enable
     PLATFORM_CFG_32K_CLK,       // 32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
-                                // Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED and *run*.
-                                //       For OSC32K, wait until status of OSC32K is OK;
-                                //       For RC32K, wait 100us after enabled.
+                                // Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED.
+                                //       For ING918, both clocks must be running:
+                                //          * For OSC32K, wait until status of OSC32K is OK;
+                                //          * For RC32K, wait 100us after enabled.
                                 // Note: Wait another 100us before disabling the unused clock.
-    PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accurary in ppm.
+    PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accuracy in ppm.
     PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
     PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (deep sleep mode) in us. (default: ~550us)
@@ -311,6 +312,9 @@ typedef enum
     PLATFORM_CFG_RTOS_ENH_TICK,             // Enhanced Ticks. Default: DISABLE
                                             // When enabled: IRQ's impact on accuracy of RTOS ticks is reduced
                                             // Note: this feature has negative impact on power consumption.
+    PLATFORM_CFG_LL_DELAY_COMPENSATION,     // When system runs at a lower frequency,
+                                            // more time (in us) is needed to run Link layer.
+                                            // For example, if ING916 runs at 24MHz, configure this to 1000
 } platform_cfg_item_t;
 
 typedef enum
@@ -335,7 +339,10 @@ void platform_config(const platform_cfg_item_t item, const uint32_t flag);
 typedef enum
 {
     PLATFORM_INFO_OSC32K_STATUS,        // Read status of 32k crystal oscillator. (0: not OK; Non-0: OK)
-    PLATFORM_INFO_32K_CALI_VALUE,       // Read current 32k clock calibaration result.
+                                        // "OK" means running.
+                                        // For ING916: this clock become running **after** selected as 32k
+                                        //             clock source.
+    PLATFORM_INFO_32K_CALI_VALUE,       // Read current 32k clock calibration result.
 } platform_info_item_t;
 
 /**

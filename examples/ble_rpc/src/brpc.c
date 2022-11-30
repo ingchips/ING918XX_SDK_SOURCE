@@ -129,7 +129,7 @@ void sys_mem_append_persistent(void *addr, uint16_t size, const void *buf)
     if (map == NULL)
         platform_raise_assertion(__FILE__, __LINE__);
 
-    memcpy(persist_mem_maps[i].local_addr + persist_mem_maps[i].local_written,
+    memcpy((uint8_t *)(persist_mem_maps[i].local_addr) + persist_mem_maps[i].local_written,
         buf, size);
     persist_mem_maps[i].local_written += size;
 }
