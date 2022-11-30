@@ -286,7 +286,7 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\bundles\typical\ING9185xx\symdefs.m</PathWithFileName>
+      <PathWithFileName>../..\bundles\typical\ING9187xx\symdefs.m</PathWithFileName>
       <FilenameWithoutPath>symdefs.m</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -295,7 +295,7 @@
 
   <Group>
     <GroupName>BSP</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -310,8 +310,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\BSP\rgb_led.c</PathWithFileName>
-      <FilenameWithoutPath>rgb_led.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\BSP\eflash.c</PathWithFileName>
+      <FilenameWithoutPath>eflash.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -323,11 +323,11 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>31</TopLine>
+      <CurrentLine>79</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\BSP\eflash.c</PathWithFileName>
-      <FilenameWithoutPath>eflash.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\BSP\board.c</PathWithFileName>
+      <FilenameWithoutPath>board.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

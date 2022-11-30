@@ -194,9 +194,6 @@ void TMR_WatchDogEnable3(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uin
     else if (reset_timeout_ms <= 250) rsttime = 6;
     else;
 
-    volatile uint32_t *reg = (volatile uint32_t *)(AON_CTRL_BASE + 0x40);
-    *reg &= ~(0xFUL << 13);
-
     WDT_UNLOCK();
     APB_WDT->Ctrl = (rsttime << 8) | (inttime << 4) | (enable_int ? 0xd : 0x9);
 }

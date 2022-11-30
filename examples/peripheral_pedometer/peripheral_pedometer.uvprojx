@@ -273,7 +273,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>155648</StartAddress>
-                <Size>122880</Size>
+                <Size>385024</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -297,8 +297,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893408</StartAddress>
-                <Size>10272</Size>
+                <StartAddress>536901904</StartAddress>
+                <Size>34544</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -334,7 +334,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls/>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,BOARD_USE_ACCEL</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -395,11 +395,6 @@
               <FileType>1</FileType>
               <FilePath>.\src\step_calc.c</FilePath>
             </File>
-            <File>
-              <FileName>bma2x2_support.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\bma2x2_support.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -413,7 +408,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\ING9185xx\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\typical\ING9187xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -421,14 +416,14 @@
           <GroupName>BSP</GroupName>
           <Files>
             <File>
-              <FileName>bma2x2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\BSP\bma2x2.c</FilePath>
-            </File>
-            <File>
               <FileName>iic.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\BSP\iic.c</FilePath>
+            </File>
+            <File>
+              <FileName>board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\board.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "rf_util.h"
 
+#include "board.h"
+
 #define PRINT_PORT    APB_UART0
 
 uint32_t cb_putc(char *c, void *dummy)
@@ -48,8 +50,7 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GPIO);
-    GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
+    setup_keys();
     loopback_mode = GIO_ReadValue(KB_KEY_1) ? 0 : 1;
 }
 

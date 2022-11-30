@@ -55,17 +55,27 @@ void setup_peripherals(void)
     TMR_Enable(APB_TMR1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     // setup channel 0 timer 1: 0.5s (2Hz)
-    SYSCTRL_SelectTimerClk(TMR_PORT_1, SYSCTRL_TMR_CLK_32k); 
+    SYSCTRL_SelectTimerClk(TMR_PORT_1, SYSCTRL_CLK_32k);
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_EXTERNAL, 0);
     TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / 2);
     TMR_Enable(APB_TMR1, 0, 0xf);
+    TMR_IntEnable(APB_TMR1, 0, 0xf);
+#ifndef SIMULATION        
+    // setup ADC
+    ADC_ClkCfg(SADC_CLK_6M);
+    ADC_Calibration(SINGLE_END_MODE);
+#endif
 #else
     #error unknown or unsupported chip family
 #endif
-    
+
 }
 
 uint32_t timer_isr(void *user_data);
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+void ADC_ClearChannelDataValid(const uint8_t channel_id) { }
+#endif
 
 int app_main()
 {
@@ -81,10 +91,12 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-    
+
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     adc_prepare_calibration();
+#endif
 
     return 0;
 }

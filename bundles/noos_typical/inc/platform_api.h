@@ -47,6 +47,13 @@ typedef struct assertion_info_s
     int line_no;
 } assertion_info_t;
 
+#define PLATFORM_ALLOW_DEEP_SLEEP            0x01
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define PLATFORM_ALLOW_DEEPER_SLEEP          0x02
+#define PLATFORM_ALLOW_BLE_ONLY_SLEEP        0x04
+#endif
+
 typedef enum
 {
     // platform callback for putc (for logging)
@@ -60,32 +67,33 @@ typedef enum
     // periphrals need to be re-initialized after deep-sleep, user can handle this event
     PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP,
 
+    // return bits combination of `PLATFORM_ALLOW_xxx`
     // return 0 if deep sleep is not allowed now; else deep sleep is allowed
     // e.g. when periphrals still have data to process (UART is tx buffer not empty)
     PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED,
-    
+
     // when hard fault occurs
     // NOTE: param (void *data) is casted from hard_fault_info_t *
     // example: uint32_t cb_hard_fault(hard_fault_info_t *info, void *dummy)
-    // if this callback is not defined, CPU enters a dead loop 
+    // if this callback is not defined, CPU enters a dead loop
     PLATFORM_CB_EVT_HARD_FAULT,
-    
+
     // when software assertion fails
     // NOTE: param (void *data) is casted from assertion_info_t *
-    // if this callback is not defined, CPU enters a dead loop 
+    // if this callback is not defined, CPU enters a dead loop
     PLATFORM_CB_EVT_ASSERTION,
-    
+
     // when LLE is initializing
     PLATFORM_CB_EVT_LLE_INIT,
-    
+
     // when allocation on heap fails (heap out of memory)
-    // if this callback is not defined, CPU enters a dead loop 
+    // if this callback is not defined, CPU enters a dead loop
     PLATFORM_CB_EVT_HEAP_OOM,
-    
+
     // platform callback for output or save a trace item
     // NOTE: param (void *data) is casted from platform_trace_evt_t *
     PLATFORM_CB_EVT_TRACE,
-    
+
     // platform callback for hardware exceptions
     // NOTE: param (void *data) is casted from platform_exception_id_t
     PLATFORM_CB_EVT_EXCEPTION,
@@ -204,10 +212,10 @@ typedef struct
  *
  * In case apps need a much larger stack than the default one in ISR, a new stack can be
  * installed to repleace the default one.
- * 
- * This function is only allowed to be called in `app_main`. The new stack is put into 
+ *
+ * This function is only allowed to be called in `app_main`. The new stack is put into
  * use after `app_main` returns.
- *                 
+ *
  *
  * @param[in]  top                  stack top (must be 4-bytes aligned)
  ****************************************************************************************
@@ -284,12 +292,13 @@ typedef enum
     PLATFORM_CFG_RC32K_EN,      // Enable/Disable RC 32k clock. Default: Enable
     PLATFORM_CFG_OSC32K_EN,     // Enable/Disable 32k crystal oscillator. Default: Enable
     PLATFORM_CFG_32K_CLK,       // 32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
-                                // Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED and *run*.
-                                //       For OSC32K, wait until status of OSC32K is OK;
-                                //       For RC32K, wait 100us after enabled.
+                                // Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED.
+                                //       For ING918, both clocks must be running:
+                                //          * For OSC32K, wait until status of OSC32K is OK;
+                                //          * For RC32K, wait 100us after enabled.
                                 // Note: Wait another 100us before disabling the unused clock.
-    PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accurary in ppm.
-    PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2    
+    PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accuracy in ppm.
+    PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
     PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (deep sleep mode) in us. (default: ~550us)
     PLATFORM_CFG_PS_DBG_1 = PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // obsoleted
@@ -303,10 +312,13 @@ typedef enum
     PLATFORM_CFG_RTOS_ENH_TICK,             // Enhanced Ticks. Default: DISABLE
                                             // When enabled: IRQ's impact on accuracy of RTOS ticks is reduced
                                             // Note: this feature has negative impact on power consumption.
+    PLATFORM_CFG_LL_DELAY_COMPENSATION,     // When system runs at a lower frequency,
+                                            // more time (in us) is needed to run Link layer.
+                                            // For example, if ING916 runs at 24MHz, configure this to 1000
 } platform_cfg_item_t;
 
 typedef enum
-{    
+{
     PLATFORM_32K_OSC,           // external 32k crystal oscillator
     PLATFORM_32K_RC             // internal RC 32k clock
 } platform_32k_clk_src_t;
@@ -327,7 +339,10 @@ void platform_config(const platform_cfg_item_t item, const uint32_t flag);
 typedef enum
 {
     PLATFORM_INFO_OSC32K_STATUS,        // Read status of 32k crystal oscillator. (0: not OK; Non-0: OK)
-    PLATFORM_INFO_32K_CALI_VALUE,       // Read current 32k clock calibaration result.
+                                        // "OK" means running.
+                                        // For ING916: this clock become running **after** selected as 32k
+                                        //             clock source.
+    PLATFORM_INFO_32K_CALI_VALUE,       // Read current 32k clock calibration result.
 } platform_info_item_t;
 
 /**
@@ -362,7 +377,7 @@ void platform_32k_rc_tune(uint16_t value);
  ****************************************************************************************
  * @brief Automatically tune the internal 32k RC clock, and get the tuning value.
  *
- * Note: This operation costs ~250ms. It is recommended to call this once and store the 
+ * Note: This operation costs ~250ms. It is recommended to call this once and store the
  *       returned value into NVM for later usage.
  *
  * @return                  Value used to tune the clock
@@ -463,7 +478,7 @@ void platform_post_sleep_processing(void);
 void platform_os_idle_resumed_hook(void);
 
 typedef enum
-{    
+{
     PLATFORM_TASK_CONTROLLER,
     PLATFORM_TASK_HOST,
     PLATFORM_TASK_RTOS_TIMER,
@@ -475,7 +490,7 @@ typedef enum
  *
  * @param[in]   id              task identifier
  * @return                      task handle if such task is known to platform bundles else 0.
- *                              0 is returned 
+ *                              0 is returned
  *                              For FreeRTOS bundles, this is casted from `TaskHandle_t`;
  *                              For NoOS bundles, this is casted from `gen_handle_t`.
  ****************************************************************************************
@@ -488,7 +503,7 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  *
  * For NoOS bundles, and `task_create` is NULL in generic OS driver:
  *
- *     To use raw packet APIs, controller needs to be initialized, and call 
+ *     To use raw packet APIs, controller needs to be initialized, and call
  *     `platform_controller_run()` continously.
  ****************************************************************************************
  */
@@ -497,7 +512,7 @@ void platform_init_controller(void);
 /**
  ****************************************************************************************
  * @brief Run controller
- * 
+ *
  * Controller will do its pending jobs, and return after all pending jobs are done.
  ****************************************************************************************
  */
@@ -519,7 +534,7 @@ void platform_controller_run(void);
  *          platform_set_timer(f, 100);
  *          platform_set_timer(f, 200);
  *          ```
- * 
+ *
  * @param[in]  callback         the callback function when the timer expired, and is
  *                              called in a RTOS task (if existing) not an ISR
  * @param[in]  delay            time delay before the timer expires (unit: 625us)
@@ -529,8 +544,51 @@ void platform_controller_run(void);
  */
 void platform_set_timer(void (* callback)(void), uint32_t delay);
 
+/**
+ ****************************************************************************************
+ * @brief Install a new RTOS stack for a specific platform task
+ *
+ * For NoOS variants, RTOS stacks can be replaced (modify its size, etc) when implementing
+ * the generic OS interface.
+ *
+ * @param[in]   id              task identifier ({PLATFORM_TASK_CONTROLLER, PLATFORM_TASK_HOST})
+ * @param[in]   start           start address of the new stack
+ * @param[in]   size            size of the new stack in bytes
+ ****************************************************************************************
+ */
+// void platform_install_task_stack(platform_task_id_t id, void *start, uint32_t size);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Get generic OS driver
+ *
+ * For NoOS variants, driver provided by app is returned;
+ * For RTOS variants, an emulated driver is returned.
+ *
+ * @return                       driver pointer casted from `const gen_os_driver_t *`
+ ****************************************************************************************
+ */
+const void *platform_get_gen_os_driver(void);
+
+/**
+ ****************************************************************************************
+ * @brief Get current task in which is calling this API
+ *
+ * Only available for RTOS variants
+ *
+ * @return                       PLATFORM_TASK_CONTROLLER or PLATFORM_TASK_HOST or other
+ *                               when it is neither in Host or Controller task, another value
+ *                               is returned.
+ ****************************************************************************************
+ */
+// platform_task_id_t platform_get_current_task(void);
+// WARNING: ^^^ this API is not available in this release
+
+
 #ifdef __cplusplus
 }
 #endif
-   
+
 #endif

@@ -2,12 +2,7 @@
 #define _trace_h
 
 #include <stdint.h>
-#include "FreeRTOS.h"
-#ifndef C2NIM
-#include "task.h"
-#include "semphr.h"
-#include "queue.h"
-#endif
+#include "port_gen_os_driver.h"
 #include "ingsoc.h"
 #include "platform_api.h"
 
@@ -27,20 +22,18 @@ typedef struct
     uint8_t           buffer[TRACE_BUFF_SIZE];
     uint16_t          write_next;
     uint16_t          read_next;
-    TaskHandle_t      handle;
-    SemaphoreHandle_t tx_sem; 
-    SemaphoreHandle_t mutex;
+    gen_handle_t      handle;
+    gen_handle_t      tx_sem;
     UART_TypeDef     *port;
 } trace_uart_t;
 
 typedef struct
 {
-    SemaphoreHandle_t mutex;
+    uint8_t placeholder;
 } trace_rtt_t;
 
 typedef struct
 {
-    SemaphoreHandle_t mutex;
     uint32_t page_cnt;
     uint32_t start_addr;
     uint32_t cur_page;
@@ -56,7 +49,6 @@ typedef struct
     uint8_t           buffer[TRACE_BUFF_SIZE];
     uint16_t          write_next;
     uint16_t          read_next;
-    SemaphoreHandle_t mutex;
     uint32_t          msg_id;
     uint16_t          value_handle;
     uint16_t          conn_handle;
@@ -91,7 +83,7 @@ void trace_rtt_init(trace_rtt_t *ctx);
  *       2. `eflash.c` must be included in the project.
  *
  * @param[in] ctx                   trace context
- * @param[in] flash_start_addr      start address of flash storage 
+ * @param[in] flash_start_addr      start address of flash storage
  *                                  (must be at boundary of a page)
  * @param[in] total_size            total size of flash storage
  *                                  (must be multiple of page size)
@@ -172,7 +164,7 @@ uint32_t trace_uart_isr(trace_uart_t *ctx);
  ****************************************************************************************
  * @brief Trace event callback
  *
- * @param[in] trace         trace event 
+ * @param[in] trace         trace event
  * @param[in] ctx           trace context
  ****************************************************************************************
  */
@@ -182,7 +174,7 @@ uint32_t cb_trace_uart(const platform_evt_trace_t *trace, trace_uart_t *ctx);
  ****************************************************************************************
  * @brief Trace event callback
  *
- * @param[in] trace         trace event 
+ * @param[in] trace         trace event
  * @param[in] ctx           trace context
  ****************************************************************************************
  */
@@ -192,7 +184,7 @@ uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx);
  ****************************************************************************************
  * @brief Trace event callback
  *
- * @param[in] trace         trace event 
+ * @param[in] trace         trace event
  * @param[in] ctx           trace context
  ****************************************************************************************
  */
@@ -202,7 +194,7 @@ uint32_t cb_trace_flash(const platform_evt_trace_t *trace, trace_flash_t *ctx);
  ****************************************************************************************
  * @brief Trace event callback
  *
- * @param[in] trace         trace event 
+ * @param[in] trace         trace event
  * @param[in] ctx           trace context
  ****************************************************************************************
  */
@@ -221,7 +213,7 @@ typedef int (* f_trace_puts)(const char *str);
 
 /**
  ****************************************************************************************
- * @brief dump full memory & registers for later analysis 
+ * @brief dump full memory & registers for later analysis
  *
  * @param[in] f_puts        callback function for print strings (ending with '\n\0', w/o '\n' or '\r')
  * @param[in] size          memory block size (64 or 32)

@@ -275,19 +275,42 @@ void apSSP_Initialize (SSP_TypeDef *SPI_BASE)
 {
     SPI_BASE->Ctrl |= (1 << bsSPI_CTRL_SPIRST);
     while((SPI_BASE->Ctrl >> bsSPI_CTRL_SPIRST) & bwSPI_CTRL_SPIRST);
+    apSSP_ResetTxFifo(SPI_BASE);
+    apSSP_ResetRxFifo(SPI_BASE);
 }
 
-/*====================================================================*/
-void apSSP_WriteFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data[], uint16_t Len)
+void apSSP_DeviceParametersSet(SSP_TypeDef *SPI_BASE, apSSP_sDeviceControlBlock *pParam)
 {
-    uint16_t i;
 
-    for(i = 0; i < Len; i++){
-        //Transmit FIFO Empty flag
-        while(apSSP_TxFifoFull(SPI_BASE));
-        //For writes, data is enqueued to the TX FIFO
-        SPI_BASE->Data = Data[i];
-    }
+    apSSP_Initialize(SPI_BASE);
+
+    /* Set Device Parameters */
+    SPI_BASE->TransFmt =  (SPI_DATAMERGE_DISABLE     << bsSPI_TRANSFMT_DATAMERGE |
+                          pParam->eSCLKPolarity     << bsSPI_TRANSFMT_CPOL |
+                          pParam->eSCLKPhase        << bsSPI_TRANSFMT_CPHA |
+                          pParam->eLsbMsbOrder      << bsSPI_TRANSFMT_LSB |
+                          pParam->eDataSize         << bsSPI_TRANSFMT_DATALEN |
+                          pParam->eMasterSlaveMode  << bsSPI_TRANSFMT_SLVMODE |
+                          pParam->eAddrLen          << bsSPI_TRANSFMT_ADDRLEN);
+
+    SPI_BASE->TransCtrl = (pParam->eReadWriteMode         << bsSPI_TRANSCTRL_TRANSMODE |
+                          pParam->eQuadMode               << bsSPI_TRANSCTRL_DUALQUAD |
+                          ((pParam->eWriteTransCnt)-1)    << bsSPI_TRANSCTRL_WRTRANCNT |
+                          ((pParam->eReadTransCnt)-1)     << bsSPI_TRANSCTRL_RDTRANCNT |
+                          pParam->eAddrEn                 << bsSPI_TRANSCTRL_ADDREN |
+                          pParam->eCmdEn                  << bsSPI_TRANSCTRL_CMDEN |
+                          pParam->SlaveDataOnly           << bsSPI_TRANSCTRL_SLVDATAONLY);
+  
+    apSSP_SetTxThres(SPI_BASE, pParam->TxThres);
+    apSSP_SetRxThres(SPI_BASE, pParam->RxThres);
+    apSSP_SetTimingSclkDiv(SPI_BASE, pParam->eSclkDiv);
+    apSSP_IntEnable(SPI_BASE, pParam->eInterruptMask);
+
+}
+/*====================================================================*/
+void apSSP_WriteFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data)
+{
+    SPI_BASE->Data = Data;
 }
 
 /*====================================================================*/
@@ -299,17 +322,11 @@ void apSSP_WriteCmd(SSP_TypeDef *SPI_BASE, uint32_t Addr, uint32_t Cmd)
 }
 
 /*====================================================================*/
-void apSSP_ReadFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data[], uint16_t Len)
+void apSSP_ReadFIFO(SSP_TypeDef *SPI_BASE, uint32_t *Data)
 {
-    uint16_t i;
-    for(i = 0; i < Len; i++){
-        //Receive FIFO Empty flag
-        while(apSSP_RxFifoEmpty(SPI_BASE));
-        //For reads, data is read and dequeued from the RX FIFO
-        if(i < Len) {Data[i] = SPI_BASE->Data;}
-    }
-
+    *Data = SPI_BASE->Data;
 }
+
 /*====================================================================*/
 uint32_t apSSP_ReadCommand(SSP_TypeDef *SPI_BASE)
 {
@@ -317,15 +334,30 @@ uint32_t apSSP_ReadCommand(SSP_TypeDef *SPI_BASE)
 }
 
 /*====================================================================*/
-void apSSP_SetTransferFormat(SSP_TypeDef *SPI_BASE, uint32_t val)
+void apSSP_SetTransferFormat(SSP_TypeDef *SPI_BASE, uint32_t val, uint32_t shift, uint32_t width)
 {
-    SPI_BASE->TransFmt = val;
+    SPI_BASE->TransFmt &= (~(BW2M(width) << shift));
+    SPI_BASE->TransFmt |= (val << shift);
 }
 
 /*====================================================================*/
-void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val)
+void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val, uint32_t shift, uint32_t width)
 {
-    SPI_BASE->TransCtrl = val;
+    SPI_BASE->TransCtrl &= (~(BW2M(width) << shift));
+    SPI_BASE->TransCtrl |= (val << shift);
+}
+
+/*====================================================================*/
+void apSSP_SetTransferControlWrTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val)
+{
+    SPI_BASE->TransCtrl &= (~(BW2M(bwSPI_TRANSCTRL_WRTRANCNT) << bsSPI_TRANSCTRL_WRTRANCNT));
+    SPI_BASE->TransCtrl |= ((val-1) << bsSPI_TRANSCTRL_WRTRANCNT);
+}
+
+void apSSP_SetTransferControlRdTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val)
+{
+    SPI_BASE->TransCtrl &= (~(BW2M(bwSPI_TRANSCTRL_RDTRANCNT) << bsSPI_TRANSCTRL_RDTRANCNT));
+    SPI_BASE->TransCtrl |= ((val-1) << bsSPI_TRANSCTRL_RDTRANCNT);
 }
 
 /*====================================================================*/
@@ -348,7 +380,26 @@ void apSSP_ClearIntStatus(SSP_TypeDef *SPI_BASE, uint32_t val)
 /*====================================================================*/
 void apSSP_IntEnable(SSP_TypeDef *SPI_BASE, uint32_t mask)
 {
-    SPI_BASE->IntrEn = mask;
+    SPI_BASE->IntrEn |= mask;
+}
+
+void apSSP_IntDisable(SSP_TypeDef *SPI_BASE, uint32_t mask)
+{
+    SPI_BASE->IntrEn &= ~mask;
+}
+
+/*====================================================================*/
+// enable spi tx fifo dma
+void apSSP_SetTxDmaEn(SSP_TypeDef *SPI_BASE, uint8_t en)
+{
+    SPI_BASE->Ctrl &= (~(0x1 << bsSPI_CTRL_TXDMAEN));
+    SPI_BASE->Ctrl |= (en << bsSPI_CTRL_TXDMAEN);
+}
+
+void apSSP_SetRxDmaEn(SSP_TypeDef *SPI_BASE, uint8_t en)
+{
+    SPI_BASE->Ctrl &= (~(0x1 << bsSPI_CTRL_RXDMAEN));
+    SPI_BASE->Ctrl |= (en << bsSPI_CTRL_RXDMAEN);
 }
 
 /*====================================================================*/
@@ -379,6 +430,11 @@ void apSSP_ResetRxFifo(SSP_TypeDef *SPI_BASE)
     SPI_BASE->Ctrl |= (1UL << bsSPI_CTRL_RXFIFORST);
     //It is automatically cleared to 0 after the reset operation completes.
     while((SPI_BASE->Ctrl >> bsSPI_CTRL_RXFIFORST) & BW2M(bwSPI_CTRL_RXFIFORST));
+}
+
+uint32_t apSSP_GetSpiStatus(SSP_TypeDef *SPI_BASE)
+{
+    return (SPI_BASE->Status );
 }
 
 /*====================================================================*/
@@ -431,6 +487,28 @@ void apSSP_SetTimingCs2Sclk(SSP_TypeDef *SPI_BASE, uint8_t cs2sclk)
 {
     SPI_BASE->Timing &= (~(BW2M(bwSPI_TIMING_CS2SCLK) << bsSPI_TIMING_CS2SCLK));
     SPI_BASE->Timing |= (cs2sclk << bsSPI_TIMING_CS2SCLK);
+}
+
+/*====================================================================*/
+uint8_t apSSP_GetTxFifoDepthWords(SSP_TypeDef *SPI_BASE)
+{
+    return SPI_FIFO_DEPTH;//words
+}
+
+uint8_t apSSP_GetRxFifoDepthWords(SSP_TypeDef *SPI_BASE)
+{
+    return SPI_FIFO_DEPTH;//words
+}
+
+/*====================================================================*/
+uint16_t apSSP_GetSlaveTxDataCnt(SSP_TypeDef *SPI_BASE)
+{
+    return ( ((SPI_BASE->SlvDataCnt >> bsSPI_SLAVE_DATA_COUNT_WRITE_CNT) & BW2M(bwSPI_SLAVE_DATA_COUNT_WRITE_CNT)) );
+}
+
+uint16_t apSSP_GetSlaveRxDataCnt(SSP_TypeDef *SPI_BASE)
+{
+    return ( ((SPI_BASE->SlvDataCnt >> bsSPI_SLAVE_DATA_COUNT_READ_CNT) & BW2M(bwSPI_SLAVE_DATA_COUNT_READ_CNT)) );
 }
 
 #endif

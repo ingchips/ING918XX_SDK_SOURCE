@@ -46,6 +46,12 @@ typedef enum
     GIO_GPIO_33 ,
     GIO_GPIO_34 ,
     GIO_GPIO_35 ,
+    GIO_GPIO_36 ,
+    GIO_GPIO_37 ,
+    GIO_GPIO_38 ,
+    GIO_GPIO_39 ,
+    GIO_GPIO_40 ,
+    GIO_GPIO_41 ,
 #endif
 } GIO_Index_t;
 
@@ -136,6 +142,9 @@ void GIO_ClearIntStatus(const GIO_Index_t io_index);
 
 #define GPIO_DI  ((__IO uint32_t *)(APB_GIO_BASE+0x00))
 #define GPIO_DO  ((__IO uint32_t *)(APB_GIO_BASE+0x10))
+#define GPIO_DOS ((__IO uint32_t *)(APB_GIO_BASE+0x14))
+#define GPIO_DOC ((__IO uint32_t *)(APB_GIO_BASE+0x18))
+#define GPIO_DOT ((__IO uint32_t *)(APB_GIO_BASE+0x1C))
 #define GPIO_OEB ((__IO uint32_t *)(APB_GIO_BASE+0x20))
 #define GPIO_IS  ((__IO uint32_t *)(APB_GIO_BASE+0x40)) // interrupt status
 #define GPIO_LV  ((__IO uint32_t *)(APB_GIO_BASE+0x50)) // interrupt type 0-edge 1-level
@@ -168,6 +177,37 @@ static __INLINE uint32_t GIO_GetAllIntStatus(void)  { return (*GPIO_IS); }
  *
  */
 static __INLINE void GIO_ClearAllIntStatus(void) { *GPIO_IS = 0; }
+
+/**
+ * @brief Set some or all of 32 GPIO to 1
+ *
+ */
+static __INLINE void GIO_SetBits(const uint32_t index_mask){ *GPIO_DOS = index_mask;}
+
+/**
+ * @brief Clear some or all of 32 GPIO to 0
+ *
+ */
+static __INLINE void GIO_ClearBits(const uint32_t index_mask){ *GPIO_DOC = index_mask;}
+
+/**
+ * @brief Toggle some or all of 32 GPIO to 0
+ *
+ */
+static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = index_mask;}
+
+/**
+ * @brief Send a pulse of duration 200~380ns to GPIO
+ *
+ * Note:The running time is 200ns less than using GIO_SetBits with GIO_ClearBits to generate a pulse.
+ */
+static __INLINE void GIO_SetQuicPulse(const uint64_t index_mask){
+    uint32_t tmp_set = (*GPIO_DO)|index_mask;
+    uint32_t tmp_clear = (*GPIO_DO)&(~index_mask);
+    *GPIO_DO = tmp_set;
+    *GPIO_DO = tmp_clear;
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
@@ -221,6 +261,49 @@ uint64_t GIO_GetAllIntStatus(void);
  *
  */
 void GIO_ClearAllIntStatus(void);
+
+/**
+ * @brief Enable or disable retention of GPIO Group A
+ *
+ * Group A = {0, 5, 6, 21, 22, 23, 36, 37}.
+ *
+ * Once enabled, GPIO configuration (and their value) are
+ * all latched and kept even in power saving modes.
+ *
+ * After enabled, all other GPIO configuration will not take
+ * effect until retention is disabled.
+ *
+ * @param[in] enable    Enable(1)/disable(0)
+ */
+void GIO_EnableRetentionGroupA(uint8_t enable);
+
+/**
+ * @brief Enable or disable retention of GPIO Group B
+ *
+ * Group B = All GPIOs - Group A.
+ *
+ * Once enabled, GPIO configuration (and their value) are
+ * all latched and kept even in power saving modes.
+ *
+ * After enabled, all other GPIO configuration will not take
+ * effect until retention is disabled.
+ *
+ * @param[in] enable    Enable(1)/disable(0)
+ */
+void GIO_EnableRetentionGroupB(uint8_t enable);
+
+/**
+ * @brief Enable or disable HighZ mode of GPIO Group B
+ *
+ * Once enabled, all GPIO in group B are kept in HighZ mode
+ * even in power saving modes.
+ *
+ * After enabled, all other GPIO configuration will not take
+ * effect until HighZ is released (i.e. disabled).
+ *
+ * @param[in] enable    Enable(1)/disable(0)
+ */
+void GIO_EnableHighZGroupB(uint8_t enable);
 
 #endif
 

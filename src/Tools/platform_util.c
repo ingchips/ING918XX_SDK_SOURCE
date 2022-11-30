@@ -7,7 +7,7 @@ const struct platform_info *platform_inspect2(uintptr_t binary_addr, int family)
         case INGCHIPS_FAMILY_918:
             return (const struct platform_info *)(binary_addr + 0xb0);
         case INGCHIPS_FAMILY_916:
-            return (const struct platform_info *)(binary_addr + 0xbc);
+            return (const struct platform_info *)(binary_addr + 0xfc);
         default:
             return (const struct platform_info *)0;
     }

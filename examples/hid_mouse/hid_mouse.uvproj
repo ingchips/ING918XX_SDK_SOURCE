@@ -295,7 +295,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>155648</StartAddress>
-                <Size>122880</Size>
+                <Size>385024</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893408</StartAddress>
-                <Size>10272</Size>
+                <StartAddress>536901904</StartAddress>
+                <Size>34544</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -417,7 +417,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\ING9185xx\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\typical\ING9187xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>

@@ -39,7 +39,7 @@ void port_timer_start(gen_handle_t timer)
     {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xTimerStartFromISR(timer, &xHigherPriorityTaskWoken);
-        
+
     }
     else
         xTimerStart(timer, portMAX_DELAY);
@@ -51,7 +51,7 @@ void port_timer_stop(gen_handle_t timer)
     {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xTimerStopFromISR(timer, &xHigherPriorityTaskWoken);
-        
+
     }
     else
         xTimerStop(timer, portMAX_DELAY);
@@ -78,11 +78,11 @@ gen_handle_t port_task_create(
     xTaskCreate(entry,
                name,
                (stack_size + 3) >> 2,
-               NULL,
+               parameter,
                priority == GEN_TASK_PRIORITY_HIGH ? APP_PRIO_HIGH : APP_PRIO_LOW,
                &r);
     return r;
-}    
+}
 
 gen_handle_t port_queue_create(int len, int item_size)
 {
@@ -96,7 +96,7 @@ int port_queue_send_msg(gen_handle_t queue, void *msg)
     {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         err = xQueueSendToBackFromISR(queue, msg, &xHigherPriorityTaskWoken);
-        
+
     }
     else
         err = xQueueSendToBack(queue, msg, portMAX_DELAY);
@@ -111,23 +111,23 @@ int port_queue_recv_msg(gen_handle_t queue, void *msg)
     {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         err = xQueueReceiveFromISR(queue, msg, &xHigherPriorityTaskWoken);
-        
+
     }
     else
         err = xQueueReceive(queue, msg, portMAX_DELAY);
     return err == pdPASS ? 0 : 1;
-}    
+}
 
 gen_handle_t port_event_create()
 {
     return xSemaphoreCreateBinary();
-}    
+}
 
 // return 0 if msg received; otherwise failed (timeout)
 int port_event_wait(gen_handle_t event)
 {
     return xSemaphoreTake(event, portMAX_DELAY) == pdPASS ? 0 : 1;
-}    
+}
 
 // event_set(event) will release the task in waiting.
 void port_event_set(gen_handle_t event)
@@ -139,7 +139,7 @@ void port_event_set(gen_handle_t event)
     }
     else
         xSemaphoreGive(event);
-}    
+}
 
 extern void xPortSysTickHandler(void);
 extern void xPortPendSVHandler(void);
@@ -151,17 +151,17 @@ const gen_os_driver_t gen_os_driver =
     .timer_start = port_timer_start,
     .timer_stop = port_timer_stop,
     .timer_delete = port_timer_delete,
-    
+
     .task_create = port_task_create,
-    
+
     .queue_create = port_queue_create,
     .queue_send_msg = port_queue_send_msg,
     .queue_recv_msg = port_queue_recv_msg,
-    
+
     .event_create = port_event_create,
     .event_set = port_event_set,
     .event_wait = port_event_wait,
-    
+
     .malloc = pvPortMalloc,
     .free = vPortFree,
     .enter_critical = vPortEnterCritical,

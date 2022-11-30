@@ -62,7 +62,10 @@ void GIO_ClearIntStatus(const GIO_Index_t io_index)
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
-#define DEF_GIO_AND_PIN(io_index)       GIO_TypeDef *pDef = io_index >= GIO_GPIO_18 ? APB_GPIO1 : APB_GPIO0; int index = io_index >= GIO_GPIO_18 ? io_index - GIO_GPIO_18 : io_index;
+#define START_OF_GPIO1          GIO_GPIO_21
+#define MASK_GPIO0_BITS         ((1 << 21) - 1)
+
+#define DEF_GIO_AND_PIN(io_index)       GIO_TypeDef *pDef = io_index >= START_OF_GPIO1 ? APB_GPIO1 : APB_GPIO0; int index = io_index >= START_OF_GPIO1 ? io_index - START_OF_GPIO1 : io_index;
 
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 {
@@ -174,28 +177,79 @@ void GIO_DebounceEn(const GIO_Index_t io_index, uint8_t enable)
     GIO_MaskedWrite(&pDef->DeBounceEn, index, enable);
 }
 
-#define MASK_18_BITS ((1 << 18) - 1)
-
 void GIO_WriteAll(const uint64_t value)
 {
-    APB_GPIO0->DataOut = value & MASK_18_BITS;
-    APB_GPIO1->DataOut = (value >> 18) & MASK_18_BITS;
+    APB_GPIO0->DataOut = value & MASK_GPIO0_BITS;
+    APB_GPIO1->DataOut = (value >> GIO_GPIO_21) & MASK_GPIO0_BITS;
 }
 
 uint64_t GIO_ReadAll(void)
 {
-    return (((uint64_t)APB_GPIO1->DataIn) << 18) | APB_GPIO0->DataIn;
+    return (((uint64_t)APB_GPIO1->DataIn) << GIO_GPIO_21) | APB_GPIO0->DataIn;
 }
 
 uint64_t GIO_GetAllIntStatus(void)
 {
-    return (((uint64_t)APB_GPIO1->IntStatus) << 18) | APB_GPIO0->IntStatus;
+    return (((uint64_t)APB_GPIO1->IntStatus) << GIO_GPIO_21) | APB_GPIO0->IntStatus;
 }
 
 void GIO_ClearAllIntStatus(void)
 {
     APB_GPIO0->IntStatus = (uint32_t)-1;
     APB_GPIO1->IntStatus = (uint32_t)-1;
+}
+
+void GIO_EnableRetentionGroupA(uint8_t enable)
+{
+    #define AON1_REG4       (AON1_CTRL_BASE + 0x10)
+    #define AON2_STATUS0    (AON2_CTRL_BASE + 0x100)
+
+    GIO_MaskedWrite((volatile uint32_t *)AON1_REG4, 7, enable);
+    while (((io_read(AON2_STATUS0) >> 19) & 1) != enable);
+}
+
+#define AON2_SLEEP_CTRL     (AON2_CTRL_BASE + 0x1A8)
+
+#ifdef __GNUC__
+#define nop(n) do { int i = n; while (i--) __asm("NOP"); } while (0)
+#else
+#define nop(n) do { int i = n; while (i--) __nop(); } while (0)
+#endif
+
+void GIO_EnableRetentionGroupB(uint8_t enable)
+{
+    if (enable)
+    {
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 1);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 1);
+        nop(10);
+    }
+    else
+    {
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 0);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 0);
+        nop(10);
+    }
+}
+
+void GIO_EnableHighZGroupB(uint8_t enable)
+{
+    if (enable)
+    {
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 1);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 1);
+        nop(10);
+    }
+    else
+    {
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 0);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 0);
+        nop(10);
+    }
 }
 
 #endif

@@ -178,10 +178,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>14</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>1</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -255,7 +255,7 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\bundles\typical\ING9185xx\symdefs.m</PathWithFileName>
+      <PathWithFileName>..\..\bundles\typical\ING9187xx\symdefs.m</PathWithFileName>
       <FilenameWithoutPath>symdefs.m</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

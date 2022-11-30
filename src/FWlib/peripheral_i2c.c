@@ -114,7 +114,44 @@ void I2C_Enable(I2C_TypeDef *I2C_BASE, uint8_t enable)
 
 void I2C_IntEnable(I2C_TypeDef *I2C_BASE, uint32_t mask)
 {
-    I2C_BASE->IntEn = mask & I2C_INT_FULL_MASK;
+    I2C_BASE->IntEn |= mask & I2C_INT_FULL_MASK;
+}
+
+void I2C_IntDisable(I2C_TypeDef *I2C_BASE, uint32_t mask)
+{
+    I2C_BASE->IntEn &= ~(mask & I2C_INT_FULL_MASK);
+}
+
+void I2C_CtrlUpdateDirection(I2C_TypeDef *I2C_BASE, I2C_TransactionDir dir)
+{
+    I2C_BASE->Ctrl &= (~(BW2M(bwI2C_CTRL_TRANSACTION_DIR) << bsI2C_CTRL_TRANSACTION_DIR));
+    I2C_BASE->Ctrl |= ((dir) << bsI2C_CTRL_TRANSACTION_DIR);
+}
+
+void I2C_CtrlUpdateDataCnt(I2C_TypeDef *I2C_BASE, uint8_t cnt)
+{
+    I2C_BASE->Ctrl &= (~(BW2M(bwI2C_CTRL_DATA_CNT)));
+    I2C_BASE->Ctrl |= cnt;
+}
+
+uint8_t I2C_CtrlGetDataCnt(I2C_TypeDef *I2C_BASE)
+{
+    return (I2C_BASE->Ctrl & BW2M(bwI2C_CTRL_DATA_CNT));
+}
+
+void I2C_CommandWrite(I2C_TypeDef *I2C_BASE, uint8_t cmd)
+{
+    I2C_BASE->Cmd = cmd;
+}
+
+void I2C_DataWrite(I2C_TypeDef *I2C_BASE, uint8_t data)
+{
+    I2C_BASE->Data = data;
+}
+
+uint8_t I2C_DataRead(I2C_TypeDef *I2C_BASE)
+{
+    return (I2C_BASE->Data);
 }
 
 uint32_t I2C_GetIntState(I2C_TypeDef *I2C_BASE)
@@ -129,7 +166,7 @@ void I2C_ClearIntState(I2C_TypeDef *I2C_BASE, uint32_t mask)
 
 int I2C_TransactionComplete(I2C_TypeDef *I2C_BASE)
 {
-	return (I2C_BASE->Status >> I2C_INT_CMPL) & 1;
+    return (I2C_BASE->Status >> I2C_INT_CMPL) & 1;
 }
 
 int I2C_FifoEmpty(I2C_TypeDef *I2C_BASE)
@@ -152,6 +189,30 @@ void I2C_ConfigSCLTiming(I2C_TypeDef *I2C_BASE, uint32_t scl_hi, uint32_t scl_ra
     t |= (sp & 0x7) << 21;
     t |= (sudat & 0x1f) << 24;
     I2C_BASE->Setup = t;
+}
+
+void I2C_ConfigClkFrequency(I2C_TypeDef *I2C_BASE, I2C_ClockFrequenyOptions option)
+{
+    switch (option)
+    {
+      case I2C_CLOCKFREQUENY_STANDARD:
+      {
+        I2C_BASE->TPM = 3;
+        I2C_ConfigSCLTiming(I2C_BASE,157,0x0,0x5,0x1,0x5);
+      }break;
+      case I2C_CLOCKFREQUENY_FASTMODE:
+      {
+        I2C_BASE->TPM = 2;
+        I2C_ConfigSCLTiming(I2C_BASE,32,0x1,0x5,0x1,0x5);
+      }break;
+      case I2C_CLOCKFREQUENY_FASTMODE_PLUS:
+      {
+        I2C_BASE->TPM = 0;
+        I2C_ConfigSCLTiming(I2C_BASE,38,0x1,0x5,0x1,0x5);
+      }break;
+      default:
+        break;
+    }
 }
 
 void I2C_ConfigSlave(I2C_TypeDef *I2C_BASE, I2C_AddressingMode addr_mode, uint8_t addr)

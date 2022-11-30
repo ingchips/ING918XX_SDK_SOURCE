@@ -334,7 +334,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,HCI_ACL_PAYLOAD_SIZE=120</Define>
+              <Define>USE_STDPERIPH_DRIVER,HCI_ACL_PAYLOAD_SIZE=120,BOARD_USE_RGB_LED</Define>
               <Undefine/>
               <IncludePath>../../src/Mesh;../../src/Mesh/os;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -424,6 +424,13 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\board.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>

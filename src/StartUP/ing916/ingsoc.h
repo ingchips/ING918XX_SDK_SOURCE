@@ -33,8 +33,10 @@ typedef enum
     PLATFORM_CB_IRQ_TIMER2,
     PLATFORM_CB_IRQ_WDT,
     PLATFORM_CB_IRQ_PDM,
+    PLATFORM_CB_IRQ_AHPSPI,
+    PLATFORM_CB_IRQ_SPI0 = PLATFORM_CB_IRQ_AHPSPI,
     PLATFORM_CB_IRQ_APBSPI,
-    PLATFORM_CB_IRQ_QSPI,
+    PLATFORM_CB_IRQ_SPI1 = PLATFORM_CB_IRQ_APBSPI,
     PLATFORM_CB_IRQ_SADC,
     PLATFORM_CB_IRQ_I2S,
     PLATFORM_CB_IRQ_UART0,
@@ -43,15 +45,31 @@ typedef enum
     PLATFORM_CB_IRQ_I2C1,
     PLATFORM_CB_IRQ_DMA,
     PLATFORM_CB_IRQ_KEYSCAN,
-    PLATFORM_CB_IRQ_PWM,
     PLATFORM_CB_IRQ_IR_INT,
     PLATFORM_CB_IRQ_IR_WAKEUP,
+    PLATFORM_CB_IRQ_PCAP0,
+    PLATFORM_CB_IRQ_PCAP1,
+    PLATFORM_CB_IRQ_PCAP2,
+    PLATFORM_CB_IRQ_QDEC0,
+    PLATFORM_CB_IRQ_QDEC1,
+    PLATFORM_CB_IRQ_QDEC2,
+    PLATFORM_CB_IRQ_USB,
+    PLATFORM_CB_IRQ_LPC_POS,
+    PLATFORM_CB_IRQ_LPC_NEG,
+    PLATFORM_CB_IRQ_PMU_PVD,
+    PLATFORM_CB_IRQ_PMU_PDR,
+    PLATFORM_CB_IRQ_PTE0,
+    PLATFORM_CB_IRQ_PTE1,
+    PLATFORM_CB_IRQ_PTE2,
+    PLATFORM_CB_IRQ_PTE3,
+    PLATFORM_CB_IRQ_RC64M_TUNE,
+    PLATFORM_CB_IRQ_32K_CNT,
 
     PLATFORM_CB_IRQ_MAX
 } platform_irq_callback_type_t;
 
+// WARNING: Defined for compatibility with ING918xx. Do not use this.
 #define PLATFORM_CB_IRQ_GPIO        PLATFORM_CB_IRQ_GPIO0
-#define PLATFORM_CB_IRQ_SPI0        PLATFORM_CB_IRQ_APBSPI
 
 /* ================================================================================ */
 /* ================      Processor and Core Peripheral Section     ================ */
@@ -73,11 +91,13 @@ typedef enum
 
 typedef struct
 {
-    __IO uint32_t OUT_CTRL[16];     // 0x00
-    __IO uint32_t IN_CTRL[16];      // 0x40
+    __IO uint32_t OUT_CTRL[7];      // 0x00
+         uint32_t Reserved0[9];
+    __IO uint32_t IN_CTRL[11];      // 0x40
+         uint32_t Reserved1[5];
     __IO uint32_t PE_CTRL[2];       // 0x80
     __IO uint32_t PS_CTRL[2];       // 0x88
-    __IO uint32_t Reserved0[28];
+    __IO uint32_t Reserved2[28];
     __IO uint32_t IS_CTRL[2];       // 0x100
     __IO uint32_t DR_CTRL[3];       // 0x108
     __IO uint32_t SPI_CFG0;         // 0x114
@@ -153,7 +173,7 @@ typedef struct
     __IO uint32_t St;                   // 0x1c
 } WDT_TypeDef;
 
-// dedicated PWM
+
 typedef struct
 {
     __IO uint32_t Ctrl0;                // 0x00
@@ -163,6 +183,22 @@ typedef struct
     __IO uint32_t HighTh;               // 0x14
     __IO uint32_t DZoneTh;              // 0x18
     __IO uint32_t DmaData;              // 0x1c
+} PWM_ChannelDef;
+
+typedef struct
+{
+    __IO uint32_t Ctrl0;                // 0x00
+    __IO uint32_t Ctrl1;                // 0x04
+    __IO uint32_t Reserved[2];
+} PCAP_ChannelDef;
+
+// dedicated PWM
+typedef struct
+{
+    PWM_ChannelDef Channels[3];         // 0x00
+    PCAP_ChannelDef PCAPChannels[3];    // 0x60
+    __IO uint32_t CapCntEn;             // 0x90
+    __IO uint32_t CapCounter;           // 0x94
 } PWM_TypeDef;
 
 // I2S
@@ -231,7 +267,6 @@ typedef struct tagDMA_Descriptor
     uint32_t DstAddr;               // +0x10
     uint32_t Reserved2;
     struct tagDMA_Descriptor *Next; // +0x18    (8-bytes aligned address)
-    uint32_t Reserved3;             // +0x1c
 } DMA_Descriptor;
 
 typedef struct
@@ -258,15 +293,37 @@ typedef struct{
     __IO uint32_t RstuCfg[2];          // 0x20
     __IO uint32_t SysCtrl;             // 0x28
     __IO uint32_t CguCfg8;             // 0x2c
-    __IO uint32_t DmaCtrl[4];          // 0x30
+    __IO uint32_t DmaCtrl[2];          // 0x30
+    __IO uint32_t Reserved3[2];
     __IO uint32_t PllCtrl;             // 0x40
-    __IO uint32_t Reserved1[3];
+    __IO uint32_t AnaCtrl;             // 0x44
+    __IO uint32_t Reserved1[2];
     __IO uint32_t PdmI2sCtrl;          // 0x50
-    __IO uint32_t Reserved2[3];
+    __IO uint32_t QdecCfg;             // 0x54
+    __IO uint32_t CguCfg9;             // 0x58
+    __IO uint32_t Reserved2[1];
     __IO uint32_t SysIoStatus;         // 0x60
     __IO uint32_t SysIoWkSource;       // 0x64
     __IO uint32_t SysIoInStatus;       // 0x68
+    __IO uint32_t Reserved4[5];
+    __IO uint32_t USBCfg;              // 0x80
 } SYSCTRL_TypeDef;
+
+// PTE
+typedef struct
+{
+    __IO uint32_t En         :1;            // +0x00
+    __IO uint32_t Int        :1;
+    __IO uint32_t InMask     :24;  
+    __IO uint32_t IntMask    :1;   
+    __IO uint32_t Reserved1  :5;   
+    __IO uint32_t OutMask    :16;           // +0x04
+    __IO uint32_t Reserved2  :16;   
+} PTE_ChannelCtrlReg;
+
+typedef struct{
+    __IO PTE_ChannelCtrlReg Channels[4];    // 0x1a0
+} PTE_TypeDef;
 
 typedef struct
 {
@@ -299,13 +356,13 @@ typedef struct
     __IO uint32_t Efuse_cfg2;         //0x8
     __IO uint32_t Efuse_cfg3;         //0xC
     __IO uint32_t Reserved0[3];       //0x10
-    __IO uint32_t efuse_cfg4;         //0x1C
-    __IO uint32_t efuse_dly_cfg0;     //0x20
-    __IO uint32_t efuse_dly_cfg1;     //0x24
+    __IO uint32_t Efuse_cfg4;         //0x1C
+    __IO uint32_t Efuse_dly_cfg0;     //0x20
+    __IO uint32_t Efuse_dly_cfg1;     //0x24
     __IO uint32_t Reserved1[2];       //0x28
-    __IO uint32_t efuse_status;       //0x30
+    __IO uint32_t Efuse_status;       //0x30
     __IO uint32_t Reserved2[3];       //0x34
-    __IO uint32_t efuse_rdata[4];     //0x40
+    __IO uint32_t Efuse_rdata[4];     //0x40
 } EFUSE_TypeDef;
 
 typedef struct
@@ -322,6 +379,15 @@ typedef struct
     __IO uint32_t ir_tx_code;             //0x24
     __IO uint32_t ir_fsm;                 //0x28
 } IR_TypeDef;
+
+typedef struct{
+    __IO uint32_t sadc_cfg[3];            // 0x0
+    __IO uint32_t sadc_data;              // 0x0c
+    __IO uint32_t sadc_status;            // 0x10
+    __IO uint32_t Reserved[7];            // 0x14
+    __IO uint32_t sadc_int_mask;          // 0x30
+    __IO uint32_t sadc_int;               // 0x34
+} SADC_TypeDef;
 
 /******************************************************************************/
 /*                         memory map                                         */
@@ -355,22 +421,26 @@ typedef struct
 #define APB_GPIO0_BASE     (APB_BASE + 0x15000)
 #define APB_GPIO1_BASE     (APB_BASE + 0x16000)
 #define APB_EFUSE_BASE     (APB_BASE + 0x17000)
+#define APB_USB_BASE       (APB_BASE + 0x18000)
 
 #define AON_APB_BASE       ((uint32_t)0x40100000UL)
-#define AON_CTRL_BASE      (AON_APB_BASE + 0x0000)
+#define AON2_CTRL_BASE     (AON_APB_BASE + 0x0000)
 #define AON_RTC_BASE       (AON_APB_BASE + 0x1000)
+#define AON1_CTRL_BASE     (AON_APB_BASE + 0x2000)
 
 #define AHB_QSPI_BASE      ((uint32_t)0x40160000UL)
 
 #define APB_PINC_BASE      APB_IOMUX_BASE
 
 #define APB_SYSCTRL        ((SYSCTRL_TypeDef *)APB_SYSCTRL_BASE)
+#define APB_PTE            ((PTE_TypeDef *)(APB_SYSCTRL_BASE + 0x1a0))
 #define APB_WDT            ((WDT_TypeDef *)APB_WDT_BASE)
 #define APB_TMR0           ((TMR_TypeDef *)APB_TMR0_BASE)
 #define APB_TMR1           ((TMR_TypeDef *)APB_TMR1_BASE)
 #define APB_TMR2           ((TMR_TypeDef *)APB_TMR2_BASE)
 #define APB_PWM            ((PWM_TypeDef *)APB_PWM_BASE)
 #define APB_I2S            ((I2S_TypeDef *)APB_I2S_BASE)
+#define APB_SADC           ((SADC_TypeDef *)APB_SARADC_BASE)
 #define APB_PDM            ((PDM_TypeDef *)APB_PDM_BASE)
 #define APB_PINCTRL        ((PINCTRL_TypeDef *)APB_PINC_BASE)
 #define APB_UART0          ((UART_TypeDef *)APB_UART0_BASE)
@@ -410,6 +480,7 @@ typedef struct
     #include "peripheral_adc.h"
     #include "peripheral_efuse.h"
     #include "peripheral_dma.h"
+    #include "peripheral_ir.h"
 #endif
 
 #define OSC_CLK_FREQ  24000000UL

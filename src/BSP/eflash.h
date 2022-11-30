@@ -12,9 +12,9 @@ extern "C" {
 /**
  * @brief Erase a block of data in flash then write data.
  *
- * Note: For ING916, `buffer` must be in RAM.
+ * Note: For ING916, `buffer` must not be in Flash.
  *
- * @param[in] dest_addr         page aligned target address (unified address) in flash
+ * @param[in] dest_addr         target address (unified address, aligned at EFLASH_ERASABLE_SIZE) in flash
  * @param[in] buffer            buffer to be written
  * @param[in] size              byte number to be written (must be multiple of 4 bytes)
  * @return                      0 if successful else non-0
@@ -45,7 +45,8 @@ typedef struct fota_update_block
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
-#define EFLASH_PAGE_SIZE    8192
+#define EFLASH_PAGE_SIZE        8192
+#define EFLASH_ERASABLE_SIZE    EFLASH_PAGE_SIZE
 
 /**
  * @brief Erase a page of flash
@@ -77,11 +78,12 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #define EFLASH_PAGE_SIZE        256
 #define EFLASH_SECTOR_SIZE      4096
+#define EFLASH_ERASABLE_SIZE    EFLASH_SECTOR_SIZE
 
 /**
  * @brief Erase a sector of flash
  *
- * @param[in] addr              start address (unified address) of the page
+ * @param[in] addr              start address (unified address) of the sector
  * @return                      0 if successful else non-0
  */
 int erase_flash_sector(const uint32_t addr);
@@ -91,10 +93,10 @@ int erase_flash_sector(const uint32_t addr);
  *
  * @param[in] block_num         number of blocks
  * @param[in] blocks            an array of `fota_update_block_t`
- * @param[in] page_buffer       buffer large enough for holding `EFLASH_PAGE_SIZE` bytes of data
- * @return                      non-0 if error occurs else platform is resetted
+ * @param[in] ram_buffer        buffer large enough for holding `EFLASH_ERASABLE_SIZE` bytes of data
+ * @return                      non-0 if error occurs else platform is reset
  */
-int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer);
+int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *ram_buffer);
 
 #endif
 

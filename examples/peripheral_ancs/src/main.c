@@ -10,6 +10,7 @@
 #include "eflash.h"
 #include <string.h>
 
+#include "board.h"
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -94,19 +95,8 @@ void setup_peripherals(void)
 
     // setup GPIOs for keys
     PINCTRL_DisableAllInputs();
-    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GPIO);
-    GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_2, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_3, GIO_DIR_INPUT);
-    GIO_ConfigIntSource(KB_KEY_1, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_2, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_3, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    
+    setup_keys();
+
     // LED
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(LED_PIN, GIO_DIR_OUTPUT);

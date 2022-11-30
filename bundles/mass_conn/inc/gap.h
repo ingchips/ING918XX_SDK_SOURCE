@@ -106,13 +106,15 @@ uint8_t gap_read_rssi(hci_con_handle_t handle);
 uint8_t gap_read_remote_used_features(hci_con_handle_t handle);
 
 /**
- * @brief read remote features upon hci connection
+ * @brief Read remote version information upon hci connection
  *
  * @param handle       connection handle
  *
  * @return             0: message sent out  others: failed
  */
-uint8_t gap_read_remote_info(hci_con_handle_t handle);
+uint8_t gap_read_remote_version(hci_con_handle_t handle);
+
+#define gap_read_remote_info gap_read_remote_version
 
 /**
  * @brief read the channel map of a hci connection
@@ -1043,11 +1045,16 @@ uint8_t gap_set_host_channel_classification(const uint32_t channel_low, const ui
 
 /**
  * @brief Updates the connection parameters for a given LE connection
+ *
+ * This function can be used for both master & slave roles. For slave role,
+ * `min_ce_len` & `max_ce_len` params are ignored.
  * @param handle
  * @param conn_interval_min (unit: 1.25ms)
  * @param conn_interval_max (unit: 1.25ms)
  * @param conn_latency
  * @param supervision_timeout (unit: 10ms)
+ * @param min_ce_len        (unit: 0.625ms)
+ * @param max_ce_len        (unit: 0.625ms)
  * @returns 0 if ok
  */
 int gap_update_connection_parameters(hci_con_handle_t con_handle, uint16_t conn_interval_min,
@@ -1252,13 +1259,13 @@ uint8_t gap_rx_test_v2(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index
  * @param slot_durations        0x01: Switching and sampling slots are 1 µs each
  *                              0x02: ................................ 2 .......
  * @param switching_pattern_length   0x02 to 0x4B The number of Antenna IDs in the pattern
- * @param antenna_ids           List of Antenna IDs in the patter
+ * @param antenna_ids           List of Antenna IDs in the pattern
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
 uint8_t gap_rx_test_v3(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index,
                             uint8_t expected_cte_length, uint8_t expected_cte_type,
                             uint8_t slot_durations,
-                            uint8_t switching_pattern_length, uint8_t antenna_ids);
+                            uint8_t switching_pattern_length, uint8_t *antenna_ids);
 
 /**
  * @brief  Start a test where the DUT generates test reference packets at a fixed interval.
@@ -1285,7 +1292,7 @@ uint8_t gap_tx_test_v2(uint8_t tx_channel, uint8_t test_data_length,
  *                              0x02 to 0x14: Expected length of the Constant Tone Extension in 8 µs units
  * @param cte_type              0x00: AoA; 0x01: AoD (1 µs); 0x02: AoD (2 µs)
  * @param switching_pattern_length   0x02 to 0x4B The number of Antenna IDs in the pattern
- * @param antenna_ids           List of Antenna IDs in the patter
+ * @param antenna_ids           List of Antenna IDs in the pattern
  * @param tx_power_level        Set transmitter to the specified or the nearest transmit power level
  *                              0x7F: Set transmitter to maximum transmit power level
  *                              0x7E: Set transmitter to minimum transmit power level
@@ -1295,7 +1302,7 @@ uint8_t gap_tx_test_v2(uint8_t tx_channel, uint8_t test_data_length,
 uint8_t gap_tx_test_v4(uint8_t tx_channel, uint8_t test_data_length,
                         uint8_t packet_payload, uint8_t phy,
                         uint8_t cte_length, uint8_t cte_type,
-                        uint8_t switching_pattern_length, uint8_t antenna_ids,
+                        uint8_t switching_pattern_length, uint8_t *antenna_ids,
                         int8_t tx_power_level);
 
 /**

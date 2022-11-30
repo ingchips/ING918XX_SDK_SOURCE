@@ -594,8 +594,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         {
             if (hci_event_command_complete_get_command_opcode(packet) == OPCODE_READ_RSSI)
             {
-                const event_command_complete_return_param_read_tx_power_t *cmpl =
-                    (const event_command_complete_return_param_read_tx_power_t *)hci_event_command_complete_get_return_parameters(packet);
+                const event_command_complete_return_param_read_rssi_t *cmpl =
+                    (const event_command_complete_return_param_read_rssi_t *)hci_event_command_complete_get_return_parameters(packet);
                 LOG_MSG("RSSI: %ddBm", cmpl->rssi);
             }
         }

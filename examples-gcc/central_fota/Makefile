@@ -17,6 +17,7 @@ PROJECT_FILES += ${ING_REL}/src/FWlib/peripheral_sysctrl.c
 PROJECT_FILES += ${ING_REL}/src/FWlib/peripheral_timer.c
 PROJECT_FILES += ${ING_REL}/src/Tools/trace.c
 PROJECT_FILES += ${ING_REL}/src/Tools/platform_tools.c
+PROJECT_FILES += ${ING_REL}/src/Tools/platform_util.c
 PROJECT_FILES += ${ING_REL}/src/Tools/gatt_client_util.c
 PROJECT_FILES += ${ING_REL}/src/Tools/malloc_override.c
 

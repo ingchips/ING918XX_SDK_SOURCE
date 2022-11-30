@@ -51,8 +51,8 @@ typedef enum
 
 typedef enum
 {
-  IR_txrx_mode_rx_mode,
-  IR_txrx_mode_tx_mode
+  IR_TXRX_MODE_RX_MODE,
+  IR_TXRX_MODE_TX_MODE
 } IR_TxRxMode_e;
 
 /**
@@ -219,7 +219,7 @@ uint8_t IR_FsmGetIrDatacodeVerify(IR_TypeDef* IR_BASE);
 uint8_t IR_FsmGetIrRepeat(IR_TypeDef* IR_BASE);
 uint8_t IR_FsmGetIrTransmitOk(IR_TypeDef* IR_BASE);
 uint8_t IR_FsmGetIrTxRepeat(IR_TypeDef* IR_BASE);
-
+void IR_FsmClearIrInt(IR_TypeDef* IR_BASE);
 
 #endif
 

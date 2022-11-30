@@ -64,13 +64,31 @@ static __INLINE const btstack_user_msg_t *hci_event_packet_get_user_msg(const ui
 }
 
 /**
- * @brief post a msg to btstack task, and handle it in the context of btstack task
+ * @brief post a msg to bt stack task, and handle it in the context of bt stack task
+ *
+ * Note: this function is safe to be called in other threads/tasks.
+ *
  * @param msg_id        (Max allowed ID: 0x80000000)
  * @param data
  * @param len
- * @return 0 if success; else error occured
+ * @return 0 if success; else error occurred
  */
 uint32_t btstack_push_user_msg(uint32_t msg_id, const void *data, const uint16_t len);
+
+typedef void (*f_btstack_user_runnable)(void *, uint16_t);
+
+/**
+ * @brief post a runnable object (function) to btstack task, and handle it in the context of bt stack task
+ *
+ * Note: this function is safe to be called in other threads/tasks.
+ *
+ * @param fun           user function to be called in the context of bt stack
+ *                      `fun` will be called as `fun(data, user_value)`.
+ * @param data          user data
+ * @param user_value    another user data
+ * @return 0 if success; else error occurred
+ */
+uint32_t btstack_push_user_runnable(f_btstack_user_runnable fun, void *data, const uint16_t user_value);
 
 /***
  * @brief Get subevent code for le event
@@ -772,12 +790,22 @@ typedef struct event_command_complete_return_param_read_rssi
     int8_t           rssi;      // in dB
 } event_command_complete_return_param_read_rssi_t;
 
-typedef struct event_command_complete_return_param_read_tx_power
+typedef struct event_command_complete_return_param_read_phy
 {
     uint8_t          status;
     hci_con_handle_t conn_handle;
-    int8_t           rssi;      // in dB
-} event_command_complete_return_param_read_tx_power_t;
+    phy_type_t       tx_phy;
+    phy_type_t       rx_phy;
+} event_command_complete_return_param_read_phy_t;
+
+typedef struct event_command_complete_return_param_read_antenna_info
+{
+    uint8_t          status;
+    uint8_t          supported_switching_rates;
+    uint8_t          num_antennae;
+    uint8_t          max_switching_pattern_len;
+    uint8_t          max_cte_length;
+} event_command_complete_return_param_read_antenna_info_t;
 
 typedef struct event_conn_packets
 {

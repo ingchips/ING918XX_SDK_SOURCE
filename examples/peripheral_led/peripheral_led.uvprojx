@@ -334,7 +334,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls/>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER,BOARD_USE_RGB_LED</Define>
               <Undefine/>
               <IncludePath>../../bundles/extension/inc;../../bundles/extension/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -409,6 +409,13 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\board.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>

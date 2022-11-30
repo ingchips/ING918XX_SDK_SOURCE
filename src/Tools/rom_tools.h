@@ -35,27 +35,23 @@ typedef uint16_t (* f_void_t)(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
-#define crc     ((f_crc_t)(0x00005699))
+#define crc     ((f_crc_t)(0x00001d21))
 
 typedef void (* f_erase_sector)(uint32_t addr);
 typedef void (* f_void)(void);
 typedef void (* f_prog_page)(uint32_t addr, const uint8_t data[256], uint32_t len);
 
-#define FlashSectorErase    ((f_erase_sector)0x0000150d)
-#define FlashWriteDisable   ((f_void)0x000015f1)
-#define FlashPageProgram    ((f_prog_page)0x00001405)
+typedef int (* f_program_flash)(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
+typedef int (* f_write_flash)(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
+typedef int (* f_erase_flash_sector)(const uint32_t addr);
+typedef int (* f_flash_do_update)(const int block_num, const fota_update_block_t *blocks, uint8_t *ram_buffer);
 
-#define FlashDisableContinuousMode      ((f_void)0x000012cd)
-#define FlashEnableContinuousMode       ((f_void)0x00001311)
+#define ROM_NVIC_SystemReset            ((f_void)0x00000cd4)
 
-#define DCacheDisable                   ((f_void)0x000010c1)
-#define DCacheEnable                    ((f_void)0x000010d5)
-#define DCacheFlush                     ((f_void)0x000010e9)
-#define ICacheDisable                   ((f_void)0x00001669)
-#define ICacheEnable                    ((f_void)0x0000167d)
-#define ICacheFlush                     ((f_void)0x00001691)
-
-#define ROM_NVIC_SystemReset            ((f_void)0x00001b11)
+#define ROM_program_flash               ((f_program_flash)0x00003b9b)
+#define ROM_write_flash                 ((f_write_flash)0x00003cfe)
+#define ROM_erase_flash_sector          ((f_erase_flash_sector)0x00001d59)
+#define ROM_flash_do_update             ((f_flash_do_update)0x00001d73)
 
 #endif
 

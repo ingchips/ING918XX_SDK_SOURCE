@@ -9,6 +9,11 @@
 #include "bluetooth.h"
 #include "sm.h"
 
+#include "btstack_mt.h"
+#include "port_gen_os_driver.h"
+
+#define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
+
 #ifdef TRACE_TO_FLASH
 #include "trace.h"
 #endif
@@ -42,6 +47,7 @@ static const char help[] =  "commands:\n"
                             "conpar interval latency timeout     set connection parameters\n"
                             "pat    0/1                          peer address type\n"
                             "conn   xx:xx:xx:xx:xx:xx            connect to dev and discover services\n"
+                            "sconn  xx:xx:xx:xx:xx:xx            connect to dev using synced API\n"
                             "cancel                              cancel create connection\n"
                             "scan                                passive scan for all adv\n"
                             "scan   xx:xx:xx:xx:xx:xx            scan for adv from a device\n"
@@ -61,7 +67,7 @@ static const char help[] =  "commands:\n"
                             "pwrctl delta                        adjust peer tx power in dB\n"
                             "auto   0/1                          enable/disable auto power control\n"
                             "subr   factor                       subrate with factor\n"
-                            "rssi                                read RX RSSI\n"
+                            "syncgap                             demo sync GAP APIs\n"
                             ;
 
 void cmd_help(const char *param)
@@ -69,10 +75,10 @@ void cmd_help(const char *param)
     tx_data(help, strlen(help) + 1);
 }
 
-void cmd_rssi(const char *param)
+void cmd_sync_gap(const char *param)
 {
-    extern void ble_read_rssi(void);
-    ble_read_rssi();
+    extern void ble_sync_gap(void);
+    ble_sync_gap();
 }
 
 void cmd_auto(const char *param)
@@ -190,6 +196,7 @@ extern bd_addr_type_t slave_addr_type;
 
 void update_addr(void);
 void conn_to_slave(void);
+void sync_conn_to_slave(void);
 void cancel_create_conn(void);
 void read_value_of_char(int handle);
 void sync_read_value_of_char(int handle);
@@ -221,6 +228,12 @@ void cmd_conn(const char *param)
 {
     if (0 == parse_addr(slave_addr, param))
         conn_to_slave();
+}
+
+void cmd_sconn(const char *param)
+{
+    if (0 == parse_addr(slave_addr, param))
+        sync_conn_to_slave();
 }
 
 void cmd_scan(const char *param)
@@ -464,6 +477,10 @@ static cmd_t cmds[] =
         .handler = cmd_conn
     },
     {
+        .cmd = "sconn",
+        .handler = cmd_sconn
+    },
+    {
         .cmd = "pat",
         .handler = cmd_pat
     },
@@ -540,8 +557,8 @@ static cmd_t cmds[] =
         .handler = cmd_auto
     },
     {
-        .cmd = "rssi",
-        .handler = cmd_rssi
+        .cmd = "syncgap",
+        .handler = cmd_sync_gap
     }
 };
 
@@ -571,6 +588,7 @@ show_help:
 
 typedef struct
 {
+    uint8_t busy;
     uint16_t size;
     char buf[712];
 } str_buf_t;
@@ -598,8 +616,37 @@ static void append_data(str_buf_t *buf, const char *d, const uint16_t len)
     }
 }
 
+static gen_handle_t cmd_event = NULL;
+
+static void console_task_entry(void *_)
+{
+    while (1)
+    {
+        GEN_OS->event_wait(cmd_event);
+
+        handle_command(input.buf);
+        input.size = 0;
+        input.busy = 0;
+    }
+}
+
+void uart_console_start(void)
+{
+    cmd_event = GEN_OS->event_create();
+    GEN_OS->task_create("console",
+        console_task_entry,
+        NULL,
+        1024,
+        GEN_TASK_PRIORITY_LOW);
+}
+
 void console_rx_data(const char *d, uint8_t len)
 {
+    if (input.busy)
+    {
+        return;
+    }
+
     if (0 == input.size)
     {
         while ((len > 0) && ((*d == '\r') || (*d == '\n')))
@@ -618,8 +665,8 @@ void console_rx_data(const char *d, uint8_t len)
         int16_t t = input.size - 2;
         while ((t > 0) && ((input.buf[t] == '\r') || (input.buf[t] == '\n'))) t--;
         input.buf[t + 1] = '\0';
-        handle_command(input.buf);
-        input.size = 0;
+        input.busy = 1;
+        GEN_OS->event_set(cmd_event);
     }
 }
 

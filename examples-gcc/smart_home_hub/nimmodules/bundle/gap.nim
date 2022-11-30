@@ -116,8 +116,8 @@ proc gap_read_remote_used_features*(handle: hci_con_handle_t): uint8 {.
 ##  @return             0: message sent out  others: failed
 ##
 
-proc gap_read_remote_info*(handle: hci_con_handle_t): uint8 {.
-    importc: "gap_read_remote_info", header: "gap.h".}
+proc gap_read_remote_version*(handle: hci_con_handle_t): uint8 {.
+    importc: "gap_read_remote_version", header: "gap.h".}
 ## *
 ##  @brief read the channel map of a hci connection
 ##

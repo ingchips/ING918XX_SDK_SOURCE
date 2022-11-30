@@ -14,9 +14,11 @@
 #include "str_util.h"
 #include "sm.h"
 #include "trace.h"
+#include "btstack_mt.h"
 
 #include "uart_console.h"
 #include "gatt_client_util.h"
+#include "btstack_sync.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -50,7 +52,7 @@ int is_targeted_scan = 0;
 uint64_t last_seen = 0;
 
 struct gatt_client_discoverer *discoverer = NULL;
-struct gatt_client_synced_runner *synced_runner = NULL;
+struct btstack_synced_runner *synced_runner = NULL;
 
 #define find_char(handle)   gatt_client_util_find_char(discoverer, handle)
 #define find_config_desc    gatt_client_util_find_config_desc
@@ -109,7 +111,7 @@ extern int8_t adv_tx_power;
 
 void do_set_data()
 {
-    gap_set_ext_adv_data(0, adv_data[ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME - 2]
+    mt_gap_set_ext_adv_data(0, adv_data[ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME - 2]
                             + ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME - 1, (uint8_t *)(adv_data));
 }
 
@@ -202,7 +204,7 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
     }
 }
 
-static void demo_synced_api(void *user_data)
+static void demo_synced_api(struct btstack_synced_runner *runner, void *user_data)
 {
     uint16_t handle = (uint16_t)(uintptr_t)user_data;
     static uint8_t data[255];
@@ -216,8 +218,11 @@ static void demo_synced_api(void *user_data)
                 mas_conn_handle, handle,
                 data,
                 &length);
-        iprintf("[%d]: err = %d:\n", n, err);
-        if (err) break;
+        if (err)
+        {
+            iprintf("[%d]: err = %d:\n", n, err);
+            break;
+        }
         print_hex_table(data, length, print_fun);
         iprintf("wait for 200ms...\n", n, err);
         vTaskDelay(pdMS_TO_TICKS(200));
@@ -225,28 +230,12 @@ static void demo_synced_api(void *user_data)
     iprintf("done\n\n");
 }
 
-#define USER_MSG_START_ADV          0
-#define USER_MSG_STOP_ADV           1
-#define USER_MSG_UPDATE_ADV_DATA    2
-#define USER_MSG_UPDATE_ADDR        3
-#define USER_MSG_CONN_TO_SLAVE      4
-#define USER_MSG_CONN_CANCEL        5
 #define USER_MSG_READ_CHAR          6
 #define USER_MSG_WRITE_CHAR         7
 #define USER_MSG_WOR_CHAR           8
 #define USER_MSG_SUB_TO_CHAR        9
 #define USER_MSG_UNSUB_TO_CHAR      10
 #define USER_MSG_SET_BONDING        11
-#define USER_MSG_START_SCAN_ADDR    12
-#define USER_MSG_START_SCAN_ALL     13
-#define USER_MSG_SET_PHY            14
-#define USER_MSG_CHANGE_CONN_PARAM      15
-#define USER_MSG_START_SCAN_OLD_ADDR    16
-#define USER_MSG_START_SCAN_OLD_ALL     17
-#define USER_MSG_READ_RSSI              18
-#define USER_MSG_SUBRATE_REQ            19
-#define USER_MSG_SYNC_READ_CHAR         20
-#define USER_MSG_SYNC_MSG_START         0x10000
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
@@ -314,40 +303,6 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
     switch (msg_id)
     {
-    case USER_MSG_START_ADV:
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
-        printf("adv started\n");
-        break;
-    case USER_MSG_STOP_ADV:
-        gap_set_ext_adv_enable(0, 0, NULL);
-        printf("adv stopped\n");
-        break;
-    case USER_MSG_UPDATE_ADV_DATA:
-        do_set_data();
-        printf("adv updated\n");
-        break;
-    case USER_MSG_UPDATE_ADDR:
-        gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
-        printf("addr changed: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                sm_persistent.identity_addr[0], sm_persistent.identity_addr[1],
-                sm_persistent.identity_addr[2], sm_persistent.identity_addr[3],
-                sm_persistent.identity_addr[4], sm_persistent.identity_addr[5]);
-        break;
-    case USER_MSG_CONN_TO_SLAVE:
-        printf("create connection...\n");
-        peer_feature_power_control = 0;
-        peer_feature_subrate = 0;
-        gap_ext_create_connection(INITIATING_ADVERTISER_FROM_PARAM,
-                                                  BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
-                                                  slave_addr_type,                  // Peer_Address_Type,
-                                                  slave_addr,                       // Peer_Address,
-                                                  sizeof(phy_configs) / sizeof(phy_configs[0]),
-                                                  phy_configs);
-        break;
-    case USER_MSG_CONN_CANCEL:
-        printf("create connection cancelled.\n");
-        gap_create_connection_cancel();
-        break;
     case USER_MSG_READ_CHAR:
         {
             char_node_t *c = find_char(size);
@@ -361,18 +316,6 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                 read_characteristic_value_callback,
                 mas_conn_handle,
                 c->chara.value_handle);
-        }
-        break;
-    case USER_MSG_SYNC_READ_CHAR:
-        {
-            char_node_t *c = find_char(size);
-            if (NULL == c)
-            {
-                iprintf("CHAR not found: %d\n", size);
-                break;
-            }
-
-            gatt_client_sync_run(synced_runner, demo_synced_api, (void *)(uintptr_t)c->chara.value_handle);
         }
         break;
     case USER_MSG_WRITE_CHAR:
@@ -463,115 +406,22 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         else
             sm_set_authentication_requirements(SM_AUTHREQ_NO_BONDING);
         break;
-    case USER_MSG_START_SCAN_ALL:
-        advertiser_num = 0;
-        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
-                              sizeof(scan_configs) / sizeof(scan_configs[0]),
-                              scan_configs);
-        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
-        break;
-    case USER_MSG_START_SCAN_ADDR:
-        is_targeted_scan = 1;
-        last_seen = 0;
-        advertiser_num = 0;
-        gap_clear_white_lists();
-        gap_add_whitelist(slave_addr, slave_addr_type);
-        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
-                              sizeof(scan_configs) / sizeof(scan_configs[0]),
-                              scan_configs);
-        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
-        break;
-    case USER_MSG_START_SCAN_OLD_ALL:
-        advertiser_num = 0;
-        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
-                              sizeof(scan_configs_lagecy) / sizeof(scan_configs_lagecy[0]),
-                              scan_configs_lagecy);
-        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
-        break;
-    case USER_MSG_START_SCAN_OLD_ADDR:
-        is_targeted_scan = 1;
-        last_seen = 0;
-        advertiser_num = 0;
-        gap_clear_white_lists();
-        gap_add_whitelist(slave_addr, slave_addr_type);
-        gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
-                              sizeof(scan_configs_lagecy) / sizeof(scan_configs_lagecy[0]),
-                              scan_configs_lagecy);
-        gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
-        break;
-    case USER_MSG_SET_PHY:
-        {
-            uint16_t       phy = size;
-            phy_bittypes_t phy_bit;
-            phy_option_t   phy_opt = HOST_PREFER_S8_CODING;
-            switch (phy)
-            {
-            case 0:
-                phy_bit = PHY_1M_BIT;
-                break;
-            case 1:
-                phy_bit = PHY_2M_BIT;
-                break;
-            case 2:
-                phy_opt = HOST_PREFER_S2_CODING; // fall through
-            case 3:
-                phy_bit = PHY_CODED_BIT;
-                break;
-            }
-            gap_set_phy(mas_conn_handle, 0, phy_bit, phy_bit, phy_opt);
-        }
-        break;
-    case USER_MSG_CHANGE_CONN_PARAM:
-        {
-            uint16_t interval = conn_param_requst.interval;
-            if (sla_conn_handle != INVALID_HANDLE)
-            {
-                l2cap_request_connection_parameter_update(sla_conn_handle,
-                        interval, interval,
-                        conn_param_requst.latency,
-                        conn_param_requst.timeout);
-            }
-            if (mas_conn_handle != INVALID_HANDLE)
-            {
-                uint16_t ce_len = (interval << 1) - 2;
-                gap_update_connection_parameters(mas_conn_handle,
-                        interval, interval,
-                        conn_param_requst.latency,
-                        conn_param_requst.timeout,
-                        ce_len, ce_len);
-            }
-        }
-        break;
 #if (defined TRACE_TO_AIR)
     case USER_MSG_ID_TRACE:
         trace_air_send(&trace_ctx);
         break;
 #endif
-    case USER_MSG_READ_RSSI:
-        if (mas_conn_handle != INVALID_HANDLE)
-            gap_read_rssi(mas_conn_handle);
-        if (sla_conn_handle != INVALID_HANDLE)
-            gap_read_rssi(sla_conn_handle);
-        break;
-    case USER_MSG_SUBRATE_REQ:
-        gap_subrate_request(0, size, size, 1,
-                            0, 2000);
-        break;
     default:
-        if (msg_id >= USER_MSG_SYNC_MSG_START)
-        {
-            struct gatt_client_synced_runner *runner = (struct gatt_client_synced_runner *)data;
-            gatt_client_sync_handle_msg(runner, msg_id - USER_MSG_SYNC_MSG_START);
-        }
+        ;
     }
 }
 
 void set_adv_local_name(const char *name, int16_t len)
 {
-    adv_data[0] = len + 1;
-    adv_data[1] = 0x9;              // Complete Local Name
-    memcpy(adv_data + 2, name, len);
-    btstack_push_user_msg(USER_MSG_UPDATE_ADV_DATA, NULL, 0);
+    adv_data[ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME - 2] = len + 1;
+    memcpy(adv_data + ADVERTISING_ITEM_OFFSET_COMPLETE_LOCAL_NAME, name, len);
+    do_set_data();
+    printf("adv updated\n");
 }
 
 void set_bonding(int flag)
@@ -581,37 +431,113 @@ void set_bonding(int flag)
 
 void start_adv()
 {
-    btstack_push_user_msg(USER_MSG_START_ADV, NULL, 0);
+    mt_gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
+    printf("adv started\n");
 }
 
 void stop_adv()
 {
-    btstack_push_user_msg(USER_MSG_STOP_ADV, NULL, 0);
+    mt_gap_set_ext_adv_enable(0, 0, NULL);
+    printf("adv stopped\n");
 }
 
 void update_addr()
 {
-    btstack_push_user_msg(USER_MSG_UPDATE_ADDR, NULL, 0);
+    mt_gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
+    printf("addr changed: %02X:%02X:%02X:%02X:%02X:%02X\n",
+            sm_persistent.identity_addr[0], sm_persistent.identity_addr[1],
+            sm_persistent.identity_addr[2], sm_persistent.identity_addr[3],
+            sm_persistent.identity_addr[4], sm_persistent.identity_addr[5]);
+}
+
+void demo_synced_create_conn(struct btstack_synced_runner *runner, void *_)
+{
+    printf("synced create connection (timeout 5s)...");
+    le_meta_event_enh_create_conn_complete_t complete = {0};
+    int r = gap_sync_ext_create_connection(synced_runner,
+                                    INITIATING_ADVERTISER_FROM_PARAM,
+                                    BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
+                                    slave_addr_type,                  // Peer_Address_Type,
+                                    slave_addr,                       // Peer_Address,
+                                    sizeof(phy_configs) / sizeof(phy_configs[0]),
+                                    phy_configs,
+                                    5000,
+                                    &complete);
+    printf(r == 0 ? "Succeed\n" : "Failed\n");
+}
+
+void sync_conn_to_slave()
+{
+    peer_feature_power_control = 0;
+    peer_feature_subrate = 0;
+    btstack_sync_run(synced_runner, demo_synced_create_conn, NULL);
 }
 
 void conn_to_slave()
 {
-    btstack_push_user_msg(USER_MSG_CONN_TO_SLAVE, NULL, 0);
+    printf("create connection...\n");
+    peer_feature_power_control = 0;
+    peer_feature_subrate = 0;
+    mt_gap_ext_create_connection(INITIATING_ADVERTISER_FROM_PARAM,
+                                              BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
+                                              slave_addr_type,                  // Peer_Address_Type,
+                                              slave_addr,                       // Peer_Address,
+                                              sizeof(phy_configs) / sizeof(phy_configs[0]),
+                                              phy_configs);
 }
 
 void start_scan(int targeted)
 {
-    btstack_push_user_msg(targeted ? USER_MSG_START_SCAN_ADDR : USER_MSG_START_SCAN_ALL, NULL, 0);
+    if (targeted)
+    {
+        is_targeted_scan = 1;
+        last_seen = 0;
+        advertiser_num = 0;
+        mt_gap_clear_white_lists();
+        mt_gap_add_whitelist(slave_addr, slave_addr_type);
+        mt_gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
+                              sizeof(scan_configs) / sizeof(scan_configs[0]),
+                              scan_configs);
+        mt_gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+    }
+    else
+    {
+        advertiser_num = 0;
+        mt_gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
+                              sizeof(scan_configs) / sizeof(scan_configs[0]),
+                              scan_configs);
+        mt_gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+    }
 }
 
 void start_scan_legacy(int targeted)
 {
-    btstack_push_user_msg(targeted ? USER_MSG_START_SCAN_OLD_ADDR : USER_MSG_START_SCAN_OLD_ALL, NULL, 0);
+    if (targeted)
+    {
+        is_targeted_scan = 1;
+        last_seen = 0;
+        advertiser_num = 0;
+        mt_gap_clear_white_lists();
+        mt_gap_add_whitelist(slave_addr, slave_addr_type);
+        mt_gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
+                              sizeof(scan_configs_lagecy) / sizeof(scan_configs_lagecy[0]),
+                              scan_configs_lagecy);
+        mt_gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+    }
+    else
+    {
+        advertiser_num = 0;
+        mt_gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
+                              sizeof(scan_configs_lagecy) / sizeof(scan_configs_lagecy[0]),
+                              scan_configs_lagecy);
+        mt_gap_set_ext_scan_enable(1, 0, 0, 0);   // start continuous scanning
+    }
 }
 
 void cancel_create_conn()
 {
-    btstack_push_user_msg(USER_MSG_CONN_CANCEL, NULL, 0);
+    printf("create connection cancelled.\n");
+    mt_gap_create_connection_cancel();
 }
 
 void read_value_of_char(int handle)
@@ -621,7 +547,14 @@ void read_value_of_char(int handle)
 
 void sync_read_value_of_char(int handle)
 {
-    btstack_push_user_msg(USER_MSG_SYNC_READ_CHAR, NULL, (uint16_t)handle);
+    char_node_t *c = find_char(handle);
+    if (NULL == c)
+    {
+        iprintf("CHAR not found: %d\n", handle);
+        return;
+    }
+
+    btstack_sync_run(synced_runner, demo_synced_api, (void *)(uintptr_t)c->chara.value_handle);
 }
 
 void write_value_of_char(int handle, block_value_t *value)
@@ -646,7 +579,24 @@ void unsub_to_char(int handle)
 
 void set_phy(int phy)
 {
-    btstack_push_user_msg(USER_MSG_SET_PHY, NULL, phy);
+    phy_bittypes_t phy_bit;
+    phy_option_t   phy_opt = HOST_PREFER_S8_CODING;
+    switch (phy)
+    {
+    case 0:
+        phy_bit = PHY_1M_BIT;
+        break;
+    case 1:
+        phy_bit = PHY_2M_BIT;
+        break;
+    case 2:
+        phy_opt = HOST_PREFER_S2_CODING; // fall through
+    case 3:
+        phy_bit = PHY_CODED_BIT;
+        break;
+    }
+    mt_gap_set_phy(mas_conn_handle, 0, phy_bit, phy_bit, phy_opt);
+
 }
 
 void ble_set_conn_power(int level)
@@ -668,7 +618,8 @@ void ble_set_conn_subrate(int factor)
 {
     if (peer_feature_subrate)
     {
-        btstack_push_user_msg(USER_MSG_SUBRATE_REQ, NULL, factor);
+        mt_gap_subrate_request(0, factor, factor, 1,
+                               0, 2000);
     }
     else
         iprintf("ERROR: peer does not support power control\n");
@@ -680,23 +631,93 @@ void ble_set_auto_power_control(int enable)
     iprintf("Auto power control %s.\n", enable ? "enabled" : "disabled");
 }
 
-void ble_read_rssi(void)
+static void demo_synced_gap_apis(struct btstack_synced_runner *runner, void *user_data)
 {
-    btstack_push_user_msg(USER_MSG_READ_RSSI, NULL, 0);
+    int err;
+    uint16_t handle = (uint16_t)(uintptr_t)user_data;
+
+    {
+        iprintf("Read channel map:\n");
+        uint8_t map[5];
+        if ((err = gap_sync_le_read_channel_map(synced_runner, handle, map)) != 0)
+        {
+            iprintf("[%d]: err = %d:\n", err);
+            return;
+        }
+
+        print_hex_table(map, sizeof(map), print_fun);
+        iprintf("\n");
+    }
+
+    {
+        iprintf("Read PHY: ");
+        static const char phys[][6] = {"1M", "2M", "Coded"};
+        phy_type_t tx_phy;
+        phy_type_t rx_phy;
+        if ((err = gap_sync_read_phy(synced_runner, handle, &tx_phy, &rx_phy)) != 0)
+        {
+            iprintf("[%d]: err = %d:\n", err);
+            return;
+        }
+
+        iprintf("Tx = %s, Rx = %s\n", phys[tx_phy], phys[rx_phy]);
+    }
+
+    int n = 5;
+    iprintf("\nsynced read RSSI for %d times:\n", n);
+
+    for (; n > 0; n--)
+    {
+        int8_t rssi;
+        if ((err = gap_sync_read_rssi(synced_runner, handle, &rssi)) != 0)
+        {
+            iprintf("[%d]: err = %d:\n", n, err);
+            break;
+        }
+        iprintf("RSSI: %ddBm\n", rssi);
+        iprintf("wait for 200ms...\n", n, err);
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+
+    iprintf("done\n\n");
+}
+
+static void synced_power_control(struct btstack_synced_runner *runner, void *user_data)
+{
+    uint16_t handle = (uint16_t)(uintptr_t)user_data;
+    int8_t rssi;
+    int err;
+    if ((err = gap_sync_read_rssi(synced_runner, handle, &rssi)) != 0)
+    {
+        iprintf("err = %d:\n", err);
+        return;
+    }
+
+    int delta = 0;
+    if (rssi > RX_GOLDEN_RAGE_MAX)
+        delta = RX_GOLDEN_RAGE_MAX - rssi;
+    else if (rssi < RX_GOLDEN_RAGE_MIN)
+        delta = RX_GOLDEN_RAGE_MIN - rssi;
+    if (delta != 0)
+        ll_adjust_conn_peer_tx_power(handle, delta);
+}
+
+void ble_sync_gap(void)
+{
+    btstack_sync_run(synced_runner, demo_synced_gap_apis,
+        (void *)(mas_conn_handle != INVALID_HANDLE ? mas_conn_handle : sla_conn_handle));
 }
 
 void change_conn_param(int interval, int latency, int timeout)
 {
-    conn_param_requst.interval = interval >= 6 ? interval : 6;
-    conn_param_requst.latency = latency;
-    conn_param_requst.timeout = timeout > 0 ? timeout :
-                    (conn_param_requst.interval > 10 ? conn_param_requst.interval * (latency + 1) : 10);
-    btstack_push_user_msg(USER_MSG_CHANGE_CONN_PARAM, NULL, 0);
-}
-
-void synced_push_user_msg(struct gatt_client_synced_runner *runner, uint8_t msg_id)
-{
-    btstack_push_user_msg(USER_MSG_SYNC_MSG_START + msg_id, runner, 0);
+    interval = conn_param_requst.interval;
+    uint16_t ce_len = (interval << 1) - 2;
+    mt_gap_update_connection_parameters(
+            mas_conn_handle != INVALID_HANDLE ? mas_conn_handle : sla_conn_handle,
+            interval, interval,
+            conn_param_requst.latency,
+            conn_param_requst.timeout,
+            ce_len, ce_len);
 }
 
 int is_new_advertiser(const uint8_t *addr)
@@ -845,7 +866,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
 
-        synced_runner = gatt_client_create_sync_runner(synced_push_user_msg);
+        synced_runner = btstack_create_sync_runner(1);
 
         platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, 1500);
         ll_set_tx_power_range(-30, 10);
@@ -932,7 +953,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 }
 
 
-                gap_read_remote_info(complete->handle);
+                gap_read_remote_version(complete->handle);
             }
             break;
         case HCI_SUBEVENT_LE_READ_REMOTE_USED_FEATURES_COMPLETE:
@@ -982,7 +1003,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 rpt->current_path_loss,
                                 decode_zone(rpt->zone_entered));
                 if (auto_power_ctrl)
-                    gap_read_rssi(rpt->conn_handle);
+                    btstack_sync_run(synced_runner, synced_power_control,
+                        (void *)(uintptr_t)rpt->conn_handle);
             }
             break;
         case HCI_SUBEVENT_LE_TRANSMIT_POWER_REPORTING:
@@ -1066,31 +1088,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_COMMAND_COMPLETE:
         {
-            const event_command_complete_return_param_read_rssi_t *
-                read_rssi;
             const uint8_t *returns = hci_event_command_complete_get_return_parameters(packet);
             if (*returns != 0)
             {
                 platform_printf("COMMAND_COMPLETE: 0x%02x for OPCODE %04X\n",
                     *returns, hci_event_command_complete_get_command_opcode(packet));
-                break;
-            }
-
-            switch (hci_event_command_complete_get_command_opcode(packet))
-            {
-            case OPCODE_READ_RSSI:
-                read_rssi = (const event_command_complete_return_param_read_rssi_t *)returns;
-                iprintf("RSSI: %d dBm", read_rssi->rssi);
-                if (auto_power_ctrl)
-                {
-                    int delta = 0;
-                    if (read_rssi->rssi > RX_GOLDEN_RAGE_MAX)
-                        delta = RX_GOLDEN_RAGE_MAX - read_rssi->rssi;
-                    else if (read_rssi->rssi < RX_GOLDEN_RAGE_MIN)
-                        delta = RX_GOLDEN_RAGE_MIN - read_rssi->rssi;
-                    if (delta != 0)
-                        ll_adjust_conn_peer_tx_power(read_rssi->conn_handle, delta);
-                }
                 break;
             }
         }

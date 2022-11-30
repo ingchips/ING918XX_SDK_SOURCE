@@ -30,9 +30,7 @@ extern "C" {
  * @param[in]  max_dBm          maximum Tx power in dBm
  ****************************************************************************************
  */
-// void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
 
 typedef enum coded_scheme_e
 {
@@ -98,9 +96,7 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
  *                                    power level.
  ****************************************************************************************
  */
-// void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
 
 /**
  ****************************************************************************************
@@ -394,9 +390,11 @@ int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
-                          uint8_t cte_type,
-                          uint8_t cte_len);
+// int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
+//                           uint8_t cte_type,
+//                           uint8_t cte_len);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
