@@ -253,9 +253,6 @@ uint32_t timer_isr(void *user_data)
 uint32_t setup_profile(void *data, void *user_data)
 {
     platform_printf("setup_profile\n");
-	while(1){
-    printf("setup_profile\n");
-	}
     battery_level = profile_data + HANDLE_BATTERY_LEVEL_OFFSET;
 
 #ifdef DEMO_TASK_DELAY_UNTIL
