@@ -134,7 +134,7 @@ int app_main()
 {
 #ifdef USE_POWER_LIB
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    power_ctrl_init()
+    power_ctrl_init();
 #endif
 #endif
 
