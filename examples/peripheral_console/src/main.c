@@ -60,10 +60,10 @@ void setup_peripherals(void)
 #ifdef USE_WATCHDOG
                               | (1 << SYSCTRL_ClkGate_APB_WDT)
 #endif
-    
+
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
     config_uart(OSC_CLK_FREQ, 115200);
-    
+
     PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
@@ -72,7 +72,7 @@ void setup_peripherals(void)
     PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_DOWN);
 #else
     #error unknown or unsupported chip family
-#endif    
+#endif
     GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
 
@@ -93,7 +93,9 @@ uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
     (void)(dummy);
     (void)(user_data);
 #ifdef USE_POWER_LIB
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     power_ctrl_deep_sleep_wakeup();
+#endif
 #endif
     setup_peripherals();
     key_detector_start_on_demand();
@@ -107,7 +109,9 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     if (IS_DEBUGGER_ATTACHED())
         return 0;
 #ifdef USE_POWER_LIB
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     power_ctrl_before_deep_sleep();
+#endif
 #endif
     return 1;
 }
@@ -129,7 +133,9 @@ trace_rtt_t trace_ctx = {0};
 int app_main()
 {
 #ifdef USE_POWER_LIB
-    power_ctrl_init();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    power_ctrl_init()
+#endif
 #endif
 
 #ifdef USE_OSC32K
@@ -145,7 +151,7 @@ int app_main()
     platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
     platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
 #endif
-    
+
     platform_set_rf_power_mapping(power_mapping);
 
     // setup handlers
@@ -153,7 +159,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-    
+
     key_detect_init(on_key_event);
     setup_peripherals();
 
@@ -161,7 +167,7 @@ int app_main()
 
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
-    platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0x0);
 
     return 0;
 }
