@@ -22,16 +22,16 @@ void PTE_DisableChennel(SYSCTRL_PTE_CHENNEL_ID ch)
 
 void PTE_SetChennelIntMask(SYSCTRL_PTE_CHENNEL_ID ch, uint32_t options)
 {
-	uint32_t *m;
-	uint32_t Cm;
+    uint32_t *m;
+    uint32_t Cm;
 
     if (options) 
         APB_PTE->Channels[ch].IntMask = 1;
     else {
-		m = (uint32_t *)&(APB_PTE->Channels[ch]);
-		Cm = PTE_MAKE_CHENNAL_INT_MASK_OPTION(!options);
+        m = (uint32_t *)&(APB_PTE->Channels[ch]);
+        Cm = PTE_MAKE_CHENNAL_INT_MASK_OPTION(!options);
         *m &= Cm;
-	}
+    }
 }
 
 void PTE_IrqProcess(SYSCTRL_PTE_CHENNEL_ID ch)

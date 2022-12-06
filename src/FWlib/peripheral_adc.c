@@ -162,6 +162,13 @@ void ADC_ClkCfg(SADC_adcClk clk)
     }
 }
 
+void ADC_SetDmaSel(uint8_t sel)
+{
+    if (sel > 7) return;
+    APB_SYSCTRL->DmaCtrl[0] &= ~(LEFT_SHIFT(0xf, (4 * sel)));
+    APB_SYSCTRL->DmaCtrl[0] |= LEFT_SHIFT(9, (4 * sel));
+}
+
 void ADC_EnableCtrlSignal(void)
 {
     ADC_RegWr(SADC_CFG_0, 1, 9);
@@ -320,8 +327,8 @@ void ADC_Start(uint8_t start)
 static void ADC_VrefRegister(float VP, float VN)
 {
     if (VP < VN) return;
-	ADC_adcCal.vref_P = VP;
-	ADC_adcCal.vref_N = VN;
+    ADC_adcCal.vref_P = VP;
+    ADC_adcCal.vref_N = VN;
     ADC_adcCal.vref_gap = VP - VN;
     if (ADC_GetPgaStatus())
         ADC_adcCal.cb = ADC_CalWithPga;
@@ -344,8 +351,8 @@ float ADC_GetVol(uint16_t data)
     if (!ADC_adcCal.cb || !ADC_adcCal.vref_gap)
         return 0;
     float vol = ADC_adcCal.cb(data);
-	if (vol > ADC_adcCal.vref_P) return ADC_adcCal.vref_P;
-	if (vol < ADC_adcCal.vref_N) return ADC_adcCal.vref_N;
+    if (vol > ADC_adcCal.vref_P) return ADC_adcCal.vref_P;
+    if (vol < ADC_adcCal.vref_N) return ADC_adcCal.vref_N;
     return vol;
 }
 

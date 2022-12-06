@@ -166,6 +166,14 @@ typedef struct
 void ADC_ClkCfg(SADC_adcClk clk);
 
 /**
+ * @brief Select DMA request channel of transmitting ADC data
+ *
+ * @param[in] sel             DMA request channel(0-7)
+ * @return                    null
+ */
+void ADC_SetDmaSel(uint8_t sel);
+
+/**
  * @brief Enable ADC control signal
  *
  * @param[in]                null
