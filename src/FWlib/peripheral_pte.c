@@ -61,7 +61,7 @@ int PTE_ConnectPeripheral(SYSCTRL_PTE_CHENNEL_ID ch,
                           SYSCTRL_PTE_SRC_INT src, 
                           SYSCTRL_PTE_DST_EN dst)
 {
-    if (ch  >  SYSCTRL_PTE_CHENNEL_4   ||
+    if (ch  >  SYSCTRL_PTE_CHENNEL_3   ||
         src >= SYSCTRL_PTE_SRC_INT_MAX ||
         dst >= SYSCTRL_PTE_DST_EN_MAX) {
         return -1;
