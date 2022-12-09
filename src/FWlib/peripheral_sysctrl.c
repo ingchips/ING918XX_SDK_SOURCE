@@ -697,4 +697,16 @@ void SYSCTRL_WaitForLDO(void)
 {
 }
 
+void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
+{
+  if(enable)
+  {
+    io_write(AON2_CTRL_BASE + 0x174, 1ul | (1 << pull_sel) | (4 << 4));
+  }
+  else
+  {
+    io_write(AON2_CTRL_BASE + 0x174, 0);
+  }
+}
+
 #endif
