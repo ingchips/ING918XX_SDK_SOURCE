@@ -1,5 +1,5 @@
 #include "mesh_includes.h"
-//#include "btstack_debug.h"
+#include "mesh_debug.h"
 #include "att_db.h"
 #include "platform_api.h"
 #include "FreeRTOS.h"
@@ -304,11 +304,7 @@ void mesh_storage_clear_and_reinit(void){
 }
 
 // ble params reset delay timer.
-#include "btstack_run_loop.h"
-//#include "msg_timer_def.h"
-#include "mesh_btstack_defines.h"
-//#include "mesh_timer.h"
-static btstack_timer_source_t       mesh_ble_params_reset_delay_timer;
+static mesh_timer_source_t       mesh_ble_params_reset_delay_timer;
 
 extern void ble_port_generate_name_and_load_name(void);
 extern void ble_port_generate_uuid_and_load_uuid(void);
@@ -323,7 +319,7 @@ static void mesh_ble_params_reload_init(void){
 }
 
 extern void mesh_node_reset(void);
-static void mesh_ble_params_reset_delay_timer_timeout_handler(btstack_timer_source_t * ts){
+static void mesh_ble_params_reset_delay_timer_timeout_handler(mesh_timer_source_t * ts){
     UNUSED(ts);
     printf("[V] timeout , ble params reset now !!!!\n");
     mesh_node_reset();
@@ -333,9 +329,9 @@ static void mesh_ble_params_reset_delay_timer_timeout_handler(btstack_timer_sour
 
 void mesh_ble_params_reset_delay_timer_start(uint32_t timeout_in_ms){
     // set timer
-    mesh_btstack_run_loop_set_timer_handler(&mesh_ble_params_reset_delay_timer, (f_timer_process)mesh_ble_params_reset_delay_timer_timeout_handler);
-    mesh_btstack_run_loop_set_timer(&mesh_ble_params_reset_delay_timer, MESH_BLE_PARAMS_RESET_DELAY_TIMER_ID, timeout_in_ms);
-    mesh_btstack_run_loop_add_timer(&mesh_ble_params_reset_delay_timer);
+    mesh_run_loop_set_timer_handler(&mesh_ble_params_reset_delay_timer, (mesh_func_timer_process)mesh_ble_params_reset_delay_timer_timeout_handler);
+    mesh_run_loop_set_timer(&mesh_ble_params_reset_delay_timer, MESH_BLE_PARAMS_RESET_DELAY_TIMER_ID, timeout_in_ms);
+    mesh_run_loop_add_timer(&mesh_ble_params_reset_delay_timer);
     printf("[V] mesh ble params reset delay timer start: %d ms\n", timeout_in_ms);
 }
 

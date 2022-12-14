@@ -10,7 +10,7 @@
 #include "mesh_port_stack.h"
 #include "adv_bearer.h"
 #include "mesh_btstack_defines.h"
-//#include "btstack_memory.h"
+#include "mesh_memory.h"
 #include "mesh.h"
 #include "mesh_proxy.h"
 #include "mesh_port_pb.h"
@@ -167,10 +167,10 @@ static MeshConnScanTypdef_t MeshConnScan =  {   .run_state = MESH_RUNNING_STATE_
                                             };
 
 // timer define.
-static btstack_timer_source_t       mesh_conn_param_update_timer;
+static mesh_timer_source_t       mesh_conn_param_update_timer;
 
 // timer timeout handler.
-static void mesh_conn_param_update_timer_timeout_handler(btstack_timer_source_t * ts){
+static void mesh_conn_param_update_timer_timeout_handler(mesh_timer_source_t * ts){
     UNUSED(ts);
     printf("[V] %s .\n", __func__);
     if(MeshConnScan.run_state == MESH_RUNNING_STATE_TIMER_START_48){
@@ -185,16 +185,16 @@ static void mesh_conn_param_update_timer_timeout_handler(btstack_timer_source_t 
 // timer start.
 void mesh_conn_param_update_timer_start(uint32_t time_ms){
     // set timer
-    mesh_btstack_run_loop_set_timer_handler(&mesh_conn_param_update_timer, (f_timer_process)mesh_conn_param_update_timer_timeout_handler);
-    mesh_btstack_run_loop_set_timer(&mesh_conn_param_update_timer, MESH_CONN_PARAM_UPDATE_TIMER_ID, time_ms);
-    mesh_btstack_run_loop_add_timer(&mesh_conn_param_update_timer);
+    mesh_run_loop_set_timer_handler(&mesh_conn_param_update_timer, (mesh_func_timer_process)mesh_conn_param_update_timer_timeout_handler);
+    mesh_run_loop_set_timer(&mesh_conn_param_update_timer, MESH_CONN_PARAM_UPDATE_TIMER_ID, time_ms);
+    mesh_run_loop_add_timer(&mesh_conn_param_update_timer);
     printf("[V] mesh conn param update timer start: %d ms\n", time_ms);
     return;
 }
 
 // timer stop.
 void mesh_conn_param_update_timer_stop(void){
-    mesh_btstack_run_loop_remove_timer(&mesh_conn_param_update_timer);
+    mesh_run_loop_remove_timer(&mesh_conn_param_update_timer);
     return;
 }
 

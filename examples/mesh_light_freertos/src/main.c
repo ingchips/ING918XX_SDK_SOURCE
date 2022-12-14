@@ -7,10 +7,6 @@
 #include "btstack_event.h"
 #include "mesh_setup_profile.h"
 #include "rgb_led.h"
-#include "peripheral_sysctrl.h"
-#include "peripheral_pinctrl.h"
-#include "peripheral_gpio.h"
-#include "peripheral_uart.h"
 
 #define ENABLE_RF_TX_RX //used to enable rf tx and rx.
 

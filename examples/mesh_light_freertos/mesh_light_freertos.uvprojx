@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>./FreeRTOS/include;./src;../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <IncludePath>./FreeRTOS/include;./src;../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src;..\..\src\SigMesh\inc;..\..\src\SigMesh\inc\mesh;..\..\src\SigMesh\inc\mesh_3rd;..\..\src\SigMesh\inc\mesh_host;..\..\src\SigMesh\inc\mesh_port</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -388,6 +388,36 @@
               <FileType>1</FileType>
               <FilePath>.\src\main.c</FilePath>
             </File>
+            <File>
+              <FileName>profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_setup_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_setup_profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>btstack_port_mesh_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\btstack_port_mesh_init.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_port_stack.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_port_stack.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_storage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_storage.c</FilePath>
+            </File>
+            <File>
+              <FileName>rgb_led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\rgb_led.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -407,19 +437,53 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\eflash.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>
           <Files>
             <File>
-              <FileName>peripheral_timer.c</FileName>
+              <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
+              <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_sysctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Tools</GroupName>
+          <Files>
+            <File>
+              <FileName>trace.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\trace.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>RTOS</GroupName>
@@ -463,6 +527,16 @@
               <FileName>heap_4.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\FreeRTOS\portable\MemMang\heap_4.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>SigMesh</GroupName>
+          <Files>
+            <File>
+              <FileName>..\..\..\002-GITHUB\ING918XX_SDK_SOURCE\src\SigMesh\SigMesh.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>$TC_ROOT$\..\..\..\002-GITHUB\ING918XX_SDK_SOURCE\src\SigMesh\SigMesh.lib</FilePath>
             </File>
           </Files>
         </Group>

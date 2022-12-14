@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "btstack_config.h"
+#include "mesh_config.h"
 #include "mesh/mesh.h"
 #include "mesh/mesh_node.h"
 #include "mesh/mesh_generic_model.h"
@@ -14,8 +14,8 @@
 #include "mesh_port_pb.h"
 #include "mesh_port_stack.h"
 #include "platform_api.h"
-#include "btstack_port.h"
-#include "mesh_btstack_memory.h"
+#include "mesh_port.h"
+#include "mesh_memory.h"
 #include "btstack_tlv_flash_bank.h"
 #include "mesh_health_server.h"
 #include "mesh_generic_level_server.h"
@@ -281,7 +281,7 @@ void bt_port_mesh_setup(void)
     // TODO: use flash storage
     // const btstack_tlv_t * btstack_tlv_impl = NULL;
 
-    mesh_btstack_memory_init();
+    mesh_memory_init();
 //    btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
 
     // setup TLV Flash Sector implementation
