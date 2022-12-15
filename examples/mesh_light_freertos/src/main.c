@@ -65,11 +65,11 @@ uint32_t cb_putc(char *c, void *dummy)
     return 0;
 }
 
-//int fputc(int ch, FILE *f)
-//{
-//    cb_putc((char *)&ch, NULL);
-//    return ch;
-//}
+int fputc(int ch, FILE *f)
+{
+   cb_putc((char *)&ch, NULL);
+   return ch;
+}
 
 void __aeabi_assert(const char *a ,const char* b, int c)
 {
