@@ -543,8 +543,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>$TC_ROOT$\..\..\..\002-GITHUB\ING918XX_SDK_SOURCE\src\SigMesh\SigMesh.lib</PathWithFileName>
-      <FilenameWithoutPath>..\..\..\002-GITHUB\ING918XX_SDK_SOURCE\src\SigMesh\SigMesh.lib</FilenameWithoutPath>
+      <PathWithFileName>..\..\src\SigMesh\SigMesh.lib</PathWithFileName>
+      <FilenameWithoutPath>SigMesh.lib</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
