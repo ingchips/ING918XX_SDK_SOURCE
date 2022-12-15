@@ -763,7 +763,6 @@ void mesh_setup_profile(void)
     
     // mesh init.
     mesh_stack_init();
-    // Ble_AttSendBuffer_Init();
     bt_port_mesh_setup();
 
     // ble init.
