@@ -287,7 +287,7 @@ void setup_peripherals(void)
 }
 
 trace_rtt_t trace_ctx = {0};
-
+extern const gen_os_driver_t *os_impl_get_driver(void);
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
@@ -309,6 +309,6 @@ int app_main()
     platform_config(PLATFORM_CFG_TRACE_MASK, 0xfff);
     // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);//enable hci log
 
-    return 0;
+    return (int)os_impl_get_driver();
 }
 
