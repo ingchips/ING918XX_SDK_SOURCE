@@ -8,7 +8,7 @@
 #include "mesh_setup_profile.h"
 #include "rgb_led.h"
 
-#define ENABLE_RF_TX_RX //used to enable rf tx and rx.
+// #define ENABLE_RF_TX_RX //used to enable rf tx and rx.
 
 #ifdef ENABLE_RF_TX_RX
 #define PRINT_UART_BAUD     921600
