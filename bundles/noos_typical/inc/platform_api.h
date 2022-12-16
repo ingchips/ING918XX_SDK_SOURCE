@@ -315,6 +315,8 @@ typedef enum
     PLATFORM_CFG_LL_DELAY_COMPENSATION,     // When system runs at a lower frequency,
                                             // more time (in us) is needed to run Link layer.
                                             // For example, if ING916 runs at 24MHz, configure this to 1000
+    PLATFORM_CFG_24M_OSC_TUNE,              // 24M OSC tunning (not only available for ING918)
+                                            // For ING916: values may vary in 0x16~0x2d, etc.
 } platform_cfg_item_t;
 
 typedef enum
@@ -343,6 +345,9 @@ typedef enum
                                         // For ING916: this clock become running **after** selected as 32k
                                         //             clock source.
     PLATFORM_INFO_32K_CALI_VALUE,       // Read current 32k clock calibration result.
+    PLATFOFM_INFO_IRQ_NUMBER = 50,      // Get the underline IRQ number of a platform IRQ
+                                        // for example, platform_read_info(PLATFOFM_INFO_IRQ_NUMBER + PLATFORM_CB_IRQ_UART0)
+    PLATFOFM_INFO_NUMBER = 255,
 } platform_info_item_t;
 
 /**

@@ -252,4 +252,11 @@ void GIO_EnableHighZGroupB(uint8_t enable)
     }
 }
 
+void GIO_EnableAnalog(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    GIO_MaskedWrite(&pDef->ChDir, index, 0);
+    GIO_MaskedWrite(&pDef->IOIE, index, 0);
+}
+
 #endif

@@ -535,6 +535,14 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
  */
 void SYSCTRL_WaitForLDO(void);
 
+/**
+ * @brief Config USB PHY functionality
+ *
+ * @param[in] enable            Enable(1)/Disable(0) usb phy module
+ * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
+ */
+void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
+
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
 #endif	/* __cplusplus */
