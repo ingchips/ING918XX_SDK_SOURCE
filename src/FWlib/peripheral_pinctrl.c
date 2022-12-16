@@ -575,14 +575,16 @@ int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins)
     return 0;
 }
 
-void PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index)
+int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index)
 {
-  set_reg_bits(&APB_PINCTRL->IN_CTRL[9], (uint32_t)1, 1, 3);
-  set_reg_bits(&APB_PINCTRL->IN_CTRL[9], (uint32_t)1, 1, 4);
-  set_reg_bits(&APB_PINCTRL->OUT_CTRL[4], (uint32_t)0, 7, 0);
-  set_reg_bits(&APB_PINCTRL->OUT_CTRL[4], (uint32_t)0, 7, 7);
-  set_reg_bits(&APB_PINCTRL->PE_CTRL[0], (uint32_t)0, 1, dp_io_pin_index);
-  set_reg_bits(&APB_PINCTRL->PE_CTRL[0], (uint32_t)0, 1, dm_io_pin_index);
+    if ((dp_io_pin_index != 16) || (dm_io_pin_index != 17))
+        return -1;
+    set_reg_bits(&APB_PINCTRL->IN_CTRL[9], (uint32_t)1, 1, 3);
+    set_reg_bits(&APB_PINCTRL->IN_CTRL[9], (uint32_t)1, 1, 4);
+    set_reg_bits(&APB_PINCTRL->OUT_CTRL[4], (uint32_t)0, 7, 0);
+    set_reg_bits(&APB_PINCTRL->OUT_CTRL[4], (uint32_t)0, 7, 7);
+    set_reg_bits(&APB_PINCTRL->PE_CTRL[0], (uint32_t)0, 1, dp_io_pin_index);
+    set_reg_bits(&APB_PINCTRL->PE_CTRL[0], (uint32_t)0, 1, dm_io_pin_index);
 }
 
 #endif

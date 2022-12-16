@@ -531,9 +531,10 @@ void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_st
  *
  * @param dp_io_pin_index      fixed, should be GPIO_16.
  * @param dm_io_pin_index      fixed, should be GPIO_17.
+ * @return                  0 if successful else non-0
  */
- void PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index);
- 
+int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index);
+
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
 #endif    /* __cplusplus */

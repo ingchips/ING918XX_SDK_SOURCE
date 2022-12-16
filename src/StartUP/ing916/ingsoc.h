@@ -314,11 +314,11 @@ typedef struct
 {
     __IO uint32_t En         :1;            // +0x00
     __IO uint32_t Int        :1;
-    __IO uint32_t InMask     :24;  
-    __IO uint32_t IntMask    :1;   
-    __IO uint32_t Reserved1  :5;   
+    __IO uint32_t InMask     :24;
+    __IO uint32_t IntMask    :1;
+    __IO uint32_t Reserved1  :5;
     __IO uint32_t OutMask    :16;           // +0x04
-    __IO uint32_t Reserved2  :16;   
+    __IO uint32_t Reserved2  :16;
 } PTE_ChannelCtrlReg;
 
 typedef struct{
@@ -390,25 +390,25 @@ typedef struct{
 } SADC_TypeDef;
 
 typedef struct{
-  volatile uint32_t      DICtrlx;     //0x900 + i*20
-  volatile uint8_t      _NOT_USED_25[4];
-  volatile uint32_t      DIIntx;      //0x908 + i*20
-  volatile uint8_t      _NOT_USED_26[4];
-  volatile uint32_t      DISizex;     //0x910 + i*20
-  volatile uint32_t      DIDmax;      //0x914 + i*20
-  volatile uint32_t      DIFifox;     //0x918 + i*20
-  volatile uint32_t      DIDmaxx;     //0x91C + i*20
+    __IO uint32_t      DICtrlx;     //0x900 + i*20
+    __IO uint8_t      _NOT_USED_25[4];
+    __IO uint32_t      DIIntx;      //0x908 + i*20
+    __IO uint8_t      _NOT_USED_26[4];
+    __IO uint32_t      DISizex;     //0x910 + i*20
+    __IO uint32_t      DIDmax;      //0x914 + i*20
+    __IO uint32_t      DIFifox;     //0x918 + i*20
+    __IO uint32_t      DIDmaxx;     //0x91C + i*20
 }USB_DIEPReg;
 
 typedef struct{
-  volatile uint32_t      DOCtrlx;     //0xB00 + i*20
-  volatile uint8_t      _NOT_USED_39[4];//
-  volatile uint32_t      DOIntx;      //0xB08 + i*20
-  volatile uint8_t      _NOT_USED_40[4];//
-  volatile uint32_t      DOSizex;     //0xB10 + i*20
-  volatile uint32_t      DODmax;      //0xB14 + i*20
-  volatile uint8_t      _NOT_USED_41[4];//
-  volatile uint32_t      DODmaxx;     //0xB1C + i*20
+    __IO uint32_t      DOCtrlx;     //0xB00 + i*20
+    __IO uint8_t      _NOT_USED_39[4];//
+    __IO uint32_t      DOIntx;      //0xB08 + i*20
+    __IO uint8_t      _NOT_USED_40[4];//
+    __IO uint32_t      DOSizex;     //0xB10 + i*20
+    __IO uint32_t      DODmax;      //0xB14 + i*20
+    __IO uint8_t      _NOT_USED_41[4];//
+    __IO uint32_t      DODmaxx;     //0xB1C + i*20
 }USB_DOEPReg;
 
 typedef struct
@@ -459,7 +459,6 @@ typedef struct
     USB_DOEPReg        UsbDOxConfig[5]; //0x0B20
     __IO uint8_t       _NOT_USED_54[576];//0x0BC0
     __IO uint32_t      UsbPCConfig;     //0x0E00
-  
 } USB_TypeDef;
 
 /******************************************************************************/
