@@ -125,13 +125,6 @@ typedef enum {
 } SADC_adcPgaGain;
 
 typedef enum {
-    SADC_CLK_1M         = 0x18,
-    SADC_CLK_2M         = 0xc,
-    SADC_CLK_4M         = 0x6,
-    SADC_CLK_6M         = 0x4,
-} SADC_adcClk;
-
-typedef enum {
     SADC_CFG_0      = 0x0,
     SADC_CFG_1      = 0x4,
     SADC_CFG_2      = 0x8,
@@ -156,14 +149,6 @@ typedef struct
     float vref_gap;
     float(*cb)(uint16_t);
 } SADC_adcCal_t;
-
-/**
- * @brief Select DMA request channel of transmitting ADC data
- *
- * @param[in] sel             DMA request channel(0-7)
- * @return                    null
- */
-void ADC_SetDmaSel(uint8_t sel);
 
 /**
  * @brief Enable ADC control signal

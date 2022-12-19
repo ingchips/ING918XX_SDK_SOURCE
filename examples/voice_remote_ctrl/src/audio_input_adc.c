@@ -85,8 +85,8 @@ void audio_input_setup(void)
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Calibration(DIFFERENTAIL_MODE);
     ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 6100000/16000);
-    ADC_SetDmaSel(0);
 
+    SYSCTRL_SelectUsedDmaItems(1 << 9);
     DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_ADC, 80, 8);
     platform_set_irq_callback(PLATFORM_CB_IRQ_DMA, DMA_cb_isr, 0);
 }

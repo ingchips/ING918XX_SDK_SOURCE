@@ -148,13 +148,6 @@ static float ADC_CalWithoutPga(uint16_t data)
     return ADC_adcCal.vref_gap * (2.f * (float)data / 16383.f - 0.5f);
 }
 
-void ADC_SetDmaSel(uint8_t sel)
-{
-    if (sel > 7) return;
-    APB_SYSCTRL->DmaCtrl[0] &= ~(LEFT_SHIFT(0xf, (4 * sel)));
-    APB_SYSCTRL->DmaCtrl[0] |= LEFT_SHIFT(9, (4 * sel));
-}
-
 void ADC_EnableCtrlSignal(void)
 {
     ADC_RegWr(SADC_CFG_0, 1, 9);
