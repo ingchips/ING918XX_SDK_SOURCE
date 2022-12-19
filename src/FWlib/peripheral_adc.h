@@ -158,14 +158,6 @@ typedef struct
 } SADC_adcCal_t;
 
 /**
- * @brief Configurate ADC clock frequece
- *
- * @param[in] clk             ADC clock frequece, see 'SADC_adcClk'
- * @return                    null
- */
-void ADC_ClkCfg(SADC_adcClk clk);
-
-/**
  * @brief Select DMA request channel of transmitting ADC data
  *
  * @param[in] sel             DMA request channel(0-7)
@@ -276,7 +268,7 @@ uint8_t ADC_GetBusyStatus(void);
  * @param[in] mode           ADC input mode, see 'SADC_adcIputMode'
  * @return                   null
  */
-void ADC_SetIputMode(SADC_adcIputMode mode);
+void ADC_SetInputMode(SADC_adcIputMode mode);
 
 /**
  * @brief Set pga gain

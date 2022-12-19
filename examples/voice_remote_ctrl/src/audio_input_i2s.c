@@ -3,7 +3,7 @@
 
 #include "app_cfg.h"
 #include "platform_api.h"
-#include "pingpang.h"
+#include "pingpong.h"
 
 #if (SAMPLING_RATE != 16000)
 #error only 16kHz is supported
@@ -19,16 +19,16 @@ static uint32_t sample_counter = 1;
 #define CHANNEL_ID  0
 #define PP_LEN  80
 
-DMA_PingPang_t PingPang;
+DMA_PingPong_t PingPong;
 
 static uint32_t DMA_cb_isr(void *user_data)
 {
-	uint32_t state = DMA_GetChannelIntState(CHANNEL_ID);
-	DMA_ClearChannelIntState(CHANNEL_ID, state);
+    uint32_t state = DMA_GetChannelIntState(CHANNEL_ID);
+    DMA_ClearChannelIntState(CHANNEL_ID, state);
 
-	uint32_t *rr = DMA_PingPangIntProc(&PingPang, CHANNEL_ID);
+    uint32_t *rr = DMA_PingPongIntProc(&PingPong, CHANNEL_ID);
     uint32_t i = sample_counter;
-    uint32_t transSize = DMA_PingPangGetTransSize(&PingPang);
+    uint32_t transSize = DMA_PingPongGetTransSize(&PingPong);
     while (i < transSize) {
         audio_rx_sample((pcm_sample_t)(rr[i] >> 8));
         i += 2;
@@ -54,13 +54,13 @@ void audio_input_setup(void)
     I2S_DMAEnable(APB_I2S, 0, 0);
     I2S_Config(APB_I2S, I2S_ROLE_MASTER, I2S_MODE_STANDARD, 0, 0, 0, 1, 24);
 
-    DMA_PingPangSetup(&PingPang, SYSCTRL_DMA_I2S_RX, PP_LEN, TRIGGER_NUMBER);
+    DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_I2S_RX, PP_LEN, TRIGGER_NUMBER);
     platform_set_irq_callback(PLATFORM_CB_IRQ_DMA, DMA_cb_isr, 0);
 }
 
 void audio_input_start(void)
 {
-    DMA_PingPangEnable(&PingPang, CHANNEL_ID);
+    DMA_PingPongEnable(&PingPong, CHANNEL_ID);
     I2S_ClearRxFIFO(APB_I2S);
     I2S_DMAEnable(APB_I2S, 1, 1);
     I2S_Enable(APB_I2S, 0, 1);
@@ -68,7 +68,7 @@ void audio_input_start(void)
 
 void audio_input_stop(void)
 {
-    DMA_PingPangDisable(&PingPang, CHANNEL_ID);
+    DMA_PingPongDisable(&PingPong, CHANNEL_ID);
     I2S_Enable(APB_I2S, 0, 0);
     I2S_DMAEnable(APB_I2S, 0, 0);
 }

@@ -62,7 +62,9 @@ void setup_peripherals(void)
     TMR_IntEnable(APB_TMR1, 0, 0xf);
 #ifndef SIMULATION        
     // setup ADC
-    ADC_ClkCfg(SADC_CLK_6M);
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
+    SYSCTRL_SetAdcClkDiv(4, 1);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Calibration(SINGLE_END_MODE);
 #endif
 #else
