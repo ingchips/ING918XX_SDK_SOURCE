@@ -18,7 +18,11 @@
 #ifdef BOARD_USE_RGB_LED
 
 #ifndef PIN_RGB_LED
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define PIN_RGB_LED   GIO_GPIO_5
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define PIN_RGB_LED   GIO_GPIO_0
+#endif
 #endif
 
 #define LED_TLC59731    0
@@ -87,9 +91,10 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 #elif(BOARD_ID == BOARD_ING91881B_02_02_06)
 
 #define GPIO_MASK (1 << PIN_RGB_LED)
-
+#define PIN_PWM_LED     GIO_GPIO_5
 static void ws2881_write(uint32_t value)
 {
+
     int8_t i;
 
     for( i = 0; i < 24; i++ )
@@ -97,18 +102,21 @@ static void ws2881_write(uint32_t value)
         uint32_t bit = value & ( 0x00800000 >> i);
 
         if (bit){
-            GIO_SetBits(GPIO_MASK);
-            GIO_ClearBits(GPIO_MASK);
+            // GIO_SetBits(GPIO_MASK);
+            // GIO_ClearBits(GPIO_MASK);
+            PWM_SetupSimple(PIN_PWM_LED >> 1, 100000, 50);
         } else {
-            GIO_SetQuicPulse(GPIO_MASK);
+            PWM_SetupSimple(PIN_PWM_LED >> 1, 100000, 50);
+            // GIO_SetQuicPulse(GPIO_MASK);
         }
     }
+    printf("finished!\n");
     delay(100 * 8);
 }
 
 void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
-    uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
+    uint32_t cmd = (0x3a << 24) | (r << 16) | (g << 8) | b;
 
     ws2881_write(cmd);
 }

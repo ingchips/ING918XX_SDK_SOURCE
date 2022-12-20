@@ -8,7 +8,7 @@
 #define BOARD_ING91881B_02_02_06        3
 
 #ifndef BOARD_ID
-#define BOARD_ID       BOARD_ING91881B_02_02_05
+#define BOARD_ID       BOARD_ING91881B_02_02_06
 #endif
 
 #ifdef __cplusplus
