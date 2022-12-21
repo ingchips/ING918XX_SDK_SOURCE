@@ -307,9 +307,9 @@ uint32_t setup_profile(void *data, void *user_data)
     PINCTRL_SelI2cSclIn(I2C_PORT, 10);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     PINCTRL_DisableAllInputs();
-    PINCTRL_SelI2cIn(I2C_PORT, 10, 11);
-    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_OUT);
-    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDA_OUT);
+    PINCTRL_SelI2cIn(I2C_PORT, 15, 16);
+    PINCTRL_SetPadMux(15, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(16, IO_SOURCE_I2C0_SDA_OUT);
 #else
     #error unknown or unsupported chip family
 #endif

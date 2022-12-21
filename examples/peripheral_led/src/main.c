@@ -46,20 +46,19 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));  
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PWM)); 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    PINCTRL_SetGeneralPadMode(PIN_PWM_LED, IO_MODE_PWM, 2, 0);
+    PINCTRL_SetGeneralPadMode(PIN_PWM_LED, IO_MODE_PWM, 0, 0);    
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     PINCTRL_SetPadMux(PIN_PWM_LED, IO_SOURCE_PWM6_B);
 #else
     #error unknown or unsupported chip family
 #endif
-
-    setup_rgb_led();
+    //setup_rgb_led();
 }
 
 const static rgb_t rgb0 = { .r = 0, .g = 0, .b = 0 };
-const static rgb_t rgb1 = { .r = 0, .g = 50, .b = 0 };
+const static rgb_t rgb1 = { .r = 50, .g = 0, .b = 0 };
 
 void set_led_color(uint8_t r, uint8_t g, uint8_t b)
 {

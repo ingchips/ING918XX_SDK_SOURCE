@@ -91,7 +91,7 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 #elif(BOARD_ID == BOARD_ING91881B_02_02_06)
 
 #define GPIO_MASK (1 << PIN_RGB_LED)
-#define PIN_PWM_LED     GIO_GPIO_5
+//#define PIN_PWM_LED     GIO_GPIO_0
 static void ws2881_write(uint32_t value)
 {
 
@@ -104,19 +104,19 @@ static void ws2881_write(uint32_t value)
         if (bit){
             // GIO_SetBits(GPIO_MASK);
             // GIO_ClearBits(GPIO_MASK);
-            PWM_SetupSimple(PIN_PWM_LED >> 1, 100000, 50);
+            PWM_SetupSingle(2, 1000000, 60);
         } else {
-            PWM_SetupSimple(PIN_PWM_LED >> 1, 100000, 50);
+            PWM_SetupSingle(2, 1000000, 30);
             // GIO_SetQuicPulse(GPIO_MASK);
         }
     }
-    printf("finished!\n");
+    printf("\n");
     delay(100 * 8);
 }
 
 void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
-    uint32_t cmd = (0x3a << 24) | (r << 16) | (g << 8) | b;
+    uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
 
     ws2881_write(cmd);
 }
@@ -341,6 +341,7 @@ void setup_accelerometer(void)
         printf("faild!!\n");
     bma2x2_get_range(&sensor_range);
     mg_factor = get_accel_mg_factor(sensor_range);
+    printf("%x %f ",sensor_range,mg_factor);
 }
 
 void get_acc_xyz(float *x, float *y, float *z)

@@ -47,19 +47,31 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#define I2C_SCL         GIO_GPIO_10
+#define I2C_SDA         GIO_GPIO_11
+
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_I2C0)
-                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
+                              | (1 << SYSCTRL_ClkGate_APB_TMR1)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
 
 #ifndef SIMULATION
-    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_OUT);
-    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDA_OUT);
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)   
-    PINCTRL_SelI2cIn(I2C_PORT_0, 10, IO_NOT_A_PIN);
+    PINCTRL_SetPadMux(I2C_SCL, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(I2C_SDA, IO_SOURCE_I2C0_SDA_OUT);
+    PINCTRL_SelI2cSclIn(I2C_PORT_0, I2C_SCL);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ClearClkGateMulti(	(1 << SYSCTRL_ITEM_APB_SysCtrl)
+                              | (1 << SYSCTRL_ITEM_APB_GPIO1)
+                              | (1 << SYSCTRL_ITEM_APB_GPIO0));	
+    PINCTRL_Pull(I2C_SCL,PINCTRL_PULL_UP);
+    PINCTRL_Pull(I2C_SDA,PINCTRL_PULL_UP);
+
+    PINCTRL_SelI2cIn(I2C_PORT_0, I2C_SCL, I2C_SDA);
+    PINCTRL_SetPadMux(I2C_SCL, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(I2C_SDA, IO_SOURCE_I2C0_SDA_OUT);
 #else
     #error unknown or unsupported chip family
 #endif
