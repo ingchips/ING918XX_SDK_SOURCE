@@ -63,6 +63,8 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 // `on_duty` is in percent, i.e. is in [0..100]
 void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty);
 
+//for Single Step Mode:
+//generate one pulse  
 void PWM_SetupSingle(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty);
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)

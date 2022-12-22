@@ -248,6 +248,7 @@ void setup_env_sensor()
 #elif(BOARD_ID == BOARD_ING91881B_02_02_06)
 
     printf("sensor MTS01B init...");
+    printf("cmd = [%x %x]\n",cmd[0], cmd[1]);
     printf("OK\n");
 
 #endif
@@ -262,8 +263,18 @@ float get_temperature()
     return comp_data.temperature;
 #elif (BOARD_ID == BOARD_ING91881B_02_02_06)
 
-    if(i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, sizeof(reg_data)) == MTS01B_E_COMM_FAIL)
-        return 0.0;
+    int tt = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
+    printf("tt = %d / MTS01B_E_COMM_FAIL = %d\n", tt, MTS01B_E_COMM_FAIL);
+    // if( tt == MTS01B_E_COMM_FAIL)
+    if( tt != 0)
+    {
+        SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
+        SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+        i2c_init(I2C_PORT);
+        i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
+    }
+    printf("reg_data = [%x] [%x] [%x]\n",reg_data[0],reg_data[1],reg_data[2]);
+        // return 0.0;
     return (float)((40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1))) * 100);
 #endif
 }

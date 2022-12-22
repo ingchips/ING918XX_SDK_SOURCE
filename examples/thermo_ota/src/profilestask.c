@@ -38,7 +38,8 @@ static void read_temperature(void)
     if ((temp = get_temperature()) < 0)
         return;
 #ifdef PRINT_ALL
-    platform_printf("T: %04d * 0.01 Deg\n", temp);
+    platform_printf("T: %f * 0.01 Deg\n", temp);
+    //latform_printf("T: %04d * 0.01 Deg\n", temp);
     platform_printf("H: %04d / 1024 %%\n", get_humidity());
     platform_printf("P: %08d Pascal \n", get_pressure());
 #endif
@@ -164,7 +165,7 @@ uint8_t *init_service(void);
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
-    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3f};    // TODO: random address generation
+    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x31};    // TODO: random address generation
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -301,7 +302,7 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(&user_packet_handler);
 
 #ifndef SIMULATION
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) 
     PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
     PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
     PINCTRL_SelI2cSclIn(I2C_PORT, 10);
@@ -317,6 +318,7 @@ uint32_t setup_profile(void *data, void *user_data)
     i2c_init(I2C_PORT);
 
     setup_env_sensor();
+    printf("temperature1 = %f  temperature2 = %f  temperature2 = %f",get_temperature(), get_temperature(), get_temperature());
 #endif
 
     return 0;
