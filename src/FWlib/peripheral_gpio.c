@@ -276,12 +276,4 @@ void GIO_ClearBits(const uint32_t index_mask)
 
 }
 
-void GIO_SetQuicPulse(const uint64_t index_mask)
-{
-    DEF_GIO_AND_PIN(GIO_GPIO_5);
-    pDef->DoutSet |= 1 << GIO_GPIO_5;
-    pDef->DoutClear |= 1 << GIO_GPIO_5;
-
-}
-
 #endif

@@ -196,18 +196,6 @@ static __INLINE void GIO_ClearBits(const uint32_t index_mask){ *GPIO_DOC = index
  */
 static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = index_mask;}
 
-/**
- * @brief Send a pulse of duration 200~380ns to GPIO
- *
- * Note:The running time is 200ns less than using GIO_SetBits with GIO_ClearBits to generate a pulse.
- */
-static __INLINE void GIO_SetQuicPulse(const uint64_t index_mask){
-    uint32_t tmp_set = (*GPIO_DO)|index_mask;
-    uint32_t tmp_clear = (*GPIO_DO)&(~index_mask);
-    *GPIO_DO = tmp_set;
-    *GPIO_DO = tmp_clear;
-}
-
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 //APB_GPIO0_BASE     (APB_BASE + 0x15000)  GPIO0的基地址
@@ -327,21 +315,6 @@ void GIO_SetBits(const uint32_t index_mask);
  *
  */
 void GIO_ClearBits(const uint32_t index_mask);
-
-
-/**
- * @brief Send a pulse of duration 200~380ns to GPIO
- *
- * Note:The running time is 200ns less than using GIO_SetBits with GIO_ClearBits to generate a pulse.
- */
-void GIO_SetQuicPulse(const uint64_t index_mask);
-// {
-//     DEF_GIO_AND_PIN(index_mask);
-//     uint32_t tmp_set = (*GPIO_DO)|index;
-//     uint32_t tmp_clear = (*GPIO_DO)&(~index);
-//     *GPIO_DO = tmp_set;
-//     *GPIO_DO = tmp_clear;
-// }
 
 #endif
 
