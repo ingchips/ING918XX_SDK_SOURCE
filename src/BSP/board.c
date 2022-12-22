@@ -19,7 +19,7 @@
 
 #ifndef PIN_RGB_LED
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#define PIN_RGB_LED   GIO_GPIO_5
+#define PIN_RGB_LED   GIO_GPIO_6
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define PIN_RGB_LED   GIO_GPIO_0
 #endif
@@ -91,7 +91,8 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 #elif(BOARD_ID == BOARD_ING91881B_02_02_06)
 
 #define GPIO_MASK (1 << PIN_RGB_LED)
-//#define PIN_PWM_LED     GIO_GPIO_0
+#define PWM_CHANNEL     0
+#define PWM_LED_FREQ    1000000
 static void ws2881_write(uint32_t value)
 {
 
@@ -101,16 +102,17 @@ static void ws2881_write(uint32_t value)
     {
         uint32_t bit = value & ( 0x00800000 >> i);
 
-        if (bit){
-            // GIO_SetBits(GPIO_MASK);
-            // GIO_ClearBits(GPIO_MASK);
-            PWM_SetupSingle(2, 1000000, 60);
-        } else {
-            PWM_SetupSingle(2, 1000000, 30);
-            // GIO_SetQuicPulse(GPIO_MASK);
+        if (bit)
+        {
+            //GIO_SetBits(GPIO_MASK);
+            //GIO_ClearBits(GPIO_MASK);
+            PWM_SetupSingle(PWM_CHANNEL, PWM_LED_FREQ, 60);
+        } 
+        else 
+        {
+            PWM_SetupSingle(PWM_CHANNEL, PWM_LED_FREQ, 30);
         }
     }
-    printf("\n");
     delay(100 * 8);
 }
 
@@ -125,13 +127,26 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 
 void setup_rgb_led()
 {
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO0));
     PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_GPIO);
 
     GIO_SetDirection(PIN_RGB_LED, GIO_DIR_OUTPUT);
     GIO_WriteValue(PIN_RGB_LED, 0);
 
-    set_rgb_led_color(50, 50, 50);
+#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                                    | (1 << SYSCTRL_ClkGate_APB_PWM)); 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    PINCTRL_SetGeneralPadMode(PIN_PWM_LED, IO_MODE_PWM, 0, 0);    
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_SelectPWMClk(SYSCTRL_CLK_24M_DIV_1);
+    PINCTRL_SetPadMux(6, IO_SOURCE_PWM6_A);
+#else
+    #error unknown or unsupported chip family
+#endif
+#endif
+   set_rgb_led_color(50, 50, 50);
 }
 
 #else
