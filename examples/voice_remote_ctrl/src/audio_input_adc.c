@@ -8,9 +8,7 @@
 
 #include "audio.h"
 
-#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
-#error only ING918xx is supported
-#endif
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 uint32_t audio_sample_isr(void *user_data)
 {    
@@ -55,3 +53,53 @@ void audio_input_stop(void)
 {
     TMR_Disable(APB_TMR1);
 }
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#include "pingpong.h"
+
+#define ADC_CHANNEL    ADC_CH_0
+#define DMA_CHANNEL    0
+#define SAMPLERATE     16000
+
+static DMA_PingPong_t PingPong;
+
+static uint32_t DMA_cb_isr(void *user_data)
+{
+    uint32_t state = DMA_GetChannelIntState(DMA_CHANNEL);
+    DMA_ClearChannelIntState(DMA_CHANNEL, state);
+
+    uint32_t *buff = DMA_PingPongIntProc(&PingPong, DMA_CHANNEL);
+    uint32_t tranSize = DMA_PingPongGetTransSize(&PingPong);
+    for (uint32_t i = 0; i < tranSize; ++i) {
+        if (ADC_GetDataChannel(buff[i]) != ADC_CHANNEL) continue;
+        uint16_t sample = ADC_GetData(buff[i]);
+        // do something with 'sample'
+    }
+    return 0;
+}
+void audio_input_setup(void)
+{
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_DMA));
+
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
+    SYSCTRL_SetAdcClkDiv(4, 1);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
+    ADC_Calibration(DIFFERENTAIL_MODE);
+    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 6100000/16000);
+
+    SYSCTRL_SelectUsedDmaItems(1 << 9);
+    DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_ADC, 80, 8);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_DMA, DMA_cb_isr, 0);
+}
+void audio_input_start(void)
+{
+    DMA_PingPongEnable(&PingPong, DMA_CHANNEL);
+    ADC_Start(1);
+}
+
+void audio_input_stop(void)
+{
+    DMA_PingPongDisable(&PingPong, DMA_CHANNEL);
+    ADC_Start(0);
+}
+
+#endif
