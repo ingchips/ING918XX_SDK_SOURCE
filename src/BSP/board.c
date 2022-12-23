@@ -254,8 +254,12 @@ void setup_env_sensor()
 #endif
 }
 
+static int err_cnt = 0;
+static int read_cnt = 0;
 float get_temperature()
 {
+    int symbol_bit;
+    read_cnt++;
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
 
     if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
@@ -272,10 +276,15 @@ float get_temperature()
         SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
         i2c_init(I2C_PORT);
         i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
+        read_cnt++;
+        err_cnt++;
     }
-    printf("reg_data = [%x] [%x] [%x]\n",reg_data[0],reg_data[1],reg_data[2]);
+    uint16_t ttt = (reg_data[0] << 8) | reg_data[1];
+    printf("%d/%d  %X reg_data = [%x] [%x] [%x] \n",err_cnt,read_cnt,(~(reg_data[0] - 1))&0xff,reg_data[0],reg_data[1],reg_data[2]);
         // return 0.0;
-    return (float)((40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1))) * 100);
+    symbol_bit = reg_data[0] >> 7;
+
+    return (float)(4000 + (((symbol_bit == 0 ? (ttt & 0X7fff) : ((-1) * ((~(ttt - 1)) & 0xffff))) * 100) >> 8));
 #endif
 }
 
