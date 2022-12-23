@@ -66,10 +66,10 @@ typedef enum{
 
 typedef enum
 {
-  USB_ERROR_DEFAULT,
   USB_ERROR_NONE = (1 << 1),
   USB_ERROR_INVALID_INPUT = (1 << 2),
   USB_ERROR_INACTIVE_EP = (1 << 3),
+  USB_ERROR_REQUEST_NOT_SUPPORT = (1 << 4)
 } USB_ERROR_TYPE_E ;
 
 typedef enum
@@ -130,30 +130,6 @@ typedef enum
   USB_REQUEST_DEVICE_DESCRIPTOR_INTERFACE_POWER = 0x08
 } USB_REQUEST_DEVICE_DESCRIPTOR_TYPES_E ;
 
-typedef enum
-{
-  USB_REQUEST_HID_CLASS_DESCRIPTOR_HID = 0x21,
-  USB_REQUEST_HID_CLASS_DESCRIPTOR_REPORT = 0x22,
-  USB_REQUEST_HID_CLASS_DESCRIPTOR_PHYSICAL_DESCRIPTOR = 0x23
-} USB_REQUEST_HID_CLASS_DESCRIPTOR_TYPES_E ;
-
-typedef enum
-{
-  USB_REQUEST_HID_CLASS_REQUEST_GET_REPORT_REPORT_INPUT = 0x01,
-  USB_REQUEST_HID_CLASS_REQUEST_GET_REPORT_REPORT_OUTPUT = 0x02,
-  USB_REQUEST_HID_CLASS_REQUEST_GET_REPORT_REPORT_FEATURE = 0x03
-} USB_REQUEST_HID_CLASS_REQUEST_GET_REPORT_REPORT_TYPE_E ;
-
-typedef enum
-{
-  USB_REQUEST_HID_CLASS_REQUEST_GET_REPORT = 0x01,
-  USB_REQUEST_HID_CLASS_REQUEST_GET_IDLE = 0x02,
-  USB_REQUEST_HID_CLASS_REQUEST_GET_PROTOCOL = 0x03,
-  USB_REQUEST_HID_CLASS_REQUEST_SET_REPORT = 0x09,
-  USB_REQUEST_HID_CLASS_REQUEST_SET_IDLE = 0x0A,
-  USB_REQUEST_HID_CLASS_REQUEST_SET_PROTOCOL = 0x0B
-} USB_REQUEST_HID_CLASS_REQUEST_TYPES_E ;
-
 typedef struct
 {
     uint8_t  Recipient      :5;
@@ -168,6 +144,7 @@ typedef struct
     uint16_t                        wValue;
     uint16_t                        wIndex;
     uint16_t                        wLength;
+    uint8_t                         data[];
 } USB_SETUP_T;
 
 // =============================================================================
@@ -477,6 +454,14 @@ extern USB_SETUP_T* USB_GetEp0SetupData(void);
  */
 extern USB_ERROR_TYPE_E USB_ConfigureEp(const USB_EP_DESCRIPTOR_REAL_T* ep);
 /**
+ * @brief interface APIs. use this pair for enable/disable certain ep.
+ *
+ * @param[in] ep number with USB_EP_DIRECTION_IN/OUT. 
+ * @param[out] null 
+ */
+extern void USB_EnableEp(uint8_t ep, USB_EP_TYPE_T type);
+extern void USB_DisableEp(uint8_t ep);
+/**
  * @brief internal API.
  *
  * @param[in] convert asicc to utf8. 
@@ -498,6 +483,14 @@ extern uint32_t USB_IrqHandler (void *user_data);
  */
 extern void USB_SetEp0Stall(uint8_t ep);
 /**
+ * @brief interface API. set ep stall pid for current transfer
+ *
+ * @param[in] ep num with direction. 
+ * @param[in] U_TRUE: stall, U_FALSE: set back to normal 
+ * @param[out] null. 
+ */
+extern void USB_SetStallEp(uint8_t ep, uint8_t stall);
+/**
  * @brief interface API. use this reg to set resume signal on bus, 
  * according to spec, the duration should be value large than 1ms but less than 15ms
  *
@@ -505,6 +498,21 @@ extern void USB_SetEp0Stall(uint8_t ep);
  * @param[out] null. 
  */
 extern void USB_DeviceSetRemoteWakeupBit(uint8_t enable);
+/**
+ * @brief interface API. use this api to set global NAK(the core will stop writing data on all out ep except setup packet)
+ *
+ * @param[in] U_TRUE: enable global NAK on all out ep. U_FALSE: stop global NAK
+ * @param[out] null. 
+ */
+extern void USB_SetGlobalOutNak(uint8_t enable);
+/**
+ * @brief interface API. use this api to set NAK on a specific IN ep
+ *
+ * @param[in] U_TRUE: enable NAK on required IN ep. U_FALSE: stop NAK
+ * @param[in] ep: ep number with USB_EP_DIRECTION_IN/OUT. 
+ * @param[out] null. 
+ */
+extern void USB_SetInEndpointNak(uint8_t ep, uint8_t enable);
 #ifdef __cplusplus
   }
 #endif

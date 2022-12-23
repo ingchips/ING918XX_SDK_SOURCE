@@ -754,7 +754,7 @@ void USB_HandleEp0(void)
       event_status = g_UsbVar.EventHandler(&event);
       
       //setup requset which is not supported, by spec, device should return stall pid to host
-      if(USB_ERROR_DEFAULT == event_status)
+      if(USB_ERROR_REQUEST_NOT_SUPPORT == event_status)
       {
         USB_SetEp0Stall((setup->bmRequestType.Direction) ? USB_EP_DIRECTION_IN(0) : USB_EP_DIRECTION_OUT(0));
       }
@@ -1046,5 +1046,50 @@ void USB_Close(void)
   AHB_USB->UsbDIntMask = 0;
   g_UsbVar.EventHandler = 0;
   g_UsbVar.UserIntMask = 0;
+}
+
+void USB_SetGlobalOutNak(uint8_t enable)
+{
+  if(U_TRUE == enable)
+  {
+    AHB_USB->UsbDControl |=  (0x1 << 9);
+    while(!(AHB_USB->UsbDControl & (0x1 << 3)));
+  }
+  else
+  {
+    AHB_USB->UsbDControl |=  (0x1 << 10);
+    AHB_USB->UsbDControl &=  ~(0x1 << 9);
+  }
+}
+
+void USB_SetInEndpointNak(uint8_t ep, uint8_t enable)
+{
+  uint8_t epNum = USB_EP_NUM(ep);
+
+  if(USB_IS_EP_DIRECTION_IN(ep))
+  {
+    if(U_TRUE == enable)
+    {
+      if(0 == epNum)
+      {
+        AHB_USB->UsbDICtrl0 |= (0x1 << 27);
+      }
+      else
+      {
+        AHB_USB->UsbDIxConfig[epNum-1].DICtrlx |= (0x1 << 27);
+      }
+    }
+    else
+    {
+      if(0 == epNum)
+      {
+        AHB_USB->UsbDICtrl0 |= (0x1 << 26);
+      }
+      else
+      {
+        AHB_USB->UsbDIxConfig[epNum-1].DICtrlx |= (0x1 << 26);
+      }
+    }
+  }
 }
 
