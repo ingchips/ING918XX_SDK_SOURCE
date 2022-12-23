@@ -148,20 +148,6 @@ static float ADC_CalWithoutPga(uint16_t data)
     return ADC_adcCal.vref_gap * (2.f * (float)data / 16383.f - 0.5f);
 }
 
-void ADC_ClkCfg(SADC_adcClk clk)
-{
-    switch (clk) {
-    case SADC_CLK_1M:
-    case SADC_CLK_2M:
-    case SADC_CLK_4M:
-    case SADC_CLK_6M:
-        APB_SYSCTRL->CguCfg[3] |= 1 << 15;
-        APB_SYSCTRL->CguCfg[5] |= 1 << 12;
-        SYSCTRL_SetAdcClkDiv(clk, 1);
-        SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
-    }
-}
-
 void ADC_EnableCtrlSignal(void)
 {
     ADC_RegWr(SADC_CFG_0, 1, 9);
@@ -243,12 +229,17 @@ void ADC_ClrFifo(void)
     ADC_RegWr(SADC_STATUS, 1, 22);
 }
 
+uint8_t ADC_GetFifoEmpty(void)
+{
+    return ADC_RegRd(SADC_INT, 0, 1);
+}
+
 uint8_t ADC_GetBusyStatus(void)
 {
     return ADC_RegRd(SADC_STATUS, 23, 1);
 }
 
-void ADC_SetIputMode(SADC_adcIputMode mode)
+void ADC_SetInputMode(SADC_adcIputMode mode)
 {
     ADC_RegClr(SADC_CFG_0, 8, 1);
     if (mode)
@@ -320,8 +311,8 @@ void ADC_Start(uint8_t start)
 static void ADC_VrefRegister(float VP, float VN)
 {
     if (VP < VN) return;
-	ADC_adcCal.vref_P = VP;
-	ADC_adcCal.vref_N = VN;
+    ADC_adcCal.vref_P = VP;
+    ADC_adcCal.vref_N = VN;
     ADC_adcCal.vref_gap = VP - VN;
     if (ADC_GetPgaStatus())
         ADC_adcCal.cb = ADC_CalWithPga;
@@ -344,8 +335,8 @@ float ADC_GetVol(uint16_t data)
     if (!ADC_adcCal.cb || !ADC_adcCal.vref_gap)
         return 0;
     float vol = ADC_adcCal.cb(data);
-	if (vol > ADC_adcCal.vref_P) return ADC_adcCal.vref_P;
-	if (vol < ADC_adcCal.vref_N) return ADC_adcCal.vref_N;
+    if (vol > ADC_adcCal.vref_P) return ADC_adcCal.vref_P;
+    if (vol < ADC_adcCal.vref_N) return ADC_adcCal.vref_N;
     return vol;
 }
 
@@ -377,7 +368,7 @@ void ADC_Calibration(SADC_adcIputMode mode)
     ADC_EnableChannel(ADC_CH_0, 1);
     ADC_SetIntTrig(1);
     ADC_SetCalrpt(CALRPT_256);
-    ADC_SetIputMode(mode);
+    ADC_SetInputMode(mode);
     ADC_IntEnable(1);
     ADC_EnableCtrlSignal();
     ADC_Start(1);
@@ -411,7 +402,7 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
         ADC_DmaEnable(1);
         ADC_SetDmaTrig(dmaEnNum);
     }
-    ADC_SetIputMode(inputMode);
+    ADC_SetInputMode(inputMode);
     ADC_SetLoopDelay(loopDelay);
     ADC_EnableCtrlSignal();
 }

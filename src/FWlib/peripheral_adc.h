@@ -125,13 +125,6 @@ typedef enum {
 } SADC_adcPgaGain;
 
 typedef enum {
-    SADC_CLK_1M         = 0x18,
-    SADC_CLK_2M         = 0xc,
-    SADC_CLK_4M         = 0x6,
-    SADC_CLK_6M         = 0x4,
-} SADC_adcClk;
-
-typedef enum {
     SADC_CFG_0      = 0x0,
     SADC_CFG_1      = 0x4,
     SADC_CFG_2      = 0x8,
@@ -156,14 +149,6 @@ typedef struct
     float vref_gap;
     float(*cb)(uint16_t);
 } SADC_adcCal_t;
-
-/**
- * @brief Configurate ADC clock frequece
- *
- * @param[in] clk             ADC clock frequece, see 'SADC_adcClk'
- * @return                    null
- */
-void ADC_ClkCfg(SADC_adcClk clk);
 
 /**
  * @brief Enable ADC control signal
@@ -255,6 +240,14 @@ void ADC_SetDmaTrig(uint8_t num);
 void ADC_ClrFifo(void);
 
 /**
+ * @brief Get ADC-FIFO's empty status
+ *
+ * @param[in]                null
+ * @return FIFO's status     0:not empty,1:empty
+ */
+uint8_t ADC_GetFifoEmpty(void);
+
+/**
  * @brief Get ADC busy status
  *
  * @param[in]                null
@@ -268,7 +261,7 @@ uint8_t ADC_GetBusyStatus(void);
  * @param[in] mode           ADC input mode, see 'SADC_adcIputMode'
  * @return                   null
  */
-void ADC_SetIputMode(SADC_adcIputMode mode);
+void ADC_SetInputMode(SADC_adcIputMode mode);
 
 /**
  * @brief Set pga gain

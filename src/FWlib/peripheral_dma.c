@@ -93,7 +93,7 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
     case SYSCTRL_DMA_PDM:
         return &APB_PDM->Data;
     case SYSCTRL_DMA_ADC:
-        return 0;
+        return &APB_SADC->sadc_data;
 
     case SYSCTRL_DMA_UART0_TX:
         return &APB_UART0->DataRead;
