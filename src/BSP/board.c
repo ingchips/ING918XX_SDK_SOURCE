@@ -272,8 +272,10 @@ float get_temperature()
     // if( tt == MTS01B_E_COMM_FAIL)
     if( tt != 0)
     {
-        SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
-        SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+        // SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
+        // SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+        SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_I2C0);
+        SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_I2C0);
         i2c_init(I2C_PORT);
         i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
         read_cnt++;
