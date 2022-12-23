@@ -229,6 +229,11 @@ void ADC_ClrFifo(void)
     ADC_RegWr(SADC_STATUS, 1, 22);
 }
 
+uint8_t ADC_GetFifoEmpty(void)
+{
+    return ADC_RegRd(SADC_INT, 0, 1);
+}
+
 uint8_t ADC_GetBusyStatus(void)
 {
     return ADC_RegRd(SADC_STATUS, 23, 1);

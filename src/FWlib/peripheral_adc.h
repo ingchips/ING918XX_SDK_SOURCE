@@ -240,6 +240,14 @@ void ADC_SetDmaTrig(uint8_t num);
 void ADC_ClrFifo(void);
 
 /**
+ * @brief Get ADC-FIFO's empty status
+ *
+ * @param[in]                null
+ * @return FIFO's status     0:not empty,1:empty
+ */
+uint8_t ADC_GetFifoEmpty(void);
+
+/**
  * @brief Get ADC busy status
  *
  * @param[in]                null
