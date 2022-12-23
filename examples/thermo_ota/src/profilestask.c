@@ -307,18 +307,20 @@ uint32_t setup_profile(void *data, void *user_data)
     PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
     PINCTRL_SelI2cSclIn(I2C_PORT, 10);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_DisableAllInputs();
-    PINCTRL_SelI2cIn(I2C_PORT, 15, 16);
-    PINCTRL_SetPadMux(15, IO_SOURCE_I2C0_SCL_OUT);
-    PINCTRL_SetPadMux(16, IO_SOURCE_I2C0_SDA_OUT);
+//    PINCTRL_DisableAllInputs();
+//    PINCTRL_SelI2cIn(I2C_PORT, 15, 16);
+//    PINCTRL_SetPadMux(15, IO_SOURCE_I2C0_SCL_OUT);
+//    PINCTRL_SetPadMux(16, IO_SOURCE_I2C0_SDA_OUT);
+//  PINCTRL_Pull(IO_SOURCE_I2C0_SCL_OUT,PINCTRL_PULL_UP);
+//  PINCTRL_Pull(IO_SOURCE_I2C0_SDA_OUT,PINCTRL_PULL_UP);
 #else
     #error unknown or unsupported chip family
 #endif
 
-    i2c_init(I2C_PORT);
+//    i2c_init(I2C_PORT);
 
-    setup_env_sensor();
-    printf("temperature1 = %f  temperature2 = %f  temperature2 = %f",get_temperature(), get_temperature(), get_temperature());
+    //setup_env_sensor();
+    //printf("temperature1 = %f  temperature2 = %f  temperature2 = %f",get_temperature(), get_temperature(), get_temperature());
 #endif
 
     return 0;
