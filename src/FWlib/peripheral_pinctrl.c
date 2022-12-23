@@ -257,8 +257,9 @@ void PINCTRL_EnableAllAntSelPins(void)
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
-    uint32_t mask = ((1 << bit_width) - 1) << bit_offset;
-    *reg = (*reg & ~mask) | (v << bit_offset);
+    uint32_t mask1 = (1 << bit_width) - 1;
+    uint32_t mask = ~(mask1 << bit_offset);
+    *reg = (*reg & mask) | ((v & mask1) << bit_offset);
 }
 
 const uint8_t io_output_source_map[IO_PIN_NUMBER][19] =
@@ -356,7 +357,7 @@ static int PINCTRL_SelInput(uint8_t io_pin,
     int id = pin_id_for_input_source(source_id, io_pin);
     if (id < 0) return id;
     set_reg_bits(&APB_PINCTRL->IN_CTRL[reg_index], (uint32_t)id, bit_width, bit_offset);
-    PINCTRL_SetPadMux((uint8_t)id, (io_source_t)(source_id));
+    PINCTRL_SetPadMux((uint8_t)io_pin, (io_source_t)(source_id));
     return 0;
 }
 

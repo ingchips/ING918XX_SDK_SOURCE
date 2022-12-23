@@ -430,6 +430,13 @@ void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode)
     }
 }
 
+void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div)
+{
+    set_reg_bit(&APB_SYSCTRL->QdecCfg, mode, 15);
+    set_reg_bits(&APB_SYSCTRL->QdecCfg, div, 10, 1);
+    set_reg_bit(&APB_SYSCTRL->QdecCfg, 1, 11);
+}
+
 static SYSCTRL_SlowRCClkMode current_slow_rc_mode = SYSCTRL_SLOW_RC_24M;
 
 uint32_t SYSCTRL_GetSlowClk(void)
@@ -474,7 +481,13 @@ static int get_safe_divider(int reg_offset, int offset)
 
 static int get_safe_divider6(int reg_offset, int offset)
 {
-    int r = (*(APB_SYSCTRL->CguCfg + reg_offset) >> offset) & 0x2f;
+    int r = (*(APB_SYSCTRL->CguCfg + reg_offset) >> offset) & 0x3f;
+    return r == 0 ? 1 : r;
+}
+
+static int get_safe_divider10(int reg_offset, int offset)
+{
+    int r = (*(APB_SYSCTRL->CguCfg + reg_offset) >> offset) & 0x3ff;
     return r == 0 ? 1 : r;
 }
 
@@ -601,6 +614,11 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetSlowClk();
     case SYSCTRL_ITEM_APB_USB:
         return SYSCTRL_GetPLLClk() / get_safe_divider(0x20, 0);
+    case SYSCTRL_ITEM_APB_QDEC:
+        if (APB_SYSCTRL->QdecCfg & (1 << 15))
+            return SYSCTRL_GetHClk() / get_safe_divider10(0x54, 1);
+        else
+            return SYSCTRL_GetSlowClk() / SYSCTRL_GetSlowClk();
     default:
         // TODO
         return SYSCTRL_GetSlowClk();

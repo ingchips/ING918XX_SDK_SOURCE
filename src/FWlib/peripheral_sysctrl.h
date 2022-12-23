@@ -378,6 +378,19 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
  */
 void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 
+/**
+ * \brief Select clock of QDEC
+ *
+ * The actual clock is clock (selected by `mode`) divided by `div`.
+ *
+ * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
+ *
+ * \param mode          clock mode
+ * \param div           clock divider (10 bits)
+ *
+ */
+void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
+
 typedef enum
 {
     SYSCTRL_SLOW_RC_CLK = 0,        // RC clock (which is tunable)
