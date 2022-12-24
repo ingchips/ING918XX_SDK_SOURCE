@@ -430,6 +430,17 @@ void SYSCTRL_Select24MClk(SYSCTRL_24MClkMode mode)
     }
 }
 
+void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div, SYSCTRL_qdecIndexSel indexSel)
+{
+    set_reg_bit(APB_SYSCTRL->QdecCfg, indexSel, 19);
+    if (indexSel) {
+        set_reg_bit(APB_SYSCTRL->QdecCfg, 1, 12);
+        set_reg_bit(APB_SYSCTRL->QdecCfg, mode, 15);
+        set_reg_bits(APB_SYSCTRL->QdecCfg, div, 10, 1);
+        set_reg_bit(APB_SYSCTRL->QdecCfg, 1, 11);
+    }
+}
+
 void SYSCTRL_EnablePLL(uint8_t enable)
 {
     set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x1A8), enable, 20);

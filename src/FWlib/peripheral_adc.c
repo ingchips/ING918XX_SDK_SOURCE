@@ -122,20 +122,20 @@ static SADC_adcCal_t ADC_adcCal;
 
 static void ADC_RegClr(SADC_adcReg reg, uint8_t s, uint32_t b)
 {
-    REG_CLR(reg, b, s);
+    ADC_REG_CLR(reg, b, s);
 }
 static void ADC_RegWr(SADC_adcReg reg, uint32_t v, uint8_t s)
 {
-    REG_WR(reg, v, s);
+    ADC_REG_WR(reg, v, s);
 }
 static void ADC_RegWrBits(SADC_adcReg reg, uint32_t v, uint8_t s, uint8_t b)
 {
-    REG_CLR(reg, b, s);
-    REG_WR(reg, v, s);
+    ADC_REG_CLR(reg, b, s);
+    ADC_REG_WR(reg, v, s);
 }
 static uint32_t ADC_RegRd(SADC_adcReg reg, uint8_t s, uint8_t b)
 {
-    return REG_RD(reg, b, s);
+    return ADC_REG_RD(reg, b, s);
 }
 
 static float ADC_CalWithPga(uint16_t data)
@@ -286,11 +286,11 @@ uint32_t ADC_PopFifoData(void)
 }
 SADC_channelId ADC_GetDataChannel(uint32_t data)
 {
-    return (SADC_channelId)(RIGHT_SHIFT(data, 14) & MK_MASK(4));
+    return (SADC_channelId)(ADC_RIGHT_SHIFT(data, 14) & ADC_MK_MASK(4));
 }
 uint16_t ADC_GetData(uint32_t data)
 {
-    return (data & MK_MASK(14));
+    return (data & ADC_MK_MASK(14));
 }
 uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 {

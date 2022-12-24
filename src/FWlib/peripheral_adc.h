@@ -134,13 +134,13 @@ typedef enum {
     SADC_INT        = 0x34,
 } SADC_adcReg;
 
-#define LEFT_SHIFT(v, s)    ((v) << (s))
-#define RIGHT_SHIFT(v, s)   ((v) >> (s))
-#define MK_MASK(b)          ((LEFT_SHIFT(1, b)) - (1))
-#define ADC_REG_VAL(reg)    ((*((uint32_t *)((APB_SARADC_BASE) + (reg)))))
-#define REG_WR(reg, v, s)   ((ADC_REG_VAL(reg)) |= (LEFT_SHIFT(v, s)))
-#define REG_RD(reg, b, s)   ((RIGHT_SHIFT((ADC_REG_VAL(reg)), s)) & MK_MASK(b))
-#define REG_CLR(reg, b, s)  ((ADC_REG_VAL(reg)) &= (~(LEFT_SHIFT(MK_MASK(b), s))))
+#define ADC_LEFT_SHIFT(v, s)    ((v) << (s))
+#define ADC_RIGHT_SHIFT(v, s)   ((v) >> (s))
+#define ADC_MK_MASK(b)          ((ADC_LEFT_SHIFT(1, b)) - (1))
+#define ADC_REG_VAL(reg)        ((*((uint32_t *)((APB_SARADC_BASE) + (reg)))))
+#define ADC_REG_WR(reg, v, s)   ((ADC_REG_VAL(reg)) |= (ADC_LEFT_SHIFT(v, s)))
+#define ADC_REG_RD(reg, b, s)   ((ADC_RIGHT_SHIFT((ADC_REG_VAL(reg)), s)) & ADC_MK_MASK(b))
+#define ADC_REG_CLR(reg, b, s)  ((ADC_REG_VAL(reg)) &= (~(ADC_LEFT_SHIFT(ADC_MK_MASK(b), s))))
 
 typedef struct
 {
