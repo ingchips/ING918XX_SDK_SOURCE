@@ -105,12 +105,12 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-    
+
     setup_peripherals();
 
     uart_driver_init(COMM_PORT, NULL, rx_hci_byte);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_driver_isr, NULL);
-    
+
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0);

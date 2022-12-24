@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define BRPC_VERSION        0x1
 
 #define STATUS_OK           0
@@ -44,7 +46,6 @@ struct rpc_event_ready_frame
 
 struct rpc_event_hci_frame
 {
-
     uint8_t packet[0];
 };
 

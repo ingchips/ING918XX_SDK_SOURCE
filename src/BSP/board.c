@@ -367,7 +367,7 @@ void setup_buzzer()
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, 4, 0);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM0_B);
 #else
     #error unknown or unsupported chip family
 #endif

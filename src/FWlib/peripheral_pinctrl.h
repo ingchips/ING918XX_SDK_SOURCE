@@ -197,24 +197,26 @@ typedef enum
     IO_SOURCE_I2C0_SDA_OUT              = 25,
     IO_SOURCE_I2C1_SCL_OUT              = 26,
     IO_SOURCE_I2C1_SDA_OUT              = 27,
-    IO_SOURCE_PWM0_A                    = 28,
-    IO_SOURCE_PWM0_B                    = 29,
-    IO_SOURCE_PWM1_A                    = 30,
-    IO_SOURCE_PWM1_B                    = 31,
-    IO_SOURCE_PWM2_A                    = 32,
-    IO_SOURCE_PWM2_B                    = 33,
-    IO_SOURCE_PWM3_A                    = 34,
-    IO_SOURCE_PWM3_B                    = 35,
-    IO_SOURCE_PWM4_A                    = 36,
-    IO_SOURCE_PWM4_B                    = 37,
-    IO_SOURCE_PWM5_A                    = 38,
-    IO_SOURCE_PWM5_B                    = 39,
-    IO_SOURCE_PWM6_A                    = 40,
-    IO_SOURCE_PWM6_B                    = 41,
-    IO_SOURCE_PWM7_A                    = 42,
-    IO_SOURCE_PWM7_B                    = 43,
-    IO_SOURCE_PWM8_A                    = 44,
-    IO_SOURCE_PWM8_B                    = 45,
+    // below PWM outputs are from TIMERs
+    IO_SOURCE_TIMER0_PWM0_A                    = 28,
+    IO_SOURCE_TIMER0_PWM0_B                    = 29,
+    IO_SOURCE_TIMER0_PWM1_A                    = 30,
+    IO_SOURCE_TIMER0_PWM1_B                    = 31,
+    IO_SOURCE_TIMER1_PWM0_A                    = 32,
+    IO_SOURCE_TIMER1_PWM0_B                    = 33,
+    IO_SOURCE_TIMER1_PWM1_A                    = 34,
+    IO_SOURCE_TIMER1_PWM1_B                    = 35,
+    IO_SOURCE_TIMER2_PWM0_A                    = 36,
+    IO_SOURCE_TIMER2_PWM0_B                    = 37,
+    IO_SOURCE_TIMER2_PWM1_A                    = 38,
+    IO_SOURCE_TIMER2_PWM1_B                    = 39,
+    // below PWM outputs are from PWM
+    IO_SOURCE_PWM0_A                    = 40,
+    IO_SOURCE_PWM0_B                    = 41,
+    IO_SOURCE_PWM1_A                    = 42,
+    IO_SOURCE_PWM1_B                    = 43,
+    IO_SOURCE_PWM2_A                    = 44,
+    IO_SOURCE_PWM2_B                    = 45,
     IO_SOURCE_ANT_SW0                   = 46,
     IO_SOURCE_ANT_SW1                   = 47,
     IO_SOURCE_ANT_SW2                   = 48,
@@ -489,6 +491,15 @@ int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode);
  * @return                  0 if successful else non-0
  */
 int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
+
+/**
+ * @brief Set USB funtion of dp and dm
+ *
+ * @param dp_io_pin_index      fixed, should be GPIO_16.
+ * @param dm_io_pin_index      fixed, should be GPIO_17.
+ * @return                  0 if successful else non-0
+ */
+int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index);
 
 #endif
 

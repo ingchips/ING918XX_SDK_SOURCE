@@ -60,7 +60,7 @@ void I2S_Config(I2S_TypeDef *base, i2s_role_t role, i2s_mode_t mode,
  *   F_bclk  = F_clk / (2 * b_div)
  *   F_lrclk = F_bclk / (2 * lr_div)
  *
- *   F_bclk should be >= F_lrclk * 48, i.e. lr_div should be >= 48.
+ *   F_bclk should be >= F_lrclk * 48, i.e. lr_div should be >= 24.
  *
  * Note 2:
  *   (lr_div - data_width) should be >= 3.

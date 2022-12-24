@@ -182,8 +182,8 @@ enum
 
 typedef enum
 {
-    SYSCTRL_CLK_24M,                            // use 24MHz clock
-    SYSCTRL_CLK_32k = SYSCTRL_CLK_24M,          // use 32kHz clock
+    SYSCTRL_CLK_SLOW,                           // use slow clock
+    SYSCTRL_CLK_32k = SYSCTRL_CLK_SLOW,         // use 32kHz clock
     SYSCTRL_CLK_HCLK,                           // use HCLK (same as MCU)
     SYSCTRL_CLK_ADC_DIV = SYSCTRL_CLK_HCLK,     // use clock from ADC divider
 
@@ -192,8 +192,8 @@ typedef enum
                                                 // ..
                                                 // SYSCTRL_TMR_CLK_PLL_DIV_1 + 14: use (PLL clock div 15)
 
-    SYSCTRL_CLK_24M_DIV_1 = SYSCTRL_CLK_HCLK,   // use RF OSC clock div 1
-                                                // SYSCTRL_CLK_24M_DIV_1 + 1: use (RF OSC clock div 2)
+    SYSCTRL_CLK_SLOW_DIV_1 = SYSCTRL_CLK_HCLK,  // use RF OSC clock div 1
+                                                // SYSCTRL_CLK_SLOW_DIV_1 + 1: use (RF OSC clock div 2)
                                                 // ..
 } SYSCTRL_ClkMode;
 
@@ -201,10 +201,10 @@ typedef enum
  * \brief Select clock mode of TIMER
  *
  * All timers share the same clock divider, which means that if timer K is
- * set to use (SYSCTRL_CLK_24M_DIV_1 + X), all previously configures timers that
- * uses (SYSCTRL_CLK_24M_DIV_1 + ...) are overwritten by (SYSCTRL_CLK_24M_DIV_1 + X).
+ * set to use (SYSCTRL_CLK_SLOW_DIV_1 + X), all previously configures timers that
+ * uses (SYSCTRL_CLK_SLOW_DIV_1 + ...) are overwritten by (SYSCTRL_CLK_SLOW_DIV_1 + X).
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_24M_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N, where N = 0..14;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -215,7 +215,7 @@ void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of PWM
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_24M_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N, where N = 0..14;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -226,7 +226,7 @@ void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of KeyScan
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_24M_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N, where N = 0..14;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -237,7 +237,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of PDM
  *
- * `mode` should be `SYSCTRL_CLK_24M_DIV_1` + N, where N = 0..62;
+ * `mode` should be `SYSCTRL_CLK_SLOW_DIV_1` + N, where N = 0..62;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -250,15 +250,15 @@ void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode);
  * \param port          the port
  * \param mode          clock mode
  *
- * Note: For SPI0: mode should be `SYSCTRL_CLK_24M`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
- *       For SPI1: mode should be `SYSCTRL_CLK_24M`, or `SYSCTRL_CLK_HCLK`.
+ * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
  */
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
 
 /**
  * \brief Select UART clock mode
  * \param port          the port
- * \param mode          clock mode (SYSCTRL_CLK_24M, or SYSCTRL_CLK_HCLK)
+ * \param mode          clock mode (SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_HCLK)
  */
 void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
 
@@ -266,7 +266,7 @@ void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
  * \brief Select I2S clock mode
  * \param mode          clock mode
  *
- * Note: mode should be SYSCTRL_CLK_24M, or SYSCTRL_CLK_PLL_DIV_1 + N, where N = 0..14.
+ * Note: mode should be SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_PLL_DIV_1 + N, where N = 0..14.
  */
 void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode);
 
@@ -302,7 +302,7 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output);
  * \brief Select HClk clock mode
  * \param mode          clock mode
  *
- * Note: mode should be SYSCTRL_CLK_24M, or SYSCTRL_CLK_PLL_DIV_1 + N,
+ * Note: mode should be SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_PLL_DIV_1 + N,
  *       where N = 0..14.
  *
  * Note: While changing, both clocks (OSC & PLL) must be running.
@@ -352,7 +352,7 @@ uint32_t SYSCTRL_GetAdcClkDiv(void);
 /**
  * \brief Select Clk mode for a type of items
  * \param item          item of type A (IR/ADC/EFUSE)
- * \param mode          clock mode ({SYSCTRL_CLK_24M, SYSCTRL_CLK_ADC_DIV})
+ * \param mode          clock mode ({SYSCTRL_CLK_SLOW, SYSCTRL_CLK_ADC_DIV})
  */
 void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode);
 
@@ -369,7 +369,7 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of Flash
  *
- * `mode` should be `SYSCTRL_CLK_24M`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
  *
  * Default mode: `SYSCTRL_CLK_PLL_DIV_1` + 1.
  *
@@ -378,19 +378,45 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
  */
 void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 
+/**
+ * \brief Select clock of QDEC
+ *
+ * The actual clock is clock (selected by `mode`) divided by `div`.
+ *
+ * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
+ *
+ * \param mode          clock mode
+ * \param div           clock divider (10 bits)
+ *
+ */
+void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
+
 typedef enum
 {
-    SYSCTRL_24M_RC_CLK = 0,     // 24MHz RC clock (which is tunnable)
-    SYSCTRL_24M_RF_CLK = 1,     // 24MHz RF clock
-} SYSCTRL_24MClkMode;
+    SYSCTRL_SLOW_RC_CLK = 0,        // RC clock (which is tunable)
+    SYSCTRL_SLOW_CLK_24M_RF = 1,    // 24MHz RF OSC clock (default)
+} SYSCTRL_SlowClkMode;
+
+typedef enum
+{
+    SYSCTRL_SLOW_RC_24M = 0,
+    SYSCTRL_SLOW_RC_48M = 1,
+    SYSCTRL_SLOW_RC_64M = 1,
+} SYSCTRL_SlowRCClkMode;
 
 /**
- * \brief Select clock source of 24M clock
+ * \brief Select clock source of slow clock
  *
  * \param mode          clock mode
  *
  */
-void SYSCTRL_Select24MClk(SYSCTRL_24MClkMode mode);
+void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode);
+
+/**
+ * \brief Get current slow clock in Hz
+ * \return              clock in Hz
+ */
+uint32_t SYSCTRL_GetSlowClk(void);
 
 /**
  * \brief Enable/Disable PLL
@@ -404,12 +430,13 @@ void SYSCTRL_Select24MClk(SYSCTRL_24MClkMode mode);
 void SYSCTRL_EnablePLL(uint8_t enable);
 
 /**
- * \brief Enable/Disable 24 RC clock
+ * \brief Enable/Disable RC clock for slow clock
  *
  * \param enable        Enable(1)/Disable(0)
+ * \param mode          Clock frequency mode
  *
  */
-void SYSCTRL_Enable24MRC(uint8_t enable);
+void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode);
 
 typedef enum
 {
@@ -446,7 +473,7 @@ typedef enum
  * Note:
  *   1. This function should be used when using DMA on hardware peripherals.
  *   1. This configuration is recommended to be fixed and not to be modified dynamically.
- *   1. If too many items are configrued, errors will occur.
+ *   1. If too many items are configured, errors will occur.
  */
 int SYSCTRL_SelectUsedDmaItems(uint32_t items);
 
@@ -549,6 +576,13 @@ typedef enum {
  */
 void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div, SYSCTRL_qdecIndexSel indexSel);
 
+/**
+ * @brief Config USB PHY functionality
+ *
+ * @param[in] enable            Enable(1)/Disable(0) usb phy module
+ * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
+ */
+void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

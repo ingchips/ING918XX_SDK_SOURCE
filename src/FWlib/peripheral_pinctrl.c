@@ -257,8 +257,9 @@ void PINCTRL_EnableAllAntSelPins(void)
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
-    uint32_t mask = ((1 << bit_width) - 1) << bit_offset;
-    *reg = (*reg & ~mask) | (v << bit_offset);
+    uint32_t mask1 = (1 << bit_width) - 1;
+    uint32_t mask = ~(mask1 << bit_offset);
+    *reg = (*reg & mask) | ((v & mask1) << bit_offset);
 }
 
 const uint8_t io_output_source_map[IO_PIN_NUMBER][19] =
@@ -356,7 +357,7 @@ static int PINCTRL_SelInput(uint8_t io_pin,
     int id = pin_id_for_input_source(source_id, io_pin);
     if (id < 0) return id;
     set_reg_bits(&APB_PINCTRL->IN_CTRL[reg_index], (uint32_t)id, bit_width, bit_offset);
-    PINCTRL_SetPadMux((uint8_t)id, (io_source_t)(source_id));
+    PINCTRL_SetPadMux((uint8_t)io_pin, (io_source_t)(source_id));
     return 0;
 }
 
@@ -572,6 +573,19 @@ int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins)
     for (i = 0; i < count; i++)
         if(PINCTRL_SetPadMux(io_pins[i], (io_source_t)(IO_SOURCE_ANT_SW0 + i)))
             return -(i + 1);
+    return 0;
+}
+
+int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index)
+{
+    if ((dp_io_pin_index != 16) || (dm_io_pin_index != 17))
+        return -1;
+    set_reg_bits(&APB_PINCTRL->IN_CTRL[9], (uint32_t)1, 1, 3);
+    set_reg_bits(&APB_PINCTRL->IN_CTRL[9], (uint32_t)1, 1, 4);
+    set_reg_bits(&APB_PINCTRL->OUT_CTRL[4], (uint32_t)0, 7, 0);
+    set_reg_bits(&APB_PINCTRL->OUT_CTRL[4], (uint32_t)0, 7, 7);
+    set_reg_bits(&APB_PINCTRL->PE_CTRL[0], (uint32_t)0, 1, dp_io_pin_index);
+    set_reg_bits(&APB_PINCTRL->PE_CTRL[0], (uint32_t)0, 1, dm_io_pin_index);
     return 0;
 }
 

@@ -305,6 +305,12 @@ void GIO_EnableRetentionGroupB(uint8_t enable);
  */
 void GIO_EnableHighZGroupB(uint8_t enable);
 
+/**
+ * @brief Enable analog function of a certain GPIO, currently used for USB
+ *
+ */
+void GIO_EnableAnalog(const GIO_Index_t io_index);
+
 #endif
 
 #ifdef __cplusplus
