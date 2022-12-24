@@ -3,81 +3,137 @@
 #include "ingsoc.h"
 #include <stdio.h>
 #include <string.h>
-#include "bsp_usb.h"
 
 #include "platform_api.h"
 #include "ing_uecc.h"
 #include "peripheral_gpio.h"
 #include "iic.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define I2C_SCL         GIO_GPIO_10
 #define I2C_SDA         GIO_GPIO_11
 
+uint8_t master_write_flag = 0;
+
 #define DATA_CNT (2)
-uint8_t write_data[DATA_CNT] = {0xcc,0x44};
+uint8_t write_data[DATA_CNT] = {0xCC,0x44};
 uint8_t write_data_cnt = 0;
-uint8_t read_data[DATA_CNT] = {0,};
+uint8_t read_data[DATA_CNT + 1] = {0,};
 uint8_t read_data_cnt = 0;
 
 void setup_peripherals_i2c_module(void);
+
+void peripheral_i2c_write_data(void)
+{
+  master_write_flag = 1;
+  // 设置方向，Master读取
+  I2C_CtrlUpdateDirection(APB_I2C0,I2C_TRANSACTION_MASTER2SLAVE);
+  // 设置每次传输的大小
+  I2C_CtrlUpdateDataCnt(APB_I2C0, DATA_CNT);
+  // 触发传输
+  I2C_CommandWrite(APB_I2C0, I2C_COMMAND_ISSUE_DATA_TRANSACTION);
+  
+}
+
+void peripheral_i2c_read_data(void)
+{
+  master_write_flag = 0;
+  I2C_CtrlUpdateDirection(APB_I2C0,I2C_TRANSACTION_SLAVE2MASTER);
+  I2C_CtrlUpdateDataCnt(APB_I2C0, DATA_CNT+1);
+  I2C_CommandWrite(APB_I2C0, I2C_COMMAND_ISSUE_DATA_TRANSACTION);
+}
 
 static uint32_t peripherals_i2c_isr(void *user_data)
 {
   uint8_t i;
   uint32_t status = I2C_GetIntState(APB_I2C0);
+  
+  // 传输结束中断，代表DATA_CNT个字节接收或者发射完成
   if(status & (1 << I2C_STATUS_CMPL))
   {
-    platform_printf("cmp %d\n", I2C_CtrlGetDataCnt(APB_I2C0));
-    I2C_ClearIntState(APB_I2C0, (1 << I2C_STATUS_CMPL));
+    // master写DATA_CNT个字节成功
+    if(master_write_flag)
+    {
+      platform_printf("wr cmp %d\n", I2C_CtrlGetDataCnt(APB_I2C0));
+      I2C_ClearIntState(APB_I2C0, (1 << I2C_STATUS_CMPL));
+
+      peripheral_i2c_read_data();
+    }
+    else// master读DATA_CNT个字节成功
+    {
+      // 将剩余的fifo中的数据读出来
+      for(; read_data_cnt < DATA_CNT + 1; read_data_cnt++)
+      {
+        read_data[read_data_cnt] = I2C_DataRead(APB_I2C0);
+      }
+
+      I2C_ClearIntState(APB_I2C0, (1 << I2C_STATUS_CMPL));
+      
+      // debug trace
+      platform_printf("rd cmp %d ",read_data_cnt);
+      for(i=0;i<DATA_CNT + 1;i++){platform_printf(" 0x%x -", read_data[i]);};
+      printf("\n");
+      
+      // prepare for next
+      read_data_cnt = 0;
+    }
   }
   
+  // 有slave响应了master的地址
   if(status & (1 << I2C_STATUS_ADDRHIT))
   {
-
-    I2C_ClearIntState(APB_I2C0, (1 << I2C_STATUS_ADDRHIT));
-  }
-  
-  if(status & (1 << I2C_STATUS_FIFO_EMPTY))
-  {
-    // push data until fifo is full
-    for(; write_data_cnt < DATA_CNT; write_data_cnt++)
+    // 打开相应中断，主要是用来填写或者读取fifo
+    if(master_write_flag)
     {
-      if(I2C_FifoFull(APB_I2C0)){break;}
-      I2C_DataWrite(APB_I2C0,write_data[write_data_cnt]);
+      I2C_IntDisable(APB_I2C0,(1 << I2C_INT_FIFO_FULL));
+      I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1 << I2C_INT_FIFO_EMPTY));
     }
-    
-    // if its the last, disable empty int
-    if(write_data_cnt == DATA_CNT)
+    else
     {
       I2C_IntDisable(APB_I2C0,(1 << I2C_INT_FIFO_EMPTY));
+      I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1 << I2C_INT_FIFO_FULL));
     }
-    platform_printf("cnt %d, 0x%x %d \n", write_data_cnt, APB_I2C0->IntEn, I2C_CtrlGetDataCnt(APB_I2C0));
+    I2C_ClearIntState(APB_I2C0, (1 << I2C_STATUS_ADDRHIT));
+    platform_printf("addr hit\n");
   }
   
+  // 该中断在master_write_flag==1打开，代表fifo为空，需要填充待发送的数据
+  if(status & (1 << I2C_STATUS_FIFO_EMPTY))
+  {
+    if(master_write_flag)
+    {
+      // push data until fifo is full
+      for(; write_data_cnt < DATA_CNT; write_data_cnt++)
+      {
+        //platform_printf("ept: %d \n",write_data_cnt);
+        if(I2C_FifoFull(APB_I2C0)){break;}
+        I2C_DataWrite(APB_I2C0,write_data[write_data_cnt]);
+      }
+      
+      // if its the last, disable empty int
+      if(write_data_cnt == DATA_CNT)
+      {
+        I2C_IntDisable(APB_I2C0,(1 << I2C_INT_FIFO_EMPTY));
+      }
+      
+    }
+  }
+  
+  // 该中断在master_write_flag==0打开，FIFO 满之后，触发中断，此时需要将所有数据都读出来
   if(status & (1 << I2C_STATUS_FIFO_FULL))
   {
-
+    if(!master_write_flag)
+    {
+      for(; read_data_cnt < DATA_CNT + 1; read_data_cnt++)
+      {
+        if(I2C_FifoEmpty(APB_I2C0)){break;}
+        read_data[read_data_cnt] = I2C_DataRead(APB_I2C0);
+      }
+      platform_printf("rd full %d \n", read_data_cnt);
+    }
   }
   
-  platform_printf("status 0x%x ", status);
-  printf("\n");
   return 0;
-}
-
-void peripheral_i2c_send_data(void)
-{
-
-  write_data_cnt = 0;
-
-  I2C_CtrlUpdateDirection(APB_I2C0,I2C_TRANSACTION_MASTER2SLAVE);
-  I2C_CtrlUpdateDataCnt(APB_I2C0, DATA_CNT);
-  I2C_CommandWrite(APB_I2C0, I2C_COMMAND_ISSUE_DATA_TRANSACTION);
-  
-  #if 0
-  platform_printf("0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x \n", 
-  APB_I2C0->Cfg, APB_I2C0->IntEn, APB_I2C0->Status, APB_I2C0->Addr, APB_I2C0->Ctrl, APB_I2C0->Cmd, APB_I2C0->Setup);
-  #endif
-
 }
 
 void setup_peripherals_i2c_pin(void)
@@ -107,16 +163,17 @@ void setup_peripherals_i2c_pin(void)
   platform_printf("DR_CTRL 0x%x \n",*(uint32_t*)(APB_IOMUX_BASE+0x108));
 }
 
+#define ADDRESS (0x44)
 void setup_peripherals_i2c_module(void)
 {
 
-  I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,0x44);
+  I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,ADDRESS);
   
   
   I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
   
   I2C_Enable(APB_I2C0,1);
-  I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1 << I2C_INT_FIFO_EMPTY));
+  I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
 
 }
 
@@ -127,11 +184,12 @@ void setup_peripherals_i2c(void)
 
   platform_set_irq_callback(PLATFORM_CB_IRQ_I2C0, peripherals_i2c_isr, NULL);
   
-  platform_printf("setup done... I2C_BASE->Setup 0x%x 0x%x APB_PINCTRL->OUT_CTRL 0x%x 0x%x\n", 
-  APB_I2C0->Setup, APB_I2C0->Ctrl, APB_PINCTRL->OUT_CTRL[2], APB_PINCTRL->IN_CTRL[4]);
-  platform_printf("clk %d hclk %d pclk %d\n",SYSCTRL_GetPLLClk(),SYSCTRL_GetHClk(),SYSCTRL_GetPClk());
+  //platform_printf("setup done... I2C_BASE->Setup 0x%x 0x%x APB_PINCTRL->OUT_CTRL 0x%x 0x%x\n", 
+  //APB_I2C0->Setup, APB_I2C0->Ctrl, APB_PINCTRL->OUT_CTRL[2], APB_PINCTRL->IN_CTRL[4]);
+  //platform_printf("clk %d hclk %d pclk %d\n",SYSCTRL_GetPLLClk(),SYSCTRL_GetHClk(),SYSCTRL_GetPClk());
   
 }
+#endif
 
 uint32_t cb_putc(char *c, void *dummy)
 {
@@ -200,9 +258,9 @@ void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
     SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
-                                | (1 << SYSCTRL_ITEM_APB_SysCtrl)
+                                 | (1 << SYSCTRL_ITEM_APB_SysCtrl)
                               | (1 << SYSCTRL_ClkGate_APB_GPIO0)
-                                | (1 << SYSCTRL_ITEM_APB_GPIO1)
+                                 | (1 << SYSCTRL_ITEM_APB_GPIO1)
                               |(1 << SYSCTRL_ClkGate_APB_PinCtrl));
     //usb11_phy_config
     //SYSCTRL_USBPhyConfig(BSP_USB_PHY_ENABLE,BSP_USB_PHY_DP_PULL_UP);
@@ -248,9 +306,6 @@ int app_main()
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) 
-    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
-#endif
     setup_peripherals();
 
 #ifdef SECURE_FOTA
@@ -260,10 +315,11 @@ int app_main()
     // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    peripheral_i2c_write_data();
 
-    peripheral_i2c_send_data();
-    peripheral_i2c_send_data();
-    peripheral_i2c_send_data();
+
+#endif
     return 0;
 }
 
