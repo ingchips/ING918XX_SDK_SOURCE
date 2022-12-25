@@ -25,14 +25,6 @@
 #endif
 #endif
 
-#define LED_TLC59731    0
-#define LED_WS2881      1
-
-//default old driver:tlc59731
-#ifndef RGB_LED
-#define RGB_LED     LED_WS2881
-#endif
-
 // CPU clok: PLL_CLK_FREQ  48000000
 // 1 cycle = 21ns
 // 48 cycles per us
@@ -90,9 +82,9 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 
 #elif(BOARD_ID == BOARD_ING91881B_02_02_06)
 
-#define GPIO_MASK (1 << PIN_RGB_LED)
-#define PWM_CHANNEL     0
+#define PWM_LED_CHANNEL     0
 #define PWM_LED_FREQ    1000000
+
 static void ws2881_write(uint32_t value)
 {
 
@@ -104,13 +96,11 @@ static void ws2881_write(uint32_t value)
 
         if (bit)
         {
-            //GIO_SetBits(GPIO_MASK);
-            //GIO_ClearBits(GPIO_MASK);
-            PWM_SetupSingle(PWM_CHANNEL, PWM_LED_FREQ, 60);
+            PWM_SetupSingle(PWM_LED_CHANNEL, PWM_LED_FREQ, 60);
         } 
         else 
         {
-            PWM_SetupSingle(PWM_CHANNEL, PWM_LED_FREQ, 30);
+            PWM_SetupSingle(PWM_LED_CHANNEL, PWM_LED_FREQ, 30);
         }
     }
     delay(100 * 8);
@@ -141,7 +131,7 @@ void setup_rgb_led()
     PINCTRL_SetGeneralPadMode(PIN_PWM_LED, IO_MODE_PWM, 0, 0);    
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     SYSCTRL_SelectPWMClk(SYSCTRL_CLK_24M_DIV_1);
-    PINCTRL_SetPadMux(6, IO_SOURCE_PWM6_A);
+    PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_PWM6_A);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -248,7 +238,6 @@ void setup_env_sensor()
 #elif(BOARD_ID == BOARD_ING91881B_02_02_06)
 
     printf("sensor MTS01B init...");
-    printf("cmd = [%x %x]\n",cmd[0], cmd[1]);
     printf("OK\n");
 
 #endif
@@ -258,35 +247,34 @@ static int err_cnt = 0;
 static int read_cnt = 0;
 float get_temperature()
 {
-    int symbol_bit;
-    read_cnt++;
+
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
 
     if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
         return 0.0;
     return comp_data.temperature;
 #elif (BOARD_ID == BOARD_ING91881B_02_02_06)
-
-    int tt = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
-    printf("tt = %d / MTS01B_E_COMM_FAIL = %d\n", tt, MTS01B_E_COMM_FAIL);
-    // if( tt == MTS01B_E_COMM_FAIL)
-    if( tt != 0)
+    int symbolbit, sensor_status;
+    uint16_t temperature_2bytes; //16bit temperature data
+    
+    sensor_status = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
+    if(sensor_status != MTS01B_OK)
     {
-        // SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
-        // SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)      
+        SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
+        SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
         SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_I2C0);
         SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_I2C0);
+#endif
         i2c_init(I2C_PORT);
         i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
-        read_cnt++;
-        err_cnt++;
     }
-    uint16_t ttt = (reg_data[0] << 8) | reg_data[1];
-    printf("%d/%d  %X reg_data = [%x] [%x] [%x] \n",err_cnt,read_cnt,(~(reg_data[0] - 1))&0xff,reg_data[0],reg_data[1],reg_data[2]);
-        // return 0.0;
-    symbol_bit = reg_data[0] >> 7;
+    
+    temperature_2bytes = (reg_data[0] << 8) | reg_data[1];
+    symbolbit = reg_data[0] >> 7;
 
-    return (float)(4000 + (((symbol_bit == 0 ? (ttt & 0X7fff) : ((-1) * ((~(ttt - 1)) & 0xffff))) * 100) >> 8));
+    return (float)(4000 + (((symbolbit == 0 ? (temperature_2bytes & 0X7fff) : ((-1) * ((~(temperature_2bytes - 1)) & 0xffff))) * 100) >> 8));
 #endif
 }
 

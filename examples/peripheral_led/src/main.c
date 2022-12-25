@@ -45,12 +45,11 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-
     setup_rgb_led();
 }
 
 const static rgb_t rgb0 = { .r = 0, .g = 0, .b = 0 };
-const static rgb_t rgb1 = { .r = 0, .g = 50, .b = 0 };
+const static rgb_t rgb1 = { .r = 50, .g = 0, .b = 0 };
 
 void set_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -80,6 +79,5 @@ int app_main()
     
     setup_rgb_breathing();
     start_led_breathing();
-    //printf("setup_rgb_led\n");
     return 0;
 }
