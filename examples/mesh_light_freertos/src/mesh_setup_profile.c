@@ -27,7 +27,6 @@
 #include "btstack_port_mesh_init.h"
 #include "mesh.h"
 #include "mesh_proxy.h"
-#include "mesh_debug.h"
 #include "mesh_port_stack.h"
 #include "mesh_setup_profile.h"
 

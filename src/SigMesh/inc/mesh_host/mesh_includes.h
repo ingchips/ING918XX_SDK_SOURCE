@@ -23,7 +23,6 @@
 #include "mesh_gap.h"
 #include "mesh_linked_list.h"
 #include "mesh_port_run_loop.h"
-#include "mesh_debug.h"
 #include "platform_api.h"
 
 

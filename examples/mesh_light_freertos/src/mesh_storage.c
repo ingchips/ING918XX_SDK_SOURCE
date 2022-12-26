@@ -1,5 +1,4 @@
 #include "mesh_includes.h"
-#include "mesh_debug.h"
 #include "att_db.h"
 #include "platform_api.h"
 #include "FreeRTOS.h"
