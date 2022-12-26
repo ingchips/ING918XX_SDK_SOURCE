@@ -196,19 +196,12 @@ static __INLINE void GIO_ClearBits(const uint32_t index_mask){ *GPIO_DOC = index
  */
 static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = index_mask;}
 
-/**
- * @brief Send a pulse of duration 200~380ns to GPIO
- *
- * Note:The running time is 200ns less than using GIO_SetBits with GIO_ClearBits to generate a pulse.
- */
-static __INLINE void GIO_SetQuicPulse(const uint64_t index_mask){
-    uint32_t tmp_set = (*GPIO_DO)|index_mask;
-    uint32_t tmp_clear = (*GPIO_DO)&(~index_mask);
-    *GPIO_DO = tmp_set;
-    *GPIO_DO = tmp_clear;
-}
-
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+//APB_GPIO0_BASE     (APB_BASE + 0x15000)  GPIO0的基地址
+#define GPIO_DO     APB_GPIO0_BASE
+#define GPIO_DOS   ((__IO uint32_t *)(APB_GPIO0_BASE+0x30))
+#define GPIO_DOC   ((__IO uint32_t *)(APB_GPIO0_BASE+0x2C))
 
 typedef enum
 {
@@ -310,6 +303,18 @@ void GIO_EnableHighZGroupB(uint8_t enable);
  *
  */
 void GIO_EnableAnalog(const GIO_Index_t io_index);
+
+/**
+ * @brief Set some or all of 32 GPIO to 1
+ *
+ */
+void GIO_SetBits(const uint32_t index_mask);
+
+/**
+ * @brief Clear some or all of 32 GPIO to 0
+ *
+ */
+void GIO_ClearBits(const uint32_t index_mask);
 
 #endif
 

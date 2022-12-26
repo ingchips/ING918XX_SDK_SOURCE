@@ -18,15 +18,11 @@
 #ifdef BOARD_USE_RGB_LED
 
 #ifndef PIN_RGB_LED
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define PIN_RGB_LED   GIO_GPIO_6
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define PIN_RGB_LED   GIO_GPIO_0
 #endif
-
-#define LED_TLC59731    0
-#define LED_WS2881      1
-
-//default old driver:tlc59731
-#ifndef RGB_LED
-#define RGB_LED     LED_WS2881
 #endif
 
 // CPU clok: PLL_CLK_FREQ  48000000
@@ -86,21 +82,25 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 
 #elif(BOARD_ID == BOARD_ING91881B_02_02_06)
 
-#define GPIO_MASK (1 << PIN_RGB_LED)
+#define PWM_LED_CHANNEL     0
+#define PWM_LED_FREQ    1000000
 
 static void ws2881_write(uint32_t value)
 {
+
     int8_t i;
 
     for( i = 0; i < 24; i++ )
     {
         uint32_t bit = value & ( 0x00800000 >> i);
 
-        if (bit){
-            GIO_SetBits(GPIO_MASK);
-            GIO_ClearBits(GPIO_MASK);
-        } else {
-            GIO_SetQuicPulse(GPIO_MASK);
+        if (bit)
+        {
+            PWM_SetupSingle(PWM_LED_CHANNEL, PWM_LED_FREQ, 60);
+        } 
+        else 
+        {
+            PWM_SetupSingle(PWM_LED_CHANNEL, PWM_LED_FREQ, 30);
         }
     }
     delay(100 * 8);
@@ -117,13 +117,26 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 
 void setup_rgb_led()
 {
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO0));
     PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_GPIO);
 
     GIO_SetDirection(PIN_RGB_LED, GIO_DIR_OUTPUT);
     GIO_WriteValue(PIN_RGB_LED, 0);
 
-    set_rgb_led_color(50, 50, 50);
+#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                                    | (1 << SYSCTRL_ClkGate_APB_PWM)); 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    PINCTRL_SetGeneralPadMode(PIN_PWM_LED, IO_MODE_PWM, 0, 0);    
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_SelectPWMClk(SYSCTRL_CLK_24M_DIV_1);
+    PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_PWM6_A);
+#else
+    #error unknown or unsupported chip family
+#endif
+#endif
+   set_rgb_led_color(50, 50, 50);
 }
 
 #else
@@ -142,6 +155,18 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b) {}
 #endif
 
 #include "iic.h"
+
+void reboot_i2c_module()
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)      
+    SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
+    SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_I2C0);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_I2C0);
+#endif
+    i2c_init(I2C_PORT);
+}
 
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
 
@@ -214,7 +239,11 @@ void setup_env_sensor()
 
     printf("sensor BME280 init...");
     if (bme280_init(&bme280_data) != BME280_OK)
+    {
         printf("failed\n");
+        reboot_i2c_module();
+    }
+        
     else
     {
         printf("OK\n");
@@ -232,16 +261,36 @@ void setup_env_sensor()
 
 float get_temperature()
 {
+
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
 
     if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
         return 0.0;
     return comp_data.temperature;
 #elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+    int symbolbit, sensor_status;
+    int try_cnt = 5;
+    uint16_t temperature_2bytes; //16bit temperature data
+ 
+    while(try_cnt--)
+    {
+        sensor_status = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 3);
+        if(sensor_status != MTS01B_OK)
+            reboot_i2c_module();
+        else
+            break;
+    }
 
-    if(i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, sizeof(reg_data)) == MTS01B_E_COMM_FAIL)
-        return 0.0;
-    return (float)((40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1))) * 100);
+    if(try_cnt == 0 && sensor_status != MTS01B_OK)
+    {
+        printf("failed!\n");
+        return 
+    }
+
+    temperature_2bytes = (reg_data[0] << 8) | reg_data[1];
+    symbolbit = reg_data[0] >> 7;
+
+    return (float)(4000 + (((symbolbit == 0 ? (temperature_2bytes & 0X7fff) : ((-1) * ((~(temperature_2bytes - 1)) & 0xffff))) * 100) >> 8));
 #endif
 }
 
@@ -326,7 +375,11 @@ float get_accel_mg_factor(uint8_t sensor_range)
 void setup_accelerometer(void)
 {
     uint8_t sensor_range = 0;
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
     printf("bma2x2_power_on...");
+#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+    printf("stk8ba58_power_on...");
+#endif
     if (bma2x2_power_on()==0)
         printf("success!!\n");
     else
@@ -365,9 +418,13 @@ void get_acc_xyz(float *x, float *y, float *z)
 void setup_buzzer()
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
     PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, 4, 0);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM0_B);
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                                    | (1 << SYSCTRL_ClkGate_APB_PWM));
+    SYSCTRL_SelectPWMClk(SYSCTRL_CLK_32k);
+    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM6_A);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -375,7 +432,11 @@ void setup_buzzer()
 
 void set_buzzer_freq(uint16_t freq)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PWM_SetupSimple(BUZZ_PIN >> 1, freq, 50);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) 
+    PWM_SetupSimple(0, freq, 50);
+#endif
 }
 
 #else

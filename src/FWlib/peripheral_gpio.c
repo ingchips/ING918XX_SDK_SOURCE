@@ -258,5 +258,22 @@ void GIO_EnableAnalog(const GIO_Index_t io_index)
     GIO_MaskedWrite(&pDef->ChDir, index, 0);
     GIO_MaskedWrite(&pDef->IOIE, index, 0);
 }
+#include <stdio.h>
+
+void GIO_SetBits(const uint32_t index_mask)
+{
+    DEF_GIO_AND_PIN(GIO_GPIO_5);
+    pDef->DoutSet |= 1 << GIO_GPIO_5;
+
+}
+
+void GIO_ClearBits(const uint32_t index_mask)
+{
+    DEF_GIO_AND_PIN(GIO_GPIO_5);
+    int io_index = GIO_GPIO_5;
+    pDef->DoutClear |= 1 << io_index;
+    //GIO_WriteValue(GIO_GPIO_5, 0);
+
+}
 
 #endif

@@ -47,25 +47,66 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-void setup_peripherals(void)
-{
-    config_uart(OSC_CLK_FREQ, 115200);
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_I2C0)
-                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
+#define I2C_SCL         GIO_GPIO_10
+#define I2C_SDA         GIO_GPIO_11
 
-#ifndef SIMULATION
-    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_OUT);
-    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDA_OUT);
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)   
-    PINCTRL_SelI2cIn(I2C_PORT_0, 10, IO_NOT_A_PIN);
+void setup_peripherals_i2c_pin(void)
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) 
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
+                              | (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                                 | (1 << SYSCTRL_ClkGate_APB_GPIO1)
+                              |(1 << SYSCTRL_ClkGate_APB_PinCtrl));
+    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
+    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SelI2cSclIn(I2C_PORT, 10);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ClearClkGateMulti(    (1 << SYSCTRL_ITEM_APB_I2C0)
+                                  | (1 << SYSCTRL_ITEM_APB_SysCtrl)
+                                  | (1 << SYSCTRL_ITEM_APB_PinCtrl)
+                                  | (1 << SYSCTRL_ITEM_APB_GPIO1)
+                                  | (1 << SYSCTRL_ITEM_APB_GPIO0));
+    
+    PINCTRL_Pull(I2C_SCL,PINCTRL_PULL_UP);
+    PINCTRL_Pull(I2C_SDA,PINCTRL_PULL_UP);
+    PINCTRL_SelI2cIn(I2C_PORT_0,I2C_SCL,I2C_SDA);
+    PINCTRL_SetPadMux(I2C_SCL,IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(I2C_SDA,IO_SOURCE_I2C0_SDA_OUT);
 #else
     #error unknown or unsupported chip family
 #endif
-    printf("init");
-    i2c_init(I2C_PORT_0);
+}
+
+//init I2C module
+#define ADDRESS (0x44)
+void setup_peripherals_i2c_module(void)
+{
+  I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,ADDRESS);
+  I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
+  I2C_Enable(APB_I2C0,1);
+  I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
+}
+
+void setup_peripherals_i2c(void)
+{
+  setup_peripherals_i2c_pin();
+  setup_peripherals_i2c_module();
+  printf("init");
+  i2c_init(I2C_PORT_0);
+}
+
+
+
+void setup_peripherals(void)
+{
+    config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
+
+#ifndef SIMULATION
+    setup_peripherals_i2c();
 #endif
+
+    SYSCTRL_SelectTimerClk(TMR_PORT_0,SYSCTRL_CLK_32k);
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     // timer 0 can be used as watchdog, so we use timer 1.
@@ -78,6 +119,7 @@ void setup_peripherals(void)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     // setup channel 0 of timer 1: 50Hz
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
+    TMR_IntEnable(APB_TMR1,0,0xf);
     TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / ACC_SAMPLING_RATE);
     TMR_Enable(APB_TMR1, 0, 0xf);
 #else

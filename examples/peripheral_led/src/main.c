@@ -42,11 +42,9 @@ void config_uart(uint32_t freq, uint32_t baud)
 }
 
 #include "impl_led.c"
-
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    
     setup_rgb_led();
 }
 
@@ -81,6 +79,5 @@ int app_main()
     
     setup_rgb_breathing();
     start_led_breathing();
-
     return 0;
 }
