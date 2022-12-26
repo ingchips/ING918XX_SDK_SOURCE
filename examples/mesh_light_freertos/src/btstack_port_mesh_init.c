@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "mesh_config.h"
 #include "mesh/mesh.h"
 #include "mesh/mesh_node.h"
 #include "mesh/mesh_generic_model.h"
