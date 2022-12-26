@@ -52,6 +52,8 @@ extern "C"
 {
 #endif
 
+#define BLUETOOTH_COMPANY_ID_BLUETOOTH_SIG_INC                                           0x003F
+
 #define MESH_SEQUENCE_NUMBER_STORAGE_INTERVAL 1000
 
 typedef enum {

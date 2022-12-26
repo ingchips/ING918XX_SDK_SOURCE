@@ -30,7 +30,8 @@ const char * device_uuid_string = "001BDC0810210B0E0A0C000B0E0A0C00";
 #endif
 
 // general
-#define MESH_BLUEKITCHEN_MODEL_ID_TEST_SERVER   0x0000u
+//#define MESH_BLUEKITCHEN_MODEL_ID_TEST_SERVER   0x0000u
+#define BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD                                  0x06AC
 
 // static mesh_model_t                 mesh_vendor_model;
 
