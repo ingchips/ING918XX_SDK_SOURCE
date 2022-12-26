@@ -41,9 +41,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include "bluetooth_company_id.h"
 #include "mesh_linked_list.h"
-
 #include "mesh/mesh_lower_transport.h"
 #include "mesh/mesh_keys.h"
 #include "mesh/mesh_node.h"
