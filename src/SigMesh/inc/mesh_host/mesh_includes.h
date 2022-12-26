@@ -18,7 +18,6 @@
 #include "mesh_msg_timer_def.h" //We cannot change host files, so we add this file for mesh.
 #include "mesh_btstack_defines.h"
 #include "bluetooth_company_id.h"
-#include "mesh_bluetooth.h"
 #include "uECC.h"
 #include "mesh_btstack_util.h"
 #include "mesh_gap.h"
