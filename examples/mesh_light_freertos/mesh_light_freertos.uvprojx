@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>./FreeRTOS/include;./src;..\..\src\SigMesh\inc;..\..\src\SigMesh\inc\mesh;..\..\src\SigMesh\inc\mesh_3rd;..\..\src\SigMesh\inc\mesh_host;..\..\src\SigMesh\inc\mesh_port;../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <IncludePath>./FreeRTOS/include;./src;..\..\src\SigMesh\inc;..\..\src\SigMesh\inc\mesh;..\..\src\SigMesh\inc\mesh_host;../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

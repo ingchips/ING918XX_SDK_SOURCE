@@ -10,7 +10,6 @@
 #include "mesh/provisioning_device.h"
 #include "btstack_util.h"
 #include "btstack_tlv.h"
-#include "mesh_port_pb.h"
 #include "mesh_port_stack.h"
 #include "platform_api.h"
 #include "mesh_port.h"

@@ -23,7 +23,6 @@
 #include "queue.h"
 #include "semphr.h"
 #include "timers.h"
-#include "mesh_port_pb.h"
 #include "btstack_port_mesh_init.h"
 #include "mesh.h"
 #include "mesh_proxy.h"
