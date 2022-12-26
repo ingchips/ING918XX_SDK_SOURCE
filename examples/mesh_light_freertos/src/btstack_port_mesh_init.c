@@ -299,9 +299,6 @@ void bt_port_mesh_setup(void)
     // setup global tlv
     btstack_tlv_set_instance(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
 
-    // crypto
-    btstack_crypto_init();
-
     printf("bt_port_mesh_setup start\r\n");
     mesh_init();
 

@@ -45,7 +45,6 @@
 #include <stdint.h>
 
 #include "btstack_defines.h"
-#include "btstack_crypto.h"
 
 #include "mesh/mesh_keys.h"
 
