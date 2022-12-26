@@ -415,9 +415,13 @@ void get_acc_xyz(float *x, float *y, float *z)
 void setup_buzzer()
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
     PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, 4, 0);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM6_B);
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                                    | (1 << SYSCTRL_ClkGate_APB_PWM));
+    SYSCTRL_SelectPWMClk(SYSCTRL_CLK_32k);
+    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM6_A);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -425,7 +429,11 @@ void setup_buzzer()
 
 void set_buzzer_freq(uint16_t freq)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PWM_SetupSimple(BUZZ_PIN >> 1, freq, 50);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) 
+    PWM_SetupSimple(0, freq, 50);
+#endif
 }
 
 #else
