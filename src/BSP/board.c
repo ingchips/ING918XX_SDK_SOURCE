@@ -375,14 +375,17 @@ float get_accel_mg_factor(uint8_t sensor_range)
 void setup_accelerometer(void)
 {
     uint8_t sensor_range = 0;
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
     printf("bma2x2_power_on...");
+#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+    printf("stk8ba58_power_on...");
+#endif
     if (bma2x2_power_on()==0)
         printf("success!!\n");
     else
         printf("faild!!\n");
     bma2x2_get_range(&sensor_range);
     mg_factor = get_accel_mg_factor(sensor_range);
-    printf("%x %f ",sensor_range,mg_factor);
 }
 
 void get_acc_xyz(float *x, float *y, float *z)
