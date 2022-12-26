@@ -156,6 +156,18 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b) {}
 
 #include "iic.h"
 
+void reboot_i2c_module()
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)      
+    SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
+    SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_I2C0);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_I2C0);
+#endif
+    i2c_init(I2C_PORT);
+}
+
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
 
 #define BME280_ADDR     BME280_I2C_ADDR_PRIM
@@ -227,7 +239,11 @@ void setup_env_sensor()
 
     printf("sensor BME280 init...");
     if (bme280_init(&bme280_data) != BME280_OK)
+    {
         printf("failed\n");
+        reboot_i2c_module();
+    }
+        
     else
     {
         printf("OK\n");
@@ -243,8 +259,6 @@ void setup_env_sensor()
 #endif
 }
 
-static int err_cnt = 0;
-static int read_cnt = 0;
 float get_temperature()
 {
 
@@ -255,22 +269,24 @@ float get_temperature()
     return comp_data.temperature;
 #elif (BOARD_ID == BOARD_ING91881B_02_02_06)
     int symbolbit, sensor_status;
+    int try_cnt = 5;
     uint16_t temperature_2bytes; //16bit temperature data
-    
-    sensor_status = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
-    if(sensor_status != MTS01B_OK)
+ 
+    while(try_cnt--)
     {
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)      
-        SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
-        SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-        SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_I2C0);
-        SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_I2C0);
-#endif
-        i2c_init(I2C_PORT);
-        i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 4);
+        sensor_status = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 3);
+        if(sensor_status != MTS01B_OK)
+            reboot_i2c_module();
+        else
+            break;
     }
-    
+
+    if(try_cnt == 0 && sensor_status != MTS01B_OK)
+    {
+        printf("failed!\n");
+        return 
+    }
+
     temperature_2bytes = (reg_data[0] << 8) | reg_data[1];
     symbolbit = reg_data[0] >> 7;
 

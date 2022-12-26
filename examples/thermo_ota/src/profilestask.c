@@ -288,6 +288,53 @@ uint8_t *init_service()
     return att_db_util_get_address();
 }
 
+#define I2C_SCL         GIO_GPIO_10
+#define I2C_SDA         GIO_GPIO_11
+
+void setup_peripherals_i2c_pin(void)
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) 
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
+                              | (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                                 | (1 << SYSCTRL_ClkGate_APB_GPIO1)
+                              |(1 << SYSCTRL_ClkGate_APB_PinCtrl));
+    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
+    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SelI2cSclIn(I2C_PORT, 10);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ClearClkGateMulti(    (1 << SYSCTRL_ITEM_APB_I2C0)
+                                  | (1 << SYSCTRL_ITEM_APB_SysCtrl)
+                                  | (1 << SYSCTRL_ITEM_APB_PinCtrl)
+                                  | (1 << SYSCTRL_ITEM_APB_GPIO1)
+                                  | (1 << SYSCTRL_ITEM_APB_GPIO0));
+    
+    PINCTRL_Pull(I2C_SCL,PINCTRL_PULL_UP);
+    PINCTRL_Pull(I2C_SDA,PINCTRL_PULL_UP);
+    PINCTRL_SelI2cIn(I2C_PORT_0,I2C_SCL,I2C_SDA);
+    PINCTRL_SetPadMux(I2C_SCL,IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(I2C_SDA,IO_SOURCE_I2C0_SDA_OUT);
+#else
+    #error unknown or unsupported chip family
+#endif
+}
+
+//init I2C module
+#define ADDRESS (0x44)
+void setup_peripherals_i2c_module(void)
+{
+  I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,ADDRESS);
+  I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
+  I2C_Enable(APB_I2C0,1);
+  I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
+}
+
+void setup_peripherals_i2c(void)
+{
+  setup_peripherals_i2c_pin();
+  setup_peripherals_i2c_module();
+  i2c_init(I2C_PORT_0);
+}
+
 uint32_t setup_profile(void *data, void *user_data)
 {
     init_service();
@@ -302,25 +349,8 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(&user_packet_handler);
 
 #ifndef SIMULATION
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) 
-    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
-    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
-    PINCTRL_SelI2cSclIn(I2C_PORT, 10);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-//    PINCTRL_DisableAllInputs();
-//    PINCTRL_SelI2cIn(I2C_PORT, 15, 16);
-//    PINCTRL_SetPadMux(15, IO_SOURCE_I2C0_SCL_OUT);
-//    PINCTRL_SetPadMux(16, IO_SOURCE_I2C0_SDA_OUT);
-//  PINCTRL_Pull(IO_SOURCE_I2C0_SCL_OUT,PINCTRL_PULL_UP);
-//  PINCTRL_Pull(IO_SOURCE_I2C0_SDA_OUT,PINCTRL_PULL_UP);
-#else
-    #error unknown or unsupported chip family
-#endif
-
-//    i2c_init(I2C_PORT);
-
-    //setup_env_sensor();
-    //printf("temperature1 = %f  temperature2 = %f  temperature2 = %f",get_temperature(), get_temperature(), get_temperature());
+    setup_peripherals_i2c();
+    setup_env_sensor();
 #endif
 
     return 0;
