@@ -1,12 +1,6 @@
 
-/**
- *
- * BTstack definitions, events, and error codes 
- *
- */
-
-#ifndef MESH_BTSTACK_DEFINES_H
-#define MESH_BTSTACK_DEFINES_H
+#ifndef MESH_DEFINES_H
+#define MESH_DEFINES_H
 #include <stdint.h>
 
 #include "mesh_linked_list.h" 
@@ -25,53 +19,8 @@ typedef struct {
 
 
 
-
-
-
-
-// Mesh Provisioning PDU
-#define PROVISIONING_DATA_PACKET 0x11u
-
-// Mesh Proxy PDU
-#define MESH_PROXY_DATA_PACKET   0x11u
-
-// Mesh Network PDU
-#define MESH_NETWORK_PACKET      0x12u
-
-// Mesh Network PDU
-#define MESH_BEACON_PACKET       0x13u
-
-// // debug log messages
-// #define LOG_MESSAGE_PACKET      0xfcu
-
-
-
-
-
 // Meta Events, see below for sub events
-// #define HCI_EVENT_META_GAP                                       0xE7u
-// #define HCI_EVENT_HSP_META                                       0xE8u
-// #define HCI_EVENT_HFP_META                                       0xE9u
-// #define HCI_EVENT_ANCS_META                                      0xEAu
-// #define HCI_EVENT_AVDTP_META                                     0xEBu
-// #define HCI_EVENT_AVRCP_META                                     0xECu
-// #define HCI_EVENT_GOEP_META                                      0xEDu
-// #define HCI_EVENT_PBAP_META                                      0xEEu
-// #define HCI_EVENT_HID_META                                       0xEFu
-// #define HCI_EVENT_A2DP_META                                      0xF0u
-// #define HCI_EVENT_HIDS_META                                      0xF1u
-// #define HCI_EVENT_GATTSERVICE_META                               0xF2u
-// #define HCI_EVENT_BIP_META                                       0xF3u
-// #define HCI_EVENT_MAP_META                                       0xF4u
 #define HCI_EVENT_MESH_META                                      0xF5u
-
-// Potential other meta groups
-// #define HCI_EVENT_BNEP_META                                0xxx
-// #define HCI_EVENT_GAP_META                                 0xxx
-// #define HCI_EVENT_GATT_META                                0xxx
-// #define HCI_EVENT_PAN_META                                 0xxx
-// #define HCI_EVENT_SDP_META                                 0xxx
-// #define HCI_EVENT_SM_META                                  0xxx
 
 
 // MESH Meta Event Group
