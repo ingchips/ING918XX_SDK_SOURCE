@@ -33,7 +33,6 @@ typedef void (*mesh_func_timer_process)(void *context);
 
 typedef struct mesh_timer_source {
     mesh_linked_item_t item;
-    // timeout in system ticks (HAVE_EMBEDDED_TICK) or milliseconds (HAVE_EMBEDDED_TIME_MS)
     uint32_t timeout;
     uint32_t id;
     // will be called when timer fired
