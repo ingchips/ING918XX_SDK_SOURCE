@@ -18,7 +18,7 @@
 #include "mesh_app_timer_def.h"
 #include "bluetooth_company_id.h"
 #include "mesh_btstack_defines.h"
-#include "mesh_btstack_event.h"
+#include "mesh_event.h"
 #include "uECC.h"
 #include "mesh_gap.h"
 #include "mesh_linked_list.h"
