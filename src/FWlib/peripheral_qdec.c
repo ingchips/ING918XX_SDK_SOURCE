@@ -1,6 +1,15 @@
 #include "peripheral_qdec.h"
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define QDEC_CH_GAIN                 0x40
+#define QDEC_LEFT_SHIFT(v, s)        ((v) << (s))
+#define QDEC_RIGHT_SHIFT(v, s)       ((v) >> (s))
+#define QDEC_MK_MASK(b)              ((QDEC_LEFT_SHIFT(1, b)) - (1))
+#define QDEC_REG_VAL(ch, reg)        ((*((uint32_t *)(((APB_QDEC_BASE) + (reg)) + ((ch) * (QDEC_CH_GAIN))))))
+#define QDEC_REG_WR(ch, reg, v, s)   ((QDEC_REG_VAL(ch, reg)) |= (QDEC_LEFT_SHIFT(v, s)))
+#define QDEC_REG_RD(ch, reg, b, s)   ((QDEC_RIGHT_SHIFT((QDEC_REG_VAL(ch, reg)), s)) & QDEC_MK_MASK(b))
+#define QDEC_REG_CLR(ch, reg, b, s)  ((QDEC_REG_VAL(ch, reg)) &= (~(QDEC_LEFT_SHIFT(QDEC_MK_MASK(b), s))))
+
 static void QDEC_RegClr(QDEC_channelId ch, QDEC_qdecReg reg, uint8_t s, uint32_t b)
 {
     QDEC_REG_CLR(ch, reg, b, s);
@@ -19,14 +28,12 @@ static uint32_t QDEC_RegRd(QDEC_channelId ch, QDEC_qdecReg reg, uint8_t s, uint8
     return QDEC_REG_RD(ch, reg, b, s);
 }
 
-void QDEC_EnableQdecDiv(QDEC_indexCfg div, uint8_t enable)
+void QDEC_EnableQdecDiv(QDEC_indexCfg div)
 {
-    APB_SYSCTRL->QdecCfg &= ~(1 << 20);
-    if (enable) {
-        APB_SYSCTRL->QdecCfg &= ~(QDEC_MK_MASK(3) << 16);
-        APB_SYSCTRL->QdecCfg |= div << 16;
-        APB_SYSCTRL->QdecCfg |= enable << 20;
-    }
+    APB_SYSCTRL->QdecCfg |= 1 << 19;
+    APB_SYSCTRL->QdecCfg &= ~(QDEC_MK_MASK(3) << 16);
+    APB_SYSCTRL->QdecCfg |= div << 16;
+    APB_SYSCTRL->QdecCfg |= 1 << 20;
 }
 
 void QDEC_TcCfg(QDEC_channelId ch, uint16_t tc_ra, uint16_t tc_rb, uint16_t tc_rc)

@@ -124,6 +124,7 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_QDEC      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 9);
+        set_reg_bit(&APB_SYSCTRL->QdecCfg, v, 12);
         break;
     case SYSCTRL_ITEM_APB_KeyScan   :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 10);
@@ -253,6 +254,7 @@ static void SYSCTRL_ResetBlockCtrl(SYSCTRL_ResetItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_QDEC      :
         set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 19);
+        set_reg_bit(&APB_SYSCTRL->QdecCfg, v, 14);
         break;
     case SYSCTRL_ITEM_APB_KeyScan   :
         set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 20);
@@ -430,15 +432,11 @@ void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode)
     }
 }
 
-void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div, SYSCTRL_qdecIndexSel indexSel)
+void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div)
 {
-    set_reg_bit(APB_SYSCTRL->QdecCfg, indexSel, 19);
-    if (indexSel) {
-        set_reg_bit(APB_SYSCTRL->QdecCfg, 1, 12);
-        set_reg_bit(APB_SYSCTRL->QdecCfg, mode, 15);
-        set_reg_bits(APB_SYSCTRL->QdecCfg, div, 10, 1);
-        set_reg_bit(APB_SYSCTRL->QdecCfg, 1, 11);
-    }
+    set_reg_bit(&APB_SYSCTRL->QdecCfg, mode, 15);
+    set_reg_bits(&APB_SYSCTRL->QdecCfg, div, 10, 1);
+    set_reg_bit(&APB_SYSCTRL->QdecCfg, 1, 11);
 }
 
 static SYSCTRL_SlowRCClkMode current_slow_rc_mode = SYSCTRL_SLOW_RC_24M;

@@ -118,6 +118,14 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define ADC_LEFT_SHIFT(v, s)    ((v) << (s))
+#define ADC_RIGHT_SHIFT(v, s)   ((v) >> (s))
+#define ADC_MK_MASK(b)          ((ADC_LEFT_SHIFT(1, b)) - (1))
+#define ADC_REG_VAL(reg)        ((*((uint32_t *)((APB_SARADC_BASE) + (reg)))))
+#define ADC_REG_WR(reg, v, s)   ((ADC_REG_VAL(reg)) |= (ADC_LEFT_SHIFT(v, s)))
+#define ADC_REG_RD(reg, b, s)   ((ADC_RIGHT_SHIFT((ADC_REG_VAL(reg)), s)) & ADC_MK_MASK(b))
+#define ADC_REG_CLR(reg, b, s)  ((ADC_REG_VAL(reg)) &= (~(ADC_LEFT_SHIFT(ADC_MK_MASK(b), s))))
+
 static SADC_adcCal_t ADC_adcCal;
 
 static void ADC_RegClr(SADC_adcReg reg, uint8_t s, uint32_t b)

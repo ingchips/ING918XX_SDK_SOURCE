@@ -37,23 +37,13 @@ typedef enum {
     QDEC_CH_2,
 } QDEC_channelId;
 
-#define QDEC_CH_GAIN                 0x40
-#define QDEC_LEFT_SHIFT(v, s)        ((v) << (s))
-#define QDEC_RIGHT_SHIFT(v, s)       ((v) >> (s))
-#define QDEC_MK_MASK(b)              ((QDEC_LEFT_SHIFT(1, b)) - (1))
-#define QDEC_REG_VAL(ch, reg)        ((*((uint32_t *)(((APB_QDEC_BASE) + (reg)) + ((ch) * (QDEC_CH_GAIN))))))
-#define QDEC_REG_WR(ch, reg, v, s)   ((QDEC_REG_VAL(ch, reg)) |= (QDEC_LEFT_SHIFT(v, s)))
-#define QDEC_REG_RD(ch, reg, b, s)   ((QDEC_RIGHT_SHIFT((QDEC_REG_VAL(ch, reg)), s)) & QDEC_MK_MASK(b))
-#define QDEC_REG_CLR(ch, reg, b, s)  ((QDEC_REG_VAL(ch, reg)) &= (~(QDEC_LEFT_SHIFT(QDEC_MK_MASK(b), s))))
-
 /**
  * @brief Set QDEC index div and enable QDEC index register
  *
  * @param[in] div            QDEC index div, see 'QDEC_indexCfg'
- * @param[in] enable         enable/disable
  * @return                   null
  */
-void QDEC_EnableQdecDiv(QDEC_indexCfg div, uint8_t enable);
+void QDEC_EnableQdecDiv(QDEC_indexCfg div);
 
 /**
  * @brief configurate timer counter for A, B and C

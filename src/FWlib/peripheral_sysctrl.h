@@ -562,19 +562,13 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
  */
 void SYSCTRL_WaitForLDO(void);
 
-typedef enum {
-    SYSCTRL_QDEC_INDEX_IO       = 0x0,
-    SYSCTRL_QDEC_INDEX_REG,
-} SYSCTRL_qdecIndexSel;
-
 /**
  * \brief Select qdec clock
  * \param mode          clock mode
  * \param div           denom of QDEC divider(1-1023)
- * \param indexSel      qdec index sel, see 'SYSCTRL_qdecIndexSel'
  * \return              null
  */
-void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div, SYSCTRL_qdecIndexSel indexSel);
+void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div);
 
 /**
  * @brief Config USB PHY functionality
