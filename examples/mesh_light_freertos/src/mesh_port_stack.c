@@ -9,7 +9,6 @@
 #include "sig_uuid.h"
 #include "mesh_port_stack.h"
 #include "adv_bearer.h"
-#include "mesh_btstack_defines.h"
 #include "mesh_memory.h"
 #include "mesh.h"
 #include "mesh_proxy.h"
