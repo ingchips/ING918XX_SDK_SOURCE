@@ -7,6 +7,7 @@
 #include "mesh_profile.h"
 #include "rgb_led.h"
 #include "app_config.h"
+#include "port_gen_os_driver.h"
 
 #ifdef ENABLE_BUTTON_TEST
 #include "BUTTON_TEST.h"
@@ -117,7 +118,6 @@ void setup_peripherals(void)
 }
 
 trace_rtt_t trace_ctx = {0};
-extern const gen_os_driver_t *os_impl_get_driver(void);
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
