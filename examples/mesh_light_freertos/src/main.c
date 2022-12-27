@@ -6,9 +6,11 @@
 #include "btstack_event.h"
 #include "mesh_profile.h"
 #include "rgb_led.h"
-#include "BUTTON_TEST.h"
 #include "app_config.h"
 
+#ifdef ENABLE_BUTTON_TEST
+#include "BUTTON_TEST.h"
+#endif
 
 //-----------------------------------------------------
 // uart config
@@ -105,8 +107,10 @@ void setup_peripherals(void)
     
     setup_rgb_led();
 
+#ifdef ENABLE_BUTTON_TEST
     button_test_init();
-
+#endif
+    
 #ifdef ENABLE_RF_TX_RX_TEST
     IngRfTest_init();
 #endif

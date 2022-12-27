@@ -382,7 +382,7 @@ static void user_msg_handler(btstack_user_msg_t * usrmsg)
     void *MsgData = usrmsg->data;
     // printf("ble_msg_process: cmd=%x, p=(%p)\n", cmd_id, MsgData);
     
-#if 1 //FOR TEST
+#ifdef ENABLE_BUTTON_TEST
     #include "BUTTON_TEST.h"
     button_msg_handler(usrmsg);
 #endif

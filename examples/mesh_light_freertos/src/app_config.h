@@ -1,6 +1,9 @@
 #ifndef __APP_CONFIG_H
 #define __APP_CONFIG_H
 
+// BUTTON TEST
+#define ENABLE_BUTTON_TEST
+
 // RF test
 // #define ENABLE_RF_TX_RX_TEST
 
