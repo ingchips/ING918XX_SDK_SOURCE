@@ -17,7 +17,9 @@ typedef enum {
     QDEC_CH_WRITE_B     = 0x18,
     QDEC_CH_WRITE_C     = 0x1c,
     QDEC_CH_INT_EN      = 0x24,
+    QDEC_BCR            = 0xc0,
     QDEC_BMR            = 0xc4,
+    QDEC_STATUS_SEL     = 0xd4,
 } QDEC_qdecReg;
 
 typedef enum {
@@ -31,12 +33,6 @@ typedef enum {
     QDEC_DIV_65536      = 0x7,
 } QDEC_indexCfg;
 
-typedef enum {
-    QDEC_CH_0           = 0x0,
-    QDEC_CH_1,
-    QDEC_CH_2,
-} QDEC_channelId;
-
 /**
  * @brief Set QDEC index div and enable QDEC index register
  *
@@ -46,47 +42,43 @@ typedef enum {
 void QDEC_EnableQdecDiv(QDEC_indexCfg div);
 
 /**
- * @brief configurate timer counter for A, B and C
- *
- * @param[in] ch             QDEC channel id, see 'QDEC_channelId'
- * @param[in] tc_ra          timer counter for A(0-0xffff)
- * @param[in] tc_rb          timer counter for B(0-0xffff)
- * @param[in] tc_rc          timer counter for C(0-0xffff)
- * @return                   null
- */
-void QDEC_TcCfg(QDEC_channelId ch, uint16_t tc_ra, uint16_t tc_rb, uint16_t tc_rc);
-
-/**
  * @brief QDEC stantard configuration interface
  *
- * @param[in] ch             QDEC channel id, see 'QDEC_channelId'
- * @param[in] tc_ra          timer counter for A(0-0xffff)
- * @param[in] tc_rb          timer counter for B(0-0xffff)
- * @param[in] tc_rc          timer counter for C(0-0xffff)
  * @param[in] fliter         QDEC signal filter value(0-63)
  * @param[in] miss           max value of QDEC miss signal(0-15)
  * @return                   null
  */
-void QDEC_QdecCfg(QDEC_channelId ch, uint16_t tc_ra, uint16_t tc_rb, uint16_t tc_rc, 
-    uint8_t fliter, uint8_t miss);
+void QDEC_QdecCfg(uint8_t fliter, uint8_t miss);
 
 /**
  * @brief Enable/disable QDEC channel
  *
- * @param[in] ch             QDEC channel id, see 'QDEC_channelId'
  * @param[in] enable         enable/disable
  * @return                   null
  */
-void QDEC_ChannelEnable(QDEC_channelId ch, uint8_t enable);
+void QDEC_ChannelEnable(uint8_t enable);
 
 /**
- * @brief Read QDEC data
+ * @brief Get QDEC data
  *
- * @param[in] ch             QDEC channel id, see 'QDEC_channelId'
  * @return                   QDEC data
  */
-uint16_t QDEC_ReadData(QDEC_channelId ch);
+uint16_t QDEC_GetData(void);
 
+/**
+ * @brief Get the direction of rotation
+ *
+ * @return                   0:clockwith, 1:anticlockwise
+ */
+uint8_t QDEC_GetDirection(void);
+
+/**
+ * @brief Reset QDEC
+ *
+ * @param[in]                null
+ * @return                   null
+ */
+void QDEC_Reset(void);
 
 #endif
 
