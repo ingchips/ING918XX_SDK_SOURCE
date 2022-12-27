@@ -303,13 +303,13 @@ void GIO_EnableAnalog(const GIO_Index_t io_index);
  * @brief Set some or all of 32 GPIO to 1
  *
  */
-void GIO_SetBits(const uint32_t index_mask);
+void GIO_SetBits(const uint64_t index_mask);
 
 /**
  * @brief Clear some or all of 32 GPIO to 0
  *
  */
-void GIO_ClearBits(const uint32_t index_mask);
+void GIO_ClearBits(const uint64_t index_mask);
 
 #endif
 
