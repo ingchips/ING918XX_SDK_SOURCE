@@ -15,9 +15,7 @@
 #include "bt_types.h"
 #include "btstack_defines.h"
 #include "platform_api.h"
-
 #include "app_config.h"
-#include "mesh_app_timer_def.h"
 #include "mesh_defines.h"
 #include "mesh_event.h"
 #include "mesh_linked_list.h"

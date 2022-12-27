@@ -34,7 +34,6 @@ typedef void (*mesh_func_timer_process)(void *context);
 typedef struct mesh_timer_source {
     mesh_linked_item_t item;
     uint32_t timeout;
-    uint32_t id;
     // will be called when timer fired
     mesh_func_timer_process process;
     void * context;
@@ -43,7 +42,7 @@ typedef struct mesh_timer_source {
 
 /***********************************************************************/
 
-void mesh_run_loop_set_timer(mesh_timer_source_t *a, uint32_t timerid, uint32_t timeout_in_ms);
+void mesh_run_loop_set_timer(mesh_timer_source_t *ts, uint32_t timeout_in_ms);
 void mesh_run_loop_add_timer(mesh_timer_source_t *ts);
 int mesh_run_loop_remove_timer(mesh_timer_source_t *ts);
 void mesh_run_loop_set_timer_handler(mesh_timer_source_t *ts, mesh_func_timer_process process);

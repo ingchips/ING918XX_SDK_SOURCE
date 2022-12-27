@@ -184,7 +184,7 @@ static void mesh_conn_param_update_timer_timeout_handler(mesh_timer_source_t * t
 void mesh_conn_param_update_timer_start(uint32_t time_ms){
     // set timer
     mesh_run_loop_set_timer_handler(&mesh_conn_param_update_timer, (mesh_func_timer_process)mesh_conn_param_update_timer_timeout_handler);
-    mesh_run_loop_set_timer(&mesh_conn_param_update_timer, MESH_CONN_PARAM_UPDATE_TIMER_ID, time_ms);
+    mesh_run_loop_set_timer(&mesh_conn_param_update_timer, time_ms);
     mesh_run_loop_add_timer(&mesh_conn_param_update_timer);
     printf("[V] mesh conn param update timer start: %d ms\n", time_ms);
     return;

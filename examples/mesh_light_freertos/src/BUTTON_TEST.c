@@ -103,7 +103,7 @@ static void mesh_ble_params_reset_delay_timer_timeout_handler(mesh_timer_source_
 static void mesh_ble_params_reset_delay_timer_start(uint32_t timeout_in_ms){
     // set timer
     mesh_run_loop_set_timer_handler(&mesh_ble_params_reset_delay_timer, (mesh_func_timer_process)mesh_ble_params_reset_delay_timer_timeout_handler);
-    mesh_run_loop_set_timer(&mesh_ble_params_reset_delay_timer, MESH_BLE_PARAMS_RESET_DELAY_TIMER_ID, timeout_in_ms);
+    mesh_run_loop_set_timer(&mesh_ble_params_reset_delay_timer, timeout_in_ms);
     mesh_run_loop_add_timer(&mesh_ble_params_reset_delay_timer);
     printf("[V] mesh ble params reset delay timer start: %d ms\n", timeout_in_ms);
 }
