@@ -318,21 +318,17 @@ void setup_peripherals_i2c_pin(void)
 #endif
 }
 
-//init I2C module
-#define ADDRESS (0x44)
-void setup_peripherals_i2c_module(void)
-{
-  I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,ADDRESS);
-  I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
-  I2C_Enable(APB_I2C0,1);
-  I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
-}
-
 void setup_peripherals_i2c(void)
 {
-  setup_peripherals_i2c_pin();
-  setup_peripherals_i2c_module();
-  i2c_init(I2C_PORT_0);
+    setup_peripherals_i2c_pin();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    //init I2C module 
+    I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,get_thermo_addr());
+    I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
+    I2C_Enable(APB_I2C0,1);
+    I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
+#endif
+    i2c_init(I2C_PORT_0);
 }
 
 uint32_t setup_profile(void *data, void *user_data)

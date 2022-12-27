@@ -9,6 +9,7 @@
 #include "step_calc.h"
 #include "iic.h"
 #include "bma2x2.h"
+#include "board.h"
 #include <stdio.h>
 
 #define PRINT_PORT    APB_UART0
@@ -77,22 +78,18 @@ void setup_peripherals_i2c_pin(void)
 #endif
 }
 
-//init I2C module
-#define ADDRESS (0x44)
-void setup_peripherals_i2c_module(void)
-{
-  I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,ADDRESS);
-  I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
-  I2C_Enable(APB_I2C0,1);
-  I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
-}
-
 void setup_peripherals_i2c(void)
 {
-  setup_peripherals_i2c_pin();
-  setup_peripherals_i2c_module();
-  printf("init");
-  i2c_init(I2C_PORT_0);
+    setup_peripherals_i2c_pin();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    //init I2C module
+    I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,get_acc_addr());
+    I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
+    I2C_Enable(APB_I2C0,1);
+    I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
+#endif
+    printf("init");
+    i2c_init(I2C_PORT_0);
 }
 
 
@@ -118,6 +115,7 @@ void setup_peripherals(void)
 	TMR_Enable(APB_TMR1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     // setup channel 0 of timer 1: 50Hz
+    SYSCTRL_SelectTimerClk(TMR_PORT_0,SYSCTRL_CLK_32k);
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
     TMR_IntEnable(APB_TMR1,0,0xf);
     TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / ACC_SAMPLING_RATE);

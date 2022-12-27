@@ -276,4 +276,16 @@ void GIO_ClearBits(const uint32_t index_mask)
 
 }
 
+void GIO_SetBits(const uint64_t index_mask)
+{
+    APB_GPIO0->DoutSet |= index_mask & 0x1fffff;
+    APB_GPIO1->DoutSet |= index_mask >> 21;
+}
+
+void GIO_ClearBits(const uint64_t index_mask)
+{
+    APB_GPIO0->DoutClear |= index_mask & 0x1fffff;
+    APB_GPIO1->DoutClear |= index_mask >> 21;
+}
+
 #endif
