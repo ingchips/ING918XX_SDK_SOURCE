@@ -198,11 +198,6 @@ static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = inde
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
-//APB_GPIO0_BASE     (APB_BASE + 0x15000)  GPIO0的基地址
-#define GPIO_DO     APB_GPIO0_BASE
-#define GPIO_DOS   ((__IO uint32_t *)(APB_GPIO0_BASE+0x30))
-#define GPIO_DOC   ((__IO uint32_t *)(APB_GPIO0_BASE+0x2C))
-
 typedef enum
 {
     GIO_DB_CLK_32K,
