@@ -12,7 +12,6 @@
 #include "btstack_tlv.h"
 #include "mesh_port_stack.h"
 #include "platform_api.h"
-#include "mesh_port.h"
 #include "btstack_tlv_flash_bank.h"
 #include "mesh_health_server.h"
 #include "mesh_generic_level_server.h"

@@ -7,8 +7,6 @@
 #include "bt_types.h"
 #include <stdint.h>
 
-#include "mesh_port.h"
-
 /**
  * Callback types for run loop data sources
  */
@@ -37,7 +35,7 @@ typedef struct mesh_timer_source {
     // will be called when timer fired
     mesh_func_timer_process process;
     void * context;
-	os_timer_handle pTimer;
+	void * pTimer;
 } mesh_timer_source_t;
 
 /***********************************************************************/
