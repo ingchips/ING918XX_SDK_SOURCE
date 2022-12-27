@@ -418,6 +418,16 @@
               <FileType>1</FileType>
               <FilePath>.\src\BUTTON_TEST.c</FilePath>
             </File>
+            <File>
+              <FileName>RF_TEST.C</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\RF_TEST.C</FilePath>
+            </File>
+            <File>
+              <FileName>app_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\app_config.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

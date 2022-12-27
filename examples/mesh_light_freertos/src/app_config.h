@@ -1,5 +1,5 @@
-#ifndef MESH_APP_CONFIG_H
-#define MESH_APP_CONFIG_H
+#ifndef __APP_CONFIG_H
+#define __APP_CONFIG_H
 
 
 // Mesh Config
@@ -7,4 +7,4 @@
 #define ENABLE_MESH_GATT_BEARER
 
 
-#endif // MESH_APP_CONFIG_H
+#endif // __APP_CONFIG_H
