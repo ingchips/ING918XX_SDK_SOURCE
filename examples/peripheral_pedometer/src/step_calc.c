@@ -252,8 +252,6 @@ void accelarator_sample(void)
 #ifndef SIMULATION
     float x,y,z;
     get_acc_xyz(&x, &y, &z);
-    printf("x=%f y=%f z=%f",x,y,z);
-
     sample_xyz.x = INT16_T(x);
     sample_xyz.y = INT16_T(y);
     sample_xyz.z = INT16_T(z);

@@ -96,11 +96,11 @@ static void ws2881_write(uint32_t value)
 
         if (bit)
         {
-            PWM_SetupSingle(PWM_LED_CHANNEL, PWM_LED_FREQ, 60);
+            PWM_SetupSingle(PWM_LED_CHANNEL, 600);
         } 
         else 
         {
-            PWM_SetupSingle(PWM_LED_CHANNEL, PWM_LED_FREQ, 30);
+            PWM_SetupSingle(PWM_LED_CHANNEL, 300);
         }
     }
     delay(100 * 8);
@@ -284,7 +284,7 @@ float get_temperature()
     if(try_cnt == 0 && sensor_status != MTS01B_OK)
     {
         printf("failed!\n");
-        return 
+        return 0.0; 
     }
 
     temperature_2bytes = (reg_data[0] << 8) | reg_data[1];
@@ -318,6 +318,15 @@ float get_pressure()
 #endif
 }
 
+uint16_t get_thermo_addr()
+{
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
+    return 0x76;
+#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
+    return 0x44;
+#endif
+}
+
 #else
 
 void setup_env_sensor() {}
@@ -337,6 +346,10 @@ float get_pressure()
     return 0.0;
 }
 
+uint16_t get_thermo_addr()
+{
+    return 0;
+}
 #endif
 
 //-------------------------------------------------accelerator driver sort-------------------------------------------------
@@ -396,6 +409,10 @@ void get_acc_xyz(float *x, float *y, float *z)
     *z = sample_xyz.z * mg_factor * 0.001;
 }
 
+uint16_t get_acc_addr()
+{
+    return 0x18;
+}
 #else
 
 void setup_accelerometer(void)
@@ -407,6 +424,11 @@ void get_acc_xyz(float *x, float *y, float *z)
     *x = rand() & 0xf;
     *y = rand() & 0xf;
     *z = rand() & 0xf;
+}
+
+uint16_t get_acc_addr()
+{
+    return 0;
 }
 #endif
 

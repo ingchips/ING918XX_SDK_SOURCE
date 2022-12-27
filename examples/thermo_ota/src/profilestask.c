@@ -38,8 +38,7 @@ static void read_temperature(void)
     if ((temp = get_temperature()) < 0)
         return;
 #ifdef PRINT_ALL
-    platform_printf("T: %f * 0.01 Deg\n", temp);
-    //latform_printf("T: %04d * 0.01 Deg\n", temp);
+    platform_printf("T: %04d * 0.01 Deg\n", temp);
     platform_printf("H: %04d / 1024 %%\n", get_humidity());
     platform_printf("P: %08d Pascal \n", get_pressure());
 #endif
@@ -165,7 +164,7 @@ uint8_t *init_service(void);
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
-    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x31};    // TODO: random address generation
+    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3f};    // TODO: random address generation
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -318,21 +317,17 @@ void setup_peripherals_i2c_pin(void)
 #endif
 }
 
-//init I2C module
-#define ADDRESS (0x44)
-void setup_peripherals_i2c_module(void)
-{
-  I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,ADDRESS);
-  I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
-  I2C_Enable(APB_I2C0,1);
-  I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
-}
-
 void setup_peripherals_i2c(void)
 {
-  setup_peripherals_i2c_pin();
-  setup_peripherals_i2c_module();
-  i2c_init(I2C_PORT_0);
+    setup_peripherals_i2c_pin();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    //init I2C module 
+    I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,get_thermo_addr());
+    I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
+    I2C_Enable(APB_I2C0,1);
+    I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
+#endif
+    i2c_init(I2C_PORT_0);
 }
 
 uint32_t setup_profile(void *data, void *user_data)
