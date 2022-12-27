@@ -389,16 +389,6 @@
               <FilePath>.\src\main.c</FilePath>
             </File>
             <File>
-              <FileName>profile.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\profile.c</FilePath>
-            </File>
-            <File>
-              <FileName>mesh_setup_profile.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\mesh_setup_profile.c</FilePath>
-            </File>
-            <File>
               <FileName>btstack_port_mesh_init.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\btstack_port_mesh_init.c</FilePath>
@@ -417,6 +407,16 @@
               <FileName>rgb_led.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\rgb_led.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>BUTTON_TEST.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\BUTTON_TEST.c</FilePath>
             </File>
           </Files>
         </Group>

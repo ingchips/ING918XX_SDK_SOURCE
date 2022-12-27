@@ -2,11 +2,11 @@
 #include "platform_api.h"
 #include "peripheral_pwm.h"
 #include <stdio.h>
-#include "profile.h"
 #include "trace.h"
 #include "btstack_event.h"
-#include "mesh_setup_profile.h"
+#include "mesh_profile.h"
 #include "rgb_led.h"
+#include "BUTTON_TEST.h"
 
 // #define ENABLE_RF_TX_RX //used to enable rf tx and rx.
 
@@ -33,10 +33,7 @@
 
 #endif
 
-#define KB_KEY_1            GIO_GPIO_1 //key 1
-#define KB_KEY_2            GIO_GPIO_5 //key 2
-#define KB_KEY_3            GIO_GPIO_7 //key 3
-#define KB_KEY_4            GIO_GPIO_4 //key 4
+
 //-----------------------------------------------------
 
 
@@ -151,126 +148,6 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 
 
-#define KEY_MASK        ((1 << KB_KEY_1) | (1 << KB_KEY_2) | (1 << KB_KEY_3) | (1 << KB_KEY_4))
-
-void setup_key_gpio(void)
-{    
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0) |
-                                (1 << SYSCTRL_ClkGate_APB_GPIO1) |
-                                (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-
-    // setup GPIOs for keys
-    PINCTRL_SetPadMux(KB_KEY_1, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_2, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_3, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(KB_KEY_4, IO_SOURCE_GPIO);
-    GIO_SetDirection(KB_KEY_1, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_2, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_3, GIO_DIR_INPUT);
-    GIO_SetDirection(KB_KEY_4, GIO_DIR_INPUT);
-    GIO_ConfigIntSource(KB_KEY_1, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_2, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_3, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-    GIO_ConfigIntSource(KB_KEY_4, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE,
-                        GIO_INT_EDGE);
-}
-
-#define KEY_1_PRESSED   1
-#define KEY_2_PRESSED   2
-#define KEY_3_PRESSED   4
-#define KEY_4_PRESSED   8
-
-static uint8_t key_pressed[4] = {1,2,4,8};
-static uint8_t key_old[4] = {0,0,0,0};
-
-
-void key_proc_in_host_task(uint8_t num){
-    switch(num){
-        case 1: // key1 : change connection interval.
-            {
-                printf("key1 : change connection interval. \n");
-                extern void app_update_conn_params_req(void);
-                app_update_conn_params_req();
-            }
-            break;
-        case 2: // key2 : clear all mesh info in flash.
-            {
-                printf("key2 : clear all mesh info in flash. \n");
-                extern void mesh_ble_params_reset_delay_timer_start(uint32_t timeout_in_ms);
-                mesh_ble_params_reset_delay_timer_start(100);
-            }
-            break;
-        case 3: // key3 : change scan params.
-            {
-                printf("key3 : change scan params. \n");
-                extern void mesh_scan_param_update(void);
-                mesh_scan_param_update();
-            }
-            break;
-        case 4: // key4 : send non-conn data.
-            {
-                printf("key4 : send non-conn data. \n");
-                extern void mesh_send_non_conn_data(void);
-                mesh_send_non_conn_data();
-            }
-            break;
-    }
-}
-
-static void key_process_in_uart_int(uint8_t num){
-    switch(num){
-        case 1: // key1 pressed event.
-        case 2: // key2 pressed event.
-        case 3:
-        case 4:
-            btstack_push_user_msg(USER_MSG_ID_KEY_EVENT, NULL, (uint16_t)num);
-            break;
-    }
-}
-
-void kb_state_changed(uint16_t key_state)
-{
-    uint8_t i=0;
-    // platform_printf("key state changed:%x\n", key_state);
-    for(i=0; i<4; i++){
-        if(key_state & key_pressed[i]){
-            if(!key_old[i]){
-                key_old[i] = 1;
-                // platform_printf("key %d pressed.\n", (i+1));
-                key_process_in_uart_int(i+1);
-            }
-        } else {
-            if(key_old[i]){
-                key_old[i] = 0;
-                // platform_printf("key %d released.\n", (i+1));
-            }
-        }
-    }
-}
-
-uint32_t gpio_isr(void *user_data)
-{
-    uint32_t current = ~GIO_ReadAll();
-    uint16_t v = 0;
-    // report which keys are pressed
-    if (current & (1 << KB_KEY_1))
-        v |= 1;
-    if (current & (1 << KB_KEY_2))
-        v |= 2;
-    if (current & (1 << KB_KEY_3))
-        v |= 4;
-    if (current & (1 << KB_KEY_4))
-        v |= 8;
-    kb_state_changed(v);
-
-    GIO_ClearAllIntStatus();
-    return 0;
-}
-
-
 void setup_peripherals(void)
 {
     uart_gpio_init();
@@ -278,7 +155,7 @@ void setup_peripherals(void)
     
     setup_rgb_led();
 
-    setup_key_gpio();
+    button_test_init();
 
 #ifdef ENABLE_RF_TX_RX
     rf_tx_rx_gpio_init();
@@ -293,8 +170,7 @@ int app_main()
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
-
-    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
+    
     setup_peripherals();
 
     // setup putc handle

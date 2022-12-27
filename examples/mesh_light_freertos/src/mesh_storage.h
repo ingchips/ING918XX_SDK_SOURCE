@@ -35,7 +35,7 @@ void mesh_storage_device_uuid_set(uint8_t *uuid, uint16_t len);
 
 //init
 int mesh_storage_init(void);
-
+void mesh_storage_clear_and_reinit(void);
 
 
 #endif

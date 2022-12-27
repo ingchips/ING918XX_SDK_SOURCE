@@ -75,7 +75,7 @@ int mesh_att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_hand
  * @brief Btstack init ok callback.
  * @note This func run at host task.
  */
-#include "mesh_setup_profile.h"
+#include "mesh_profile.h"
 void mesh_stack_ready(void)
 {
     printf("%s\n", __func__);

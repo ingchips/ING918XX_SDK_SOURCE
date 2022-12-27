@@ -228,54 +228,6 @@ static int my_kv_read_from_flash(void *db, const int max_size){
     return 0;
 }
 
-// static uint8_t wrData[] = "\x11\x22\x33\x44\x55\x66\x77\x88\x55\x22\x33\x44\x55\x66\x77\x99";
-// static uint8_t tmpData[20];
-// static int tmpLen;
-// int flash_test(void){
-
-
-//     // read 16
-//     memcpy((uint8_t *)tmpData, ((uint8_t *) HAL_FLASH_BANK_0_ADDR), 16);
-//     printf("read[0x%x]: ", HAL_FLASH_BANK_0_ADDR);
-//     printf_hexdump(tmpData, 16);
-
-//     // read 8
-//     memcpy((uint8_t *)tmpData, ((uint8_t *) HAL_FLASH_BANK_0_ADDR)+8, 8);
-//     printf("read[0x%x]: ", HAL_FLASH_BANK_0_ADDR+8);
-//     printf_hexdump(tmpData, 8);
-
-//     // erase
-//     erase_flash_page(HAL_FLASH_BANK_0_ADDR);
-
-//     // read 16
-//     memcpy((uint8_t *)tmpData, ((uint8_t *) HAL_FLASH_BANK_0_ADDR), 16);
-//     printf("read[0x%x]: ", HAL_FLASH_BANK_0_ADDR);
-//     printf_hexdump(tmpData, 16);
-
-//     // read 8
-//     memcpy((uint8_t *)tmpData, ((uint8_t *) HAL_FLASH_BANK_0_ADDR)+8, 8);
-//     printf("read[0x%x]: ", HAL_FLASH_BANK_0_ADDR+8);
-//     printf_hexdump(tmpData, 8);
-
-//     // write
-//     int ret = write_flash(HAL_FLASH_BANK_0_ADDR+8, (uint8_t *)wrData, 8);
-//     printf("===Write 8\n");
-
-//     // read 16
-//     memcpy((uint8_t *)tmpData, ((uint8_t *) HAL_FLASH_BANK_0_ADDR), 16);
-//     printf("read[0x%x]: ", HAL_FLASH_BANK_0_ADDR);
-//     printf_hexdump(tmpData, 16);
-
-//     // read 8
-//     memcpy((uint8_t *)tmpData, ((uint8_t *) HAL_FLASH_BANK_0_ADDR)+8, 8);
-//     printf("read[0x%x]: ", HAL_FLASH_BANK_0_ADDR+8);
-//     printf_hexdump(tmpData, 8);
-
-
-
-//     return 0;
-// }
-
 // init.
 int mesh_storage_init(void){
     // return flash_test();
@@ -296,43 +248,29 @@ int mesh_storage_init(void){
     return 0;
 }
 
+
 void mesh_storage_clear_and_reinit(void){
     // clear all information in flash.
     my_kv_erase_flash(); 
     mesh_storage_init();
 }
 
-// ble params reset delay timer.
-static mesh_timer_source_t       mesh_ble_params_reset_delay_timer;
 
-extern void ble_port_generate_name_and_load_name(void);
-extern void ble_port_generate_uuid_and_load_uuid(void);
-extern void ble_port_generate_addr_and_load_addr(void);
-static void mesh_ble_params_reload_init(void){
-    //name reload.
-    ble_port_generate_name_and_load_name();
-    //addr reload.
-    ble_port_generate_addr_and_load_addr();
-    //uuid reload.
-    ble_port_generate_uuid_and_load_uuid();
-}
 
-extern void mesh_node_reset(void);
-static void mesh_ble_params_reset_delay_timer_timeout_handler(mesh_timer_source_t * ts){
-    UNUSED(ts);
-    printf("[V] timeout , ble params reset now !!!!\n");
-    mesh_node_reset();
-    mesh_storage_clear_and_reinit();
-    mesh_ble_params_reload_init();
-}
 
-void mesh_ble_params_reset_delay_timer_start(uint32_t timeout_in_ms){
-    // set timer
-    mesh_run_loop_set_timer_handler(&mesh_ble_params_reset_delay_timer, (mesh_func_timer_process)mesh_ble_params_reset_delay_timer_timeout_handler);
-    mesh_run_loop_set_timer(&mesh_ble_params_reset_delay_timer, MESH_BLE_PARAMS_RESET_DELAY_TIMER_ID, timeout_in_ms);
-    mesh_run_loop_add_timer(&mesh_ble_params_reset_delay_timer);
-    printf("[V] mesh ble params reset delay timer start: %d ms\n", timeout_in_ms);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

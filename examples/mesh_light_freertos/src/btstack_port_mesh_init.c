@@ -17,7 +17,6 @@
 #include "mesh_health_server.h"
 #include "mesh_generic_level_server.h"
 #include "mesh_configuration_client.h"
-#include "mesh_setup_profile.h"
 #include "gap.h"
 #include "mesh_storage.h"
 

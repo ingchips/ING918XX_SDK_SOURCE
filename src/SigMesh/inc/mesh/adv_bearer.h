@@ -51,10 +51,6 @@
 extern "C" {
 #endif
 
-// mesh adv handle
-#define MESH_PROXY_ADV_HANDLE        0x00
-#define MESH_PB_ADV_HANDLE           0x01
-
 typedef struct {
 	void * next;
 	uint8_t adv_length;

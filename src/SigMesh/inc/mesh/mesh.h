@@ -115,7 +115,6 @@ void mesh_access_appkey_finalize(mesh_transport_key_t * transport_key);
 
 // lizhk
 bool ble_mesh_is_provisioned(void);
-void ble_mesh_provisioned_status_set(int sta);
 
 #if defined __cplusplus
 }
