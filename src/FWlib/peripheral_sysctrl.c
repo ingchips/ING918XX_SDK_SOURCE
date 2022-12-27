@@ -618,9 +618,9 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
         return SYSCTRL_GetPLLClk() / get_safe_divider(0x20, 0);
     case SYSCTRL_ITEM_APB_QDEC:
         if (APB_SYSCTRL->QdecCfg & (1 << 15))
-            return SYSCTRL_GetHClk() / get_safe_divider10(0x54, 1);
+            return SYSCTRL_GetHClk() / get_safe_divider10(21, 1);
         else
-            return SYSCTRL_GetSlowClk() / SYSCTRL_GetSlowClk();
+            return SYSCTRL_GetSlowClk() / get_safe_divider10(21, 1);
     default:
         // TODO
         return SYSCTRL_GetSlowClk();
