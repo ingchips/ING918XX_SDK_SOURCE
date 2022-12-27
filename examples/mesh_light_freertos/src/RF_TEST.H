@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+void IngRfTest_btstack_ready(void);
+void IngRfTest_init(void);
 
 
 #endif

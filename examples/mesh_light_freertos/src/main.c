@@ -7,33 +7,23 @@
 #include "mesh_profile.h"
 #include "rgb_led.h"
 #include "BUTTON_TEST.h"
+#include "app_config.h"
 
-// #define ENABLE_RF_TX_RX //used to enable rf tx and rx.
 
-#ifdef ENABLE_RF_TX_RX
-#define PRINT_UART_BAUD     921600
-#else
-#define PRINT_UART_BAUD     115200
-#endif
+//-----------------------------------------------------
+// uart config
 #define PRINT_UART          APB_UART0
 
-// GPIO SELECT ----------------------------------------
-#ifdef ENABLE_RF_TX_RX
-
-#define RF_IO_TX_IND        GIO_GPIO_2 //RF tx
-#define RF_IO_RX_IND        GIO_GPIO_6 //RF rx
-
+#ifdef ENABLE_RF_TX_RX_TEST
+#include "RF_TEST.H"
+#define PRINT_UART_BAUD     921600
 #define USER_UART0_IO_TX    GIO_GPIO_0 //uart0 tx
-#define USER_UART0_IO_RX    GIO_GPIO_9 //uart0 rx
-
+#define USER_UART0_IO_RX    GIO_GPIO_3 //uart0 rx
 #else
-
+#define PRINT_UART_BAUD     115200
 #define USER_UART0_IO_TX    GIO_GPIO_2 //uart0 tx
 #define USER_UART0_IO_RX    GIO_GPIO_3 //uart0 rx
-
 #endif
-
-
 //-----------------------------------------------------
 
 
@@ -74,43 +64,6 @@ void __aeabi_assert(const char *a ,const char* b, int c)
     for (;;);
 }
 
-
-#ifdef ENABLE_RF_TX_RX
-
-static void rf_tx_rx_gpio_init(void){
-
-    PINCTRL_SetPadMux(RF_IO_TX_IND, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(RF_IO_TX_IND, 0);
-    GIO_SetDirection(RF_IO_TX_IND, GIO_DIR_OUTPUT);
-    GIO_WriteValue(RF_IO_TX_IND, 0);
-
-    PINCTRL_SetPadMux(RF_IO_RX_IND, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(RF_IO_RX_IND, 0);
-    GIO_SetDirection(RF_IO_RX_IND, GIO_DIR_OUTPUT);
-    GIO_WriteValue(RF_IO_RX_IND, 0);
-
-}
-
-#define w32(a,b) *(volatile uint32_t*)(a) = (uint32_t)(b);
-#define r32(a)   *(volatile uint32_t*)(a)
-
-void set_gpio_2_6_for_rf_tx_rx(void)
-{
-    w32(0x4007005c, 0x82);
-    w32(0x40070044, ((r32(0x40070044)) | (0xf<<8) | (0xf<<24)));
-    w32(0x40090064, 0x400);
-}
-
-#else 
-
-void set_gpio_2_6_for_rf_tx_rx(void)
-{
-
-}
-
-#endif
-
-
 static void uart_gpio_init(void){
     SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ClkGate_APB_UART0);
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO) | 
@@ -145,9 +98,6 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_UART, &UART_0, 0);
 }
 
-
-
-
 void setup_peripherals(void)
 {
     uart_gpio_init();
@@ -157,9 +107,8 @@ void setup_peripherals(void)
 
     button_test_init();
 
-#ifdef ENABLE_RF_TX_RX
-    rf_tx_rx_gpio_init();
-    set_gpio_2_6_for_rf_tx_rx(); // may fail.
+#ifdef ENABLE_RF_TX_RX_TEST
+    IngRfTest_init();
 #endif
 }
 

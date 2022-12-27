@@ -13,6 +13,7 @@
 #include "mesh_port_stack.h"
 #include "mesh.h"
 #include "btstack_port_mesh_init.h"
+#include "app_config.h"
 
 // mesh adv handle
 #define MESH_PROXY_ADV_HANDLE        0x00
@@ -427,10 +428,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             break;
         printf("bt init ok.\n");
         mesh_stack_ready();
-        {
-            extern void set_gpio_2_6_for_rf_tx_rx(void);
-            set_gpio_2_6_for_rf_tx_rx();
-        }
+#ifdef ENABLE_RF_TX_RX_TEST
+        #include "RF_TEST.H"
+        IngRfTest_btstack_ready();
+#endif
         break;
 
     case HCI_EVENT_LE_META:

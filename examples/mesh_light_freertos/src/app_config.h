@@ -1,6 +1,8 @@
 #ifndef __APP_CONFIG_H
 #define __APP_CONFIG_H
 
+// RF test
+// #define ENABLE_RF_TX_RX_TEST
 
 // Mesh Config
 #define ENABLE_MESH_ADV_BEARER
