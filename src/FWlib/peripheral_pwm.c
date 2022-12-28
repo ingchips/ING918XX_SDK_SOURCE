@@ -188,10 +188,9 @@ void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, cons
     PWM_HaltCtrlEnable(channel_index, 0);
 }
 
-#define PWM_LED_BASE_FREQ    1000000
 void PWM_SetupSingle(const uint8_t channel_index, const uint32_t pulse_width)
 { 
-    uint32_t pera = PWM_CLOCK_FREQ / (PWM_LED_BASE_FREQ * 1000 / pulse_width);
+    uint32_t pera = PWM_CLOCK_FREQ / (1000000000 / pulse_width);
     PWM_Enable(channel_index, 0);
     PWM_SetPeraThreshold(channel_index, pera);
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
