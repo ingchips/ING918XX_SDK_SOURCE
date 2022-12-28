@@ -175,7 +175,7 @@ void ADC_SetAdcMode(SADC_adcMode mode)
 }
 SADC_adcMode ADC_GetAdcMode(void)
 {
-    return ADC_RegRd(SADC_CFG_0, 0, 1);
+    return (SADC_adcMode)ADC_RegRd(SADC_CFG_0, 0, 1);
 }
 
 static void ADC_SetCalrpt(SADC_adcCalrpt value)
@@ -198,7 +198,7 @@ void ADC_SetAdcCtrlMode(SADC_adcCtrlMode mode)
 
 void ADC_EnableChannel(SADC_channelId ch, uint8_t enable)
 {
-    if (ch < ADC_CH_0 || ch > ADC_CH_11) return;
+    if (ch > ADC_CH_11) return;
     if (enable)
         ADC_RegWr(SADC_CFG_2, 1, (ch + 3));
     else
@@ -256,7 +256,7 @@ void ADC_SetInputMode(SADC_adcIputMode mode)
 
 void ADC_PgaGainSet(SADC_adcPgaGain gain)
 {
-    if (gain < PGA_GAIN_1 || gain > PGA_GAIN_128) return;
+    if (gain > PGA_GAIN_128) return;
 
     ADC_RegWrBits(SADC_CFG_0, gain, 2, 3);
     if (!ADC_adcCal.cb)
@@ -264,7 +264,7 @@ void ADC_PgaGainSet(SADC_adcPgaGain gain)
 }
 SADC_adcPgaGain ADC_PgaGainGet(void)
 {
-    return 1 << ADC_RegRd(SADC_CFG_0, 2, 3);
+    return (SADC_adcPgaGain)(1 << ADC_RegRd(SADC_CFG_0, 2, 3));
 }
 void ADC_PgaEnable(uint8_t enable)
 {
@@ -325,8 +325,7 @@ static void ADC_VrefRegister(float VP, float VN)
     if (ADC_GetPgaStatus())
         ADC_adcCal.cb = ADC_CalWithPga;
     else
-        ADC_adcCal.cb = ADC_CalWithPga;
-        // ADC_adcCal.cb = ADC_CalWithoutPga;
+        ADC_adcCal.cb = ADC_CalWithoutPga;
 }
 
 void ADC_VrefCalibration(void)
