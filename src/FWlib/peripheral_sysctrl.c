@@ -440,7 +440,7 @@ void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode)
     }
 }
 
-void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div)
+void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div)
 {
     set_reg_bit(&APB_SYSCTRL->QdecCfg, mode, 15);
     set_reg_bits(&APB_SYSCTRL->QdecCfg, div, 10, 1);

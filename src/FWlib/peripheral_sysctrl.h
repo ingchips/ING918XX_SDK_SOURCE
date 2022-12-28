@@ -550,13 +550,20 @@ int SYSCTRL_SelectUsedDmaItems(uint32_t items);
  */
 int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 
-
 /**
  * @brief Set LDO output level for Flash
  *
  * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH...`)
  */
 void SYSCTRL_SetLDOOutputFlash(int level);
+
+/**
+ * @brief Config USB PHY functionality
+ *
+ * @param[in] enable            Enable(1)/Disable(0) usb phy module
+ * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
+ */
+void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #endif
 
@@ -627,22 +634,6 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
  * @brief Wait for LDO state ready
  */
 void SYSCTRL_WaitForLDO(void);
-
-/**
- * \brief Select qdec clock
- * \param mode          clock mode
- * \param div           denom of QDEC divider(1-1023)
- * \return              null
- */
-void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div);
-
-/**
- * @brief Config USB PHY functionality
- *
- * @param[in] enable            Enable(1)/Disable(0) usb phy module
- * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
- */
-void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
