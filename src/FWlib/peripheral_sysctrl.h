@@ -391,18 +391,54 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
  */
 void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 
+/**
+ * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan, or MCU
+ *
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N,
+ *  where N is in [0..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
+ *  clock source (32k OSC or 32k RC).
+ *
+ * Note: The default mode is (`SYSCTRL_CLK_SLOW_DIV_1` + 999), i.e. (SLOW_CLK / 1000).
+ *
+ * \param mode                  clock mode
+ */
+void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
+
+/**
+ * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan, or MCU
+ *
+ * \return                      frequency of the 32k
+ */
+int SYSCTRL_GetCLK32k(void);
+
+typedef enum
+{
+    SYSCTRL_CPU_32k_CLK_32k = 0,    // use the clock configured by `SYSCTRL_SelectCLK32k`
+    SYSCTRL_CPU_32k_INTERNAL = 1,   // use the internal 32k clock source (32k OSC or 32k RC)
+} SYSCTRL_CPU32kMode;
+
+/**
+ * \brief Select clock of 32k for MCU
+ *
+ * Note: The default mode is `SYSCTRL_CPU_32k_INTERNAL`.
+ *
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
+
+/**
+ * \brief Get the frequency of CPU 32k
+ *
+ * \return                      frequency of CPU 32k
+ */
+int SYSCTRL_GetCPU32k(void);
+
 typedef enum
 {
     SYSCTRL_SLOW_RC_CLK = 0,        // RC clock (which is tunable)
     SYSCTRL_SLOW_CLK_24M_RF = 1,    // 24MHz RF OSC clock (default)
 } SYSCTRL_SlowClkMode;
-
-typedef enum
-{
-    SYSCTRL_SLOW_RC_24M = 0,
-    SYSCTRL_SLOW_RC_48M = 1,
-    SYSCTRL_SLOW_RC_64M = 1,
-} SYSCTRL_SlowRCClkMode;
 
 /**
  * \brief Select clock source of slow clock
@@ -429,6 +465,16 @@ uint32_t SYSCTRL_GetSlowClk(void);
  */
 void SYSCTRL_EnablePLL(uint8_t enable);
 
+typedef enum
+{
+    SYSCTRL_SLOW_RC_8M = 0,
+    SYSCTRL_SLOW_RC_16M = 1,
+    SYSCTRL_SLOW_RC_24M = 3,
+    SYSCTRL_SLOW_RC_32M = 7,
+    SYSCTRL_SLOW_RC_48M = 0xf,
+    SYSCTRL_SLOW_RC_64M = 0x1f,
+} SYSCTRL_SlowRCClkMode;
+
 /**
  * \brief Enable/Disable RC clock for slow clock
  *
@@ -437,6 +483,26 @@ void SYSCTRL_EnablePLL(uint8_t enable);
  *
  */
 void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode);
+
+/**
+ * \brief Tune the RC clock for slow clock to the frequency given by
+ * `SYSCTRL_SlowRCClkMode` automatically.
+ *
+ * Note: 1. The returned value can be stored in NVM for later use (see `SYSCTRL_TuneSlowRC`)
+ *       2. The internal configuration is different for different `SYSCTRL_SlowRCClkMode`.
+ *
+ * \return              the internal configuration after tunning
+ *
+ */
+uint32_t SYSCTRL_AutoTuneSlowRC(void);
+
+/**
+ * \brief Set the internal configuration the RC clock for slow clock
+ *
+ * \param value         the internal configuration which is returned from
+ *                      `SYSCTRL_AutoTuneSlowRC` to tune the clock
+ */
+void SYSCTRL_TuneSlowRC(uint32_t value);
 
 typedef enum
 {
@@ -484,13 +550,20 @@ int SYSCTRL_SelectUsedDmaItems(uint32_t items);
  */
 int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 
-
 /**
  * @brief Set LDO output level for Flash
  *
  * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH...`)
  */
 void SYSCTRL_SetLDOOutputFlash(int level);
+
+/**
+ * @brief Config USB PHY functionality
+ *
+ * @param[in] enable            Enable(1)/Disable(0) usb phy module
+ * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
+ */
+void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #endif
 
@@ -561,14 +634,6 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
  * @brief Wait for LDO state ready
  */
 void SYSCTRL_WaitForLDO(void);
-
-/**
- * @brief Config USB PHY functionality
- *
- * @param[in] enable            Enable(1)/Disable(0) usb phy module
- * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
- */
-void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
