@@ -5,7 +5,7 @@
 #include "bsp_usb_hid.h"
 
 const USB_DEVICE_DESCRIPTOR_REAL_T DeviceDescriptor __attribute__ ((aligned (4))) = USB_DEVICE_DESCRIPTOR;
-const BSP_USB_DESC_STRUCTURE_T ConfigDescriptor __attribute__ ((aligned (4))) = 
+const BSP_USB_DESC_STRUCTURE_T ConfigDescriptor __attribute__ ((aligned (4))) =
 {USB_CONFIG_DESCRIPTOR,USB_INTERFACE_DESCRIPTOR_KB, USB_HID_DESCRIPTOR_KB,{USB_EP_IN_DESCRIPTOR_KB},
 USB_INTERFACE_DESCRIPTOR_MO, USB_HID_DESCRIPTOR_MO,{USB_EP_IN_DESCRIPTOR_MO}};
 const uint8_t StringDescriptor_0[] __attribute__ ((aligned (4))) = USB_STRING_LANGUAGE;
@@ -24,7 +24,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
 {
   uint32_t size;
   uint32_t status = USB_ERROR_NONE;
-  
+
   switch(event->id)
   {
     case USB_EVENT_DEVICE_RESET:
@@ -81,7 +81,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
               // check if the cfg_idx is correct
               status |= USB_ConfigureEp(&(ConfigDescriptor.ep_kb[0]));
               status |= USB_ConfigureEp(&(ConfigDescriptor.ep_mo[0]));
-              
+
             }
             break;
             case USB_REQUEST_DEVICE_GET_DESCRIPTOR:
@@ -100,7 +100,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
                 {
                   size = sizeof(BSP_USB_DESC_STRUCTURE_T);
                   size = (setup->wLength < size) ? (setup->wLength) : size;
-                  
+
                   status |= USB_SendData(0, (void*)&ConfigDescriptor, size, 0);
                 }
                 break;
@@ -157,7 +157,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
           }
         }
         break;
-        
+
         case USB_REQUEST_DESTINATION_INTERFACE:
         {
           switch(setup->bRequest)
@@ -276,7 +276,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
       platform_printf("USB event exec error %x (0x%x 0x%x)\n", status, *(uint32_t*)setup,*((uint32_t*)setup+1));
     }
     }break;
-    
+
     case USB_EVENT_EP_DATA_TRANSFER:
     {
       switch(event->data.type)
@@ -407,18 +407,16 @@ void bsp_usb_handle_hid_mouse_clear_report_buffer(void)
 void bsp_usb_init(void)
 {
   USB_INIT_CONFIG_T config;
-  
+
   SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
   SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);
-  
+
   platform_set_irq_callback(PLATFORM_CB_IRQ_USB, USB_IrqHandler, NULL);
-  
+
   PINCTRL_SelUSB(USB_PIN_DP,USB_PIN_DM);
-  GIO_EnableAnalog(USB_PIN_DP);
-  GIO_EnableAnalog(USB_PIN_DM);
-  
+
   SYSCTRL_USBPhyConfig(BSP_USB_PHY_ENABLE,BSP_USB_PHY_DP_PULL_UP);
-  
+
   memset(&config, 0x00, sizeof(USB_INIT_CONFIG_T));
   config.intmask = USBINTMASK_SUSP | USBINTMASK_RESUME;
   config.handler = bsp_usb_event_handler;
@@ -428,7 +426,7 @@ void bsp_usb_init(void)
 void bsp_usb_disable(void)
 {
   USB_INIT_CONFIG_T config;
-  
+
   USB_Close();
   SYSCTRL_SetClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
 

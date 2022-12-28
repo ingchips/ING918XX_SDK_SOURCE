@@ -75,12 +75,6 @@ typedef enum
     GIO_INT_LOGIC
 } GIO_IntTriggerType_t;
 
-typedef enum
-{
-    GIO_PULL_UP,
-    GIO_PULL_DOWN
-} GIO_PullType_t;
-
 /**
  * @brief Set I/O direction of a GPIO
  *
@@ -267,8 +261,9 @@ void GIO_ClearAllIntStatus(void);
  *
  * Group A = {0, 5, 6, 21, 22, 23, 36, 37}.
  *
- * Once enabled, GPIO configuration (and their value) are
+ * Once enabled, GPIO configuration (stored in IOMUX) are
  * all latched and kept even in power saving modes.
+ * GPIO in this group are not powered off in power saving modes.
  *
  * After enabled, all other GPIO configuration will not take
  * effect until retention is disabled.
@@ -282,7 +277,7 @@ void GIO_EnableRetentionGroupA(uint8_t enable);
  *
  * Group B = All GPIOs - Group A.
  *
- * Once enabled, GPIO configuration (and their value) are
+ * Once enabled, GPIO configuration (and their value when used as OUTPUT) are
  * all latched and kept even in power saving modes.
  *
  * After enabled, all other GPIO configuration will not take
@@ -295,8 +290,12 @@ void GIO_EnableRetentionGroupB(uint8_t enable);
 /**
  * @brief Enable or disable HighZ mode of GPIO Group B
  *
- * Once enabled, all GPIO in group B are kept in HighZ mode
- * even in power saving modes.
+ * Once enabled, all GPIO which are configured as OUTPUT in group B
+ * are kept in HighZ mode even in power saving modes.
+ *
+ * Note: For USB IOs, there are extra internal pull-down resisters,
+ * so the corresponding GPIOs will be affected by them and can be put into
+ * High-Z mode actually.
  *
  * After enabled, all other GPIO configuration will not take
  * effect until HighZ is released (i.e. disabled).
@@ -306,10 +305,44 @@ void GIO_EnableRetentionGroupB(uint8_t enable);
 void GIO_EnableHighZGroupB(uint8_t enable);
 
 /**
- * @brief Enable analog function of a certain GPIO, currently used for USB
+ * @brief Enable a GPIO as wakeup source from DEEP SLEEP mode
  *
+ * Note:
+ *
+ * 1. When going to DEEP SLEEP mode, GPIO configurations are switching to those
+ * specified here. So, pull of a GPIO must be the same as in normal working mode,
+ * and the specified GPIO is used as INPUT in normal working mode.
+ *
+ * 1. Generally, if high level is select, then pull should be DOWN; if low level is select, then
+ *    pull should be UP.
+ *
+ * 1. `pull` is ignored for GPIO in Group A.
+ *
+ * 1. When a GPIO in Group A is enabled, call `GIO_EnableRetentionGroupA(1)` before entering sleep;
+ *
+ * 1. When a GPIO in Group B is enabled, call `GIO_EnableRetentionGroupB(1)` or `GIO_EnableHighZGroupB(1)`
+ *    before entering sleep;
+ *
+ * @param[in] io_index          the GPIO ({0-17, 21-25, 29-37})
+ * @param[in] enable            Enable(1)/Disable(0)
+ * @param[in] level             wake up by high level(1)/low level(0)
+ * @param[in] pull              Pull of the GPIO
+ * @return                      0 if successful else non-0
  */
-void GIO_EnableAnalog(const GIO_Index_t io_index);
+int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
+        uint8_t level, pinctrl_pull_mode_t pull);
+
+/**
+ * @brief Enable a group of GPIOs as wakeup source from DEEPER SLEEP mode
+ *
+ * Once enabled, all GPIOs in Group A that have been configured as INPUT act as wakeup
+ * sources from DEEPER SLEEP mode.
+ *
+ * When enabled, call `GIO_EnableRetentionGroupA(1)` before entering sleep.
+ *
+ * @param[in] enable            Enable(1)/disable(0)
+ */
+void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable);
 
 #endif
 

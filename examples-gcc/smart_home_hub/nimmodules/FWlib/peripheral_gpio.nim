@@ -16,12 +16,6 @@ type
     GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE = 2
   GIO_IntTriggerType_t* {.size: sizeof(cint).} = enum
     GIO_INT_EDGE, GIO_INT_LOGIC
-  GIO_PullType_t* {.size: sizeof(cint).} = enum
-    GIO_PULL_UP, GIO_PULL_DOWN
-
-
-
-
 
 
 const
