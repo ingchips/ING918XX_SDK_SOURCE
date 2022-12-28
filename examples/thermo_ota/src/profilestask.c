@@ -295,18 +295,18 @@ void setup_peripherals_i2c_pin(void)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) 
     SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
-                              | (1 << SYSCTRL_ClkGate_APB_GPIO0)
-                                 | (1 << SYSCTRL_ClkGate_APB_GPIO1)
-                              |(1 << SYSCTRL_ClkGate_APB_PinCtrl));
+                                | (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                                | (1 << SYSCTRL_ClkGate_APB_GPIO1)
+                                |(1 << SYSCTRL_ClkGate_APB_PinCtrl));
     PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
     PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
     PINCTRL_SelI2cSclIn(I2C_PORT, 10);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    SYSCTRL_ClearClkGateMulti(    (1 << SYSCTRL_ITEM_APB_I2C0)
-                                  | (1 << SYSCTRL_ITEM_APB_SysCtrl)
-                                  | (1 << SYSCTRL_ITEM_APB_PinCtrl)
-                                  | (1 << SYSCTRL_ITEM_APB_GPIO1)
-                                  | (1 << SYSCTRL_ITEM_APB_GPIO0));
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ITEM_APB_I2C0)
+                                | (1 << SYSCTRL_ITEM_APB_SysCtrl)
+                                | (1 << SYSCTRL_ITEM_APB_PinCtrl)
+                                | (1 << SYSCTRL_ITEM_APB_GPIO1)
+                                | (1 << SYSCTRL_ITEM_APB_GPIO0));
     
     PINCTRL_Pull(I2C_SCL,PINCTRL_PULL_UP);
     PINCTRL_Pull(I2C_SDA,PINCTRL_PULL_UP);
