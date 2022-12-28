@@ -10,7 +10,7 @@ static uint8_t FindBurstNum(uint8_t burstNum)
             return i;
         }
     }
-    return -1;
+    return 0;
 }
 uint8_t DMA_PingPongSetup(DMA_PingPong_t *PingPong, 
                           SYSCTRL_DMA srcDev, 
@@ -63,8 +63,8 @@ void DMA_PingPongEnable(DMA_PingPong_t *PingPong, uint8_t ch)
     if (PingPong->ping || PingPong->pong) return;
     PingPong->ping = malloc(bits);
     PingPong->pong = malloc(bits);
-    PingPong->descriptor_pp[0].DstAddr = (uint32_t *)PingPong->ping;
-    PingPong->descriptor_pp[1].DstAddr = (uint32_t *)PingPong->pong;
+    PingPong->descriptor_pp[0].DstAddr = (uint32_t)PingPong->ping;
+    PingPong->descriptor_pp[1].DstAddr = (uint32_t)PingPong->pong;
     DMA_EnableChannel(ch, &PingPong->descriptor_pp[PingPong->status]);
 }
 
