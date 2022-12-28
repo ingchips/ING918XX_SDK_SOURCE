@@ -21,12 +21,10 @@ uint8_t DMA_PingPongSetup(DMA_PingPong_t *PingPong,
     uint8_t ret;
     uint8_t b = FindBurstNum(burstNum);
     uint16_t bits = transWordsNum * sizeof(uint32_t);
-    PingPong->ping = malloc(bits);
-    PingPong->pong = malloc(bits);
     PingPong->descriptor_pp[0].Next = &PingPong->descriptor_pp[1];
     PingPong->descriptor_pp[1].Next = &PingPong->descriptor_pp[0];
     ret = DMA_PreparePeripheral2Mem(&PingPong->descriptor_pp[PING_WRITE],
-                              (uint32_t *)PingPong->ping,
+                              0,
                               srcDev,
                               bits,
                               DMA_ADDRESS_INC,
@@ -34,7 +32,7 @@ uint8_t DMA_PingPongSetup(DMA_PingPong_t *PingPong,
                               | b << 24
                               | 1 << DMA_DESC_OPTION_BIT_INTERRUPT_EACH_DESC);
     ret += DMA_PreparePeripheral2Mem(&PingPong->descriptor_pp[PONG_WRITE],
-                              (uint32_t *)PingPong->pong,
+                              0,
                               srcDev,
                               bits,
                               DMA_ADDRESS_INC,
@@ -61,6 +59,12 @@ uint32_t DMA_PingPongGetTransSize(DMA_PingPong_t *PingPong)
 void DMA_PingPongEnable(DMA_PingPong_t *PingPong, uint8_t ch)
 {
     DMA_Reset(1);
+    uint16_t bits = PingPong->descriptor_pp[0].TranSize;
+    if (PingPong->ping || PingPong->pong) return;
+    PingPong->ping = malloc(bits);
+    PingPong->pong = malloc(bits);
+    PingPong->descriptor_pp[0].DstAddr = (uint32_t *)PingPong->ping;
+    PingPong->descriptor_pp[1].DstAddr = (uint32_t *)PingPong->pong;
     DMA_EnableChannel(ch, &PingPong->descriptor_pp[PingPong->status]);
 }
 
@@ -70,6 +74,8 @@ void DMA_PingPongDisable(DMA_PingPong_t *PingPong, uint8_t ch)
     DMA_Reset(1);
     free(PingPong->ping);
     free(PingPong->pong);
+    PingPong->ping = NULL;
+    PingPong->pong = NULL;
 }
 
 #endif

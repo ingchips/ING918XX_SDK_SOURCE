@@ -563,6 +563,14 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
 void SYSCTRL_WaitForLDO(void);
 
 /**
+ * \brief Select qdec clock
+ * \param mode          clock mode
+ * \param div           denom of QDEC divider(1-1023)
+ * \return              null
+ */
+void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div);
+
+/**
  * @brief Config USB PHY functionality
  *
  * @param[in] enable            Enable(1)/Disable(0) usb phy module

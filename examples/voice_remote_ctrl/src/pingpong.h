@@ -29,7 +29,7 @@ typedef struct {
  * @param[in] srcDev                    DMA data srouce ID
  * @param[in] transWordsNum             Number of words to transmit in half pingpong-loop
  * @param[in] burstNum                  DMA burst transmission number
- * @return state                        0:seccess, other value:failed
+ * @return state                        0:success, other value:failed
  */
 uint8_t DMA_PingPongSetup(DMA_PingPong_t *PingPong, 
                           SYSCTRL_DMA  srcDev, 

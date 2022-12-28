@@ -124,6 +124,7 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_QDEC      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 9);
+        set_reg_bit(&APB_SYSCTRL->QdecCfg, v, 12);
         break;
     case SYSCTRL_ITEM_APB_KeyScan   :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 10);
@@ -253,6 +254,7 @@ static void SYSCTRL_ResetBlockCtrl(SYSCTRL_ResetItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_QDEC      :
         set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 19);
+        set_reg_bit(&APB_SYSCTRL->QdecCfg, v, 14);
         break;
     case SYSCTRL_ITEM_APB_KeyScan   :
         set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 20);
@@ -430,7 +432,7 @@ void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode)
     }
 }
 
-void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div)
+void SYSCTRL_SelectQdecClk(SYSCTRL_ClkMode mode, uint16_t div)
 {
     set_reg_bit(&APB_SYSCTRL->QdecCfg, mode, 15);
     set_reg_bits(&APB_SYSCTRL->QdecCfg, div, 10, 1);
@@ -616,9 +618,9 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
         return SYSCTRL_GetPLLClk() / get_safe_divider(0x20, 0);
     case SYSCTRL_ITEM_APB_QDEC:
         if (APB_SYSCTRL->QdecCfg & (1 << 15))
-            return SYSCTRL_GetHClk() / get_safe_divider10(0x54, 1);
+            return SYSCTRL_GetHClk() / get_safe_divider10(21, 1);
         else
-            return SYSCTRL_GetSlowClk() / SYSCTRL_GetSlowClk();
+            return SYSCTRL_GetSlowClk() / get_safe_divider10(21, 1);
     default:
         // TODO
         return SYSCTRL_GetSlowClk();
