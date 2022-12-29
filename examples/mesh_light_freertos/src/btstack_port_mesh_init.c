@@ -28,7 +28,7 @@ const char * device_uuid_string = "001BDC0810210B0E0A0C000B0E0A0C00";
 #endif
 
 // general
-//#define MESH_BLUEKITCHEN_MODEL_ID_TEST_SERVER   0x0000u
+//#define MESH_INGCHIPS_MODEL_ID_TEST_SERVER   0x0000u
 #define BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD                                  0x06AC
 
 // static mesh_model_t                 mesh_vendor_model;
@@ -265,32 +265,15 @@ void ble_port_generate_uuid_and_load_uuid(void){
     mesh_node_set_device_uuid(device_uuid);
 }
 
-#if 1
-#include "hal_flash_bank_eflash.h"
-#include "mesh_storage.h"
-static btstack_tlv_flash_bank_t btstack_tlv_flash_bank_context;
-static hal_flash_bank_eflash_t   hal_flash_bank_context;
-#endif
 
 void bt_port_mesh_setup(void)
 {
-
-    // setup TLV Flash Sector implementation
-    const hal_flash_bank_t * hal_flash_bank_impl = NULL;
-    hal_flash_bank_impl = hal_flash_bank_eflash_init_instance(
-    		&hal_flash_bank_context,
-    		HAL_FLASH_BANK_SIZE,
-			HAL_FLASH_BANK_0_ADDR,
-			HAL_FLASH_BANK_1_ADDR);
-    const btstack_tlv_t * btstack_tlv_impl = btstack_tlv_flash_bank_init_instance(
-    		&btstack_tlv_flash_bank_context,
-			hal_flash_bank_impl,
-			&hal_flash_bank_context);
-
-    // setup global tlv
-    btstack_tlv_set_instance(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
-
     printf("bt_port_mesh_setup start\r\n");
+    
+    // mesh stack storage init.
+    mesh_stack_storage_init();
+
+    // mesh init.
     mesh_init();
 
 #ifdef ENABLE_MESH_GATT_BEARER
@@ -367,7 +350,7 @@ void bt_port_mesh_setup(void)
     mesh_element_add_model(mesh_node_get_primary_element(), &mesh_light_HSL_server_model);
 
     // Setup our custom model
-    // mesh_vendor_model.model_identifier = mesh_model_get_model_identifier(BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD, MESH_BLUEKITCHEN_MODEL_ID_TEST_SERVER);
+    // mesh_vendor_model.model_identifier = mesh_model_get_model_identifier(BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD, MESH_INGCHIPS_MODEL_ID_TEST_SERVER);
     // mesh_element_add_model(mesh_node_get_primary_element(), &mesh_vendor_model);
 
     // Enable Output OOB

@@ -7,6 +7,13 @@
 #include "kv_storage.h"
 #include "mesh_storage.h"
 
+// Flash distribution.
+#define HAL_FLASH_BANK_SIZE     EFLASH_PAGE_SIZE  //For ingchips eflash, the true unit of bank is page, and one page = 8KB(0x2000). 
+#define HAL_FLASH_BANK_0_ADDR   ((uint32_t)0x00070000)                                      //Bank for mesh stack.
+#define HAL_FLASH_BANK_1_ADDR   ((uint32_t)(HAL_FLASH_BANK_0_ADDR + HAL_FLASH_BANK_SIZE))   //Bank for mesh stack.
+#define HAL_FLASH_BANK_2_ADDR   ((uint32_t)(HAL_FLASH_BANK_1_ADDR + HAL_FLASH_BANK_SIZE))   //Bank for application info.
+
+// Application flash related.
 #define MESH_STORAGE_KEY_START      KV_MESH_KEY_START 
 #define MESH_STORAGE_KEY_END        KV_MESH_KEY_END
 
@@ -19,16 +26,18 @@
 
 // Mesh application storage struct.
 typedef struct mesh_app_storage_db {
-
+    // control flag.
     uint32_t flag;
-
-    // Identification
-    uint8_t name[30];
+    
+    // name
+    uint8_t  name[30];
     uint16_t name_len;
-
+    // connect addr
     bd_addr_t gatt_addr;
+    // non-connect addr
     bd_addr_t beacon_addr;
-    uint8_t device_uuid[16];
+    // mesh uuid
+    uint8_t  device_uuid[16];
     uint16_t uuid_len;
 
 } mesh_app_storage_db_t;
@@ -232,9 +241,9 @@ static int my_kv_read_from_flash(void *db, const int max_size){
 int mesh_storage_init(void){
     // return flash_test();
     uint32_t flag = 0;
-
+    
     kv_init(&my_kv_write_to_flash, &my_kv_read_from_flash);
-    // if not init, init it. or print flag.
+    // if not init, init it. 
     if(mesh_storage_flag_get(&flag) < 0){
         printf("===init\n");
         kv_put(MESH_STORAGE_APP_KEY, NULL, sizeof(mesh_app_storage_db_t));
@@ -242,7 +251,9 @@ int mesh_storage_init(void){
         memset(store, 0, sizeof(mesh_app_storage_db_t));
         store->flag = 0;
         return 1;
-    } else {
+    }
+    // if already init, just print the flag.
+    else {
         printf("===flag = %02X\n", flag);
     }
     return 0;
@@ -256,114 +267,29 @@ void mesh_storage_clear_and_reinit(void){
 }
 
 
+///////////////////////////////////////////////////////////
+#include "hal_flash_bank_eflash.h"
+#include "btstack_tlv_flash_bank.h"
+static btstack_tlv_flash_bank_t  btstack_tlv_flash_bank_context;
+static hal_flash_bank_eflash_t   hal_flash_bank_context;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// test ================================================================================================
-#if 0
-static char my_name[] = "this_is_my_name";
-static bd_addr_t gatt_addr = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
-static bd_addr_t beacon_addr = {0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc};
-static char my_uuid[] = "123456789abcdefg";
-
-static uint8_t tmpBuf[100];
-static uint16_t tmpLen=0;
-static bd_addr_t tmpAddr;
-
-
-
-static void read_name(void){
-    // read name.
-    memset(tmpBuf, 0, sizeof(tmpBuf)); tmpLen = 0;
-    mesh_storage_name_get(tmpBuf, &tmpLen);
-    printf("read name[%d]: %s\n",tmpLen,  (char*)tmpBuf);
-}
-
-static void read_gatt_addr(void){
-    // read gatt addr.
-    memset(tmpAddr, 0, sizeof(tmpAddr));
-    mesh_storage_gatt_addr_get(tmpAddr);
-    printf("gatt_addr[%d]: ",sizeof(tmpAddr));
-    printf_hexdump(tmpAddr, sizeof(tmpAddr));
-}
-
-static void read_beacon_addr(void){
-    // read beacon addr.
-    memset(tmpAddr, 0, sizeof(tmpAddr));
-    mesh_storage_beacon_addr_get(tmpAddr);
-    printf("beacon_addr[%d]: ",sizeof(tmpAddr));
-    printf_hexdump(tmpAddr, sizeof(tmpAddr));
-}
-
-static void read_uuid(void){
-    // read gatt addr.
-    memset(tmpBuf, 0, sizeof(tmpBuf)); tmpLen = 0;
-    mesh_storage_device_uuid_get(tmpBuf, &tmpLen);
-    printf("my_uuid[%d]: ", tmpLen);
-    printf_hexdump(tmpBuf, tmpLen);
-}
-
-static void read_all(void){
-    read_name();
-    read_gatt_addr();
-    read_beacon_addr();
-    read_uuid();
-}
-
-static void set_all(void){
-    // set name.
-    mesh_storage_name_set((uint8_t *)my_name, strlen(my_name));//不包含'\0',所以用strlen，不能用sizeof
-
-    // set gatt addr.
-    mesh_storage_gatt_addr_set(gatt_addr);
-
-    // set beacon addr.
-    mesh_storage_beacon_addr_set(beacon_addr);
-
-    // set uuid.
-    mesh_storage_device_uuid_set((uint8_t *)my_uuid, strlen(my_uuid));
-}
-
-
-void mesh_storage_test(void){
-    printf("\n---------------------------\n");
-
-    // erase test.
-    // my_kv_erase_flash();
-
-    // init.
-    if(mesh_storage_init()){
-        set_all();
-    }
+// mesh stack storage init.
+void mesh_stack_storage_init(void){
     
-    // read all.
-    read_all();
+    // setup TLV Flash Sector implementation
+    const hal_flash_bank_t * hal_flash_bank_impl = NULL;
+    hal_flash_bank_impl = hal_flash_bank_eflash_init_instance(
+    		&hal_flash_bank_context,
+    		HAL_FLASH_BANK_SIZE,
+			HAL_FLASH_BANK_0_ADDR,
+			HAL_FLASH_BANK_1_ADDR);
+    const btstack_tlv_t * btstack_tlv_impl = btstack_tlv_flash_bank_init_instance(
+    		&btstack_tlv_flash_bank_context,
+			hal_flash_bank_impl,
+			&hal_flash_bank_context);
 
-    printf("\n---------------------------\n");
+    // setup global tlv
+    btstack_tlv_set_instance(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
 }
-#endif
-
-
-
-
-
-
-
-
 
 
