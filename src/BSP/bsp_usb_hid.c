@@ -77,7 +77,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
             break;
             case USB_REQUEST_DEVICE_SET_CONFIGURATION:
             {
-              uint8_t cfg_idx = setup->wValue&0xFF;
+              // uint8_t cfg_idx = setup->wValue&0xFF;
               // check if the cfg_idx is correct
               status |= USB_ConfigureEp(&(ConfigDescriptor.ep_kb[0]));
               status |= USB_ConfigureEp(&(ConfigDescriptor.ep_mo[0]));
@@ -357,7 +357,6 @@ void bsp_usb_handle_hid_keyb_key_report(uint8_t key, uint8_t press)
 
 void bsp_usb_handle_hid_keyb_modifier_report(BSP_KEYB_KEYB_MODIFIER_e modifier, uint8_t press)
 {
-  uint32_t size;
   uint8_t last_press_state = ((KeybReport.report.modifier & modifier) != 0);
   if((U_FALSE == KeybReport.pending)&&(last_press_state != press))
   {
@@ -409,7 +408,7 @@ void bsp_usb_init(void)
   USB_INIT_CONFIG_T config;
 
   SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
-  SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);
+  SYSCTRL_SelectHClk((SYSCTRL_ClkMode)(SYSCTRL_CLK_PLL_DIV_1+3));
 
   platform_set_irq_callback(PLATFORM_CB_IRQ_USB, USB_IrqHandler, NULL);
 
@@ -425,8 +424,6 @@ void bsp_usb_init(void)
 
 void bsp_usb_disable(void)
 {
-  USB_INIT_CONFIG_T config;
-
   USB_Close();
   SYSCTRL_SetClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
 
