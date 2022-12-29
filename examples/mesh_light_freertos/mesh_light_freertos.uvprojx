@@ -548,6 +548,11 @@
               <FileType>4</FileType>
               <FilePath>..\..\src\SigMesh\SigMesh.lib</FilePath>
             </File>
+            <File>
+              <FileName>hal_flash_bank_eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\SigMesh\src\hal_flash_bank_eflash.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
