@@ -6,6 +6,9 @@
 
 #include "platform_api.h"
 #include "ing_uecc.h"
+#include "peripheral_gpio.h"
+#include "iic.h"
+#include "board.h"
 
 uint32_t cb_putc(char *c, void *dummy)
 {
@@ -48,8 +51,6 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
-                              |(1 << SYSCTRL_ClkGate_APB_PinCtrl));
 }
 
 uint32_t setup_profile(void *, void *);
@@ -65,7 +66,6 @@ int app_main()
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
-
     setup_peripherals();
 
 #ifdef SECURE_FOTA

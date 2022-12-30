@@ -571,7 +571,7 @@ USB_ERROR_TYPE_E USB_ConfigureEp(const USB_EP_DESCRIPTOR_REAL_T* ep)
     g_UsbVar.ep[epNum].maxpacket = ep->mps;
     g_UsbVar.ep[epNum].is_in = USB_IS_EP_DIRECTION_IN(ep->ep) ? 1 : 0;
   
-    USB_EnableEp(ep->ep, ep->attributes);
+    USB_EnableEp(ep->ep, (USB_EP_TYPE_T)(ep->attributes));
     g_UsbVar.ep[epNum].active = 1;
   
     return(error);
@@ -720,7 +720,6 @@ void USB_HandleEp0(void)
 {
   USB_SETUP_T* setup = (USB_SETUP_T*)(g_UsbBufferEp0Out);
   USB_EVNET_HANDLER_T event;
-  USB_CONTROL_TRANSFER_STAGE_E stage = USB_CONTROL_TRANSFER_STAGE_NONE;
   uint32_t event_status = 0;
   
   switch(g_UsbVar.Ep0State)
@@ -852,7 +851,7 @@ uint32_t USB_IrqHandler (void *user_data)
     
     event.id = USB_EVENT_DEVICE_RESET;
     g_UsbVar.EventHandler(&event);
-    g_UsbVar.DeviceState = (1<<USB_DEVICE_ATTACHED) | (1<<USB_DEVICE_POWERED);
+    g_UsbVar.DeviceState = (USB_DEVICE_STATE_E)((1<<USB_DEVICE_ATTACHED) | (1<<USB_DEVICE_POWERED));
   }
   
   if(status & (0x1 << 13))
