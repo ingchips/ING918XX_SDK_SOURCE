@@ -105,7 +105,7 @@ void setup_peripherals(void)
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
     GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE, GIO_INT_EDGE);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
-        
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     // setup timer 1: 10Hz
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 10);
@@ -124,10 +124,10 @@ void setup_peripherals(void)
     TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / 10);
     TMR_Enable(APB_TMR1, 0, 0xf);
     TMR_IntEnable(APB_TMR1, 0, 0xf);
-    
+
     PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_UP);
 
-    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM0_A);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -182,12 +182,12 @@ int app_main()
     setup_peripherals();
 
     // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
-    
-    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);    
+
+    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-    
+
     kv_init(db_write_to_flash, read_from_flash);
 
     key_detect_init(on_key_event);

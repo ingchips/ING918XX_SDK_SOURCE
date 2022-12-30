@@ -85,7 +85,7 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
     case SYSCTRL_DMA_I2C0:
         return &APB_I2C0->Data;
     case SYSCTRL_DMA_QDEC0:
-        return 0;
+        return &APB_QDEC->channels[0].channel_write_a;
     case SYSCTRL_DMA_QDEC1:
         return 0;
     case SYSCTRL_DMA_I2S_RX:
@@ -93,7 +93,7 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
     case SYSCTRL_DMA_PDM:
         return &APB_PDM->Data;
     case SYSCTRL_DMA_ADC:
-        return 0;
+        return &APB_SADC->sadc_data;
 
     case SYSCTRL_DMA_UART0_TX:
         return &APB_UART0->DataRead;

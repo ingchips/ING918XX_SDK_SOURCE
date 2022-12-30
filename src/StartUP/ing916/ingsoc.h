@@ -389,6 +389,42 @@ typedef struct{
     __IO uint32_t sadc_int;               // 0x34
 } SADC_TypeDef;
 
+//QDEC
+typedef struct
+{
+    __IO uint32_t channel_ctrl          ; // 0x00
+    __IO uint32_t channel_mode          ; // 0x04
+    __IO uint32_t channel_step          ; // 0x08
+    __IO uint32_t channel_read_rab      ; // 0x0c
+    __IO uint32_t channel_read_tc       ; // 0x10
+    __IO uint32_t channel_write_a       ; // 0x14
+    __IO uint32_t channel_write_b       ; // 0x18
+    __IO uint32_t channel_write_c       ; // 0x1c
+    __IO uint32_t channel_tiob0_rd      ; // 0x20
+    __IO uint32_t channel_int_en        ; // 0x24
+    __IO uint32_t channel_int_dis       ; // 0x28
+    __IO uint32_t channel_int_rd        ; // 0x2c
+    __IO uint32_t Reserved[4]           ; // 0x30
+} QDEC_ChannelCtrlReg;
+typedef struct{
+    __IO QDEC_ChannelCtrlReg channels[3]; // 0x0
+    __IO uint32_t bcr;                    // 0xc0
+    __IO uint32_t bmr;                    // 0xc4
+    __IO uint32_t qdec_inten;             // 0xc8
+    __IO uint32_t qdec_intdis;            // 0xcc
+    __IO uint32_t qdec_inten_rd;          // 0xd0
+    __IO uint32_t qdec_status_sel;        // 0xd4
+    __IO uint32_t pwm_fault;              // 0xd8
+    __IO uint32_t Reserved;               // 0xdc
+    __IO uint32_t dummy;                  // 0xe0
+    __IO uint32_t wpmode;                 // 0xe4
+    __IO uint32_t Reserved1;              // 0xe8
+    __IO uint32_t addrsize;               // 0xec
+    __IO uint32_t name1;                  // 0xf0
+    __IO uint32_t name2;                  // 0xf4
+    __IO uint32_t FEATURES;               // 0xf8
+} QDEC_TypeDef;
+
 typedef struct{
     __IO uint32_t      DICtrlx;     //0x900 + i*20
     __IO uint8_t      _NOT_USED_25[4];
@@ -513,6 +549,7 @@ typedef struct
 #define APB_I2S            ((I2S_TypeDef *)APB_I2S_BASE)
 #define APB_SADC           ((SADC_TypeDef *)APB_SARADC_BASE)
 #define APB_PDM            ((PDM_TypeDef *)APB_PDM_BASE)
+#define APB_QDEC           ((QDEC_TypeDef *)APB_QDEC_BASE)
 #define APB_PINCTRL        ((PINCTRL_TypeDef *)APB_PINC_BASE)
 #define APB_UART0          ((UART_TypeDef *)APB_UART0_BASE)
 #define APB_UART1          ((UART_TypeDef *)APB_UART1_BASE)

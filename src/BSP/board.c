@@ -446,7 +446,7 @@ void setup_buzzer()
     SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                                     | (1 << SYSCTRL_ClkGate_APB_PWM));
     SYSCTRL_SelectPWMClk(SYSCTRL_CLK_32k);
-    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM6_A);
+    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM0_B);
 #else
     #error unknown or unsupported chip family
 #endif
