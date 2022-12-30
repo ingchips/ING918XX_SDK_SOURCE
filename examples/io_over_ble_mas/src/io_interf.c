@@ -164,4 +164,27 @@ void io_interf_setup_peripherals()
 void io_interf_init()
 {
 }
+
+#elif (IO_TYPE == IO_TYPE_USB_BIN)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#include "usb_driver.h"
+
+void HANDLE_FUNC(const uint8_t *data, const int len)
+{
+    if(bsp_usb_send_data(data, len))
+        dbg_printf("data lost: %d\n", len);
+}
+
+void io_interf_push_data(uint8_t *data, uint32_t len)
+{
+    send_data(data, len, 0);
+}
+
+void io_interf_setup_peripherals(){}
+
+void io_interf_init()
+{
+    bsp_usb_init();
+}
+#endif
 #endif

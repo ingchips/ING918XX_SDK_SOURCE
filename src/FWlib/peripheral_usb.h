@@ -58,11 +58,11 @@
 // =============================================================================
 /// Enum and struct of USB module
 // =============================================================================
-typedef enum{
-  USBINTMASK_SOF = (0x1 << 3),
-  USBINTMASK_SUSP = (0x1 << 11),
-  USBINTMASK_RESUME = (0x1U << 31)
-}UsbIntMask_E;
+
+/* user intmask, used in struct USB_INIT_CONFIG_T */
+#define USBINTMASK_SOF (0x1 << 3)
+#define USBINTMASK_SUSP (0x1 << 11)
+#define USBINTMASK_RESUME (0x1U << 31)
 
 typedef enum
 {
@@ -317,7 +317,7 @@ typedef uint32_t (*USB_USER_EVENT_HANDLER)(USB_EVNET_HANDLER_T *);
 
 typedef struct
 {
-  uint32_t intmask;//use "UsbIntMask_E" to open extra interrupt
+  uint32_t intmask;//use "USBINTMASK_xx" to open extra interrupt
   /** Thresholding enable flags and length varaiables, only valid for isochronous transfer **/
   uint16_t rx_thr_en;
   uint16_t iso_tx_thr_en;
