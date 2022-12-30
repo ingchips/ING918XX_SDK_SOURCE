@@ -110,7 +110,7 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
     case SYSCTRL_DMA_KeyScan:
         return 0;
     case SYSCTRL_DMA_I2S_TX:
-        return 0;
+        return &APB_I2S->TX;
     case SYSCTRL_DMA_PWM0:
         return &APB_PWM->Channels[0].DmaData;
     case SYSCTRL_DMA_PWM1:
