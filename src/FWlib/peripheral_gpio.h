@@ -304,12 +304,8 @@ void GIO_EnableHighZGroupB(uint8_t enable);
  * 1. Generally, if high level is select, then pull should be DOWN; if low level is select, then
  *    pull should be UP.
  *
- * 1. `pull` is ignored for GPIO in Group A.
- *
- * 1. When a GPIO in Group A is enabled, call `GIO_EnableRetentionGroupA(1)` before entering sleep;
- *
- * 1. When a GPIO in Group B is enabled, call `GIO_EnableRetentionGroupB(1)` or `GIO_EnableHighZGroupB(1)`
- *    before entering sleep;
+ * 1. `pull` is ignored for GPIO in Group A, for which `pull` shall be configured
+ *    by `PINCTRL_Pull(...)`.
  *
  * @param[in] io_index          the GPIO ({0-17, 21-25, 29-37})
  * @param[in] enable            Enable(1)/Disable(0)
@@ -326,20 +322,18 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
  * Once enabled, all GPIOs in Group A that have been configured as INPUT act as wakeup
  * sources from DEEPER SLEEP mode.
  *
- * When enabled, call `GIO_EnableRetentionGroupA(1)` before entering sleep.
- *
  * @param[in] enable            Enable(1)/disable(0)
  */
 void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable);
 
 /**
- * @brief Set some or all of 32 GPIO to 1
+ * @brief Set some or all of GPIO to 1
  *
  */
 void GIO_SetBits(const uint64_t index_mask);
 
 /**
- * @brief Clear some or all of 32 GPIO to 0
+ * @brief Clear some or all of GPIO to 0
  *
  */
 void GIO_ClearBits(const uint64_t index_mask);

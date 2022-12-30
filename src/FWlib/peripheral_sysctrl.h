@@ -279,7 +279,7 @@ uint32_t SYSCTRL_GetPLLClk(void);
 /**
  * \brief Config PLL clock in Hz
  *
- *               f_osc * loop
+ *               f_in * loop
  * f_vco = ------------------------
  *                  div_pre
  *
@@ -288,8 +288,9 @@ uint32_t SYSCTRL_GetPLLClk(void);
  *               div_output
  *
  * Requirements:
+ *    1. f_in/div_pref should be in [2, 30]MHz, where f_in is slow clock;
  *    1. f_vco should be in [60, 600]MHz;
- *    1. f_osc/div_pref should be in [2, 24]MHz;
+ *    1. f_pll should not exceed 500MHz.
  *
  * \param loop          loop (6 bits)
  * \param div_pre       div_pre (8 bits)
@@ -338,10 +339,9 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item);
 
 /**
  * \brief Select ADC Clk divider
- * \param denom         denom (6 bits)
- * \param num           num (6 bits)
- */
-void SYSCTRL_SetAdcClkDiv(uint8_t denom, uint8_t num);
+ * \param denom         denominator (6 bits)
+  */
+void SYSCTRL_SetAdcClkDiv(uint8_t denom);
 
 /**
  * \brief Get ADC Clk from divider
@@ -379,11 +379,14 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock of QDEC
+ * \brief Select the two clocks of QDEC
  *
- * The actual clock is clock (selected by `mode`) divided by `div`.
+ * This function configures two clocks for QDEC:
  *
- * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
+ * 1. `clk_qdec`: selected by `mode` (`SYSCTRL_CLK_SLOW` or `SYSCTRL_CLK_HCLK`);
+ * 1. `clk_qdec_div`: divided from `qdec_clk`, specified by `div`.
+ *
+ * Note: `clk_qdec` must be >= PClk (see `SYSCTRL_GetPClk()`).
  *
  * \param mode          clock mode
  * \param div           clock divider (10 bits)

@@ -128,7 +128,7 @@ void setup_rgb_led()
     SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                                     | (1 << SYSCTRL_ClkGate_APB_PWM)); 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    PINCTRL_SetGeneralPadMode(PIN_PWM_LED, IO_MODE_PWM, 0, 0);    
+    PINCTRL_SetGeneralPadMode(PIN_RGB_LED, IO_MODE_PWM, 0, 0);    
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     SYSCTRL_SelectPWMClk(SYSCTRL_CLK_24M_DIV_1);
     PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_PWM6_A);
