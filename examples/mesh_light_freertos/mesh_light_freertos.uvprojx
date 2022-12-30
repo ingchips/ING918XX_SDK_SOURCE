@@ -428,6 +428,11 @@
               <FileType>5</FileType>
               <FilePath>.\src\app_config.h</FilePath>
             </File>
+            <File>
+              <FileName>mesh_model.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_model.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

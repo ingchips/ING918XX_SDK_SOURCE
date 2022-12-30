@@ -18,6 +18,7 @@
 #include "mesh_configuration_client.h"
 #include "gap.h"
 #include "mesh_storage.h"
+#include "mesh_model.h"
 
 // #define USE_DEFAULT_UUID
 
@@ -300,7 +301,8 @@ void bt_port_mesh_setup(void)
     // setup health server
     mesh_health_server_add_fault_state(mesh_node_get_health_server(), BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD, &health_fault);
 
-
+    // Setup model
+    mesh_model_init();
 
     // Setup Configuration Client model
     mesh_configuration_client_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT);

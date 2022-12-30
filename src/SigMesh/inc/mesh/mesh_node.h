@@ -170,6 +170,10 @@ typedef struct mesh_element {
     mesh_linked_list_t models;
     uint16_t models_count_sig;
     uint16_t models_count_vendor;
+    
+    // 
+    mesh_model_t * const sig_models;
+    mesh_model_t * const vnd_models;
 
 } mesh_element_t;
 
