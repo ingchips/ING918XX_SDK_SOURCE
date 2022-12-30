@@ -14,7 +14,7 @@ Below table shows how to connect the microphone to the Dev-Board for each input 
 | ---               | ---                           | ---               | ---                       | ---               |
 |0                  | Simulated                     | Universal         | Universal                 | --                |
 |1                  | ADC                           | ADC Channel 4     | ADC Channel 4             | Analog MIC        |
-|2                  | I2S                           | Not available     | BCLK(28),IN(29),LRCLK(30) | INMP441: <img src="./img/i2s_mic.png" width="50%">|
+|2                  | I2S                           | Not available     | BCLK(21),IN(22),LRCLK(35) | INMP441: <img src="./img/i2s_mic.png" width="50%">|
 |3                  | PDM                           | Not available     | MCLK(28),IN(29)           | MP34DT01: <img src="./img/pdm_mic.png" width="50%">|
 
 Note: for type `0`, audio is playback from a data file (ITU standard testing data), and no microphone
