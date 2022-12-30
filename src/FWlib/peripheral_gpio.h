@@ -190,18 +190,6 @@ static __INLINE void GIO_ClearBits(const uint32_t index_mask){ *GPIO_DOC = index
  */
 static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = index_mask;}
 
-/**
- * @brief Send a pulse of duration 200~380ns to GPIO
- *
- * Note:The running time is 200ns less than using GIO_SetBits with GIO_ClearBits to generate a pulse.
- */
-static __INLINE void GIO_SetQuicPulse(const uint64_t index_mask){
-    uint32_t tmp_set = (*GPIO_DO)|index_mask;
-    uint32_t tmp_clear = (*GPIO_DO)&(~index_mask);
-    *GPIO_DO = tmp_set;
-    *GPIO_DO = tmp_clear;
-}
-
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
@@ -343,6 +331,18 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
  * @param[in] enable            Enable(1)/disable(0)
  */
 void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable);
+
+/**
+ * @brief Set some or all of 32 GPIO to 1
+ *
+ */
+void GIO_SetBits(const uint64_t index_mask);
+
+/**
+ * @brief Clear some or all of 32 GPIO to 0
+ *
+ */
+void GIO_ClearBits(const uint64_t index_mask);
 
 #endif
 

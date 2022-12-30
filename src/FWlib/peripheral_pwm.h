@@ -63,6 +63,11 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 // `on_duty` is in percent, i.e. is in [0..100]
 void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty);
 
+//for Single Step Mode:
+//generate one pulse 
+// `pulse_width` is in ns 
+void PWM_SetupSingle(const uint8_t channel_index, const uint32_t pulse_width);
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 // The PWM waveform can be set to multi-duty-cycle if it's not in single step mode or halt mode
