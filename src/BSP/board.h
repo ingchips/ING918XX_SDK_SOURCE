@@ -8,7 +8,7 @@
 #define BOARD_ING91881B_02_02_06        3
 
 #ifndef BOARD_ID
-#define BOARD_ID       BOARD_ING91881B_02_02_05
+#define BOARD_ID       BOARD_ING91881B_02_02_06
 #endif
 
 #ifdef __cplusplus
@@ -83,6 +83,15 @@ float get_pressure(void);
 
 /**
  ****************************************************************************************
+ * @brief Gets the I2C address of the accelerometer
+ * 
+ * @return uint16_t address
+ ****************************************************************************************
+ */
+uint16_t get_thermo_addr(void);
+
+/**
+ ****************************************************************************************
  * @brief Set the up accelerometer
  *
  * BMA280 and STK8BA58 are supported. And it supported the same code.
@@ -105,6 +114,15 @@ void setup_accelerometer(void);
  ****************************************************************************************
  */
 void get_acc_xyz(float *x, float *y, float *z);
+
+/**
+ ****************************************************************************************
+ * @brief Gets the I2C address of the accelerometer
+ * 
+ * @return uint16_t address
+ ****************************************************************************************
+ */
+uint16_t get_acc_addr(void);
 
 /**
  ****************************************************************************************
