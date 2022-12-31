@@ -146,14 +146,22 @@ static uint32_t ADC_RegRd(SADC_adcReg reg, uint8_t s, uint8_t b)
     return ADC_REG_RD(reg, b, s);
 }
 
-static float ADC_CalWithPga(uint16_t data)
+static float ADC_CalWithPgaSingle(uint16_t data)
 {
     float gain = (float)ADC_PgaGainGet();
-    return (2.f / gain) * ADC_adcCal.vref_gap * (((float)data / 16383.f) + 0.5f - (1.f / gain));
+    return ADC_adcCal.vref_P * 0.5f + ((2 * ADC_adcCal.vref_P * (data - 8192.f)) / (16384.f * gain));
 }
-static float ADC_CalWithoutPga(uint16_t data)
+static float ADC_CalWithPgaDiff(uint16_t data)
 {
-    return ADC_adcCal.vref_gap * (2.f * (float)data / 16383.f - 0.5f);
+    float gain = (float)ADC_PgaGainGet();
+    return ((data - 8192.f) * 2.f * ADC_adcCal.vref_P) / (16384.f * gain);
+}
+static void ADC_CbRegister(void)
+{
+    if (ADC_RegRd(SADC_CFG_0, 8, 1))
+        ADC_adcCal.cb = ADC_CalWithPgaDiff;
+    else
+        ADC_adcCal.cb = ADC_CalWithPgaSingle;
 }
 
 void ADC_EnableCtrlSignal(void)
@@ -252,15 +260,14 @@ void ADC_SetInputMode(SADC_adcIputMode mode)
     ADC_RegClr(SADC_CFG_0, 8, 1);
     if (mode)
         ADC_RegWr(SADC_CFG_0, mode, 8);
+    if (ADC_adcCal.cb)
+        ADC_CbRegister();
 }
 
 void ADC_PgaGainSet(SADC_adcPgaGain gain)
 {
     if (gain > PGA_GAIN_128) return;
-
     ADC_RegWrBits(SADC_CFG_0, gain, 2, 3);
-    if (!ADC_adcCal.cb)
-        ADC_adcCal.cb = ADC_CalWithPga;
 }
 SADC_adcPgaGain ADC_PgaGainGet(void)
 {
@@ -321,11 +328,7 @@ static void ADC_VrefRegister(float VP, float VN)
     if (VP < VN) return;
     ADC_adcCal.vref_P = VP;
     ADC_adcCal.vref_N = VN;
-    ADC_adcCal.vref_gap = VP - VN;
-    if (ADC_GetPgaStatus())
-        ADC_adcCal.cb = ADC_CalWithPga;
-    else
-        ADC_adcCal.cb = ADC_CalWithoutPga;
+    ADC_CbRegister();
 }
 
 void ADC_VrefCalibration(void)
@@ -339,7 +342,7 @@ void ADC_VrefCalibration(void)
 
 float ADC_GetVol(uint16_t data)
 {
-    if (!ADC_adcCal.cb || !ADC_adcCal.vref_gap)
+    if (!ADC_adcCal.cb || !ADC_adcCal.vref_P)
         return 0;
     float vol = ADC_adcCal.cb(data);
     if (vol > ADC_adcCal.vref_P) return ADC_adcCal.vref_P;

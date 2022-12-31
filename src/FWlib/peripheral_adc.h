@@ -138,7 +138,6 @@ typedef struct
 {
     float vref_P;
     float vref_N;
-    float vref_gap;
     float(*cb)(uint16_t);
 } SADC_adcCal_t;
 
