@@ -1,8 +1,14 @@
+#include "ingsoc.h"
 #include "ring_buf.h"
 
 #define BLOCK_SIZE          (247 - 3)
 
-#define RX_BUFFER_SIZE      (BLOCK_SIZE * 65 + RING_BUF_OBJ_SIZE)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define RX_BUFFER_SIZE      (BLOCK_SIZE * 65 + RING_BUF_OBJ_SIZE)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define RX_BUFFER_SIZE      (BLOCK_SIZE * 15 + RING_BUF_OBJ_SIZE)
+#endif
+
 static uint8_t ring_buff_storage[RX_BUFFER_SIZE];
 static struct ring_buf *ring_buffer;
 

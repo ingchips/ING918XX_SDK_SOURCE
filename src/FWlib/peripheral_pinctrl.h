@@ -422,6 +422,20 @@ int PINCTRL_SelUartIn(uart_port_t port,
                       uint8_t io_pin_cts);
 
 /**
+ * @brief ING918xx Compatible API: Select input io_pin for UART CTS
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for UART CTS
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelUartCtsIn(const uart_port_t port, const uint8_t io_pin_index);
+
+/**
  * @brief Select I2C input IOs
  *
  * Note: If an input is not used or invalid, set it to `IO_NOT_A_PIN`.
@@ -433,6 +447,13 @@ int PINCTRL_SelUartIn(uart_port_t port,
 int PINCTRL_SelI2cIn(i2c_port_t port,
                       uint8_t io_pin_scl,
                       uint8_t io_pin_sda);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for I2C SCL
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index);
 
 /**
  * @brief Select PDM input IOs

@@ -53,6 +53,7 @@ typedef enum
     GIO_GPIO_40 ,
     GIO_GPIO_41 ,
 #endif
+    GIO_GPIO_NUMBER,
 } GIO_Index_t;
 
 typedef enum

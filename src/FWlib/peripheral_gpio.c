@@ -255,7 +255,7 @@ void GIO_EnableHighZGroupB(uint8_t enable)
 int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
         uint8_t level, pinctrl_pull_mode_t pull)
 {
-    if ((0 <= io_index) && (io_index <= 17)
+    if ((io_index <= 17)
      || (21 <= io_index) && (io_index <= 25)
      || (29 <= io_index) && (io_index <= 37))
     {
