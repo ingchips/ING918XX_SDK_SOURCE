@@ -49,7 +49,7 @@ typedef int (* f_flash_do_update)(const int block_num, const fota_update_block_t
 #define ROM_NVIC_SystemReset            ((f_void)0x00000cd4)
 
 #define ROM_program_flash               ((f_program_flash)0x00003b9b)
-#define ROM_write_flash                 ((f_write_flash)0x00003cfe)
+#define ROM_write_flash                 ((f_write_flash)0x00003cff)
 #define ROM_erase_flash_sector          ((f_erase_flash_sector)0x00001d59)
 #define ROM_flash_do_update             ((f_flash_do_update)0x00001d73)
 

@@ -5,7 +5,7 @@
 #include "bsp_usb.h"
 
 const USB_DEVICE_DESCRIPTOR_REAL_T DeviceDescriptor __attribute__ ((aligned (4))) = USB_DEVICE_DESCRIPTOR;
-const BSP_USB_DESC_STRUCTURE_T ConfigDescriptor __attribute__ ((aligned (4))) = 
+const BSP_USB_DESC_STRUCTURE_T ConfigDescriptor __attribute__ ((aligned (4))) =
 {USB_CONFIG_DESCRIPTOR, {USB_INTERFACE_DESCRIPTOR},{USB_EP_1_DESCRIPTOR,USB_EP_2_DESCRIPTOR}};
 const uint8_t StringDescriptor_0[] __attribute__ ((aligned (4))) = USB_STRING_LANGUAGE;
 const uint8_t StringDescriptor_1[] __attribute__ ((aligned (4))) = USB_STRING_MANUFACTURER;
@@ -25,8 +25,8 @@ uint8_t DataSendBuf[EP_X_MPS_BYTES] __attribute__ ((aligned (4)));
 static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
 {
   uint32_t size;
-  uint32_t status = USB_ERROR_DEFAULT;
-  
+  uint32_t status = USB_ERROR_NONE;
+
   switch(event->id)
   {
     case USB_EVENT_DEVICE_RESET:
@@ -79,11 +79,11 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
             break;
             case USB_REQUEST_DEVICE_SET_CONFIGURATION:
             {
-              uint8_t cfg_idx = setup->wValue&0xFF;
+              // uint8_t cfg_idx = setup->wValue&0xFF;
               // check if the cfg_idx is correct
               status |= USB_ConfigureEp(&(ConfigDescriptor.endpoint[0]));
               status |= USB_ConfigureEp(&(ConfigDescriptor.endpoint[1]));
-              
+
               status |= USB_RecvData(ConfigDescriptor.endpoint[EP_OUT-1].ep, DataRecvBuf, ConfigDescriptor.endpoint[EP_OUT-1].mps, 0);
             }
             break;
@@ -103,7 +103,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
                 {
                   size = sizeof(BSP_USB_DESC_STRUCTURE_T);
                   size = (setup->wLength < size) ? (setup->wLength) : size;
-                  
+
                   status |= USB_SendData(0, (void*)&ConfigDescriptor, size, 0);
                 }
                 break;
@@ -138,6 +138,11 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
 
                   size = (setup->wLength < size) ? (setup->wLength) : size;
                   status |= USB_SendData(0, (void*)addr, size, 0);
+                }
+                break;
+                default:
+                {
+                  status = USB_ERROR_REQUEST_NOT_SUPPORT;
                 }break;
               }
             }
@@ -149,15 +154,15 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
               {
                 size = 0x28;//40
                 size = (setup->wLength < size) ? (setup->wLength) : size;
-                
+
                 status |= USB_SendData(0, (void*)&WcidDescriptor_4, size, 0);
               }
-              
+
               if((setup->wIndex&0xFF) == 0x05)
               {
                 size = 0x8e;//total len 142
                 size = (setup->wLength < size) ? (setup->wLength) : size;
-                
+
                 status |= USB_SendData(0, (void*)&WcidDescriptor_5, size, 0);
               }
             }
@@ -176,10 +181,14 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
               status |= USB_SendData(0, DynamicDescriptor, 1, 0);
             }
             break;
+            default:
+            {
+              status = USB_ERROR_REQUEST_NOT_SUPPORT;
+            }break;
           }
         }
         break;
-        
+
         case USB_REQUEST_DESTINATION_INTERFACE:
         {
           switch(setup->bRequest)
@@ -191,32 +200,36 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
               {
                 size = 0x8e;//total len 142
                 size = (setup->wLength < size) ? (setup->wLength) : size;
-                
+
                 status |= USB_SendData(0, (void*)&WcidDescriptor_5, size, 0);
               }
             }break;
             #endif
             default:
-              break;
+            {
+              status = USB_ERROR_REQUEST_NOT_SUPPORT;
+            }break;
           }
         }
         break;
-        
+
         case USB_REQUEST_DESTINATION_EP:
-        
+
         break;
         default:
-          break;
+        {
+          status = USB_ERROR_REQUEST_NOT_SUPPORT;
+        }break;
       }
 
-    // if status equals to USB_ERROR_DEFAULT: it is not supported request.
+    // if status equals to USB_ERROR_REQUEST_NOT_SUPPORT: it is not supported request.
     // if status equals to USB_ERROR_NONE: it is successfully executed.
-    if((USB_ERROR_NONE != status) && (USB_ERROR_DEFAULT != status))
+    if((USB_ERROR_NONE != status) && (USB_ERROR_REQUEST_NOT_SUPPORT != status))
     {
       platform_printf("USB event exec error %x (0x%x 0x%x)\n", status, *(uint32_t*)setup,*((uint32_t*)setup+1));
     }
     }break;
-    
+
     case USB_EVENT_EP_DATA_TRANSFER:
     {
       switch(event->data.type)
@@ -227,7 +240,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
           {
             uint32_t i;
             platform_printf("(%d)data: ",event->data.ep);for(i=0;i<10;i++){platform_printf(" 0x%x ",DataRecvBuf[i]);}platform_printf("\n");
-            
+
             memset(DataSendBuf, 0x33, sizeof(DataSendBuf));
             status |= USB_SendData(ConfigDescriptor.endpoint[EP_IN-1].ep, DataRecvBuf, ConfigDescriptor.endpoint[EP_IN-1].mps, 0);
           }
@@ -253,18 +266,16 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
 void bsp_usb_init(void)
 {
   USB_INIT_CONFIG_T config;
-  
+
   SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
-  SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);
-  
+  SYSCTRL_SelectHClk((SYSCTRL_ClkMode)(SYSCTRL_CLK_PLL_DIV_1+3));
+
   platform_set_irq_callback(PLATFORM_CB_IRQ_USB, USB_IrqHandler, NULL);
-  
+
   PINCTRL_SelUSB(USB_PIN_DP,USB_PIN_DM);
-  GIO_EnableAnalog(USB_PIN_DP);
-  GIO_EnableAnalog(USB_PIN_DM);
-  
+
   SYSCTRL_USBPhyConfig(BSP_USB_PHY_ENABLE,BSP_USB_PHY_DP_PULL_UP);
-  
+
   memset(&config, 0x00, sizeof(USB_INIT_CONFIG_T));
   config.intmask = USBINTMASK_SUSP | USBINTMASK_RESUME;
   config.handler = bsp_usb_event_handler;
@@ -273,8 +284,7 @@ void bsp_usb_init(void)
 
 void bsp_usb_disable(void)
 {
-  USB_INIT_CONFIG_T config;
-  
+
   USB_Close();
   SYSCTRL_SetClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
 

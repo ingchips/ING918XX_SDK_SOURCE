@@ -201,7 +201,7 @@ void PINCTRL_Pull(const uint8_t io_pin_index, const pinctrl_pull_mode_t mode)
     }
 }
 
-void PINCTRL_SetSlewRate(const uint8_t io_pin_index, const pinctrl_slew_rate_t rate)
+void PINCTRL_SetSlewRate(uint8_t io_pin_index, const pinctrl_slew_rate_t rate)
 {
     volatile uint32_t *sr = (volatile uint32_t *)(APB_PINC_BASE + 0x20);
     if (rate)
@@ -257,8 +257,9 @@ void PINCTRL_EnableAllAntSelPins(void)
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
-    uint32_t mask = ((1 << bit_width) - 1) << bit_offset;
-    *reg = (*reg & ~mask) | (v << bit_offset);
+    uint32_t mask1 = (1 << bit_width) - 1;
+    uint32_t mask = ~(mask1 << bit_offset);
+    *reg = (*reg & mask) | ((v & mask1) << bit_offset);
 }
 
 const uint8_t io_output_source_map[IO_PIN_NUMBER][19] =
@@ -356,7 +357,7 @@ static int PINCTRL_SelInput(uint8_t io_pin,
     int id = pin_id_for_input_source(source_id, io_pin);
     if (id < 0) return id;
     set_reg_bits(&APB_PINCTRL->IN_CTRL[reg_index], (uint32_t)id, bit_width, bit_offset);
-    PINCTRL_SetPadMux((uint8_t)id, (io_source_t)(source_id));
+    PINCTRL_SetPadMux((uint8_t)io_pin, (io_source_t)(source_id));
     return 0;
 }
 
@@ -437,6 +438,36 @@ int PINCTRL_SelUartIn(uart_port_t port,
     return 0;
 }
 
+void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index)
+{
+    switch (port)
+    {
+    case UART_PORT_0:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART0_RXD, 3, 5, 15);
+        break;
+    case UART_PORT_1:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART1_RXD, 4, 5, 0);
+        break;
+    default:
+        break;
+    }
+}
+
+void PINCTRL_SelUartCtsIn(const uart_port_t port, const uint8_t io_pin_index)
+{
+    switch (port)
+    {
+    case UART_PORT_0:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART0_CTS, 3, 5, 20);
+        break;
+    case UART_PORT_1:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART1_CTS, 4, 5, 5);
+        break;
+    default:
+        break;
+    }
+}
+
 int PINCTRL_SelI2cIn(i2c_port_t port,
                       uint8_t io_pin_scl,
                       uint8_t io_pin_sda)
@@ -455,6 +486,21 @@ int PINCTRL_SelI2cIn(i2c_port_t port,
         break;
     }
     return 0;
+}
+
+void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index)
+{
+    switch (port)
+    {
+    case I2C_PORT_0:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_I2C0_SCL_IN, 4, 5, 10);
+        break;
+    case I2C_PORT_1:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_I2C1_SCL_IN, 4, 5, 20);
+        break;
+    default:
+        break;
+    }
 }
 
 int PINCTRL_SelPdmIn(uint8_t io_pin_dmic)
@@ -549,11 +595,6 @@ void PINCTRL_DisableAllInputs(void)
         APB_PINCTRL->IN_CTRL[i] = (uint32_t)-1;
 }
 
-void PINCTRL_SetSlewRate(const uint8_t io_pin_index, const pinctrl_slew_rate_t rate)
-{
-
-}
-
 void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_strength_t strength)
 {
     int reg = io_pin_index / 16;
@@ -581,11 +622,23 @@ int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index)
         return -1;
     set_reg_bits(&APB_PINCTRL->IN_CTRL[9], (uint32_t)1, 1, 3);
     set_reg_bits(&APB_PINCTRL->IN_CTRL[9], (uint32_t)1, 1, 4);
-    set_reg_bits(&APB_PINCTRL->OUT_CTRL[4], (uint32_t)0, 7, 0);
-    set_reg_bits(&APB_PINCTRL->OUT_CTRL[4], (uint32_t)0, 7, 7);
-    set_reg_bits(&APB_PINCTRL->PE_CTRL[0], (uint32_t)0, 1, dp_io_pin_index);
-    set_reg_bits(&APB_PINCTRL->PE_CTRL[0], (uint32_t)0, 1, dm_io_pin_index);
+    PINCTRL_EnableAnalog((GIO_Index_t)dp_io_pin_index);
+    PINCTRL_EnableAnalog((GIO_Index_t)dm_io_pin_index);
     return 0;
+}
+
+void PINCTRL_EnableAnalog(const uint8_t io_index)
+{
+    PINCTRL_SetPadMux(io_index, IO_SOURCE_GPIO);
+    PINCTRL_Pull(io_index, PINCTRL_PULL_DISABLE);
+
+    // GIO_SetDirection(io_index, GIO_DIR_NONE)
+    uint8_t start_gpio1 = GIO_GPIO_NUMBER / 2;
+    GIO_TypeDef *pDef = io_index >= start_gpio1 ? APB_GPIO1 : APB_GPIO0;
+    int index = io_index >= start_gpio1 ? io_index - start_gpio1 : io_index;
+    uint32_t mask = ~(1ul << index);
+    pDef->ChDir &= mask;
+    pDef->IOIE &= mask;
 }
 
 #endif

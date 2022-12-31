@@ -6,7 +6,6 @@
 #include "task.h"
 #include "profile.h"
 #include "container.h"
-#include "rom_tools.h"
 #include "eflash.h"
 
 #include "board.h"
@@ -114,6 +113,25 @@ const static uint8_t key_pins[] = {
 #define BUZZ_PIN        GIO_GPIO_8
 #define IIC_SCL_PIN     GIO_GPIO_14
 #define IIC_SDA_PIN     GIO_GPIO_15
+
+#elif (BOARD_ID == BOARD_DB682AC1A)
+
+const static uint8_t led_pins[] = {
+    GIO_GPIO_11, GIO_GPIO_14,
+};
+
+const static uint8_t key_pins[] = {
+    IO_NOT_A_PIN, GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
+};
+
+#define LED_ON          0
+#define LED_OFF         1
+
+#define KEY_DOWN        0
+
+#define BUZZ_PIN        GIO_GPIO_13
+#define IIC_SCL_PIN     GIO_GPIO_15
+#define IIC_SDA_PIN     GIO_GPIO_16
 
 #else
     #error unknown BOARD_ID
@@ -233,14 +251,25 @@ uint32_t uart_isr(void *user_data)
 
     typedef  void (*pFunction)(void);
     __disable_irq();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #define BOOT_ADDR 0x44000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define BOOT_ADDR 0x2042000
+#endif
     {
         int i;
         SysTick->CTRL = 0;
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
         SYSCTRL_WriteBlockRst(0);
         SYSCTRL_WriteBlockRst(0x3ffffful);
-
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+        for (i = 0; i < SYSCTRL_ITEM_NUMBER; i++)
+        {
+            SYSCTRL_ResetBlock((SYSCTRL_ResetItem)i);
+            SYSCTRL_ReleaseBlock((SYSCTRL_ResetItem)i);
+        }
+#endif
         __set_MSP(*(uint32_t *)(BOOT_ADDR));
         ((pFunction)(*(uint32_t *) (BOOT_ADDR + 4)))();
     }
@@ -253,7 +282,12 @@ void setup_peripherals(void)
     int i;
     SYSCTRL_ClearClkGateMulti(0
                             | (1 << SYSCTRL_ClkGate_APB_TMR0)
+#if   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
                             | (1 << SYSCTRL_ClkGate_APB_GPIO)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+                            | (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                            | (1 << SYSCTRL_ClkGate_APB_GPIO1)
+#endif
                             | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                             | (1 << SYSCTRL_ClkGate_APB_PWM)
                             | (1 << SYSCTRL_ClkGate_APB_I2C0));
@@ -293,6 +327,7 @@ void setup_peripherals(void)
 
 float read_adc(int channel)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     ADC_Reset();
     ADC_PowerCtrl(1);
 
@@ -312,7 +347,11 @@ float read_adc(int channel)
     ADC_Enable(0);
     ADC_PowerCtrl(0);
 
-    return voltage * (3.3 / 1024.);
+    return voltage * (3.3f / 1024.f);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #warning WIP: 916 read_adc
+    return (platform_rand() & 0xff) * 3.3f / 256.f;
+#endif
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)

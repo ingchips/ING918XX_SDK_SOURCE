@@ -229,7 +229,7 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value);
  * @param[in] ch_id             channel ID
  * @param[in] mask              enable or disable a timer in a channel
  * Note:
- *   - PWM is always identified as the 3rd timer.
+ *   - PWM is always identified as the 3rd timer (counting from 0).
  ****************************************************************************************
  */
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);

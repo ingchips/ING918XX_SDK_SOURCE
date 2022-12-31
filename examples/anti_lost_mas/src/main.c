@@ -12,7 +12,7 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
                     "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
                     "R12: 0x%08X\n",
-                    info->pc, info->lr, info->psr, 
+                    info->pc, info->lr, info->psr,
                     info->r0, info->r1, info->r2, info->r3, info->r12);
     for (;;);
 }
@@ -82,7 +82,7 @@ void adv_received()
 }
 
 void vTimerCallback(TimerHandle_t _)
-{    
+{
     set_buzzer_freq(500);
 }
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
@@ -104,7 +104,7 @@ void setup_peripherals(void)
 
 void adv_received()
 {
-    PINCTRL_SetPadMux(LED_IO, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(LED_IO, IO_SOURCE_PWM0_B);
     PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_GPIO);
     blink_style(0, BLINK_SINGLE);
     xTimerReset(timer,  portMAX_DELAY);
@@ -113,7 +113,7 @@ void adv_received()
 void vTimerCallback(TimerHandle_t _)
 {
     PINCTRL_SetPadMux(LED_IO, IO_SOURCE_GPIO);
-    PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(BUZZ_IO, IO_SOURCE_PWM0_A);
     PWM_SetupSimple(0, 500, 50);
 }
 #else
@@ -146,7 +146,7 @@ int app_main()
                  pdMS_TO_TICKS(10 * 1000),
                  pdFALSE,
                  NULL,
-                 vTimerCallback); 
+                 vTimerCallback);
     xTimerStart(timer, 0);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
@@ -154,7 +154,7 @@ int app_main()
     // setup handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
+    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     setup_peripherals();
