@@ -126,4 +126,12 @@ void RTC_ClearIntState(uint32_t state)
     APB_RTC->St |= state &  _RTC_INT_MASK;
 }
 
+void RTC_EnableDeepSleepWakeupSource(uint8_t enable)
+{
+    uint32_t t = io_read(AON2_CTRL_BASE + 0x12c);
+    if (enable) t |= 1 << 6;
+    else t &= ~(1u << 6);
+    io_write(AON2_CTRL_BASE + 0x12c, t);
+}
+
 #endif

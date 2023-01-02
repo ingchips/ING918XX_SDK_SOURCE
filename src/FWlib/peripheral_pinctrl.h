@@ -159,6 +159,14 @@ void PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
  */
 void PINCTRL_EnableAllAntSelPins(void);
 
+/**
+ * @brief Set slew rate of a GPIO
+ *
+ * @param io_pin_index      The io pad to be configured.
+ * @param rate              The rate to be configured (default: SLOW)
+ */
+void PINCTRL_SetSlewRate(uint8_t io_pin_index, const pinctrl_slew_rate_t rate);
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #define IO_PIN_NUMBER                   42
@@ -340,11 +348,6 @@ typedef enum
 
 typedef enum
 {
-    PINCTRL_SLEW_RATE_DUMMY,
-} pinctrl_slew_rate_t;
-
-typedef enum
-{
     PINCTRL_DRIVE_2mA,
     PINCTRL_DRIVE_4mA,
     PINCTRL_DRIVE_8mA,
@@ -419,6 +422,20 @@ int PINCTRL_SelUartIn(uart_port_t port,
                       uint8_t io_pin_cts);
 
 /**
+ * @brief ING918xx Compatible API: Select input io_pin for UART CTS
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for UART CTS
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelUartCtsIn(const uart_port_t port, const uint8_t io_pin_index);
+
+/**
  * @brief Select I2C input IOs
  *
  * Note: If an input is not used or invalid, set it to `IO_NOT_A_PIN`.
@@ -430,6 +447,13 @@ int PINCTRL_SelUartIn(uart_port_t port,
 int PINCTRL_SelI2cIn(i2c_port_t port,
                       uint8_t io_pin_scl,
                       uint8_t io_pin_sda);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for I2C SCL
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index);
 
 /**
  * @brief Select PDM input IOs
@@ -493,13 +517,19 @@ int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode);
 int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
 
 /**
- * @brief Set USB funtion of dp and dm
+ * @brief Set USB function of dp and dm
  *
  * @param dp_io_pin_index      fixed, should be GPIO_16.
  * @param dm_io_pin_index      fixed, should be GPIO_17.
  * @return                  0 if successful else non-0
  */
 int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index);
+
+/**
+ * @brief Enable analog function of a certain IO (used for USB/ADC)
+ *
+ */
+void PINCTRL_EnableAnalog(const uint8_t io_index);
 
 #endif
 
@@ -525,15 +555,7 @@ void PINCTRL_DisableAllInputs(void);
  * @brief Set slew rate of a GPIO
  *
  * @param io_pin_index      The io pad to be configured.
- * @param rate              The rate to be configured (default: SLOW)
- */
-void PINCTRL_SetSlewRate(const uint8_t io_pin_index, const pinctrl_slew_rate_t rate);
-
-/**
- * @brief Set slew rate of a GPIO
- *
- * @param io_pin_index      The io pad to be configured.
- * @param strenght          The strength to be configured (default: 8mA)
+ * @param strength          The strength to be configured (default: 8mA)
  */
 void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_strength_t strength);
 

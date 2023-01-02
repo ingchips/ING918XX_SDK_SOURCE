@@ -48,14 +48,14 @@ void recv_char(uint8_t c)
         recv_cnt = 0;
         last_crlf = 0;
     }
-    
+
     if (IS_CRLF(c) && last_crlf)
         return;
-    
+
     last_crlf = IS_CRLF(c);
-    
+
     recv_buff[recv_cnt++] = c;
-    
+
     if (last_crlf)
     {
         send_data(recv_buff, recv_cnt, 1);
@@ -65,8 +65,8 @@ void recv_char(uint8_t c)
 
 uint32_t uart_isr(void *user_data)
 {
-    uint32_t status;    
-    
+    uint32_t status;
+
     while(1)
     {
         status = apUART_Get_all_raw_int_stat(APB_UART0);
@@ -164,4 +164,28 @@ void io_interf_setup_peripherals()
 void io_interf_init()
 {
 }
+
+#elif (IO_TYPE == IO_TYPE_USB_BIN)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#include "peripheral_usb.c"
+#include "usb_driver.c"
+
+void HANDLE_FUNC(const uint8_t *data, const int len)
+{
+    if(bsp_usb_send_data(data, len))
+        dbg_printf("data lost: %d\n", len);
+}
+
+void io_interf_push_data(uint8_t *data, uint32_t len)
+{
+    send_data(data, len, 0);
+}
+
+void io_interf_setup_peripherals(){}
+
+void io_interf_init()
+{
+    bsp_usb_init();
+}
+#endif
 #endif

@@ -279,7 +279,7 @@ uint32_t SYSCTRL_GetPLLClk(void);
 /**
  * \brief Config PLL clock in Hz
  *
- *               f_osc * loop
+ *               f_in * loop
  * f_vco = ------------------------
  *                  div_pre
  *
@@ -288,8 +288,9 @@ uint32_t SYSCTRL_GetPLLClk(void);
  *               div_output
  *
  * Requirements:
+ *    1. f_in/div_pref should be in [2, 30]MHz, where f_in is slow clock;
  *    1. f_vco should be in [60, 600]MHz;
- *    1. f_osc/div_pref should be in [2, 24]MHz;
+ *    1. f_pll should not exceed 500MHz.
  *
  * \param loop          loop (6 bits)
  * \param div_pre       div_pre (8 bits)
@@ -338,10 +339,9 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item);
 
 /**
  * \brief Select ADC Clk divider
- * \param denom         denom (6 bits)
- * \param num           num (6 bits)
- */
-void SYSCTRL_SetAdcClkDiv(uint8_t denom, uint8_t num);
+ * \param denom         denominator (6 bits)
+  */
+void SYSCTRL_SetAdcClkDiv(uint8_t denom);
 
 /**
  * \brief Get ADC Clk from divider
@@ -379,11 +379,14 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock of QDEC
+ * \brief Select the two clocks of QDEC
  *
- * The actual clock is clock (selected by `mode`) divided by `div`.
+ * This function configures two clocks for QDEC:
  *
- * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
+ * 1. `clk_qdec`: selected by `mode` (`SYSCTRL_CLK_SLOW` or `SYSCTRL_CLK_HCLK`);
+ * 1. `clk_qdec_div`: divided from `qdec_clk`, specified by `div`.
+ *
+ * Note: `clk_qdec` must be >= PClk (see `SYSCTRL_GetPClk()`).
  *
  * \param mode          clock mode
  * \param div           clock divider (10 bits)
@@ -391,18 +394,54 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
  */
 void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 
+/**
+ * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan, or MCU
+ *
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N,
+ *  where N is in [0..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
+ *  clock source (32k OSC or 32k RC).
+ *
+ * Note: The default mode is (`SYSCTRL_CLK_SLOW_DIV_1` + 999), i.e. (SLOW_CLK / 1000).
+ *
+ * \param mode                  clock mode
+ */
+void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
+
+/**
+ * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan, or MCU
+ *
+ * \return                      frequency of the 32k
+ */
+int SYSCTRL_GetCLK32k(void);
+
+typedef enum
+{
+    SYSCTRL_CPU_32k_CLK_32k = 0,    // use the clock configured by `SYSCTRL_SelectCLK32k`
+    SYSCTRL_CPU_32k_INTERNAL = 1,   // use the internal 32k clock source (32k OSC or 32k RC)
+} SYSCTRL_CPU32kMode;
+
+/**
+ * \brief Select clock of 32k for MCU
+ *
+ * Note: The default mode is `SYSCTRL_CPU_32k_INTERNAL`.
+ *
+ * \param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
+
+/**
+ * \brief Get the frequency of CPU 32k
+ *
+ * \return                      frequency of CPU 32k
+ */
+int SYSCTRL_GetCPU32k(void);
+
 typedef enum
 {
     SYSCTRL_SLOW_RC_CLK = 0,        // RC clock (which is tunable)
     SYSCTRL_SLOW_CLK_24M_RF = 1,    // 24MHz RF OSC clock (default)
 } SYSCTRL_SlowClkMode;
-
-typedef enum
-{
-    SYSCTRL_SLOW_RC_24M = 0,
-    SYSCTRL_SLOW_RC_48M = 1,
-    SYSCTRL_SLOW_RC_64M = 1,
-} SYSCTRL_SlowRCClkMode;
 
 /**
  * \brief Select clock source of slow clock
@@ -429,6 +468,16 @@ uint32_t SYSCTRL_GetSlowClk(void);
  */
 void SYSCTRL_EnablePLL(uint8_t enable);
 
+typedef enum
+{
+    SYSCTRL_SLOW_RC_8M = 0,
+    SYSCTRL_SLOW_RC_16M = 1,
+    SYSCTRL_SLOW_RC_24M = 3,
+    SYSCTRL_SLOW_RC_32M = 7,
+    SYSCTRL_SLOW_RC_48M = 0xf,
+    SYSCTRL_SLOW_RC_64M = 0x1f,
+} SYSCTRL_SlowRCClkMode;
+
 /**
  * \brief Enable/Disable RC clock for slow clock
  *
@@ -437,6 +486,26 @@ void SYSCTRL_EnablePLL(uint8_t enable);
  *
  */
 void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode);
+
+/**
+ * \brief Tune the RC clock for slow clock to the frequency given by
+ * `SYSCTRL_SlowRCClkMode` automatically.
+ *
+ * Note: 1. The returned value can be stored in NVM for later use (see `SYSCTRL_TuneSlowRC`)
+ *       2. The internal configuration is different for different `SYSCTRL_SlowRCClkMode`.
+ *
+ * \return              the internal configuration after tunning
+ *
+ */
+uint32_t SYSCTRL_AutoTuneSlowRC(void);
+
+/**
+ * \brief Set the internal configuration the RC clock for slow clock
+ *
+ * \param value         the internal configuration which is returned from
+ *                      `SYSCTRL_AutoTuneSlowRC` to tune the clock
+ */
+void SYSCTRL_TuneSlowRC(uint32_t value);
 
 typedef enum
 {
@@ -484,13 +553,20 @@ int SYSCTRL_SelectUsedDmaItems(uint32_t items);
  */
 int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 
-
 /**
  * @brief Set LDO output level for Flash
  *
  * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH...`)
  */
 void SYSCTRL_SetLDOOutputFlash(int level);
+
+/**
+ * @brief Config USB PHY functionality
+ *
+ * @param[in] enable            Enable(1)/Disable(0) usb phy module
+ * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
+ */
+void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #endif
 
@@ -561,14 +637,6 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
  * @brief Wait for LDO state ready
  */
 void SYSCTRL_WaitForLDO(void);
-
-/**
- * @brief Config USB PHY functionality
- *
- * @param[in] enable            Enable(1)/Disable(0) usb phy module
- * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
- */
-void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

@@ -16,7 +16,7 @@
 static uint32_t sample_counter = 0;
 
 static uint32_t cb_isr(void *user_data)
-{ 
+{
     uint32_t state = I2S_GetIntState(APB_I2S);
     I2S_ClearIntState(APB_I2S, state);
 
@@ -37,24 +37,24 @@ static uint32_t cb_isr(void *user_data)
 void audio_input_setup(void)
 {
     // PDM @ 3MHz
-    SYSCTRL_SetAdcClkDiv(8, 1);
+    SYSCTRL_SetAdcClkDiv(8);
     SYSCTRL_SelectTypeAClk(SYSCTRL_ITEM_APB_PDM, SYSCTRL_CLK_ADC_DIV);
-    
+
     PINCTRL_SetPadMux(PDM_PIN_MCLK, IO_SOURCE_PDM_DMIC_MCLK);
     PINCTRL_SetPadMux(PDM_PIN_IN, IO_SOURCE_PDM_DMIC_IN);
     PINCTRL_SelPdmIn(PDM_PIN_IN);
 
     // I2S data form PDM
     // I2S @ OSC_CLK_FREQ / (4 * 5 * 75) = 16000
-    I2S_DataFromPDM(1);    
+    I2S_DataFromPDM(1);
     I2S_ConfigClk(APB_I2S, 5, 75);
     I2S_ConfigIRQ(APB_I2S, 0, 1, 0, 10);
-    I2S_DMAEnable(APB_I2S, 0, 0);    
+    I2S_DMAEnable(APB_I2S, 0, 0);
     I2S_Config(APB_I2S, I2S_ROLE_MASTER, I2S_MODE_STANDARD, 0, 1, 0, 1, 24);
-    
+
     platform_set_irq_callback(PLATFORM_CB_IRQ_I2S, cb_isr, 0);
 
-    PDM_Config(APB_PDM, 0, 1, 1, 1, 0);    
+    PDM_Config(APB_PDM, 0, 1, 1, 1, 0);
 }
 
 void audio_input_start(void)

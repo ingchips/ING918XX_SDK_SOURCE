@@ -118,34 +118,50 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define ADC_LEFT_SHIFT(v, s)    ((v) << (s))
+#define ADC_RIGHT_SHIFT(v, s)   ((v) >> (s))
+#define ADC_MK_MASK(b)          ((ADC_LEFT_SHIFT(1, b)) - (1))
+#define ADC_REG_VAL(reg)        ((*((uint32_t *)((APB_SARADC_BASE) + (reg)))))
+#define ADC_REG_WR(reg, v, s)   ((ADC_REG_VAL(reg)) |= (ADC_LEFT_SHIFT(v, s)))
+#define ADC_REG_RD(reg, b, s)   ((ADC_RIGHT_SHIFT((ADC_REG_VAL(reg)), s)) & ADC_MK_MASK(b))
+#define ADC_REG_CLR(reg, b, s)  ((ADC_REG_VAL(reg)) &= (~(ADC_LEFT_SHIFT(ADC_MK_MASK(b), s))))
+
 static SADC_adcCal_t ADC_adcCal;
 
 static void ADC_RegClr(SADC_adcReg reg, uint8_t s, uint32_t b)
 {
-    REG_CLR(reg, b, s);
+    ADC_REG_CLR(reg, b, s);
 }
 static void ADC_RegWr(SADC_adcReg reg, uint32_t v, uint8_t s)
 {
-    REG_WR(reg, v, s);
+    ADC_REG_WR(reg, v, s);
 }
 static void ADC_RegWrBits(SADC_adcReg reg, uint32_t v, uint8_t s, uint8_t b)
 {
-    REG_CLR(reg, b, s);
-    REG_WR(reg, v, s);
+    ADC_REG_CLR(reg, b, s);
+    ADC_REG_WR(reg, v, s);
 }
 static uint32_t ADC_RegRd(SADC_adcReg reg, uint8_t s, uint8_t b)
 {
-    return REG_RD(reg, b, s);
+    return ADC_REG_RD(reg, b, s);
 }
 
-static float ADC_CalWithPga(uint16_t data)
+static float ADC_CalWithPgaSingle(uint16_t data)
 {
     float gain = (float)ADC_PgaGainGet();
-    return (2.f / gain) * ADC_adcCal.vref_gap * (((float)data / 16383.f) + 0.5f - (1.f / gain));
+    return ADC_adcCal.vref_P * 0.5f + ((2 * ADC_adcCal.vref_P * (data - 8192.f)) / (16384.f * gain));
 }
-static float ADC_CalWithoutPga(uint16_t data)
+static float ADC_CalWithPgaDiff(uint16_t data)
 {
-    return ADC_adcCal.vref_gap * (2.f * (float)data / 16383.f - 0.5f);
+    float gain = (float)ADC_PgaGainGet();
+    return ((data - 8192.f) * 2.f * ADC_adcCal.vref_P) / (16384.f * gain);
+}
+static void ADC_CbRegister(void)
+{
+    if (ADC_RegRd(SADC_CFG_0, 8, 1))
+        ADC_adcCal.cb = ADC_CalWithPgaDiff;
+    else
+        ADC_adcCal.cb = ADC_CalWithPgaSingle;
 }
 
 void ADC_EnableCtrlSignal(void)
@@ -167,7 +183,7 @@ void ADC_SetAdcMode(SADC_adcMode mode)
 }
 SADC_adcMode ADC_GetAdcMode(void)
 {
-    return ADC_RegRd(SADC_CFG_0, 0, 1);
+    return (SADC_adcMode)ADC_RegRd(SADC_CFG_0, 0, 1);
 }
 
 static void ADC_SetCalrpt(SADC_adcCalrpt value)
@@ -190,7 +206,7 @@ void ADC_SetAdcCtrlMode(SADC_adcCtrlMode mode)
 
 void ADC_EnableChannel(SADC_channelId ch, uint8_t enable)
 {
-    if (ch < ADC_CH_0 || ch > ADC_CH_11) return;
+    if (ch > ADC_CH_11) return;
     if (enable)
         ADC_RegWr(SADC_CFG_2, 1, (ch + 3));
     else
@@ -244,19 +260,18 @@ void ADC_SetInputMode(SADC_adcIputMode mode)
     ADC_RegClr(SADC_CFG_0, 8, 1);
     if (mode)
         ADC_RegWr(SADC_CFG_0, mode, 8);
+    if (ADC_adcCal.cb)
+        ADC_CbRegister();
 }
 
 void ADC_PgaGainSet(SADC_adcPgaGain gain)
 {
-    if (gain < PGA_GAIN_1 || gain > PGA_GAIN_128) return;
-
+    if (gain > PGA_GAIN_128) return;
     ADC_RegWrBits(SADC_CFG_0, gain, 2, 3);
-    if (!ADC_adcCal.cb)
-        ADC_adcCal.cb = ADC_CalWithPga;
 }
 SADC_adcPgaGain ADC_PgaGainGet(void)
 {
-    return 1 << ADC_RegRd(SADC_CFG_0, 2, 3);
+    return (SADC_adcPgaGain)(1 << ADC_RegRd(SADC_CFG_0, 2, 3));
 }
 void ADC_PgaEnable(uint8_t enable)
 {
@@ -286,11 +301,11 @@ uint32_t ADC_PopFifoData(void)
 }
 SADC_channelId ADC_GetDataChannel(uint32_t data)
 {
-    return (SADC_channelId)(RIGHT_SHIFT(data, 14) & MK_MASK(4));
+    return (SADC_channelId)(ADC_RIGHT_SHIFT(data, 14) & ADC_MK_MASK(4));
 }
 uint16_t ADC_GetData(uint32_t data)
 {
-    return (data & MK_MASK(14));
+    return (data & ADC_MK_MASK(14));
 }
 uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 {
@@ -313,12 +328,7 @@ static void ADC_VrefRegister(float VP, float VN)
     if (VP < VN) return;
     ADC_adcCal.vref_P = VP;
     ADC_adcCal.vref_N = VN;
-    ADC_adcCal.vref_gap = VP - VN;
-    if (ADC_GetPgaStatus())
-        ADC_adcCal.cb = ADC_CalWithPga;
-    else
-        ADC_adcCal.cb = ADC_CalWithPga;
-        // ADC_adcCal.cb = ADC_CalWithoutPga;
+    ADC_CbRegister();
 }
 
 void ADC_VrefCalibration(void)
@@ -332,7 +342,7 @@ void ADC_VrefCalibration(void)
 
 float ADC_GetVol(uint16_t data)
 {
-    if (!ADC_adcCal.cb || !ADC_adcCal.vref_gap)
+    if (!ADC_adcCal.cb || !ADC_adcCal.vref_P)
         return 0;
     float vol = ADC_adcCal.cb(data);
     if (vol > ADC_adcCal.vref_P) return ADC_adcCal.vref_P;

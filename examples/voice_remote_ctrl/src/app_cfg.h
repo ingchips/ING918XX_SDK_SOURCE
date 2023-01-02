@@ -30,8 +30,8 @@
 #define PDM_PIN_MCLK        28
 #define PDM_PIN_IN          29
 
-#define I2S_PIN_BCLK        28
-#define I2S_PIN_IN          29
-#define I2S_PIN_LRCLK       30
+#define I2S_PIN_BCLK        21
+#define I2S_PIN_IN          22
+#define I2S_PIN_LRCLK       35
 
 #endif
