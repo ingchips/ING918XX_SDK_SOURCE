@@ -49,11 +49,15 @@ static mesh_model_t sig_models[] = {
     BT_MESH_MODEL_GEN_ONOFF_SRV(&gen_onoff_srv_cb, &gen_onoff_publish),
 };
 
+static mesh_model_t vnd_models[] = {
+    // add vendor models here.
+};
+
 /*
  * Root and Secondary Element Declarations
  */
 static mesh_element_t elements[] = {
-    BT_MESH_ELEM(0x0000, sig_models, BT_MESH_MODEL_NONE), //primary element.
+    BT_MESH_ELEM(0x0000, sig_models, vnd_models), //primary element.
 };
 
 static const struct bt_mesh_comp comp = {
@@ -66,7 +70,7 @@ static const struct bt_mesh_comp comp = {
 };
 
 
-static void mesh_setup(const struct bt_mesh_comp *a_comp){
+static void mesh_elements_and_models_init(const struct bt_mesh_comp *a_comp){
     size_t i;
     for(i=0; i<a_comp->elem_count; i++){
         mesh_node_add_element(&a_comp->elem[i]);
@@ -74,6 +78,6 @@ static void mesh_setup(const struct bt_mesh_comp *a_comp){
 }
 
 void mesh_model_init(void){
-    mesh_setup(&comp);
+    mesh_elements_and_models_init(&comp);
 }
 

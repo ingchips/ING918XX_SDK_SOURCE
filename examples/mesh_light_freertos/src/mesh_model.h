@@ -63,20 +63,16 @@ struct bt_mesh_comp {
     .models_count_vendor  = 0,  \
 }
 
-/** Helper to define an empty model array */
-#define BT_MESH_MODEL_NONE ((mesh_model_t []){})
 
 // typedef struct mesh_model
-#define BT_MESH_MODEL(_id, _op, _pub, _srv)                            \
-{                                                                            \
-    .model_identifier = mesh_model_get_model_identifier_bluetooth_sig(_id),                                                         \
-    .operations = _op,                                                           \
-    .appkey_indices = { [0 ... (MAX_NR_MESH_APPKEYS_PER_MODEL - 1)] =             \
-            MESH_APPKEY_INVALID },                                \
-    .publication_model = _pub,                                                         \
-    .subscriptions = { [0 ... (MAX_NR_MESH_SUBSCRIPTION_PER_MODEL - 1)] =         \
-            0x0000 },                           \
-    .model_data = _srv,                                             \
+#define BT_MESH_MODEL(_id, _op, _pub, _srv)                                                     \
+{                                                                                               \
+    .model_identifier = ((uint32_t) BLUETOOTH_COMPANY_ID_BLUETOOTH_SIG_INC << 16) | _id,        \
+    .operations = (const mesh_operation_t *)_op,                                                \
+    .appkey_indices = { [0 ... (MAX_NR_MESH_APPKEYS_PER_MODEL - 1)] = MESH_APPKEY_INVALID },    \
+    .publication_model = _pub,                                                                  \
+    .subscriptions = { [0 ... (MAX_NR_MESH_SUBSCRIPTION_PER_MODEL - 1)] = 0x0000 },             \
+    .model_data = (void *)_srv,                                                                 \
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -94,7 +90,7 @@ typedef struct light_state {
 #include "mesh_generic_on_off_server.h"
 #define BT_MESH_MODEL_GEN_ONOFF_SRV(srv, pub)		\
 	BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER,	\
-                mesh_generic_on_off_server_get_operations(), pub, srv)
+                &mesh_generic_on_off_server_get_operations, pub, srv)
 
 
 struct bt_mesh_gen_onoff_srv_cb {
