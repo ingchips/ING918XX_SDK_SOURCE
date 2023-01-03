@@ -59,8 +59,8 @@ struct bt_mesh_comp {
     .loc                  = (_loc),                 \
     .sig_models           = (_mods),                \
     .vnd_models           = (_vnd_mods),            \
-    .models_count_sig     = 0,      \
-    .models_count_vendor  = 0,  \
+    .models_count_sig     = 0,                      \
+    .models_count_vendor  = 0,                      \
 }
 
 

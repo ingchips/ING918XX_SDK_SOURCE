@@ -389,6 +389,16 @@
               <FilePath>.\src\main.c</FilePath>
             </File>
             <File>
+              <FileName>mesh_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\profile.c</FilePath>
+            </File>
+            <File>
               <FileName>btstack_port_mesh_init.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\btstack_port_mesh_init.c</FilePath>
@@ -409,10 +419,20 @@
               <FilePath>.\src\rgb_led.c</FilePath>
             </File>
             <File>
-              <FileName>mesh_profile.c</FileName>
+              <FileName>mesh_model.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\mesh_profile.c</FilePath>
+              <FilePath>.\src\mesh_model.c</FilePath>
             </File>
+            <File>
+              <FileName>app_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\app_config.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>TEST_CODE</GroupName>
+          <Files>
             <File>
               <FileName>BUTTON_TEST.c</FileName>
               <FileType>1</FileType>
@@ -422,16 +442,6 @@
               <FileName>RF_TEST.C</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\RF_TEST.C</FilePath>
-            </File>
-            <File>
-              <FileName>app_config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\app_config.h</FilePath>
-            </File>
-            <File>
-              <FileName>mesh_model.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\mesh_model.c</FilePath>
             </File>
           </Files>
         </Group>

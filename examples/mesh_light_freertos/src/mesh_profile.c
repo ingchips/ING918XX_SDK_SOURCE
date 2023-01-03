@@ -9,11 +9,12 @@
 #include "platform_api.h"
 #include "att_db.h"
 #include "mesh_profile.h"
-#include "mesh_storage.h"
-#include "mesh_port_stack.h"
-#include "mesh.h"
-#include "btstack_port_mesh_init.h"
 #include "app_config.h"
+#include "profile.h"
+#include "mesh.h"
+#include "mesh_port_stack.h"
+#include "mesh_storage.h" 
+
 
 // mesh adv handle
 #define MESH_PROXY_ADV_HANDLE        0x00
@@ -496,18 +497,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 /* API START */
 uint32_t setup_profile(void *data, void *user_data)
 {
-    static btstack_packet_callback_registration_t mesh_hci_event_callback_registration;
-    
-    platform_printf("mesh_setup_profile start\n");
-
-    // mesh store init
-    mesh_storage_init();
-    
     // mesh init.
-    mesh_stack_init();
-    bt_port_mesh_setup();
+    mesh_init();
 
     // ble init.
+    static btstack_packet_callback_registration_t mesh_hci_event_callback_registration;
     att_server_init(att_read_callback, att_write_callback);
     mesh_hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&mesh_hci_event_callback_registration);

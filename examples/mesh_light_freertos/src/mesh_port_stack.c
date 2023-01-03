@@ -334,17 +334,15 @@ void mesh_gatt_can_send_now(uint16_t conn_handle)
 }
 
 static void mesh_node_reset_handler(void){
-    mesh_stack_init();//added by lizhk.
+    mesh_port_init();//added by lizhk.
     mesh_server_restart(); //added by lizhk.
 }
 
 /******************************************************************************************
  * @brief Mesh stack initialization function.
  */
-void mesh_stack_init(void)
+void mesh_port_init(void)
 {
-    printf("%s\n", __func__);
-
 //    SERVICE_MESH_PROV_HDL = HANDLE_MESH_PROVISIONING_DATA_IN-2;
     PROV_DATA_IN_HDL = HANDLE_MESH_PROVISIONING_DATA_IN;
     PROV_DATA_OUT_HDL = HANDLE_MESH_PROVISIONING_DATA_OUT;
