@@ -240,6 +240,35 @@ void ble_port_generate_uuid_and_load_uuid(void){
     mesh_node_set_device_uuid(device_uuid);
 }
 
+void mesh_platform_config(void)
+{
+#ifdef ENABLE_MESH_GATT_BEARER
+    // setup connectable advertisments
+    bd_addr_t null_addr;
+    memset(null_addr, 0, 6);
+    uint8_t adv_type = CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT;   // connectable, scannable, legacy
+    uint16_t adv_int_min = 0x0030;
+    uint16_t adv_int_max = 0x0030;
+    adv_bearer_advertisements_set_params(adv_int_min, adv_int_max, adv_type, BD_ADDR_TYPE_LE_PUBLIC, null_addr, PRIMARY_ADV_ALL_CHANNELS, ADV_FILTER_ALLOW_ALL);
+    
+    ble_port_generate_name_and_load_name();
+#endif
+    
+}
+
+void mesh_prov_config(void)
+{
+    // Track Provisioning as device role
+    mesh_register_provisioning_device_packet_handler((btstack_packet_handler_t)&mesh_provisioning_message_handler);
+    
+    // Enable Output OOB
+    // provisioning_device_set_output_oob_actions(0x08, 0x08);
+    
+    // Set uuid.
+    ble_port_generate_uuid_and_load_uuid();
+    
+}
+
 void mesh_elements_models_init(void)
 {
     // Loc - bottom - https://www.bluetooth.com/specifications/assigned-numbers/gatt-namespace-descriptors
@@ -311,34 +340,5 @@ void mesh_elements_models_init(void)
     // Enable PROXY and RELAY
     mesh_foundation_gatt_proxy_set(1);
     mesh_foundation_relay_set(1);
-}
-
-void mesh_platform_config(void)
-{
-#ifdef ENABLE_MESH_GATT_BEARER
-    // setup connectable advertisments
-    bd_addr_t null_addr;
-    memset(null_addr, 0, 6);
-    uint8_t adv_type = CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT;   // connectable, scannable, legacy
-    uint16_t adv_int_min = 0x0030;
-    uint16_t adv_int_max = 0x0030;
-    adv_bearer_advertisements_set_params(adv_int_min, adv_int_max, adv_type, BD_ADDR_TYPE_LE_PUBLIC, null_addr, PRIMARY_ADV_ALL_CHANNELS, ADV_FILTER_ALLOW_ALL);
-    
-    ble_port_generate_name_and_load_name();
-#endif
-    
-}
-
-void mesh_prov_config(void)
-{
-    // Track Provisioning as device role
-    mesh_register_provisioning_device_packet_handler((btstack_packet_handler_t)&mesh_provisioning_message_handler);
-    
-    // Enable Output OOB
-    // provisioning_device_set_output_oob_actions(0x08, 0x08);
-    
-    // Set uuid.
-    ble_port_generate_uuid_and_load_uuid();
-    
 }
 
