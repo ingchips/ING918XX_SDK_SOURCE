@@ -596,9 +596,14 @@ void SYSCTRL_ClearClkGateMulti(uint32_t items);
 
 /**
  * \brief Reset a component
- * \param item      the component to be resetted
+ * \param item      the component to be reset
  */
 void SYSCTRL_ResetBlock(SYSCTRL_ResetItem item);
+
+/**
+ * \brief Reset all components
+ */
+void SYSCTRL_ResetAllBlocks(void);
 
 /**
  * \brief Release a component from reset

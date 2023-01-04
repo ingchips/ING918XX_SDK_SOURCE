@@ -38,6 +38,11 @@ void SYSCTRL_ResetBlock(SYSCTRL_ResetItem item)
     AHB_SYSCTRL->RstSet &= ~(1 << item);
 }
 
+void SYSCTRL_ResetAllBlocks(void)
+{
+    AHB_SYSCTRL->RstSet = 0;
+}
+
 void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item)
 {
     AHB_SYSCTRL->RstSet |= (1 << item);
@@ -864,6 +869,11 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
     {
         io_write(AON2_CTRL_BASE + 0x174, 0);
     }
+}
+
+void SYSCTRL_ResetAllBlocks(void)
+{
+    APB_SYSCTRL->RstuCfg[1] &= 0x23;
 }
 
 #endif
