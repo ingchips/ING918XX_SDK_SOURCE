@@ -150,7 +150,7 @@ static mesh_model_t sig_models[] = {
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER, &gen_level_srv_cb),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_LEVEL_CLIENT, NULL),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_LIGHT_LIGHTNESS_SERVER, &light_lightness_srv_cb),
-    BT_MESH_MODEL(MESH_SIG_MODEL_ID_LIGHT_SERVER_SERVER, &light_hsl_srv_cb),
+    BT_MESH_MODEL(MESH_SIG_MODEL_ID_LIGHT_HSL_SERVER, &light_hsl_srv_cb),
 };
 
 // example: 

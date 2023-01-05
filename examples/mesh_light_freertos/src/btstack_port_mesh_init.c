@@ -363,7 +363,7 @@ static void mesh_sig_models_init(mesh_element_t * element, mesh_model_t * model,
                 mesh_element_add_model(element, model);
                 break;
             
-            case MESH_SIG_MODEL_ID_LIGHT_SERVER_SERVER: //Meshlib not support this model, add later.
+            case MESH_SIG_MODEL_ID_LIGHT_HSL_SERVER: //Meshlib not support this model, add later.
                 // Setup Light HSL server model
 //                model->operations = mesh_generic_level_server_get_operations();
 //                model->model_data = (void *) &mesh_generic_level_state;
@@ -400,6 +400,9 @@ static void mesh_vendor_models_init(mesh_element_t * element, mesh_model_t * mod
 }
 
 void mesh_elements_and_models_init(const bt_mesh_comp_t *a_comp){
+    
+    printf("#elem_count: %d\n", a_comp->elem_count);
+    
     // check element valid.
     if (a_comp->elem_count == 0) return;
     
@@ -425,6 +428,8 @@ void mesh_elements_and_models_init(const bt_mesh_comp_t *a_comp){
         
         // init location.
         mesh_node_set_element_location(pElement, loc);
+        
+        printf("models_count_sig: %d, models_count_vendor: %d\n", pElement->models_count_sig, pElement->models_count_vendor);
         
         // add sig models to element.
         if(pElement->models_count_sig){
