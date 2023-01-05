@@ -60,6 +60,9 @@ extern "C"
 #define MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER  0x1002u
 #define MESH_SIG_MODEL_ID_GENERIC_LEVEL_CLIENT  0x1003u
 
+#define MESH_SIG_MODEL_ID_LIGHT_LIGHTNESS_SERVER    0x1300u
+#define MESH_SIG_MODEL_ID_LIGHT_SERVER_SERVER       0x1307u
+
 // Foundation Model Operations
 #define MESH_FOUNDATION_OPERATION_APPKEY_ADD                                      0x00
 #define MESH_FOUNDATION_OPERATION_APPKEY_UPDATE                                   0x01

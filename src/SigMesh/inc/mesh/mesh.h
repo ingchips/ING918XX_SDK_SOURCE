@@ -54,7 +54,8 @@ void mesh_node_reset_handler_register(f_mesh_callback_t func);
 /**
  * Init Mesh network stack
  */
-void mesh_stack_init(void);
+typedef void (*f_mesh_elem_init_t)(void);
+void mesh_stack_init(f_mesh_elem_init_t mesh_elems_init);
 
 /**
  * Register for Mesh Provisioning Device events

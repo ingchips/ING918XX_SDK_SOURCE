@@ -150,6 +150,9 @@ typedef struct mesh_model {
 
     // packet handler for transition events in server, event callback handler in client
     btstack_packet_handler_t model_packet_handler;
+    
+    //lizhk
+    void * user_data;
 } mesh_model_t;
 
 typedef struct {
@@ -171,7 +174,7 @@ typedef struct mesh_element {
     uint16_t models_count_sig;
     uint16_t models_count_vendor;
     
-    // 
+    // models, added by lizhk
     mesh_model_t * const sig_models;
     mesh_model_t * const vnd_models;
 
@@ -181,8 +184,8 @@ typedef struct {
     mesh_linked_list_iterator_t it;
 } mesh_element_iterator_t;
 
-
-void mesh_node_init(void);
+//void mesh_node_init(void);
+void mesh_primary_elem_init(mesh_element_t * elem);
 
 /**
  * @brief Set unicast address of primary element
