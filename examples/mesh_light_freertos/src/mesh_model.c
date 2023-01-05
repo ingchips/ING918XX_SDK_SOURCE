@@ -16,9 +16,9 @@ static bt_mesh_cfg_srv_t cfg_srv = {
     .frnd = BT_MESH_FRIEND_NOT_SUPPORTED,
     .low_pwr = BT_MESH_LOW_POWER_NOT_SUPPORTED,
     .beacon = BT_MESH_BEACON_DISABLED,
-    .default_ttl = 3,
-    .net_transmit = 2,
-    .relay_retransmit = 2,
+    .default_ttl = 7,
+    .net_transmit = 3,
+    .relay_retransmit = 3,
     
 };
 
