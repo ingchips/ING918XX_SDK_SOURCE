@@ -4,6 +4,9 @@
 #include "task.h"
 #include "semphr.h"
 #include "timers.h"
+#include "string.h"
+
+#define MESH_RESIZE_HOST_TASK_STACK_DEPTH_WORDS 512 //host stack is 512 words
 
 struct timer_user_data
 {
@@ -75,9 +78,16 @@ gen_handle_t port_task_create(
     )
 {
     TaskHandle_t r;
+    uint16_t StackDepth = (stack_size + 3) >> 2;// stack_size = (StackDepth) words = (StackDepth * 4) bytes.
+    if(memcmp(name, (char *)"host", 4) == 0){
+        if(StackDepth < MESH_RESIZE_HOST_TASK_STACK_DEPTH_WORDS){
+            StackDepth = MESH_RESIZE_HOST_TASK_STACK_DEPTH_WORDS;
+            platform_printf("task name: %s, stack: %d\n", name, StackDepth);
+        }
+    }
     xTaskCreate(entry,
                name,
-               (stack_size + 3) >> 2,
+               StackDepth,
                parameter,
                priority == GEN_TASK_PRIORITY_HIGH ? APP_PRIO_HIGH : APP_PRIO_LOW,
                &r);
