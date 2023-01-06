@@ -101,30 +101,54 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
     switch(packet[0]){
         case HCI_EVENT_MESH_META:
             switch(packet[2]){
-                case MESH_SUBEVENT_STATE_UPDATE_BOOL:
-                    printf("State update: model identifier 0x%08x, state identifier 0x%08x, reason %u, state %u\n",
-                        mesh_subevent_state_update_bool_get_model_identifier(packet),
-                        mesh_subevent_state_update_bool_get_state_identifier(packet),
-                        mesh_subevent_state_update_bool_get_reason(packet),
-                        mesh_subevent_state_update_bool_get_value(packet));
-                    
-                    uint8_t element_index = mesh_subevent_state_update_bool_get_element_index(packet);
-                    uint32_t model_identifier = mesh_subevent_state_update_bool_get_model_identifier(packet);
-                    uint8_t state = mesh_subevent_state_update_bool_get_value(packet);
-                    mesh_model_t * model = mesh_model_get_by_identifier(mesh_node_element_for_index(element_index), model_identifier);
-                    if ( mesh_model_is_bluetooth_sig(model_identifier) ) {
-                        switch( mesh_model_get_model_id(model_identifier) )
-                        {
-                            case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:{                                
-                                    // Set Generic On/Off state
-                                    mesh_on_off_server_control_callback();
-                                }break;
-                            
-                            default:
-                                break;
+                case MESH_SUBEVENT_STATE_UPDATE_BOOL:{
+                        printf("State update: model identifier 0x%08x, state identifier 0x%08x, reason %u, state %u\n",
+                            mesh_subevent_state_update_bool_get_model_identifier(packet),
+                            mesh_subevent_state_update_bool_get_state_identifier(packet),
+                            mesh_subevent_state_update_bool_get_reason(packet),
+                            mesh_subevent_state_update_bool_get_value(packet));
+                        
+                        uint8_t element_index = mesh_subevent_state_update_bool_get_element_index(packet);
+                        uint32_t model_identifier = mesh_subevent_state_update_bool_get_model_identifier(packet);
+                        uint8_t state = mesh_subevent_state_update_bool_get_value(packet);
+                        mesh_model_t * model = mesh_model_get_by_identifier(mesh_node_element_for_index(element_index), model_identifier);
+                        if ( mesh_model_is_bluetooth_sig(model_identifier) ) {
+                            switch( mesh_model_get_model_id(model_identifier) )
+                            {
+                                case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:{                                
+                                        // Set Generic On/Off state
+                                        mesh_on_off_server_control_callback();
+                                    }break;
+                                
+                                default:
+                                    break;
+                            }
                         }
-                    }
-                    break;
+                    }break;
+                case MESH_SUBEVENT_STATE_UPDATE_INT16:{
+                        printf("int16 update: model identifier 0x%08x, state identifier 0x%08x, reason %u, value %u\n",
+                            mesh_subevent_state_update_int16_get_model_identifier(packet),
+                            mesh_subevent_state_update_int16_get_state_identifier(packet),
+                            mesh_subevent_state_update_int16_get_reason(packet),
+                            mesh_subevent_state_update_int16_get_value(packet));
+                        
+                        uint8_t element_index = mesh_subevent_state_update_int16_get_element_index(packet);
+                        uint32_t model_identifier = mesh_subevent_state_update_int16_get_model_identifier(packet);
+                        int16_t value = mesh_subevent_state_update_int16_get_value(packet);
+                        mesh_model_t * model = mesh_model_get_by_identifier(mesh_node_element_for_index(element_index), model_identifier);
+                        if ( mesh_model_is_bluetooth_sig(model_identifier) ) {
+                            switch( mesh_model_get_model_id(model_identifier) )
+                            {
+                                case MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER:{                                
+                                        // Set Generic level
+                                        mesh_on_off_server_control_callback();
+                                    }break;
+                                
+                                default:
+                                    break;
+                            }
+                        }
+                    }break; 
                 default:
                     break;
             }
