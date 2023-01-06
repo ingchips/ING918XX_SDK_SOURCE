@@ -1,0 +1,52 @@
+{
+ "bundle_meta": {
+  "rom": {
+   "size": 133588,
+   "base": 16384
+  },
+  "ram": {
+   "size": 30980,
+   "base": 536870912
+  },
+  "app": {
+   "base": 155648
+  },
+  "version": [
+   1,8,3]
+ },
+ "tc_dir": "C:\\Keil_v5\\UV4",
+ "ide_ver": "5",
+ "ide_exe": "C:\\Keil_v5\\UV4\\UV4.exe",
+ "ota": false,
+ "ide": "keil",
+ "arm_cc": "C:\/keil\/ARM\/ARMCC",
+ "scan_data": "0\r\n",
+ "log_uart1": false,
+ "enable_hci_log": false,
+ "ota_ver_minor": "0",
+ "ota_ver_major": "0",
+ "ble_50": false,
+ "template": "C:\\projects\\ingWizard\\templates\\mesh\\light",
+ "series": "ING9187xx",
+ "proj_name": "mesh-light",
+ "sdk_release_path": "..\/..",
+ "adv_data": "0\r\n",
+ "wizard_dir": "C:\\projects\\ingWizard",
+ "pb_adv": true,
+ "pb_gatt": false,
+ "deep_sleep": true,
+ "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\mesh-light",
+ "bundle": "typical",
+ "app_rom_size": "385024",
+ "app_rom_addr": "155648",
+ "family": "ing918",
+ "role": "light",
+ "keil": true,
+ "cmsis": "",
+ "app_ram_size": 34552,
+ "app_ram_addr": 536901896,
+ "uart_log": true,
+ "ota_ver_patch": "0",
+ "profile_data": "0, 0\r\n",
+ "proxy": true
+}
