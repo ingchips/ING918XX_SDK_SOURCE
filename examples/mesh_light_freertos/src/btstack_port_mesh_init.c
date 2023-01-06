@@ -325,108 +325,98 @@ static void mesh_model_foundation_init(mesh_model_t * model){
 }
 
 static void mesh_sig_models_init(mesh_element_t * element, mesh_model_t * model, const node_info_t *info){    
-    if ( mesh_model_is_bluetooth_sig(model->model_identifier) ) {
-        switch( mesh_model_get_model_id(model->model_identifier) )
-        {
-            case MESH_SIG_MODEL_ID_CONFIGURATION_SERVER:
-                // configure Config Server
-                model->operations = mesh_configuration_server_get_operations();   
-                model->model_data = (void *) &mesh_configuration_server_model_context;
-                mesh_element_add_model(element, model);
-                pMesh_configuration_server_model = model;
-                app_assert(pMesh_configuration_server_model != NULL);
-                mesh_model_foundation_init(model);
-                break;
-            
-            case MESH_SIG_MODEL_ID_HEALTH_SERVER:
-                // Config Health Server
-                model->model_data       = &mesh_health_server_model_context;
-                model->operations       = mesh_health_server_get_operations();
-                model->publication_model = &mesh_health_server_publication;
-                mesh_element_add_model(element, model);
-                mesh_health_server_set_publication_model(model, &mesh_health_server_publication);
-                // setup health server
-                mesh_health_server_add_fault_state(model, info->cid, &health_fault);
-                break;
-            
-            case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:
-                // Setup Generic On/Off server model
-                model->operations = mesh_generic_on_off_server_get_operations();
-                model->model_data = (void *) &mesh_generic_on_off_state;
-                mesh_generic_on_off_server_register_packet_handler(model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-                mesh_generic_on_off_server_set_publication_model(model, &generic_on_off_server_publication);
-                mesh_element_add_model(element, model);
-                break;
-            
-            case MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT:
-                // Setup Configuration Client model
-                mesh_configuration_client_register_packet_handler(model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
-                mesh_element_add_model(element, model);
-                break;
-            
-            case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_CLIENT:
-                // Setup Generic On/Off client model
-                mesh_configuration_client_register_packet_handler(model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
-                mesh_element_add_model(element, model);
-                break;
-            
-            case MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER:
-                // Setup Generic level server model
-                model->operations = mesh_generic_level_server_get_operations();
-                model->model_data = (void *) &mesh_generic_level_state;
-                mesh_generic_level_server_register_packet_handler(model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-                mesh_generic_level_server_set_publication_model(model, &generic_level_server_publication);
-                mesh_element_add_model(element, model);
-                break;
-            
-            case MESH_SIG_MODEL_ID_GENERIC_LEVEL_CLIENT:
-                // Setup Generic level client model
-                mesh_configuration_client_register_packet_handler(model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
-                mesh_element_add_model(element, model);
-                break;
-            
-            case MESH_SIG_MODEL_ID_LIGHT_LIGHTNESS_SERVER: //Meshlib not support this model, add later.
-                // Setup Light lightness server model
-//                model->operations = mesh_generic_level_server_get_operations();
-//                model->model_data = (void *) &mesh_generic_level_state;
-//                mesh_generic_level_server_register_packet_handler(model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-//                mesh_generic_level_server_set_publication_model(model, &generic_level_server_publication);
-                mesh_element_add_model(element, model);
-                break;
-            
-            case MESH_SIG_MODEL_ID_LIGHT_HSL_SERVER: //Meshlib not support this model, add later.
-                // Setup Light HSL server model
-//                model->operations = mesh_generic_level_server_get_operations();
-//                model->model_data = (void *) &mesh_generic_level_state;
-//                mesh_generic_level_server_register_packet_handler(model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-//                mesh_generic_level_server_set_publication_model(model, &generic_level_server_publication);
-                mesh_element_add_model(element, model);
-                break;
-            
-            default:
-                printf("#error: unknown sig model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
-                break;
-        }
-    } else {
-        printf("#error: not sig model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
+    if ( !mesh_model_is_bluetooth_sig(model->model_identifier) ) 
+        return;
+    
+    switch( mesh_model_get_model_id(model->model_identifier) )
+    {
+        case MESH_SIG_MODEL_ID_CONFIGURATION_SERVER:
+            // configure Config Server
+            model->operations = mesh_configuration_server_get_operations();   
+            model->model_data = (void *) &mesh_configuration_server_model_context;
+            mesh_element_add_model(element, model);
+            pMesh_configuration_server_model = model;
+            app_assert(pMesh_configuration_server_model != NULL);
+            mesh_model_foundation_init(model);
+            break;
+        
+        case MESH_SIG_MODEL_ID_HEALTH_SERVER:
+            // Config Health Server
+            model->model_data       = &mesh_health_server_model_context;
+            model->operations       = mesh_health_server_get_operations();
+            model->publication_model = &mesh_health_server_publication;
+            mesh_element_add_model(element, model);
+            mesh_health_server_set_publication_model(model, &mesh_health_server_publication);
+            // setup health server
+            mesh_health_server_add_fault_state(model, info->cid, &health_fault);
+            break;
+        
+        case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:
+            // Setup Generic On/Off server model
+            model->operations = mesh_generic_on_off_server_get_operations();
+            model->model_data = (void *) &mesh_generic_on_off_state;
+            mesh_generic_on_off_server_register_packet_handler(model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
+            mesh_generic_on_off_server_set_publication_model(model, &generic_on_off_server_publication);
+            mesh_element_add_model(element, model);
+            break;
+        
+        case MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT:
+            // Setup Configuration Client model
+            mesh_configuration_client_register_packet_handler(model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
+            mesh_element_add_model(element, model);
+            break;
+        
+        case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_CLIENT:
+            // Setup Generic On/Off client model
+            mesh_configuration_client_register_packet_handler(model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
+            mesh_element_add_model(element, model);
+            break;
+        
+        case MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER:
+            // Setup Generic level server model
+            model->operations = mesh_generic_level_server_get_operations();
+            model->model_data = (void *) &mesh_generic_level_state;
+            mesh_generic_level_server_register_packet_handler(model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
+            mesh_generic_level_server_set_publication_model(model, &generic_level_server_publication);
+            mesh_element_add_model(element, model);
+            break;
+        
+        case MESH_SIG_MODEL_ID_GENERIC_LEVEL_CLIENT:
+            // Setup Generic level client model
+            mesh_configuration_client_register_packet_handler(model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
+            mesh_element_add_model(element, model);
+            break;
+        
+        case MESH_SIG_MODEL_ID_LIGHT_LIGHTNESS_SERVER: //Meshlib not support this model, add later.
+            // Setup Light lightness server model
+            mesh_element_add_model(element, model);
+            break;
+        
+        case MESH_SIG_MODEL_ID_LIGHT_HSL_SERVER: //Meshlib not support this model, add later.
+            // Setup Light HSL server model
+            mesh_element_add_model(element, model);
+            break;
+        
+        default:
+            printf("#error: unknown sig model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
+            break;
     }
 }
 
 static void mesh_vendor_models_init(mesh_element_t * element, mesh_model_t * model, const node_info_t *info){   
     // check vendor id valid.
-    if ( mesh_model_get_vendor_id(model->model_identifier) == info->cid ) {
-        switch( mesh_model_get_model_id(model->model_identifier) )
-        {
-            case INGCHIPS_VND_ID_1:
-                // Setup vendor model
-                mesh_element_add_model(element, model);
-                break;
-            default:
-                printf("#error: unknown vendor model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
-                break;
-        }
-    } else {
-        printf("#error: not vendor model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
+    if ( mesh_model_is_bluetooth_sig(model->model_identifier) ) 
+        return;
+    
+    switch( mesh_model_get_model_id(model->model_identifier) )
+    {
+        case INGCHIPS_VND_ID_1:
+            // Setup vendor model
+            mesh_element_add_model(element, model);
+            break;
+        default:
+            printf("#error: unknown vendor model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
+            break;
     }
 }
 
