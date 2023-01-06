@@ -12,6 +12,7 @@
 #include "mesh.h"
 #include "mesh_proxy.h"
 #include "mesh_port_pb.h"
+#include "mesh_profile.h"
 
 // profile data.
 #include "../data/gatt_pb.const"
@@ -22,8 +23,6 @@
 
 
 // variable.
-//static uint16_t SERVICE_MESH_PROXY_HDL = ATT_HANDLE_INVALID;
-//static uint16_t SERVICE_MESH_PROV_HDL = ATT_HANDLE_INVALID;
 static uint16_t PROV_DATA_IN_HDL = ATT_HANDLE_INVALID;
 static uint16_t PROXY_DATA_IN_HDL = ATT_HANDLE_INVALID;
 static uint16_t PROV_DATA_OUT_HDL = ATT_HANDLE_INVALID;
@@ -33,9 +32,6 @@ static uint16_t PROXY_DATA_OUT_CCCD_HDL = ATT_HANDLE_INVALID;
 
 static bool notify_enable = false;
 
-// extern function.
-extern void mesh_setup_adv(void);
-extern uint32_t mesh_msg_send_to_queue(MeshMsg_t * mesh_msg);
 // local function.
 void mesh_scan_20_20_start(void);
 void mesh_gatt_notify_enable_callback(void);
@@ -81,11 +77,9 @@ void mesh_stack_ready(void)
     printf("%s\n", __func__);
     
     mesh_setup_adv();
-    // mesh_node_reset();
 #if defined(ENABLE_MESH_ADV_BEARER)
     // setup scanning when supporting ADV Bearer
     mesh_setup_scan();
-    // mesh_scan_start();
     mesh_scan_20_20_start();
 #endif
 }
@@ -343,12 +337,10 @@ static void mesh_node_reset_handler(void){
  */
 void mesh_port_init(void)
 {
-//    SERVICE_MESH_PROV_HDL = HANDLE_MESH_PROVISIONING_DATA_IN-2;
     PROV_DATA_IN_HDL = HANDLE_MESH_PROVISIONING_DATA_IN;
     PROV_DATA_OUT_HDL = HANDLE_MESH_PROVISIONING_DATA_OUT;
     PROV_DATA_OUT_CCCD_HDL = HANDLE_MESH_PROVISIONING_DATA_OUT_CLIENT_CHAR_CONFIG;
     
-//    SERVICE_MESH_PROXY_HDL = HANDLE_MESH_PROXY_DATA_IN-2;
     PROXY_DATA_IN_HDL = HANDLE_MESH_PROXY_DATA_IN;
     PROXY_DATA_OUT_HDL = HANDLE_MESH_PROXY_DATA_OUT;
     PROXY_DATA_OUT_CCCD_HDL = HANDLE_MESH_PROXY_DATA_OUT_CLIENT_CHAR_CONFIG;

@@ -31,25 +31,13 @@ const char * device_uuid_string = "001BDC0810210B0E0A0C000B0E0A0C00";
 #endif
 
 // general
-//#define MESH_INGCHIPS_MODEL_ID_TEST_SERVER   0x0000u
-#define BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD                                  0x06AC
-
-// static mesh_model_t                 mesh_vendor_model;
-
-//static mesh_model_t                 mesh_generic_on_off_server_model;
 static mesh_generic_on_off_state_t  mesh_generic_on_off_state;
 
 static mesh_health_fault_t          health_fault;
 static mesh_publication_model_t     generic_on_off_server_publication;
-//static mesh_model_t                 mesh_generic_level_server_model;
+
 static mesh_generic_level_state_t   mesh_generic_level_state;
 static mesh_publication_model_t     generic_level_server_publication;
-//static mesh_model_t                 mesh_configuration_client_model;
-
-//static mesh_model_t                 mesh_generic_on_off_client_model;
-//static mesh_model_t                 mesh_generic_level_client_model;
-//static mesh_model_t                 mesh_light_lightness_server_model;
-//static mesh_model_t                 mesh_light_HSL_server_model;
 
 // Mandatory Confiuration Server 
 static mesh_model_t                 *pMesh_configuration_server_model = NULL;
@@ -57,7 +45,6 @@ static mesh_configuration_server_model_context_t mesh_configuration_server_model
 
 // Mandatory Health Server
 static mesh_publication_model_t     mesh_health_server_publication;
-//static mesh_model_t                 mesh_health_server_model;
 static mesh_health_state_t          mesh_health_server_model_context;
 
 
@@ -351,18 +338,18 @@ static void mesh_sig_models_init(mesh_element_t * element, mesh_model_t * model,
             mesh_health_server_add_fault_state(model, info->cid, &health_fault);
             break;
         
+        case MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT:
+            // Setup Configuration Client model
+            mesh_configuration_client_register_packet_handler(model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
+            mesh_element_add_model(element, model);
+            break;
+        
         case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:
             // Setup Generic On/Off server model
             model->operations = mesh_generic_on_off_server_get_operations();
             model->model_data = (void *) &mesh_generic_on_off_state;
             mesh_generic_on_off_server_register_packet_handler(model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
             mesh_generic_on_off_server_set_publication_model(model, &generic_on_off_server_publication);
-            mesh_element_add_model(element, model);
-            break;
-        
-        case MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT:
-            // Setup Configuration Client model
-            mesh_configuration_client_register_packet_handler(model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
             mesh_element_add_model(element, model);
             break;
         
@@ -467,93 +454,3 @@ void mesh_elements_and_models_init(const bt_mesh_comp_t *a_comp){
         }
     }
 }
-
-
-
-//void mesh_elements_models_init(void)
-//{
-//    // setup default models.
-//    mesh_node_setup_default_models();
-        
-//    // Loc - bottom - https://www.bluetooth.com/specifications/assigned-numbers/gatt-namespace-descriptors
-//    mesh_node_set_element_location(mesh_node_get_primary_element(), 0x0000);//lizhk modified. 0x0000=unknow, 0x0103=bottom,
-    
-//    // Setup node info
-//    mesh_node_set_info(BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD, 0, 0);
-
-//    // setup health server
-//    mesh_health_server_add_fault_state(mesh_node_get_health_server(), BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD, &health_fault);
-    
-//    // Setup Configuration Client model
-//    mesh_configuration_client_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT);
-//    mesh_configuration_client_register_packet_handler(&mesh_configuration_client_model, (btstack_packet_handler_t)&mesh_configuration_message_handler);
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_configuration_client_model);
-
-//    // Setup Generic On/Off server model
-//    mesh_generic_on_off_server_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER);
-//    mesh_generic_on_off_server_model.operations = mesh_generic_on_off_server_get_operations();
-//    mesh_generic_on_off_server_model.model_data = (void *) &mesh_generic_on_off_state;
-//    mesh_generic_on_off_server_register_packet_handler(&mesh_generic_on_off_server_model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-//    mesh_generic_on_off_server_set_publication_model(&mesh_generic_on_off_server_model, &generic_on_off_server_publication);
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_generic_on_off_server_model);
-
-//    // Setup Generic On/Off client model
-//    mesh_generic_on_off_client_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(MESH_SIG_MODEL_ID_GENERIC_ON_OFF_CLIENT);
-//    mesh_configuration_client_register_packet_handler(&mesh_generic_on_off_client_model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_generic_on_off_client_model);
-
-//    // Setup Generic level server model
-//    mesh_generic_level_server_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER);
-//    mesh_generic_level_server_model.operations = mesh_generic_level_server_get_operations();
-//    mesh_generic_level_server_model.model_data = (void *) &mesh_generic_level_state;
-//    mesh_generic_level_server_register_packet_handler(&mesh_generic_level_server_model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-//    mesh_generic_level_server_set_publication_model(&mesh_generic_level_server_model, &generic_level_server_publication);
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_generic_level_server_model);
-
-//    // Setup Generic level client model
-//    mesh_generic_level_client_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(MESH_SIG_MODEL_ID_GENERIC_LEVEL_CLIENT);
-//    mesh_configuration_client_register_packet_handler(&mesh_generic_level_client_model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_generic_level_client_model);
-
-//    // Setup Light lightness server model
-//    mesh_light_lightness_server_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(0x1300u);
-//    mesh_light_lightness_server_model.operations = mesh_generic_level_server_get_operations();
-//    mesh_light_lightness_server_model.model_data = (void *) &mesh_generic_level_state;//change later
-//    mesh_generic_level_server_register_packet_handler(&mesh_light_lightness_server_model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-//    mesh_generic_level_server_set_publication_model(&mesh_light_lightness_server_model, &generic_level_server_publication);//change later
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_light_lightness_server_model);
-
-//    // Setup Light HSL server model
-//    mesh_light_HSL_server_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(0x1307u);
-//    mesh_light_HSL_server_model.operations = mesh_generic_level_server_get_operations();
-//    mesh_light_HSL_server_model.model_data = (void *) &mesh_generic_level_state;//change later
-//    mesh_generic_level_server_register_packet_handler(&mesh_light_HSL_server_model, (btstack_packet_handler_t)&mesh_state_update_message_handler);
-//    mesh_generic_level_server_set_publication_model(&mesh_light_HSL_server_model, &generic_level_server_publication);//change later
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_light_HSL_server_model);
-
-    // Setup our custom model
-    // mesh_vendor_model.model_identifier = mesh_model_get_model_identifier(BLUETOOTH_COMPANY_ID_INGCHIPS_TECHNOLOGY_CO_LTD, MESH_INGCHIPS_MODEL_ID_TEST_SERVER);
-    // mesh_element_add_model(mesh_node_get_primary_element(), &mesh_vendor_model);
-    
-    
-//    // Enable PROXY and RELAY
-//    mesh_foundation_gatt_proxy_set(1);
-//    mesh_foundation_relay_set(1);
-//}
-
-
-//static void mesh_node_setup_default_models(void){
-//    // configure Config Server
-//    mesh_configuration_server_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(MESH_SIG_MODEL_ID_CONFIGURATION_SERVER);
-//    mesh_configuration_server_model.model_data       = &mesh_configuration_server_model_context;
-//    mesh_configuration_server_model.operations       = mesh_configuration_server_get_operations();    
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_configuration_server_model);
-
-//    // Config Health Server
-//    mesh_health_server_model.model_identifier = mesh_model_get_model_identifier_bluetooth_sig(MESH_SIG_MODEL_ID_HEALTH_SERVER);
-//    mesh_health_server_model.model_data       = &mesh_health_server_model_context;
-//    mesh_health_server_model.operations       = mesh_health_server_get_operations();
-//    mesh_health_server_model.publication_model = &mesh_health_server_publication;
-//    mesh_element_add_model(mesh_node_get_primary_element(), &mesh_health_server_model);
-//    mesh_health_server_set_publication_model(&mesh_health_server_model, &mesh_health_server_publication);
-//}

@@ -77,46 +77,46 @@ int light_model_gen_level_set(mesh_model_t *model, s16_t  level)
     return 0;
 }
 
-int light_model_light_lightness_get(mesh_model_t *model, u16_t *lightness, u16_t *light, u8_t *remain)
-{
-    light_state_t *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
-    *lightness = a_light->lightness[0];
-    return 0;
-}
+//int light_model_light_lightness_get(mesh_model_t *model, u16_t *lightness, u16_t *light, u8_t *remain)
+//{
+//    light_state_t *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
+//    *lightness = a_light->lightness[0];
+//    return 0;
+//}
 
-int light_model_light_lightness_set(mesh_model_t *model, u16_t lightness)
-{
-    light_state_t *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
-    a_light->lightness[1] = a_light->lightness[0];
-    a_light->lightness[0] = lightness;
+//int light_model_light_lightness_set(mesh_model_t *model, u16_t lightness)
+//{
+//    light_state_t *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
+//    a_light->lightness[1] = a_light->lightness[0];
+//    a_light->lightness[0] = lightness;
 
-    // light_update(a_light);
-    return 0;
-}
+//    // light_update(a_light);
+//    return 0;
+//}
 
-int light_model_light_hsl_get(mesh_model_t *model, u16_t *hue, u16_t *saturation, u16_t *lightness, uint8_t* remain)
-{
-    light_state_t *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
-    *lightness  = a_light->lightness[0];
-    *hue        = a_light->hue[0];
-    *saturation = a_light->saturation[0];
-    return 0;
-}
+//int light_model_light_hsl_get(mesh_model_t *model, u16_t *hue, u16_t *saturation, u16_t *lightness, uint8_t* remain)
+//{
+//    light_state_t *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
+//    *lightness  = a_light->lightness[0];
+//    *hue        = a_light->hue[0];
+//    *saturation = a_light->saturation[0];
+//    return 0;
+//}
 
-int light_model_light_hsl_set(mesh_model_t *model, hsl_val_t *val)
-{
-    light_state_t *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
+//int light_model_light_hsl_set(mesh_model_t *model, hsl_val_t *val)
+//{
+//    light_state_t *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
 
-    a_light->lightness[1]     = a_light->lightness[0];
-    a_light->hue[1]           = a_light->hue[0];
-    a_light->saturation[1]    = a_light->saturation[0];
-    a_light->lightness[0] = val->lightness;
-    a_light->hue[0]       = val->hue;
-    a_light->saturation[0]= val->sa;
+//    a_light->lightness[1]     = a_light->lightness[0];
+//    a_light->hue[1]           = a_light->hue[0];
+//    a_light->saturation[1]    = a_light->saturation[0];
+//    a_light->lightness[0] = val->lightness;
+//    a_light->hue[0]       = val->hue;
+//    a_light->saturation[0]= val->sa;
 
-    // light_update(a_light);
-    return 0;
-}
+//    // light_update(a_light);
+//    return 0;
+//}
 
 #define LED_1 1
 
@@ -137,35 +137,32 @@ static struct bt_mesh_gen_level_srv_cb gen_level_srv_cb = {
     .light_state = &a_light_state
 };
 
-static struct bt_mesh_light_lightness_srv_cb light_lightness_srv_cb = {
-    .get = light_model_light_lightness_get,
-    .set = light_model_light_lightness_set,
-    .light_state = &a_light_state
-};
+//static struct bt_mesh_light_lightness_srv_cb light_lightness_srv_cb = {
+//    .get = light_model_light_lightness_get,
+//    .set = light_model_light_lightness_set,
+//    .light_state = &a_light_state
+//};
 
-static struct bt_mesh_light_hsl_srv_cb light_hsl_srv_cb = {
-    .get = light_model_light_hsl_get,
-    .set = light_model_light_hsl_set,
-    .light_state = &a_light_state
-};
-
-
-
+//static struct bt_mesh_light_hsl_srv_cb light_hsl_srv_cb = {
+//    .get = light_model_light_hsl_get,
+//    .set = light_model_light_hsl_set,
+//    .light_state = &a_light_state
+//};
 
 
 static mesh_model_t sig_models[] = {
-    // mandatory models: Config Server and Health Server.
+    // mandatory sig models: Config Server and Health Server.
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_CONFIGURATION_SERVER, &cfg_srv),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_HEALTH_SERVER, NULL),
     
-    // other models.
+    // other sig models.
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT, NULL),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER, &gen_onoff_srv_cb),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_ON_OFF_CLIENT, NULL),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER, &gen_level_srv_cb),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_LEVEL_CLIENT, NULL),
-    BT_MESH_MODEL(MESH_SIG_MODEL_ID_LIGHT_LIGHTNESS_SERVER, &light_lightness_srv_cb),
-    BT_MESH_MODEL(MESH_SIG_MODEL_ID_LIGHT_HSL_SERVER, &light_hsl_srv_cb),
+//    BT_MESH_MODEL(MESH_SIG_MODEL_ID_LIGHT_LIGHTNESS_SERVER, &light_lightness_srv_cb), //mesh lib not support yet.
+//    BT_MESH_MODEL(MESH_SIG_MODEL_ID_LIGHT_HSL_SERVER, &light_hsl_srv_cb), //mesh lib not support yet.
 };
 
 // example: 
