@@ -14,20 +14,26 @@
 
 #define rand() platform_rand()
 
-//-------------------------------------------------RGB_LED drive sort-------------------------------------------------
-#ifdef BOARD_USE_RGB_LED
+#if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) || (BOARD_ID == BOARD_ING91881B_02_02_06))
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
+    #error INGCHIPS_FAMILY conflicts with BOARD_ID
+#endif
+#elif (BOARD_ID == BOARD_DB682AC1A)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_916)
+    #error INGCHIPS_FAMILY conflicts with BOARD_ID
+#endif
+#endif
 
 #ifndef PIN_RGB_LED
+#if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) || (BOARD_ID == BOARD_ING91881B_02_02_06))
 #define PIN_RGB_LED   GIO_GPIO_0
+#elif (BOARD_ID == BOARD_DB682AC1A)
+#define PIN_RGB_LED   GIO_GPIO_6
+#endif
 #endif
 
-#define LED_TLC59731    0
-#define LED_WS2881      1
-
-//default old driver:tlc59731
-#ifndef RGB_LED
-#define RGB_LED     LED_WS2881
-#endif
+//-------------------------------------------------RGB_LED drive sort-------------------------------------------------
+#ifdef BOARD_USE_RGB_LED
 
 // CPU clok: PLL_CLK_FREQ  48000000
 // 1 cycle = 21ns
@@ -84,9 +90,10 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
     tlc59731_write(cmd);
 }
 
-#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
 
-#define GPIO_MASK (1 << PIN_RGB_LED)
+#define PWM_LED_CHANNEL     0
+#define PWM_LED_FREQ    1000000
 
 static void ws2881_write(uint32_t value)
 {
@@ -96,11 +103,13 @@ static void ws2881_write(uint32_t value)
     {
         uint32_t bit = value & ( 0x00800000 >> i);
 
-        if (bit){
-            GIO_SetBits(GPIO_MASK);
-            GIO_ClearBits(GPIO_MASK);
-        } else {
-            GIO_SetQuicPulse(GPIO_MASK);
+        if (bit)
+        {
+            PWM_SetupSingle(PWM_LED_CHANNEL, 600);
+        }
+        else
+        {
+            PWM_SetupSingle(PWM_LED_CHANNEL, 300);
         }
     }
     delay(100 * 8);
@@ -117,13 +126,26 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 
 void setup_rgb_led()
 {
+#if(BOARD_ID == BOARD_ING91881B_02_02_05)
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO0));
     PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_GPIO);
 
     GIO_SetDirection(PIN_RGB_LED, GIO_DIR_OUTPUT);
     GIO_WriteValue(PIN_RGB_LED, 0);
 
-    set_rgb_led_color(50, 50, 50);
+#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                             | (1 << SYSCTRL_ClkGate_APB_PWM));
+    PINCTRL_SetGeneralPadMode(PIN_RGB_LED, IO_MODE_PWM, 0, 0);
+#elif(BOARD_ID == BOARD_DB682AC1A)
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                             | (1 << SYSCTRL_ClkGate_APB_PWM));
+    SYSCTRL_SelectPWMClk(SYSCTRL_CLK_SLOW_DIV_1);
+    PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_PWM0_A);
+#else
+    #error unknown or unsupported board type
+#endif
+   set_rgb_led_color(50, 50, 50);
 }
 
 #else
@@ -142,6 +164,18 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b) {}
 #endif
 
 #include "iic.h"
+
+void reboot_i2c_module()
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    SYSCTRL_ResetBlock(SYSCTRL_Reset_APB_I2C0);
+    SYSCTRL_ReleaseBlock(SYSCTRL_Reset_APB_I2C0);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_I2C0);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_I2C0);
+#endif
+    i2c_init(I2C_PORT);
+}
 
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
 
@@ -194,17 +228,7 @@ struct bme280_dev bme280_data =
 
 static struct bme280_data comp_data;
 
-#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
-
-    #define I2C_PORT        I2C_PORT_0
-    #define MTS01B_OK           0
-    #define MTS01B_E_COMM_FAIL  1
-
-    /* Temperature measurement instruction of MTS01B */
-    #define CONVERT_T   0xCC44
-
-    uint8_t cmd[2]={(uint8_t)(CONVERT_T >>8), (uint8_t)(CONVERT_T & 0xFF)};
-    uint8_t reg_data[3] = {0};
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
 
 #endif
 
@@ -214,7 +238,10 @@ void setup_env_sensor()
 
     printf("sensor BME280 init...");
     if (bme280_init(&bme280_data) != BME280_OK)
+    {
         printf("failed\n");
+        reboot_i2c_module();
+    }
     else
     {
         printf("OK\n");
@@ -222,7 +249,7 @@ void setup_env_sensor()
         bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
     }
 
-#elif(BOARD_ID == BOARD_ING91881B_02_02_06)
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
 
     printf("sensor MTS01B init...");
     printf("OK\n");
@@ -233,15 +260,40 @@ void setup_env_sensor()
 float get_temperature()
 {
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
-
     if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
         return 0.0;
     return comp_data.temperature;
-#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+    #define MTS01B_OK           0
+    #define MTS01B_E_COMM_FAIL  1
 
-    if(i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, sizeof(reg_data)) == MTS01B_E_COMM_FAIL)
+    int symbolbit, sensor_status;
+    int try_cnt = 5;
+    uint16_t temperature_2bytes; //16bit temperature data
+    /* Temperature measurement instruction of MTS01B */
+    #define CONVERT_T   0xCC44
+    uint8_t cmd[2] = {(uint8_t)(CONVERT_T >> 8), (uint8_t)(CONVERT_T & 0xFF)};
+    uint8_t reg_data[3] = {0};
+
+    while(try_cnt--)
+    {
+        sensor_status = i2c_read(I2C_PORT, 0x44, cmd, 2, reg_data, 3);
+        if(sensor_status != MTS01B_OK)
+            reboot_i2c_module();
+        else
+            break;
+    }
+
+    if(try_cnt == 0 && sensor_status != MTS01B_OK)
+    {
+        printf("failed!\n");
         return 0.0;
-    return (float)((40 + ((reg_data[0] & 0x7F) >> 7) * (-1) * (~((reg_data[0] & 0x7F) - 1))) * 100);
+    }
+
+    temperature_2bytes = (reg_data[0] << 8) | reg_data[1];
+    symbolbit = reg_data[0] >> 7;
+
+    return (float)(4000 + (((symbolbit == 0 ? (temperature_2bytes & 0X7fff) : ((-1) * ((~(temperature_2bytes - 1)) & 0xffff))) * 100) >> 8));
 #endif
 }
 
@@ -252,7 +304,7 @@ float get_humidity()
         return 0.0;
     return comp_data.humidity;
 
-#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
     return 0.0;
 #endif
 }
@@ -264,8 +316,17 @@ float get_pressure()
         return 0.0;
     return comp_data.humidity;
 
-#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
     return 0.0;
+#endif
+}
+
+uint16_t get_thermo_addr()
+{
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
+    return 0x76;
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+    return 0x44;
 #endif
 }
 
@@ -288,6 +349,10 @@ float get_pressure()
     return 0.0;
 }
 
+uint16_t get_thermo_addr()
+{
+    return 0;
+}
 #endif
 
 //-------------------------------------------------accelerator driver sort-------------------------------------------------
@@ -317,7 +382,7 @@ float get_accel_mg_factor(uint8_t sensor_range)
     return sensor_range == RANGE_2G ? 0.224 :
                 sensor_range == RANGE_4G ? 0.488 :
                     sensor_range == RANGE_8G ? 0.977 : 1.953;
-#elif (BOARD_ID == BOARD_ING91881B_02_02_06)
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
     return sensor_range == RANGE_2G ? 0.98 :
                 sensor_range == RANGE_4G ? 1.95 :  3.91;
 #endif
@@ -326,7 +391,11 @@ float get_accel_mg_factor(uint8_t sensor_range)
 void setup_accelerometer(void)
 {
     uint8_t sensor_range = 0;
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
     printf("bma2x2_power_on...");
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+    printf("stk8ba58_power_on...");
+#endif
     if (bma2x2_power_on()==0)
         printf("success!!\n");
     else
@@ -343,6 +412,10 @@ void get_acc_xyz(float *x, float *y, float *z)
     *z = sample_xyz.z * mg_factor * 0.001;
 }
 
+uint16_t get_acc_addr()
+{
+    return 0x18;
+}
 #else
 
 void setup_accelerometer(void)
@@ -355,6 +428,11 @@ void get_acc_xyz(float *x, float *y, float *z)
     *y = rand() & 0xf;
     *z = rand() & 0xf;
 }
+
+uint16_t get_acc_addr()
+{
+    return 0;
+}
 #endif
 
 //-------------------------------------------------buzzer driver sort-------------------------------------------------
@@ -365,9 +443,13 @@ void get_acc_xyz(float *x, float *y, float *z)
 void setup_buzzer()
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PWM));
     PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, 4, 0);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM6_B);
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                                    | (1 << SYSCTRL_ClkGate_APB_PWM));
+    SYSCTRL_SelectPWMClk(SYSCTRL_CLK_32k);
+    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM0_B);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -375,7 +457,11 @@ void setup_buzzer()
 
 void set_buzzer_freq(uint16_t freq)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PWM_SetupSimple(BUZZ_PIN >> 1, freq, 50);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PWM_SetupSimple(0, freq, 50);
+#endif
 }
 
 #else
@@ -393,11 +479,17 @@ void set_buzzer_freq(uint16_t freq)
 //-------------------------------------------------key configuration-------------------------------------------------
 #ifdef BOARD_USE_KEYS
 
-const static GIO_Index_t key_pins[] = {
-    GIO_GPIO_1, GIO_GPIO_5, GIO_GPIO_7, GIO_GPIO_4
-};
+#if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) || (BOARD_ID == BOARD_ING91881B_02_02_06))
+    const static GIO_Index_t key_pins[] = {
+        GIO_GPIO_1, GIO_GPIO_5, GIO_GPIO_7, GIO_GPIO_4
+    };
+#elif (BOARD_ID ==  BOARD_DB682AC1A)
+    const static GIO_Index_t key_pins[] = {
+        GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
+    };
+#endif
 
-#define ARRAY_LEN(x)    (sizeof(x)/sizeof(x[0]))
+#define ARRAY_LEN(x)    (sizeof(x) / sizeof(x[0]))
 
 void setup_keys()
 {

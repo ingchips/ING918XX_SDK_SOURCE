@@ -187,3 +187,18 @@ void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, cons
     PWM_Enable(channel_index, 1);
     PWM_HaltCtrlEnable(channel_index, 0);
 }
+
+#define PWM_LED_BASE_FREQ    1000000
+void PWM_SetupSingle(const uint8_t channel_index, const uint32_t pulse_width)
+{ 
+    uint32_t pera = PWM_CLOCK_FREQ / (PWM_LED_BASE_FREQ * 1000 / pulse_width);
+    PWM_Enable(channel_index, 0);
+    PWM_SetPeraThreshold(channel_index, pera);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
+#endif
+    PWM_SetHighThreshold(channel_index, 0, 0);
+    PWM_SetMode(channel_index, PWM_WORK_MODE_SINGLE_WITHOUT_DIED_ZONE);
+    PWM_SetMask(channel_index, 0, 0);
+    PWM_Enable(channel_index, 1);
+}

@@ -6,6 +6,7 @@
 #define IO_TYPE_UART_STR    0   // string-oriented transmission
 #define IO_TYPE_UART_BIN    1   // binary-oriented transmission
 #define IO_TYPE_LOOPBACK    2   // loopback (only one can be set to loopback)
+#define IO_TYPE_USB_BIN     3   // binary-oriented transmission
 
 typedef struct
 {

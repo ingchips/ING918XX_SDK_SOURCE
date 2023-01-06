@@ -272,8 +272,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>33714176</StartAddress>
-                <Size>364544</Size>
+                <StartAddress>33718272</StartAddress>
+                <Size>360448</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -297,8 +297,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893616</StartAddress>
-                <Size>10064</Size>
+                <StartAddress>536893720</StartAddress>
+                <Size>9960</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -404,6 +404,11 @@
               <FileName>audio_input.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\audio_input.c</FilePath>
+            </File>
+            <File>
+              <FileName>pingpong.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\pingpong.c</FilePath>
             </File>
           </Files>
         </Group>

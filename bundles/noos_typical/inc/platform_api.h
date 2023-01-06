@@ -56,6 +56,16 @@ typedef struct assertion_info_s
 
 typedef enum
 {
+    PLATFORM_WAKEUP_REASON_NORMAL = 0,  // normal wakeup: sleep procedure is completed successfully
+    PLATFORM_WAKEUP_REASON_ABORTED = 1, // sleep process after last `PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED`
+                                        // is aborted. See also `PLATFORM_CFG_ALWAYS_CALL_WAKEUP`
+                                        //
+                                        // Platform will call `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` with this reason
+                                        // only when `PLATFORM_CFG_ALWAYS_CALL_WAKEUP` is enabled.
+} platform_wakeup_call_reason_t;
+
+typedef enum
+{
     // platform callback for putc (for logging)
     // NOTE: param (void *data) is casted from char *
     // example: uint32_t cb_putc(char *c, void *dummy)
@@ -64,7 +74,8 @@ typedef enum
     // when bluetooth protocol stack ask app to initialize
     PLATFORM_CB_EVT_PROFILE_INIT,
 
-    // periphrals need to be re-initialized after deep-sleep, user can handle this event
+    // peripherals need to be re-initialized after deep-sleep, user can handle this event
+    // Note: param (void *data) is casted from platform_wakeup_call_reason_t.
     PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP,
 
     // return bits combination of `PLATFORM_ALLOW_xxx`
@@ -315,6 +326,12 @@ typedef enum
     PLATFORM_CFG_LL_DELAY_COMPENSATION,     // When system runs at a lower frequency,
                                             // more time (in us) is needed to run Link layer.
                                             // For example, if ING916 runs at 24MHz, configure this to 1000
+    PLATFORM_CFG_24M_OSC_TUNE,              // 24M OSC tunning (not only available for ING918)
+                                            // For ING916: values may vary in 0x16~0x2d, etc.
+    PLATFORM_CFG_ALWAYS_CALL_WAKEUP,        // always trigger `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` no matter if deep sleep
+                                            // procedure is completed or aborted (failed).
+                                            // Default for ING918: Disabled(0) for backward compatability
+                                            // Default for ING918: Enabled(1)
 } platform_cfg_item_t;
 
 typedef enum
@@ -343,6 +360,9 @@ typedef enum
                                         // For ING916: this clock become running **after** selected as 32k
                                         //             clock source.
     PLATFORM_INFO_32K_CALI_VALUE,       // Read current 32k clock calibration result.
+    PLATFOFM_INFO_IRQ_NUMBER = 50,      // Get the underline IRQ number of a platform IRQ
+                                        // for example, platform_read_info(PLATFOFM_INFO_IRQ_NUMBER + PLATFORM_CB_IRQ_UART0)
+    PLATFOFM_INFO_NUMBER = 255,
 } platform_info_item_t;
 
 /**

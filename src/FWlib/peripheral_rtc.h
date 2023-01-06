@@ -156,6 +156,15 @@ uint32_t RTC_GetIntState(void);
  */
 void RTC_ClearIntState(uint32_t state);
 
+/**
+ ****************************************************************************************
+ * @brief Enable RTC timer (interrupt) as a wakeup source for DEEP SLEEP mode
+ *
+ * @param[in] enable            Enable(1)/disable(0)
+ ****************************************************************************************
+ */
+void RTC_EnableDeepSleepWakeupSource(uint8_t enable);
+
 #endif
 
 #ifdef __cplusplus

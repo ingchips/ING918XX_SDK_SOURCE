@@ -314,11 +314,11 @@ typedef struct
 {
     __IO uint32_t En         :1;            // +0x00
     __IO uint32_t Int        :1;
-    __IO uint32_t InMask     :24;  
-    __IO uint32_t IntMask    :1;   
-    __IO uint32_t Reserved1  :5;   
+    __IO uint32_t InMask     :24;
+    __IO uint32_t IntMask    :1;
+    __IO uint32_t Reserved1  :5;
     __IO uint32_t OutMask    :16;           // +0x04
-    __IO uint32_t Reserved2  :16;   
+    __IO uint32_t Reserved2  :16;
 } PTE_ChannelCtrlReg;
 
 typedef struct{
@@ -389,6 +389,114 @@ typedef struct{
     __IO uint32_t sadc_int;               // 0x34
 } SADC_TypeDef;
 
+//QDEC
+typedef struct
+{
+    __IO uint32_t channel_ctrl          ; // 0x00
+    __IO uint32_t channel_mode          ; // 0x04
+    __IO uint32_t channel_step          ; // 0x08
+    __IO uint32_t channel_read_rab      ; // 0x0c
+    __IO uint32_t channel_read_tc       ; // 0x10
+    __IO uint32_t channel_write_a       ; // 0x14
+    __IO uint32_t channel_write_b       ; // 0x18
+    __IO uint32_t channel_write_c       ; // 0x1c
+    __IO uint32_t channel_tiob0_rd      ; // 0x20
+    __IO uint32_t channel_int_en        ; // 0x24
+    __IO uint32_t channel_int_dis       ; // 0x28
+    __IO uint32_t channel_int_rd        ; // 0x2c
+    __IO uint32_t Reserved[4]           ; // 0x30
+} QDEC_ChannelCtrlReg;
+typedef struct{
+    __IO QDEC_ChannelCtrlReg channels[3]; // 0x0
+    __IO uint32_t bcr;                    // 0xc0
+    __IO uint32_t bmr;                    // 0xc4
+    __IO uint32_t qdec_inten;             // 0xc8
+    __IO uint32_t qdec_intdis;            // 0xcc
+    __IO uint32_t qdec_inten_rd;          // 0xd0
+    __IO uint32_t qdec_status_sel;        // 0xd4
+    __IO uint32_t pwm_fault;              // 0xd8
+    __IO uint32_t Reserved;               // 0xdc
+    __IO uint32_t dummy;                  // 0xe0
+    __IO uint32_t wpmode;                 // 0xe4
+    __IO uint32_t Reserved1;              // 0xe8
+    __IO uint32_t addrsize;               // 0xec
+    __IO uint32_t name1;                  // 0xf0
+    __IO uint32_t name2;                  // 0xf4
+    __IO uint32_t FEATURES;               // 0xf8
+} QDEC_TypeDef;
+
+typedef struct{
+    __IO uint32_t      DICtrlx;     //0x900 + i*20
+    __IO uint8_t      _NOT_USED_25[4];
+    __IO uint32_t      DIIntx;      //0x908 + i*20
+    __IO uint8_t      _NOT_USED_26[4];
+    __IO uint32_t      DISizex;     //0x910 + i*20
+    __IO uint32_t      DIDmax;      //0x914 + i*20
+    __IO uint32_t      DIFifox;     //0x918 + i*20
+    __IO uint32_t      DIDmaxx;     //0x91C + i*20
+}USB_DIEPReg;
+
+typedef struct{
+    __IO uint32_t      DOCtrlx;     //0xB00 + i*20
+    __IO uint8_t      _NOT_USED_39[4];//
+    __IO uint32_t      DOIntx;      //0xB08 + i*20
+    __IO uint8_t      _NOT_USED_40[4];//
+    __IO uint32_t      DOSizex;     //0xB10 + i*20
+    __IO uint32_t      DODmax;      //0xB14 + i*20
+    __IO uint8_t      _NOT_USED_41[4];//
+    __IO uint32_t      DODmaxx;     //0xB1C + i*20
+}USB_DOEPReg;
+
+typedef struct
+{
+    __IO uint32_t      _NOT_USED_0;
+    __IO uint32_t      UsbOTGIntStat;   //0x0004
+    __IO uint32_t      UsbAConfig;      //0x0008
+    __IO uint32_t      UsbConfig;       //0x000C
+    __IO uint32_t      UsbRControl;     //0x0010
+    __IO uint32_t      UsbIntStat;      //0x0014
+    __IO uint32_t      UsbIntMask;      //0x0018
+    __IO uint32_t      _NOT_USED_1[2];
+    __IO uint32_t      UsbRFifoSize;    //0x0024
+    __IO uint32_t      UsbTFifoSize;    //0x0028
+    __IO uint32_t      _NOT_USED_2[8];
+    __IO uint32_t      UsbHConfig3;     //0x004C
+    __IO uint32_t      _NOT_USED_3[45];
+    __IO uint32_t      UsbIFifo[5];     //0x0104
+    __IO uint32_t      _NOT_USED_4[442];
+    __IO uint32_t      UsbDConfig;      //0x0800
+    __IO uint32_t      UsbDControl;     //0x0804
+    __IO uint32_t      _NOT_USED_5[2];
+    __IO uint32_t      UsbDIMask;       //0x0810
+    __IO uint32_t      UsbDOMask;       //0x0814
+    __IO uint32_t      UsbDInt;         //0x0818
+    __IO uint32_t      UsbDIntMask;     //0x081C
+    __IO uint32_t      _NOT_USED_51[4];
+    __IO uint32_t      UsbDThreCtrl;    //0x0830
+    __IO uint32_t      _NOT_USED_6[51];
+    __IO uint32_t      UsbDICtrl0;      //0x0900
+    __IO uint8_t       _NOT_USED_23[4]; //0x0904
+    __IO uint32_t      UsbDIInt0;       //0x0908
+    __IO uint8_t       _NOT_USED_24[4]; //0x090C
+    __IO uint32_t      UsbDISize0;      //0x0910
+    __IO uint32_t      UsbDIDma0;       //0x0914
+    __IO uint32_t      UsbDIFifo0;      //0x0918
+    __IO uint32_t      UsbDIDmax0;      //0x091C
+    USB_DIEPReg        UsbDIxConfig[5]; //0x0920
+    __IO uint8_t       _NOT_USED_35[320];//0x09C0
+    __IO uint32_t      UsbDOCtrl0;      //0x0B00
+    __IO uint8_t       _NOT_USED_36[4]; //0x0B04
+    __IO uint32_t      UsbDOInt0;       //0x0B08
+    __IO uint8_t       _NOT_USED_37[4]; //0x0B0C
+    __IO uint32_t      UsbDOSize0;      //0x0B10
+    __IO uint32_t      UsbDODma0;       //0x0B14
+    __IO uint8_t       _NOT_USED_38[4]; //0x0B18
+    __IO uint32_t      UsbDODmax0;      //0x0B1C
+    USB_DOEPReg        UsbDOxConfig[5]; //0x0B20
+    __IO uint8_t       _NOT_USED_54[576];//0x0BC0
+    __IO uint32_t      UsbPCConfig;     //0x0E00
+} USB_TypeDef;
+
 /******************************************************************************/
 /*                         memory map                                         */
 /******************************************************************************/
@@ -421,7 +529,6 @@ typedef struct{
 #define APB_GPIO0_BASE     (APB_BASE + 0x15000)
 #define APB_GPIO1_BASE     (APB_BASE + 0x16000)
 #define APB_EFUSE_BASE     (APB_BASE + 0x17000)
-#define APB_USB_BASE       (APB_BASE + 0x18000)
 
 #define AON_APB_BASE       ((uint32_t)0x40100000UL)
 #define AON2_CTRL_BASE     (AON_APB_BASE + 0x0000)
@@ -429,7 +536,7 @@ typedef struct{
 #define AON1_CTRL_BASE     (AON_APB_BASE + 0x2000)
 
 #define AHB_QSPI_BASE      ((uint32_t)0x40160000UL)
-
+#define AHB_USB_BASE       ((uint32_t)0x40180000UL)
 #define APB_PINC_BASE      APB_IOMUX_BASE
 
 #define APB_SYSCTRL        ((SYSCTRL_TypeDef *)APB_SYSCTRL_BASE)
@@ -442,6 +549,7 @@ typedef struct{
 #define APB_I2S            ((I2S_TypeDef *)APB_I2S_BASE)
 #define APB_SADC           ((SADC_TypeDef *)APB_SARADC_BASE)
 #define APB_PDM            ((PDM_TypeDef *)APB_PDM_BASE)
+#define APB_QDEC           ((QDEC_TypeDef *)APB_QDEC_BASE)
 #define APB_PINCTRL        ((PINCTRL_TypeDef *)APB_PINC_BASE)
 #define APB_UART0          ((UART_TypeDef *)APB_UART0_BASE)
 #define APB_UART1          ((UART_TypeDef *)APB_UART1_BASE)
@@ -455,6 +563,7 @@ typedef struct{
 #define APB_RTC            ((RTC_TypeDef *)AON_RTC_BASE)
 #define APB_EFUSE          ((EFUSE_TypeDef *)APB_EFUSE_BASE)
 #define APB_IR             ((IR_TypeDef *)APB_IR_BASE)
+#define AHB_USB            ((USB_TypeDef *)AHB_USB_BASE)
 
 #define APB_SPI            APB_SSP1
 #define AHB_QSPI           AHB_SSP0
@@ -481,6 +590,7 @@ typedef struct{
     #include "peripheral_efuse.h"
     #include "peripheral_dma.h"
     #include "peripheral_ir.h"
+    #include "peripheral_usb.h"
 #endif
 
 #define OSC_CLK_FREQ  24000000UL

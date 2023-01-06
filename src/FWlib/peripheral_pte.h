@@ -12,10 +12,10 @@ extern "C" {	/* allow C++ to use these headers */
 
 typedef enum
 {
-    SYSCTRL_PTE_CHENNEL_1     = 0,
-    SYSCTRL_PTE_CHENNEL_2     = 1,
-    SYSCTRL_PTE_CHENNEL_3     = 2,
-    SYSCTRL_PTE_CHENNEL_4     = 3,
+    SYSCTRL_PTE_CHENNEL_0     = 0,
+    SYSCTRL_PTE_CHENNEL_1     = 1,
+    SYSCTRL_PTE_CHENNEL_2     = 2,
+    SYSCTRL_PTE_CHENNEL_3     = 3,
 } SYSCTRL_PTE_CHENNEL_ID;
 
 typedef enum
