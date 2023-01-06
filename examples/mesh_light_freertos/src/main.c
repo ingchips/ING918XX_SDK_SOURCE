@@ -5,7 +5,6 @@
 #include "trace.h"
 #include "btstack_event.h"
 #include "mesh_profile.h"
-#include "rgb_led.h"
 #include "app_config.h"
 #include "port_gen_os_driver.h"
 
@@ -100,6 +99,8 @@ void config_uart(uint32_t freq, uint32_t baud)
 
     apUART_Initialize(PRINT_UART, &UART_0, 0);
 }
+
+#include "../../peripheral_led/src/impl_led.c"
 
 void setup_peripherals(void)
 {

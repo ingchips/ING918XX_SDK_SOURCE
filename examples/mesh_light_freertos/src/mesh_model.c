@@ -1,6 +1,7 @@
 #include "mesh_model.h"
 #include "mesh_generic_model.h"
 #include "btstack_port_mesh_init.h"
+#include "board.h"
 
 #define INGCHIPS_COMP_ID                            0x06AC
 #define MESH_PRODUCT_ID                             0x0000
@@ -21,7 +22,21 @@ static bt_mesh_cfg_srv_t cfg_srv = {
     .relay_retransmit = 3,
     
 };
-    
+
+static void light_update(struct light_state *a_light)
+{
+    u8_t val;
+    if (!a_light->onoff[0]) { // Set led off.
+        val = 0;
+    } else { // Set led on, belongs to level value.
+        uint32_t lvl = a_light->level[0] + 32768; // 0~65535
+        lvl = ((lvl + 1) >> 8);     //0~256
+        if(lvl == 256) lvl = 255;   //0~255
+        val = (uint8_t)lvl;
+    }
+    printf("gen set rgb val: %d\n",val);
+    set_rgb_led_color(val, val, val);
+}
 
 #define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->light_state
 
@@ -32,23 +47,19 @@ int light_model_gen_onoff_get(mesh_model_t *model, u8_t *state)
     printf("gen get state: %d\n", *state);
     return 0;
 }
-#include "rgb_led.h"
+
 int light_model_gen_onoff_set(mesh_model_t *model, u8_t state)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
-    a_light->onoff[1] = a_light->onoff[0];
     a_light->onoff[0] = state;
-    a_light->lightness[1] = a_light->lightness[0];
-    a_light->lightness[0] = state ? 65535 : 0;
+    if(state){ //bind to level
+        if(a_light->level[0] < 0){ //lightness can not less 50%.
+            a_light->level[0] = 0;
+        }
+    }
     
     printf("gen set state: %d\n", state);
-    
-    if(state){
-        set_rgb_led_color(50, 50, 50);
-    } else {
-        set_rgb_led_color(0, 0, 0);
-    }
-    // light_update(a_light);
+    light_update(a_light);
     return 0;
 }
 
@@ -56,24 +67,20 @@ int light_model_gen_level_get(mesh_model_t *model, s16_t *level)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
     *level = a_light->level[0];
-    printf("gen get lightness: %d\n", *level);
+    printf("gen get level: %d\n", *level);
     return 0;
 }
 
 int light_model_gen_level_set(mesh_model_t *model, s16_t  level)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
-    a_light->level[1] = a_light->level[0];
     a_light->level[0] = level;
-    a_light->lightness[1] = a_light->lightness[0];
-    a_light->lightness[0] = level + 32768;
-    printf("gen set lightness -> %d, %04x\n", level, a_light->lightness[0]);
-    // light_update(a_light);
-    if(level > 0){
-        set_rgb_led_color(50, 50, 50);
-    } else {
-        set_rgb_led_color(0, 0, 0);
-    }
+    if(level == -32768) //bind to state.
+        a_light->onoff[0] = 0;
+    else 
+        a_light->onoff[0] = 1;
+    printf("gen set level -> %d\n", level);
+    light_update(a_light);
     return 0;
 }
 
