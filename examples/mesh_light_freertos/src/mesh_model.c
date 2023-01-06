@@ -21,7 +21,7 @@ static bt_mesh_cfg_srv_t cfg_srv = {
     .relay_retransmit = 3,
     
 };
-
+    
 
 #define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->light_state
 
@@ -29,6 +29,7 @@ int light_model_gen_onoff_get(mesh_model_t *model, u8_t *state)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
     *state = a_light->onoff[0];
+    printf("gen get state: %d\n", *state);
     return 0;
 }
 
@@ -39,6 +40,14 @@ int light_model_gen_onoff_set(mesh_model_t *model, u8_t state)
     a_light->onoff[0] = state;
     a_light->lightness[1] = a_light->lightness[0];
     a_light->lightness[0] = state ? 65535 : 0;
+    
+    printf("gen set state: %d\n", state);
+    #include "rgb_led.h"
+    if(state){
+        set_rgb_led_color(50, 50, 50);
+    } else {
+        set_rgb_led_color(0, 0, 0);
+    }
     // light_update(a_light);
     return 0;
 }

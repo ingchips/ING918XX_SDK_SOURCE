@@ -107,18 +107,23 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
                         mesh_subevent_state_update_bool_get_state_identifier(packet),
                         mesh_subevent_state_update_bool_get_reason(packet),
                         mesh_subevent_state_update_bool_get_value(packet));
-
-                    // Test code of controlling light state to on or off , optimize here later.
-                    #include "rgb_led.h"
-                    if(mesh_subevent_state_update_bool_get_value(packet)){
-                        set_rgb_led_color(50, 50, 50);
-                    } else {
-                        set_rgb_led_color(0, 0, 0);
-                    }
-
-                    // mesh_scan_start(); //led control check if scan is started.
-                    mesh_on_off_server_control_callback();
                     
+                    uint8_t element_index = mesh_subevent_state_update_bool_get_element_index(packet);
+                    uint32_t model_identifier = mesh_subevent_state_update_bool_get_model_identifier(packet);
+                    uint8_t state = mesh_subevent_state_update_bool_get_value(packet);
+                    mesh_model_t * model = mesh_model_get_by_identifier(mesh_node_element_for_index(element_index), model_identifier);
+                    if ( mesh_model_is_bluetooth_sig(model_identifier) ) {
+                        switch( mesh_model_get_model_id(model_identifier) )
+                        {
+                            case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:{                                
+                                    // Set Generic On/Off state
+                                    mesh_on_off_server_control_callback();
+                                }break;
+                            
+                            default:
+                                break;
+                        }
+                    }
                     break;
                 default:
                     break;

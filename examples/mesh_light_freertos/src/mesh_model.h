@@ -7,6 +7,7 @@
 
 #include "mesh_node.h"
 #include "mesh_foundation.h"
+#include "mesh_generic_model.h"
 
 // Ingchips Vendor Model Id
 #define INGCHIPS_VND_ID_1  0x0000u
@@ -140,42 +141,6 @@ typedef struct light_state {
     u16_t saturation[2];
     u8_t led_gpio_pin;
 } light_state_t;
-
-typedef struct HSL_VAL
-{
-    uint16_t lightness;
-    uint16_t hue;
-    uint16_t sa;
-    uint8_t  TID;
-    uint8_t  transtime;
-    uint8_t  delay;
-}hsl_val_t;
-
-struct bt_mesh_gen_onoff_srv_cb {
-    int (*get)(mesh_model_t *model, u8_t *state);
-    int (*set)(mesh_model_t *model, u8_t state);
-    void* light_state;
-};
-
-struct bt_mesh_gen_level_srv_cb {
-    int (*get)(mesh_model_t *model, s16_t *level);
-    int (*set)(mesh_model_t *model, s16_t level);
-    void* light_state;
-};
-
-struct bt_mesh_light_lightness_srv_cb {
-    int (*get)(mesh_model_t *model, u16_t *p_light ,u16_t *light,u8_t * remain);
-    int (*set)(mesh_model_t *model, u16_t light);
-    void* light_state;
-};
-
-struct bt_mesh_light_hsl_srv_cb{
-    int (*get)(mesh_model_t *model,uint16_t *hue,uint16_t* sa,uint16_t* lightness,uint8_t* remain );
-    int (*set)(mesh_model_t *model,hsl_val_t *val);
-    void* light_state;
-};
-
-
 
 
 /////////////////////////////////////////////////////////////////////////

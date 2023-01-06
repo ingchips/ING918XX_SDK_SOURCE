@@ -93,6 +93,44 @@ typedef struct {
     mesh_transition_int16_t transition_data;       
 } mesh_generic_level_state_t;
 
+////////////////////////////////////////////////////////////////////////////////
+// for app api.
+
+typedef struct HSL_VAL
+{
+    uint16_t lightness;
+    uint16_t hue;
+    uint16_t sa;
+    uint8_t  TID;
+    uint8_t  transtime;
+    uint8_t  delay;
+}hsl_val_t;
+
+typedef struct bt_mesh_gen_onoff_srv_cb {
+    int (*get)(mesh_model_t *model, uint8_t *state);
+    int (*set)(mesh_model_t *model, uint8_t state);
+    void* light_state;
+}bt_mesh_gen_onoff_srv_cb_t;
+
+typedef struct bt_mesh_gen_level_srv_cb {
+    int (*get)(mesh_model_t *model, int16_t *level);
+    int (*set)(mesh_model_t *model, int16_t level);
+    void* light_state;
+}bt_mesh_gen_level_srv_cb_t;
+
+typedef struct bt_mesh_light_lightness_srv_cb {
+    int (*get)(mesh_model_t *model, uint16_t *p_light ,uint16_t *light,uint8_t * remain);
+    int (*set)(mesh_model_t *model, uint16_t light);
+    void* light_state;
+}bt_mesh_light_lightness_srv_cb_t;
+
+typedef struct bt_mesh_light_hsl_srv_cb{
+    int (*get)(mesh_model_t *model,uint16_t *hue,uint16_t* sa,uint16_t* lightness,uint8_t* remain );
+    int (*set)(mesh_model_t *model,hsl_val_t *val);
+    void* light_state;
+}bt_mesh_light_hsl_srv_cb_t;
+
+
 #ifdef __cplusplus
 } /* end of extern "C" */
 #endif
