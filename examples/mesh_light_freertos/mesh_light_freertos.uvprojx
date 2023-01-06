@@ -428,6 +428,11 @@
               <FileType>5</FileType>
               <FilePath>.\src\app_config.h</FilePath>
             </File>
+            <File>
+              <FileName>app_debug.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\app_debug.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

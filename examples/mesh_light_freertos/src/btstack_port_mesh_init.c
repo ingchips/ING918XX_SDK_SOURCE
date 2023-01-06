@@ -20,6 +20,7 @@
 #include "gap.h"
 #include "mesh_storage.h"
 #include "mesh_model.h"
+#include "app_debug.h"
 
 // #define USE_DEFAULT_UUID
 
@@ -51,7 +52,7 @@ static mesh_publication_model_t     generic_level_server_publication;
 //static mesh_model_t                 mesh_light_HSL_server_model;
 
 // Mandatory Confiuration Server 
-static mesh_model_t                 *pMesh_configuration_server_model;
+static mesh_model_t                 *pMesh_configuration_server_model = NULL;
 static mesh_configuration_server_model_context_t mesh_configuration_server_model_context;
 
 // Mandatory Health Server
@@ -277,8 +278,8 @@ void mesh_prov_config(void)
     
 }
 
-
 mesh_model_t * get_configuration_server_model(void){
+    app_assert(pMesh_configuration_server_model != NULL);
     return pMesh_configuration_server_model;
 }
 
@@ -304,6 +305,7 @@ static void mesh_sig_models_init(mesh_element_t * element, mesh_model_t * model,
                 model->model_data = (void *) &mesh_configuration_server_model_context;
                 mesh_element_add_model(element, model);
                 pMesh_configuration_server_model = model;
+                app_assert(pMesh_configuration_server_model != NULL);
                 mesh_model_foundation_init(model);
                 break;
             
