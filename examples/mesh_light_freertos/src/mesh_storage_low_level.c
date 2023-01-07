@@ -5,6 +5,7 @@
 #include "task.h"
 #include "kv_storage.h"
 #include "eflash.h"
+#include "app_debug.h"
 
 
 // Application flash related.
@@ -216,12 +217,14 @@ void mesh_storage_device_uuid_set(uint8_t *uuid, uint16_t len){
 
 // erase flash
 static void my_kv_erase_flash(void){
+    app_assert(app_flash_start_address != 0);
     erase_flash_page(app_flash_start_address);
 }
 
 // write to flash.
 static int my_kv_write_to_flash(const void *db, const int size){
     printf("my_kv_write_to_flash start, size = %d\n", size);
+    app_assert(app_flash_start_address != 0);
     int ret = program_flash(app_flash_start_address, (uint8_t *)db, size);//Auto erase flash before each writing flash operation.
     printf("my_kv_write_to_flash end, size = %d\n", size);
     return ret;
@@ -230,6 +233,7 @@ static int my_kv_write_to_flash(const void *db, const int size){
 // read from flash.
 static int my_kv_read_from_flash(void *db, const int max_size){
     // read data from flash: just need copy it!
+    app_assert(app_flash_start_address != 0);
     memcpy((uint8_t *)db, ((uint8_t *) app_flash_start_address), max_size);
     printf("===Read max size = %d\n", max_size);
     return 0;
@@ -262,6 +266,7 @@ int mesh_storage_low_level_init(uint32_t start_address){
 void mesh_storage_low_level_reinit(void){
     // clear all information in flash.
     my_kv_erase_flash();
+    app_flash_start_address = 0;
 }
 
 
