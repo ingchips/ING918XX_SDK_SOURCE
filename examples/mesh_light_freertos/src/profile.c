@@ -189,6 +189,7 @@ static void prov_reset(void)
 
 static uint8_t dev_uuid[16] = BLE_MESH_DEV_UUID;
 
+// Provisioning struct.
 static const bt_mesh_prov_t prov = {
     .uuid = dev_uuid,
 #if (USE_OOB_TYPE == MESH_OOB_TYPE_OUTPUT)

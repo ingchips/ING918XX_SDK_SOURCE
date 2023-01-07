@@ -26,10 +26,6 @@
 
 static char dev_name[] = "ing-mesh-xxxxxxxx";
 
-#ifdef USE_DEFAULT_UUID
-const char * device_uuid_string = "001BDC0810210B0E0A0C000B0E0A0C00";
-#endif
-
 static const bt_mesh_prov_t *pMesh_prov = NULL;
 
 // general
@@ -74,19 +70,23 @@ static void mesh_provisioning_message_handler(uint8_t packet_type, uint16_t chan
                 case MESH_SUBEVENT_PB_PROV_COMPLETE:
                     printf("Provisioning complete\n");
                     provisioning_device_data_get(&provisioning_data);
+                    app_assert(pMesh_prov != NULL);
                     pMesh_prov->complete(provisioning_data.network_key->netkey_index, provisioning_data.unicast_address);
                     break;
                 case MESH_SUBEVENT_PB_PROV_START_EMIT_OUTPUT_OOB:{
                         uint16_t pb_trasport_cid = mesh_subevent_pb_prov_start_emit_output_oob_get_pb_transport_cid(packet);
                         uint32_t output_oob = mesh_subevent_pb_prov_start_emit_output_oob_get_output_oob(packet);
-                        // printf("pb_trasport_cid: %u, output_oob: %u \n", pb_trasport_cid, output_oob);                    
+                        // printf("pb_trasport_cid: %u, output_oob: %u \n", pb_trasport_cid, output_oob);  
+                        app_assert(pMesh_prov != NULL);                  
                         pMesh_prov->output_number(output_oob);
                     }break;                
                 case MESH_SUBEVENT_PB_PROV_INPUT_OOB_REQUEST:
+                    app_assert(pMesh_prov != NULL);
                     pMesh_prov->input_req();
                     break;
                 case MESH_SUBEVENT_NODE_RESET:
                     mesh_port_node_reset_handler();
+                    app_assert(pMesh_prov != NULL);
                     pMesh_prov->reset();
                     break;
                 default:
@@ -163,36 +163,6 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
             break;
     }
 }
-
-#ifdef USE_DEFAULT_UUID
-
-static int scan_hex_byte(const char * byte_string){
-    int upper_nibble = nibble_for_char(*byte_string++);
-    if (upper_nibble < 0) return -1;
-    int lower_nibble = nibble_for_char(*byte_string);
-    if (lower_nibble < 0) return -1;
-    return (upper_nibble << 4) | lower_nibble;
-}
-static int btstack_parse_hex(const char * string, uint16_t len, uint8_t * buffer){
-    int i;
-    for (i = 0; i < len; i++) {
-        int single_byte = scan_hex_byte(string);
-        if (single_byte < 0) return 0;
-        string += 2;
-        buffer[i] = (uint8_t)single_byte;
-        // don't check seperator after last byte
-        if (i == len - 1) {
-            return 1;
-        }
-        // optional seperator
-        char separator = *string;
-        if (separator == ':' && separator == '-' && separator == ' ') {
-            string++;
-        }
-    }
-    return 1;
-}
-#endif
 
 static void mesh_configuration_message_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
@@ -275,9 +245,10 @@ void ble_port_generate_name_and_load_name(void){
 
 void ble_port_generate_uuid_and_load_uuid(void){
     uint8_t device_uuid[16];
-
+    
 #ifdef USE_DEFAULT_UUID
-    btstack_parse_hex(device_uuid_string, 16, device_uuid);// use default uuid.
+    app_assert(pMesh_prov != NULL);
+    memcpy(device_uuid, pMesh_prov->uuid, 16);// use default uuid.
 #else
     mesh_generate_random_uuid(device_uuid, 16);// generate uuid.
 #endif
