@@ -48,6 +48,7 @@ typedef struct mouse_report
     uint8_t buttons;
     int8_t x;
     int8_t y;
+    int8_t wheel;
 } mouse_report_t;
 
 typedef struct
@@ -154,7 +155,8 @@ mouse_report_t report =
 { 
     .buttons = 0,
     .x = 10,
-    .y = 10
+    .y = 10,
+    .wheel = 0
 };
 
 // let's draw a circle (radius = 100)
@@ -166,6 +168,21 @@ const int8_t delta_xy[][2] =
  {10,-4},{10,-3},{11,-1},{10,-1},{10,1},{11,1},{10,3},{10,4},{9,4},{9,6},{8,7},{7,7},
  {7,8},{6,9},{4,9},{4,10},{3,10},{1,11},{1,10}};
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+static uint16_t StepCal(uint16_t preData, uint16_t data, uint8_t *dir)
+{
+    uint16_t step = 0;
+    step = *dir ? (preData - data) : (data - preData);
+    if (data - preData > 60000) {
+        step += 65536;
+    }
+    if (step > 60000) {
+        *dir ^= 1;
+        step = StepCal(preData, data, dir);
+    }
+    return step;
+}
+#endif
 void mouse_report_movement(void)
 {
     if (suspended)
@@ -174,10 +191,24 @@ void mouse_report_movement(void)
         return;
     if (notify_enable)
     {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
         static int index = 0;      
         report.x = delta_xy[index][0];
         report.y = delta_xy[index][1];
         index = index < sizeof(delta_xy) / sizeof(delta_xy[0]) - 1 ? index + 1 : 0;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+        static uint16_t preData = 0;
+        static uint16_t data = 0;
+        uint8_t dir;
+        data = QDEC_GetData();
+        dir = QDEC_GetDirection();
+        if (data == preData)
+            return;
+        uint16_t step;
+        step = StepCal(preData, data, &dir);
+        preData = data;
+        report.wheel = dir ? step : (0 - (int8_t)step);
+#endif
         att_server_notify(handle_send, att_handle_notify, (uint8_t*)&report, sizeof(report));
     }
 }
@@ -429,10 +460,11 @@ const static uint8_t MOUSE_REPORT_MAP[] = {
             USAGE_PAGE(1),      0x01,         //   Generic Desktop
             USAGE(1),           0x30,         //   X
             USAGE(1),           0x31,         //   Y
+            USAGE(1),           0x38,         //   Wheel
             LOGICAL_MINIMUM(1), 0x81,         //   -127
             LOGICAL_MAXIMUM(1), 0x7f,         //   127
             REPORT_SIZE(1),     0x08,         //   Two bytes
-            REPORT_COUNT(1),    0x02,
+            REPORT_COUNT(1),    0x03,
             INPUT(1),           0x06,         //   Data, Variable, Relative
         END_COLLECTION(0),
     END_COLLECTION(0),

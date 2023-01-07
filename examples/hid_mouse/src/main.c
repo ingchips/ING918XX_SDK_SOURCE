@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "blink.h"
+#include "peripheral_qdec.h"
 
 #include "../../peripheral_console/src/key_detector.h"
 
@@ -168,6 +169,32 @@ int read_from_flash(void *db, const int max_size)
     return KV_OK;
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+static void QDEC_PclkCfg(void)
+{
+    uint32_t hclk = SYSCTRL_GetHClk();
+    uint32_t qdecClk = SYSCTRL_GetClk(SYSCTRL_ITEM_APB_QDEC);
+    uint8_t div = hclk / qdecClk;
+    if (hclk % qdecClk)
+        div++;
+    if (!(div >> 4))
+        SYSCTRL_SetPClkDiv(div);
+}
+static void QDEC_Setup(void)
+{
+    QDEC_PclkCfg();
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_QDEC);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_PinCtrl |
+                         SYSCTRL_ITEM_APB_QDEC);
+    PINCTRL_SelQDECIn(21, 22);
+
+    SYSCTRL_SelectQdecClk(SYSCTRL_CLK_HCLK, 100);
+    QDEC_EnableQdecDiv(QDEC_DIV_1024);
+    QDEC_QdecCfg(63, 0);
+    QDEC_ChannelEnable(1);
+}
+#endif
+
 extern void on_key_event(key_press_event_t evt);
 
 trace_rtt_t trace_ctx = {0};
@@ -195,6 +222,9 @@ int app_main()
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0xfff);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    QDEC_Setup();
+#endif
 
     return 0;
 }
