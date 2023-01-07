@@ -5,7 +5,7 @@
 #include "bt_types.h"
 #include "profile.h"
 
-void mesh_elements_and_models_init(const bt_mesh_comp_t *a_comp);
+void mesh_elems_and_models_ll_init(const bt_mesh_comp_t *a_comp);
 
 
 #endif

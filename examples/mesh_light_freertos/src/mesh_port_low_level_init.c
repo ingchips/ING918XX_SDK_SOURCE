@@ -407,7 +407,7 @@ static void mesh_vendor_models_init(mesh_element_t * element, mesh_model_t * mod
     }
 }
 
-void mesh_elements_and_models_init(const bt_mesh_comp_t *a_comp){
+void mesh_elems_and_models_ll_init(const bt_mesh_comp_t *a_comp){
     
     printf("#elem_count: %d\n", a_comp->elem_count);
     

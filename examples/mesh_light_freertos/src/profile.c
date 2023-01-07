@@ -149,7 +149,7 @@ static const bt_mesh_comp_t comp = {
 
 
 static void mesh_elems_model_init(void){
-    mesh_elements_and_models_init(&comp);
+    mesh_elems_and_models_ll_init(&comp);
 }
 
 
