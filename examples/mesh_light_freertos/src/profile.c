@@ -24,7 +24,7 @@ static void mesh_platform_init(void){
 extern void mesh_prov_config(void);
 static void mesh_provising_init(void){
     mesh_port_init();
-    
+    mesh_prov_config();
 }
 
 void mesh_init(void){
