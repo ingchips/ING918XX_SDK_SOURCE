@@ -2,21 +2,21 @@
 /*  ING CHIPS MESH */
 
 /*
- * Copyright (c) 2018 INGCHIPS MESH
+ * Copyright (c) 2022 INGCHIPS MESH
  */
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "mesh_defines.h"
 #include "BUTTON_TEST.h"
 #include "stdbool.h"
 #include "mesh_profile.h"
-
 #include "ingsoc.h"
 #include "platform_api.h"
-#include "mesh_includes.h"
-#include "mesh_storage.h"
+#include "mesh_storage_app.h"
 #include "adv_bearer.h"
+#include "mesh_port_run_loop.h"
 
 
 // button gpio select.
@@ -91,7 +91,7 @@ static void mesh_ble_params_reset_delay_timer_timeout_handler(mesh_timer_source_
     // mesh network reset.
     mesh_node_reset();    
     // mesh storage clear and reload.
-    mesh_storage_clear_and_reinit();    
+    mesh_storage_app_reinit();    
     // name reload.
     ble_port_generate_name_and_load_name();
     // addr reload.

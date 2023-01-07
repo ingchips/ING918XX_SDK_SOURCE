@@ -1,6 +1,6 @@
 #include "profile.h"
 #include "platform_api.h"
-#include "mesh_storage.h"
+#include "mesh_storage_app.h"
 #include "mesh.h"
 #include "mesh_port_stack.h"
 #include "mesh_port_low_level_init.h"
@@ -216,8 +216,8 @@ static const bt_mesh_prov_t prov = {
  *-----------------------------> API <--------------------------------
  *------------------------------------------------------------------*/
 static void mesh_flash_init(void){
-    mesh_storage_init();
-    mesh_stack_storage_init();
+    mesh_storage_app_init();
+    mesh_storage_stack_init();
 }
 
 void mesh_elements_init(void){

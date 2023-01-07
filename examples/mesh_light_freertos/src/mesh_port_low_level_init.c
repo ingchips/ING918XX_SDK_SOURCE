@@ -18,9 +18,10 @@
 #include "mesh_configuration_client.h"
 #include "mesh_configuration_server.h"
 #include "gap.h"
-#include "mesh_storage.h"
+#include "mesh_storage_app.h"
 #include "app_debug.h"
 #include "profile.h"
+#include "app_config.h"
 
 // #define USE_DEFAULT_UUID
 
@@ -181,61 +182,6 @@ static void mesh_configuration_message_handler(uint8_t packet_type, uint16_t cha
         default:
             break;
     }
-}
-
-static void mesh_generate_random_uuid(uint8_t * dev_uuid, uint16_t len){
-    if(len != 16)
-        return;
-
-    if(!mesh_storage_is_device_uuid_set()){
-        // generate random beacon address.
-        big_endian_store_32(dev_uuid, 0, (uint32_t)platform_rand());
-        big_endian_store_32(dev_uuid, 4, (uint32_t)platform_rand());
-        big_endian_store_32(dev_uuid, 8, (uint32_t)platform_rand());
-        big_endian_store_32(dev_uuid, 12, (uint32_t)platform_rand());
-        // write addr to database and flash.
-        mesh_storage_device_uuid_set(dev_uuid, len);
-    } else {
-        // read addr from database.
-        mesh_storage_device_uuid_get(dev_uuid, &len);
-    }
-
-    printf("dev uuid: ");
-    printf_hexdump(dev_uuid, len);
-}
-
-
-
-static void mesh_generate_random_name(uint8_t * name, uint16_t len){
-
-    if(!mesh_storage_is_name_set()){
-        // generate random area.
-        int rand = platform_rand();
-        char line[8];
-        int pos = 0;
-        line[pos++] = char_for_nibble((rand >> 28) & 0x0f);
-        line[pos++] = char_for_nibble((rand >> 24) & 0x0f);
-        line[pos++] = char_for_nibble((rand >> 20) & 0x0f);
-        line[pos++] = char_for_nibble((rand >> 16) & 0x0f);
-        line[pos++] = char_for_nibble((rand >> 12) & 0x0f);
-        line[pos++] = char_for_nibble((rand >>  8) & 0x0f);
-        line[pos++] = char_for_nibble((rand >>  4) & 0x0f);
-        line[pos++] = char_for_nibble((rand >>  0) & 0x0f);
-        if(len > 8){
-            memcpy(name+len-8, line, 8);
-        } else {
-            return;
-        }
-        
-        // write name to database and flash.
-        mesh_storage_name_set(name, len);
-    } else {
-        // read name from database.
-        mesh_storage_name_get(name, &len);
-    }
-
-    name[len] = '\0';
-    printf("dev name[%d]: %s\n", len, name);
 }
 
 void ble_port_generate_name_and_load_name(void){

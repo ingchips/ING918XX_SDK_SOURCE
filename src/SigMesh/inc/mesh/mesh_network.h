@@ -38,7 +38,10 @@
 #ifndef __MESH_NETWORK
 #define __MESH_NETWORK
 
-#include "mesh_includes.h"
+#include <string.h>
+#include "mesh_defines.h"
+#include "mesh_event.h"
+#include "mesh_port_run_loop.h"
 
 #include "mesh/provisioning.h"
 #include "mesh/mesh_keys.h"

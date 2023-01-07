@@ -13,6 +13,7 @@
 #include "mesh_proxy.h"
 #include "mesh_port_pb.h"
 #include "mesh_profile.h"
+#include "app_config.h"
 
 // profile data.
 #include "../data/gatt_pb.const"

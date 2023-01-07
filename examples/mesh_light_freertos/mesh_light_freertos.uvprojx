@@ -404,9 +404,14 @@
               <FilePath>.\src\mesh_port_stack.c</FilePath>
             </File>
             <File>
-              <FileName>mesh_storage.c</FileName>
+              <FileName>mesh_storage_app.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\mesh_storage.c</FilePath>
+              <FilePath>.\src\mesh_storage_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_storage_low_level.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_storage_low_level.c</FilePath>
             </File>
             <File>
               <FileName>app_config.h</FileName>

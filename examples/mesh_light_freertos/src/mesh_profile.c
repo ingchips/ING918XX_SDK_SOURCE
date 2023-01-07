@@ -13,7 +13,7 @@
 #include "profile.h"
 #include "mesh.h"
 #include "mesh_port_stack.h"
-#include "mesh_storage.h" 
+#include "mesh_storage_app.h" 
 
 
 // mesh adv handle
@@ -62,15 +62,15 @@ const uint8_t gatt_data_proxy[] =
 
 
 const static uint8_t prov_adv_data[] = {
-    // 0x01 - «Flags»
+    // 0x01 - Flags»
     2, 0x01,
     0x06,
 
-    // 0x03 - «Complete List of 16-bit Service Class UUIDs»
+    // 0x03 - Complete List of 16-bit Service Class UUIDs»
     3, 0x03,
     0x27, 0x18,
 
-    // 0x16 - «Service Data - 16-bit UUID»
+    // 0x16 - Service Data - 16-bit UUID»
     21, 0x16,
     0x27, 0x18, 0x00, 0x01, 0x61, 0x00, 0x04, 0x20,
     0x30, 0x75, 0x79, 0xBC, 0xDE, 0xEF, 0xB6, 0xDB,
@@ -78,15 +78,15 @@ const static uint8_t prov_adv_data[] = {
 };
 
 const static uint8_t proxy_adv_data[] = {
-    // 0x01 - «Flags»
+    // 0x01 - Flags»
     2, 0x01,
     0x06,
 
-    // 0x03 - «Complete List of 16-bit Service Class UUIDs»
+    // 0x03 - Complete List of 16-bit Service Class UUIDs»
     3, 0x03,
     0x27, 0x18,
 
-    // 0x16 - «Service Data - 16-bit UUID»
+    // 0x16 - Service Data - 16-bit UUID»
     21, 0x16,
     0x27, 0x18, 0x00, 0x01, 0x61, 0x00, 0x04, 0x20,
     0x30, 0x75, 0x79, 0xBC, 0xDE, 0xEF, 0xB6, 0xDB,
@@ -95,7 +95,7 @@ const static uint8_t proxy_adv_data[] = {
 
 // hello-mesh
 const static uint8_t scan_data[] = {
-    // 0x09 - «Complete Local Name»
+    // 0x09 - Complete Local Name»
     0x0B, 0x09,
     0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x2D, 0x6D, 0x65, 0x73, 0x68
 };
@@ -246,44 +246,6 @@ void ble_set_conn_interval_ms(uint16_t interval_ms){
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// addr
-static void mesh_gatt_addr_generate_and_get(bd_addr_t addr){
-    if(!mesh_storage_is_gatt_addr_set()){
-        // generate random gatt address.
-        int rand = platform_rand();
-        addr[5] = rand & 0xFF;
-        addr[4] = (rand >> 8) & 0xFF;
-        addr[3] = (rand >> 16) & 0xFF;
-        addr[2] = (rand >> 24) & 0xFF;
-        // write addr to database and flash.
-        mesh_storage_gatt_addr_set(addr);
-    } else {
-        // read addr from database.
-        mesh_storage_gatt_addr_get(addr);
-    }
-
-    printf("gatt_addr: ");
-    printf_hexdump(addr, sizeof(bd_addr_t));
-}
-
-static void mesh_beacon_addr_generate_and_get(bd_addr_t addr){
-    if(!mesh_storage_is_beacon_addr_set()){
-        // generate random beacon address.
-        int rand = platform_rand();
-        addr[5] = rand & 0xFF;
-        addr[4] = (rand >> 8) & 0xFF;
-        addr[3] = (rand >> 16) & 0xFF;
-        addr[2] = (rand >> 24) & 0xFF;
-        // write addr to database and flash.
-        mesh_storage_beacon_addr_set(addr);
-    } else {
-        // read addr from database.
-        mesh_storage_beacon_addr_get(addr);
-    }
-
-    printf("beacon_addr: ");
-    printf_hexdump(addr, sizeof(bd_addr_t));
-}
 
 static void mesh_proxy_adv_setup(void){
 
