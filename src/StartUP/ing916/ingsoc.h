@@ -497,6 +497,20 @@ typedef struct
     __IO uint32_t      UsbPCConfig;     //0x0E00
 } USB_TypeDef;
 
+typedef struct
+{
+    __IO uint32_t      key_scanner_ctrl0; //0x0000
+    __IO uint32_t      key_scanner_ctrl1; //0x0004
+    __IO uint32_t      key_row_mask_ctrl; //0x0008
+    __IO uint32_t      key_col_mask_ctrl; //0x000C
+    __IO uint32_t      key_int_en;        //0x0010
+    __IO uint32_t      key_int;           //0x0014
+    __IO uint32_t      fifo_status;       //0x0018
+    __IO uint32_t      key_data;          //0x001C
+    __IO uint32_t      key_trig;          //0x0020
+    __IO uint32_t      key_err_cfg;       //0x0024
+} KEYSCAN_TypeDef;
+
 /******************************************************************************/
 /*                         memory map                                         */
 /******************************************************************************/
@@ -564,6 +578,7 @@ typedef struct
 #define APB_EFUSE          ((EFUSE_TypeDef *)APB_EFUSE_BASE)
 #define APB_IR             ((IR_TypeDef *)APB_IR_BASE)
 #define AHB_USB            ((USB_TypeDef *)AHB_USB_BASE)
+#define APB_KEYSCAN        ((KEYSCAN_TypeDef *)APB_KEYSCAN_BASE)
 
 #define APB_SPI            APB_SSP1
 #define AHB_QSPI           AHB_SSP0
