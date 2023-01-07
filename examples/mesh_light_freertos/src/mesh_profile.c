@@ -247,13 +247,23 @@ void ble_set_conn_interval_ms(uint16_t interval_ms){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void mesh_proxy_adv_setup(void){
-
+static void ble_port_generate_gatt_addr_and_load(void){
     // generate and get random gatt address.
     mesh_gatt_addr_generate_and_get(m_rand_addr);
-
     // set addr.
     gap_set_adv_set_random_addr(MESH_PROXY_ADV_HANDLE, m_rand_addr);
+}
+
+static void ble_port_generate_beacon_addr_and_load(void){
+    // generate and get random beacon address.
+    mesh_beacon_addr_generate_and_get(m_rand_addr);
+    // set addr.
+    gap_set_adv_set_random_addr(MESH_PB_ADV_HANDLE, m_rand_addr);
+}
+
+static void mesh_proxy_adv_setup(void){
+    // set gatt addr.
+    ble_port_generate_gatt_addr_and_load();
 
     // set adv params.
     bd_addr_t peer_addr;
@@ -270,11 +280,8 @@ static void mesh_proxy_adv_setup(void){
 
 static void mesh_pb_adv_setup(void){
     
-    // generate and get random beacon address.
-    mesh_beacon_addr_generate_and_get(m_rand_addr);
-
-    // set addr.
-    gap_set_adv_set_random_addr(MESH_PB_ADV_HANDLE, m_rand_addr);
+    // set beacon addr.
+    ble_port_generate_beacon_addr_and_load();
         
     // set adv params.
     bd_addr_t peer_addr;
@@ -298,18 +305,10 @@ void mesh_setup_adv(void)
 
 // reload gatt addr and beacon addr.
 void ble_port_generate_addr_and_load_addr(void){
-    bd_addr_t rnd_addr;
-    // generate and get random gatt address.
-    mesh_gatt_addr_generate_and_get(rnd_addr);
-
-    // set addr.
-    gap_set_adv_set_random_addr(MESH_PROXY_ADV_HANDLE, rnd_addr);
-
-    // generate and get random beacon address.
-    mesh_beacon_addr_generate_and_get(rnd_addr);
-
-    // set addr.
-    gap_set_adv_set_random_addr(MESH_PB_ADV_HANDLE, rnd_addr);
+    // set gatt addr.
+    ble_port_generate_gatt_addr_and_load();
+    // set beacon addr.
+    ble_port_generate_beacon_addr_and_load();
 }
 
 void mesh_server_restart(void)
