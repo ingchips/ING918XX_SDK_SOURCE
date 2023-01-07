@@ -389,14 +389,14 @@
               <FilePath>.\src\main.c</FilePath>
             </File>
             <File>
-              <FileName>mesh_profile.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\mesh_profile.c</FilePath>
-            </File>
-            <File>
               <FileName>profile.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_profile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_profile.c</FilePath>
             </File>
             <File>
               <FileName>btstack_port_mesh_init.c</FileName>
@@ -412,11 +412,6 @@
               <FileName>mesh_storage.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\mesh_storage.c</FilePath>
-            </File>
-            <File>
-              <FileName>mesh_model.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\mesh_model.c</FilePath>
             </File>
             <File>
               <FileName>app_config.h</FileName>

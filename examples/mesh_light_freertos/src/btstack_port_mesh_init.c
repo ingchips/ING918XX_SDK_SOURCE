@@ -19,8 +19,8 @@
 #include "mesh_configuration_server.h"
 #include "gap.h"
 #include "mesh_storage.h"
-#include "mesh_model.h"
 #include "app_debug.h"
+#include "profile.h"
 
 // #define USE_DEFAULT_UUID
 
