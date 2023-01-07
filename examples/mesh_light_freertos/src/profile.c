@@ -3,7 +3,7 @@
 #include "mesh_storage.h"
 #include "mesh.h"
 #include "mesh_port_stack.h"
-#include "btstack_port_mesh_init.h"
+#include "mesh_port_low_level_init.h"
 #include "board.h"
 
 /*--------------------------------------------------------------------

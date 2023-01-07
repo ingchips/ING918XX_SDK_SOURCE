@@ -399,11 +399,6 @@
               <FilePath>.\src\mesh_profile.c</FilePath>
             </File>
             <File>
-              <FileName>btstack_port_mesh_init.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\btstack_port_mesh_init.c</FilePath>
-            </File>
-            <File>
               <FileName>mesh_port_stack.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\mesh_port_stack.c</FilePath>
@@ -567,6 +562,11 @@
               <FileName>hal_flash_bank_eflash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\SigMesh\src\hal_flash_bank_eflash.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_port_low_level_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_port_low_level_init.c</FilePath>
             </File>
           </Files>
         </Group>
