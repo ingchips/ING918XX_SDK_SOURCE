@@ -6,7 +6,7 @@
 #include "profile.h"
 
 void mesh_elems_and_models_ll_init(const bt_mesh_comp_t *a_comp);
-
+void mesh_prov_ll_init(const bt_mesh_prov_t *prov);
 
 #endif
 

@@ -13,18 +13,6 @@
 /*--------------------------------------------------------------------
  *--------------------------> MESH DEFINE <---------------------------
  *------------------------------------------------------------------*/
-/**
-* @def basic data type
-* @brief define the basic data type name reference  */
-#define u8_t    uint8_t
-#define s8_t    int8_t
-#define u16_t   uint16_t
-#define s16_t   int16_t
-#define u32_t   uint32_t
-#define u64_t   uint64_t
-#define s64_t   int64_t
-#define s32_t   int32_t
-
 // ARRAY
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -39,14 +27,14 @@
 
 /** Mesh Configuration Server Model Context */
 typedef struct bt_mesh_cfg_srv {
-	u8_t relay;                /* Relay Mode state */
-	u8_t gatt_proxy;           /* GATT Proxy state */
-	u8_t frnd;                 /* Friend state */
-	u8_t low_pwr;              /* Low Power state */
-	u8_t beacon;               /* Secure Network Beacon state */
-	u8_t default_ttl;          /* Default TTL */    
-	u8_t net_transmit;         /* Network Transmit count */
-	u8_t relay_retransmit;     /* Relay Retransmit count */
+	uint8_t relay;                /* Relay Mode state */
+	uint8_t gatt_proxy;           /* GATT Proxy state */
+	uint8_t frnd;                 /* Friend state */
+	uint8_t low_pwr;              /* Low Power state */
+	uint8_t beacon;               /* Secure Network Beacon state */
+	uint8_t default_ttl;          /* Default TTL */    
+	uint8_t net_transmit;         /* Network Transmit count */
+	uint8_t relay_retransmit;     /* Relay Retransmit count */
 }bt_mesh_cfg_srv_t;
 
 /*
@@ -81,9 +69,9 @@ typedef struct bt_mesh_cfg_srv {
 
 // ACCESS
 typedef struct node_info {
-    u16_t cid;
-    u16_t pid;
-    u16_t vid;
+    uint16_t cid;
+    uint16_t pid;
+    uint16_t vid;
 }node_info_t;
 
 /** Node Composition */
@@ -121,12 +109,12 @@ typedef struct bt_mesh_comp {
 
 // MODEL_SRV
 typedef struct light_state {
-    u8_t onoff[2];
-    s16_t level[2];
-    u16_t lightness[2];
-    u16_t hue[2];
-    u16_t saturation[2];
-    u8_t led_gpio_pin;
+    uint8_t onoff[2];
+    int16_t level[2];
+    uint16_t lightness[2];
+    uint16_t hue[2];
+    uint16_t saturation[2];
+    uint8_t led_gpio_pin;
 } light_state_t;
 
 
@@ -134,6 +122,13 @@ typedef struct light_state {
 /*--------------------------------------------------------------------
  *------------------------> PROVISIONING <----------------------------
  *------------------------------------------------------------------*/
+/*
+* @def  MESH oob type
+*/
+#define MESH_OOB_TYPE_NONE          0
+#define MESH_OOB_TYPE_STATIC        1
+#define MESH_OOB_TYPE_OUTPUT        2
+#define MESH_OOB_TYPE_INTPUT        3
 
 /**
 * @enum mesh_out_action
@@ -166,114 +161,49 @@ typedef enum {
 	BT_MESH_PROV_GATT  = BIT(1),
 } bt_mesh_prov_bearer_t;
 
-/**
-* @enum prov_oob
-*/
-typedef enum {
-	BT_MESH_PROV_OOB_OTHER     = BIT(0),
-	BT_MESH_PROV_OOB_URI       = BIT(1),
-	BT_MESH_PROV_OOB_2D_CODE   = BIT(2),
-	BT_MESH_PROV_OOB_BAR_CODE  = BIT(3),
-	BT_MESH_PROV_OOB_NFC       = BIT(4),
-	BT_MESH_PROV_OOB_NUMBER    = BIT(5),
-	BT_MESH_PROV_OOB_STRING    = BIT(6),
-	/* 7 - 10 are reserved */
-	BT_MESH_PROV_OOB_ON_BOX    = BIT(11),
-	BT_MESH_PROV_OOB_IN_BOX    = BIT(12),
-	BT_MESH_PROV_OOB_ON_PAPER  = BIT(13),
-	BT_MESH_PROV_OOB_IN_MANUAL = BIT(14),
-	BT_MESH_PROV_OOB_ON_DEV    = BIT(15),
-} bt_mesh_prov_oob_info_t;
-
 /** Provisioning properties & capabilities. */
 /**
 * @struct bt_mesh_prov
 */
-struct bt_mesh_prov {
+typedef struct bt_mesh_prov {
 	/** The UUID that's used when advertising as unprovisioned */
-	const u8_t *uuid;
+	const uint8_t *uuid;
+    
+    /* Public Key OOB */
+    const uint8_t * public_key;
+    const uint8_t * private_key;
+    
+    /* Static OOB */
+    const uint8_t * static_oob_data;
+    uint16_t static_oob_len;
+    
+    /* Output OOB */
+    uint16_t output_oob_action;
+    uint8_t  output_oob_max_size;
+    
+    /* Input OOB */
+    uint16_t input_oob_action;
+    uint8_t  input_oob_max_size;
 
-	/** Optional URI. This will be advertised separately from the
-	 *  unprovisioned beacon, however the unprovisioned beacon will
-	 *  contain a hash of it so the two can be associated by the
-	 *  provisioner.
-	 */
-	const char *uri;
-
-	/** Out of Band information field. */
-	bt_mesh_prov_oob_info_t oob_info;
-
-	/** Static OOB value */
-	const u8_t *static_val;
-	/** Static OOB value length */
-	u8_t        static_val_len;
-
-	/** Maximum size of Output OOB supported */
-	u8_t        output_size;
-	/** Supported Output OOB Actions */
-	u16_t       output_actions;
-
-	/* Maximum size of Input OOB supported */
-	u8_t        input_size;
-	/** Supported Input OOB Actions */
-	u16_t       input_actions;
-
-	/** @brief Output of a number is requested.
-	 *
+	/** @brief Output of a number is displayed.
 	 *  This callback notifies the application that it should
-	 *  output the given number using the given action.
-	 *
-	 *  @param act Action for outputting the number.
+	 *  output the given number.
 	 *  @param num Number to be outputted.
-	 *
 	 *  @return Zero on success or negative error code otherwise
 	 */
-	int         (*output_number)(bt_mesh_output_action_t act, u32_t num);
-
-	/** @brief Output of a string is requested.
-	 *
-	 *  This callback notifies the application that it should
-	 *  display the given string to the user.
-	 *
-	 *  @param str String to be displayed.
-	 *
-	 *  @return Zero on success or negative error code otherwise
-	 */
-	int         (*output_string)(const char *str);
+	int         (*output_number)(uint32_t num);
 
 	/** @brief Input is requested.
 	 *
 	 *  This callback notifies the application that it should
-	 *  request input from the user using the given action. The
+	 *  request input from the user. The
 	 *  requested input will either be a string or a number, and
 	 *  the application needs to consequently call the
 	 *  bt_mesh_input_string() or bt_mesh_input_number() functions
 	 *  once the data has been acquired from the user.
-	 *
-	 *  @param act Action for inputting data.
-	 *  @param num Maximum size of the inputted data.
-	 *
 	 *  @return Zero on success or negative error code otherwise
 	 */
-	int         (*input)(bt_mesh_input_action_t act, u8_t size);
-
-	/** @brief Provisioning link has been opened.
-	 *
-	 *  This callback notifies the application that a provisioning
-	 *  link has been opened on the given provisioning bearer.
-	 *
-	 *  @param bearer Provisioning bearer.
-	 */
-	void        (*link_open)(bt_mesh_prov_bearer_t bearer);
-
-	/** @brief Provisioning link has been closed.
-	 *
-	 *  This callback notifies the application that a provisioning
-	 *  link has been closed on the given provisioning bearer.
-	 *
-	 *  @param bearer Provisioning bearer.
-	 */
-	void        (*link_close)(bt_mesh_prov_bearer_t bearer);
+	int         (*input_req)(void);
 
 	/** @brief Provisioning is complete.
 	 *
@@ -284,20 +214,8 @@ struct bt_mesh_prov {
 	 *  @param net_idx NetKeyIndex given during provisioning.
 	 *  @param addr Primary element address.
 	 */
-	void        (*complete)(u16_t net_idx, u16_t addr);
-
-	/** @brief A new node has been added to the provisioning database.
-	 *
-	 *  This callback notifies the application that provisioning has
-	 *  been successfully completed, and that a node has been assigned
-	 *  the specified NetKeyIndex and primary element address.
-	 *
-	 *  @param net_idx NetKeyIndex given during provisioning.
-	 *  @param addr Primary element address.
-	 *  @param num_elem Number of elements that this node has.
-	 */
-	void        (*node_added)(u16_t net_idx, u16_t addr, u8_t num_elem);
-
+	void        (*complete)(uint16_t net_idx, uint16_t addr);
+    
 	/** @brief Node has been reset.
 	 *
 	 *  This callback notifies the application that the local node
@@ -307,28 +225,8 @@ struct bt_mesh_prov {
 	 *  unprovisioned advertising on one or more provisioning bearers.
 	 */
 	void        (*reset)(void);
-
-    /**@brief provisioner has provisioned a device.
-	 *
-	 *  This callback notifies the application that the provisioner
-	 *  has provisioned a device.
-     */
-    void        (*provisioner_complete)(u16_t addr);
-
-    /**@brief report to APP the middle status in the provisioner or device.
-	 *
-	 *  This callback notifies the application
-	 *
-     */
-    void       (*status_report)(u8_t  status_code,u8_t* param);
-
-    /**@brief add for proxy_service.
-	 *
-	 *  proxy_uuid for pb_gatt or gatt_proxy service.
-	 *
-     */
-    const u8_t *proxy_uuid;
-};
+    
+}bt_mesh_prov_t;
 
 /** @brief Enable specific provisioning bearers
  *
@@ -350,6 +248,9 @@ int bt_mesh_prov_enable(bt_mesh_prov_bearer_t bearers);
  *  @return Zero on success or (negative) error code otherwise.
  */
 int bt_mesh_prov_disable(bt_mesh_prov_bearer_t bearers);
+
+int bt_mesh_input_string(const uint8_t * str, uint16_t len);
+int bt_mesh_input_number(uint32_t num);
 
 
 

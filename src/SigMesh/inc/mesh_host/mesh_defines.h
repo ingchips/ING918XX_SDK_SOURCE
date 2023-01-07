@@ -176,6 +176,13 @@ typedef struct {
 #define MESH_SUBEVENT_ATTENTION_TIMER                                                0x1eu
 
 /**
+ * @format 
+ * @param subevent_code
+ * @param attention_time in seconds
+ */
+#define MESH_SUBEVENT_NODE_RESET                                                     0x1fu
+
+/**
  * @format 1H
  * @param subevent_code
  * @param con_handle

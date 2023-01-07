@@ -30,6 +30,8 @@ static char dev_name[] = "ing-mesh-xxxxxxxx";
 const char * device_uuid_string = "001BDC0810210B0E0A0C000B0E0A0C00";
 #endif
 
+static const bt_mesh_prov_t *pMesh_prov = NULL;
+
 // general
 static mesh_generic_on_off_state_t  mesh_generic_on_off_state;
 
@@ -49,34 +51,51 @@ static mesh_health_state_t          mesh_health_server_model_context;
 
 
 static void mesh_provisioning_message_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
-   UNUSED(packet_type);
-   UNUSED(channel);
-   UNUSED(size);
+    UNUSED(packet_type);
+    UNUSED(channel);
+    UNUSED(size);
 
-   if (packet_type != HCI_EVENT_PACKET) return;
+    if (packet_type != HCI_EVENT_PACKET) return;
+    
+    mesh_provisioning_data_t provisioning_data;
 
-   switch(packet[0]){
-       case HCI_EVENT_MESH_META:
-           switch(packet[2]){
-               case MESH_SUBEVENT_PB_TRANSPORT_LINK_OPEN:
-                   printf("Provisioner link opened");
-                   break;
-               case MESH_SUBEVENT_ATTENTION_TIMER:
-                   printf("Attention Timer: %u\n", mesh_subevent_attention_timer_get_attention_time(packet));
-                   break;
-               case MESH_SUBEVENT_PB_TRANSPORT_LINK_CLOSED:
-                   printf("Provisioner link close");
-                   break;
-               case MESH_SUBEVENT_PB_PROV_COMPLETE:
-                   printf("Provisioning complete\n");
-                   break;
-               default:
-                   break;
-           }
+    switch(packet[0]){
+        case HCI_EVENT_MESH_META:
+            switch(packet[2]){
+                case MESH_SUBEVENT_PB_TRANSPORT_LINK_OPEN:
+                    printf("Provisioner link opened");
+                    break;
+                case MESH_SUBEVENT_ATTENTION_TIMER:
+                    printf("Attention Timer: %u\n", mesh_subevent_attention_timer_get_attention_time(packet));
+                    break;
+                case MESH_SUBEVENT_PB_TRANSPORT_LINK_CLOSED:
+                    printf("Provisioner link close");
+                    break;
+                case MESH_SUBEVENT_PB_PROV_COMPLETE:
+                    printf("Provisioning complete\n");
+                    provisioning_device_data_get(&provisioning_data);
+                    pMesh_prov->complete(provisioning_data.network_key->netkey_index, provisioning_data.unicast_address);
+                    break;
+                case MESH_SUBEVENT_PB_PROV_START_EMIT_OUTPUT_OOB:{
+                        uint16_t pb_trasport_cid = mesh_subevent_pb_prov_start_emit_output_oob_get_pb_transport_cid(packet);
+                        uint32_t output_oob = mesh_subevent_pb_prov_start_emit_output_oob_get_output_oob(packet);
+                        // printf("pb_trasport_cid: %u, output_oob: %u \n", pb_trasport_cid, output_oob);                    
+                        pMesh_prov->output_number(output_oob);
+                    }break;                
+                case MESH_SUBEVENT_PB_PROV_INPUT_OOB_REQUEST:
+                    pMesh_prov->input_req();
+                    break;
+                case MESH_SUBEVENT_NODE_RESET:
+                    mesh_port_node_reset_handler();
+                    pMesh_prov->reset();
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
            break;
-       default:
-           break;
-   }
+    }
 }
 
 static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
@@ -281,13 +300,35 @@ void mesh_platform_config(void)
     
 }
 
-void mesh_prov_config(void)
+int bt_mesh_input_string(const uint8_t * str, uint16_t len){
+    provisioning_device_input_oob_complete_alphanumeric(1, str, len);
+    return 0;
+}
+
+int bt_mesh_input_number(uint32_t num){
+    provisioning_device_input_oob_complete_numeric(1, num);
+    return 0;
+}
+
+void mesh_prov_ll_init(const bt_mesh_prov_t *prov)
 {
+    pMesh_prov = prov;
+    
     // Track Provisioning as device role
     mesh_register_provisioning_device_packet_handler((btstack_packet_handler_t)&mesh_provisioning_message_handler);
     
-    // Enable Output OOB
-    // provisioning_device_set_output_oob_actions(0x08, 0x08);
+    // Config Public Key OOB
+    if(prov->public_key != NULL && prov->private_key != NULL)
+        provisioning_device_set_public_key_oob(prov->public_key, prov->private_key);
+    // Config Static OOB
+    if(prov->static_oob_len)
+        provisioning_device_set_static_oob(prov->static_oob_len, prov->static_oob_data);
+    // Config Output OOB
+    if(prov->output_oob_max_size)
+        provisioning_device_set_output_oob_actions(prov->output_oob_action, prov->output_oob_max_size);
+    // Config Input OOB
+    if(prov->input_oob_max_size)
+        provisioning_device_set_input_oob_actions(prov->input_oob_action, prov->input_oob_max_size);
     
     // Set uuid.
     ble_port_generate_uuid_and_load_uuid();

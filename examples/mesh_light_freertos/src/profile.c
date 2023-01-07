@@ -32,7 +32,7 @@ static bt_mesh_cfg_srv_t cfg_srv = {
 
 static void light_update(struct light_state *a_light)
 {
-    u8_t val;
+    uint8_t val;
     if (!a_light->onoff[0]) { // Set led off.
         val = 0;
     } else { // Set led on, belongs to level value.
@@ -47,7 +47,7 @@ static void light_update(struct light_state *a_light)
 
 #define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->light_state
 
-int light_model_gen_onoff_get(mesh_model_t *model, u8_t *state)
+int light_model_gen_onoff_get(mesh_model_t *model, uint8_t *state)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
     *state = a_light->onoff[0];
@@ -55,7 +55,7 @@ int light_model_gen_onoff_get(mesh_model_t *model, u8_t *state)
     return 0;
 }
 
-int light_model_gen_onoff_set(mesh_model_t *model, u8_t state)
+int light_model_gen_onoff_set(mesh_model_t *model, uint8_t state)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
     a_light->onoff[0] = state;
@@ -70,7 +70,7 @@ int light_model_gen_onoff_set(mesh_model_t *model, u8_t state)
     return 0;
 }
 
-int light_model_gen_level_get(mesh_model_t *model, s16_t *level)
+int light_model_gen_level_get(mesh_model_t *model, int16_t *level)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
     *level = a_light->level[0];
@@ -78,7 +78,7 @@ int light_model_gen_level_get(mesh_model_t *model, s16_t *level)
     return 0;
 }
 
-int light_model_gen_level_set(mesh_model_t *model, s16_t  level)
+int light_model_gen_level_set(mesh_model_t *model, int16_t  level)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
     a_light->level[0] = level;
@@ -148,69 +148,62 @@ static const bt_mesh_comp_t comp = {
 };
 
 
-static void mesh_elems_model_init(void){
-    mesh_elems_and_models_ll_init(&comp);
-}
-
-
 
 
 /*--------------------------------------------------------------------
  *------------------------> PROVISIONING <----------------------------
  *------------------------------------------------------------------*/
-#if 0
 
+#define USE_OOB_TYPE    MESH_OOB_TYPE_NONE
 
-#define USE_OOB
-
-#ifdef USE_OOB
-static int output_number(bt_mesh_output_action_t action, u32_t number)
+#if (USE_OOB_TYPE == MESH_OOB_TYPE_OUTPUT)
+static int output_number(uint32_t number)
 {
     printf("OOB Number %u", number);
     return 0;
 }
+#endif
 
-static int output_string(const char *str)
+#if (USE_OOB_TYPE == MESH_OOB_TYPE_INTPUT)
+static int input_request(void)
 {
-    printf("OOB String %s", str);
+    printf("Please view displaying string or number at client. And then call :\n");
+    printf("1. bt_mesh_input_string(); to send string. Or,\n");
+    printf("2. bt_mesh_input_number(); to send number.\n");
     return 0;
 }
 #endif
 
-static void prov_complete(u16_t net_idx, u16_t addr)
+static void prov_complete(uint16_t net_idx, uint16_t addr)
 {
-    printf("provisioning complete for net_idx 0x%04x addr 0x%04x",net_idx, addr);
+    printf("provisioning complete for net_idx 0x%04x addr 0x%04x\n",net_idx, addr);
     
 }
 
 static void prov_reset(void)
 {
-    
+    printf("====>node reset.\n");
 }
 
 #define BLE_MESH_DEV_UUID ((uint8_t[16]){0xA8, 0x01, 0x61,0x00,0x04,0x20,0x30,0x75,0x9a,0x00,0x09,0xda,0x78,0x00,0x00,0x00})
 
-static u8_t dev_uuid[16] = BLE_MESH_DEV_UUID;
-const unsigned char addr[6] = {1,0,0,0,0,0};
+static uint8_t dev_uuid[16] = BLE_MESH_DEV_UUID;
 
-static const struct bt_mesh_prov prov = {
+static const bt_mesh_prov_t prov = {
     .uuid = dev_uuid,
-#if USE_OOB
-    .output_size = 6,
-    .output_actions = (BT_MESH_DISPLAY_NUMBER | BT_MESH_DISPLAY_STRING),
+#if (USE_OOB_TYPE == MESH_OOB_TYPE_OUTPUT)
+    .output_oob_action = BT_MESH_DISPLAY_NUMBER,
+    .output_oob_max_size = 1,
     .output_number = output_number,
-    .output_string = output_string,
-#else
-    .output_size = 0,
-    .output_actions = 0,
-    .output_number = 0,
-    .output_string = 0,
+#elif (USE_OOB_TYPE == MESH_OOB_TYPE_INTPUT)
+    .input_oob_action = BT_MESH_ENTER_STRING,
+    .input_oob_max_size = 8,
+    .input_req = input_request,
 #endif
     .complete = prov_complete,
     .reset = prov_reset,
 };
 
-#endif
 
 /*--------------------------------------------------------------------
  *--------------------------> PLATFORM <------------------------------
@@ -227,7 +220,7 @@ static void mesh_flash_init(void){
 }
 
 void mesh_elements_init(void){
-    mesh_elems_model_init();
+    mesh_elems_and_models_ll_init(&comp);
 }
 
 extern void mesh_platform_config(void);
@@ -237,17 +230,16 @@ static void mesh_platform_init(void){
     
 }
 
-extern void mesh_prov_config(void);
 static void mesh_provising_init(void){
     mesh_port_init();
-    mesh_prov_config();
+    mesh_prov_ll_init(&prov);
 }
 
 void mesh_init(void){
     platform_printf("mesh start.\n");
     mesh_flash_init();
-    mesh_stack_init(&mesh_elements_init);
     mesh_platform_init();
+    mesh_stack_init(&mesh_elements_init);
     mesh_provising_init();
 }
 

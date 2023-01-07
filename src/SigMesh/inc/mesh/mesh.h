@@ -48,9 +48,6 @@
 extern "C" {
 #endif
 
-typedef void (*f_mesh_callback_t)(void);
-void mesh_node_reset_handler_register(f_mesh_callback_t func);
-
 /**
  * Init Mesh network stack
  */

@@ -52,6 +52,7 @@ void mesh_conn_params_update_complete_callback(uint8_t status, uint16_t handle, 
 void mesh_on_off_server_control_callback(void);
 
 void mesh_gatt_can_send_now(uint16_t conn_handle);
+void mesh_port_node_reset_handler(void);
 void mesh_port_init(void);
 
 #endif
