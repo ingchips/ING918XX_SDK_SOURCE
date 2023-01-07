@@ -188,7 +188,7 @@ static void QDEC_Setup(void)
                          SYSCTRL_ITEM_APB_QDEC);
     PINCTRL_SelQDECIn(21, 22);
 
-    SYSCTRL_SelectQdecClk(SYSCTRL_CLK_HCLK, 100);
+    SYSCTRL_SelectQDECClk(SYSCTRL_CLK_HCLK, 100);
     QDEC_EnableQdecDiv(QDEC_DIV_1024);
     QDEC_QdecCfg(63, 0);
     QDEC_ChannelEnable(1);
