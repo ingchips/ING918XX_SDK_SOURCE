@@ -34,9 +34,7 @@ but also GUI tools and documentation.
 
     ```json
     {
-        // ...
         "sdk": "path/to/cloned/repository",
-        //...
     }
     ```
 1. Start _Wizard_.
