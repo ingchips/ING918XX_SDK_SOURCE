@@ -5,6 +5,7 @@
 #include "mesh_port_stack.h"
 #include "mesh_port_low_level_init.h"
 #include "board.h"
+#include "mesh_version.h"
 
 /*--------------------------------------------------------------------
  *----------------------------> MODEL <-------------------------------
@@ -236,8 +237,24 @@ static void mesh_provising_init(void){
     mesh_prov_ll_init(&prov);
 }
 
+static void mesh_get_ver_info(void){    
+    char version[8];
+    int ver_len = mesh_get_version_info_str(version, sizeof(version));
+    if(ver_len > 0 && ver_len < sizeof(version)-1){
+        version[ver_len] = '\0';
+        printf("mesh ver: v%s\n", version); 
+    }
+    
+    char date_time[30];
+    int str_len = mesh_get_lib_compile_date_time(date_time, sizeof(date_time));
+    if(str_len > 0 ){
+        printf("mesh date: %s\n", date_time); 
+    }
+}
+
 void mesh_init(void){
     platform_printf("mesh start.\n");
+    mesh_get_ver_info();
     mesh_flash_init();
     mesh_platform_init();
     mesh_stack_init(&mesh_elements_init);
