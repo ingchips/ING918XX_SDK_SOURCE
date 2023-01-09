@@ -37,7 +37,8 @@
 static hci_con_handle_t my_conn_handle = CON_HANDLE_INVALID;
 static uint16_t   my_conn_interval_ms = 0;
 
-static bd_addr_t m_rand_addr   = {0xFC, 0x01, 0x02, 0x03, 0x23, 0x01};
+static bd_addr_t m_gatt_adv_addr;
+static bd_addr_t m_beacon_adv_addr;
 
 const static ext_adv_set_en_t adv_sets_en[2] = {{.handle = MESH_PROXY_ADV_HANDLE, .duration = 0, .max_events = 0},
                                                 {.handle = MESH_PB_ADV_HANDLE,    .duration = 0, .max_events = 0}};
@@ -247,23 +248,17 @@ void ble_set_conn_interval_ms(uint16_t interval_ms){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void ble_port_generate_gatt_addr_and_load(void){
-    // generate and get random gatt address.
-    mesh_gatt_addr_generate_and_get(m_rand_addr);
-    // set addr.
-    gap_set_adv_set_random_addr(MESH_PROXY_ADV_HANDLE, m_rand_addr);
+void mesh_gatt_adv_addr_set(bd_addr_t addr){
+    memcpy(m_gatt_adv_addr, addr, sizeof(bd_addr_t));
 }
 
-static void ble_port_generate_beacon_addr_and_load(void){
-    // generate and get random beacon address.
-    mesh_beacon_addr_generate_and_get(m_rand_addr);
-    // set addr.
-    gap_set_adv_set_random_addr(MESH_PB_ADV_HANDLE, m_rand_addr);
+void mesh_beacon_adv_addr_set(bd_addr_t addr){
+    memcpy(m_beacon_adv_addr, addr, sizeof(bd_addr_t));
 }
 
 static void mesh_proxy_adv_setup(void){
     // set gatt addr.
-    ble_port_generate_gatt_addr_and_load();
+    gap_set_adv_set_random_addr(MESH_PROXY_ADV_HANDLE, m_gatt_adv_addr);
 
     // set adv params.
     bd_addr_t peer_addr;
@@ -281,7 +276,7 @@ static void mesh_proxy_adv_setup(void){
 static void mesh_pb_adv_setup(void){
     
     // set beacon addr.
-    ble_port_generate_beacon_addr_and_load();
+    gap_set_adv_set_random_addr(MESH_PB_ADV_HANDLE, m_beacon_adv_addr);
         
     // set adv params.
     bd_addr_t peer_addr;
@@ -300,15 +295,6 @@ void mesh_setup_adv(void)
     
     mesh_proxy_adv_setup();
     mesh_pb_adv_setup();
-}
-
-
-// reload gatt addr and beacon addr.
-void ble_port_generate_addr_and_load_addr(void){
-    // set gatt addr.
-    ble_port_generate_gatt_addr_and_load();
-    // set beacon addr.
-    ble_port_generate_beacon_addr_and_load();
 }
 
 void mesh_server_restart(void)

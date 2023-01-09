@@ -90,7 +90,7 @@ void mesh_generate_random_name(uint8_t * name, uint16_t len){
         line[pos++] = char_for_nibble((rand >>  4) & 0x0f);
         line[pos++] = char_for_nibble((rand >>  0) & 0x0f);
         if(len > 8){
-            memcpy(name+len-8, line, 8);
+            memcpy(name+len-8, line, 8);//change last 8 chars.
         } else {
             return;
         }

@@ -79,9 +79,7 @@ static mesh_timer_source_t       mesh_ble_params_reset_delay_timer;
 
 // ext func.
 extern void mesh_node_reset(void);
-extern void ble_port_generate_name_and_load_name(void);
-extern void ble_port_generate_uuid_and_load_uuid(void);
-extern void ble_port_generate_addr_and_load_addr(void);
+extern void mesh_platform_init(void);
 
 // local func.
 static void mesh_ble_params_reset_delay_timer_timeout_handler(mesh_timer_source_t * ts){
@@ -91,13 +89,9 @@ static void mesh_ble_params_reset_delay_timer_timeout_handler(mesh_timer_source_
     // mesh network reset.
     mesh_node_reset();    
     // mesh storage clear and reload.
-    mesh_storage_app_reinit();    
-    // name reload.
-    ble_port_generate_name_and_load_name();
-    // addr reload.
-    ble_port_generate_addr_and_load_addr();
-    // uuid reload.
-    ble_port_generate_uuid_and_load_uuid();
+    mesh_storage_app_reinit();
+    // mesh platform reinit.
+    mesh_platform_init();
 }
 
 static void mesh_ble_params_reset_delay_timer_start(uint32_t timeout_in_ms){

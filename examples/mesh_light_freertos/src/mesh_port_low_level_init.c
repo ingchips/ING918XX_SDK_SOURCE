@@ -22,10 +22,17 @@
 #include "app_debug.h"
 #include "profile.h"
 #include "app_config.h"
+#include "mesh_port_low_level_init.h"
+#include "mesh_profile.h"
 
-// #define USE_DEFAULT_UUID
 
-static char dev_name[] = "ing-mesh-xxxxxxxx";
+#ifdef USE_MESH_APP_FLASH
+#define MESH_UUID_USE_FLASH
+#define MESH_NAME_USE_FLASH
+#define MESH_GATT_ADV_ADDR_USE_FLASH
+#define MESH_BEACON_ADV_ADDR_USE_FLASH
+#endif
+
 
 static const bt_mesh_prov_t *pMesh_prov = NULL;
 
@@ -184,24 +191,7 @@ static void mesh_configuration_message_handler(uint8_t packet_type, uint16_t cha
     }
 }
 
-void ble_port_generate_name_and_load_name(void){
-    mesh_generate_random_name((uint8_t *)dev_name, strlen(dev_name));
-    adv_bearer_adv_set_scan_rsp_data((uint8_t *)dev_name, strlen(dev_name));
-}
-
-void ble_port_generate_uuid_and_load_uuid(void){
-    uint8_t device_uuid[16];
-    
-#ifdef USE_DEFAULT_UUID
-    app_assert(pMesh_prov != NULL);
-    memcpy(device_uuid, pMesh_prov->uuid, 16);// use default uuid.
-#else
-    mesh_generate_random_uuid(device_uuid, 16);// generate uuid.
-#endif
-    mesh_node_set_device_uuid(device_uuid);
-}
-
-void mesh_platform_config(void)
+void mesh_platform_adv_params_init(void)
 {
 #ifdef ENABLE_MESH_GATT_BEARER
     // setup connectable advertisments
@@ -212,9 +202,52 @@ void mesh_platform_config(void)
     uint16_t adv_int_max = 0x0030;
     adv_bearer_advertisements_set_params(adv_int_min, adv_int_max, adv_type, BD_ADDR_TYPE_LE_PUBLIC, null_addr, PRIMARY_ADV_ALL_CHANNELS, ADV_FILTER_ALLOW_ALL);
     
-    ble_port_generate_name_and_load_name();
 #endif
     
+}
+
+void mesh_platform_config(bt_mesh_config_t type, void *data, uint32_t data_len){
+    
+    switch(type)
+    {
+        case MESH_CFG_NAME:{            
+#ifdef MESH_NAME_USE_FLASH
+            char dev_name[29]; //"ing-mesh-xxxxxxxx"
+            uint32_t name_len = (data_len + 9); //add random tail: -xxxxxxxx , len: 9bytes.
+            memset(dev_name, 0, sizeof(dev_name));
+            app_assert(name_len <= sizeof(dev_name));
+            memcpy(dev_name, (uint8_t *)data, data_len);            
+            mesh_generate_random_name((uint8_t *)dev_name, name_len);
+            adv_bearer_adv_set_scan_rsp_data((uint8_t *)dev_name, name_len);
+#else
+            app_assert(data_len <= 29);
+            adv_bearer_adv_set_scan_rsp_data((uint8_t *)data, data_len);
+#endif
+        }break;
+        
+        case MESH_CFG_GATT_ADV_ADDR:{
+#ifdef MESH_GATT_ADV_ADDR_USE_FLASH
+            bd_addr_t addr;
+            mesh_gatt_addr_generate_and_get(addr);
+            mesh_gatt_adv_addr_set(addr);
+#else
+            mesh_gatt_adv_addr_set((uint8_t *) data);
+#endif
+        }break;
+        
+        case MESH_CFG_BEACON_ADV_ADDR:{
+#ifdef MESH_BEACON_ADV_ADDR_USE_FLASH
+            bd_addr_t addr;
+            mesh_beacon_addr_generate_and_get(addr);
+            mesh_beacon_adv_addr_set(addr);
+#else
+            mesh_beacon_adv_addr_set((uint8_t *) data);
+#endif
+        }break;
+        
+        default:{
+        }break;
+    }
 }
 
 int bt_mesh_input_string(const uint8_t * str, uint16_t len){
@@ -247,8 +280,15 @@ void mesh_prov_ll_init(const bt_mesh_prov_t *prov)
     if(prov->input_oob_max_size)
         provisioning_device_set_input_oob_actions(prov->input_oob_action, prov->input_oob_max_size);
     
-    // Set uuid.
-    ble_port_generate_uuid_and_load_uuid();
+    // Set uuid.    
+#ifdef MESH_UUID_USE_FLASH
+    uint8_t rand_uuid[16];
+    mesh_generate_random_uuid(rand_uuid, 16);// generate random uuid and store.
+    mesh_node_set_device_uuid(rand_uuid);
+#else
+    app_assert(pMesh_prov != NULL);
+    mesh_node_set_device_uuid(pMesh_prov->uuid);
+#endif
     
 }
 

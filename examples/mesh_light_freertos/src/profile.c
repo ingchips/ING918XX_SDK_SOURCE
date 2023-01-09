@@ -211,6 +211,16 @@ static const bt_mesh_prov_t prov = {
  *--------------------------> PLATFORM <------------------------------
  *------------------------------------------------------------------*/
 
+void mesh_platform_init(void){
+    const char mesh_name[] = "ing-mesh";
+    const bd_addr_t addr_gatt_adv    = {0xd5, 0x33, 0xa3, 0x17, 0x2f, 0xFC};
+    const bd_addr_t addr_beacon_adv  = {0xd0, 0x2a, 0x4e, 0x19, 0x28, 0xFC};
+
+    mesh_platform_config(MESH_CFG_NAME, (uint8_t *)mesh_name, strlen(mesh_name));
+    mesh_platform_config(MESH_CFG_GATT_ADV_ADDR, (uint8_t *)addr_gatt_adv, sizeof(bd_addr_t));
+    mesh_platform_config(MESH_CFG_BEACON_ADV_ADDR, (uint8_t *)addr_beacon_adv, sizeof(bd_addr_t));
+    mesh_platform_adv_params_init();
+}
 
 
 /*--------------------------------------------------------------------
@@ -240,18 +250,10 @@ void mesh_elements_init(void){
     mesh_elems_and_models_ll_init(&comp);
 }
 
-extern void mesh_platform_config(void);
-static void mesh_platform_init(void){
-    // name, addr.
-    mesh_platform_config();
-    
-}
-
 static void mesh_provising_init(void){
     mesh_port_init();
     mesh_prov_ll_init(&prov);
 }
-
 
 
 void mesh_init(void){
