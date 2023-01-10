@@ -228,7 +228,6 @@ void KEYSCAN_Initialize(KEYSCAN_SetStateStruct* keyscan_set)
     col = 0;
     for (i = 0; i < keyscan_set->col_num; i++) {
         col = col | (0x1 << keyscan_set->col[i].in_col);
-        PINCTRL_SetPadMux(keyscan_set->col[i].gpio, keyscan_set->col[i].in_col + IO_SOURCE_KEYSCN_IN_COL_0);
         PINCTRL_SelKeyScanColIn(keyscan_set->col[i].in_col, keyscan_set->col[i].gpio);
         PINCTRL_Pull(keyscan_set->col[i].gpio, PINCTRL_PULL_DISABLE);
     }
