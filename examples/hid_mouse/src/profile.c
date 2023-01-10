@@ -173,9 +173,6 @@ static uint16_t StepCal(uint16_t preData, uint16_t data, uint8_t *dir)
 {
     uint16_t step = 0;
     step = *dir ? (preData - data) : (data - preData);
-    if (data - preData > 60000) {
-        step += 65536;
-    }
     if (step > 60000) {
         *dir ^= 1;
         step = StepCal(preData, data, dir);

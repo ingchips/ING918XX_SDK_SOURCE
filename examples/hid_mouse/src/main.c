@@ -172,23 +172,25 @@ int read_from_flash(void *db, const int max_size)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 static void QDEC_PclkCfg(void)
 {
+    if ((APB_SYSCTRL->QdecCfg >> 15) & 1)
+        return;
     uint32_t hclk = SYSCTRL_GetHClk();
-    uint32_t qdecClk = SYSCTRL_GetClk(SYSCTRL_ITEM_APB_QDEC);
-    uint8_t div = hclk / qdecClk;
-    if (hclk % qdecClk)
+    uint32_t slowClk = SYSCTRL_GetSlowClk();
+    uint8_t div = hclk / slowClk;
+    if (hclk % slowClk)
         div++;
     if (!(div >> 4))
         SYSCTRL_SetPClkDiv(div);
 }
 static void QDEC_Setup(void)
 {
-    QDEC_PclkCfg();
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_QDEC);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_PinCtrl |
                          SYSCTRL_ITEM_APB_QDEC);
     PINCTRL_SelQDECIn(21, 22);
 
-    SYSCTRL_SelectQDECClk(SYSCTRL_CLK_HCLK, 100);
+    SYSCTRL_SelectQDECClk(SYSCTRL_CLK_SLOW, 25);
+    QDEC_PclkCfg();
     QDEC_EnableQdecDiv(QDEC_DIV_1024);
     QDEC_QdecCfg(63, 0);
     QDEC_ChannelEnable(1);
