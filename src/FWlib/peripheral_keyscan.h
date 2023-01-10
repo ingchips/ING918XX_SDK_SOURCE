@@ -68,15 +68,19 @@ typedef enum
 
 typedef struct {
     KEYSCAN_InColIndex_t in_col;
-    io_source_t source;
     GIO_Index_t gpio;
 } KEYSCAN_InColList;
 
 typedef struct {
     KEYSCAN_OutRowIndex_t out_row;
-    io_source_t source;
     GIO_Index_t gpio;
 } KEYSCAN_OutRowList;
+
+typedef struct
+{
+    uint8_t row_to_idx[KEY_OUT_ROW_NUMBER];
+    uint8_t col_to_idx[KEY_IN_COL_NUMBER];
+} KEYSCAN_Ctx;
 
 typedef struct {
     KEYSCAN_InColList *col;
@@ -85,6 +89,7 @@ typedef struct {
     KEYSCAN_OutRowList *row;
     int row_num;
 
+    KEYSCAN_Ctx *ctx;
     uint8_t fifo_num_trig_int;
     uint8_t dma_num_trig_int;
     uint8_t dma_en;
@@ -118,13 +123,14 @@ uint16_t KEYSCAN_GetKeyData(void);
 /**
  * @brief Transfer keyscan FIFO raw data to keyboard array row and col
  *
+ * @param[in] keyscan_set       Initial parameter struct
  * @param[in] key_data          keyscan FIFO raw data
  * @param[in] row               pressed key's row in keyboard array
  * @param[in] col               pressed key's col in keyboard array
  * @return                      0: scan cycle end data;
  *                              1: find key pressed, *row and *col are key position in keyboard array
  */
-uint8_t KEYSCAN_KeyDataToRowColIdx(uint32_t key_data, uint8_t *row, uint8_t *col);
+uint8_t KEYSCAN_KeyDataToRowColIdx(KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col);
 
 #endif
 

@@ -5,30 +5,16 @@
 
 #include "peripheral_keyscan.h"
 
-#if defined __cplusplus
-    extern "C" {
-#endif
-
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 static void KEYSCAN_reg_write_bits(volatile uint32_t *reg, uint8_t offset, uint8_t bits_width, const uint32_t data)
 {
-    uint8_t i;
     uint32_t mask;
 
-    if (offset >= 32 || bits_width > 32) {
-        return;
-    } else if (offset + bits_width > 32) {
-        return;
-    } else {
-    }
-
-    mask = 0;
-    for (i = 0; i < bits_width; i++) {
-        mask = (mask | (0x1 << i));
-    }
+    mask = 0xFFFFFFFF;
+    mask = mask >> (32 - bits_width);
 
     *reg = (*reg & (~(mask << offset))) | ((data & mask) << offset);
     return;
@@ -37,22 +23,12 @@ static void KEYSCAN_reg_write_bits(volatile uint32_t *reg, uint8_t offset, uint8
 static uint32_t KEYSCAN_reg_read_bits(volatile uint32_t *reg, uint8_t offset, uint8_t bits_width)
 {
     uint32_t data;
-    uint8_t i;
     uint32_t mask;
 
-    if (offset >= 32 || bits_width > 32) {
-        return 0;
-    } else if (offset + bits_width > 32) {
-        return 0;
-    } else {
-    }
+    mask = 0xFFFFFFFF;
+    mask = mask >> (32 - bits_width);
 
-    mask = 0;
-    for (i = 0; i < bits_width; i++) {
-        mask = (mask | (0x1 << i));
-    }
-
-    data = (*reg >> offset) & mask;
+    data = ((*reg) >> offset) & mask;
     return data;
 }
 
@@ -208,31 +184,29 @@ void KEYSCAN_SetDmaNumTrigInt(uint32_t trig_num)
     return;
 }
 
-static uint8_t key_scan_row_to_idx[KEY_OUT_ROW_NUMBER] = {0};
-static uint8_t key_scan_col_to_idx[KEY_IN_COL_NUMBER]  = {0};
 static void KEYSCAN_InitKeyScanToIdx(KEYSCAN_SetStateStruct* keyscan_set)
 {
     int i;
 
     for (i = 0; i < keyscan_set->col_num; i++) {
-        key_scan_col_to_idx[keyscan_set->col[i].in_col] =  i;
+        keyscan_set->ctx->col_to_idx[keyscan_set->col[i].in_col] =  i;
     }
 
     for (i = 0; i < keyscan_set->row_num; i++) {
-        key_scan_row_to_idx[keyscan_set->row[i].out_row] =  i;
+        keyscan_set->ctx->row_to_idx[keyscan_set->row[i].out_row] =  i;
     }
 
     return;
 }
 
-uint8_t KEYSCAN_KeyDataToRowColIdx(uint32_t key_data, uint8_t *row, uint8_t *col)
+uint8_t KEYSCAN_KeyDataToRowColIdx(KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col)
 {
     if (key_data == 0x00000400) {
         return 0;
     }
 
-    *row = key_scan_row_to_idx[((key_data >> 5) & 0x1f)] + 1;
-    *col = key_scan_col_to_idx[(key_data & 0x1f)] + 1;
+    *row = keyscan_set->ctx->row_to_idx[((key_data >> 5) & 0x1f)] + 1;
+    *col = keyscan_set->ctx->col_to_idx[(key_data & 0x1f)] + 1;
 
     return 1;
 }
@@ -247,14 +221,14 @@ void KEYSCAN_Initialize(KEYSCAN_SetStateStruct* keyscan_set)
     row = 0;
     for (i = 0; i < keyscan_set->row_num; i++) {
         row = row | (0x1 << keyscan_set->row[i].out_row);
-        PINCTRL_SetPadMux(keyscan_set->row[i].gpio, keyscan_set->row[i].source);
+        PINCTRL_SetPadMux(keyscan_set->row[i].gpio, keyscan_set->row[i].out_row + IO_SOURCE_KEYSCN_ROW_0);
         PINCTRL_Pull(keyscan_set->row[i].gpio, PINCTRL_PULL_UP);
     }
 
     col = 0;
     for (i = 0; i < keyscan_set->col_num; i++) {
         col = col | (0x1 << keyscan_set->col[i].in_col);
-        PINCTRL_SetPadMux(keyscan_set->col[i].gpio, keyscan_set->col[i].source);
+        PINCTRL_SetPadMux(keyscan_set->col[i].gpio, keyscan_set->col[i].in_col + IO_SOURCE_KEYSCN_IN_COL_0);
         PINCTRL_SelKeyScanColIn(keyscan_set->col[i].in_col, keyscan_set->col[i].gpio);
         PINCTRL_Pull(keyscan_set->col[i].gpio, PINCTRL_PULL_DISABLE);
     }
@@ -276,9 +250,5 @@ void KEYSCAN_Initialize(KEYSCAN_SetStateStruct* keyscan_set)
     return;
 }
 
-#endif
-
-#if defined __cplusplus
-    }
 #endif
 
