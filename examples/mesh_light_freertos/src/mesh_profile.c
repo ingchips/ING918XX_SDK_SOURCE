@@ -15,6 +15,7 @@
 #include "mesh_port_stack.h"
 #include "mesh_storage_app.h" 
 #include "mesh_manage_conn_and_scan.h"
+#include "app_debug.h"
 
 #define CON_HANDLE_INVALID 0xFFFF
 
@@ -204,32 +205,32 @@ void mesh_scan_param_set(uint16_t interval_ms, uint8_t window_ms){
                                                 .interval = SCAN_SET_TIME_MS(interval_ms), 
                                                 .window = SCAN_SET_TIME_MS(window_ms)}};
     if (0 != gap_set_ext_scan_para(own_addr_type, filter_policy, config_num, scan_config)){
-        printf("=============>ERR - %s\n", __func__);
+        app_log_error("=============>ERR - %s\n", __func__);
     }
 }
 
 // scan enable or disable.
 void mesh_scan_run_set(uint8_t en){
-    printf("%s\n", __func__);
+    app_log_debug("%s\n", __func__);
     // Scan disable.
     if (0 != gap_set_ext_scan_enable(en, 0, 0, 0)){
-        printf("=============>ERR - %s, en = %d\n", __func__, en);
+        app_log_error("=============>ERR - %s, en = %d\n", __func__, en);
     }
 }
 
 void mesh_scan_start(void){
-    printf("%s\n", __func__);
+    app_log_debug("%s\n", __func__);
     mesh_scan_run_set(1);
 }
 
 void mesh_scan_stop(void){
-    printf("%s\n", __func__);
+    app_log_debug("%s\n", __func__);
     mesh_scan_run_set(0);
 }
 
 void mesh_setup_scan(void){
 
-    printf("%s\n", __func__);
+    app_log_debug("%s\n", __func__);
 
     // Setup address of scanning other devices and creating connection with other devices.
     mesh_scan_addr_set();
@@ -301,7 +302,7 @@ void mesh_setup_adv(void)
 
 void mesh_server_restart(void)
 {
-    printf("reset disconnect %d\n", my_conn_handle);
+    app_log_debug("reset disconnect %d\n", my_conn_handle);
     if (my_conn_handle != CON_HANDLE_INVALID){
         gap_disconnect(my_conn_handle);
     } else {
@@ -326,29 +327,11 @@ bool Is_ble_curr_conn_valid(void){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static void user_msg_handler(btstack_user_msg_t * usrmsg)
-{
-    bool done = false;
-    uint32_t cmd_id = usrmsg->msg_id;
-    void *MsgData = usrmsg->data;
-    // printf("ble_msg_process: cmd=%x, p=(%p)\n", cmd_id, MsgData);
-    
+{    
 #ifdef ENABLE_BUTTON_TEST
     #include "BUTTON_TEST.h"
     button_msg_handler(usrmsg);
 #endif
-    
-    switch(cmd_id){
-        default:
-            {
-                ;
-            }
-            break;
-    }
-    
-    if(done == true && MsgData != NULL){
-        //ble_memory_free(MsgData);
-        // printf("ble_memory_free:(%p)\n", MsgData);
-    }
 }
 
 // read
@@ -376,7 +359,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        printf("bt init ok.\n");
+        app_log_debug("bt init ok.\n");
         mesh_stack_ready();
 #ifdef ENABLE_RF_TX_RX_TEST
         #include "RF_TEST.H"
@@ -392,7 +375,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                         decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                     my_conn_handle = create_conn->handle;
                     my_conn_interval_ms = CPI_VAL_TO_MS(create_conn->interval);
-                    printf("connect.\n");
+                    app_log_debug("connect.\n");
                     att_set_db(my_conn_handle, ( ble_mesh_is_provisioned()?  gatt_data_proxy : gatt_data_pb ));
                     mesh_connected(my_conn_handle);
                     platform_calibrate_32k();
@@ -401,14 +384,14 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:{
                     const le_meta_event_conn_update_complete_t *conn_update = 
                                         decode_hci_le_meta_event(packet, le_meta_event_conn_update_complete_t);
-                    printf("\nconn update complete:%d\n", conn_update->status);
+                    app_log_debug("\nconn update complete:%d\n", conn_update->status);
                     if(conn_update->status == ERROR_CODE_SUCCESS){
                         my_conn_interval_ms = CPI_VAL_TO_MS(conn_update->interval);
                         
-                        printf("status:%d\n", conn_update->status);
-                        printf("handle:%d\n", conn_update->handle);
-                        printf("interval:%dms\n", CPI_VAL_TO_MS(conn_update->interval));
-                        printf("sup_timeout:%dms\n", CPSTT_VAL_TO_MS(conn_update->sup_timeout));
+                        app_log_debug("status:%d\n", conn_update->status);
+                        app_log_debug("handle:%d\n", conn_update->handle);
+                        app_log_debug("interval:%dms\n", CPI_VAL_TO_MS(conn_update->interval));
+                        app_log_debug("sup_timeout:%dms\n", CPSTT_VAL_TO_MS(conn_update->sup_timeout));
                     }
                     mesh_mcas_conn_params_update_complete_callback(conn_update->status, conn_update->handle, conn_update->interval, conn_update->sup_timeout);
                 }
@@ -419,8 +402,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
-        printf("disconnect.\n");
-        printf("------------------------------------------------------------------------------------------------\r\n");
+        app_log_debug("disconnect.\n");
+        app_log_debug("------------------------------------------------------------------------------------------------\r\n");
         mesh_disconnected(my_conn_handle, NULL);
         my_conn_handle = CON_HANDLE_INVALID;
         my_conn_interval_ms = 0;

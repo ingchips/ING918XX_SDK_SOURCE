@@ -82,7 +82,6 @@ gen_handle_t port_task_create(
     if(memcmp(name, (char *)"host", 4) == 0){
         if(StackDepth < MESH_RESIZE_HOST_TASK_STACK_DEPTH_WORDS){
             StackDepth = MESH_RESIZE_HOST_TASK_STACK_DEPTH_WORDS;
-            platform_printf("task name: %s, stack: %d\n", name, StackDepth);
         }
     }
     xTaskCreate(entry,

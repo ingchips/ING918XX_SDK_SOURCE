@@ -6,6 +6,7 @@
 #include "mesh_port_low_level_init.h"
 #include "board.h"
 #include "mesh_version.h"
+#include "app_debug.h"
 
 /*--------------------------------------------------------------------
  *----------------------------> MODEL <-------------------------------
@@ -42,7 +43,7 @@ static void light_update(struct light_state *a_light)
         if(lvl == 256) lvl = 255;   //0~255
         val = (uint8_t)lvl;
     }
-    printf("gen set rgb val: %d\n",val);
+    app_log_info("gen set rgb val: %d\n",val);
     set_rgb_led_color(val, val, val);
 }
 
@@ -52,7 +53,7 @@ int light_model_gen_onoff_get(mesh_model_t *model, uint8_t *state)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
     *state = a_light->onoff[0];
-    printf("gen get state: %d\n", *state);
+    app_log_info("gen get state: %d\n", *state);
     return 0;
 }
 
@@ -66,7 +67,7 @@ int light_model_gen_onoff_set(mesh_model_t *model, uint8_t state)
         }
     }
     
-    printf("gen set state: %d\n", state);
+    app_log_info("gen set state: %d\n", state);
     light_update(a_light);
     return 0;
 }
@@ -75,7 +76,7 @@ int light_model_gen_level_get(mesh_model_t *model, int16_t *level)
 {
     light_state_t *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
     *level = a_light->level[0];
-    printf("gen get level: %d\n", *level);
+    app_log_info("gen get level: %d\n", *level);
     return 0;
 }
 
@@ -87,7 +88,7 @@ int light_model_gen_level_set(mesh_model_t *model, int16_t  level)
         a_light->onoff[0] = 0;
     else 
         a_light->onoff[0] = 1;
-    printf("gen set level -> %d\n", level);
+    app_log_info("gen set level -> %d\n", level);
     light_update(a_light);
     return 0;
 }
@@ -160,7 +161,7 @@ static const bt_mesh_comp_t comp = {
 #if (USE_OOB_TYPE == MESH_OOB_TYPE_OUTPUT)
 static int output_number(uint32_t number)
 {
-    printf("OOB Number %u", number);
+    app_log_info("OOB Number %u", number);
     return 0;
 }
 #endif
@@ -168,22 +169,22 @@ static int output_number(uint32_t number)
 #if (USE_OOB_TYPE == MESH_OOB_TYPE_INTPUT)
 static int input_request(void)
 {
-    printf("Please view displaying string or number at client. And then call :\n");
-    printf("1. bt_mesh_input_string(); to send string. Or,\n");
-    printf("2. bt_mesh_input_number(); to send number.\n");
+    app_log_info("Please view displaying string or number at client. And then call :\n");
+    app_log_info("1. bt_mesh_input_string(); to send string. Or,\n");
+    app_log_info("2. bt_mesh_input_number(); to send number.\n");
     return 0;
 }
 #endif
 
 static void prov_complete(uint16_t net_idx, uint16_t addr)
 {
-    printf("provisioning complete for net_idx 0x%04x addr 0x%04x\n",net_idx, addr);
+    app_log_info("provisioning complete for net_idx 0x%04x addr 0x%04x\n",net_idx, addr);
     
 }
 
 static void prov_reset(void)
 {
-    printf("====>node reset.\n");
+    app_log_info("====>node reset.\n");
 }
 
 #define BLE_MESH_DEV_UUID ((uint8_t[16]){0xA8, 0x01, 0x61,0x00,0x04,0x20,0x30,0x75,0x9a,0x00,0x09,0xda,0x78,0x00,0x00,0x00})
@@ -231,13 +232,13 @@ static void mesh_get_ver_info(void){
     int ver_len = mesh_get_version_info_str(version, sizeof(version));
     if(ver_len > 0 && ver_len < sizeof(version)-1){
         version[ver_len] = '\0';
-        printf("mesh ver: v%s\n", version); 
+        app_log_info("mesh ver: v%s\n", version); 
     }
     
     char date_time[30];
     int str_len = mesh_get_lib_compile_date_time(date_time, sizeof(date_time));
     if(str_len > 0 ){
-        printf("mesh date: %s\n", date_time); 
+        app_log_info("mesh date: %s\n", date_time); 
     }
 }
 
@@ -257,7 +258,7 @@ static void mesh_provising_init(void){
 
 
 void mesh_init(void){
-    platform_printf("mesh start.\n");
+    app_log_info("mesh start.\n");
     mesh_get_ver_info();
     mesh_flash_init();
     mesh_platform_init();

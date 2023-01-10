@@ -17,6 +17,7 @@
 #include "mesh_storage_app.h"
 #include "adv_bearer.h"
 #include "mesh_port_run_loop.h"
+#include "app_debug.h"
 
 
 // button gpio select.
@@ -36,31 +37,31 @@
 #define CPSTT_MS_TO_VAL(x)  ((uint16_t)(x / 10))
 
 static void conn_params_print(const le_meta_event_enh_create_conn_complete_t *conn){
-    printf("my_conn_handle:%d\n", conn->handle);
-    printf("conn_interval:%dms\n", CPI_VAL_TO_MS(conn->interval));
-    printf("conn_timeout:%dms\n", CPSTT_VAL_TO_MS(conn->sup_timeout));
+    app_log_debug("my_conn_handle:%d\n", conn->handle);
+    app_log_debug("conn_interval:%dms\n", CPI_VAL_TO_MS(conn->interval));
+    app_log_debug("conn_timeout:%dms\n", CPSTT_VAL_TO_MS(conn->sup_timeout));
 }
 
 // Switch different connection interval params.
 static void app_update_conn_params_req(void){
     if(!Is_ble_curr_conn_valid()){
-        printf("conn handle err.\n");
+        app_log_error("conn handle err.\n");
         return ;
     }
 
     static uint8_t flag = 0;
     if(flag == 0){
-        printf("conn interval: %d\n", CPI_VAL_TO_MS(CPI_MS_TO_VAL(200)));
+        app_log_debug("conn interval: %d\n", CPI_VAL_TO_MS(CPI_MS_TO_VAL(200)));
         gap_update_connection_parameters(   ble_get_curr_conn_handle(), CPI_MS_TO_VAL(200), CPI_MS_TO_VAL(200), 
                                             0, CPSTT_MS_TO_VAL(5000), 0x0000, 8);//ce_len = unit 0.625ms.
         flag ++;
     } else if (flag == 1) {
-        printf("conn interval: %d\n", CPI_VAL_TO_MS(CPI_MS_TO_VAL(48)));
+        app_log_debug("conn interval: %d\n", CPI_VAL_TO_MS(CPI_MS_TO_VAL(48)));
         gap_update_connection_parameters(   ble_get_curr_conn_handle(), CPI_MS_TO_VAL(48), CPI_MS_TO_VAL(48), 
                                             0, CPSTT_MS_TO_VAL(5000), 0x0000, 8);//ce_len = unit 0.625ms.
         flag ++;
     } else if (flag == 2) {
-        printf("conn interval: %d\n", CPI_VAL_TO_MS(CPI_MS_TO_VAL(30)));
+        app_log_debug("conn interval: %d\n", CPI_VAL_TO_MS(CPI_MS_TO_VAL(30)));
         gap_update_connection_parameters(   ble_get_curr_conn_handle(), CPI_MS_TO_VAL(30), CPI_MS_TO_VAL(30), 
                                             0, CPSTT_MS_TO_VAL(5000), 0x0000, 8);//ce_len = unit 0.625ms.
         flag = 0;
@@ -84,7 +85,7 @@ extern void mesh_platform_init(void);
 // local func.
 static void mesh_ble_params_reset_delay_timer_timeout_handler(mesh_timer_source_t * ts){
     UNUSED(ts);
-    printf("[V] timeout , mesh params reset now !!!!\n");
+    app_log_debug("[V] timeout , mesh params reset now !!!!\n");
     
     // mesh network reset.
     mesh_node_reset();    
@@ -99,7 +100,7 @@ static void mesh_ble_params_reset_delay_timer_start(uint32_t timeout_in_ms){
     mesh_run_loop_set_timer_handler(&mesh_ble_params_reset_delay_timer, (mesh_func_timer_process)mesh_ble_params_reset_delay_timer_timeout_handler);
     mesh_run_loop_set_timer(&mesh_ble_params_reset_delay_timer, timeout_in_ms);
     mesh_run_loop_add_timer(&mesh_ble_params_reset_delay_timer);
-    printf("[V] mesh ble params reset delay timer start: %d ms\n", timeout_in_ms);
+    app_log_debug("[V] mesh ble params reset delay timer start: %d ms\n", timeout_in_ms);
 }
 #endif
 
@@ -133,7 +134,7 @@ static void mesh_scan_param_update(void){
 
     for(i=0; i<sizeof(my_scan_param)/sizeof(my_scan_stu_t); i++){
         if(my_scan_param[i].seq == scan_flag){
-            printf("scan param, interval, window: %d,%d . \n", my_scan_param[i].interval, my_scan_param[i].window);
+            app_log_debug("scan param, interval, window: %d,%d . \n", my_scan_param[i].interval, my_scan_param[i].window);
             mesh_scan_param_set(my_scan_param[i].interval, my_scan_param[i].window);//interval, window, ms, 0.625ms
             mesh_scan_run_set(1);
             scan_flag ++;
@@ -142,7 +143,7 @@ static void mesh_scan_param_update(void){
     }
 
     if(i == sizeof(my_scan_param)/sizeof(my_scan_stu_t)){
-        printf("stop scan.\n");
+        app_log_debug("stop scan.\n");
         scan_flag = 0;
     }
 }
@@ -177,25 +178,25 @@ static void key_proc_in_host_task(uint8_t num){
     switch(num){
         case 1: // key1 : change connection interval.
             {
-                printf("key1 : change connection interval. \n");
+                app_log_debug("key1 : change connection interval. \n");
                 app_update_conn_params_req();
             }
             break;
         case 2: // key2 : clear all mesh info in flash.
             {
-                printf("key2 : clear all mesh info in flash. \n");
+                app_log_debug("key2 : clear all mesh info in flash. \n");
                 mesh_ble_params_reset_delay_timer_start(100);
             }
             break;
         case 3: // key3 : change scan params.
             {
-                printf("key3 : change scan params. \n");
+                app_log_debug("key3 : change scan params. \n");
                 mesh_scan_param_update();
             }
             break;
         case 4: // key4 : send non-conn data.
             {
-                printf("key4 : send non-conn data. \n");
+                app_log_debug("key4 : send non-conn data. \n");
                 mesh_send_non_conn_data();
             }
             break;
@@ -226,12 +227,10 @@ void button_msg_handler(btstack_user_msg_t * usrmsg)
 /* button system init */
 
 static void key_pressed_callback(uint16_t num){
-    // platform_printf("key %d pressed.\n", num);
     btstack_push_user_msg(USER_MSG_ID_KEY_PRESSED_EVENT, NULL, (uint16_t)num);
 }
 
 static void key_released_callback(uint16_t num){
-    // platform_printf("key %d released.\n", num);
     btstack_push_user_msg(USER_MSG_ID_KEY_RELEASED_EVENT, NULL, (uint16_t)num);
 }
 
@@ -241,7 +240,6 @@ static void kb_state_changed(uint16_t key_state)
     static uint8_t key_old[4] = {0,0,0,0};
     
     uint16_t i=0;
-    // platform_printf("key state changed:%x\n", key_state);
     for(i=0; i<4; i++){
         if(key_state & key_pressed[i]){
             if(!key_old[i]){

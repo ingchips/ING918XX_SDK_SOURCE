@@ -15,7 +15,7 @@
         uint16_t ver_hex;
         int ver_len = mesh_get_version_info_hex(&ver_hex);
         if(ver_len > 0){
-          printf("mesh version[hex]: 0x%x\n", ver_hex); 
+          platform_printf("mesh version[hex]: 0x%x\n", ver_hex); 
         }
         // print: mesh version[hex]: 0x100
  */
@@ -34,7 +34,7 @@ int mesh_get_version_info_hex(uint16_t * ver_hex);
         int ver_len = mesh_get_version_info_str(version, sizeof(version));
         if(ver_len > 0 && ver_len < sizeof(version)-1){
             version[ver_len] = '\0';
-            printf("mesh ver: v%s\n", version); 
+            platform_printf("mesh ver: v%s\n", version); 
         }
         // print: mesh ver: v1.0.0
  */
@@ -52,7 +52,7 @@ int mesh_get_version_info_str(char * str, uint8_t str_len);
         char date_time[30];
         int str_len = mesh_get_lib_compile_date_time(date_time, sizeof(date_time));
         if(str_len > 0 ){
-            printf("mesh date: %s\n", date_time); 
+            platform_printf("mesh date: %s\n", date_time); 
         }
         // print: mesh date: 15:38:31 Jan  9 2023
  */

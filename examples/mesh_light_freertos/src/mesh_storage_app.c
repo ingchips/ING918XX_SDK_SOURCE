@@ -2,6 +2,7 @@
 #include "mesh_storage_low_level.h"
 #include "platform_api.h"
 #include "eflash.h"
+#include "app_debug.h"
 
 // Flash distribution.
 #define HAL_FLASH_BANK_SIZE     EFLASH_PAGE_SIZE  //For ingchips eflash, the true unit of bank is page, and one page = 8KB(0x2000). 
@@ -27,8 +28,8 @@ void mesh_gatt_addr_generate_and_get(bd_addr_t addr){
         mesh_storage_gatt_addr_get(addr);
     }
 
-    printf("gatt_addr: ");
-    printf_hexdump(addr, sizeof(bd_addr_t));
+    app_log_debug("gatt_addr: ");
+    app_log_debug_hexdump(addr, sizeof(bd_addr_t));
 }
 
 void mesh_beacon_addr_generate_and_get(bd_addr_t addr){
@@ -46,8 +47,8 @@ void mesh_beacon_addr_generate_and_get(bd_addr_t addr){
         mesh_storage_beacon_addr_get(addr);
     }
 
-    printf("beacon_addr: ");
-    printf_hexdump(addr, sizeof(bd_addr_t));
+    app_log_debug("beacon_addr: ");
+    app_log_debug_hexdump(addr, sizeof(bd_addr_t));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +69,8 @@ void mesh_generate_random_uuid(uint8_t * dev_uuid, uint16_t len){
         mesh_storage_device_uuid_get(dev_uuid, &len);
     }
 
-    printf("dev uuid: ");
-    printf_hexdump(dev_uuid, len);
+    app_log_debug("dev uuid: ");
+    app_log_debug_hexdump(dev_uuid, len);
 }
 
 
@@ -103,7 +104,7 @@ void mesh_generate_random_name(uint8_t * name, uint16_t len){
     }
 
     name[len] = '\0';
-    printf("dev name[%d]: %s\n", len, name);
+    app_log_debug("dev name[%d]: %s\n", len, name);
 }
 
 //////////////////////////////////////

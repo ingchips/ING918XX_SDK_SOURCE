@@ -54,9 +54,9 @@ static mesh_timer_source_t       mesh_conn_param_update_timer;
  */
 static void mesh_conn_param_update_timer_timeout_handler(mesh_timer_source_t * ts){
     UNUSED(ts);
-    printf("[V] %s .\n", __func__);
+    app_log_debug("[V] %s .\n", __func__);
     if(MeshConnScan.run_state == MESH_RUNNING_STATE_TIMER_START_48){
-        printf("update 48ms\n");
+        app_log_debug("update 48ms\n");
         mesh_scan_stop();
         ble_set_conn_interval_ms(ble_get_curr_conn_interval_ms()); //just update max_ce_len = 5ms, do not change conn interval.
         MeshConnScan.run_state = MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_48;
@@ -74,7 +74,7 @@ static void mesh_conn_param_update_timer_start(uint32_t time_ms){
     mesh_run_loop_set_timer_handler(&mesh_conn_param_update_timer, (mesh_func_timer_process)mesh_conn_param_update_timer_timeout_handler);
     mesh_run_loop_set_timer(&mesh_conn_param_update_timer, time_ms);
     mesh_run_loop_add_timer(&mesh_conn_param_update_timer);
-    printf("[V] mesh conn param update timer start: %d ms\n", time_ms);
+    app_log_debug("[V] mesh conn param update timer start: %d ms\n", time_ms);
     return;
 }
 
@@ -92,20 +92,20 @@ static void mesh_conn_param_update_timer_stop(void){
  * 
  */
 void mesh_mcas_gatt_notify_enable_callback(void){
-    printf("-- %s .\n", __func__);
+    app_log_debug("-- %s .\n", __func__);
 
     if(!Is_ble_curr_conn_valid())
         return;
     
     if(MeshConnScan.run_state != MESH_RUNNING_STATE_IDLE){
-        printf("Run busy: %d\n", MeshConnScan.run_state);
+        app_log_debug("Run busy: %d\n", MeshConnScan.run_state);
         return;
     }
 
     // start timer , delay the conn param update procedure, which waiting for ble stable.
     // Such as huawei phone, when it just connect, it will auto change conn params some times, 
     // So we need wait for the auto-procedure completing, and after that, we can start our's conn param update request.
-    printf("timer start 48ms\n");
+    app_log_debug("timer start 48ms\n");
     mesh_conn_param_update_timer_start(MESH_MCAS_TIMER_DELAY_MS);
     MeshConnScan.run_state = MESH_RUNNING_STATE_TIMER_START_48;
 
@@ -117,19 +117,19 @@ void mesh_mcas_gatt_notify_enable_callback(void){
  * 
  */
 void mesh_mcas_on_off_server_control_callback(void){
-    printf("-- %s .\n", __func__);
+    app_log_debug("-- %s .\n", __func__);
 
     if(!Is_ble_curr_conn_valid())
         return;
     
     if(MeshConnScan.run_state != MESH_RUNNING_STATE_IDLE){
-        printf("Run busy: %d\n", MeshConnScan.run_state);
+        app_log_debug("Run busy: %d\n", MeshConnScan.run_state);
         return;
     }
     
     app_assert(MESH_FINAL_CONN_INTERVAL_MS > 20);
     if(ble_get_curr_conn_interval_ms() < (MESH_FINAL_CONN_INTERVAL_MS - 20)){
-        printf("update 200ms\n");
+        app_log_debug("update 200ms\n");
         mesh_scan_stop();
 
         //update interval to 200ms , and update max_ce_len = 5ms .
@@ -161,35 +161,35 @@ void mesh_mcas_scan_start(void){
  * @param sup_timeout connection timeout time.
  */
 void mesh_mcas_conn_params_update_complete_callback(uint8_t status, uint16_t handle, uint16_t interval, uint16_t sup_timeout){
-    printf("-- %s .\n", __func__);
+    app_log_debug("-- %s .\n", __func__);
 
     if(!status){
         //update success.
         if(MeshConnScan.run_state == MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_48){
-            printf("update 48ms ok (max_ce_len also updated.).\n");
+            app_log_debug("update 48ms ok (max_ce_len also updated.).\n");
             MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
 
             #if 1
             if(ble_get_curr_conn_interval_ms() >= (MESH_FINAL_SCAN_INTERVAL_MS + 10)){ // check conn intvl , can not too small.
                 mesh_mcas_scan_start();
-                printf("scan_window_1: 20ms\n");
+                app_log_debug("scan_window_1: 20ms\n");
             }
             #endif
 
         } else if (MeshConnScan.run_state == MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_200){
-            printf("update 200ms ok (max_ce_len also updated.).\n");
+            app_log_debug("update 200ms ok (max_ce_len also updated.).\n");
             MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
 
             #if 1
             if(ble_get_curr_conn_interval_ms() >= (MESH_FINAL_SCAN_INTERVAL_MS + 10)){ // check conn intvl , can not too small.
                 mesh_mcas_scan_start();
-                printf("scan_window_2: 20ms\n");
+                app_log_debug("scan_window_2: 20ms\n");
             }
             #endif
         }
     } else {
         // update fail.
-        printf("update conn param fail.\n");
+        app_log_error("update conn param fail.\n");
         MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
     }
 
@@ -202,7 +202,7 @@ void mesh_mcas_conn_params_update_complete_callback(uint8_t status, uint16_t han
  * @param handle connection handle.
  */
 void mesh_mcas_connect_callback(uint16_t handle){
-    printf("-- %s .\n", __func__);
+    app_log_debug("-- %s .\n", __func__);
 
     mesh_conn_param_update_timer_stop();
     MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
@@ -219,7 +219,7 @@ void mesh_mcas_connect_callback(uint16_t handle){
  * @param handle connection handle.
  */
 void mesh_mcas_disconnect_callback(uint16_t handle){
-    printf("-- %s .\n", __func__);
+    app_log_debug("-- %s .\n", __func__);
 
     mesh_conn_param_update_timer_stop();
     MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;

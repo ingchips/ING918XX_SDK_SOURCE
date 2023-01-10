@@ -11,12 +11,8 @@
 #include "eflash.h"
 #include "hal_flash_bank_eflash.h"
 #include "app_config.h"
+#include "app_debug.h"
 
-#ifdef USE_MESH_FLASH
-#define MESH_STACK_TLV_USE_FLASH
-#endif
-
-#define EFLASH_WRITE_SUPPORT_OFFSET_ADDR_NOT_ALIGMENT
 
 static uint32_t hal_flash_bank_eflash_get_size(void * context){
 	hal_flash_bank_eflash_t * self = (hal_flash_bank_eflash_t *) context;
@@ -33,7 +29,7 @@ static void hal_flash_bank_eflash_erase(void * context, int bank){
 
     // Erase page.
 	erase_flash_page(self->banks[bank]);
-    // printf("== erase flash[0x%x]\n", self->banks[bank]);
+    app_log_debug("== erase flash[0x%x]\n", self->banks[bank]);
 }
 
 static void hal_flash_bank_eflash_read(void * context, int bank, uint32_t offset, uint8_t * buffer, uint32_t size){
@@ -44,8 +40,8 @@ static void hal_flash_bank_eflash_read(void * context, int bank, uint32_t offset
 	if ((offset + size) > self->bank_size) return;
 
 	memcpy(buffer, ((uint8_t *) self->banks[bank]) + offset, size);
-    // printf("== read flash[0x%x][%d]: ", self->banks[bank] + offset, size);
-    // printf_hexdump(buffer, size);
+//    app_log_debug("== read flash[0x%x][%d]: ", self->banks[bank] + offset, size);
+//    app_log_debug_hexdump(buffer, size);
 }
 
 static void hal_flash_bank_eflash_write(void * context, int bank, uint32_t offset, const uint8_t * data, uint32_t size){
@@ -61,6 +57,7 @@ static void hal_flash_bank_eflash_write(void * context, int bank, uint32_t offse
 #endif
     
 #ifdef EFLASH_WRITE_SUPPORT_OFFSET_ADDR_NOT_ALIGMENT
+    
     uint32_t aligment = hal_flash_bank_memory_get_alignment(NULL);
     if ((size & (aligment - 1)) != 0) return; //size must be aligment.
 
@@ -103,15 +100,17 @@ static void hal_flash_bank_eflash_write(void * context, int bank, uint32_t offse
     memset(tmpData, 0xff, sizeof(tmpData));
     memcpy(tmpData, pBuffer, size);
     write_flash(addr_aligned, tmpData, aligment);
+    
 #else 
 
     // Write flash
-    int ret = write_flash(self->banks[bank] + offset, data, size); //not use program_flash, because addr page alignment problems.
-    // printf("== write flash[0x%x][%d]: ", self->banks[bank] + offset, size);
-    // printf_hexdump(data, size);
-    // if(ret){
-    //     printf("~~ write fail!!! \n");
-    // }
+    int ret = write_flash(self->banks[bank] + offset, data, size);
+    app_log_debug("== write flash[0x%x][%d]: ", self->banks[bank] + offset, size);
+    app_log_debug_hexdump(data, size);
+    if(ret){
+        app_log_error("~~ write fail!!! \n");
+    }
+    
 #endif
 }
 

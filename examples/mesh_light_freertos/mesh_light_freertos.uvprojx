@@ -419,6 +419,11 @@
               <FilePath>.\src\mesh_manage_conn_and_scan.c</FilePath>
             </File>
             <File>
+              <FileName>mesh_port_low_level_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_port_low_level_init.c</FilePath>
+            </File>
+            <File>
               <FileName>app_config.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\src\app_config.h</FilePath>
@@ -572,11 +577,6 @@
               <FileName>hal_flash_bank_eflash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\SigMesh\src\hal_flash_bank_eflash.c</FilePath>
-            </File>
-            <File>
-              <FileName>mesh_port_low_level_init.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\mesh_port_low_level_init.c</FilePath>
             </File>
           </Files>
         </Group>

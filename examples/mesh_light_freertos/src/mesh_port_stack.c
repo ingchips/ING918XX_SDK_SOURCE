@@ -15,6 +15,8 @@
 #include "mesh_profile.h"
 #include "app_config.h"
 #include "mesh_manage_conn_and_scan.h"
+#include "mesh_profile.h"
+#include "app_debug.h"
 
 // profile data.
 #include "../data/gatt_pb.const"
@@ -68,10 +70,9 @@ int mesh_att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_hand
  * @brief Btstack init ok callback.
  * @note This func run at host task.
  */
-#include "mesh_profile.h"
 void mesh_stack_ready(void)
 {
-    printf("%s\n", __func__);
+    app_log_debug("%s\n", __func__);
     
     mesh_setup_adv();
 #if defined(ENABLE_MESH_ADV_BEARER)
@@ -87,7 +88,7 @@ void mesh_stack_ready(void)
  */
 void mesh_connected(uint16_t conn_handle)
 {
-    printf("%s\n", __func__);
+    app_log_debug("%s\n", __func__);
     mesh_mcas_connect_callback(conn_handle);
 }
 
@@ -97,7 +98,7 @@ void mesh_connected(uint16_t conn_handle)
  */
 void mesh_disconnected(uint16_t conn_handle, uint8_t reason)
 {
-    printf("%s\n", __func__);
+    app_log_debug("%s\n", __func__);
     
     // mesh_adv_start();
     mesh_port_proxy_disconnect(conn_handle);

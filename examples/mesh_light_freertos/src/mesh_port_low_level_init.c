@@ -27,14 +27,6 @@
 #include "mesh_manage_conn_and_scan.h"
 
 
-#ifdef USE_MESH_FLASH
-#define MESH_UUID_USE_FLASH
-#define MESH_NAME_USE_FLASH
-#define MESH_GATT_ADV_ADDR_USE_FLASH
-#define MESH_BEACON_ADV_ADDR_USE_FLASH
-#endif
-
-
 static const bt_mesh_prov_t *pMesh_prov = NULL;
 
 // general
@@ -76,16 +68,16 @@ static void mesh_provisioning_message_handler(uint8_t packet_type, uint16_t chan
         case HCI_EVENT_MESH_META:
             switch(packet[2]){
                 case MESH_SUBEVENT_PB_TRANSPORT_LINK_OPEN:
-                    printf("Provisioner link opened");
+                    app_log_info("Provisioner link opened");
                     break;
                 case MESH_SUBEVENT_ATTENTION_TIMER:
-                    printf("Attention Timer: %u\n", mesh_subevent_attention_timer_get_attention_time(packet));
+                    app_log_info("Attention Timer: %u\n", mesh_subevent_attention_timer_get_attention_time(packet));
                     break;
                 case MESH_SUBEVENT_PB_TRANSPORT_LINK_CLOSED:
-                    printf("Provisioner link close");
+                    app_log_info("Provisioner link close");
                     break;
                 case MESH_SUBEVENT_PB_PROV_COMPLETE:
-                    printf("Provisioning complete\n");
+                    app_log_info("Provisioning complete\n");
                     provisioning_device_data_get(&provisioning_data);
                     app_assert(pMesh_prov != NULL);
                     pMesh_prov->complete(provisioning_data.network_key->netkey_index, provisioning_data.unicast_address);
@@ -93,7 +85,7 @@ static void mesh_provisioning_message_handler(uint8_t packet_type, uint16_t chan
                 case MESH_SUBEVENT_PB_PROV_START_EMIT_OUTPUT_OOB:{
                         uint16_t pb_trasport_cid = mesh_subevent_pb_prov_start_emit_output_oob_get_pb_transport_cid(packet);
                         uint32_t output_oob = mesh_subevent_pb_prov_start_emit_output_oob_get_output_oob(packet);
-                        // printf("pb_trasport_cid: %u, output_oob: %u \n", pb_trasport_cid, output_oob);  
+                        // app_log_info("pb_trasport_cid: %u, output_oob: %u \n", pb_trasport_cid, output_oob);  
                         app_assert(pMesh_prov != NULL);                  
                         pMesh_prov->output_number(output_oob);
                     }break;                
@@ -125,7 +117,7 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
         case HCI_EVENT_MESH_META:
             switch(packet[2]){
                 case MESH_SUBEVENT_STATE_UPDATE_BOOL:{
-                        printf("State update: model identifier 0x%08x, state identifier 0x%08x, reason %u, state %u\n",
+                        app_log_info("State update: model identifier 0x%08x, state identifier 0x%08x, reason %u, state %u\n",
                             mesh_subevent_state_update_bool_get_model_identifier(packet),
                             mesh_subevent_state_update_bool_get_state_identifier(packet),
                             mesh_subevent_state_update_bool_get_reason(packet),
@@ -149,7 +141,7 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
                         }
                     }break;
                 case MESH_SUBEVENT_STATE_UPDATE_INT16:{
-                        printf("int16 update: model identifier 0x%08x, state identifier 0x%08x, reason %u, value %u\n",
+                        app_log_info("int16 update: model identifier 0x%08x, state identifier 0x%08x, reason %u, value %u\n",
                             mesh_subevent_state_update_int16_get_model_identifier(packet),
                             mesh_subevent_state_update_int16_get_state_identifier(packet),
                             mesh_subevent_state_update_int16_get_reason(packet),
@@ -191,7 +183,7 @@ static void mesh_configuration_message_handler(uint8_t packet_type, uint16_t cha
         case HCI_EVENT_MESH_META:
             switch(packet[2]){
                 default:
-                    printf("mesh_configuration_message_handler: event not parsed");
+                    app_log_info("mesh_configuration_message_handler: event not parsed");
                     break;
             }
             break;
@@ -397,7 +389,7 @@ static void mesh_sig_models_init(mesh_element_t * element, mesh_model_t * model,
             break;
         
         default:
-            printf("#error: unknown sig model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
+            app_log_error("#error: unknown sig model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
             break;
     }
 }
@@ -414,14 +406,14 @@ static void mesh_vendor_models_init(mesh_element_t * element, mesh_model_t * mod
             mesh_element_add_model(element, model);
             break;
         default:
-            printf("#error: unknown vendor model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
+            app_log_error("#error: unknown vendor model id: 0x%04X\n", mesh_model_get_model_id(model->model_identifier));
             break;
     }
 }
 
 void mesh_elems_and_models_ll_init(const bt_mesh_comp_t *a_comp){
     
-    printf("#elem_count: %d\n", a_comp->elem_count);
+    app_log_info("#elem_count: %d\n", a_comp->elem_count);
     
     // check element valid.
     if (a_comp->elem_count == 0) return;
@@ -449,7 +441,7 @@ void mesh_elems_and_models_ll_init(const bt_mesh_comp_t *a_comp){
         // init location.
         mesh_node_set_element_location(pElement, loc);
         
-        printf("models_count_sig: %d, models_count_vendor: %d\n", pElement->models_count_sig, pElement->models_count_vendor);
+        app_log_info("models_count_sig: %d, models_count_vendor: %d\n", pElement->models_count_sig, pElement->models_count_vendor);
         
         // add sig models to element.
         if(pElement->models_count_sig){

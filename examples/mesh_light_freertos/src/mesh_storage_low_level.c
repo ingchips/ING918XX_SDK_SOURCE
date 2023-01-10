@@ -202,7 +202,7 @@ void mesh_storage_device_uuid_set(uint8_t *uuid, uint16_t len){
         return;
 
     if (len != sizeof(store->device_uuid)){
-        printf("error: uuid len err=%d(rightLen=%d)\n", len, sizeof(store->device_uuid));
+        app_log_error("error: uuid len err=%d(right Len =%d)\n", len, sizeof(store->device_uuid));
         return;
     }
     
@@ -223,10 +223,10 @@ static void my_kv_erase_flash(void){
 
 // write to flash.
 static int my_kv_write_to_flash(const void *db, const int size){
-    printf("my_kv_write_to_flash start, size = %d\n", size);
+    app_log_debug("my_kv_write_to_flash start, size = %d\n", size);
     app_assert(app_flash_start_address != 0);
     int ret = program_flash(app_flash_start_address, (uint8_t *)db, size);//Auto erase flash before each writing flash operation.
-    printf("my_kv_write_to_flash end, size = %d\n", size);
+    app_log_debug("my_kv_write_to_flash end, size = %d\n", size);
     return ret;
 }
 
@@ -235,7 +235,7 @@ static int my_kv_read_from_flash(void *db, const int max_size){
     // read data from flash: just need copy it!
     app_assert(app_flash_start_address != 0);
     memcpy((uint8_t *)db, ((uint8_t *) app_flash_start_address), max_size);
-    printf("===Read max size = %d\n", max_size);
+    app_log_debug("===Read max size = %d\n", max_size);
     return 0;
 }
 
@@ -248,7 +248,7 @@ int mesh_storage_low_level_init(uint32_t start_address){
     kv_init(&my_kv_write_to_flash, &my_kv_read_from_flash);
     // if not init, init it. 
     if(mesh_storage_flag_get(&flag) < 0){
-        printf("===init\n");
+        app_log_info("kv storage init\n");
         kv_put(MESH_STORAGE_APP_KEY, NULL, sizeof(mesh_app_storage_db_t));
         mesh_app_storage_db_t *store = (mesh_app_storage_db_t *)kv_get(MESH_STORAGE_APP_KEY, NULL);
         memset(store, 0, sizeof(mesh_app_storage_db_t));
@@ -257,7 +257,7 @@ int mesh_storage_low_level_init(uint32_t start_address){
     }
     // if already init, just print the flag.
     else {
-        printf("===flag = %02X\n", flag);
+        app_log_debug("===flag = %02X\n", flag);
     }
     return 0;
 }
