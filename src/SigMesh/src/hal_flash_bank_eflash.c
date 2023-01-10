@@ -10,6 +10,11 @@
 #include "stdio.h"
 #include "eflash.h"
 #include "hal_flash_bank_eflash.h"
+#include "app_config.h"
+
+#ifdef USE_MESH_FLASH
+#define MESH_STACK_TLV_USE_FLASH
+#endif
 
 #define EFLASH_WRITE_SUPPORT_OFFSET_ADDR_NOT_ALIGMENT
 
@@ -50,7 +55,11 @@ static void hal_flash_bank_eflash_write(void * context, int bank, uint32_t offse
 	if (offset > self->bank_size) return;
 	if ((offset + size) > self->bank_size) return;
     if (size == 0) return;
-
+    
+#if !defined(MESH_STACK_TLV_USE_FLASH)
+    return;
+#endif
+    
 #ifdef EFLASH_WRITE_SUPPORT_OFFSET_ADDR_NOT_ALIGMENT
     uint32_t aligment = hal_flash_bank_memory_get_alignment(NULL);
     if ((size & (aligment - 1)) != 0) return; //size must be aligment.

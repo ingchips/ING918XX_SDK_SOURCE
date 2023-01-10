@@ -26,7 +26,7 @@
 #include "mesh_profile.h"
 
 
-#ifdef USE_MESH_APP_FLASH
+#ifdef USE_MESH_FLASH
 #define MESH_UUID_USE_FLASH
 #define MESH_NAME_USE_FLASH
 #define MESH_GATT_ADV_ADDR_USE_FLASH
@@ -216,8 +216,13 @@ void mesh_platform_config(bt_mesh_config_t type, void *data, uint32_t data_len){
             uint32_t name_len = (data_len + 9); //add random tail: -xxxxxxxx , len: 9bytes.
             memset(dev_name, 0, sizeof(dev_name));
             app_assert(name_len <= sizeof(dev_name));
-            memcpy(dev_name, (uint8_t *)data, data_len);            
+            // add user name. "ing-mesh" (data_len bytes)
+            memcpy(dev_name, (uint8_t *)data, data_len);
+            // add '-' (1bytes)
+            dev_name[data_len] = '-';
+            // add random tail(8bytes)
             mesh_generate_random_name((uint8_t *)dev_name, name_len);
+            // set name to gap scan response data. 
             adv_bearer_adv_set_scan_rsp_data((uint8_t *)dev_name, name_len);
 #else
             app_assert(data_len <= 29);
