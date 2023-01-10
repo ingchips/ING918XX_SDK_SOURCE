@@ -414,6 +414,11 @@
               <FilePath>.\src\mesh_storage_low_level.c</FilePath>
             </File>
             <File>
+              <FileName>mesh_manage_conn_and_scan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_manage_conn_and_scan.c</FilePath>
+            </File>
+            <File>
               <FileName>app_config.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\src\app_config.h</FilePath>

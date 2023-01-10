@@ -24,6 +24,7 @@
 #include "app_config.h"
 #include "mesh_port_low_level_init.h"
 #include "mesh_profile.h"
+#include "mesh_manage_conn_and_scan.h"
 
 
 #ifdef USE_MESH_FLASH
@@ -53,6 +54,14 @@ static mesh_configuration_server_model_context_t mesh_configuration_server_model
 static mesh_publication_model_t     mesh_health_server_publication;
 static mesh_health_state_t          mesh_health_server_model_context;
 
+/******************************************************************************************
+ * @brief Mesh stack node reset.
+ */
+static void mesh_port_node_reset_handler(void)
+{
+    mesh_port_init();
+    mesh_server_restart();  
+}
 
 static void mesh_provisioning_message_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(packet_type);
@@ -131,7 +140,7 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
                             {
                                 case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:{                                
                                         // Set Generic On/Off state
-                                        mesh_on_off_server_control_callback();
+                                        mesh_mcas_on_off_server_control_callback();
                                     }break;
                                 
                                 default:
@@ -155,7 +164,7 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
                             {
                                 case MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER:{                                
                                         // Set Generic level
-                                        mesh_on_off_server_control_callback();
+                                        mesh_mcas_on_off_server_control_callback();
                                     }break;
                                 
                                 default:

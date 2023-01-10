@@ -14,7 +14,9 @@
 #include "mesh.h"
 #include "mesh_port_stack.h"
 #include "mesh_storage_app.h" 
+#include "mesh_manage_conn_and_scan.h"
 
+#define CON_HANDLE_INVALID 0xFFFF
 
 // mesh adv handle
 #define MESH_PROXY_ADV_HANDLE        0x00
@@ -408,7 +410,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                         printf("interval:%dms\n", CPI_VAL_TO_MS(conn_update->interval));
                         printf("sup_timeout:%dms\n", CPSTT_VAL_TO_MS(conn_update->sup_timeout));
                     }
-                    mesh_conn_params_update_complete_callback(conn_update->status, conn_update->handle, conn_update->interval, conn_update->sup_timeout);
+                    mesh_mcas_conn_params_update_complete_callback(conn_update->status, conn_update->handle, conn_update->interval, conn_update->sup_timeout);
                 }
 			    break;
             default:
