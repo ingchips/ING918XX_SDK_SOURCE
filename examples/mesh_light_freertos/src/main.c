@@ -137,7 +137,6 @@ int app_main()
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0xfff);
-    // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);//enable hci log
 
     return (int)os_impl_get_driver();
 }

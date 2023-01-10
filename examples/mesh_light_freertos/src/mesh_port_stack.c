@@ -108,7 +108,14 @@ void mesh_disconnected(uint16_t conn_handle, uint8_t reason)
     mesh_ble_disconnect_callback(conn_handle);
 }
 
-
+/******************************************************************************************
+ * @brief gatt can send now callback.
+ * @note This func run at host task.
+ */
+void mesh_gatt_can_send_now(uint16_t conn_handle)
+{
+    mesh_att_service_trigger_can_send_now();
+}
 
 
 // -------------------------------------------------------------------------------------------------------
@@ -313,19 +320,6 @@ void mesh_ble_disconnect_callback(uint16_t handle){
 #endif
 // -------------------------------------------------------------------------------------------------------
 
-
-/******************************************************************************************
- * @brief gatt can send now callback.
- * @note This func run at host task.
- */
-void mesh_gatt_can_send_now(uint16_t conn_handle)
-{
-    UNUSED(conn_handle);
-    // Ble_AttSendBuffer_can_send_now_handler();
-    extern void mock_att_service_trigger_can_send_now(void);
-    mock_att_service_trigger_can_send_now();
-}
-
 /******************************************************************************************
  * @brief Mesh stack node reset.
  */
@@ -334,6 +328,7 @@ void mesh_port_node_reset_handler(void)
     mesh_port_init();
     mesh_server_restart();  
 }
+
 /******************************************************************************************
  * @brief Mesh stack initialization function.
  */
