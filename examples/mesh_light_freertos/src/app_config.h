@@ -2,10 +2,12 @@
 #define __APP_CONFIG_H
 
 /* debug */
+// assert.
 #define APP_ASSERT_EN
-#define APP_LOG_INFO_EN
-#define APP_LOG_DEBUG_EN
-#define APP_LOG_ERROR_EN
+// log
+//#define APP_LOG_INFO_EN
+//#define APP_LOG_DEBUG_EN
+//#define APP_LOG_ERROR_EN
 
 /* BUTTON TEST */
 #define ENABLE_BUTTON_TEST

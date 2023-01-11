@@ -227,18 +227,11 @@ void mesh_platform_init(void){
 /*--------------------------------------------------------------------
  *-----------------------------> API <--------------------------------
  *------------------------------------------------------------------*/
-static void mesh_get_ver_info(void){    
-    char version[8];
-    int ver_len = mesh_get_version_info_str(version, sizeof(version));
-    if(ver_len > 0 && ver_len < sizeof(version)-1){
-        version[ver_len] = '\0';
-        app_log_info("mesh ver: v%s\n", version); 
-    }
-    
-    char date_time[30];
-    int str_len = mesh_get_lib_compile_date_time(date_time, sizeof(date_time));
-    if(str_len > 0 ){
-        app_log_info("mesh date: %s\n", date_time); 
+static void mesh_get_ver_info(void){
+    char version[28];
+    int ver_len = mesh_get_lib_version_info(version, sizeof(version));
+    if(ver_len > 0){
+        platform_printf("mesh version info: %s\n", version); 
     }
 }
 
