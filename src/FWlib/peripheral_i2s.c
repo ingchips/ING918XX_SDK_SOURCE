@@ -7,7 +7,7 @@ void I2S_Config(I2S_TypeDef *base, i2s_role_t role, i2s_mode_t mode,
                 uint8_t lrclk_polar, uint8_t txbclk_polar, uint8_t rxbclk_polar,
                 uint8_t data_width)
 {
-    uint32_t mask = 0x3 << 2;
+    uint32_t mask = 0x7 << 2;
     base->ModeConfig &= ~mask;
     base->ModeConfig |=  (mode << 2) | ((uint32_t)mono << 4);
     mask = 0x1f0f;
