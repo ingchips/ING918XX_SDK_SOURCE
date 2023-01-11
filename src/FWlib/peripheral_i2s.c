@@ -30,7 +30,7 @@ void I2S_Enable(I2S_TypeDef *base, uint8_t tx_en, uint8_t rx_en)
 {
     uint32_t mask = 0x3;
     base->ModeConfig &= ~mask;
-    base->ModeConfig =   (tx_en << 0) | (rx_en << 1);
+    base->ModeConfig |= (tx_en << 0) | (rx_en << 1);
 }
 
 void I2S_ConfigClk(I2S_TypeDef *base, uint8_t b_div, uint8_t lr_div)
