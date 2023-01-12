@@ -38,13 +38,9 @@
 #ifndef __MESH_NETWORK
 #define __MESH_NETWORK
 
-#include <string.h>
-#include "mesh_defines.h"
-#include "mesh_event.h"
-#include "mesh_port_run_loop.h"
-
 #include "mesh/provisioning.h"
 #include "mesh/mesh_keys.h"
+#include "mesh_port_run_loop.h"
 
 #if defined __cplusplus
 extern "C" {

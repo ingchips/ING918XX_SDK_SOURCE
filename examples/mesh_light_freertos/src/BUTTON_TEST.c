@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mesh_defines.h"
+#include "mesh_btstack_defines.h"
 #include "BUTTON_TEST.h"
 #include "stdbool.h"
 #include "mesh_profile.h"

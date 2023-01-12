@@ -1,6 +1,12 @@
 
-#ifndef MESH_DEFINES_H
-#define MESH_DEFINES_H
+/**
+ *
+ * BTstack definitions, events, and error codes 
+ *
+ */
+
+#ifndef MESH_BTSTACK_DEFINES_H
+#define MESH_BTSTACK_DEFINES_H
 #include <stdint.h>
 
 #include "mesh_linked_list.h" 
@@ -18,12 +24,19 @@ typedef struct {
 } btstack_context_callback_registration_t;
 
 
+// Mesh Provisioning PDU
+#define PROVISIONING_DATA_PACKET 0x11u
 
-// Meta Events, see below for sub events
+// Mesh Proxy PDU
+#define MESH_PROXY_DATA_PACKET   0x11u
+
+// Mesh Network PDU
+#define MESH_NETWORK_PACKET      0x12u
+
+// Mesh Network PDU
+#define MESH_BEACON_PACKET       0x13u
+
 #define HCI_EVENT_MESH_META                                      0xF5u
-
-
-// MESH Meta Event Group
 
 /**
  * @format 1

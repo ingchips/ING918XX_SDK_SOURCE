@@ -1,6 +1,6 @@
-
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "mesh/mesh.h"
 #include "mesh/mesh_node.h"
@@ -25,6 +25,7 @@
 #include "mesh_port_low_level_init.h"
 #include "mesh_profile.h"
 #include "mesh_manage_conn_and_scan.h"
+#include "mesh_btstack_event.h"
 
 
 static const bt_mesh_prov_t *pMesh_prov = NULL;

@@ -42,7 +42,6 @@
 #include <stdint.h>
 
 #include "btstack_defines.h"
-#include "mesh_includes.h"
 
 #if defined __cplusplus
 extern "C" {

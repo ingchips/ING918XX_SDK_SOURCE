@@ -40,6 +40,7 @@
 
 #include <stdint.h>
 
+#include "mesh_btstack_defines.h"
 #include "mesh_linked_list.h"
 #include "mesh/mesh_network.h"
 

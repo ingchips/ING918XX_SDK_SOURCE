@@ -43,6 +43,8 @@
 #include "mesh/mesh_network.h"
 #include "mesh/mesh_lower_transport.h"
 
+#include "mesh_btstack_defines.h"
+
 #ifdef __cplusplus
 extern "C"
 {

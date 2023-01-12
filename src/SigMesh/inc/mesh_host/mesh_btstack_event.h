@@ -1,8 +1,90 @@
 
-#ifndef MESH_EVENT_H
-#define MESH_EVENT_H
+#ifndef MESH_BTSTACK_EVENT_H
+#define MESH_BTSTACK_EVENT_H
 #include <stdint.h>
 #include "btstack_util.h"
+
+
+
+
+/*** 175
+ * @brief Get subevent code for mesh event
+ * @param event packet
+ * @return subevent_code
+ */
+static inline uint8_t hci_event_mesh_meta_get_subevent_code(const uint8_t * event){
+    return event[2];
+}
+
+
+
+/** 348
+ * @brief Get field connection_handle from event HCI_EVENT_DISCONNECTION_COMPLETE
+ * @param event packet
+ * @return connection_handle
+ * @note: btstack_type 2
+ */
+static inline uint16_t hci_event_disconnection_complete_get_connection_handle(const uint8_t * event){
+    return little_endian_read_16(event, 3);
+}
+
+
+/** 3796
+ * @brief Get field advertising_event_type from event HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT
+ * @param event packet
+ * @return advertising_event_type
+ * @note: btstack_type 1
+ */
+static inline uint8_t gap_event_advertising_report_get_advertising_event_type(const uint8_t * event){
+    return event[2];
+}
+/**
+ * @brief Get field address_type from event HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT
+ * @param event packet
+ * @return address_type
+ * @note: btstack_type 1
+ */
+static inline uint8_t gap_event_advertising_report_get_address_type(const uint8_t * event){
+    return event[3];
+}
+/**
+ * @brief Get field address from event HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT
+ * @param event packet
+ * @param Pointer to storage for address
+ * @note: btstack_type B
+ */
+static inline void gap_event_advertising_report_get_address(const uint8_t * event, bd_addr_t address){
+    reverse_bytes(&event[4], address, 6);
+}
+/**
+ * @brief Get field rssi from event HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT
+ * @param event packet
+ * @return rssi
+ * @note: btstack_type 1
+ */
+static inline uint8_t gap_event_advertising_report_get_rssi(const uint8_t * event){
+    return event[10];
+}
+/**
+ * @brief Get field data_length from event HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT
+ * @param event packet
+ * @return data_length
+ * @note: btstack_type J
+ */
+static inline uint8_t gap_event_advertising_report_get_data_length(const uint8_t * event){
+    return event[11];
+}
+/**
+ * @brief Get field data from event HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT
+ * @param event packet
+ * @return data
+ * @note: btstack_type V
+ */
+static inline const uint8_t * gap_event_advertising_report_get_data(const uint8_t * event){
+    return &event[12];
+}
+
+
 
 
 /** 13025
