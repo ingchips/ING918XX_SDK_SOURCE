@@ -243,14 +243,15 @@ int ll_raw_packet_set_param(struct ll_raw_packet *packet,
  *
  * @param[in]   packet              the packet object
  * @param[in]   header              header sending before packet length
- * @param[in]   freq_mhz            freqency in MHz
+ * @param[in]   freq_mhz            frequency in MHz
  *                                  When 0: use the channel specified in `ll_raw_packet_set_param`)
  * @return                          0 if successful else error code
  *
  *
  * Note: Only a subset of uint8_t are supported in `header`;
  *       When bare mode is used, CRC & whitening are all handled by apps;
- *       When bare mode is used, `crc_init` is ignored.
+ *       When bare mode is used, `crc_init` is ignored;
+ *       When `freq_mhz` is not zero, BLE activities near this raw packets might be affected.
  ****************************************************************************************
  */
 int ll_raw_packet_set_bare_mode(struct ll_raw_packet *packet,
