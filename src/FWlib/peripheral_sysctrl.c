@@ -738,6 +738,10 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetHClk() / get_safe_divider10(21, 1);
         else
             return SYSCTRL_GetSlowClk() / get_safe_divider10(21, 1);
+    case SYSCTRL_ITEM_APB_I2C0:
+    case SYSCTRL_ITEM_APB_I2C1:
+        // generally, this clock is not needed in programming I2C
+        return SYSCTRL_GetPClk();
     default:
         // TODO
         return SYSCTRL_GetSlowClk();

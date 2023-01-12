@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iarUserArgVars>
+    <group name="ING_SDK" active="true">
+        <variable>
+            <name>ING_SDK_ROOT</name>
+            <value>$PROJ_DIR$/../..</value>
+        </variable>
+    </group>
+</iarUserArgVars>

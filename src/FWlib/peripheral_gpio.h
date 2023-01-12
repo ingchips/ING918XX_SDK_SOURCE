@@ -324,8 +324,9 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
  * sources from DEEPER SLEEP mode.
  *
  * @param[in] enable            Enable(1)/disable(0)
+ * @param[in] level             wake up by high level(1)/low level(0)
  */
-void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable);
+void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level);
 
 /**
  * @brief Set some or all of GPIO to 1

@@ -264,8 +264,8 @@ typedef enum
     IO_SOURCE_QDEC_TIMER_EXT_OUT1_B     = 82,
     IO_SOURCE_QDEC_TIMER_EXT_OUT2_B     = 83,
     // below sources are for input
-    IO_SOURCE_SW_TMS                      = 84,
-    IO_SOURCE_SW_TCK                      = 85,
+    IO_SOURCE_SW_DIO                      = 84,
+    IO_SOURCE_SW_CLK                      = 85,
     IO_SOURCE_SPI0_CLK_IN                 = 86,
     IO_SOURCE_SPI0_CSN_IN                 = 87,
     IO_SOURCE_SPI0_HOLD_IN                = 88,
@@ -361,11 +361,11 @@ typedef enum
  *
  * This function fails when IO pin do not support such configurations.
  *
- * @param[in] io_pin_tms        TMS
- * @param[in] io_pin_tck        TCK
+ * @param[in] io_pin_dio        DIO
+ * @param[in] io_pin_clk        CLK
  * @return                      0 if successful else non-0
  */
-int PINCTRL_SelSwIn(uint8_t io_pin_tms, uint8_t io_pin_tck);
+int PINCTRL_SelSwIn(uint8_t io_pin_dio, uint8_t io_pin_clk);
 
 /**
  * @brief Select SPI input IOs
@@ -438,7 +438,9 @@ void PINCTRL_SelUartCtsIn(const uart_port_t port, const uint8_t io_pin_index);
 /**
  * @brief Select I2C input IOs
  *
- * Note: If an input is not used or invalid, set it to `IO_NOT_A_PIN`.
+ * Note: Both SCL and SDA are configured properly.
+ * Developer don't need to call `PINCTRL_SetPadMux(io_pin_sda, IO_SOURCE_I2C0_SDA_OUT)`
+ * or `PINCTRL_Pull(...)`.
  *
  * @param[in] io_pin_scl        SCL
  * @param[in] io_pin_sda        SDA
@@ -510,6 +512,8 @@ int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode);
  * ...
  * ANT_SEL[count - 1] -> io_pins[count - 1]
  *
+ * If ANT_SEL[n] output does not need to be configured, set io_pins[n] to `IO_NOT_A_PIN`.
+ *
  * @param count             PIN count in io_pins
  * @param io_pins           PIN array
  * @return                  0 if successful else non-0
@@ -539,7 +543,7 @@ void PINCTRL_EnableAnalog(const uint8_t io_index);
  * When the specified IO pad do not support such source, this function will fail
  * and a non-0 value is returned.
  *
- * Note: To select an input source for an IO pad, it is not need to call this.
+ * Note: To select an input source for an IO pad, DO NOT call this.
  * Use `PINCTRL_Sel...In(...)` instead.
  *
  * @param io_pin_index      The io pad to be configured (0 .. IO_PIN_NUMBER - 1).
@@ -555,7 +559,7 @@ void PINCTRL_DisableAllInputs(void);
  * @brief Set slew rate of a GPIO
  *
  * @param io_pin_index      The io pad to be configured.
- * @param strength          The strength to be configured (default: 8mA)
+ * @param strength          The strength to be configured (default: 8mA; Exception: IO1 12mA)
  */
 void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_strength_t strength);
 

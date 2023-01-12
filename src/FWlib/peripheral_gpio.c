@@ -300,8 +300,9 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
     return 0;
 }
 
-void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable)
+void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level)
 {
+    GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 9, (level & 1) ^ 1);
     GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 10, enable);
 }
 
