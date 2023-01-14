@@ -64,8 +64,8 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty);
 
 //for Single Step Mode:
-//generate one pulse 
-// `pulse_width` is in ns 
+//generate one pulse
+// `pulse_width` is in ns
 void PWM_SetupSingle(const uint8_t channel_index, const uint32_t pulse_width);
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
@@ -104,7 +104,9 @@ void PWM_SetInvertOutput(const uint8_t channel_index, const uint8_t inv_a, const
  * @brief Enable/Disable DMA transfer
  *
  * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
- * @param[in] trig_cfg          DMA trigger configure
+ * @param[in] trig_cfg          DMA trigger configure (0..7)
+ *                              PCAP mode: DMA triggered when >= trig_cfg
+ *                              Other modes: DMA triggered when < trig_cfg
  * @param[in] enable            enable(1)/disable(0)
  */
 void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable);

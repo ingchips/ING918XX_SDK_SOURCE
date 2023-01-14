@@ -500,13 +500,13 @@ void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode)
     if (mode == SYSCTRL_CLK_32k)
     {
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 12);
-        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 0, 11);
     }
     else
     {
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 11);
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, 0, 12);
         set_reg_bits(APB_SYSCTRL->CguCfg + 7, mode, 12, 20);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 10);
     }
 }
 

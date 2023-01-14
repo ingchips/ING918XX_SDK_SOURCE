@@ -395,7 +395,7 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 
 /**
- * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan, or MCU
+ * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N,
  *  where N is in [0..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
@@ -408,7 +408,7 @@ void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan, or MCU
+ * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
  * \return                      frequency of the 32k
  */
