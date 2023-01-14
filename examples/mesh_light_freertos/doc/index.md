@@ -1,4 +1,4 @@
-# mesh_light_freertos
+# mesh-light
 
 This example demonstrates how to:
 
