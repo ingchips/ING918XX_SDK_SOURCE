@@ -118,21 +118,21 @@ static void mesh_adv_set_params(uint8_t   adv_handle,
                                 uint8_t   channel_map, 
                                 uint8_t   filter_policy){
     
-    gap_set_ext_adv_para(   (const uint8_t)adv_handle,
-                            (const adv_event_properties_t)adv_type,
-                            (const uint32_t)adv_int_min,
-                            (const uint32_t)adv_int_max,
-                            (const adv_channel_bits_t)channel_map, 
-                            (const bd_addr_type_t)BD_ADDR_TYPE_LE_RANDOM,
-                            (const bd_addr_type_t)direct_address_typ,
-                            (const uint8_t *)direct_address,
-                            (const adv_filter_policy_t) filter_policy,
-                            (const int8_t)100,   //tx power
-                            (const phy_type_t)PHY_1M,
-                            (const uint8_t)0,     //max skip
-                            (const phy_type_t)PHY_1M,
-                            (const uint8_t)0x00,  //sig
-                            (const uint8_t)0x00 ); //notify
+    gap_set_ext_adv_para(   adv_handle,
+                            adv_type,
+                            adv_int_min,
+                            adv_int_max,
+                            channel_map, 
+                            BD_ADDR_TYPE_LE_RANDOM,
+                            (bd_addr_type_t)direct_address_typ,
+                            direct_address,
+                            (adv_filter_policy_t)filter_policy,
+                            100,   //tx power
+                            PHY_1M,
+                            0,     //max skip
+                            PHY_1M,
+                            0x00,  //sig
+                            0x00 ); //notify
 }
 
 

@@ -36,11 +36,11 @@
 #define CPSTT_VAL_TO_MS(x)  ((uint16_t)(x * 10))
 #define CPSTT_MS_TO_VAL(x)  ((uint16_t)(x / 10))
 
-static void conn_params_print(const le_meta_event_enh_create_conn_complete_t *conn){
-    app_log_debug("my_conn_handle:%d\n", conn->handle);
-    app_log_debug("conn_interval:%dms\n", CPI_VAL_TO_MS(conn->interval));
-    app_log_debug("conn_timeout:%dms\n", CPSTT_VAL_TO_MS(conn->sup_timeout));
-}
+//static void conn_params_print(const le_meta_event_enh_create_conn_complete_t *conn){
+//    app_log_debug("my_conn_handle:%d\n", conn->handle);
+//    app_log_debug("conn_interval:%dms\n", CPI_VAL_TO_MS(conn->interval));
+//    app_log_debug("conn_timeout:%dms\n", CPSTT_VAL_TO_MS(conn->sup_timeout));
+//}
 
 // Switch different connection interval params.
 static void app_update_conn_params_req(void){
