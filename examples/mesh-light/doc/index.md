@@ -1,6 +1,19 @@
 # mesh-light
 
-This example demonstrates how to:
+This example creates a SIG Mesh light.
 
-* Integreate NoOS bundle with FreeRTOS;
-* Develop a mesh application.
+## Hardware Setup
+
+* ING918XX Dev-Board
+
+Jumpers marked in below figure should be connected:
+
+<img src="./img/hardware.png" width="50%" />
+
+## Test
+
+This example can be tested with following apps:
+
+* ING Mesh (WeChat mini program) - recommended
+* ING Mesh (iOS App) - recommended
+* nRF Mesh (iOS/Android)
