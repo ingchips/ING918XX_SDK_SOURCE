@@ -403,24 +403,14 @@
               <FilePath>.\src\profile.c</FilePath>
             </File>
             <File>
-              <FileName>mesh_manage_conn_and_scan.c</FileName>
+              <FileName>mesh_profile.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\mesh_manage_conn_and_scan.c</FilePath>
-            </File>
-            <File>
-              <FileName>mesh_port_low_level_init.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\mesh_port_low_level_init.c</FilePath>
+              <FilePath>.\src\mesh_profile.c</FilePath>
             </File>
             <File>
               <FileName>mesh_port_stack.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\mesh_port_stack.c</FilePath>
-            </File>
-            <File>
-              <FileName>mesh_profile.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\mesh_profile.c</FilePath>
             </File>
             <File>
               <FileName>mesh_storage_app.c</FileName>
@@ -431,6 +421,16 @@
               <FileName>mesh_storage_low_level.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\mesh_storage_low_level.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_manage_conn_and_scan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_manage_conn_and_scan.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_port_low_level_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_port_low_level_init.c</FilePath>
             </File>
             <File>
               <FileName>hal_flash_bank_eflash.c</FileName>
