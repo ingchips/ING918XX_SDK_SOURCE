@@ -104,7 +104,7 @@ typedef struct {
  *
  * @param[in] keyscan_set       Initial parameter struct
  */
-void KEYSCAN_Initialize(KEYSCAN_SetStateStruct* keyscan_set);
+void KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set);
 
 /**
  * @brief Check keyscan FIFO empty or not
@@ -130,7 +130,7 @@ uint16_t KEYSCAN_GetKeyData(void);
  * @return                      0: scan cycle end data;
  *                              1: find key pressed, *row and *col are key position in keyboard array
  */
-uint8_t KEYSCAN_KeyDataToRowColIdx(KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col);
+uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col);
 
 
 /**
@@ -138,7 +138,7 @@ uint8_t KEYSCAN_KeyDataToRowColIdx(KEYSCAN_SetStateStruct* keyscan_set, uint32_t
  *
  * @param[in] keyscan_set       Initial parameter struct
  */
-void KEYSCAN_EnableWakeupBeforeSleep(KEYSCAN_SetStateStruct* keyscan_set);
+void KEYSCAN_EnableWakeupBeforeSleep(const KEYSCAN_SetStateStruct* keyscan_set);
 
 
 /**
@@ -146,7 +146,7 @@ void KEYSCAN_EnableWakeupBeforeSleep(KEYSCAN_SetStateStruct* keyscan_set);
  *
  * @param[in] keyscan_set       Initial parameter struct
  */
-void KEYSCAN_DisableWakeupBeforeSleep(KEYSCAN_SetStateStruct* keyscan_set);
+void KEYSCAN_DisableWakeupBeforeSleep(const KEYSCAN_SetStateStruct* keyscan_set);
 
 #endif
 

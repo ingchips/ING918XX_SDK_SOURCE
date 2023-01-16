@@ -184,7 +184,7 @@ void KEYSCAN_SetDmaNumTrigInt(uint32_t trig_num)
     return;
 }
 
-static void KEYSCAN_InitKeyScanToIdx(KEYSCAN_SetStateStruct* keyscan_set)
+static void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set)
 {
     int i;
 
@@ -199,7 +199,7 @@ static void KEYSCAN_InitKeyScanToIdx(KEYSCAN_SetStateStruct* keyscan_set)
     return;
 }
 
-static uint8_t KEYSCAN_CheckStatePara(KEYSCAN_SetStateStruct* keyscan_set)
+static uint8_t KEYSCAN_CheckStatePara(const KEYSCAN_SetStateStruct* keyscan_set)
 {
     if (keyscan_set == 0) {
         return -1;
@@ -212,7 +212,7 @@ static uint8_t KEYSCAN_CheckStatePara(KEYSCAN_SetStateStruct* keyscan_set)
     return 0;
 }
 
-uint8_t KEYSCAN_KeyDataToRowColIdx(KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col)
+uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col)
 {
     if (KEYSCAN_CheckStatePara(keyscan_set) != 0) {
         return 0;
@@ -228,7 +228,7 @@ uint8_t KEYSCAN_KeyDataToRowColIdx(KEYSCAN_SetStateStruct* keyscan_set, uint32_t
     return 1;
 }
 
-void KEYSCAN_Initialize(KEYSCAN_SetStateStruct* keyscan_set)
+void KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set)
 {
     int i;
     uint32_t row;
@@ -316,7 +316,7 @@ static uint8_t gpio_retention_group[GIO_GPIO_NUMBER] = {
     GROUP_B, // GIO_GPIO_41
 };
 
-void KEYSCAN_EnableWakeupBeforeSleep(KEYSCAN_SetStateStruct* keyscan_set)
+void KEYSCAN_EnableWakeupBeforeSleep(const KEYSCAN_SetStateStruct* keyscan_set)
 {
     int i;
     uint8_t enable_retention_group_a = 0;
@@ -357,7 +357,7 @@ void KEYSCAN_EnableWakeupBeforeSleep(KEYSCAN_SetStateStruct* keyscan_set)
     return;
 }
 
-void KEYSCAN_DisableWakeupBeforeSleep(KEYSCAN_SetStateStruct* keyscan_set)
+void KEYSCAN_DisableWakeupBeforeSleep(const KEYSCAN_SetStateStruct* keyscan_set)
 {
     int i;
     uint8_t disable_retention_group_a = 0;
