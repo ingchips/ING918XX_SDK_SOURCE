@@ -14,9 +14,9 @@
   "version": [
    1,8,3]
  },
- "tc_dir": "D:\/001-LZK-SETUP\/KEIL472\/uv4",
- "ide_ver": "4",
- "ide_exe": "D:\/001-LZK-SETUP\/KEIL472\/uv4\/uv4.exe",
+ "tc_dir": "D:\/001-LZK-SETUP\/KEIL536\/uv4",
+ "ide_ver": "5",
+ "ide_exe": "D:\/001-LZK-SETUP\/KEIL536\/uv4\/uv4.exe",
  "ota": false,
  "ide": "keil",
  "arm_cc": "C:\/keil\/ARM\/ARMCC",
@@ -35,7 +35,7 @@
  "pb_adv": true,
  "pb_gatt": false,
  "deep_sleep": true,
- "proj_dir": "D:\/002-GITHUB\/ING918XX_SDK_SOURCE\/examples\\mesh-light",
+ "proj_dir": "D:\/002-GITHUB\/ING918XX_SDK_FORK\/examples\\mesh-light",
  "bundle": "noos_typical",
  "app_rom_size": "401408",
  "app_rom_addr": "139264",
