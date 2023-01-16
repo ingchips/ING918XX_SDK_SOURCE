@@ -1,22 +1,22 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133588,
+   "size": 122840,
    "base": 16384
   },
   "ram": {
-   "size": 30980,
+   "size": 5508,
    "base": 536870912
   },
   "app": {
-   "base": 155648
+   "base": 139264
   },
   "version": [
    1,8,3]
  },
- "tc_dir": "C:\\Keil_v5\\UV4",
+ "tc_dir": "D:\/001-LZK-SETUP\/KEIL536\/uv4",
  "ide_ver": "5",
- "ide_exe": "C:\\Keil_v5\\UV4\\UV4.exe",
+ "ide_exe": "D:\/001-LZK-SETUP\/KEIL536\/uv4\/uv4.exe",
  "ota": false,
  "ide": "keil",
  "arm_cc": "C:\/keil\/ARM\/ARMCC",
@@ -35,16 +35,16 @@
  "pb_adv": true,
  "pb_gatt": false,
  "deep_sleep": true,
- "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\mesh-light",
- "bundle": "typical",
- "app_rom_size": "385024",
- "app_rom_addr": "155648",
+ "proj_dir": "D:\/002-GITHUB\/ING918XX_SDK_FORK\/examples\\mesh-light",
+ "bundle": "noos_typical",
+ "app_rom_size": "401408",
+ "app_rom_addr": "139264",
  "family": "ing918",
  "role": "light",
  "keil": true,
  "cmsis": "",
- "app_ram_size": 34552,
- "app_ram_addr": 536901896,
+ "app_ram_size": 60024,
+ "app_ram_addr": 536876424,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",
