@@ -179,7 +179,7 @@ static void QDEC_PclkCfg(void)
     uint8_t div = hclk / slowClk;
     if (hclk % slowClk)
         div++;
-    if (!(div >> 4))
+    if (!(div >> 4))    // This div has 4 bits at most
         SYSCTRL_SetPClkDiv(div);
 }
 static void QDEC_Setup(void)

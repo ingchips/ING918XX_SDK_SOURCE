@@ -173,7 +173,7 @@ static uint16_t StepCal(uint16_t preData, uint16_t data, uint8_t *dir)
 {
     uint16_t step = 0;
     step = *dir ? (preData - data) : (data - preData);
-    if (step > 60000) {
+    if (step > 32768) {
         *dir ^= 1;
         step = StepCal(preData, data, dir);
     }
@@ -204,7 +204,8 @@ void mouse_report_movement(void)
         uint16_t step;
         step = StepCal(preData, data, &dir);
         preData = data;
-        report.wheel = dir ? step : (0 - (int8_t)step);
+        if (!(step >> 8))
+            report.wheel = dir ? step : (0 - (int8_t)step);
 #endif
         att_server_notify(handle_send, att_handle_notify, (uint8_t*)&report, sizeof(report));
     }
