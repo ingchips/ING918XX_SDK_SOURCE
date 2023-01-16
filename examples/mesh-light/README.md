@@ -7,3 +7,4 @@ This example demonstrates how to:
 
 Test Result:
     * OK: nRF Mesh (Android)
+    * OK: nRF Mesh (iOS)
