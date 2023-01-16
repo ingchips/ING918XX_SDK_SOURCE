@@ -132,6 +132,22 @@ uint16_t KEYSCAN_GetKeyData(void);
  */
 uint8_t KEYSCAN_KeyDataToRowColIdx(KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col);
 
+
+/**
+ * @brief Before sleep should enable gpios of keyboard wakeup
+ *
+ * @param[in] keyscan_set       Initial parameter struct
+ */
+void KEYSCAN_EnableWakeupBeforeSleep(KEYSCAN_SetStateStruct* keyscan_set);
+
+
+/**
+ * @brief After wakeup should disable gpios of keyboard wakeup first
+ *
+ * @param[in] keyscan_set       Initial parameter struct
+ */
+void KEYSCAN_DisableWakeupBeforeSleep(KEYSCAN_SetStateStruct* keyscan_set);
+
 #endif
 
 #ifdef __cplusplus
