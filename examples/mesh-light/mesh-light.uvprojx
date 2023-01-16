@@ -1,14 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
+
   <SchemaVersion>2.1</SchemaVersion>
+
   <Header>### uVision Project, (C) Keil Software</Header>
+
   <Targets>
     <Target>
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARMCC</pCCUsed>
-      <uAC6>0</uAC6>
+      <pCCUsed>6160000::V6.16::ARMCLANG</pCCUsed>
+      <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>ING91800</Device>
@@ -16,28 +19,28 @@
           <PackID>INGChips.INGCHIPS_DeviceFamilyPack.0.9.0</PackID>
           <PackURL>http://www.ingchips.com</PackURL>
           <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
-          <FlashUtilSpec/>
-          <StartupFile/>
-          <FlashDriverDll/>
+          <FlashUtilSpec></FlashUtilSpec>
+          <StartupFile></StartupFile>
+          <FlashDriverDll></FlashDriverDll>
           <DeviceId>0</DeviceId>
-          <RegisterFile/>
-          <MemoryEnv/>
-          <Cmp/>
-          <Asm/>
-          <Linker/>
-          <OHString/>
-          <InfinionOptionDll/>
-          <SLE66CMisc/>
-          <SLE66AMisc/>
-          <SLE66LinkerMisc/>
+          <RegisterFile></RegisterFile>
+          <MemoryEnv></MemoryEnv>
+          <Cmp></Cmp>
+          <Asm></Asm>
+          <Linker></Linker>
+          <OHString></OHString>
+          <InfinionOptionDll></InfinionOptionDll>
+          <SLE66CMisc></SLE66CMisc>
+          <SLE66AMisc></SLE66AMisc>
+          <SLE66LinkerMisc></SLE66LinkerMisc>
           <SFDFile>$$Device:ING91800$SVD\ING91800.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
-          <BinPath/>
-          <IncludePath/>
-          <LibPath/>
-          <RegisterFilePath/>
-          <DBRegisterFilePath/>
+          <BinPath></BinPath>
+          <IncludePath></IncludePath>
+          <LibPath></LibPath>
+          <RegisterFilePath></RegisterFilePath>
+          <DBRegisterFilePath></DBRegisterFilePath>
           <TargetStatus>
             <Error>0</Error>
             <ExitCodeStop>0</ExitCodeStop>
@@ -59,8 +62,8 @@
           <BeforeCompile>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name/>
-            <UserProg2Name/>
+            <UserProg1Name></UserProg1Name>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopU1X>0</nStopU1X>
@@ -69,8 +72,8 @@
           <BeforeMake>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name/>
-            <UserProg2Name/>
+            <UserProg1Name></UserProg1Name>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopB1X>0</nStopB1X>
@@ -80,14 +83,14 @@
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
             <UserProg1Name>fromelf.exe --bin -o mesh-light.bin ./output/mesh-light.axf</UserProg1Name>
-            <UserProg2Name/>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>
             <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
-          <SVCSIdString/>
+          <SVCSIdString></SVCSIdString>
         </TargetCommonOption>
         <CommonProperty>
           <UseCPPCompiler>0</UseCPPCompiler>
@@ -101,8 +104,8 @@
           <AssembleAssemblyFile>0</AssembleAssemblyFile>
           <PublicsOnly>0</PublicsOnly>
           <StopOnExitCode>3</StopOnExitCode>
-          <CustomArgument/>
-          <IncludeLibraryModules/>
+          <CustomArgument></CustomArgument>
+          <IncludeLibraryModules></IncludeLibraryModules>
           <ComprImg>1</ComprImg>
         </CommonProperty>
         <DllOption>
@@ -129,17 +132,17 @@
             <UseTargetDll>1</UseTargetDll>
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
-            <UpdateFlashBeforeDebugging>0</UpdateFlashBeforeDebugging>
+            <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
             <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
           <Flash3>"" ()</Flash3>
-          <Flash4/>
-          <pFcarmOut/>
-          <pFcarmGrp/>
-          <pFcArmRoot/>
+          <Flash4></Flash4>
+          <pFcarmOut></pFcarmOut>
+          <pFcarmGrp></pFcarmGrp>
+          <pFcArmRoot></pFcArmRoot>
           <FcArmLst>0</FcArmLst>
         </Utilities>
         <TargetArmAds>
@@ -172,7 +175,7 @@
             <RvctClst>0</RvctClst>
             <GenPPlst>0</GenPPlst>
             <AdsCpuType>"Cortex-M3"</AdsCpuType>
-            <RvctDeviceName/>
+            <RvctDeviceName></RvctDeviceName>
             <mOS>0</mOS>
             <uocRom>0</uocRom>
             <uocRam>0</uocRam>
@@ -272,8 +275,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>155648</StartAddress>
-                <Size>385024</Size>
+                <StartAddress>0x22000</StartAddress>
+                <Size>0x62000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -297,8 +300,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536901896</StartAddress>
-                <Size>34552</Size>
+                <StartAddress>0x20001588</StartAddress>
+                <Size>0xea78</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -306,7 +309,7 @@
                 <Size>0x0</Size>
               </OCR_RVCT10>
             </OnChipMemories>
-            <RvctStartVector/>
+            <RvctStartVector></RvctStartVector>
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
@@ -319,24 +322,24 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>2</wLevel>
+            <wLevel>3</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
             <uGnu>0</uGnu>
             <useXO>0</useXO>
-            <v6Lang>4</v6Lang>
-            <v6LangP>1</v6LangP>
+            <v6Lang>3</v6Lang>
+            <v6LangP>3</v6LangP>
             <vShortEn>1</vShortEn>
             <vShortWch>1</vShortWch>
             <v6Lto>0</v6Lto>
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,HCI_ACL_PAYLOAD_SIZE=120,BOARD_USE_RGB_LED</Define>
-              <Undefine/>
-              <IncludePath>../../src/Mesh;../../src/Mesh/os;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <MiscControls></MiscControls>
+              <Define>USE_STDPERIPH_DRIVER,BOARD_USE_RGB_LED</Define>
+              <Undefine></Undefine>
+              <IncludePath>..\peripheral_console_freertos\FreeRTOS\include;./src;..\..\src\SigMesh\inc;..\..\src\SigMesh\inc\mesh;..\..\src\SigMesh\inc\mesh_host;../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -351,10 +354,10 @@
             <useXO>0</useXO>
             <ClangAsOpt>4</ClangAsOpt>
             <VariousControls>
-              <MiscControls/>
-              <Define/>
-              <Undefine/>
-              <IncludePath/>
+              <MiscControls></MiscControls>
+              <Define></Define>
+              <Undefine></Undefine>
+              <IncludePath></IncludePath>
             </VariousControls>
           </Aads>
           <LDads>
@@ -366,13 +369,13 @@
             <useFile>0</useFile>
             <TextAddressRange>0x00000000</TextAddressRange>
             <DataAddressRange>0x00000000</DataAddressRange>
-            <pXoBase/>
-            <ScatterFile/>
-            <IncludeLibs/>
-            <IncludeLibsPath/>
-            <Misc/>
-            <LinkerInputFile/>
-            <DisabledWarnings/>
+            <pXoBase></pXoBase>
+            <ScatterFile></ScatterFile>
+            <IncludeLibs></IncludeLibs>
+            <IncludeLibsPath></IncludeLibsPath>
+            <Misc></Misc>
+            <LinkerInputFile></LinkerInputFile>
+            <DisabledWarnings></DisabledWarnings>
           </LDads>
         </TargetArmAds>
       </TargetOption>
@@ -391,19 +394,64 @@
               <FilePath>.\src\profile.c</FilePath>
             </File>
             <File>
-              <FileName>model_cli.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\model_cli.c</FilePath>
-            </File>
-            <File>
-              <FileName>model_srv.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\model_srv.c</FilePath>
-            </File>
-            <File>
               <FileName>mesh_profile.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\mesh_profile.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_port_stack.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_port_stack.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_storage_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_storage_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_storage_low_level.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_storage_low_level.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_manage_conn_and_scan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_manage_conn_and_scan.c</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_port_low_level_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mesh_port_low_level_init.c</FilePath>
+            </File>
+            <File>
+              <FileName>hal_flash_bank_eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\hal_flash_bank_eflash.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\app_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_debug.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\app_debug.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>TEST_CODE</GroupName>
+          <Files>
+            <File>
+              <FileName>BUTTON_TEST.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\BUTTON_TEST.c</FilePath>
+            </File>
+            <File>
+              <FileName>RF_TEST.C</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\RF_TEST.C</FilePath>
             </File>
           </Files>
         </Group>
@@ -418,13 +466,18 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\ING9187xx\symdefs.m</FilePath>
+              <FilePath>../..\bundles\noos_typical\ING9187xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
           <Files>
+            <File>
+              <FileName>eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\eflash.c</FilePath>
+            </File>
             <File>
               <FileName>board.c</FileName>
               <FileType>1</FileType>
@@ -436,24 +489,24 @@
           <GroupName>FWlib</GroupName>
           <Files>
             <File>
-              <FileName>peripheral_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\peripheral_uart.c</FilePath>
-            </File>
-            <File>
               <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
             </File>
             <File>
-              <FileName>peripheral_pwm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\FWlib\peripheral_pwm.c</FilePath>
-            </File>
-            <File>
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_rtc.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_gpio.c</FileName>
@@ -466,11 +519,6 @@
           <GroupName>Tools</GroupName>
           <Files>
             <File>
-              <FileName>ad_parser.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\ad_parser.c</FilePath>
-            </File>
-            <File>
               <FileName>trace.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\trace.c</FilePath>
@@ -478,17 +526,57 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Mesh</GroupName>
+          <GroupName>RTOS</GroupName>
           <Files>
             <File>
-              <FileName>mesh_stack.c</FileName>
+              <FileName>event_groups.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\src\Mesh\mesh_stack.c</FilePath>
+              <FilePath>..\peripheral_console_freertos\FreeRTOS\event_groups.c</FilePath>
             </File>
             <File>
-              <FileName>Mesh.lib</FileName>
+              <FileName>gen_os_impl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peripheral_console_freertos\FreeRTOS\gen_os_impl.c</FilePath>
+            </File>
+            <File>
+              <FileName>list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peripheral_console_freertos\FreeRTOS\list.c</FilePath>
+            </File>
+            <File>
+              <FileName>queue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peripheral_console_freertos\FreeRTOS\queue.c</FilePath>
+            </File>
+            <File>
+              <FileName>tasks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peripheral_console_freertos\FreeRTOS\tasks.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peripheral_console_freertos\FreeRTOS\timers.c</FilePath>
+            </File>
+            <File>
+              <FileName>port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peripheral_console_freertos\FreeRTOS\portable\GCC\ARM_CM3\port.c</FilePath>
+            </File>
+            <File>
+              <FileName>heap_4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\peripheral_console_freertos\FreeRTOS\portable\MemMang\heap_4.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>MeshLib</GroupName>
+          <Files>
+            <File>
+              <FileName>SigMesh.lib</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\src\mesh\Mesh.lib</FilePath>
+              <FilePath>..\..\src\SigMesh\SigMesh.lib</FilePath>
             </File>
           </Files>
         </Group>
@@ -498,11 +586,12 @@
       </Groups>
     </Target>
   </Targets>
+
   <RTE>
     <apis/>
     <components>
-      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="5.5.0" condition="ARMv6_7_8-M Device">
-        <package url="http://www.keil.com/pack/" name="CMSIS" vendor="ARM" version="5.8.0" schemaVersion="1.3"/>
+      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="4.3.0" condition="Cortex-M Device">
+        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
         <targetInfos>
           <targetInfo name="Target 1"/>
         </targetInfos>
@@ -510,4 +599,14 @@
     </components>
     <files/>
   </RTE>
+
+  <LayerInfo>
+    <Layers>
+      <Layer>
+        <LayName>mesh-light</LayName>
+        <LayPrjMark>1</LayPrjMark>
+      </Layer>
+    </Layers>
+  </LayerInfo>
+
 </Project>

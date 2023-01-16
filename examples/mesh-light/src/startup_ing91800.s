@@ -25,17 +25,18 @@
 ;//-------- <<< Use Configuration Wizard in Context Menu >>> ------------------
 ;*/
 
-Stack_Size      EQU     0x00000004
+Stack_Size      EQU     0x00000400
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
 __initial_sp
                 EXPORT  __initial_sp
 
+
                 EXPORT  __heap_base
                 EXPORT  __heap_limit
                 
-Heap_Size       EQU     0x5000
+Heap_Size       EQU     0
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base
@@ -50,7 +51,7 @@ __heap_limit
                 AREA    RESET, DATA, READONLY
                 EXPORT  __Vectors
 
-__Vectors       DCD     0                         ; Top of Stack
+__Vectors       DCD     __initial_sp                         ; Top of Stack
                 DCD     Reset_Handler             ; Reset Handler
                 
 __Vectors_End
@@ -68,8 +69,12 @@ Reset_Handler   PROC
                 IMPORT  __scatterload
 
                 ; this push is consumed by main
-                PUSH    {R0, LR}
-                
+                PUSH    {R1, LR}
+
+                ; save msp
+                MRS     R1, MSP
+                MSR     PSP, R1
+
                 LDR     R0, =__scatterload
                 BX      R0
                 
@@ -83,8 +88,12 @@ main            PROC
 
                 LDR     R0, =app_main
                 BLX     R0
-                
-                POP     {R0, PC}
+
+                ; restore msp
+                MRS     R1, PSP
+                MSR     MSP, R1
+
+                POP     {R1, PC}
 
                 ENDP
                 
