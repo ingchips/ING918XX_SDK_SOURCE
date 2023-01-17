@@ -144,7 +144,7 @@ int app_main()
     platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
     {
         int i;
-        for (i = 0; i < 100 * 48; i++) __nop();
+        for (i = 0; i < 100 * 48; i++) __NOP();
     }
     platform_config(PLATFORM_CFG_RC32K_EN, PLATFORM_CFG_DISABLE);
 #else

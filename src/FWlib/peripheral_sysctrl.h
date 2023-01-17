@@ -568,6 +568,24 @@ void SYSCTRL_SetLDOOutputFlash(int level);
  */
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
+#define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
+#define SYSCTRL_WAKEUP_SOURCE_COMPARATOR    2       // waken up by comparator
+#define SYSCTRL_WAKEUP_SOURCE_RTC_ALARM     4       // waken up by RTC alarm
+
+typedef struct
+{
+    uint64_t gpio;      // if any GPIO (bit n for GPIO #n) has triggered wake up
+    uint32_t other;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
+} SYSCTRL_WakeupSource_t;
+
+/**
+ * @brief Get wake up source of last wake up
+ *
+ * @param[out] source           source of the last wake up
+ * @return                      1 if any wake up source is found else 0
+ */
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
+
 #endif
 
 /**

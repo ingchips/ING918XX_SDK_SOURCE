@@ -47,11 +47,7 @@ static void delay(int cycles)
 #endif
     for (i = 0; i < cycles; i++)
     {
-#ifdef __GNUC__
-        __asm("NOP");
-#else
-        __nop();
-#endif
+        __NOP();
     }
 }
 

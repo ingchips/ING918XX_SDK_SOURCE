@@ -880,4 +880,46 @@ void SYSCTRL_ResetAllBlocks(void)
     APB_SYSCTRL->RstuCfg[1] &= 0x23;
 }
 
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
+{
+    source->other = 0;
+    source->gpio = APB_SYSCTRL->SysIoWkSource;
+    uint32_t a = APB_SYSCTRL->SysIoStatus >> 16;
+    if ((source->gpio == 0) && (a == 0))
+    {
+        a = io_read(AON2_CTRL_BASE + 0x140);
+        switch (a & 3)
+        {
+        case 0:
+            return 0;
+        case 1:
+            source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO;
+            break;
+        case 3:
+            source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO; // fall through
+        case 2:
+            a >>= 2;
+            source->gpio = a & 1;
+            source->gpio |= (a & (0x3 << 1)) << (5 - 1);
+            source->gpio |= (a & (0x7 << 3)) << (21 - 3);
+            source->gpio |= ((uint64_t)(a & (0x3 << 5))) << (36 - 5);
+            break;
+        default:
+            break;
+        }
+
+        return 1;
+    }
+
+    source->gpio |= ((uint64_t)(a & 0x3f)) << 32;
+    if (a & (1 << (6 + 0)))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_RTC_ALARM;
+    if (a & (1 << (6 + 1)))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO;
+    if (a & (1 << (6 + 2)))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_COMPARATOR;
+
+    return 1;
+}
+
 #endif
