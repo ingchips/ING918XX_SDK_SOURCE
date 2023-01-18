@@ -1,10 +1,9 @@
-# Mesh Light
+# mesh-light
 
 This example demonstrates how to:
 
-* Define a mesh model;
-* Define a mesh HSL light;
-* Convert HSL to RGB.
+* Integreate NoOS bundle with FreeRTOS;
+* Develop a mesh application.
 
 Test Result:
     * OK: nRF Mesh (Android)
