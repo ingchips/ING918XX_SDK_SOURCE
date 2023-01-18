@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "bluetooth.h"
+#include "ingsoc.h"
 #include "btstack_event.h"
 
 #define USER_MSG_ID_KEY_PRESSED_EVENT          (0x40) // key pressed event.

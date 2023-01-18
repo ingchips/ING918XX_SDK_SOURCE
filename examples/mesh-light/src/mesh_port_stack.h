@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "bt_types.h"
+#include "ingsoc.h"
 #include "btstack_event.h"
 
 // function define.

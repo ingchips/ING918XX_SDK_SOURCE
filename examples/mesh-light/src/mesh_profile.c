@@ -3,7 +3,6 @@
 #include <string.h>
 #include "gap.h"
 #include "bt_types.h"
-#include "btstack_event.h"
 #include "errno.h"
 #include "stdbool.h"
 #include "platform_api.h"

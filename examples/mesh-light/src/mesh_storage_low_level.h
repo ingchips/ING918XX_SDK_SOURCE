@@ -4,9 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include "bt_types.h"
-#include "gap.h"
-#include "btstack_event.h"
+#include "bluetooth.h"
 
 
 // name
