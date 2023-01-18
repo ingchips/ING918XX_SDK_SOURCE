@@ -52,8 +52,4 @@
 #define __MODULE__          __FILE_NAME__
 #endif
 
-#ifndef __NOP
-#define __NOP()             __asm("nop")
-#endif
-
 #endif // _COMPILER_H_

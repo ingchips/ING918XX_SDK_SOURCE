@@ -1,13 +1,9 @@
 #ifndef INGSOC_H
 #define INGSOC_H
 
-#include "../__ingsoc.h"
-
 #ifdef __cplusplus
  extern "C" {
 #endif
-
-#define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_916
 
 typedef enum IRQn
 {
@@ -84,6 +80,10 @@ typedef enum
 
 #include <core_cm4.h>                       /* Processor and core peripherals                    */
 #include <stdint.h>
+
+#include "../__ingsoc.h"
+
+#define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_916
 
 /* ================================================================================ */
 /* ================       Device Specific Peripheral Section       ================ */
