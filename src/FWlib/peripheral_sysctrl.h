@@ -157,20 +157,21 @@ typedef SYSCTRL_Item SYSCTRL_ResetItem;
 
 enum
 {
-    SYSCTRL_LDO_OUPUT_CORE_1V000 = 0x0,     // LDO Core Output: 1.000V
+    SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0x0,    // LDO Core Output: 1.000V
                                             // Range: [1.000, 1.300]V
                                             // Step: 20mV
                                             // 1.300V = SYSCTRL_LDO_OUPUT_1V000
-                                            //          + 15 * SYSCTRL_LDO_OUPUT_CORE_STEP_0V020
-    SYSCTRL_LDO_OUPUT_FLASH_1V600  = 0x0,   // LDO Flash Output: 1.600V
+                                            //          + 15 * SYSCTRL_LDO_OUTPUT_CORE_STEP_0V020
+    SYSCTRL_LDO_OUTPUT_FLASH_1V600  = 0x0,  // LDO Flash Output: 1.600V
                                             // Range: [1.600, 3.100]V
                                             // Step: 100mV
                                             // 3.100V = SYSCTRL_LDO_OUPUT_FLASH_1V600
-                                            //          + 15 * SYSCTRL_LDO_OUPUT_FLASH_STEP_0V100
+                                            //          + 15 * SYSCTRL_LDO_OUTPUT_FLASH_STEP_0V100
 };
 
-#define SYSCTRL_LDO_OUPUT_CORE_STEP_0V020           1   // step: 20mV
-#define SYSCTRL_LDO_OUPUT_FLASH_STEP_0V100          1   // step: 100mV
+#define SYSCTRL_LDO_OUTPUT_CORE_STEP_0V020           1   // step: 20mV
+#define SYSCTRL_LDO_OUTPUT_FLASH_STEP_0V100          1   // step: 100mV
+
 enum
 {
     SYSCTRL_BOR_1V5 = 0x0,          // BOR Threshold on VBAT: 1.5V
@@ -556,7 +557,7 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 /**
  * @brief Set LDO output level for Flash
  *
- * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH...`)
+ * @param[in] level         output level (available values see `SYSCTRL_LDO_OUPUT_FLASH_1V600`)
  */
 void SYSCTRL_SetLDOOutputFlash(int level);
 
@@ -579,7 +580,19 @@ typedef struct
 } SYSCTRL_WakeupSource_t;
 
 /**
- * @brief Get wake up source of last wake up
+ * @brief Enable wake up source detection once
+ *
+ * After enabled, wake up source can be read through `SYSCTRL_GetLastWakeupSource`.
+ *
+ * This function only enable the detection for one time, and needs to be called
+ * each time before entering DEEP/DEEPER sleep modes if apps need to know the
+ * wake up sources.
+ *
+ */
+void SYSCTRL_EnableWakeupSourceDetection(void);
+
+/**
+ * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
  *
  * @param[out] source           source of the last wake up
  * @return                      1 if any wake up source is found else 0

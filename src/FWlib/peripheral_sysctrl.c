@@ -880,6 +880,11 @@ void SYSCTRL_ResetAllBlocks(void)
     APB_SYSCTRL->RstuCfg[1] &= 0x23;
 }
 
+void SYSCTRL_EnableWakeupSourceDetection(void)
+{
+    set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x1A8), 1, 16);
+}
+
 uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
 {
     source->other = 0;
