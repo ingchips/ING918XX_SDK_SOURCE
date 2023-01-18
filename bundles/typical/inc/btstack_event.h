@@ -4,7 +4,7 @@
 *
 *
 *  INGCHIPS confidential and proprietary.
-*  COPYRIGHT (c) 2018 by INGCHIPS
+*  COPYRIGHT (c) 2018-2023 by INGCHIPS
 *
 *  All rights are reserved. Reproduction in whole or in part is
 *  prohibited without the written consent of the copyright owner.
@@ -783,6 +783,43 @@ static __INLINE uint8_t gap_event_dedicated_bonding_completed_get_status(const u
     return *decode_event_offset(event, uint8_t, 2);
 }
 
+typedef struct l2cap_event_complete_sdu
+{
+    uint16_t total_length;          // total length of this SDU
+    const uint8_t *payload;         // payload of this SDU
+} l2cap_event_complete_sdu_t;
+
+typedef struct l2cap_event_channel_opened
+{
+    uint8_t             status;
+    bd_addr_t           peer_addr;
+    hci_con_handle_t    conn_handle;
+    uint16_t            psm;
+    uint16_t            local_cid;
+    uint16_t            peer_cid;
+    uint16_t            local_mtu;
+    uint16_t            peer_mtu;
+    uint16_t            local_mps;
+    uint16_t            peer_mps;
+    uint16_t            flush_timeout;
+    uint16_t            local_credits;
+    uint16_t            peer_credits;
+} l2cap_event_channel_opened_t;
+
+typedef struct l2cap_event_channel_closed
+{
+    uint16_t            local_cid;
+    uint8_t             reason;
+} l2cap_event_channel_closed_t;
+
+typedef struct l2cap_event_fragment_sdu
+{
+    uint16_t total_length;          // total length of this SDU
+    uint16_t offset;                // offset of this fragment within a SDU
+    uint16_t length;                // length of this fragment within a SDU
+    const uint8_t *payload;         // payload of this fragment
+} l2cap_event_fragment_sdu_t;
+
 typedef struct event_command_complete_return_param_read_rssi
 {
     uint8_t          status;
@@ -1226,7 +1263,9 @@ typedef enum btstack_l2cap_msg_def
 #define decode_hci_event_disconn_complete(packet)    decode_event_offset(packet, event_disconn_complete_t, 2)
 #define decode_hci_event_vendor_ccm_complete(packet) decode_event_offset(packet, event_vendor_ccm_complete_t, 5)
 
-#define decode_hci_event(packet, T) decode_event_offset(packet, T, 2)
+#define decode_hci_event(packet, T)     decode_event_offset(packet, T, 2)
+
+#define decode_l2cap_event(packet, T)   decode_event_offset(packet, T, 2)
 
 /* API_END */
 

@@ -422,7 +422,7 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode)
 {
     if (mode >= SYSCTRL_CLK_PLL_DIV_1)
     {
-        set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 6);
+        set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 16);
         set_reg_bits(AON1_BOOT, mode, 4, 19);
     }
     set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode == 0 ? 0 : 1, 18);
@@ -618,6 +618,16 @@ uint32_t SYSCTRL_GetPLLClk()
     }
     else
         return 0;
+}
+
+uint32_t SYSCTRL_GetFlashClk(void)
+{
+    if (APB_SYSCTRL->CguCfg[1] & (0x1 << 18))
+    {
+        return SYSCTRL_GetPLLClk() / get_safe_divider(0, 16);
+    }
+    else
+        return SYSCTRL_GetSlowClk();
 }
 
 int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)

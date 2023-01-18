@@ -6,6 +6,9 @@
 #include "mesh_port_low_level_init.h"
 #include "board.h"
 #include "mesh_version.h"
+
+#define APP_LOG_INFO_EN
+
 #include "app_debug.h"
 
 /*--------------------------------------------------------------------
@@ -20,7 +23,7 @@
  * Server Configuration Declaration
  */
 static bt_mesh_cfg_srv_t cfg_srv = {
-    
+
     .relay = BT_MESH_RELAY_ENABLED,
     .gatt_proxy = BT_MESH_GATT_PROXY_ENABLED,
     .frnd = BT_MESH_FRIEND_NOT_SUPPORTED,
@@ -29,7 +32,7 @@ static bt_mesh_cfg_srv_t cfg_srv = {
     .default_ttl = 7,
     .net_transmit = 3,
     .relay_retransmit = 3,
-    
+
 };
 
 static void light_update(struct light_state *a_light)
@@ -66,7 +69,7 @@ int light_model_gen_onoff_set(mesh_model_t *model, uint8_t state)
             a_light->level[0] = 0;
         }
     }
-    
+
     app_log_info("gen set state: %d\n", state);
     light_update(a_light);
     return 0;
@@ -86,7 +89,7 @@ int light_model_gen_level_set(mesh_model_t *model, int16_t  level)
     a_light->level[0] = level;
     if(level == -32768) //bind to state.
         a_light->onoff[0] = 0;
-    else 
+    else
         a_light->onoff[0] = 1;
     app_log_info("gen set level -> %d\n", level);
     light_update(a_light);
@@ -117,7 +120,7 @@ static mesh_model_t sig_models[] = {
     // mandatory sig models: Config Server and Health Server.
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_CONFIGURATION_SERVER, &cfg_srv),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_HEALTH_SERVER, NULL),
-    
+
     // other sig models.
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT, NULL),
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER, &gen_onoff_srv_cb),
@@ -126,7 +129,7 @@ static mesh_model_t sig_models[] = {
     BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_LEVEL_CLIENT, NULL),
 };
 
-// example: 
+// example:
 // BT_MESH_MODEL_VND(INGCHIPS_COMP_ID, INGCHIPS_VND_ID_1, &vendor_srv_1);
 // BT_MESH_MODEL_VND(INGCHIPS_COMP_ID, INGCHIPS_VND_ID_2, &vendor_srv_2);
 static mesh_model_t vnd_models[] = {
@@ -179,7 +182,7 @@ static int input_request(void)
 static void prov_complete(uint16_t net_idx, uint16_t addr)
 {
     app_log_info("provisioning complete for net_idx 0x%04x addr 0x%04x\n",net_idx, addr);
-    
+
 }
 
 static void prov_reset(void)
@@ -231,7 +234,7 @@ static void mesh_get_ver_info(void){
     char version[28];
     int ver_len = mesh_get_lib_version_info(version, sizeof(version));
     if(ver_len > 0){
-        platform_printf("mesh version info: %s\n", version); 
+        platform_printf("mesh version info: %s\n", version);
     }
 }
 

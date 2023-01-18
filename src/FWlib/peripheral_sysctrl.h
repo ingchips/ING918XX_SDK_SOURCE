@@ -155,31 +155,85 @@ typedef SYSCTRL_Item SYSCTRL_ClkGateItem;
 
 typedef SYSCTRL_Item SYSCTRL_ResetItem;
 
+/**
+ * @brief LDO Core Output
+ *
+ * @see `SYSCTRL_SetLDOOutput`
+ *
+ * Range: [1.000, 1.300]V
+ *
+ * Default: 1.200V. Step: 20mV
+ */
 enum
 {
-    SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0x0,    // LDO Core Output: 1.000V
-                                            // Range: [1.000, 1.300]V
-                                            // Step: 20mV
-                                            // 1.300V = SYSCTRL_LDO_OUPUT_1V000
-                                            //          + 15 * SYSCTRL_LDO_OUTPUT_CORE_STEP_0V020
-    SYSCTRL_LDO_OUTPUT_FLASH_1V600  = 0x0,  // LDO Flash Output: 1.600V
-                                            // Range: [1.600, 3.100]V
-                                            // Step: 100mV
-                                            // 3.100V = SYSCTRL_LDO_OUPUT_FLASH_1V600
-                                            //          + 15 * SYSCTRL_LDO_OUTPUT_FLASH_STEP_0V100
+    SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0,      // 1.000V
+    SYSCTRL_LDO_OUTPUT_CORE_1V020 = 1,
+    SYSCTRL_LDO_OUTPUT_CORE_1V040 = 2,
+    SYSCTRL_LDO_OUTPUT_CORE_1V060 = 3,
+    SYSCTRL_LDO_OUTPUT_CORE_1V080 = 4,
+    SYSCTRL_LDO_OUTPUT_CORE_1V100 = 5,
+    SYSCTRL_LDO_OUTPUT_CORE_1V120 = 6,
+    SYSCTRL_LDO_OUTPUT_CORE_1V140 = 7,
+    SYSCTRL_LDO_OUTPUT_CORE_1V160 = 8,
+    SYSCTRL_LDO_OUTPUT_CORE_1V180 = 9,
+    SYSCTRL_LDO_OUTPUT_CORE_1V200 = 10,
+    SYSCTRL_LDO_OUTPUT_CORE_1V220 = 11,
+    SYSCTRL_LDO_OUTPUT_CORE_1V240 = 12,
+    SYSCTRL_LDO_OUTPUT_CORE_1V260 = 13,
+    SYSCTRL_LDO_OUTPUT_CORE_1V280 = 14,
+    SYSCTRL_LDO_OUTPUT_CORE_1V300 = 15
 };
 
-#define SYSCTRL_LDO_OUTPUT_CORE_STEP_0V020           1   // step: 20mV
-#define SYSCTRL_LDO_OUTPUT_FLASH_STEP_0V100          1   // step: 100mV
-
+/**
+ * @brief LDO Flash Output
+ *
+ * @see `SYSCTRL_SetLDOOutputFlash`
+ *
+ * Range: [2.100, 3.100]V
+ *
+ * Default: 2.100V. Step: 100mV
+ */
 enum
 {
-    SYSCTRL_BOR_1V5 = 0x0,          // BOR Threshold on VBAT: 1.5V
-                                    // Range: [1.5, 3]V
-                                    // 3V = SYSCTRL_BOR_1V5 + 15 * SYSCTRL_BOR_STEP_0V1
+    SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5,     // 2.100V
+    SYSCTRL_LDO_OUTPUT_FLASH_2V200 = 6,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V300 = 7,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V400 = 8,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V500 = 9,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V600 = 10,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V700 = 11,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V800 = 12,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V900 = 13,
+    SYSCTRL_LDO_OUTPUT_FLASH_3V000 = 14,
+    SYSCTRL_LDO_OUTPUT_FLASH_3V100 = 15
 };
 
-#define SYSCTRL_BOR_STEP_0V1                1   // step: 0.1V
+/**
+ * @brief BOR Threshold on VBAT
+ *
+ * @see `SYSCTRL_ConfigBOR`
+ *
+ * Range: [1.5, 3]V
+ */
+enum
+{
+    SYSCTRL_BOR_1V5 = 0,
+    SYSCTRL_BOR_1V6 = 1,
+    SYSCTRL_BOR_1V7 = 2,
+    SYSCTRL_BOR_1V8 = 3,
+    SYSCTRL_BOR_1V9 = 4,
+    SYSCTRL_BOR_2V0 = 5,
+    SYSCTRL_BOR_2V1 = 6,
+    SYSCTRL_BOR_2V2 = 7,
+    SYSCTRL_BOR_2V3 = 8,
+    SYSCTRL_BOR_2V4 = 9,
+    SYSCTRL_BOR_2V5 = 10,
+    SYSCTRL_BOR_2V6 = 11,
+    SYSCTRL_BOR_2V7 = 12,
+    SYSCTRL_BOR_2V8 = 13,
+    SYSCTRL_BOR_2V9 = 14,
+    SYSCTRL_BOR_3V0 = 15
+};
 
 typedef enum
 {
@@ -380,6 +434,13 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 
 /**
+ * \brief Get the frequency of Flash clock
+ *
+ * \return                      frequency
+ */
+uint32_t SYSCTRL_GetFlashClk(void);
+
+/**
  * \brief Select the two clocks of QDEC
  *
  * This function configures two clocks for QDEC:
@@ -557,7 +618,7 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 /**
  * @brief Set LDO output level for Flash
  *
- * @param[in] level         output level (available values see `SYSCTRL_LDO_OUPUT_FLASH_1V600`)
+ * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH_...`)
  */
 void SYSCTRL_SetLDOOutputFlash(int level);
 

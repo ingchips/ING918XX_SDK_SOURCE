@@ -3,7 +3,7 @@
 *  @brief API for ATT server
 *
 *  INGCHIPS confidential and proprietary.
-*  COPYRIGHT (c) 2018 by INGCHIPS
+*  COPYRIGHT (c) 2018-2023 by INGCHIPS
 *
 *  All rights are reserved. Reproduction in whole or in part is
 *  prohibited without the written consent of the copyright owner.
@@ -28,10 +28,10 @@ extern "C" {
  * @ingroup bluetooth_host
  * @{
  */
-// custom BTstack error codes
+// custom btstack error codes
 #define ATT_ERROR_HCI_DISCONNECT_RECEIVED          0x1f
 
-// custom BTstack ATT error coders
+// custom btstack ATT error coders
 #define ATT_ERROR_DATA_MISMATCH                    0x7e
 #define ATT_ERROR_TIMEOUT                          0x7F
 

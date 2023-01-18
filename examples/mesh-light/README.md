@@ -1,4 +1,4 @@
-# mesh-light
+# Mesh Light
 
 This example demonstrates how to:
 
