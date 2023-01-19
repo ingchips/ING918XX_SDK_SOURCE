@@ -6,18 +6,58 @@ issued, and response are displayed.
 This example also demonstrate the use of power saving, which can be turned on and off on-the-fly
 through a command.
 
+There are several compiling switches:
+
+* **LISTEN_TO_POWER_SAVING**
+
+    When defined, a buzzer can be used as an indicator that the SoC has entered deep sleep and waken
+    up again.
+
+* **USE_WATCHDOG**
+
+    Enable watchdog.
+
+* **USE_POWER_LIB** (ONLY for ING918xx)
+
+    To further reduce power consumption.
+
+* **USE_SLOW_CLK_RC** (ONLY for ING916xx)
+
+    Use internal RC clock as source for _slow_clk_. Different frequencies can be
+    selected:
+
+    | **USE_SLOW_CLK_RC**  | Frequency (MHz)    |
+    |:--------:|:-----------:|
+    | 8  | 8  |
+    | 16 | 16 |
+    | 24 | 24 |
+    | 32 | 32 |
+    | 48 | 48 |
+    | 64 | 64 |
+
 ## Hardware Setup
 
-To test this example on ING918xx Dev-Board, the marked jumpers should be connected:
+### ING918xx Dev-Board
 
-<img src="./img/hardware.png" width="50%" />
+| Dev-Board| Pin  | Note                                    |
+|:--------:|:----:|:----------------------------------------|
+| EXT_INT  | EXT_INT |                              |
+| EXT_INT  | GPIO 9  | Key detection                |
+| Buzzer   | GPIO 8  | Listen to power saving       |
 
-Note that the `EXT_INT` key also connected GPIO 9.
+
+### ING916xx Dev-Board
+
+| Dev-Board| Pin  | Note|
+|:--------:|:----:|:----------------------------------------|
+| EXT_INT  | GPIO 0  | Emulating EXT_INT on ING918xx        |
+| EXT_INT  | GPIO 9  | Key detection                        |
+| Buzzer   | GPIO 8  | Listen to power saving               |
 
 ## Test
 
 Download this example to Dev-Board, the buzzing indicates that the SoC has entered deep sleep and waken
-up again, busy with advertising. Connect it with _ING BLE_, the buzzing will become faster indicating
+up again, busy with advertising, etc. Connect it with _ING BLE_, the buzzing will become faster indicating
 that the SoC is now busy with connection activities which is more frequent than advertising.
 
 The console supports several commands. Some notable ones are listed below. Check out
@@ -34,6 +74,10 @@ The console supports several commands. Some notable ones are listed below. Check
 * `f`
 
     Show the actual frequency of the 32k clock.
+
+* `f-cpu`
+
+    Show the configured frequency of CPU.
 
 * `latency`
 

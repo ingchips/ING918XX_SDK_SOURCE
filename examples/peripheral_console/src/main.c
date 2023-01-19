@@ -52,6 +52,7 @@ uint32_t gpio_isr(void *user_data)
 }
 
 #define PIN_BUZZER 8
+#define PIN_WAKEUP 0        // For ING916xx: GPIO 0 belongs to Group A
 
 void setup_peripherals(void)
 {
@@ -62,14 +63,22 @@ void setup_peripherals(void)
 #endif
 
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-    config_uart(OSC_CLK_FREQ, 115200);
 
     PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    config_uart(OSC_CLK_FREQ, 115200);
     PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_DOWN);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    config_uart(SYSCTRL_GetClk(SYSCTRL_ITEM_APB_UART0), 115200);
+
     PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_DOWN);
+
+    // GPIO 0 (also connected to KEY) emulating EXT_INT as in ING918XX
+    GIO_EnableRetentionGroupA(0);
+    PINCTRL_SetPadMux(PIN_WAKEUP, IO_SOURCE_GPIO);
+    GIO_SetDirection(PIN_WAKEUP, GIO_DIR_INPUT);
+    PINCTRL_Pull(PIN_WAKEUP, PINCTRL_PULL_DOWN);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -88,16 +97,19 @@ void setup_peripherals(void)
 #endif
 }
 
-uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
+uint32_t on_deep_sleep_wakeup(void *casted_reason, void *user_data)
 {
-    (void)(dummy);
-    (void)(user_data);
-#ifdef USE_POWER_LIB
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#ifdef USE_POWER_LIB
     power_ctrl_deep_sleep_wakeup();
 #endif
-#endif
     setup_peripherals();
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    platform_wakeup_call_reason_t reason = (platform_wakeup_call_reason_t)(uintptr_t)casted_reason;
+    if (PLATFORM_WAKEUP_REASON_NORMAL == reason)
+        setup_peripherals();
+#endif
+
     key_detector_start_on_demand();
     return 1;
 }
@@ -108,10 +120,12 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     (void)(user_data);
     if (IS_DEBUGGER_ATTACHED())
         return 0;
-#ifdef USE_POWER_LIB
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#ifdef USE_POWER_LIB
     power_ctrl_before_deep_sleep();
 #endif
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    GIO_EnableRetentionGroupA(1);
 #endif
     return 1;
 }
@@ -132,15 +146,40 @@ trace_rtt_t trace_ctx = {0};
 
 int app_main()
 {
-#ifdef USE_POWER_LIB
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    power_ctrl_init();
-#endif
+    #ifdef USE_POWER_LIB
+        power_ctrl_init();
+    #endif
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    // configure it only once
+    GIO_EnableDeepSleepWakeupSource(PIN_WAKEUP, 1, 1, PINCTRL_PULL_DOWN);
+    #ifdef USE_SLOW_CLK_RC
+        #if (USE_SLOW_CLK_RC == 8)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_8M);
+        #elif (USE_SLOW_CLK_RC == 16)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_16M);
+        #elif (USE_SLOW_CLK_RC == 24)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_24M);
+        #elif (USE_SLOW_CLK_RC == 32)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_32M);
+        #elif (USE_SLOW_CLK_RC == 48)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_48M);
+        #else
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_64M);
+        #endif
+        SYSCTRL_AutoTuneSlowRC();
+        SYSCTRL_SelectFlashClk(SYSCTRL_CLK_SLOW);
+        SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
+        SYSCTRL_EnablePLL(0);
+        SYSCTRL_SelectSlowClk(SYSCTRL_SLOW_RC_CLK);
+    #endif
 #endif
 
 #ifdef USE_OSC32K
     platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_ENABLE);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     while (platform_read_info(PLATFORM_INFO_OSC32K_STATUS) == 0) ;
+#endif
     platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
     {
         int i;
