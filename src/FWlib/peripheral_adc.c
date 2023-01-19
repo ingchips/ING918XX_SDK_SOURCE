@@ -372,7 +372,6 @@ void ADC_AdcClose(void)
 
 void ADC_Calibration(SADC_adcIputMode mode)
 {
-    ADC_Reset();
     ADC_SetAdcMode(CALIBRATION_MODE);
     ADC_SetAdcCtrlMode(SINGLE_MODE);
     ADC_EnableChannel(ADC_CH_0, 1);
@@ -381,6 +380,8 @@ void ADC_Calibration(SADC_adcIputMode mode)
     ADC_SetInputMode(mode);
     ADC_IntEnable(1);
     ADC_EnableCtrlSignal();
+    ADC_RegWr(SADC_CFG_0, 1, 17);
+    ADC_RegWrBits(SADC_CFG_0, 4, 18, 4);
     ADC_Start(1);
     while (!ADC_GetIntStatus());
     ADC_Start(0);
@@ -399,7 +400,6 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
                  SADC_adcIputMode inputMode, 
                  uint32_t loopDelay)
 {
-    ADC_Reset();
     ADC_SetAdcMode(CONVERSION_MODE);
     ADC_SetAdcCtrlMode(ctrlMode);
     ADC_PgaGainSet(pgaGain);
