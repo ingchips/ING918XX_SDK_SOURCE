@@ -62,7 +62,7 @@ uint16_t QDEC_GetData(void)
     return QDEC_RegRd(QDEC_CH_WRITE_A, 0, 16);
 }
 
-uint8_t QDEC_GetDirection()
+uint8_t QDEC_GetDirection(void)
 {
     return QDEC_RegRd(QDEC_STATUS_SEL, 8, 1);
 }
@@ -78,6 +78,11 @@ void QDEC_ChannelEnable(uint8_t enable)
         QDEC_RegWrBits(QDEC_CH_CTRL, 5, 0, 3);
     else
         QDEC_RegClr(QDEC_CH_CTRL, 0, 3);
+}
+
+void QDEC_IntClear(void)
+{
+    QDEC_RegRd(QDEC_CH_TIOB0_RD, 0, 10);
 }
 
 #endif

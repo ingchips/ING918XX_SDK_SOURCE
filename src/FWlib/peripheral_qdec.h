@@ -16,6 +16,7 @@ typedef enum {
     QDEC_CH_WRITE_A     = 0x14,
     QDEC_CH_WRITE_B     = 0x18,
     QDEC_CH_WRITE_C     = 0x1c,
+    QDEC_CH_TIOB0_RD    = 0x20,
     QDEC_CH_INT_EN      = 0x24,
     QDEC_BCR            = 0xc0,
     QDEC_BMR            = 0xc4,
@@ -80,6 +81,13 @@ uint8_t QDEC_GetDirection(void);
  */
 void QDEC_Reset(void);
 
+/**
+ * @brief Clear QDEC interrupt
+ *
+ * @param[in]                null
+ * @return                   null
+ */
+void QDEC_IntClear(void);
 #endif
 
 #ifdef __cplusplus
