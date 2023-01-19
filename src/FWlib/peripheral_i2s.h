@@ -113,12 +113,20 @@ void I2S_Enable(I2S_TypeDef *base, uint8_t tx_en, uint8_t rx_en);
  * @brief Read a word from I2S Rx FIFO
  *
  * @param[in] base                      I2S peripheral base address
- * @return                              word value
+ * @return                              word value (see `I2S_PushTxFIFO`)
  */
 uint32_t I2S_PopRxFIFO(I2S_TypeDef *base);
 
 /**
  * @brief Push a word into I2S Tx FIFO
+ *
+ * Note on `value`:
+ *
+ * * When `data_width` == 16, each `value` represent two samples: the most significant
+ *   16 bits for the left channel, while the least significant 16 bits for the right;
+ * * When `data_width` > 16, each `value` represent one sample of a channel:
+ *   within one snapshot of two channels, the sample for left channel comes firstly,
+ *   followed by the sample for right chanel.
  *
  * @param[in] base                      I2S peripheral base address
  * @param[in] value                     Word value

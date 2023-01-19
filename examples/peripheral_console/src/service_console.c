@@ -33,6 +33,7 @@ void cmd_help(const char *param)
                                 "ps 1/0     enable/disable power saving\n"
                                 "ver        show platform version\n"
                                 "f          show 32k freq\n"
+                                "f-cpu      show CPU freq\n"
                                 "advpwr ..  set adv power\n"
                                 "latency .. self assigned peripheral latency\n"
                                 ;
@@ -130,6 +131,16 @@ void cmd_freq(const char *param)
     tx_data(buffer, strlen(buffer) + 1);
 }
 
+void cmd_fcpu(const char *param)
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    sprintf(buffer, "cpu @ 48MHz");
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    sprintf(buffer, "cpu @ %u Hz", SYSCTRL_GetHClk());
+#endif
+    tx_data(buffer, strlen(buffer) + 1);
+}
+
 void cmd_advpwr(const char *param)
 {
     if (sscanf(param, "%d", &adv_tx_power) != 1)
@@ -191,6 +202,10 @@ static cmd_t cmds[] =
     {
         .cmd = "f",
         .handler = cmd_freq
+    },
+    {
+        .cmd = "f-cpu",
+        .handler = cmd_fcpu
     },
     {
         .cmd = "c",

@@ -170,7 +170,8 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 int erase_flash_sector(const uint32_t addr)
 {
-    return ROM_erase_flash_sector(addr);
+    uint32_t val = (uint32_t)-1;
+    program_flash(addr, (const uint8_t *)&val, sizeof(val));
 }
 
 int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)

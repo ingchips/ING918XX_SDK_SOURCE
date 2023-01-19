@@ -210,11 +210,7 @@ void GIO_EnableRetentionGroupA(uint8_t enable)
 
 #define AON2_SLEEP_CTRL     (AON2_CTRL_BASE + 0x1A8)
 
-#ifdef __GNUC__
-#define nop(n) do { int i = n; while (i--) __asm("NOP"); } while (0)
-#else
-#define nop(n) do { int i = n; while (i--) __nop(); } while (0)
-#endif
+#define nop(n) do { int i = n; while (i--) __NOP(); } while (0)
 
 void GIO_EnableRetentionGroupB(uint8_t enable)
 {
@@ -300,8 +296,9 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
     return 0;
 }
 
-void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable)
+void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level)
 {
+    GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 9, (level & 1) ^ 1);
     GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 10, enable);
 }
 

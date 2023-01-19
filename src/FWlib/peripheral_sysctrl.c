@@ -38,6 +38,11 @@ void SYSCTRL_ResetBlock(SYSCTRL_ResetItem item)
     AHB_SYSCTRL->RstSet &= ~(1 << item);
 }
 
+void SYSCTRL_ResetAllBlocks(void)
+{
+    AHB_SYSCTRL->RstSet = 0;
+}
+
 void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item)
 {
     AHB_SYSCTRL->RstSet |= (1 << item);
@@ -417,7 +422,7 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode)
 {
     if (mode >= SYSCTRL_CLK_PLL_DIV_1)
     {
-        set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 6);
+        set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 16);
         set_reg_bits(AON1_BOOT, mode, 4, 19);
     }
     set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode == 0 ? 0 : 1, 18);
@@ -495,13 +500,13 @@ void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode)
     if (mode == SYSCTRL_CLK_32k)
     {
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 12);
-        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 0, 11);
     }
     else
     {
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 11);
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, 0, 12);
         set_reg_bits(APB_SYSCTRL->CguCfg + 7, mode, 12, 20);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 10);
     }
 }
 
@@ -613,6 +618,16 @@ uint32_t SYSCTRL_GetPLLClk()
     }
     else
         return 0;
+}
+
+uint32_t SYSCTRL_GetFlashClk(void)
+{
+    if (APB_SYSCTRL->CguCfg[1] & (0x1 << 18))
+    {
+        return SYSCTRL_GetPLLClk() / get_safe_divider(0, 16);
+    }
+    else
+        return SYSCTRL_GetSlowClk();
 }
 
 int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
@@ -733,6 +748,10 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetHClk() / get_safe_divider10(21, 1);
         else
             return SYSCTRL_GetSlowClk() / get_safe_divider10(21, 1);
+    case SYSCTRL_ITEM_APB_I2C0:
+    case SYSCTRL_ITEM_APB_I2C1:
+        // generally, this clock is not needed in programming I2C
+        return SYSCTRL_GetPClk();
     default:
         // TODO
         return SYSCTRL_GetSlowClk();
@@ -864,6 +883,58 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
     {
         io_write(AON2_CTRL_BASE + 0x174, 0);
     }
+}
+
+void SYSCTRL_ResetAllBlocks(void)
+{
+    APB_SYSCTRL->RstuCfg[1] &= 0x23;
+}
+
+void SYSCTRL_EnableWakeupSourceDetection(void)
+{
+    set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x1A8), 1, 16);
+}
+
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
+{
+    source->other = 0;
+    source->gpio = APB_SYSCTRL->SysIoWkSource;
+    uint32_t a = APB_SYSCTRL->SysIoStatus >> 16;
+    if ((source->gpio == 0) && (a == 0))
+    {
+        a = io_read(AON2_CTRL_BASE + 0x140);
+        switch (a & 3)
+        {
+        case 0:
+            return 0;
+        case 1:
+            source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO;
+            break;
+        case 3:
+            source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO; // fall through
+        case 2:
+            a >>= 2;
+            source->gpio = a & 1;
+            source->gpio |= (a & (0x3 << 1)) << (5 - 1);
+            source->gpio |= (a & (0x7 << 3)) << (21 - 3);
+            source->gpio |= ((uint64_t)(a & (0x3 << 5))) << (36 - 5);
+            break;
+        default:
+            break;
+        }
+
+        return 1;
+    }
+
+    source->gpio |= ((uint64_t)(a & 0x3f)) << 32;
+    if (a & (1 << (6 + 0)))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_RTC_ALARM;
+    if (a & (1 << (6 + 1)))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO;
+    if (a & (1 << (6 + 2)))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_COMPARATOR;
+
+    return 1;
 }
 
 #endif

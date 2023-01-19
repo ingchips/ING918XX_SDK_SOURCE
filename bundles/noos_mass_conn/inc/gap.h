@@ -1380,7 +1380,7 @@ void hci_add_event_handler(btstack_packet_callback_registration_t * callback_han
 void hci_register_acl_packet_handler(btstack_packet_handler_t handler);
 
 /**
- * @brief Requests the change of BTstack power mode.
+ * @brief Requests the change of btstack power mode.
  *
  * @param mode                   0:HCI_POWER_OFF  ,1:HCI_POWER_ON , 2:HCI_POWER_SLEEP
  *

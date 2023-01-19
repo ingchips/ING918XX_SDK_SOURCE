@@ -24,6 +24,21 @@ but also GUI tools and documentation.
 1. Run `make`;
 1. Use [Flash Downloader](tools/README.md) to download programs.
 
+### The Mixed Way
+
+1. [Download](releases) setup file & install our SDK package;
+1. Fork/Clone this repository;
+1. Run [gen_files](tools/README.md) to prepare files;
+1. Edit _/path/to/sdk/wizard/cfg/settings.json_ while _Wizard_ is closed:
+   change _sdk_ to the path of the cloned repository:
+
+    ```json
+    {
+        "sdk": "path/to/cloned/repository",
+    }
+    ```
+1. Start _Wizard_.
+
 ## Branches
 
 1. `master` is used for releases;

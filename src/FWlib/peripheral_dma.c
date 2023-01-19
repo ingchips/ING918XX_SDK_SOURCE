@@ -37,7 +37,20 @@ int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
     return 0;
 }
 
-static int DMA_GetPeripheralWidth(SYSCTRL_DMA src)
+static int DMG_GetSPIDMAWidth(SSP_TypeDef *SSP)
+{
+    switch ((SSP->TransFmt >> 8) & 0x1f)
+    {
+    case 7:
+        return DMA_WIDTH_BYTE;
+    case 15:
+        return DMA_WIDTH_16_BITS;
+    default:
+        return DMA_WIDTH_32_BITS;
+    }
+}
+
+static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
 {
     switch (src)
     {
@@ -50,12 +63,14 @@ static int DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         return DMA_WIDTH_BYTE;
 
     case SYSCTRL_DMA_SPI0_TX:
+    case SYSCTRL_DMA_SPI0_RX:
+        return DMG_GetSPIDMAWidth(AHB_SSP0);
     case SYSCTRL_DMA_SPI1_TX:
+    case SYSCTRL_DMA_SPI1_RX:
+        return DMG_GetSPIDMAWidth(APB_SSP1);
     case SYSCTRL_DMA_I2S_RX:
     case SYSCTRL_DMA_PDM:
     case SYSCTRL_DMA_ADC:
-    case SYSCTRL_DMA_SPI0_RX:
-    case SYSCTRL_DMA_SPI1_RX:
     case SYSCTRL_DMA_I2S_TX:
     case SYSCTRL_DMA_PWM0:
     case SYSCTRL_DMA_PWM1:
@@ -66,7 +81,7 @@ static int DMA_GetPeripheralWidth(SYSCTRL_DMA src)
     case SYSCTRL_DMA_QDEC2:
         return DMA_WIDTH_32_BITS;
     default:
-        return -1;
+        return DMA_WIDTH_32_BITS;
     }
 }
 
@@ -142,7 +157,7 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
                  | ((uint32_t)width << bsDMA_SRC_WIDTH)
                  | ((uint32_t)dst_addr_ctrl << bsDMA_DST_ADDR_CTRL)
                  | ((v ? DMA_WIDTH_BYTE : DMA_WIDTH_32_BITS) << bsDMA_DST_WIDTH);
-    pDesc->TranSize = width == DMA_WIDTH_BYTE ? size : size / sizeof(uint32_t);
+    pDesc->TranSize = size / (1 << width);
     pDesc->DstAddr = (uint32_t)dst;
     pDesc->SrcAddr = (uint32_t)peri_addr;
 
@@ -202,7 +217,7 @@ int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
                  | ((uint32_t)src_req << bsDMA_SRC_REQ_SEL)
                  | ((uint32_t)DMA_ADDRESS_FIXED << bsDMA_SRC_ADDR_CTRL)
                  | ((uint32_t)src_width << bsDMA_SRC_WIDTH);
-    pDesc->TranSize = src_width == DMA_WIDTH_BYTE ? size : size / sizeof(uint32_t);
+    pDesc->TranSize = src_width == DMA_WIDTH_BYTE ? size : size / (1 << src_width);
     pDesc->DstAddr = (uint32_t)dst_addr;
     pDesc->SrcAddr = (uint32_t)src_addr;
 

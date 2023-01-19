@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-    
+// WARNING: This library is ONLY for ING918XX
+
 // Call this funciton in `app_main`
 void power_ctrl_init(void);
 

@@ -1,13 +1,9 @@
 #ifndef INGSOC_H
 #define INGSOC_H
 
-#include "../__ingsoc.h"
-
 #ifdef __cplusplus
  extern "C" {
 #endif
-
-#define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_918
 
 typedef enum IRQn
 {
@@ -46,25 +42,21 @@ typedef enum
 /* ================      Processor and Core Peripheral Section     ================ */
 /* ================================================================================ */
 
-#ifndef C2NIM
-
 /* --------  Configuration of the Cortex-M4 Processor and Core Peripherals  ------- */
 #define __CM3_REV                 0x0201    /*!< Core revision r2p1                              */
 #define __MPU_PRESENT             1         /*!< MPU present or not                              */
 #define __NVIC_PRIO_BITS          3         /*!< Number of Bits used for Priority Levels         */
 #define __Vendor_SysTickConfig    0         /*!< Set to 1 if different SysTick Config is used    */
 
-#endif
-
 #include <core_cm3.h>                       /* Processor and core peripherals                    */
+
+#include "../__ingsoc.h"
+
+#define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_918
 
 /* ================================================================================ */
 /* ================       Device Specific Peripheral Section       ================ */
 /* ================================================================================ */
-
-#ifdef C2NIM
-#def __IO
-#endif
 
 // i2c
 typedef struct{

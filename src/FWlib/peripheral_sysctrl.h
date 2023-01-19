@@ -155,30 +155,85 @@ typedef SYSCTRL_Item SYSCTRL_ClkGateItem;
 
 typedef SYSCTRL_Item SYSCTRL_ResetItem;
 
+/**
+ * @brief LDO Core Output
+ *
+ * @see `SYSCTRL_SetLDOOutput`
+ *
+ * Range: [1.000, 1.300]V
+ *
+ * Default: 1.200V. Step: 20mV
+ */
 enum
 {
-    SYSCTRL_LDO_OUPUT_CORE_1V000 = 0x0,     // LDO Core Output: 1.000V
-                                            // Range: [1.000, 1.300]V
-                                            // Step: 20mV
-                                            // 1.300V = SYSCTRL_LDO_OUPUT_1V000
-                                            //          + 15 * SYSCTRL_LDO_OUPUT_CORE_STEP_0V020
-    SYSCTRL_LDO_OUPUT_FLASH_1V600  = 0x0,   // LDO Flash Output: 1.600V
-                                            // Range: [1.600, 3.100]V
-                                            // Step: 100mV
-                                            // 3.100V = SYSCTRL_LDO_OUPUT_FLASH_1V600
-                                            //          + 15 * SYSCTRL_LDO_OUPUT_FLASH_STEP_0V100
+    SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0,      // 1.000V
+    SYSCTRL_LDO_OUTPUT_CORE_1V020 = 1,
+    SYSCTRL_LDO_OUTPUT_CORE_1V040 = 2,
+    SYSCTRL_LDO_OUTPUT_CORE_1V060 = 3,
+    SYSCTRL_LDO_OUTPUT_CORE_1V080 = 4,
+    SYSCTRL_LDO_OUTPUT_CORE_1V100 = 5,
+    SYSCTRL_LDO_OUTPUT_CORE_1V120 = 6,
+    SYSCTRL_LDO_OUTPUT_CORE_1V140 = 7,
+    SYSCTRL_LDO_OUTPUT_CORE_1V160 = 8,
+    SYSCTRL_LDO_OUTPUT_CORE_1V180 = 9,
+    SYSCTRL_LDO_OUTPUT_CORE_1V200 = 10,
+    SYSCTRL_LDO_OUTPUT_CORE_1V220 = 11,
+    SYSCTRL_LDO_OUTPUT_CORE_1V240 = 12,
+    SYSCTRL_LDO_OUTPUT_CORE_1V260 = 13,
+    SYSCTRL_LDO_OUTPUT_CORE_1V280 = 14,
+    SYSCTRL_LDO_OUTPUT_CORE_1V300 = 15
 };
 
-#define SYSCTRL_LDO_OUPUT_CORE_STEP_0V020           1   // step: 20mV
-#define SYSCTRL_LDO_OUPUT_FLASH_STEP_0V100          1   // step: 100mV
+/**
+ * @brief LDO Flash Output
+ *
+ * @see `SYSCTRL_SetLDOOutputFlash`
+ *
+ * Range: [2.100, 3.100]V
+ *
+ * Default: 2.100V. Step: 100mV
+ */
 enum
 {
-    SYSCTRL_BOR_1V5 = 0x0,          // BOR Threshold on VBAT: 1.5V
-                                    // Range: [1.5, 3]V
-                                    // 3V = SYSCTRL_BOR_1V5 + 15 * SYSCTRL_BOR_STEP_0V1
+    SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5,     // 2.100V
+    SYSCTRL_LDO_OUTPUT_FLASH_2V200 = 6,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V300 = 7,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V400 = 8,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V500 = 9,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V600 = 10,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V700 = 11,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V800 = 12,
+    SYSCTRL_LDO_OUTPUT_FLASH_2V900 = 13,
+    SYSCTRL_LDO_OUTPUT_FLASH_3V000 = 14,
+    SYSCTRL_LDO_OUTPUT_FLASH_3V100 = 15
 };
 
-#define SYSCTRL_BOR_STEP_0V1                1   // step: 0.1V
+/**
+ * @brief BOR Threshold on VBAT
+ *
+ * @see `SYSCTRL_ConfigBOR`
+ *
+ * Range: [1.5, 3]V
+ */
+enum
+{
+    SYSCTRL_BOR_1V5 = 0,
+    SYSCTRL_BOR_1V6 = 1,
+    SYSCTRL_BOR_1V7 = 2,
+    SYSCTRL_BOR_1V8 = 3,
+    SYSCTRL_BOR_1V9 = 4,
+    SYSCTRL_BOR_2V0 = 5,
+    SYSCTRL_BOR_2V1 = 6,
+    SYSCTRL_BOR_2V2 = 7,
+    SYSCTRL_BOR_2V3 = 8,
+    SYSCTRL_BOR_2V4 = 9,
+    SYSCTRL_BOR_2V5 = 10,
+    SYSCTRL_BOR_2V6 = 11,
+    SYSCTRL_BOR_2V7 = 12,
+    SYSCTRL_BOR_2V8 = 13,
+    SYSCTRL_BOR_2V9 = 14,
+    SYSCTRL_BOR_3V0 = 15
+};
 
 typedef enum
 {
@@ -379,6 +434,13 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 
 /**
+ * \brief Get the frequency of Flash clock
+ *
+ * \return                      frequency
+ */
+uint32_t SYSCTRL_GetFlashClk(void);
+
+/**
  * \brief Select the two clocks of QDEC
  *
  * This function configures two clocks for QDEC:
@@ -395,7 +457,7 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 
 /**
- * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan, or MCU
+ * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N,
  *  where N is in [0..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
@@ -408,7 +470,7 @@ void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan, or MCU
+ * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
  * \return                      frequency of the 32k
  */
@@ -556,7 +618,7 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 /**
  * @brief Set LDO output level for Flash
  *
- * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH...`)
+ * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH_...`)
  */
 void SYSCTRL_SetLDOOutputFlash(int level);
 
@@ -567,6 +629,36 @@ void SYSCTRL_SetLDOOutputFlash(int level);
  * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
  */
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
+
+#define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
+#define SYSCTRL_WAKEUP_SOURCE_COMPARATOR    2       // waken up by comparator
+#define SYSCTRL_WAKEUP_SOURCE_RTC_ALARM     4       // waken up by RTC alarm
+
+typedef struct
+{
+    uint64_t gpio;      // if any GPIO (bit n for GPIO #n) has triggered wake up
+    uint32_t other;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
+} SYSCTRL_WakeupSource_t;
+
+/**
+ * @brief Enable wake up source detection once
+ *
+ * After enabled, wake up source can be read through `SYSCTRL_GetLastWakeupSource`.
+ *
+ * This function only enable the detection for one time, and needs to be called
+ * each time before entering DEEP/DEEPER sleep modes if apps need to know the
+ * wake up sources.
+ *
+ */
+void SYSCTRL_EnableWakeupSourceDetection(void);
+
+/**
+ * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
+ *
+ * @param[out] source           source of the last wake up
+ * @return                      1 if any wake up source is found else 0
+ */
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
 
 #endif
 
@@ -596,9 +688,14 @@ void SYSCTRL_ClearClkGateMulti(uint32_t items);
 
 /**
  * \brief Reset a component
- * \param item      the component to be resetted
+ * \param item      the component to be reset
  */
 void SYSCTRL_ResetBlock(SYSCTRL_ResetItem item);
+
+/**
+ * \brief Reset all components
+ */
+void SYSCTRL_ResetAllBlocks(void);
 
 /**
  * \brief Release a component from reset
