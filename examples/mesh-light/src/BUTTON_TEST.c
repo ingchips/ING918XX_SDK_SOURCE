@@ -19,6 +19,12 @@
 #include "mesh_port_run_loop.h"
 #include "app_debug.h"
 
+// Test enable.
+//#define APP_MESH_UPDATE_CONN_PARAM_REQ_TEST_EN
+#define APP_MESH_FLASH_PARAM_CLEAR_TEST_EN
+//#define APP_MESH_UPDATE_SCAN_PARAM_TEST_EN
+//#define APP_MESH_SEND_NON_CONN_DATA_TEST_EN
+
 
 // button gpio select.
 #define KB_KEY_1            GIO_GPIO_1 //key 1
@@ -30,7 +36,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* connection params update test */
-#if 1 
+#ifdef APP_MESH_UPDATE_CONN_PARAM_REQ_TEST_EN
 #define CPI_VAL_TO_MS(x)    ((uint16_t)(x * 5 / 4))
 #define CPI_MS_TO_VAL(x)    ((uint16_t)(x * 4 / 5))
 #define CPSTT_VAL_TO_MS(x)  ((uint16_t)(x * 10))
@@ -74,7 +80,7 @@ static void app_update_conn_params_req(void){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* clear flash mesh information test */
-#if 1
+#ifdef APP_MESH_FLASH_PARAM_CLEAR_TEST_EN
 // var
 static mesh_timer_source_t       mesh_ble_params_reset_delay_timer;
 
@@ -108,7 +114,7 @@ static void mesh_ble_params_reset_delay_timer_start(uint32_t timeout_in_ms){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* scan params test */
-#if 1 
+#ifdef APP_MESH_UPDATE_SCAN_PARAM_TEST_EN
 typedef struct {
     uint8_t seq;
     uint16_t interval;
@@ -152,7 +158,7 @@ static void mesh_scan_param_update(void){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* send beacon test */
-#if 1 //for test.
+#ifdef APP_MESH_SEND_NON_CONN_DATA_TEST_EN
 static void mesh_send_non_conn_data(void){
     uint8_t data[] = "0123456789abcdef";
     uint16_t dat_len = sizeof(data)-1;
@@ -178,26 +184,34 @@ static void key_proc_in_host_task(uint8_t num){
     switch(num){
         case 1: // key1 : change connection interval.
             {
-//                app_log_debug("key1 : change connection interval. \n");
-//                app_update_conn_params_req();
+#ifdef APP_MESH_UPDATE_CONN_PARAM_REQ_TEST_EN
+                app_log_debug("key1 : change connection interval. \n");
+                app_update_conn_params_req();
+#endif
             }
             break;
         case 2: // key2 : clear all mesh info in flash.
             {
+#ifdef APP_MESH_FLASH_PARAM_CLEAR_TEST_EN
                 app_log_debug("key2 : clear all mesh info in flash. \n");
                 mesh_ble_params_reset_delay_timer_start(100);
+#endif
             }
             break;
         case 3: // key3 : change scan params.
             {
-//                app_log_debug("key3 : change scan params. \n");
-//                mesh_scan_param_update();
+#ifdef APP_MESH_UPDATE_SCAN_PARAM_TEST_EN
+                app_log_debug("key3 : change scan params. \n");
+                mesh_scan_param_update();
+#endif
             }
             break;
         case 4: // key4 : send non-conn data.
             {
-//                app_log_debug("key4 : send non-conn data. \n");
-//                mesh_send_non_conn_data();
+#ifdef APP_MESH_SEND_NON_CONN_DATA_TEST_EN
+                app_log_debug("key4 : send non-conn data. \n");
+                mesh_send_non_conn_data();
+#endif
             }
             break;
     }

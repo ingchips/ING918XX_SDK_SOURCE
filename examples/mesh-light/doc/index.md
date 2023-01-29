@@ -18,7 +18,19 @@ This example can be tested with following apps:
 * ING Mesh (iOS App) - recommended
 * nRF Mesh (iOS/Android)
 
-## Others
+## Software Setup
+
+### BOARD_ID setup
+* At present, Ingchips development board supports two types of LED driver ICs(WS2811 or 59731), and may support more types in the future, as shown in the figure below: 
+
+<img src="./img/LED_DRV_IC.png" width="70%" />
+
+* Different LED driver IC require different software configuration. Therefore, in order to make LED work normally, you need to switch the software macro definition __BOARD_ID__ according to the silkscreen of the IC on your board: 
+  * __WS2811__ : BOARD_ING91881B_02_02_06
+  * __59731__  : BOARD_ING91881B_02_02_05
+  * __others__ : Please contact Ingchips-FAE.
+
+### Storage setup
 
 * By default, this example stores the following information in flash:
   * __Device name__
