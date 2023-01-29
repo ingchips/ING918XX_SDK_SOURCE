@@ -28,7 +28,6 @@ but also GUI tools and documentation.
 
 1. [Download](releases) setup file & install our SDK package;
 1. Fork/Clone this repository;
-1. Run [gen_files](tools/README.md) to prepare files;
 1. Edit _/path/to/sdk/wizard/cfg/settings.json_ while _Wizard_ is closed:
    change _sdk_ to the path of the cloned repository:
 
@@ -37,7 +36,9 @@ but also GUI tools and documentation.
         "sdk": "path/to/cloned/repository",
     }
     ```
-1. Start _Wizard_.
+
+1. Start _Wizard_;
+1. Click menu item Tools -> "Re-generate bundle files" in _Wizard_.
 
 ## Branches
 
@@ -51,7 +52,7 @@ contributions via Github [Pull Requests](pulls) in the `develop` branch.
 
 ## License
 
-   Copyright 2019-2022 INGCHIPS
+   Copyright 2019-2023 INGCHIPS
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
