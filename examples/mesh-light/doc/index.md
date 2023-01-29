@@ -21,14 +21,7 @@ This example can be tested with following apps:
 ## Software Setup
 
 ### BOARD_ID setup
-* At present, Ingchips development board supports two types of LED driver ICs(WS2811 or 59731), and may support more types in the future, as shown in the figure below: 
-
-<img src="./img/LED_DRV_IC.png" width="70%" />
-
-* Different LED driver IC require different software configuration. Therefore, in order to make LED work normally, you need to switch the software macro definition __BOARD_ID__ according to the silkscreen of the IC on your board: 
-  * __WS2811__ : BOARD_ING91881B_02_02_06
-  * __59731__  : BOARD_ING91881B_02_02_05
-  * __others__ : Please contact Ingchips-FAE.
+* At present, In order to make LED work normally, please switch the project macro definition __BOARD_ID__ to the proper value according to the silkscreen of the IC on your board.
 
 ### Storage setup
 
