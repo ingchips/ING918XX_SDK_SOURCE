@@ -677,6 +677,11 @@ void SYSCTRL_SetPClkDiv(uint8_t div)
     set_reg_bit(APB_SYSCTRL->CguCfg, 1, 29);
 }
 
+uint8_t SYSCTRL_GetPClkDiv(void)
+{
+    return get_safe_divider(0, 4);
+}
+
 uint32_t SYSCTRL_GetPClk()
 {
     return SYSCTRL_GetHClk() / get_safe_divider(0, 4);

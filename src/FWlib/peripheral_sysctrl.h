@@ -380,6 +380,12 @@ uint32_t SYSCTRL_GetHClk(void);
 void SYSCTRL_SetPClkDiv(uint8_t div);
 
 /**
+ * \brief Get PClk (APB Clk) divider
+ * \return              divider (1..15)
+ */
+uint8_t SYSCTRL_GetPClkDiv(void);
+
+/**
  * \brief Get current PClk in Hz
  * \return              clock in Hz
  */
