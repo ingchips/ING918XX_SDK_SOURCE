@@ -184,16 +184,19 @@ static void QDEC_PclkCfg(void)
 }
 static void QDEC_Setup(void)
 {
+    uint32_t pclk;
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_QDEC);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_PinCtrl |
                          SYSCTRL_ITEM_APB_QDEC);
     PINCTRL_SelQDECIn(21, 22);
 
     SYSCTRL_SelectQDECClk(SYSCTRL_CLK_SLOW, 25);
+    pclk = SYSCTRL_GetPClk();
     QDEC_PclkCfg();
     QDEC_EnableQdecDiv(QDEC_DIV_1024);
     QDEC_QdecCfg(63, 0);
     QDEC_ChannelEnable(1);
+    SYSCTRL_SetPClkDiv(SYSCTRL_GetHClk() / pclk);
 }
 #endif
 
