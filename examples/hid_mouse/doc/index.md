@@ -6,6 +6,8 @@ This example implements an HID mouse with Just Works paring.
 
 On ING918xx Dev-Board, connect jumpers for GPIO 4 (Key 4) & 6 (LED 3):
 
+On ING916xx Dev-Board, connect jumpers for GPIO 9 (Key 4) & 6 (LED 3):
+
 <img src="img/overview.png" width="50%" alt></img>
 
 ## Test
@@ -23,6 +25,12 @@ systems:
 
 After the mouse is added, the pointer will start to move in a cycle. Size of the cycle depends on
 the resolution of the hardware and the underlying operating system.
+
+When you test HID mouse on ING916xx Dev-Board, it demonstrates how to control the device it connected 
+page-up and page-down. For this effect bases on QDEC peripheral, please input two signals phase_a and phase_b.
+Like you can find a real mouse with a mouse wheel.
+
+More information please reference 916xx Developer's Handbook, QDEC section.
 
 ![](./img/test_iphone.gif)
 
