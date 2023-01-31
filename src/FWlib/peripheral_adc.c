@@ -376,7 +376,7 @@ void ADC_Calibration(SADC_adcIputMode mode)
     ADC_SetAdcCtrlMode(SINGLE_MODE);
     ADC_EnableChannel(ADC_CH_0, 1);
     ADC_SetIntTrig(1);
-    ADC_SetCalrpt(CALRPT_256);
+    ADC_SetCalrpt(CALRPT_32);
     ADC_SetInputMode(mode);
     ADC_IntEnable(1);
     ADC_EnableCtrlSignal();
