@@ -606,6 +606,7 @@ typedef struct
     #include "peripheral_dma.h"
     #include "peripheral_ir.h"
     #include "peripheral_usb.h"
+    #include "peripheral_qdec.h"
 #endif
 
 #define OSC_CLK_FREQ  24000000UL
