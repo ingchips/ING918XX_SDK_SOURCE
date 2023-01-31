@@ -463,9 +463,16 @@ void SYSCTRL_EnablePLL(uint8_t enable)
 
 void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode)
 {
-    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), enable, 1);
-    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 1, 0);
-    set_reg_bits(SLOW_RC_CFG0, mode, 5, 12);
+    if (enable)
+    {
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 0, 0);
+        set_reg_bits(SLOW_RC_CFG0, mode, 5, 12);
+    }
+    else
+    {
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 0, 1);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 1, 0);
+    }
 }
 
 uint32_t SYSCTRL_GetSlowClk(void)
