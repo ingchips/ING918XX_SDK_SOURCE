@@ -18,7 +18,12 @@ This example can be tested with following apps:
 * ING Mesh (iOS App) - recommended
 * nRF Mesh (iOS/Android)
 
-## Others
+## Software Setup
+
+### BOARD_ID setup
+* At present, In order to make LED work normally, please switch the project macro definition __BOARD_ID__ to the proper value according to the silkscreen of the IC on your board.
+
+### Storage setup
 
 * By default, this example stores the following information in flash:
   * __Device name__

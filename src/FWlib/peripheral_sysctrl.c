@@ -463,9 +463,16 @@ void SYSCTRL_EnablePLL(uint8_t enable)
 
 void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode)
 {
-    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), enable, 1);
-    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 1, 0);
-    set_reg_bits(SLOW_RC_CFG0, mode, 5, 12);
+    if (enable)
+    {
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 0, 0);
+        set_reg_bits(SLOW_RC_CFG0, mode, 5, 12);
+    }
+    else
+    {
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 0, 1);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), 1, 0);
+    }
 }
 
 uint32_t SYSCTRL_GetSlowClk(void)
@@ -675,6 +682,11 @@ void SYSCTRL_SetPClkDiv(uint8_t div)
 {
     set_reg_bits(APB_SYSCTRL->CguCfg, div, 4, 4);
     set_reg_bit(APB_SYSCTRL->CguCfg, 1, 29);
+}
+
+uint8_t SYSCTRL_GetPClkDiv(void)
+{
+    return get_safe_divider(0, 4);
 }
 
 uint32_t SYSCTRL_GetPClk()

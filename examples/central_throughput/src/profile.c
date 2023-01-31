@@ -564,7 +564,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     platform_reset();
                 LOG_MSG("connected");
                 slave.conn_handle = conn_complete->handle;
-                gap_set_phy(slave.conn_handle, 0, PHY_2M_BIT, PHY_2M_BIT, HOST_NO_PREFERRED_CODING);
+                gap_read_remote_used_features(conn_complete->handle);
                 gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, conn_complete->handle, UUID_TPT);
 #ifdef USE_DISPLAY
                 app_status.connected = 1;

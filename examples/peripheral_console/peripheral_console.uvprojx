@@ -334,7 +334,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls/>
-              <Define>USE_STDPERIPH_DRIVER,USE_POWER_LIB,LISTEN_TO_POWER_SAVING,USE_SLOW_CLK_RC=48</Define>
+              <Define>USE_STDPERIPH_DRIVER,USE_POWER_LIB,LISTEN_TO_POWER_SAVING,USE_SLOW_CLK_RC=24</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>

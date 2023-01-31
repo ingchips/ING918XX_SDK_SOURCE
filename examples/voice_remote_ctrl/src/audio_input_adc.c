@@ -59,7 +59,7 @@ void audio_input_stop(void)
 #define ADC_CHANNEL           ADC_CH_0
 #define DMA_CHANNEL           0
 #define ADC_CLK_MHZ           6
-#define LOOP_DELAY(c, s)      ((((c) * (1000000)) / (s)) - (16))
+#define LOOP_DELAY(c, s)      ((((c) * (1000000)) / (s)) - (21))
 
 static DMA_PingPong_t PingPong;
 
@@ -84,6 +84,7 @@ void audio_input_setup(void)
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
     SYSCTRL_SetAdcClkDiv(24 / ADC_CLK_MHZ);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
+    ADC_Reset();
     ADC_Calibration(DIFFERENTAIL_MODE);
     ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_16, 1, ADC_CHANNEL, 0, 8, 
                 DIFFERENTAIL_MODE, LOOP_DELAY(ADC_CLK_MHZ, SAMPLING_RATE));
