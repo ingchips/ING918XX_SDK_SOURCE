@@ -590,23 +590,26 @@ typedef struct
 #define IS_DEBUGGER_ATTACHED() (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)
 
 #ifdef USE_STDPERIPH_DRIVER
-    #include "peripheral_pinctrl.h"
-    #include "peripheral_sysctrl.h"
-    #include "peripheral_uart.h"
-    #include "peripheral_ssp.h"
+    #include "peripheral_adc.h"
+    #include "peripheral_comparator.h"
+    #include "peripheral_dma.h"
+    #include "peripheral_efuse.h"
     #include "peripheral_gpio.h"
-    #include "peripheral_timer.h"
-    #include "peripheral_pwm.h"
     #include "peripheral_i2c.h"
     #include "peripheral_i2s.h"
-    #include "peripheral_pdm.h"
-    #include "peripheral_rtc.h"
-    #include "peripheral_adc.h"
-    #include "peripheral_efuse.h"
-    #include "peripheral_dma.h"
     #include "peripheral_ir.h"
-    #include "peripheral_usb.h"
+    #include "peripheral_keyscan.h"
+    #include "peripheral_pdm.h"
+    #include "peripheral_pinctrl.h"
+    #include "peripheral_pte.h"
+    #include "peripheral_pwm.h"
     #include "peripheral_qdec.h"
+    #include "peripheral_rtc.h"
+    #include "peripheral_ssp.h"
+    #include "peripheral_sysctrl.h"
+    #include "peripheral_timer.h"
+    #include "peripheral_uart.h"
+    #include "peripheral_usb.h"
 #endif
 
 #define OSC_CLK_FREQ  24000000UL

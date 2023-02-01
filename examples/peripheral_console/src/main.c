@@ -172,6 +172,8 @@ int app_main()
         SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
         SYSCTRL_EnablePLL(0);
         SYSCTRL_SelectSlowClk(SYSCTRL_SLOW_RC_CLK);
+    #else
+        SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
     #endif
 #endif
 
