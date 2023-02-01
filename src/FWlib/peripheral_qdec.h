@@ -47,7 +47,6 @@ void QDEC_EnableQdecDiv(QDEC_indexCfg div);
  *
  * @param[in] fliter         QDEC signal filter value(0-63)
  * @param[in] miss           max value of QDEC miss signal(0-15)
- * @return                   null
  */
 void QDEC_QdecCfg(uint8_t fliter, uint8_t miss);
 
@@ -55,37 +54,35 @@ void QDEC_QdecCfg(uint8_t fliter, uint8_t miss);
  * @brief Enable/disable QDEC channel
  *
  * @param[in] enable         enable/disable
- * @return                   null
  */
 void QDEC_ChannelEnable(uint8_t enable);
 
 /**
- * @brief Get QDEC data
+ * @brief Get QDEC decoding result
  *
- * @return                   QDEC data
+ * @return                   accumulation of valid motion sample values
  */
 uint16_t QDEC_GetData(void);
 
 /**
- * @brief Get the direction of rotation
+ * @brief Get the direction of the most recent valid motion
  *
- * @return                   0:clockwith, 1:anticlockwise
+ * The overall direction of motion within a period of time can be determined
+ * by comparing accumulation values.
+ *
+ * @return                   0:clockwise, 1:anticlockwise
  */
 uint8_t QDEC_GetDirection(void);
 
 /**
  * @brief Reset QDEC
  *
- * @param[in]                null
- * @return                   null
  */
 void QDEC_Reset(void);
 
 /**
  * @brief Clear QDEC interrupt
  *
- * @param[in]                null
- * @return                   null
  */
 void QDEC_IntClear(void);
 #endif
