@@ -121,9 +121,24 @@ typedef enum
 /**
  * @brief Initialize comparator module
  *
+ * IO pins are also initialzed here.
+ * 
+ * Note: Comparator's internal configurations are kept during power saving,
+ * so, this function do not need to be called after wake up.
+ *
  * @param[in] cmp_set           Initial parameter struct
  */
 void COMPARATOR_Initialize(const COMPARATOR_SetStateStruct* cmp_set);
+
+/**
+ * @brief Initialize IO pins for comparator module
+ *
+ * Note: Unlike `COMPARATOR_Initialize()`, this function may need to be 
+ *       called after each wake up. See also the retention functionality of GPIO.
+ *
+ * @param[in] cmp_set           Initial parameter struct
+ */
+void COMPARATOR_InitializePins(const COMPARATOR_SetStateStruct* cmp_set);
 
 /**
  * @brief Get comparator result
