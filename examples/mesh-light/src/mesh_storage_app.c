@@ -52,8 +52,8 @@ void mesh_beacon_addr_generate_and_get(bd_addr_t addr){
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-void mesh_generate_random_uuid(uint8_t * dev_uuid, uint16_t len){
-    if(len != 16)
+void mesh_generate_random_uuid(uint8_t * dev_uuid, uint16_t *len){
+    if(*len != 16)
         return;
 
     if(!mesh_storage_is_device_uuid_set()){
@@ -63,19 +63,19 @@ void mesh_generate_random_uuid(uint8_t * dev_uuid, uint16_t len){
         big_endian_store_32(dev_uuid, 8, (uint32_t)platform_rand());
         big_endian_store_32(dev_uuid, 12, (uint32_t)platform_rand());
         // write addr to database and flash.
-        mesh_storage_device_uuid_set(dev_uuid, len);
+        mesh_storage_device_uuid_set(dev_uuid, *len);
     } else {
         // read addr from database.
-        mesh_storage_device_uuid_get(dev_uuid, &len);
+        mesh_storage_device_uuid_get(dev_uuid, len);
     }
 
     app_log_debug("dev uuid: ");
-    app_log_debug_hexdump(dev_uuid, len);
+    app_log_debug_hexdump(dev_uuid, *len);
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-void mesh_generate_random_name(uint8_t * name, uint16_t len){
+void mesh_generate_random_name(uint8_t * name, uint16_t *len){
 
     if(!mesh_storage_is_name_set()){
         // generate random area.
@@ -90,21 +90,21 @@ void mesh_generate_random_name(uint8_t * name, uint16_t len){
         line[pos++] = char_for_nibble((rand >>  8) & 0x0f);
         line[pos++] = char_for_nibble((rand >>  4) & 0x0f);
         line[pos++] = char_for_nibble((rand >>  0) & 0x0f);
-        if(len > 8){
-            memcpy(name+len-8, line, 8);//change last 8 chars.
+        if(*len > 8){
+            memcpy(name+*len-8, line, 8);//change last 8 chars.
         } else {
             return;
         }
         
         // write name to database and flash.
-        mesh_storage_name_set(name, len);
+        mesh_storage_name_set(name, *len);
     } else {
         // read name from database.
-        mesh_storage_name_get(name, &len);
+        mesh_storage_name_get(name, len);
     }
 
-    name[len] = '\0';
-    app_log_debug("dev name[%d]: %s\n", len, name);
+    name[*len] = '\0';
+    app_log_debug("dev name[%d]: %s\n", *len, name);
 }
 
 //////////////////////////////////////

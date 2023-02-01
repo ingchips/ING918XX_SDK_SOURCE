@@ -215,7 +215,7 @@ void mesh_platform_config(bt_mesh_config_t type, void *data, uint32_t data_len){
         case MESH_CFG_NAME:{            
 #ifdef MESH_NAME_USE_FLASH
             char dev_name[29]; //"ing-mesh-xxxxxxxx"
-            uint32_t name_len = (data_len + 9); //add random tail: -xxxxxxxx , len: 9bytes.
+            uint16_t name_len = (data_len + 9); //add random tail: -xxxxxxxx , len: 9bytes.
             memset(dev_name, 0, sizeof(dev_name));
             app_assert(name_len <= sizeof(dev_name));
             // add user name. "ing-mesh" (data_len bytes)
@@ -223,7 +223,7 @@ void mesh_platform_config(bt_mesh_config_t type, void *data, uint32_t data_len){
             // add '-' (1bytes)
             dev_name[data_len] = '-';
             // add random tail(8bytes)
-            mesh_generate_random_name((uint8_t *)dev_name, name_len);
+            mesh_generate_random_name((uint8_t *)dev_name, &name_len);
             // set name to gap scan response data. 
             adv_bearer_adv_set_scan_rsp_data((uint8_t *)dev_name, name_len);
 #else
@@ -290,7 +290,8 @@ void mesh_prov_ll_init(const bt_mesh_prov_t *prov)
     // Set uuid.    
 #ifdef MESH_UUID_USE_FLASH
     uint8_t rand_uuid[16];
-    mesh_generate_random_uuid(rand_uuid, 16);// generate random uuid and store.
+    uint16_t len = sizeof(rand_uuid);
+    mesh_generate_random_uuid(rand_uuid, &len);// generate random uuid and store.
     mesh_node_set_device_uuid(rand_uuid);
 #else
     app_assert(pMesh_prov != NULL);
