@@ -338,6 +338,8 @@ void ADC_VrefCalibration(void)
     while (!ADC_GetIntStatus());
     uint32_t data = ADC_PopFifoData();
     ADC_VrefRegister(19659.6f / (float)ADC_GetData(data), 0.f);
+    ADC_EnableChannel(ADC_CH_9, 0);
+    ADC_Start(0);
 }
 
 float ADC_GetVol(uint16_t data)
