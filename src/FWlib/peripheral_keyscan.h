@@ -89,7 +89,6 @@ typedef struct {
     KEYSCAN_OutRowList *row;
     int row_num;
 
-    KEYSCAN_Ctx *ctx;
     uint8_t fifo_num_trig_int;
     uint8_t dma_num_trig_int;
     uint8_t dma_en;
@@ -103,8 +102,9 @@ typedef struct {
  * @brief Initialize keyscan module
  *
  * @param[in] keyscan_set       Initial parameter struct
+ * @return                      0 if success else non-0
  */
-void KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set);
+int KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set);
 
 /**
  * @brief Check keyscan FIFO empty or not
@@ -121,16 +121,26 @@ uint8_t KEYSCAN_GetIntStateFifoEmptyRaw(void);
 uint16_t KEYSCAN_GetKeyData(void);
 
 /**
+ * @brief Initialize mapping table of keyboard array row and col
+ *
+ * @param[in]  keyscan_set       Initial parameter struct
+ * @param[out] ctx               keyboard array mapping table
+ */
+void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set, KEYSCAN_Ctx *ctx);
+
+/**
  * @brief Transfer keyscan FIFO raw data to keyboard array row and col
  *
- * @param[in] keyscan_set       Initial parameter struct
- * @param[in] key_data          keyscan FIFO raw data
- * @param[in] row               pressed key's row in keyboard array
- * @param[in] col               pressed key's col in keyboard array
+ * To use this helper function, `ctx` must be initialized with `KEYSCAN_InitKeyScanToIdx`.
+ *
+ * @param[in]  ctx              keyboard array mapping table
+ * @param[in]  key_data         keyscan FIFO raw data
+ * @param[out] row              pressed key's row in keyboard array
+ * @param[out] col              pressed key's col in keyboard array
  * @return                      0: scan cycle end data;
- *                              1: find key pressed, *row and *col are key position in keyboard array
+ *                              1: find key pressed, *row and *col are key positions in keyboard array
  */
-uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col);
+uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col);
 
 /**
  * @brief Set keyscan start scan
