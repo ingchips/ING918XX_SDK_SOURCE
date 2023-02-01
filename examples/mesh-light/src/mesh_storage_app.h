@@ -6,8 +6,8 @@
 
 void mesh_gatt_addr_generate_and_get(bd_addr_t addr);
 void mesh_beacon_addr_generate_and_get(bd_addr_t addr);
-void mesh_generate_random_uuid(uint8_t * dev_uuid, uint16_t len);
-void mesh_generate_random_name(uint8_t * name, uint16_t len);
+void mesh_generate_random_uuid(uint8_t * dev_uuid, uint16_t *len);
+void mesh_generate_random_name(uint8_t * name, uint16_t *len);
 
 
 
