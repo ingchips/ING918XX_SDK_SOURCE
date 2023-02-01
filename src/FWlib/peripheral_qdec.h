@@ -35,10 +35,13 @@ typedef enum {
 } QDEC_indexCfg;
 
 /**
- * @brief Set QDEC index div and enable QDEC index register
+ * @brief Set QDEC index divider and enable QDEC index register
+ *
+ * Interrupt or DMA request is triggered by the output of this divider.
+ * Input of this divider is `clk_qdec_div` which is the output of another
+ * divider on `qdec_clk` (see `SYSCTRL_SelectQDECClk`).
  *
  * @param[in] div            QDEC index div, see 'QDEC_indexCfg'
- * @return                   null
  */
 void QDEC_EnableQdecDiv(QDEC_indexCfg div);
 
