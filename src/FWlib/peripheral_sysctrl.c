@@ -146,6 +146,7 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         set_reg_bit(APB_SYSCTRL->CguCfg + 2, v, 0);
         break;
     case SYSCTRL_ITEM_AHB_SPI0      :
+        set_reg_bit(APB_SYSCTRL->CguCfg + 2, v, 12);
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 13);
         set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 6);
         break;

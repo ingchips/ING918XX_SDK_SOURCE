@@ -444,7 +444,7 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
 
 /* several options of spi clock */
 
-/* default clk config 
+/* default clk config for spi0 and spi1
    for default, spi interface clock is 24M, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
    for example, "eSclkDiv == 1" means 24M/(2*(1+1)) = 6M(spi clk speed)*/
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_6M    (1)
@@ -453,15 +453,27 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M4   (4)
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M    (5)
 
-/* hclk config 
-   for hclk, use SYSCTRL_SelectHClk() and SYSCTRL_SelectSpiClk() to increase spi interface clock
-   for instance, below config would setup a spi interface clock for 96M, use SYSCTRL_GetClk() to confirm
-    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);
-    SYSCTRL_SelectSpiClk(SPI_PORT_1,SYSCTRL_CLK_HCLK);
-   again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
-   for example, "eSclkDiv == 1" means 96M/(2*(1+1)) = 24M(spi clk speed)*/
-#define SPI_INTERFACETIMINGSCLKDIV_HCLK_24M    (1)
-#define SPI_INTERFACETIMINGSCLKDIV_HCLK_12M    (3)
+/* high speed SPI1 clk config 
+   1. SPI1 use HCLK, use SYSCTRL_SelectHClk() and SYSCTRL_SelectSpiClk() to increase spi interface clock
+   for instance, below config would setup a spi interface clock for 84M(if pll clock is 336M), use SYSCTRL_GetClk() to confirm
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);//setup hclk, 336/4 = 84M
+    SYSCTRL_SelectSpiClk(SPI_PORT_1,SYSCTRL_CLK_HCLK);//switch spi clock to hclk
+   this is only an example, use API "SYSCTRL_GetClk(SYSCTRL_ITEM_APB_SPI1)" to check the real spi interface clock
+   2. again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   for example, "eSclkDiv == 1" means 84M/(2*(1+1)) = 21M(spi clk speed)
+#define SPI_INTERFACETIMINGSCLKDIV_SPI1_21M    (1)
+#define SPI_INTERFACETIMINGSCLKDIV_SPI1_14M    (2)
+*/
+
+/* high speed SPI0 clk config 
+   1. for SPI0, use SYSCTRL_GetPLLClk() to check the source clock, then use below API to config spi interface clock
+   //for say, pll clock is 336M, then below api would generate a spi interface clock of 336/4 = 84M
+   SYSCTRL_SelectSpiClk(SPI_PORT_0,SYSCTRL_CLK_PLL_DIV_1+3);
+   2. again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   for example, "eSclkDiv == 1" means 84M/(2*(1+1)) = 21M(spi clk speed)
+#define SPI_INTERFACETIMINGSCLKDIV_SPI0_21M    (1)
+#define SPI_INTERFACETIMINGSCLKDIV_SPI0_14M    (2)
+*/
 
 typedef uint8_t  SPI_InterfaceTimingSclkDiv;// spi interface clock / (2 * (eSclkDiv + 1))
 
