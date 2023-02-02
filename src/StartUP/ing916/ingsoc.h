@@ -590,6 +590,7 @@ typedef struct
 #define IS_DEBUGGER_ATTACHED() (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)
 
 #ifdef USE_STDPERIPH_DRIVER
+    #include "peripheral_pinctrl.h"
     #include "peripheral_adc.h"
     #include "peripheral_comparator.h"
     #include "peripheral_dma.h"
@@ -598,9 +599,7 @@ typedef struct
     #include "peripheral_i2c.h"
     #include "peripheral_i2s.h"
     #include "peripheral_ir.h"
-    #include "peripheral_keyscan.h"
     #include "peripheral_pdm.h"
-    #include "peripheral_pinctrl.h"
     #include "peripheral_pte.h"
     #include "peripheral_pwm.h"
     #include "peripheral_qdec.h"

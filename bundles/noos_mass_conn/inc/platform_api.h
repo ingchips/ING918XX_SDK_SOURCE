@@ -276,14 +276,18 @@ uint8_t platform_read_persistent_reg(void);
 /**
  ****************************************************************************************
  * @brief Shutdown the whole system, and power on again after a duration
- *        specified by duration_cycles.
- *        Optionally, a portion of SYS memory can be retentioned during shutdown.
+ *        specified by duration_cycles or by external wake up source.
+ *        Optionally, a portion of SYS memory can be retained during shutdown.
+ *
+ * External wake up source:
+ *      ING918xx: EXT_INT;
+ *      ING916xx: GPIOs that are configured as DEEPER sleep wake up source.
  *
  * @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
- *                                  Mininum value: 825 cycles (about 25.18ms)
- *                                  When = 0: power on when EXT_INT is asserted
- * @param[in] p_retention_data      Pointer to the start of data to be retentioned
- * @param[in] data_size             Size of the data to be retentioned
+ *                                  Minimum value: 825 cycles (about 25.18ms)
+ *                                  When = 0: only power on when external wake up source is asserted
+ * @param[in] p_retention_data      Pointer to the start of data to be retained
+ * @param[in] data_size             Size of the data to be retained
  ****************************************************************************************
  */
 void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);

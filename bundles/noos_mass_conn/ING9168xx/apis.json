@@ -241,8 +241,8 @@
     "sm_set_authentication_requirements": "0x02021549", 
     "sm_set_encryption_key_size_range": "0x02021555", 
     "sscanf_bd_addr": "0x020218b5", 
-    "sysSetPublicDeviceAddr": "0x02021c7d", 
-    "uuid128_to_str": "0x020223c5", 
-    "uuid_add_bluetooth_prefix": "0x0202241d", 
-    "uuid_has_bluetooth_prefix": "0x0202243d"
+    "sysSetPublicDeviceAddr": "0x02021ca9", 
+    "uuid128_to_str": "0x02022419", 
+    "uuid_add_bluetooth_prefix": "0x02022471", 
+    "uuid_has_bluetooth_prefix": "0x02022491"
 }
