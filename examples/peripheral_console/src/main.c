@@ -66,13 +66,11 @@ void setup_peripherals(void)
 
     PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
+    PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_DOWN);
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     config_uart(OSC_CLK_FREQ, 115200);
-    PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_DOWN);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     config_uart(SYSCTRL_GetClk(SYSCTRL_ITEM_APB_UART0), 115200);
-
-    PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_DOWN);
 
     // GPIO 0 (also connected to KEY) emulating EXT_INT as in ING918XX
     GIO_EnableRetentionGroupA(0);
@@ -172,6 +170,8 @@ int app_main()
         SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
         SYSCTRL_EnablePLL(0);
         SYSCTRL_SelectSlowClk(SYSCTRL_SLOW_RC_CLK);
+    #else
+        SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
     #endif
 #endif
 
