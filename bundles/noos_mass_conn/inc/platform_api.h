@@ -329,13 +329,13 @@ typedef enum
                                             // Note: this feature has negative impact on power consumption.
     PLATFORM_CFG_LL_DELAY_COMPENSATION,     // When system runs at a lower frequency,
                                             // more time (in us) is needed to run Link layer.
-                                            // For example, if ING916 runs at 24MHz, configure this to 1000
-    PLATFORM_CFG_24M_OSC_TUNE,              // 24M OSC tunning (not only available for ING918)
+                                            // For example, if ING916 runs at 24MHz, configure this to 2500
+    PLATFORM_CFG_24M_OSC_TUNE,              // 24M OSC tunning (not available for ING918)
                                             // For ING916: values may vary in 0x16~0x2d, etc.
     PLATFORM_CFG_ALWAYS_CALL_WAKEUP,        // always trigger `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` no matter if deep sleep
                                             // procedure is completed or aborted (failed).
                                             // Default for ING918: Disabled(0) for backward compatability
-                                            // Default for ING918: Enabled(1)
+                                            // Default for ING916: Enabled(1)
 } platform_cfg_item_t;
 
 typedef enum
