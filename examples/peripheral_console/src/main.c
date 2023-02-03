@@ -154,16 +154,22 @@ int app_main()
     #ifdef USE_SLOW_CLK_RC
         #if (USE_SLOW_CLK_RC == 8)
             SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_8M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 9000);
         #elif (USE_SLOW_CLK_RC == 16)
             SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_16M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 5000);
         #elif (USE_SLOW_CLK_RC == 24)
             SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_24M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 2500);
         #elif (USE_SLOW_CLK_RC == 32)
             SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_32M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 2000);
         #elif (USE_SLOW_CLK_RC == 48)
             SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_48M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 1200);
         #else
             SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_64M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 800);
         #endif
         SYSCTRL_AutoTuneSlowRC();
         SYSCTRL_SelectFlashClk(SYSCTRL_CLK_SLOW);

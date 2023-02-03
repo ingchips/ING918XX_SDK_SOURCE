@@ -582,6 +582,8 @@ uint32_t SYSCTRL_AutoTuneSlowRC(void)
 
     while ((*SLOW_RC_CFG0 & (0x80000000u)) == 0) ;
 
+    set_reg_bit(SLOW_RC_CFG1, 0, 16);
+
     uint16_t r = (*SLOW_RC_CFG0 >> 19) & 0xfffu;
     SYSCTRL_TuneSlowRC(r);
 
