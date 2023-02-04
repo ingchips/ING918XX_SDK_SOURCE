@@ -128,6 +128,23 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 1;
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#ifndef USE_SLOW_CLK_RC
+static uint32_t idle_proc(void *dummy, void *user_data)
+{
+    // change to slow clock during IDLE
+    // to save power
+    uint32_t div = SYSCTRL_GetPLLClk() / SYSCTRL_GetHClk();
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
+    __DSB();
+    __WFI();
+    __ISB();
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1 + div - 1);
+    return 0;
+}
+#endif
+#endif
+
 // To calibration Tx power preciously, we can use a "fake" power mapping table,
 // then measure Tx power using testers.
 const int16_t power_mapping[] = {
@@ -141,6 +158,35 @@ const int16_t power_mapping[] = {
 extern void on_key_event(key_press_event_t evt);
 
 trace_rtt_t trace_ctx = {0};
+
+const platform_evt_cb_table_t evt_cb_table =
+{
+    .callbacks = {
+        [PLATFORM_CB_EVT_PUTC] = {
+            .f = (f_platform_evt_cb)cb_putc
+        },
+        [PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP] = {
+            .f = on_deep_sleep_wakeup
+        },
+        [PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED] = {
+            .f = query_deep_sleep_allowed
+        },
+        [PLATFORM_CB_EVT_PROFILE_INIT] = {
+            .f = setup_profile
+        },
+        [PLATFORM_CB_EVT_TRACE] = {
+            .f = (f_platform_evt_cb)cb_trace_rtt,
+            .user_data = &trace_ctx
+        },
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #ifndef USE_SLOW_CLK_RC
+        [PLATFORM_CB_IDLE_PROC] = {
+            .f = idle_proc
+        },
+    #endif
+#endif
+    }
+};
 
 int app_main()
 {
@@ -200,10 +246,7 @@ int app_main()
     platform_set_rf_power_mapping(power_mapping);
 
     // setup handlers
-    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+    platform_set_evt_callback_table(&evt_cb_table);
 
     key_detect_init(on_key_event);
     setup_peripherals();
@@ -211,7 +254,6 @@ int app_main()
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
 
     trace_rtt_init(&trace_ctx);
-    platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0x0);
 
     return 0;

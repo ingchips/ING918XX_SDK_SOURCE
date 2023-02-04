@@ -90,13 +90,8 @@ void setup_peripherals(void)
 
     PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_DOWN);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_DOWN);
-#else
-    #error unknown or unsupported chip family
-#endif
+
     GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
 

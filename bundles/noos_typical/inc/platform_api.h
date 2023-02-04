@@ -109,11 +109,40 @@ typedef enum
     // NOTE: param (void *data) is casted from platform_exception_id_t
     PLATFORM_CB_EVT_EXCEPTION,
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    // platform callback for customized IDLE procedure
+    // developers can setup this callback to implement customized IDLE procedure.
+    // the default IDLE procedure is: `__DSB(); __WFI(); __ISB();`
+    PLATFORM_CB_IDLE_PROC,
+#endif
+
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;
 
 typedef uint32_t (*f_platform_evt_cb)(void *data, void *user_data);
 typedef uint32_t (*f_platform_irq_cb)(void *user_data);
+
+typedef struct platform_evt_cb_info
+{
+    f_platform_evt_cb  f;
+    void              *user_data;
+} platform_evt_cb_info_t;
+
+typedef struct platform_irq_cb_info
+{
+    f_platform_irq_cb  f;
+    void              *user_data;
+} platform_irq_cb_info_t;
+
+typedef struct
+{
+    platform_evt_cb_info_t callbacks[PLATFORM_CB_EVT_MAX];
+} platform_evt_cb_table_t;
+
+typedef struct
+{
+    platform_irq_cb_info_t callbacks[PLATFORM_CB_IRQ_MAX];
+} platform_irq_cb_table_t;
 
 // A trace item is a combination of data1 and data2. Note:
 // 1. len1 or len2 might be 0, but not both
@@ -181,6 +210,34 @@ void platform_set_evt_callback(platform_evt_callback_type_t type, f_platform_evt
  ****************************************************************************************
  */
 void platform_set_irq_callback(platform_irq_callback_type_t type, f_platform_irq_cb f, void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief register callback function table for all platform events
+ *
+ * Instead of configure callback functions one by one, this function registers a
+ * table for ALL events.
+ *
+ * DO NOT use this if `platform_set_evt_callback` is used.
+ *
+ * @param[in] table         callback function table
+ ****************************************************************************************
+ */
+void platform_set_evt_callback_table(const platform_evt_cb_table_t *table);
+
+/**
+ ****************************************************************************************
+ * @brief register callback function table for all platform interrupt requests
+ *
+ * Instead of configure callback functions one by one, this function registers a
+ * table for ALL interrupt requests.
+ *
+ * DO NOT use this if `platform_set_irq_callback` is used.
+ *
+ * @param[in] table         callback function table
+ ****************************************************************************************
+ */
+void platform_set_irq_callback_table(const platform_irq_cb_table_t *table);
 
 /**
  ****************************************************************************************

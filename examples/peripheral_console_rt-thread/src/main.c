@@ -71,7 +71,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
 #ifdef USE_WATCHDOG
                               | (1 << SYSCTRL_ClkGate_APB_WDT)
 #endif

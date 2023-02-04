@@ -76,6 +76,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals(void)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti(0
                             | (1 << SYSCTRL_ClkGate_APB_TMR0)
                             | (1 << SYSCTRL_ClkGate_APB_TMR1)
@@ -112,6 +113,11 @@ void setup_peripherals(void)
 	TMR_IntEnable(APB_TMR1);
 	TMR_Reload(APB_TMR1);
 	TMR_Enable(APB_TMR1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #error WIP
+#else
+    #error unknown or unsupported chip family
+#endif
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -158,7 +164,7 @@ static void lvgl_task(void *pdata)
 	lv_port_disp_init();
 	//show a chart here
 	lv_example_chart_2();
-    
+
     for (;;)
     {
     	lv_task_handler();
@@ -180,7 +186,7 @@ int app_main()
 
     setup_peripherals();
 
-    platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer1_isr, NULL);	
+    platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer1_isr, NULL);
 
 	xTaskCreate(watchdog_task,
            "w",
