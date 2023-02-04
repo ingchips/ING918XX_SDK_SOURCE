@@ -9,6 +9,8 @@
   - write bit 3(total 128bits) to 1(default 0)
     EFUSE_UnLock(APB_EFUSE, EFUSE_UNLOCK_FLAG);
     EFUSE_WriteEfuseDataBitToOne(APB_EFUSE, 3);
+    while(1 == EFUSE_GetStatusBusy(EFUSE_BASE));
+    EFUSE_Lock(EFUSE_BASE);
     
   - read data
     EFUSE_SetRdFlag(APB_EFUSE);
@@ -78,6 +80,12 @@ void EFUSE_UnLock(EFUSE_TypeDef* EFUSE_BASE, uint16_t data)
 }
 
 /*====================================================================*/
+void EFUSE_Lock(EFUSE_TypeDef* EFUSE_BASE)
+{
+   EFUSE_BASE->Efuse_cfg0 &= (~(BW2M(bwEFUSE_CFG0_EFUSE_LOCK) << bsEFUSE_CFG0_EFUSE_LOCK));
+}
+
+/*====================================================================*/
 void EFUSE_WriteEfuseDataWord(EFUSE_TypeDef* EFUSE_BASE, EFUSE_ProgramWordCnt index, uint32_t data)
 {
    EFUSE_BASE->Efuse_cfg0 &= (~(BW2M(bwEFUSE_CFG0_PROM_MODE) << bsEFUSE_CFG0_PROM_MODE));
@@ -105,6 +113,9 @@ void EFUSE_WriteEfuseDataWord(EFUSE_TypeDef* EFUSE_BASE, EFUSE_ProgramWordCnt in
    
    EFUSE_UnLock(EFUSE_BASE, EFUSE_UNLOCK_FLAG);
    EFUSE_BASE->Efuse_cfg0 |= 0x1 << bsEFUSE_CFG0_PG_EFUSE;
+
+   while(1 == EFUSE_GetStatusBusy(EFUSE_BASE));
+   EFUSE_Lock(EFUSE_BASE);
 }
 
 
