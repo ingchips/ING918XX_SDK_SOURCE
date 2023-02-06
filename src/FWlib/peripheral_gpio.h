@@ -101,12 +101,20 @@ GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index);
 void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit);
 
 /**
- * @brief Get current value of a GPIO
+ * @brief Get current value of a GPIO which configured as input or both.
  *
  * @param[in] io_index          the GPIO
  * @return                      value
  */
 uint8_t GIO_ReadValue(const GIO_Index_t io_index);
+
+/**
+ * @brief Get current value of a GPIO which configured as output or both.
+ *
+ * @param[in] io_index          the GPIO
+ * @return                      value
+ */
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index);
 
 /**
  * @brief Config interrupt trigger type of a GPIO
