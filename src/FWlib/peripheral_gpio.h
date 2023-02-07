@@ -348,6 +348,12 @@ void GIO_SetBits(const uint64_t index_mask);
  */
 void GIO_ClearBits(const uint64_t index_mask);
 
+/**
+ * @brief Toggle some or all of GPIO to 0
+ *
+ */
+void GIO_ToggleBits(const uint64_t index_mask);
+
 #endif
 
 #ifdef __cplusplus
