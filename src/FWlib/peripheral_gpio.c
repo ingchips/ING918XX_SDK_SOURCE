@@ -327,8 +327,8 @@ void GIO_ClearBits(const uint64_t index_mask)
 
 void GIO_ToggleBits(const uint64_t index_mask)
 {
-    APB_GPIO0->DataOut = APB_GPIO0->DataOut ^ index_mask;
-    APB_GPIO1->DataOut = APB_GPIO1->DataOut ^ (index_mask >> 21);
+    APB_GPIO0->DataOut ^= index_mask & 0x1fffff;
+    APB_GPIO1->DataOut ^= index_mask >> 21;
 }
 
 #endif
