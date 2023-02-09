@@ -41,7 +41,7 @@ Original Author: Shay Gal-on
 
 #include <time.h>
 
-uint32_t SystemCoreClock = 
+uint32_t SystemCoreClock =
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PLL_CLK_FREQ
 #else
@@ -51,7 +51,7 @@ uint32_t SystemCoreClock =
 
 static volatile unsigned int systick_overflows = 0;
 
-extern void SysTick_Handler(void) 
+extern void SysTick_Handler(void)
 {
    systick_overflows++;
 }
@@ -127,24 +127,22 @@ void portable_init(core_portable *p, int *argc, char *argv[])
 {
     SCB->VTOR = (uint32_t)&__Vectors;
 
+    app_main();
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    SYSCTRL_ConfigPLLClk(6, 110, 1);
-    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1 + 1);
     SystemCoreClock = SYSCTRL_GetHClk();
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #else
     #error unknown or unsupported chip family
 #endif
-    
-	app_main();
-    
+
     __enable_irq();
 
 	p->portable_id=1;
     printf("\n"
            "============================\n"
            "*      Run Coremark        *\n"
-           "*    CPU @ %10dHz    *\n"      
+           "*    CPU @ %10dHz    *\n"
            "*     Wait about 30s...    *\n"
            "============================\n\n", SystemCoreClock);
 }
