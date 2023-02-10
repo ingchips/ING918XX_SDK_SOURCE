@@ -742,6 +742,14 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
  */
 void SYSCTRL_WaitForLDO(void);
 
+/**
+ * @brief Enable/Disable p_cap mode for a certain pwm channel
+ *
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ * @param[in] enable            Enable(1)/Disable(0)
+ */
+void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable);
+
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
 #endif	/* __cplusplus */

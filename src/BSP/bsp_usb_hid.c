@@ -408,7 +408,8 @@ void bsp_usb_init(void)
   USB_INIT_CONFIG_T config;
 
   SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
-  SYSCTRL_SelectHClk((SYSCTRL_ClkMode)(SYSCTRL_CLK_PLL_DIV_1+3));
+  //use SYSCTRL_GetClk(SYSCTRL_ITEM_APB_USB) to confirm, USB module clock has to be 48M.
+  SYSCTRL_SelectUSBClk((SYSCTRL_ClkMode)(SYSCTRL_GetPLLClk()/48000000));
 
   platform_set_irq_callback(PLATFORM_CB_IRQ_USB, USB_IrqHandler, NULL);
 
