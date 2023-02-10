@@ -952,4 +952,9 @@ uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
     return 1;
 }
 
+void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE+0x74), enable&0x1, channel_index);
+}
+
 #endif
