@@ -43,6 +43,11 @@ uint8_t GIO_ReadValue(const GIO_Index_t io_index)
     return (*GPIO_DI >> io_index) & 1;
 }
 
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index)
+{
+    return (*GPIO_DO >> io_index) & 1;
+}
+
 void GIO_ConfigIntSource(const GIO_Index_t io_index, const uint8_t enable, const GIO_IntTriggerType_t type)
 {
     GIO_MaskedWrite(GPIO_LV, io_index, type);
@@ -104,6 +109,12 @@ uint8_t GIO_ReadValue(const GIO_Index_t io_index)
 {
     DEF_GIO_AND_PIN(io_index);
     return (pDef->DataIn >> index) & 1;
+}
+
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    return (pDef->DataOut >> index) & 1;
 }
 
 static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t type)
@@ -312,6 +323,12 @@ void GIO_ClearBits(const uint64_t index_mask)
 {
     APB_GPIO0->DoutClear |= index_mask & 0x1fffff;
     APB_GPIO1->DoutClear |= index_mask >> 21;
+}
+
+void GIO_ToggleBits(const uint64_t index_mask)
+{
+    APB_GPIO0->DataOut ^= index_mask & 0x1fffff;
+    APB_GPIO1->DataOut ^= index_mask >> 21;
 }
 
 #endif
