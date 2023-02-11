@@ -118,8 +118,9 @@ uint32_t on_deep_sleep_wakeup(void *casted_reason, void *user_data)
     if (PLATFORM_WAKEUP_REASON_NORMAL == reason)
         setup_peripherals();
 #endif
-
+#ifdef DETECT_KEY
     key_detector_start_on_demand();
+#endif
     return 1;
 }
 
@@ -183,8 +184,11 @@ int app_main()
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #ifdef USE_POWER_LIB
-        power_ctrl_init();
+        power_ctrl_init(POWER_CTRL_MODE_BALANCED);
     #endif
+    // make sure that RAM does not exceed 0x20004000
+    // then, we can power off the unused block 1
+    SYSCTRL_SelectMemoryBlocks(SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #ifdef DETECT_KEY
     // configure it only once
@@ -257,7 +261,9 @@ int app_main()
     // setup handlers
     platform_set_evt_callback_table(&evt_cb_table);
 
+#ifdef DETECT_KEY
     key_detect_init(on_key_event);
+#endif
     setup_peripherals();
 
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
