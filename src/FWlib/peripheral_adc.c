@@ -343,7 +343,7 @@ static uint32_t ADC_VrefCalIsr(void *user_data)
     ADC_PopFifoData();
     while (!ADC_GetFifoEmpty()) {
         data += ADC_GetData(ADC_PopFifoData());
-		cnt++;
+        cnt++;
     }
     ADC_VrefRegister(19659.6f / (float)(data / cnt), 0.f);
     platform_set_irq_callback(PLATFORM_CB_IRQ_SADC, 0, 0);
@@ -353,7 +353,7 @@ static uint32_t ADC_VrefCalIsr(void *user_data)
 }
 void ADC_VrefCalibration(void)
 {
-	ADC_DisableAllChannels();
+    ADC_DisableAllChannels();
     ADC_ClrFifo();
     ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, ADC_CH_9, 15, 0, 
         SINGLE_END_MODE, SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC) / 100000);
