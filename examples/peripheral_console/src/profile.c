@@ -180,6 +180,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             platform_calibrate_32k();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+            platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 5200);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 280);
+#endif
             break;
         default:
             break;

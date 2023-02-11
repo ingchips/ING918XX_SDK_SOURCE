@@ -77,6 +77,15 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep)
     io_write(RTC_POR0, (io_read(RTC_POR0) & ~0x3ul) | (enable_active << 1) | enable_sleep);
 }
 
+void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
+{
+    #define RTC_MEM1 (APB_RTC_BASE + 0x78)
+    #define RTC_MEM2 (APB_RTC_BASE + 0x8c)
+    uint32_t mask = ~(0x1f << 27);
+    uint32_t shutdown = ((~block_map) & 0x1f) << 27;
+    io_write(RTC_POR1, (io_read(RTC_MEM1) & mask) | shutdown);
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
@@ -399,17 +408,13 @@ void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode)
     }
 }
 
-#define AON1_BOOT   (volatile uint32_t *)(AON1_CTRL_BASE + 0x14)
-
 void SYSCTRL_SelectHClk(SYSCTRL_ClkMode mode)
 {
     set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode == 0 ? 0 : 1, 14);
-    set_reg_bit(AON1_BOOT, mode == 0 ? 0 : 1, 13);
     if (mode >= SYSCTRL_CLK_PLL_DIV_1)
     {
         set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 0);
         set_reg_bit(APB_SYSCTRL->CguCfg, 1, 28);
-        set_reg_bits(AON1_BOOT, mode, 4, 14);
     }
 }
 
@@ -424,10 +429,9 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode)
     if (mode >= SYSCTRL_CLK_PLL_DIV_1)
     {
         set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 16);
-        set_reg_bits(AON1_BOOT, mode, 4, 19);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 29);
     }
     set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode == 0 ? 0 : 1, 18);
-    set_reg_bit(AON1_BOOT, mode == 0 ? 0 : 1, 18);
 }
 
 void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode)
@@ -456,7 +460,6 @@ void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div)
 void SYSCTRL_EnablePLL(uint8_t enable)
 {
     set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x1A8), enable, 20);
-    set_reg_bit(AON1_BOOT, enable, 1);
 }
 
 #define SLOW_RC_CFG0     ((volatile uint32_t *)(AON2_CTRL_BASE + 0x17c))
@@ -669,8 +672,36 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
     t |= (div_pre << 1) | (loop << 7) | (div_output << 15) | (vco << 21);
     APB_SYSCTRL->PllCtrl = t;
     io_write(AON2_CTRL_BASE + 0x1A8, io_read(AON2_CTRL_BASE + 0x1A8) | (1ul << 20));
-    set_reg_bits(AON1_BOOT, loop, 6, 5);
     return 0;
+}
+
+#define AON1_BOOT   (volatile uint32_t *)(AON1_CTRL_BASE + 0x14)
+
+void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
+        SYSCTRL_ClkMode hclk,
+        SYSCTRL_ClkMode flash_clk,
+        uint8_t enable_watchdog)
+{
+    *AON1_BOOT = ((0x1 << 0 ) |
+                (enable_pll << 1 ) |
+                (0x1 << 2 ) |
+                (0x0 << 3 ) |
+                (((uint32_t)pll_loop)  << 5 ) |
+                (hclk > 0 ? 0x1 << 13 : 0) |
+                (((uint32_t)hclk)   << 14) |
+                (flash_clk > 0 ? 0x1 << 18 : 0) |
+                (((uint32_t)flash_clk)   << 19) |
+                (0x1 << 23) |
+                (0x2 << 24) |
+                (0x1 << 27) |
+                (enable_watchdog << 28) |
+                (7UL << 29)
+                );
+}
+
+void SYSCTRL_DisableConfigClocksAfterWakeup(void)
+{
+    *AON1_BOOT &= ~0x1;
 }
 
 uint32_t SYSCTRL_GetHClk()
@@ -954,7 +985,21 @@ uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
 
 void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
 {
-    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE+0x74), enable&0x1, channel_index);
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x74), enable & 0x1, channel_index);
+}
+
+void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
+{
+    if (block_map & SYSCTRL_MEM_BLOCK_1)
+    {
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), 1, 17);
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), 1, 17);
+    }
+    else
+    {
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), 0, 17);
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), 0, 17);
+    }
 }
 
 #endif

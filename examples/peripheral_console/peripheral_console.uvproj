@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536900896</StartAddress>
-                <Size>35552</Size>
+                <StartAddress>536884536</StartAddress>
+                <Size>51912</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -348,7 +348,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER,USE_WATCHDOG,USE_POWER_LIB</Define>
               <Undefine/>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/mini/inc;../../bundles/mini/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -427,7 +427,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\ING9187xx\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\mini\ING9187xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>

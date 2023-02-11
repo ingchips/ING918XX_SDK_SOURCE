@@ -8,6 +8,9 @@
 #include "key_detector.h"
 #include "trace.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #define PRINT_PORT    APB_UART0
 
 uint32_t cb_putc(char *c, void *dummy)
@@ -57,31 +60,39 @@ uint32_t gpio_isr(void *user_data)
 void setup_peripherals(void)
 {
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
+    SYSCTRL_ClearClkGateMulti(0
 #ifdef USE_WATCHDOG
                               | (1 << SYSCTRL_ClkGate_APB_WDT)
 #endif
+#if (defined DETECT_KEY) || (LISTEN_TO_POWER_SAVING)
+                              | (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+#endif    
+    );
 
-                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-
+#ifdef DETECT_KEY
     PINCTRL_SetPadMux(KEY_PIN, IO_SOURCE_GPIO);
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
     PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_DOWN);
+    GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
+#endif
+    
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     config_uart(OSC_CLK_FREQ, 115200);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     config_uart(SYSCTRL_GetClk(SYSCTRL_ITEM_APB_UART0), 115200);
 
+#ifdef DETECT_KEY
     // GPIO 0 (also connected to KEY) emulating EXT_INT as in ING918XX
     GIO_EnableRetentionGroupA(0);
     PINCTRL_SetPadMux(PIN_WAKEUP, IO_SOURCE_GPIO);
     GIO_SetDirection(PIN_WAKEUP, GIO_DIR_INPUT);
     PINCTRL_Pull(PIN_WAKEUP, PINCTRL_PULL_DOWN);
+#endif
 #else
     #error unknown or unsupported chip family
-#endif
-    GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE);
-    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
+#endif    
 
 #ifdef LISTEN_TO_POWER_SAVING
     PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_GPIO);
@@ -128,23 +139,6 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 1;
 }
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#ifndef USE_SLOW_CLK_RC
-static uint32_t idle_proc(void *dummy, void *user_data)
-{
-    // change to slow clock during IDLE
-    // to save power
-    uint32_t div = SYSCTRL_GetPLLClk() / SYSCTRL_GetHClk();
-    SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
-    __DSB();
-    __WFI();
-    __ISB();
-    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1 + div - 1);
-    return 0;
-}
-#endif
-#endif
-
 // To calibration Tx power preciously, we can use a "fake" power mapping table,
 // then measure Tx power using testers.
 const int16_t power_mapping[] = {
@@ -157,7 +151,9 @@ const int16_t power_mapping[] = {
 
 extern void on_key_event(key_press_event_t evt);
 
+#ifdef USE_TRACE
 trace_rtt_t trace_ctx = {0};
+#endif
 
 const platform_evt_cb_table_t evt_cb_table =
 {
@@ -174,16 +170,11 @@ const platform_evt_cb_table_t evt_cb_table =
         [PLATFORM_CB_EVT_PROFILE_INIT] = {
             .f = setup_profile
         },
+#ifdef USE_TRACE
         [PLATFORM_CB_EVT_TRACE] = {
             .f = (f_platform_evt_cb)cb_trace_rtt,
             .user_data = &trace_ctx
         },
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #ifndef USE_SLOW_CLK_RC
-        [PLATFORM_CB_IDLE_PROC] = {
-            .f = idle_proc
-        },
-    #endif
 #endif
     }
 };
@@ -195,8 +186,10 @@ int app_main()
         power_ctrl_init();
     #endif
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#ifdef DETECT_KEY
     // configure it only once
     GIO_EnableDeepSleepWakeupSource(PIN_WAKEUP, 1, 1, PINCTRL_PULL_DOWN);
+#endif
     #ifdef USE_SLOW_CLK_RC
         #if (USE_SLOW_CLK_RC == 8)
             SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_8M);
@@ -214,8 +207,7 @@ int app_main()
             SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_48M);
             platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 1200);
         #else
-            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_64M);
-            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 800);
+            #error unsupported USE_SLOW_CLK_RC
         #endif
         SYSCTRL_AutoTuneSlowRC();
         SYSCTRL_SelectFlashClk(SYSCTRL_CLK_SLOW);
@@ -223,7 +215,24 @@ int app_main()
         SYSCTRL_EnablePLL(0);
         SYSCTRL_SelectSlowClk(SYSCTRL_SLOW_RC_CLK);
     #else
+        #define HCLK_DIV 5
+        
+        platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4000);
+        platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 225);
+
+        SYSCTRL_EnableConfigClocksAfterWakeup(1,
+            PLL_BOOT_DEF_LOOP,
+            HCLK_DIV,
+            SYSCTRL_CLK_PLL_DIV_2,
+            0);
+
         SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
+        SYSCTRL_SelectHClk(HCLK_DIV);
+        SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
+        
+        // make sure that RAM does not exceed 0x20004000
+        // then, we can power off the unused block 1
+        SYSCTRL_SelectMemoryBlocks(SYSCTRL_MEM_BLOCK_0);
     #endif
 #endif
 
@@ -253,10 +262,20 @@ int app_main()
 
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
 
+#ifdef USE_TRACE
     trace_rtt_init(&trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0x0);
-
+#endif
     return 0;
+}
+
+void show_stack_mem(char *buffer)
+{
+    sprintf(buffer, "stack min free\n"
+        "ctrl: %u\n"
+        "host: %u\n",
+        (uint32_t)uxTaskGetStackHighWaterMark((TaskHandle_t)platform_get_task_handle(PLATFORM_TASK_CONTROLLER)) * 4,
+        (uint32_t)uxTaskGetStackHighWaterMark((TaskHandle_t)platform_get_task_handle(PLATFORM_TASK_HOST)) * 4);
 }
 
 const char welcome_msg[] = "Using Built-in FreeRTOS";

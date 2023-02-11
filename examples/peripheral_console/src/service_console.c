@@ -115,12 +115,21 @@ void cmd_version(const char *param)
 
 extern void platform_get_heap_status(platform_heap_status_t *status);
 
+__attribute((weak)) void show_stack_mem(char *buffer)
+{
+}
+
 void cmd_mem(const char *param)
 {
     platform_heap_status_t status;
     platform_get_heap_status(&status);
     sprintf(buffer, "heap:\nfree: %dB\nmin free:%dB", status.bytes_free, status.bytes_minimum_ever_free);
     tx_data(buffer, strlen(buffer) + 1);
+    buffer[0] = '\0';
+    show_stack_mem(buffer);
+    int l = strlen(buffer);
+    if (l > 0)
+        tx_data(buffer, l + 1);
 }
 
 void cmd_freq(const char *param)

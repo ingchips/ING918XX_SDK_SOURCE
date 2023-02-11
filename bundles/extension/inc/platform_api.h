@@ -113,7 +113,7 @@ typedef enum
     // platform callback for customized IDLE procedure
     // developers can setup this callback to implement customized IDLE procedure.
     // the default IDLE procedure is: `__DSB(); __WFI(); __ISB();`
-    PLATFORM_CB_IDLE_PROC,
+    PLATFORM_CB_EVT_IDLE_PROC,
 #endif
 
     PLATFORM_CB_EVT_MAX
@@ -230,7 +230,8 @@ void platform_set_evt_callback_table(const platform_evt_cb_table_t *table);
  * @brief register callback function table for all platform interrupt requests
  *
  * Instead of configure callback functions one by one, this function registers a
- * table for ALL interrupt requests.
+ * table for ALL interrupt requests. When using this API, interrupts can be enabled
+ * using corresponding IRQ enable/disable functions of MCU.
  *
  * DO NOT use this if `platform_set_irq_callback` is used.
  *
@@ -389,6 +390,7 @@ typedef enum
                                             // procedure is completed or aborted (failed).
                                             // Default for ING918: Disabled(0) for backward compatability
                                             // Default for ING916: Enabled(1)
+    PLATFORM_CFG_PS_DBG_3,
 } platform_cfg_item_t;
 
 typedef enum
