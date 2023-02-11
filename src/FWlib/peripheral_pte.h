@@ -12,11 +12,11 @@ extern "C" {	/* allow C++ to use these headers */
 
 typedef enum
 {
-    SYSCTRL_PTE_CHENNEL_0     = 0,
-    SYSCTRL_PTE_CHENNEL_1     = 1,
-    SYSCTRL_PTE_CHENNEL_2     = 2,
-    SYSCTRL_PTE_CHENNEL_3     = 3,
-} SYSCTRL_PTE_CHENNEL_ID;
+    SYSCTRL_PTE_CHANNEL_0     = 0,
+    SYSCTRL_PTE_CHANNEL_1     = 1,
+    SYSCTRL_PTE_CHANNEL_2     = 2,
+    SYSCTRL_PTE_CHANNEL_3     = 3,
+} SYSCTRL_PTE_CHANNEL_ID;
 
 typedef enum
 {
@@ -79,7 +79,7 @@ typedef enum
  * @param[in] ch             PTE channel ID
  * @return                   null
  */
-void PTE_IrqProcess(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_IrqProcess(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Standard process of out peripheral's irq-function with chennal continue enabled.
@@ -87,7 +87,7 @@ void PTE_IrqProcess(SYSCTRL_PTE_CHENNEL_ID ch);
  * @param[in] ch             PTE channel ID
  * @return                   null
  */
-void PTE_OutPeripheralContinueProcess(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_OutPeripheralContinueProcess(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Standard process of out peripheral's irq-function with chennal disenabled.
@@ -95,7 +95,7 @@ void PTE_OutPeripheralContinueProcess(SYSCTRL_PTE_CHENNEL_ID ch);
  * @param[in] ch             PTE channel ID
  * @return                   null
  */
-void PTE_OutPeripheralEndProcess(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_OutPeripheralEndProcess(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Close PTE channel
@@ -103,7 +103,7 @@ void PTE_OutPeripheralEndProcess(SYSCTRL_PTE_CHENNEL_ID ch);
  * @param[in] ch             PTE channel ID
  * @return                   null
  */
-void PTE_ChennelClose(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_ChannelClose(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Enable PTE channel
@@ -111,7 +111,7 @@ void PTE_ChennelClose(SYSCTRL_PTE_CHENNEL_ID ch);
  * @param[in] ch             PTE channel ID
  * @return                   null
  */
-void PTE_EnableChennel(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_EnableChannel(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Connect two peripherals with PTE
@@ -121,7 +121,7 @@ void PTE_EnableChennel(SYSCTRL_PTE_CHENNEL_ID ch);
  * @param[in] dst            destination peripheral
  * @return                   0 if no error else non-0
  */
-int PTE_ConnectPeripheral(SYSCTRL_PTE_CHENNEL_ID ch, 
+int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch, 
                           SYSCTRL_PTE_SRC_INT src, 
                           SYSCTRL_PTE_DST_EN dst);
 
