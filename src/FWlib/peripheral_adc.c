@@ -212,6 +212,10 @@ void ADC_EnableChannel(SADC_channelId ch, uint8_t enable)
     else
         ADC_RegClr(SADC_CFG_2, (ch + 3), 1);
 }
+void ADC_DisableAllChannels(void)
+{
+    ADC_RegClr(SADC_CFG_2, 3, 12);
+}
 
 void ADC_IntEnable(uint8_t enable)
 {
@@ -331,15 +335,30 @@ static void ADC_VrefRegister(float VP, float VN)
     ADC_CbRegister();
 }
 
+static uint32_t ADC_VrefCalIsr(void *user_data)
+{
+    ADC_Start(0); 
+    uint32_t cnt = 0;
+    uint32_t data = 0;
+    ADC_PopFifoData();
+    while (!ADC_GetFifoEmpty()) {
+        data += ADC_GetData(ADC_PopFifoData());
+		cnt++;
+    }
+    ADC_VrefRegister(19659.6f / (float)(data / cnt), 0.f);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_SADC, 0, 0);
+    ADC_EnableChannel(ADC_CH_9, 0);
+    ADC_IntEnable(0);
+    return 0;
+}
 void ADC_VrefCalibration(void)
 {
-    ADC_ConvCfg(SINGLE_MODE, PGA_GAIN_2, 1, ADC_CH_9, 1, 0, SINGLE_END_MODE, 0);
+	ADC_DisableAllChannels();
+    ADC_ClrFifo();
+    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, ADC_CH_9, 15, 0, 
+        SINGLE_END_MODE, SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC) / 100000);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_SADC, ADC_VrefCalIsr, 0);
     ADC_Start(1);
-    while (!ADC_GetIntStatus());
-    uint32_t data = ADC_PopFifoData();
-    ADC_VrefRegister(19659.6f / (float)ADC_GetData(data), 0.f);
-    ADC_EnableChannel(ADC_CH_9, 0);
-    ADC_Start(0);
 }
 
 float ADC_GetVol(uint16_t data)
@@ -387,10 +406,10 @@ void ADC_Calibration(SADC_adcIputMode mode)
     ADC_Start(1);
     while (!ADC_GetIntStatus());
     ADC_Start(0);
-    ADC_ResetCtrlSignal();
     ADC_IntEnable(0);
     ADC_ClrFifo();
     ADC_SetAdcMode(CONVERSION_MODE);
+    ADC_EnableChannel(ADC_CH_0, 0);
 }
 
 void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, 

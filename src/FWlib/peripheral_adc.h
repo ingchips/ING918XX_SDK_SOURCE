@@ -143,17 +143,11 @@ typedef struct
 
 /**
  * @brief Enable ADC control signal
- *
- * @param[in]                null
- * @return                   null
  */
 void ADC_EnableCtrlSignal(void);
 
 /**
  * @brief Reset ADC control signal
- *
- * @param[in]                null
- * @return                   null
  */
 void ADC_ResetCtrlSignal(void);
 
@@ -161,14 +155,12 @@ void ADC_ResetCtrlSignal(void);
  * @brief Set ADC mode
  *
  * @param[in] mode           ADC mode, see 'SADC_adcMode'
- * @return                   null
  */
 void ADC_SetAdcMode(SADC_adcMode mode);
 
 /**
  * @brief Get ADC mode
  *
- * @param[in]                null
  * @return                   mode
  */
 SADC_adcMode ADC_GetAdcMode(void);
@@ -177,7 +169,6 @@ SADC_adcMode ADC_GetAdcMode(void);
  * @brief Set ADC control mode
  *
  * @param[in] mode           ADC control mode, see 'SADC_adcCtrlMode'
- * @return                   null
  */
 void ADC_SetAdcCtrlMode(SADC_adcCtrlMode mode);
 
@@ -186,15 +177,18 @@ void ADC_SetAdcCtrlMode(SADC_adcCtrlMode mode);
  *
  * @param[in] ch             ADC channel ID, see 'SADC_channelId'
  * @param[in] enable         enable/disable channel
- * @return                   null
  */
 void ADC_EnableChannel(SADC_channelId ch, uint8_t enable);
+
+/**
+ * @brief Disable all ADC channels
+ */
+void ADC_DisableAllChannels(void);
 
 /**
  * @brief Enable ADC interrupt
  *
  * @param[in] enable         enable/disable ADC interrupt
- * @return                   null
  */
 void ADC_IntEnable(uint8_t enable);
 
@@ -202,7 +196,6 @@ void ADC_IntEnable(uint8_t enable);
  * @brief Set ADC interrupt trigger number
  *
  * @param[in] num            ADC interrupt trigger number(0-15)
- * @return                   null
  */
 void ADC_SetIntTrig(uint8_t num);
 
@@ -210,7 +203,6 @@ void ADC_SetIntTrig(uint8_t num);
  * @brief Enable ADC dma transmition request
  *
  * @param[in] enable         enable/disable ADC dma transmition request
- * @return                   null
  */
 void ADC_DmaEnable(uint8_t enable);
 
@@ -218,22 +210,17 @@ void ADC_DmaEnable(uint8_t enable);
  * @brief Set ADC dma transmition trigger number
  *
  * @param[in] num            ADC dma transmition trigger number(0-15)
- * @return                   null
  */
 void ADC_SetDmaTrig(uint8_t num);
 
 /**
  * @brief clear ADC FIFO
- *
- * @param[in]                null
- * @return                   null
  */
 void ADC_ClrFifo(void);
 
 /**
  * @brief Get ADC-FIFO's empty status
  *
- * @param[in]                null
  * @return FIFO's status     0:not empty,1:empty
  */
 uint8_t ADC_GetFifoEmpty(void);
@@ -241,7 +228,6 @@ uint8_t ADC_GetFifoEmpty(void);
 /**
  * @brief Get ADC busy status
  *
- * @param[in]                null
  * @return                   1:busy, 0:not work
  */
 uint8_t ADC_GetBusyStatus(void);
@@ -250,7 +236,6 @@ uint8_t ADC_GetBusyStatus(void);
  * @brief Set ADC input mode
  *
  * @param[in] mode           ADC input mode, see 'SADC_adcIputMode'
- * @return                   null
  */
 void ADC_SetInputMode(SADC_adcIputMode mode);
 
@@ -258,14 +243,12 @@ void ADC_SetInputMode(SADC_adcIputMode mode);
  * @brief Set pga gain
  *
  * @param[in] gain           pga gain, see 'SADC_adcPgaGain'
- * @return                   null
  */
 void ADC_PgaGainSet(SADC_adcPgaGain gain);
 
 /**
  * @brief Get pga gain
  *
- * @param[in]                null
  * @return                   pga gain, see 'SADC_adcPgaGain'
  */
 SADC_adcPgaGain ADC_PgaGainGet(void);
@@ -274,14 +257,12 @@ SADC_adcPgaGain ADC_PgaGainGet(void);
  * @brief Enable pga
  *
  * @param[in] enable         enable/disable pga
- * @return                   null
  */
 void ADC_PgaEnable(uint8_t enable);
 
 /**
  * @brief Get pga work status
  *
- * @param[in]                null
  * @return                   1:pga enabled, 0:pga disabled
  */
 uint8_t ADC_GetPgaStatus(void);
@@ -290,14 +271,12 @@ uint8_t ADC_GetPgaStatus(void);
  * @brief Set ADC loop delay
  *
  * @param[in] delay          ADC loop delay(0-0xffffffff)
- * @return                   null
  */
 void ADC_SetLoopDelay(uint32_t delay);
 
 /**
  * @brief Get ADC interrupt-bit's value
  *
- * @param[in]                null
  * @return                   1:interrupt, 0:no interrupt
  */
 uint8_t ADC_GetIntStatus(void);
@@ -305,7 +284,6 @@ uint8_t ADC_GetIntStatus(void);
 /**
  * @brief Read ADC FIFO data(should work with ADC_GetDataChannel & ADC_GetData)
  *
- * @param[in]                null
  * @return                   data channel & ADC data
  */
 uint32_t ADC_PopFifoData(void);
@@ -340,15 +318,11 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id);
  * @brief start ADC
  *
  * @param[in] start          start/stop ADC
- * @return                   null
  */
 void ADC_Start(uint8_t start);
 
 /**
  * @brief Calibrate VREFP
- *
- * @param[in]                null
- * @return                   null
  */
 void ADC_VrefCalibration(void);
 
@@ -363,17 +337,11 @@ float ADC_GetVol(uint16_t data);
 
 /**
  * @brief Reset ADC configuration
- *
- * @param[in]                null
- * @return                   null
  */
 void ADC_Reset(void);
 
 /**
  * @brief Close ADC
- *
- * @param[in]                null
- * @return                   null
  */
 void ADC_AdcClose(void);
 
@@ -381,7 +349,6 @@ void ADC_AdcClose(void);
  * @brief ADC calibration standard configuration interface
  *
  * @param[in] mode           ADC input mode, see 'SADC_adcIputMode'
- * @return                   null
  */
 void ADC_Calibration(SADC_adcIputMode mode);
 
@@ -396,7 +363,6 @@ void ADC_Calibration(SADC_adcIputMode mode);
  * @param[in] dmaEnNum       DMA transmition require trigger number(0-15)
  * @param[in] inputMode      ADC input mode, see 'SADC_adcIputMode'
  * @param[in] loopDelay      ADC loop delay(0-0xffffffff)
- * @return                   null
  */
 void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, 
                  SADC_adcPgaGain pgaGain,
