@@ -65,6 +65,7 @@ void setup_peripherals(void)
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
     SYSCTRL_SetAdcClkDiv(4);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
+    ADC_Reset();
     ADC_Calibration(SINGLE_END_MODE);
 #endif
 #else

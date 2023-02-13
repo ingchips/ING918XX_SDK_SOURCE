@@ -29,7 +29,7 @@ void PTE_SetChannelIntMask(SYSCTRL_PTE_CHANNEL_ID ch, uint32_t options)
         APB_PTE->Channels[ch].IntMask = 1;
     else {
         m = (uint32_t *)&(APB_PTE->Channels[ch]);
-        Cm = PTE_MAKE_CHENNAL_INT_MASK_OPTION(!options);
+        Cm = PTE_MAKE_CHANNEL_INT_MASK_OPTION(!options);
         *m &= Cm;
     }
 }

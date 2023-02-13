@@ -162,6 +162,9 @@ uint16_t read_adc(uint8_t channel)
     ADC_ConvCfg(SINGLE_MODE, PGA_GAIN_2, 1, channel, 1, 0, SINGLE_END_MODE, 0);
     ADC_Start(1);
     while (!ADC_GetIntStatus()) ;
+    ADC_Start(0);
+    ADC_EnableChannel(channel, 0);
+    ADC_IntEnable(0);
     return ADC_ReadChannelData(channel);
 #endif
 }

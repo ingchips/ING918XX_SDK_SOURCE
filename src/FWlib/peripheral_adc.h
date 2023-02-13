@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "ingsoc.h"
+#include "platform_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,6 +40,8 @@ typedef struct
     volatile uint32_t pon;
     volatile uint32_t act;
 }  ADC_Pwr_Ctrl_Type;
+
+typedef void (*ADC_VrefCaliCb)(void);
 
 /** \brief ADC power control
  * flag: 1: power on
@@ -324,7 +327,7 @@ void ADC_Start(uint8_t start);
 /**
  * @brief Calibrate VREFP
  */
-void ADC_VrefCalibration(void);
+void ADC_VrefCalibration(ADC_VrefCaliCb cb);
 
 /**
  * @brief Get voltage by ADC data

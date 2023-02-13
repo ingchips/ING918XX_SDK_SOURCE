@@ -71,29 +71,26 @@ typedef enum
 } SYSCTRL_PTE_DST_EN;
 
 #define PTE_MAKE_MASK_SIZE_OPTION(size)                 (((1) << ((uint32_t)(size))) - (1))
-#define PTE_MAKE_CHENNAL_INT_MASK_OPTION(options)       ((~((0x1) << (1))) & (~((options) << (26))))
+#define PTE_MAKE_CHANNEL_INT_MASK_OPTION(options)       ((~((0x1) << (1))) & (~((options) << (26))))
 
 /**
  * @brief Standard process of PTE's irq-function
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
 void PTE_IrqProcess(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
- * @brief Standard process of out peripheral's irq-function with chennal continue enabled.
+ * @brief Standard process of out peripheral's irq-function with channel continue enabled.
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
 void PTE_OutPeripheralContinueProcess(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
- * @brief Standard process of out peripheral's irq-function with chennal disenabled.
+ * @brief Standard process of out peripheral's irq-function with channel disabled.
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
 void PTE_OutPeripheralEndProcess(SYSCTRL_PTE_CHANNEL_ID ch);
 
@@ -101,7 +98,6 @@ void PTE_OutPeripheralEndProcess(SYSCTRL_PTE_CHANNEL_ID ch);
  * @brief Close PTE channel
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
 void PTE_ChannelClose(SYSCTRL_PTE_CHANNEL_ID ch);
 
@@ -109,7 +105,6 @@ void PTE_ChannelClose(SYSCTRL_PTE_CHANNEL_ID ch);
  * @brief Enable PTE channel
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
 void PTE_EnableChannel(SYSCTRL_PTE_CHANNEL_ID ch);
 

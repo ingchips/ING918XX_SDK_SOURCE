@@ -335,7 +335,7 @@ static void ADC_VrefRegister(float VP, float VN)
     ADC_CbRegister();
 }
 
-static uint32_t ADC_VrefCalIsr(void *user_data)
+static uint32_t ADC_VrefCalIsr(ADC_VrefCaliCb cb)
 {
     ADC_Start(0); 
     uint32_t cnt = 0;
@@ -349,15 +349,16 @@ static uint32_t ADC_VrefCalIsr(void *user_data)
     platform_set_irq_callback(PLATFORM_CB_IRQ_SADC, 0, 0);
     ADC_EnableChannel(ADC_CH_9, 0);
     ADC_IntEnable(0);
+	cb();
     return 0;
 }
-void ADC_VrefCalibration(void)
+void ADC_VrefCalibration(ADC_VrefCaliCb cb)
 {
     ADC_DisableAllChannels();
     ADC_ClrFifo();
     ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, ADC_CH_9, 15, 0, 
         SINGLE_END_MODE, SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC) / 100000);
-    platform_set_irq_callback(PLATFORM_CB_IRQ_SADC, ADC_VrefCalIsr, 0);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_SADC, (f_platform_irq_cb)ADC_VrefCalIsr, (void *)cb);
     ADC_Start(1);
 }
 
