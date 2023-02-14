@@ -135,8 +135,8 @@ void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set, KEYSCAN
  *
  * @param[in]  ctx              keyboard array mapping table
  * @param[in]  key_data         keyscan FIFO raw data
- * @param[out] row              pressed key's row in keyboard array
- * @param[out] col              pressed key's col in keyboard array
+ * @param[out] row              pressed key's 0-based row index in keyboard array
+ * @param[out] col              pressed key's 0-based col index in keyboard array
  * @return                      0: scan cycle end data;
  *                              1: find key pressed, *row and *col are key positions in keyboard array
  */
