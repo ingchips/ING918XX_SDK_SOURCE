@@ -67,7 +67,7 @@ void setup_peripherals(void)
 #if (defined DETECT_KEY) || (LISTEN_TO_POWER_SAVING)
                               | (1 << SYSCTRL_ClkGate_APB_GPIO0)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
-#endif    
+#endif
     );
 
 #ifdef DETECT_KEY
@@ -77,7 +77,7 @@ void setup_peripherals(void)
     GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE, GIO_INT_EDGE);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
 #endif
-    
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     config_uart(OSC_CLK_FREQ, 115200);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
@@ -92,7 +92,7 @@ void setup_peripherals(void)
 #endif
 #else
     #error unknown or unsupported chip family
-#endif    
+#endif
 
 #ifdef LISTEN_TO_POWER_SAVING
     PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_GPIO);
@@ -102,7 +102,7 @@ void setup_peripherals(void)
 
 #ifdef USE_WATCHDOG
     // Watchdog will timeout after 10sec
-    TMR_WatchDogEnable(TMR_CLK_FREQ * 5);
+    TMR_WatchDogEnable(TMR_CLK_FREQ * 5);    
 #endif
 }
 
@@ -220,9 +220,9 @@ int app_main()
         SYSCTRL_SelectSlowClk(SYSCTRL_SLOW_RC_CLK);
     #else
         #define HCLK_DIV 5
-        
+
         platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4000);
-        platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 225);
+        platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 245);
 
         SYSCTRL_EnableConfigClocksAfterWakeup(1,
             PLL_BOOT_DEF_LOOP,
@@ -233,7 +233,7 @@ int app_main()
         SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
         SYSCTRL_SelectHClk(HCLK_DIV);
         SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
-        
+
         // make sure that RAM does not exceed 0x20004000
         // then, we can power off the unused block 1
         SYSCTRL_SelectMemoryBlocks(SYSCTRL_MEM_BLOCK_0);

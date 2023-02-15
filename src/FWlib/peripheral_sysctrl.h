@@ -173,7 +173,7 @@ typedef SYSCTRL_Item SYSCTRL_ResetItem;
  *
  * Default: 1.200V. Step: 20mV
  */
-enum
+typedef enum
 {
     SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0,      // 1.000V
     SYSCTRL_LDO_OUTPUT_CORE_1V020 = 1,
@@ -191,7 +191,7 @@ enum
     SYSCTRL_LDO_OUTPUT_CORE_1V260 = 13,
     SYSCTRL_LDO_OUTPUT_CORE_1V280 = 14,
     SYSCTRL_LDO_OUTPUT_CORE_1V300 = 15
-};
+} SYSCTRL_LDOOutputCore;
 
 /**
  * @brief LDO Flash Output
@@ -202,7 +202,7 @@ enum
  *
  * Default: 2.100V. Step: 100mV
  */
-enum
+typedef enum
 {
     SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5,     // 2.100V
     SYSCTRL_LDO_OUTPUT_FLASH_2V200 = 6,
@@ -215,7 +215,7 @@ enum
     SYSCTRL_LDO_OUTPUT_FLASH_2V900 = 13,
     SYSCTRL_LDO_OUTPUT_FLASH_3V000 = 14,
     SYSCTRL_LDO_OUTPUT_FLASH_3V100 = 15
-};
+} SYSCTRL_LDOOutputFlash;
 
 /**
  * @brief BOR Threshold on VBAT
@@ -332,7 +332,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of PDM
  *
- * `mode` should be `(SYSCTRL_ClkMode)N`, where N = 1..63;
+ * Clock of PDM is divided from SLOW_CLK.`mode` should be `(SYSCTRL_ClkMode)N`, where N = 1..63;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -717,9 +717,146 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 /**
  * @brief Set LDO output level for Flash
  *
- * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH_...`)
+ * @param[in] level         output level
  */
-void SYSCTRL_SetLDOOutputFlash(int level);
+void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level);
+
+/**
+ * @brief LDO for RF output level
+ *
+ * Range: [1.200, 2.750]V
+ *
+ * Default: 1.500V. Step: 50mV
+ */
+typedef enum
+{
+    SYSCTRL_LDO_RF_OUTPUT_1V200 = 0,    // 1.200V
+    SYSCTRL_LDO_RF_OUTPUT_1V250 = 1,
+    SYSCTRL_LDO_RF_OUTPUT_1V300 = 2,
+    SYSCTRL_LDO_RF_OUTPUT_1V350 = 3,
+    SYSCTRL_LDO_RF_OUTPUT_1V400 = 4,
+    SYSCTRL_LDO_RF_OUTPUT_1V450 = 5,
+    SYSCTRL_LDO_RF_OUTPUT_1V500 = 6,
+    SYSCTRL_LDO_RF_OUTPUT_1V550 = 7,
+    SYSCTRL_LDO_RF_OUTPUT_1V600 = 8,
+    SYSCTRL_LDO_RF_OUTPUT_1V650 = 9,
+    SYSCTRL_LDO_RF_OUTPUT_1V700 = 10,
+    SYSCTRL_LDO_RF_OUTPUT_1V750 = 11,
+    SYSCTRL_LDO_RF_OUTPUT_1V800 = 12,
+    SYSCTRL_LDO_RF_OUTPUT_1V850 = 13,
+    SYSCTRL_LDO_RF_OUTPUT_1V900 = 14,
+    SYSCTRL_LDO_RF_OUTPUT_1V950 = 15,
+    SYSCTRL_LDO_RF_OUTPUT_2V000 = 16,
+    SYSCTRL_LDO_RF_OUTPUT_2V050 = 17,
+    SYSCTRL_LDO_RF_OUTPUT_2V100 = 18,
+    SYSCTRL_LDO_RF_OUTPUT_2V150 = 19,
+    SYSCTRL_LDO_RF_OUTPUT_2V200 = 20,
+    SYSCTRL_LDO_RF_OUTPUT_2V250 = 21,
+    SYSCTRL_LDO_RF_OUTPUT_2V300 = 22,
+    SYSCTRL_LDO_RF_OUTPUT_2V350 = 23,
+    SYSCTRL_LDO_RF_OUTPUT_2V400 = 24,
+    SYSCTRL_LDO_RF_OUTPUT_2V450 = 25,
+    SYSCTRL_LDO_RF_OUTPUT_2V500 = 26,
+    SYSCTRL_LDO_RF_OUTPUT_2V550 = 27,
+    SYSCTRL_LDO_RF_OUTPUT_2V600 = 28,
+    SYSCTRL_LDO_RF_OUTPUT_2V650 = 29,
+    SYSCTRL_LDO_RF_OUTPUT_2V700 = 30,
+    SYSCTRL_LDO_RF_OUTPUT_2V750 = 31,
+} SYSCTRL_LDOOutputRF;
+
+/**
+ * @brief Set LDO output level for RF
+ *
+ * @param[in] level         output level
+ */
+void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level);
+
+/**
+ * @brief ADC V1.2 reference (VREF12_ADC) level
+ *
+ * Range: [1.184, 1.215]V
+ *
+ * Default: 1.200V. Step: 1mV
+ */
+typedef enum
+{
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0,  // 1.184V
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V185 = 1,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V186 = 2,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V187 = 3,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V188 = 4,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V189 = 5,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V190 = 6,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V191 = 7,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V192 = 8,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V193 = 9,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V194 = 10,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V195 = 11,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V196 = 12,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V197 = 13,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V198 = 14,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V199 = 15,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V200 = 16,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V201 = 17,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V202 = 18,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V203 = 19,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V204 = 20,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V205 = 21,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V206 = 22,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V207 = 23,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V208 = 24,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V209 = 25,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V210 = 26,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V211 = 27,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V212 = 28,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V213 = 29,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V214 = 30,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V215 = 31,
+} SYSCTRL_AdcVrefOutput;
+
+/**
+ * @brief Set LDO output level for RF
+ *
+ * @param[in] level         output level
+ */
+void SYSCTRL_SetAdcVrefOutput(SYSCTRL_AdcVrefOutput level);
+
+/**
+ * @brief BUCK DC-DC output level
+ *
+ * @see `SYSCTRL_SetLDOOutputFlash`
+ *
+ * Range: [1.200, 2.700]V
+ *
+ * Default: 1.800V. Step: 100mV
+ */
+typedef enum
+{
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0, // 1.2V
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 1,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 2,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V500 = 3,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V600 = 4,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V700 = 5,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V800 = 6,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V900 = 7,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V000 = 8,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V100 = 9,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V200 = 10,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V300 = 11,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V400 = 12,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V500 = 13,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V600 = 14,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V700 = 15,
+} SYSCTRL_BuckDCDCOutput;
+
+/**
+ * @brief Set BUCK DC-DC output level
+ *
+ * @param[in] level         output level
+ */
+void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
+
 
 /**
  * @brief Config USB PHY functionality
@@ -823,7 +960,7 @@ void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item);
  *
  * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT...`)
  */
-void SYSCTRL_SetLDOOutput(int level);
+void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level);
 
 /**
  * @brief Config BOR (Brownout Reset) functionality

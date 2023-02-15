@@ -904,15 +904,30 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep)
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), enable ^ 0x1, 5);
 }
 
-void SYSCTRL_SetLDOOutputFlash(int level)
+void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level)
 {
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), level & 0xf, 4, 11);
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), 1, 31);
 }
 
-void SYSCTRL_SetLDOOutput(int level)
+void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level)
 {
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x0), level & 0xf, 4, 1);
+}
+
+void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level)
+{
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), level & 0xf, 4, 27);
+}
+
+void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level)
+{
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), level & 0x1f, 5, 6);
+}
+
+void SYSCTRL_SetAdcVrefOutput(SYSCTRL_AdcVrefOutput level)
+{
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0xc), level & 0x1f, 5, 11);
 }
 
 void SYSCTRL_WaitForLDO(void)
