@@ -1,4 +1,3 @@
-
 /*
 ** COPYRIGHT (c) 2023 by INGCHIPS
 */
@@ -184,16 +183,16 @@ void KEYSCAN_SetDmaNumTrigInt(uint32_t trig_num)
     return;
 }
 
-static void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set)
+void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set, KEYSCAN_Ctx *ctx)
 {
     int i;
 
     for (i = 0; i < keyscan_set->col_num; i++) {
-        keyscan_set->ctx->col_to_idx[keyscan_set->col[i].in_col] =  i;
+        ctx->col_to_idx[keyscan_set->col[i].in_col] =  i;
     }
 
     for (i = 0; i < keyscan_set->row_num; i++) {
-        keyscan_set->ctx->row_to_idx[keyscan_set->row[i].out_row] =  i;
+        ctx->row_to_idx[keyscan_set->row[i].out_row] =  i;
     }
 
     return;
@@ -205,50 +204,48 @@ static uint8_t KEYSCAN_CheckStatePara(const KEYSCAN_SetStateStruct* keyscan_set)
         return -1;
     }
 
-    if ((keyscan_set->row == 0) || (keyscan_set->col == 0) || (keyscan_set->ctx == 0)) {
+    if ((keyscan_set->row == 0) || (keyscan_set->col == 0)) {
         return -1;
     }
 
     return 0;
 }
 
-uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_SetStateStruct* keyscan_set, uint32_t key_data, uint8_t *row, uint8_t *col)
+uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col)
 {
-    if (KEYSCAN_CheckStatePara(keyscan_set) != 0) {
-        return 0;
-    }
-
     if (key_data == 0x00000400) {
         return 0;
     }
 
-    *row = keyscan_set->ctx->row_to_idx[((key_data >> 5) & 0x1f)] + 1;
-    *col = keyscan_set->ctx->col_to_idx[(key_data & 0x1f)] + 1;
+    *row = ctx->row_to_idx[(key_data >> 5) & 0x1f];
+    *col = ctx->col_to_idx[key_data & 0x1f];
 
     return 1;
 }
 
-void KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set)
+int KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set)
 {
+    int r = 0;
     int i;
     uint32_t row;
     uint32_t col;
 
     if (KEYSCAN_CheckStatePara(keyscan_set) != 0) {
-        return;
+        return 1;
     }
 
-    KEYSCAN_InitKeyScanToIdx(keyscan_set);
     row = 0;
     for (i = 0; i < keyscan_set->row_num; i++) {
         row = row | (0x1 << keyscan_set->row[i].out_row);
-        PINCTRL_SetPadMux(keyscan_set->row[i].gpio, keyscan_set->row[i].out_row + IO_SOURCE_KEYSCN_ROW_0);
+        r = PINCTRL_SetPadMux(keyscan_set->row[i].gpio, keyscan_set->row[i].out_row + IO_SOURCE_KEYSCN_ROW_0);
+        if (r) return r;
     }
 
     col = 0;
     for (i = 0; i < keyscan_set->col_num; i++) {
         col = col | (0x1 << keyscan_set->col[i].in_col);
-        PINCTRL_SelKeyScanColIn(keyscan_set->col[i].in_col, keyscan_set->col[i].gpio);
+        r = PINCTRL_SelKeyScanColIn(keyscan_set->col[i].in_col, keyscan_set->col[i].gpio);
+        if (r) return r;
         PINCTRL_Pull(keyscan_set->col[i].gpio, PINCTRL_PULL_DOWN);
     }
 
@@ -266,7 +263,7 @@ void KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set)
     KEYSCAN_SetDebounceEn(0xfffff);
     KEYSCAN_SetScannerEn(1);
 
-    return;
+    return 0;
 }
 
 #endif
