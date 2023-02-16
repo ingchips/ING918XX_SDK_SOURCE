@@ -1,4 +1,3 @@
-
 /*
 ** COPYRIGHT (c) 2023 by INGCHIPS
 */
@@ -57,7 +56,7 @@ uint8_t COMPARATOR_GetComparatorResult(void)
 #define COMPARATOR_VINN_RESERVED_CHANNEL 0xff
 #define COMPARATOR_VINN_IN_CHIP_VREF     0xf1
 
-static uint8_t vinp_map_to_gpio[COMPARATOR_VINP_NUMBER] =
+const static uint8_t vinp_map_to_gpio[COMPARATOR_VINP_NUMBER] =
 {
     GIO_GPIO_4,
     GIO_GPIO_18,
@@ -69,7 +68,7 @@ static uint8_t vinp_map_to_gpio[COMPARATOR_VINP_NUMBER] =
     GIO_GPIO_2,
 };
 
-static uint8_t vinn_map_to_gpio[COMPARATOR_VINN_NUMBER] =
+const static uint8_t vinn_map_to_gpio[COMPARATOR_VINN_NUMBER] =
 {
     GIO_GPIO_3,
     GIO_GPIO_19,
@@ -84,12 +83,29 @@ static uint8_t vinn_map_to_gpio[COMPARATOR_VINN_NUMBER] =
 void COMPARATOR_Initialize(const COMPARATOR_SetStateStruct* cmp_set)
 {
     uint16_t cmp_config;
-    uint8_t vinp_gpio;
-    uint8_t vinn_gpio;
 
     if (cmp_set == 0) {
         return;
     }
+
+    COMPARATOR_InitializePins(cmp_set);
+
+    cmp_config = ((cmp_set->en              << 0 ) |
+                  (cmp_set->v_in_p          << 1 ) |
+                  (cmp_set->hysteresis      << 4 ) |
+                  (cmp_set->vinn_division   << 5 ) |
+                  (cmp_set->work_mode       << 9)  |
+                  (cmp_set->output_polarity << 11) |
+                  (cmp_set->v_in_n          << 12));
+    COMPARATOR_SetComparatorConfig(cmp_config);
+
+    return;
+}
+
+void COMPARATOR_InitializePins(const COMPARATOR_SetStateStruct* cmp_set)
+{
+    uint8_t vinp_gpio;
+    uint8_t vinn_gpio;
 
     vinp_gpio = vinp_map_to_gpio[cmp_set->v_in_p];
     vinn_gpio = vinn_map_to_gpio[cmp_set->v_in_n];
@@ -101,15 +117,6 @@ void COMPARATOR_Initialize(const COMPARATOR_SetStateStruct* cmp_set)
     if (vinn_gpio < GIO_GPIO_NUMBER) {
         PINCTRL_EnableAnalog(vinn_gpio);
     }
-
-    cmp_config = ((cmp_set->en              << 0 ) |
-                  (cmp_set->v_in_p          << 1 ) |
-                  (cmp_set->hysteresis      << 4 ) |
-                  (cmp_set->vinn_division   << 5 ) |
-                  (cmp_set->work_mode       << 9)  |
-                  (cmp_set->output_polarity << 11) |
-                  (cmp_set->v_in_n          << 12));
-    COMPARATOR_SetComparatorConfig(cmp_config);
 
     return;
 }
