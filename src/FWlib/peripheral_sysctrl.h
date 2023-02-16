@@ -912,6 +912,31 @@ typedef enum
                                   // Default: ON
 } SYSCTRL_MemBlock;
 
+typedef enum
+{
+    SYSCTRL_MEM_BLOCK_AS_CACHE = 0,
+    SYSCTRL_MEM_BLOCK_AS_SYS_MEM = 1,
+} SYSCTRL_CacheMemCtrl;
+
+/**
+ * @brief Control the usage of cache memory blocks which can be used as Cache or
+ *        system memory.
+ *
+ * Address and size of each block when used as system memory:
+ *     1. D-Cache: 8KiB starting from 0x2000E000
+ *     2. I-Cache: 8KiB starting from 0x20010000
+ *
+ * CAUTION:
+ *     1. When used as system memory, more RAM are available, but performance might be degraded;
+ *     2. When used as system memory, contents are *NOT* retained in sleep modes;
+ *     3. These settings are not kept in sleep modes and will restore to defaults during waking up,
+ *        so this function needs to be called each time the system wakes up.
+ *
+ * @param[in] i_cache           usage of I-Cache (default: AS_CACHE)
+ * @param[in] d_cache           usage of D-Cache (default: AS_CACHE)
+ */
+void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache);
+
 #endif
 
 /**

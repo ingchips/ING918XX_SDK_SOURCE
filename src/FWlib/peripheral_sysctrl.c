@@ -1017,4 +1017,29 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
     }
 }
 
+void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache)
+{
+    #define IC_BASE 0x40140000
+    #define DC_BASE 0x40140000
+
+    uint8_t v = (i_cache << 1) | d_cache;
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE != i_cache)
+        set_reg_bit((volatile uint32_t *)(IC_BASE), 0, 1);
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE == d_cache)
+        set_reg_bit((volatile uint32_t *)(DC_BASE), 0, 1);
+
+    set_reg_bits(&APB_SYSCTRL->SysCtrl, v, 2, 0);
+
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE == i_cache)
+    {
+        *(volatile uint32_t *)(IC_BASE + 0x58) =  (1UL<<31) | 0x4;
+        set_reg_bit((volatile uint32_t *)(IC_BASE), 1, 1);
+    }
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE == d_cache)
+    {
+        *(volatile uint32_t *)(DC_BASE + 0x58) =  (1UL<<31) | 0x4;
+        set_reg_bit((volatile uint32_t *)(DC_BASE), 1, 1);
+    }
+}
+
 #endif
