@@ -55,12 +55,12 @@ typedef enum
     SYSCTRL_Reset_APB_TRNG                = 21
 } SYSCTRL_ResetItem;
 
-enum
+typedef enum
 {
     SYSCTRL_LDO_OUPUT_1V60 = 0x13,  // Recommended for Vbat = 1.8V
     SYSCTRL_LDO_OUPUT_1V80 = 0x16,  // Recommended for Vbat = 2.5V
     SYSCTRL_LDO_OUPUT_2V50 = 0x1f,  // Recommended for Vbat = 3.3V
-};
+}SYSCTRL_LDOOutputCore;
 
 enum
 {
