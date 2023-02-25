@@ -27,7 +27,6 @@
 // mesh stack tlv storage.
 #define MESH_STACK_TLV_USE_FLASH
 
-// eflash aligment.
-#define EFLASH_WRITE_SUPPORT_OFFSET_ADDR_NOT_ALIGMENT
+
 
 #endif
