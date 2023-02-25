@@ -13,7 +13,6 @@
 #define ENABLE_BUTTON_TEST
 
 /* Mesh App Config */
-#define ENABLE_MESH_ADV_BEARER
 #define ENABLE_MESH_GATT_BEARER
 
 
