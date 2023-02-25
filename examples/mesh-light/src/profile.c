@@ -6,9 +6,8 @@
 #include "mesh_port_low_level_init.h"
 #include "board.h"
 #include "mesh_version.h"
-
-#define APP_LOG_INFO_EN
-
+#include "adv_bearer.h"
+#include "mesh_profile.h"
 #include "app_debug.h"
 #include "mesh_debug.h"
 
@@ -256,6 +255,37 @@ static void mesh_provising_init(void){
     mesh_prov_ll_init(&prov);
 }
 
+static void print_addr(char *str, bd_addr_t addr)
+{
+    platform_printf("%s: %02X:%02X:%02X:%02X:%02X:%02X\n", str, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+}
+
+static void mesh_basic_info_print(void){
+    
+    // name
+    uint8_t name[30];
+    uint8_t name_len = sizeof(name);
+    adv_bearer_adv_get_scan_rsp_data(name, &name_len);
+    name[name_len] = '\0';
+    platform_printf("dev name: %s\n", name);
+
+    // uuid
+    uint8_t uuid[16];
+    const uint8_t * pUuid = mesh_node_get_device_uuid();
+    memcpy(uuid, pUuid, 16);
+    platform_printf("mesh uuid: ");
+    printf_hexdump(uuid, sizeof(uuid));
+
+    // addr
+    bd_addr_t gatt_adv_addr;
+    bd_addr_t beacon_adv_addr;
+    mesh_gatt_adv_addr_get(gatt_adv_addr);
+    mesh_beacon_adv_addr_get(beacon_adv_addr);
+    print_addr((char*)"gatt adv addr", gatt_adv_addr);
+    print_addr((char*)"beacon adv addr", beacon_adv_addr);
+}
+
+
 
 void mesh_init(void){
     app_log_info("mesh start.\n");
@@ -265,5 +295,6 @@ void mesh_init(void){
     mesh_platform_init();
     mesh_stack_init(&mesh_elements_init);
     mesh_provising_init();
+    mesh_basic_info_print();
 }
 

@@ -40,6 +40,13 @@ void adv_bearer_advertisements_set_params(uint16_t adv_int_min, uint16_t adv_int
  */
 void adv_bearer_adv_set_scan_rsp_data(uint8_t *data, uint8_t len);
 
+/**
+ * @brief Get Advertisement Response Paramters
+ * @param data rsp data
+ * @param len max 29 bytes
+ */
+void adv_bearer_adv_get_scan_rsp_data(uint8_t *data, uint8_t *len);
+
 /** 
  * @brief Enable/Disable Advertisements. OFF by default.
  * @param enabled
