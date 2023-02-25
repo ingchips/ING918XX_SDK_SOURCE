@@ -72,6 +72,11 @@ uint8_t mesh_attention_timer_get(void);
 // provision state
 bool mesh_is_provisioned(void);
 
+// advertising control.
+void mesh_proxy_start_gatt_advertising(void);
+void mesh_proxy_stop_gatt_advertising(void);
+
+
 #if defined __cplusplus
 }
 #endif
