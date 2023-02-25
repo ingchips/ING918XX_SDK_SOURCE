@@ -12,7 +12,7 @@
 // name
 void mesh_storage_name_get(uint8_t *name, uint16_t *len);
 int mesh_storage_is_name_set(void);
-void mesh_storage_name_set(uint8_t *name, uint16_t len);
+void mesh_storage_name_set(uint8_t *name, uint16_t len, uint8_t now);
 
 // gatt addr
 void mesh_storage_gatt_addr_get(bd_addr_t addr);
