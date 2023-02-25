@@ -10,6 +10,8 @@
 #define APP_LOG_INFO_EN
 
 #include "app_debug.h"
+#include "mesh_debug.h"
+
 
 /*--------------------------------------------------------------------
  *----------------------------> MODEL <-------------------------------
@@ -257,6 +259,7 @@ static void mesh_provising_init(void){
 
 void mesh_init(void){
     app_log_info("mesh start.\n");
+    // mesh_trace_config(FLASH_FEA, ALL_LVL);
     mesh_get_ver_info();
     mesh_flash_init();
     mesh_platform_init();
