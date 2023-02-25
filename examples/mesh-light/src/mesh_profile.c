@@ -16,6 +16,7 @@
 #include "mesh_storage_app.h" 
 #include "mesh_manage_conn_and_scan.h"
 #include "app_debug.h"
+#include "ble_status.h"
 
 #define CON_HANDLE_INVALID 0xFFFF
 
@@ -434,6 +435,9 @@ uint32_t setup_profile(void *data, void *user_data)
     mesh_hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&mesh_hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
+
+    // ble status init.
+    ble_status_init();
     
     return 0;
 }
