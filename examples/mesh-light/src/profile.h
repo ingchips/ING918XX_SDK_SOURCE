@@ -66,6 +66,18 @@ typedef struct bt_mesh_cfg_srv {
 #define BT_MESH_FEAT_FRIEND                 BIT(2)
 #define BT_MESH_FEAT_LOW_POWER              BIT(3)
 
+/** @def BT_MESH_TRANSMIT
+ *
+ *  @brief Encode transmission count & interval steps.
+ *
+ *  @param count   Number of retransmissions (first transmission is excluded).
+ *  @param int_ms  Interval steps in milliseconds. Must be greater than 0,
+ *                 less than or equal to 320, and a multiple of 10.
+ *
+ *  @return Mesh transmit value that can be used e.g. for the default
+ *          values of the configuration model data.
+ */
+#define BT_MESH_TRANSMIT(count, int_ms) ((count-1) | (((int_ms / 10) - 1) << 3))
 
 // ACCESS
 typedef struct node_info {
