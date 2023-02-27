@@ -20,6 +20,8 @@ enum trace_layer{
     CFG_FEA     = BIT(9),    ///< bit set of configure server mssage for trace
     HEALTH_FEA  = BIT(10),   ///< bit set of health model message for trace
     NODE_FEA    = BIT(11),   ///< bit set of node message for trace
+    FLASH_FEA   = BIT(12),   ///< bit set of mesh tlv storage operation for trace
+    ALL_LAYER   = 0x7FFFFFFF,///< set all bits for trace.
 };
 
 /**
@@ -30,6 +32,7 @@ enum trace_lvl{
     DEBUG_LVL = BIT(0),
     INFO_LVL  = BIT(1),
     WARN_LVL  = BIT(2),
+    ALL_LVL   = 0xFF,
 };
 
 
