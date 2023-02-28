@@ -6,7 +6,7 @@
 
 #include "app_cfg.h"
 
-#include "audio.h"
+#include "audio_adpcm.h"
 
 const pcm_sample_t pcm[] =
 #include "../data/itu_female_16k.m"

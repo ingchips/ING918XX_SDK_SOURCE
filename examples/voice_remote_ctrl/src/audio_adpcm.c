@@ -1,4 +1,4 @@
-#include "audio.h"
+#include "audio_adpcm.h"
 #include <string.h>
 
 const int8_t indexTable[16] = { -1, -1, -1, -1, 2, 4, 6, 8, /* Table of index changes */

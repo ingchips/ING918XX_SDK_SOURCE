@@ -1,5 +1,5 @@
 #include "audio_service.h"
-#include "audio.h"
+#include "audio_adpcm.h"
 #include "ingsoc.h"
 
 #include "FreeRTOS.h"

@@ -414,9 +414,9 @@
               <FilePath>.\src\pingpong.c</FilePath>
             </File>
             <File>
-              <FileName>audio.c</FileName>
+              <FileName>audio_adpcm.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\audio.c</FilePath>
+              <FilePath>.\src\audio_adpcm.c</FilePath>
             </File>
           </Files>
         </Group>
