@@ -9,7 +9,7 @@
 // adv.
 typedef struct {
 
-	void (*proxy_set_params)(   uint16_t  adv_int_min, 
+    void (*proxy_set_params)(   uint16_t  adv_int_min, 
                                 uint16_t  adv_int_max, 
                                 uint8_t   adv_type,
                                 uint8_t   direct_address_typ, 
@@ -43,11 +43,11 @@ typedef struct {
 
 // event.
 typedef struct {
-	uint8_t *adv_data;
-	uint8_t adv_length;
-	uint8_t type;
-	uint8_t count;
-	uint16_t interval_ms;
+    uint8_t *adv_data;
+    uint8_t adv_length;
+    uint8_t type;
+    uint8_t count;
+    uint16_t interval_ms;
 } mesh_adv_bearer_send_msg_begin_t;
 
 typedef struct {
