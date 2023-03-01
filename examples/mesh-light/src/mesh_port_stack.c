@@ -72,13 +72,8 @@ int mesh_att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_hand
 void mesh_stack_ready(void)
 {
     app_log_debug("%s\n", __func__);
-    
     mesh_setup_adv();
-#if defined(ENABLE_MESH_ADV_BEARER)
-    // setup scanning when supporting ADV Bearer
-    mesh_setup_scan();
-    mesh_mcas_scan_start();
-#endif
+    mesh_mcas_stack_ready_callback();
 }
 
 /******************************************************************************************

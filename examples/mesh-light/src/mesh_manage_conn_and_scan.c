@@ -7,6 +7,7 @@
 #include "mesh_port_pb.h"
 #include "mesh_profile.h"
 #include "app_debug.h"
+#include "ble_status.h"
 
 /**
  * @brief This file is mainly for managing connection parameters and scanning parameters when they exist at the same time.
@@ -18,50 +19,70 @@
  *        of radio frequency. This document exists to address this problem.
  * @name mcas : The abbreviation means "manage connection and scan".
  * @details 
- *        1. notify enable: start timer, delay 200ms to request connection_updating to update max_ce_len to 5ms, not changing connection interval.
- *        2. mesh model control: reuest to update conn_interval to 200ms.
- *        3. connection update ok: Depending on the trigger, the treatment is different.
- *                                  (1) notify enable : start scan.
- *                                  (2) mesh model control :  start scan.
- *                                  (3) other reason : don't care.
- *        4. ble connected: stop scan. stop delay timer.
- *        5. ble disconnect: stop delay timer. (can not stop scan, because we constantly need scanning to receive adv data.)
+ *        1. mesh model control: reuest to update conn_interval to MESH_FINAL_CONN_INTERVAL_MS if current connect interval 
+ *                               less then MESH_FINAL_CONN_INTERVAL_CMP_MS. Stop scanning and start a timer to keep scanning 
+ *                               alive some time later, use MESH_MCAS_KEEP_ALIVE_WAIT_MS to set timeout time.
+ *        2. timer timeout handler: if MeshConnScan.run_state == MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_200, recovery scanning.
+ *        3. connection update ok: (1) Depending on the trigger, the treatment is different:
+ *                                     * mesh model control :  start scanning.
+ *                                     * other reason : don't care.
+ *                                 (2) Set local max_ce_len to 5ms.
+ *        4. ble connected:(1) mesh provisioned ?
+ *                             yes: start scannig;
+ *                             no: stop scanning;
+ *                         (2) Set local max_ce_len to 5ms.
+ *        5. ble disconnect: start scanning.
+ *        6. ble ready: start scanning.
+ *        7. mesh prov complete: start scanning.
  */
 
 /**
  * @brief application definition.
  */
 
+// scan
+#define MESH_FINAL_SCAN_WINDOW_MS       20      // scan window.
 #define MESH_FINAL_SCAN_INTERVAL_MS     20      // scan interval.
+// conn_interval
 #define MESH_FINAL_CONN_INTERVAL_MS     200     // conn interval.
-#define MESH_MCAS_TIMER_DELAY_MS        200     // delay time.
+#define MESH_FINAL_CONN_INTERVAL_CMP_MS ((MESH_FINAL_CONN_INTERVAL_MS>10)?(MESH_FINAL_CONN_INTERVAL_MS-10):10) // Compare to this value, and then decide if send connection update request.
+// time
+#define MESH_MCAS_KEEP_ALIVE_WAIT_MS    4000    //(ms) After starting connect interval request, if update complete event not come, this timer will start scanning when timer timeout.
 
 /**
  * @var control value.
  */
-static MeshConnScanTypdef_t MeshConnScan =  {   .run_state  = MESH_RUNNING_STATE_IDLE,
-                                                .scan_state = MESH_SCAN_STATE_IDLE,
+static MeshConnScanTypdef_t MeshConnScan =  {   .run_state  = MESH_RUNNING_STATE_IDLE, \
                                             };
 /**
  * @var timer id.
  */
-static mesh_timer_source_t       mesh_conn_param_update_timer;
+static mesh_timer_source_t       mesh_keep_scan_alive_timer;
+
+// func declaration.
+static void mesh_mcas_init(void);
+
+// ------------------------------------------------------------------------------------
+
+static void mesh_mcas_set_slave_local_ce_len(uint16_t handle){
+    ll_hint_on_ce_len(handle, 0, 8); // max_ce_len = 5ms
+}
 
 /**
- * @brief mesh mcas timer timeout handler.
- * 
- * @param ts timer id.
+ * @brief mesh mcas scan start.
  */
-static void mesh_conn_param_update_timer_timeout_handler(mesh_timer_source_t * ts){
-    UNUSED(ts);
-    app_log_debug("[V] %s .\n", __func__);
-    if(MeshConnScan.run_state == MESH_RUNNING_STATE_TIMER_START_48){
-        app_log_debug("update 48ms\n");
-        mesh_scan_stop();
-        ble_set_conn_interval_ms(ble_get_curr_conn_interval_ms()); //just update max_ce_len = 5ms, do not change conn interval.
-        MeshConnScan.run_state = MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_48;
-    }
-    return;
+static void mesh_mcas_scan_start(void){
+    // mesh_profile_scan_stop();
+    mesh_profile_scan_param_set(MESH_FINAL_SCAN_INTERVAL_MS, MESH_FINAL_SCAN_WINDOW_MS);
+    mesh_profile_scan_duty_start();
+}
+
+/**
+ * @brief mesh mcas scan stop.
+ * 
+ */
+static void mesh_mcas_scan_stop(void){
+    mesh_profile_scan_stop();
 }
 
 /**
@@ -69,12 +90,12 @@ static void mesh_conn_param_update_timer_timeout_handler(mesh_timer_source_t * t
  * 
  * @param time_ms delay timer.
  */
-static void mesh_conn_param_update_timer_start(uint32_t time_ms){
+static void mesh_keep_scan_alive_timer_start(uint32_t time_ms, mesh_func_timer_process tmo_handler){
+    app_log_debug("[V] %s: tmo=%dms", __func__, time_ms);
     // set timer
-    mesh_run_loop_set_timer_handler(&mesh_conn_param_update_timer, (mesh_func_timer_process)mesh_conn_param_update_timer_timeout_handler);
-    mesh_run_loop_set_timer(&mesh_conn_param_update_timer, time_ms);
-    mesh_run_loop_add_timer(&mesh_conn_param_update_timer);
-    app_log_debug("[V] mesh conn param update timer start: %d ms\n", time_ms);
+    mesh_run_loop_set_timer_handler(&mesh_keep_scan_alive_timer, tmo_handler);
+    mesh_run_loop_set_timer(&mesh_keep_scan_alive_timer, time_ms);
+    mesh_run_loop_add_timer(&mesh_keep_scan_alive_timer);
     return;
 }
 
@@ -82,74 +103,34 @@ static void mesh_conn_param_update_timer_start(uint32_t time_ms){
  * @brief mesh mcas timer stop.
  * 
  */
-static void mesh_conn_param_update_timer_stop(void){
-    mesh_run_loop_remove_timer(&mesh_conn_param_update_timer);
+static void mesh_keep_scan_alive_timer_stop(void){
+    app_log_debug("[V] %s", __func__);
+    mesh_run_loop_remove_timer(&mesh_keep_scan_alive_timer);
     return;
 }
+
+// ------------------------------------------------------------------------------------
 
 /**
  * @brief ble notify enable callback.
  * 
  */
 void mesh_mcas_gatt_notify_enable_callback(void){
-    app_log_debug("-- %s .\n", __func__);
-
-    if(!Is_ble_curr_conn_valid())
-        return;
-    
-    if(MeshConnScan.run_state != MESH_RUNNING_STATE_IDLE){
-        app_log_debug("Run busy: %d\n", MeshConnScan.run_state);
-        return;
-    }
-
-    // start timer , delay the conn param update procedure, which waiting for ble stable.
-    // Such as huawei phone, when it just connect, it will auto change conn params some times, 
-    // So we need wait for the auto-procedure completing, and after that, we can start our's conn param update request.
-    app_log_debug("timer start 48ms\n");
-    mesh_conn_param_update_timer_start(MESH_MCAS_TIMER_DELAY_MS);
-    MeshConnScan.run_state = MESH_RUNNING_STATE_TIMER_START_48;
-
-    return;
+    app_log_debug("-- %s .", __func__);
 }
 
 /**
- * @brief mesh on-off server control callback.
+ * @brief mesh mcas timer timeout handler.
  * 
+ * @param ts timer id.
  */
-void mesh_mcas_on_off_server_control_callback(void){
-    app_log_debug("-- %s .\n", __func__);
-
-    if(!Is_ble_curr_conn_valid())
-        return;
-    
-    if(MeshConnScan.run_state != MESH_RUNNING_STATE_IDLE){
-        app_log_debug("Run busy: %d\n", MeshConnScan.run_state);
-        return;
+static void mesh_keep_scan_alive_timer_timeout_handler(mesh_timer_source_t * ts){
+    app_log_debug("[V] %s", __func__);
+    if (MeshConnScan.run_state == MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_200){
+        mesh_mcas_scan_start();
+        MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
     }
-    
-    app_assert(MESH_FINAL_CONN_INTERVAL_MS > 20);
-    if(ble_get_curr_conn_interval_ms() < (MESH_FINAL_CONN_INTERVAL_MS - 20)){
-        app_log_debug("update 200ms\n");
-        mesh_scan_stop();
-
-        //update interval to 200ms , and update max_ce_len = 5ms .
-        ble_set_conn_interval_ms(MESH_FINAL_CONN_INTERVAL_MS); 
-        MeshConnScan.run_state = MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_200;
-    }
-
     return;
-}
-
-/**
- * @brief mesh mcas scan start.
- * @param connect_interval fixed = 20ms 
- */
-void mesh_mcas_scan_start(void){
-    mesh_scan_stop();
-    // scan = 20ms.
-    mesh_scan_param_set(MESH_FINAL_SCAN_INTERVAL_MS, MESH_FINAL_SCAN_INTERVAL_MS);
-    mesh_scan_start();
-    MeshConnScan.scan_state = MESH_SCAN_STATE_INTERVAL_20_WINDOW_20;
 }
 
 /**
@@ -161,31 +142,14 @@ void mesh_mcas_scan_start(void){
  * @param sup_timeout connection timeout time.
  */
 void mesh_mcas_conn_params_update_complete_callback(uint8_t status, uint16_t handle, uint16_t interval, uint16_t sup_timeout){
-    app_log_debug("-- %s .\n", __func__);
+    app_log_debug("-- %s .", __func__);
 
-    if(!status){
+    if(status == 0){
         //update success.
-        if(MeshConnScan.run_state == MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_48){
-            app_log_debug("update 48ms ok (max_ce_len also updated.).\n");
+        if (MeshConnScan.run_state == MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_200){
+            mesh_keep_scan_alive_timer_stop();
+            mesh_mcas_scan_start();
             MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
-
-            #if 1
-            if(ble_get_curr_conn_interval_ms() >= (MESH_FINAL_SCAN_INTERVAL_MS + 10)){ // check conn intvl , can not too small.
-                mesh_mcas_scan_start();
-                app_log_debug("scan_window_1: 20ms\n");
-            }
-            #endif
-
-        } else if (MeshConnScan.run_state == MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_200){
-            app_log_debug("update 200ms ok (max_ce_len also updated.).\n");
-            MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
-
-            #if 1
-            if(ble_get_curr_conn_interval_ms() >= (MESH_FINAL_SCAN_INTERVAL_MS + 10)){ // check conn intvl , can not too small.
-                mesh_mcas_scan_start();
-                app_log_debug("scan_window_2: 20ms\n");
-            }
-            #endif
         }
     } else {
         // update fail.
@@ -193,7 +157,52 @@ void mesh_mcas_conn_params_update_complete_callback(uint8_t status, uint16_t han
         MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
     }
 
-    return;
+    // set max_ce_len
+    mesh_mcas_set_slave_local_ce_len(handle);
+}
+
+/**
+ * @brief mesh on-off server control callback.
+ * 
+ */
+void mesh_mcas_on_off_server_control_callback(void){
+    app_log_debug("-- %s .", __func__);
+
+    if(!ble_status_connection_state_get())
+        return;
+    
+    if(MeshConnScan.run_state != MESH_RUNNING_STATE_IDLE){
+        app_log_debug("Run busy: %d", MeshConnScan.run_state);
+        return;
+    }
+    
+    if(ble_status_connection_interval_get() < MESH_FINAL_CONN_INTERVAL_CMP_MS){
+        app_log_debug("update 200ms");
+        mesh_mcas_scan_stop();
+        //update interval to 200ms
+        ble_set_conn_interval_ms(MESH_FINAL_CONN_INTERVAL_MS);
+        mesh_keep_scan_alive_timer_start(MESH_MCAS_KEEP_ALIVE_WAIT_MS, (mesh_func_timer_process)&mesh_keep_scan_alive_timer_timeout_handler);
+        MeshConnScan.run_state = MESH_RUNNING_STATE_UPDATE_CONN_PARAM_REQ_200;
+    }
+}
+
+/**
+ * @brief mesh stack ready.
+ */
+void mesh_mcas_stack_ready_callback(void){
+    app_log_debug("-- %s .", __func__);
+    mesh_profile_scan_addr_set();
+    mesh_mcas_scan_start();
+    mesh_mcas_init();
+}
+
+/**
+ * @brief mesh provision complete.
+ * 
+ */
+void mesh_mcas_prov_complete(void){
+    app_log_debug("-- %s .", __func__);
+    mesh_mcas_scan_start();
 }
 
 /**
@@ -203,14 +212,16 @@ void mesh_mcas_conn_params_update_complete_callback(uint8_t status, uint16_t han
  */
 void mesh_mcas_connect_callback(uint16_t handle){
     app_log_debug("-- %s .\n", __func__);
-
-    mesh_conn_param_update_timer_stop();
-    MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
-
-    mesh_scan_stop();
-    MeshConnScan.scan_state = MESH_SCAN_STATE_IDLE;
-
-    return;
+    // set max_ce_len.
+    mesh_mcas_set_slave_local_ce_len(handle);
+    // set scan.
+    if (mesh_is_provisioned()){
+        mesh_mcas_scan_start();
+    } else {
+        mesh_mcas_scan_stop();
+    }
+    // init.
+    mesh_mcas_init();
 }
 
 /**
@@ -220,14 +231,15 @@ void mesh_mcas_connect_callback(uint16_t handle){
  */
 void mesh_mcas_disconnect_callback(uint16_t handle){
     app_log_debug("-- %s .\n", __func__);
-
-    mesh_conn_param_update_timer_stop();
-    MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
-
-    // mesh_scan_stop();
-    // MeshConnScan.scan_state = MESH_SCAN_STATE_IDLE;
-
-    return;
+    mesh_mcas_scan_start();
+    mesh_mcas_init();
 }
 
-
+/**
+ * @brief initialize.
+ * 
+ */
+static void mesh_mcas_init(void){
+    mesh_keep_scan_alive_timer_stop();
+    MeshConnScan.run_state = MESH_RUNNING_STATE_IDLE;
+}

@@ -30,7 +30,7 @@ This example can be tested with following apps:
   * __MAC address__ (gatt_adv_addr and non-connect_adv_addr)
   * __Adv UUID__
   * __Provisioning Information__
-* Press __KEY-2__ and then press __KEY-RESET__ to clear all flash information.
+* Press __KEY-2__ and then press __KEY-RESET__ to clear flash information of __Provisioning Information__, keep the others.
 
 * If you don't want to store any information in flash, you can disable the corresponding flash storage function by masking the following macro definitions:
   * __MESH_UUID_USE_FLASH__ : For Adv UUID

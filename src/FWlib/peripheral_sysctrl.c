@@ -81,7 +81,7 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
 {
     #define RTC_MEM1 (APB_RTC_BASE + 0x78)
     #define RTC_MEM2 (APB_RTC_BASE + 0x8c)
-    uint32_t mask = ~(0x1f << 27);
+    uint32_t mask = ~((uint32_t)0x1f << 27);
     uint32_t shutdown = ((~block_map) & 0x1f) << 27;
     io_write(RTC_POR1, (io_read(RTC_MEM1) & mask) | shutdown);
 }

@@ -17,6 +17,11 @@ extern "C" {
 typedef struct {
 
 	/**
+	 * Get total number of used banks.
+	 */
+	uint32_t (*get_bank_num)(void * context);
+
+	/**
 	 * Get size of flash banks
 	 */
 	uint32_t (*get_size)(void * context);
