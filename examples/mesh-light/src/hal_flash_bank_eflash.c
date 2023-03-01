@@ -15,12 +15,12 @@
 
 static uint32_t hal_flash_bank_eflash_get_bank_num(void * context){
     hal_flash_bank_eflash_t * self = (hal_flash_bank_eflash_t *) context;
-    n self->bank_num;
+    return self->bank_num;
 }
 
 static uint32_t hal_flash_bank_eflash_get_size(void * context){
     hal_flash_bank_eflash_t * self = (hal_flash_bank_eflash_t *) context;
-    urn self->bank_size;
+    return self->bank_size;
 }
 
 static uint32_t hal_flash_bank_memory_get_alignment(void * context){
