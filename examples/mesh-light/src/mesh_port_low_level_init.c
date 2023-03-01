@@ -24,7 +24,6 @@
 #include "app_config.h"
 #include "mesh_port_low_level_init.h"
 #include "mesh_profile.h"
-#include "mesh_manage_conn_and_scan.h"
 #include "mesh_btstack_event.h"
 
 
@@ -133,7 +132,6 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
                             {
                                 case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:{                                
                                         // Set Generic On/Off state
-                                        mesh_mcas_on_off_server_control_callback();
                                     }break;
                                 
                                 default:
@@ -157,7 +155,6 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
                             {
                                 case MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER:{                                
                                         // Set Generic level
-                                        mesh_mcas_on_off_server_control_callback();
                                     }break;
                                 
                                 default:
