@@ -8,7 +8,6 @@
 #include "mesh_version.h"
 #include "adv_bearer.h"
 #include "mesh_profile.h"
-#include "mesh_manage_conn_and_scan.h"
 #include "app_debug.h"
 #include "mesh_debug.h"
 
@@ -186,7 +185,6 @@ static int input_request(void)
 static void prov_complete(uint16_t net_idx, uint16_t addr)
 {
     app_log_info("provisioning complete for net_idx 0x%04x addr 0x%04x\n",net_idx, addr);
-    mesh_mcas_prov_complete();
 }
 
 static void prov_reset(void)

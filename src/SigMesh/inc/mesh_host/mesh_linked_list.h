@@ -9,7 +9,7 @@
 #include "stdbool.h"
 
 /* API_START */
-	
+    
 typedef struct mesh_linked_item {
     struct mesh_linked_item *next; // <-- next element in list, or NULL
 } mesh_linked_item_t;
@@ -17,9 +17,9 @@ typedef struct mesh_linked_item {
 typedef mesh_linked_item_t * mesh_linked_list_t;
 
 typedef struct {
-	int advance_on_next;
-    mesh_linked_item_t * prev;	// points to the item before the current one
-    mesh_linked_item_t * curr;	// points to the current item (to detect item removal)
+    int advance_on_next;
+    mesh_linked_item_t * prev;    // points to the item before the current one
+    mesh_linked_item_t * curr;    // points to the current item (to detect item removal)
 } mesh_linked_list_iterator_t;
 
 

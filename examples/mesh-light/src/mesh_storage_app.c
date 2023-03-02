@@ -129,14 +129,14 @@ void mesh_storage_stack_init(void){
     // setup TLV Flash Sector implementation
     const hal_flash_bank_t * hal_flash_bank_impl = NULL;
     hal_flash_bank_impl = hal_flash_bank_eflash_init_instance(
-    		&hal_flash_bank_context,
-    		HAL_FLASH_BANK_SIZE,
-			HAL_FLASH_BANK_0_ADDR,
-			HAL_FLASH_BANK_1_ADDR);
+            &hal_flash_bank_context,
+            HAL_FLASH_BANK_SIZE,
+            HAL_FLASH_BANK_0_ADDR,
+            HAL_FLASH_BANK_1_ADDR);
     const btstack_tlv_t * btstack_tlv_impl = btstack_tlv_flash_bank_init_instance(
-    		&btstack_tlv_flash_bank_context,
-			hal_flash_bank_impl,
-			&hal_flash_bank_context);
+            &btstack_tlv_flash_bank_context,
+            hal_flash_bank_impl,
+            &hal_flash_bank_context);
 
     // setup global tlv
     btstack_tlv_set_instance(btstack_tlv_impl, &btstack_tlv_flash_bank_context);

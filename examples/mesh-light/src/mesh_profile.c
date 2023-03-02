@@ -14,7 +14,6 @@
 #include "mesh.h"
 #include "mesh_port_stack.h"
 #include "mesh_storage_app.h" 
-#include "mesh_manage_conn_and_scan.h"
 #include "app_debug.h"
 #include "board.h"
 #include "ble_status.h"
@@ -147,9 +146,6 @@ void mesh_profile_adv_pb_enable(int enabled){
 
 // adv bearer send begin callback.
 static void mesh_profile_adv_bearer_event_send_msg_begin(mesh_adv_bearer_send_msg_begin_t *msg){
-    if(msg->type == BLUETOOTH_DATA_TYPE_MESH_MESSAGE){ // Mesh Message
-        mesh_mcas_on_off_server_control_callback(); //update conn interval.
-    }
 }
 
 // adv bearer send end callback.
@@ -187,7 +183,7 @@ static void mesh_scan_run_set(uint8_t en, uint16_t scan_timeout_ms){
 /* API START */
 
 // set scan addr.
-void mesh_profile_scan_addr_set(void){
+static void mesh_profile_scan_addr_set(void){
     gap_set_random_device_address(m_rnd_addr_scan);
 }
 
@@ -217,10 +213,14 @@ void mesh_profile_scan_stop(void){
     mesh_scan_run_set(0, 0);
 }
 
+void mesh_setup_scan(void){
+    mesh_profile_scan_addr_set();
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* API START */
-void ble_set_conn_interval_ms(uint16_t interval_ms){
+void mesh_profile_conn_interval_update_ms(uint16_t interval_ms){
     gap_update_connection_parameters(   my_conn_handle, \
                             CPI_MS_TO_VAL(interval_ms), CPI_MS_TO_VAL(interval_ms), \
                             0, CPSTT_MS_TO_VAL(5000), NULL, NULL);//slave can not change ce_len, use [ll_hint_on_ce_len] to set slave local ce_len
@@ -362,7 +362,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                         app_log_debug("interval:%dms\n", CPI_VAL_TO_MS(conn_update->interval));
                         app_log_debug("sup_timeout:%dms\n", CPSTT_VAL_TO_MS(conn_update->sup_timeout));
                     }
-                    mesh_mcas_conn_params_update_complete_callback(conn_update->status, conn_update->handle, conn_update->interval, conn_update->sup_timeout);
                 }
                 break;
             case HCI_SUBEVENT_LE_SCAN_TIMEOUT:{
@@ -430,6 +429,7 @@ static const mesh_profile_api_adv_t mesh_profile_adv_impl = {
 
 // scan
 static const mesh_profile_api_scan_t mesh_profile_scan_impl = {
+    /* void (*param_set)(..);               */ &mesh_profile_scan_param_set,
     /* void (*duty_start)(..);              */ &mesh_profile_scan_duty_start,
     /* void (*single_start)(..);            */ &mesh_profile_scan_single_start,
     /* void (*stop)(..);                    */ &mesh_profile_scan_stop,
@@ -437,8 +437,8 @@ static const mesh_profile_api_scan_t mesh_profile_scan_impl = {
 
 // adv bearer event.
 static const mesh_profile_api_adv_bearer_event_t mesh_profile_adv_bearer_event_impl = {
-    /* void (*adv_msg_begin)(..);           */ &mesh_profile_adv_bearer_event_send_msg_begin,
-    /* void (*adv_msg_end)(..);             */ &mesh_profile_adv_bearer_event_send_msg_end,
+    /* void (*send_msg_begin)(..);           */ &mesh_profile_adv_bearer_event_send_msg_begin,
+    /* void (*send_msg_end)(..);             */ &mesh_profile_adv_bearer_event_send_msg_end,
 };
 
 // att
@@ -447,12 +447,18 @@ static const mesh_profile_api_att_t mesh_profile_att_impl = {
     /* void (*att_req_can_send_now_evt)(..);     */ &mesh_profile_att_server_request_can_send_now_event,
 };
 
+// conn
+static const mesh_profile_api_conn_t mesh_profile_conn_impl = {
+    /* void (*conn_interval_update)(..);            */ &mesh_profile_conn_interval_update_ms,
+};
+
 // all.
 static const mesh_profile_api_t mesh_profile_api_impl = {
     /* const mesh_profile_api_adv_t *                   */ &mesh_profile_adv_impl,
     /* const mesh_profile_api_scan_t *                  */ &mesh_profile_scan_impl,
     /* const mesh_profile_api_adv_bearer_event_t *      */ &mesh_profile_adv_bearer_event_impl,
     /* const mesh_profile_api_att_t *                   */ &mesh_profile_att_impl,
+    /* const mesh_profile_api_conn_t *                  */ &mesh_profile_conn_impl,
 };
 
 

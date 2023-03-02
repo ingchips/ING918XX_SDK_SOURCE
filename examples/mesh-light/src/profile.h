@@ -27,14 +27,14 @@
 
 /** Mesh Configuration Server Model Context */
 typedef struct bt_mesh_cfg_srv {
-	uint8_t relay;                /* Relay Mode state */
-	uint8_t gatt_proxy;           /* GATT Proxy state */
-	uint8_t frnd;                 /* Friend state */
-	uint8_t low_pwr;              /* Low Power state */
-	uint8_t beacon;               /* Secure Network Beacon state */
-	uint8_t default_ttl;          /* Default TTL */    
-	uint8_t net_transmit;         /* Network Transmit count */
-	uint8_t relay_retransmit;     /* Relay Retransmit count */
+    uint8_t relay;                /* Relay Mode state */
+    uint8_t gatt_proxy;           /* GATT Proxy state */
+    uint8_t frnd;                 /* Friend state */
+    uint8_t low_pwr;              /* Low Power state */
+    uint8_t beacon;               /* Secure Network Beacon state */
+    uint8_t default_ttl;          /* Default TTL */    
+    uint8_t net_transmit;         /* Network Transmit count */
+    uint8_t relay_retransmit;     /* Relay Retransmit count */
 }bt_mesh_cfg_srv_t;
 
 /*
@@ -146,31 +146,31 @@ typedef struct light_state {
 * @enum mesh_out_action
 */
 typedef enum {
-	BT_MESH_NO_OUTPUT       = 0,
-	BT_MESH_BLINK           = BIT(0),
-	BT_MESH_BEEP            = BIT(1),
-	BT_MESH_VIBRATE         = BIT(2),
-	BT_MESH_DISPLAY_NUMBER  = BIT(3),
-	BT_MESH_DISPLAY_STRING  = BIT(4),
+    BT_MESH_NO_OUTPUT       = 0,
+    BT_MESH_BLINK           = BIT(0),
+    BT_MESH_BEEP            = BIT(1),
+    BT_MESH_VIBRATE         = BIT(2),
+    BT_MESH_DISPLAY_NUMBER  = BIT(3),
+    BT_MESH_DISPLAY_STRING  = BIT(4),
 } bt_mesh_output_action_t;
 
 /**
 * @enum mesh_in_action
 */
 typedef enum {
-	BT_MESH_NO_INPUT      = 0,
-	BT_MESH_PUSH          = BIT(0),
-	BT_MESH_TWIST         = BIT(1),
-	BT_MESH_ENTER_NUMBER  = BIT(2),
-	BT_MESH_ENTER_STRING  = BIT(3),
+    BT_MESH_NO_INPUT      = 0,
+    BT_MESH_PUSH          = BIT(0),
+    BT_MESH_TWIST         = BIT(1),
+    BT_MESH_ENTER_NUMBER  = BIT(2),
+    BT_MESH_ENTER_STRING  = BIT(3),
 } bt_mesh_input_action_t;
 
 /**
 * @enum prov_bearer
 */
 typedef enum {
-	BT_MESH_PROV_ADV   = BIT(0),
-	BT_MESH_PROV_GATT  = BIT(1),
+    BT_MESH_PROV_ADV   = BIT(0),
+    BT_MESH_PROV_GATT  = BIT(1),
 } bt_mesh_prov_bearer_t;
 
 /** Provisioning properties & capabilities. */
@@ -178,8 +178,8 @@ typedef enum {
 * @struct bt_mesh_prov
 */
 typedef struct bt_mesh_prov {
-	/** The UUID that's used when advertising as unprovisioned */
-	const uint8_t *uuid;
+    /** The UUID that's used when advertising as unprovisioned */
+    const uint8_t *uuid;
     
     /* Public Key OOB */
     const uint8_t * public_key;
@@ -197,46 +197,46 @@ typedef struct bt_mesh_prov {
     uint16_t input_oob_action;
     uint8_t  input_oob_max_size;
 
-	/** @brief Output of a number is displayed.
-	 *  This callback notifies the application that it should
-	 *  output the given number.
-	 *  @param num Number to be outputted.
-	 *  @return Zero on success or negative error code otherwise
-	 */
-	int         (*output_number)(uint32_t num);
+    /** @brief Output of a number is displayed.
+     *  This callback notifies the application that it should
+     *  output the given number.
+     *  @param num Number to be outputted.
+     *  @return Zero on success or negative error code otherwise
+     */
+    int         (*output_number)(uint32_t num);
 
-	/** @brief Input is requested.
-	 *
-	 *  This callback notifies the application that it should
-	 *  request input from the user. The
-	 *  requested input will either be a string or a number, and
-	 *  the application needs to consequently call the
-	 *  bt_mesh_input_string() or bt_mesh_input_number() functions
-	 *  once the data has been acquired from the user.
-	 *  @return Zero on success or negative error code otherwise
-	 */
-	int         (*input_req)(void);
+    /** @brief Input is requested.
+     *
+     *  This callback notifies the application that it should
+     *  request input from the user. The
+     *  requested input will either be a string or a number, and
+     *  the application needs to consequently call the
+     *  bt_mesh_input_string() or bt_mesh_input_number() functions
+     *  once the data has been acquired from the user.
+     *  @return Zero on success or negative error code otherwise
+     */
+    int         (*input_req)(void);
 
-	/** @brief Provisioning is complete.
-	 *
-	 *  This callback notifies the application that provisioning has
-	 *  been successfully completed, and that the local node has been
-	 *  assigned the specified NetKeyIndex and primary element address.
-	 *
-	 *  @param net_idx NetKeyIndex given during provisioning.
-	 *  @param addr Primary element address.
-	 */
-	void        (*complete)(uint16_t net_idx, uint16_t addr);
+    /** @brief Provisioning is complete.
+     *
+     *  This callback notifies the application that provisioning has
+     *  been successfully completed, and that the local node has been
+     *  assigned the specified NetKeyIndex and primary element address.
+     *
+     *  @param net_idx NetKeyIndex given during provisioning.
+     *  @param addr Primary element address.
+     */
+    void        (*complete)(uint16_t net_idx, uint16_t addr);
     
-	/** @brief Node has been reset.
-	 *
-	 *  This callback notifies the application that the local node
-	 *  has been reset and needs to be reprovisioned. The node will
-	 *  not automatically advertise as unprovisioned, rather the
-	 *  bt_mesh_prov_enable() API needs to be called to enable
-	 *  unprovisioned advertising on one or more provisioning bearers.
-	 */
-	void        (*reset)(void);
+    /** @brief Node has been reset.
+     *
+     *  This callback notifies the application that the local node
+     *  has been reset and needs to be reprovisioned. The node will
+     *  not automatically advertise as unprovisioned, rather the
+     *  bt_mesh_prov_enable() API needs to be called to enable
+     *  unprovisioned advertising on one or more provisioning bearers.
+     */
+    void        (*reset)(void);
     
 }bt_mesh_prov_t;
 
