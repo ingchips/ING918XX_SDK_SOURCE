@@ -104,6 +104,15 @@ typedef enum
     SYSCTRL_MEM_BLOCK_4 = 0x10,   // block 4 is 16KiB following block 3
 } SYSCTRL_MemBlock;
 
+/**
+ * \brief Get current HClk (same as MCU working clock) in Hz
+ *
+ * Compatible API with ING916's
+ *
+ * \return              clock in Hz
+ */
+#define SYSCTRL_GetHClk()       48000000
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum

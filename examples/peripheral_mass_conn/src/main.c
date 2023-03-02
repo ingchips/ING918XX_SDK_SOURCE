@@ -110,8 +110,6 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     
-    // platform_config(PLATFORM_CFG_LOG_HCI, 1);
-
     setup_peripherals();
     xTaskCreate(watchdog_task,
            "w",

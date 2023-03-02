@@ -177,14 +177,9 @@ static void SVC_Handler(void)
 #define MAXIMUM_SUPPRESSED_TICKS            (0xffffff / RTC_CYCLES_PER_TICK)
 #define EXPECTED_IDLE_TIME_BEFORE_SLEEP     2
 #define MISSED_COUNTS_FACTOR                45
-#define STOPPED_TIMER_COMPENSATION          (MISSED_COUNTS_FACTOR / ( PLL_CLK_FREQ / RTC_CLK_FREQ ))
+#define STOPPED_TIMER_COMPENSATION          (MISSED_COUNTS_FACTOR / ( SYSCTRL_GetHClk() / RTC_CLK_FREQ ))
 
 #ifdef POWER_SAVING
-
-struct    
-{
-    uint8_t enhanced_ticks;
-} pm_info = {0};
 
 // This is a re-implementation of FreeRTOS's suppress ticks and sleep function.
 static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
@@ -205,18 +200,12 @@ static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
     portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
     portNVIC_SYSTICK_CTRL_REG |= portNVIC_SYSTICK_ENABLE_BIT;
     
-    if (pm_info.enhanced_ticks)
-        while (0 == portNVIC_SYSTICK_CURRENT_VALUE_REG) ;
-
     platform_pre_sleep_processing();
     platform_post_sleep_processing();
 
     rt_hw_interrupt_enable(lock);
 
     lock = rt_hw_interrupt_disable();
-
-    if (pm_info.enhanced_ticks)
-        while (portNVIC_SYSTICK_CURRENT_VALUE_REG == portNVIC_SYSTICK_CURRENT_VALUE_REG);
 
     portNVIC_SYSTICK_CTRL_REG = ( portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT );
 
@@ -247,18 +236,11 @@ static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
     portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
     portNVIC_SYSTICK_CTRL_REG |= portNVIC_SYSTICK_ENABLE_BIT;
     rt_tick_set(rt_tick_get() + ulCompleteTickPeriods);
-    if (pm_info.enhanced_ticks)
-        while (0 == portNVIC_SYSTICK_CURRENT_VALUE_REG) ;
+
     portNVIC_SYSTICK_LOAD_REG = RTC_CYCLES_PER_TICK - 1UL;
 
     rt_hw_interrupt_enable(lock);
     return ulCompleteTickPeriods;
-}
-
-void rt_enable_enhanced_ticks(void)
-{
-    platform_config(PLATFORM_CFG_RTOS_ENH_TICK, 1);
-    pm_info.enhanced_ticks = 1;
 }
 
 #endif

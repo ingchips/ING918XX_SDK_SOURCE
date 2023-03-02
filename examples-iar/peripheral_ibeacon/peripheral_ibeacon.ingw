@@ -1,18 +1,18 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133324,
+   "size": 133572,
    "base": 16384
   },
   "ram": {
-   "size": 29980,
+   "size": 29820,
    "base": 536870912
   },
   "app": {
    "base": 155648
   },
   "version": [
-   1,8,6]
+   1,9,4]
  },
  "tc_dir": "",
  "ide_ver": "",
@@ -50,8 +50,8 @@
   "proxy": true
  },
  "cmsis": "",
- "app_ram_size": 35552,
- "app_ram_addr": 536900896,
+ "app_ram_size": 35712,
+ "app_ram_addr": 536900736,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",
