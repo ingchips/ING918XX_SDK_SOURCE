@@ -167,9 +167,9 @@ void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
  *
  * IQ samples in periodic advertising or other extended advertising sets
  * (see `ll_attach_cte_to_adv_set`) are sampled and reported through a vendor defined LE
- * subevent.
+ * sub-events.
  *
- * Note: This function will fail if scannning has not been started. IQ sampling is
+ * Note: This function will fail if scanning has not been started. IQ sampling is
  * disabled when scanning is disabled.
  *
  * @param[in]   cte_type                cte_type (0: AoA; 1: AoD 1us; 2: AoD 2us)
@@ -188,9 +188,51 @@ void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
 int ll_scanner_enable_iq_sampling(uint8_t cte_type,
                           uint8_t slot_len,
                           uint8_t switching_pattern_len,
-                          const uint8_t *swiching_pattern,
+                          const uint8_t *switching_pattern,
                           uint8_t slot_sampling_offset,
                           uint8_t slot_sample_count);
+
+/**
+ ****************************************************************************************
+ * @brief Enable IQ sampling on legacy adv after scanning is enabled
+ *
+ * CAUTION: This feature might cause system into dead-lock, or hard fault. Be sure to enable watchdog.
+ *
+ * A portion of legacy advertising is treated as CTE, and IQ samples are sampled
+ * and reported through a vendor defined LE sub-events.
+ *
+ * Note: Before calling this function, scanning mode must be configured to LEGACY ONLY.
+ * This function will fail if scanning has not been started. IQ sampling is
+ * disabled when scanning is disabled.
+ *
+ * @param[in]   sampling_offset         CTE position (**bit** offset) in payload (>= 8bits)
+ *                                      For example, in ADV_IND, to start CTE sampling
+ *                                      from the first bit of AdvData, `sampling_offset`
+ *                                      is 6 * 8 (bits).
+ * @param[in]   cte_type                cte_type (0: AoA; 1: AoD 1us; 2: AoD 2us)
+ * @param[in]   slot_len                slot length for AoA
+ * @param[in]   switching_pattern_len   switching pattern len
+ * @param[in]   switching_pattern       switching pattern
+ * @param[in]   slot_sampling_offset    sampling offset (0..23) in a slot
+ * @param[in]   slot_sample_count       sample count within a slot (1..5)
+ * @return                              0 if successful else error code
+ *
+ * Note:
+ * Recommended value: slot_sampling_offset = 12, slot_sample_count = 1
+ * (slot_sampling_offset + slot_sample_count) should be <= 24
+ ****************************************************************************************
+ */
+// int ll_scanner_enable_iq_sampling_on_legacy(
+//                           uint16_t sampling_offset,
+//                           uint8_t cte_type,
+//                           uint8_t cte_time,
+//                           uint8_t slot_len,
+//                           uint8_t switching_pattern_len,
+//                           const uint8_t *switching_pattern,
+//                           uint8_t slot_sampling_offset,
+//                           uint8_t slot_sample_count);
+// WARNING: ^^^ this API is not available in this release
+
 
 struct ll_raw_packet;
 
@@ -508,6 +550,46 @@ int ll_ackable_packet_run(struct ll_raw_packet *packet,
 
 /**
  ****************************************************************************************
+ * @brief Lock RF frequency
+ *
+ * Once locked, all RF activities will occur on the specified channel, no matter
+ * BLE ADV/SCAN/CONNECTION, or raw packets.
+ *
+ * `ll_raw_packet_set_bare_mode` with `freq_mhz != 0` also relies on this functionality.
+ * It will call this and `ll_unlock_frequency()` automatically.
+ *
+ * Locking is a low level configuration, of which BLE sub-system is totally unaware.
+ * Do NOT forget whitening: after locking to 2402MHz (channel 37), do not expecting
+ * all adv on 37/38/39 can be received, since BLE sub-system is still transmitting
+ * adv on 37/38/39 with whitening corresponding to each channel.
+ *
+ * To make all 3 adv on a single channel receivable (properly whitened as on channel 37),
+ * call `ll_override_whitening_init_value(1, 0x53)`.
+ *
+ * Nesting of locking:
+ *      lock(f0);       // locked to f0
+ *          lock(f1);   // locked to f1
+ *          unlock();
+ *          ...         // stilling locked to f1
+ *      unlock();
+ *      ...             // unlocked
+ *
+ * @param[in]   freq_mhz            channel frequency in MHz
+ ****************************************************************************************
+ */
+void ll_lock_frequency(int freq_mhz);
+
+/**
+ ****************************************************************************************
+ * @brief Unlock RF frequency
+ *
+ * After unlocking, RF behaviors are back to normal again.
+ ****************************************************************************************
+ */
+void ll_unlock_frequency(void);
+
+/**
+ ****************************************************************************************
  * @brief Allocate memory from LL internal heap
  *
  * @param[in]   size                memory size in bytes
@@ -568,6 +650,43 @@ void ll_set_adv_access_address(uint32_t acc_addr);
  ****************************************************************************************
  */
 void ll_set_conn_interval_unit(uint16_t unit);
+
+/**
+ ****************************************************************************************
+ * @brief Override standard whitening init value
+ *
+ * @param[in]  override     enable override: 1; disable override: 0 (default: disable)
+ * @param[in]  value        customized whitening init value when override is enabled:
+ *                          lfsr[0] = bit[0]; ...; lfsr[6] = bit[6].
+ *                          For example, standard value for channel 37 is 0x53.
+ ****************************************************************************************
+ */
+// void ll_override_whitening_init_value(uint8_t override, uint8_t value);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Allow the reception of adv packets that use a nonstandard ADV TYPE
+ *
+ * @param[in]  allowed      allowed: 1; not allowed: 0 (default: not allowed)
+ * @param[in]  type         nonstandard ADV TYPE
+ ****************************************************************************************
+ */
+// void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Set CTE bit
+ *
+ * @param[in]  bit          CTE bit: 0/1 (default: 1)
+ ****************************************************************************************
+ */
+// void ll_set_cte_bit(uint8_t bit);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
