@@ -67,6 +67,8 @@ void setup_peripherals(void)
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Reset();
     ADC_Calibration(SINGLE_END_MODE);
+    ADC_ftInit();
+    ADC_VrefCalibration();
 #endif
 #else
     #error unknown or unsupported chip family

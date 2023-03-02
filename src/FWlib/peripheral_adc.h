@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #include "ingsoc.h"
-#include "platform_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -141,8 +140,29 @@ typedef struct
 {
     float vref_P;
     float vref_N;
-    float(*cb)(uint16_t);
+    float (*cb)(uint16_t);
 } SADC_adcCal_t;
+
+typedef struct
+{
+    uint32_t k;
+    uint32_t Coseq;
+} SADC_ftChPara_t;
+typedef struct
+{
+    uint32_t V1;
+    uint32_t V2;
+    uint32_t Vp;
+    uint16_t V12Data;
+    uint16_t (*f)(SADC_channelId, uint32_t);
+    SADC_ftChPara_t chPara[8];
+} __attribute__((packed)) SADC_ftCali_t;
+
+typedef struct {
+    uint8_t s;
+    uint16_t cnt;
+    uint16_t data[5];
+} __attribute__((packed)) SADC_adcAve_t;
 
 /**
  * @brief Enable ADC control signal
@@ -318,6 +338,26 @@ uint16_t ADC_GetData(uint32_t data);
 uint16_t ADC_ReadChannelData(const uint8_t channel_id);
 
 /**
+ * @brief To get the ADC data in average
+ * @note It returns average value in continue mode, equals to 'ADC_GetData' in single mode.
+ * To avoid get fluctuant single data, is a good way to configure ADC in continue mode and 
+ * 5 data per trigger, call this function 5 times with raw-data to get a data more accurate.
+ * 
+ * @param[in] data           data read by ADC_PopFifoData
+ * @return                   ADC data
+ */
+uint16_t ADC_GetAveData(uint32_t data);
+
+/**
+ * @brief Disable all ADC average data memory
+ * @note Call this function to free all ADC average data memory. And it can be rebuild
+ * the next calling of function 'ADC_Start(1)'.
+ * You should have got all data in ADC average data memory or you don't need them, for they
+ * will be discarded after calling 'ADC_AveDisable'.
+ */
+void ADC_AveDisable(void);
+
+/**
  * @brief start ADC
  *
  * @param[in] start          start/stop ADC
@@ -325,9 +365,17 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id);
 void ADC_Start(uint8_t start);
 
 /**
- * @brief Calibrate VREFP
+ * @brief To Calibrate VREFP
+ * @note Should call 'ADC_ftInit' first or it dosen't work.
  */
-void ADC_VrefCalibration(ADC_VrefCaliCb cb);
+void ADC_VrefCalibration(void);
+
+/**
+ * @brief Initialization of ADC FT-Calibration
+ * @note Should call this function before do ADC conversion or get voltage value.
+ * And this function should be used again if 'ADC_AdcClose' is called.
+ */
+void ADC_ftInit(void);
 
 /**
  * @brief Get voltage by ADC data

@@ -168,6 +168,23 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #include "rom_tools.h"
 
+#define APB_SPI_FLASH_CTRL_BASE              ((uint32_t)0x40150000UL)
+#define SPI_FLASH_LEFT_SHIFT(v, s)           ((v) << (s))
+#define SPI_FLASH_RIGHT_SHIFT(v, s)          ((v) >> (s))
+#define SPI_FLASH_MK_MASK(b)                 ((SPI_FLASH_LEFT_SHIFT(1, b)) - (1))
+#define SPI_FLASH_REG_VAL(reg)               ((*((uint32_t *)((APB_SPI_FLASH_CTRL_BASE) + (reg)))))
+#define REG_CLR(reg, b, s)                   ((SPI_FLASH_REG_VAL(reg)) & (~(SPI_FLASH_LEFT_SHIFT(SPI_FLASH_MK_MASK(b), s))))
+#define SPI_FLASH_REG_WR_BITS(reg, v, s, b)  ((SPI_FLASH_REG_VAL(reg)) = ((REG_CLR(reg, b, s)) | (SPI_FLASH_LEFT_SHIFT(v, s))))
+#define SPI_FLASH_REG_RD(reg, b, s)          ((SPI_FLASH_RIGHT_SHIFT((SPI_FLASH_REG_VAL(reg)), s)) & SPI_FLASH_MK_MASK(b))
+static void SPI_FLASH_RegWrBits(SPI_FLASH_Reg reg, uint32_t v, uint8_t s, uint8_t b)
+{
+    SPI_FLASH_REG_WR_BITS(reg, v, s, b);
+}
+static uint32_t SPI_FLASH_RegRd(SPI_FLASH_Reg reg, uint8_t s, uint8_t b)
+{
+    return SPI_FLASH_REG_RD(reg, b, s);
+}
+
 int erase_flash_sector(const uint32_t addr)
 {
     return ROM_erase_flash_sector(addr);
@@ -186,6 +203,24 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
 {
     return ROM_flash_do_update(block_num, blocks, page_buffer);
+}
+
+#define __RAM_CODE    __attribute__((section(".data")))
+__RAM_CODE uint32_t SecurityPageRead(uint32_t addr)
+ {
+    SPI_FLASH_RegWrBits(SPI_CFG, 2, 17, 2);
+    SPI_FLASH_RegWrBits(SPI_BLOCK_SIZE, 4, 8, 9);
+    SPI_FLASH_RegWrBits(SPI_CMD_ADDR, ((addr&0xffffff)<<8) | 0x48, 0, 32);
+    ROM_FlashWaitBusyDown();
+    return SPI_FLASH_RegRd(RX_STATUS, 0, 32);
+ }
+__RAM_CODE uint32_t ReadFlashSecurity(uint32_t addr)
+{
+    uint32_t ret;
+    ROM_FlashDisableContinuousMode();
+    ret = SecurityPageRead(addr);
+    ROM_FlashEnableContinuousMode();
+    return ret;
 }
 
 #endif
