@@ -433,5 +433,11 @@ void trace_full_dump(f_trace_puts f_puts, int size)
     sprintf(str,    "CTL: %08x", __get_CONTROL()); f_puts(str);
     str[0] = ':';
     hex_dump(str, buf, f_puts, 0x20000000, size);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     hex_dump(str, buf, f_puts, 0x400A0000, size);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    hex_dump(str, buf, f_puts, 0x40120000, size);
+#else
+    #error unknown or unsupported chip family
+#endif
 }
