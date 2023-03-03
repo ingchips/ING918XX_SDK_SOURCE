@@ -1,0 +1,9 @@
+DateTime==5.0
+future==0.18.2
+iso8601==1.0.2
+libusb-package==1.0.26.1
+pyserial==3.5
+pytz==2022.7.1
+pyusb==1.2.1
+PyYAML==6.0
+zope.interface==5.5.2
