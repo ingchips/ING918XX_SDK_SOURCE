@@ -86,6 +86,12 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
     io_write(RTC_POR1, (io_read(RTC_MEM1) & mask) | shutdown);
 }
 
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
+{
+    source->source = (io_read(BB_REG_BASE + 0x304) >> 8) & 0x3;
+    return source->source != 0;
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)

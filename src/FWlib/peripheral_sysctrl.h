@@ -113,6 +113,14 @@ typedef enum
  */
 #define SYSCTRL_GetHClk()       48000000
 
+#define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
+#define SYSCTRL_WAKEUP_SOURCE_EXT_INT       2       // waken up by EXT_INT
+
+typedef struct
+{
+    uint32_t source;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
+} SYSCTRL_WakeupSource_t;
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
@@ -898,14 +906,6 @@ typedef struct
 void SYSCTRL_EnableWakeupSourceDetection(void);
 
 /**
- * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
- *
- * @param[out] source           source of the last wake up
- * @return                      1 if any wake up source is found else 0
- */
-uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
-
-/**
  * @brief Enable/Disable p_cap mode for a certain pwm channel
  *
  * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
@@ -1029,6 +1029,14 @@ void SYSCTRL_WaitForLDO(void);
  *                              memory block is powered off.
  */
 void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
+
+/**
+ * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
+ *
+ * @param[out] source           source of the last wake up
+ * @return                      1 if any wake up source is found else 0
+ */
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
