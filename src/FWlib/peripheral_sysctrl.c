@@ -1026,7 +1026,7 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
 void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache)
 {
     #define IC_BASE 0x40140000
-    #define DC_BASE 0x40140000
+    #define DC_BASE 0x40141000
 
     uint8_t v = (i_cache << 1) | d_cache;
     if (SYSCTRL_MEM_BLOCK_AS_CACHE != i_cache)
