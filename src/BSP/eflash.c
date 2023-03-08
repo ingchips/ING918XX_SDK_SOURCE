@@ -121,7 +121,7 @@ int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 int program_fota_metadata(const uint32_t entry, const int block_num, const fota_update_block_t *blocks)
 {
 #define START               (EFLASH_BASE + EFLASH_SIZE + 2 * PAGE_SIZE)
-#define	DEF_UPDATE_FLAG     (0x5A5A5A5A)
+#define    DEF_UPDATE_FLAG     (0x5A5A5A5A)
 
     uint32_t backup[4];
     uint32_t addr = START - 4;

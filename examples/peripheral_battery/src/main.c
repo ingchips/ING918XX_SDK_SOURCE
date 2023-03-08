@@ -73,7 +73,7 @@ void ADC_AveInit(void)
 {
     uint16_t ch;
     if (ADC_GetInputMode()) {
-		ch = ADC_GetChannelStatus(DIFFERENTAIL_MODE) >> 1;
+        ch = ADC_GetChannelStatus(DIFFERENTAIL_MODE) >> 1;
         ADC_AveInitSet((SADC_channelId)ch);
         return;
     }
