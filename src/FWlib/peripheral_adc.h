@@ -160,8 +160,8 @@ typedef struct
 
 typedef struct {
     uint8_t s;
-    uint16_t cnt;
-    uint16_t data[5];
+    uint8_t cnt;
+    uint16_t data[0];
 } __attribute__((packed)) SADC_adcAve_t;
 
 /**
@@ -263,6 +263,13 @@ uint8_t ADC_GetBusyStatus(void);
 void ADC_SetInputMode(SADC_adcIputMode mode);
 
 /**
+ * @brief Get ADC input mode
+ *
+ * @return                   ADC input mode, see 'SADC_adcIputMode'
+*/
+SADC_adcIputMode ADC_GetInputMode(void);
+
+/**
  * @brief Set pga gain
  *
  * @param[in] gain           pga gain, see 'SADC_adcPgaGain'
@@ -336,6 +343,16 @@ uint16_t ADC_GetData(uint32_t data);
  * @return                   ADC data
  */
 uint16_t ADC_ReadChannelData(const uint8_t channel_id);
+
+/**
+ * @brief Get ADC-Channel's status
+ * @note if ADC-input-mode is differential,it returns channel value multiply by 2.
+ * if ADC-input-mode is differential,it returns channel value left-shifted by 1.
+ * 
+ * @param[in] channel_id     ADC input mode, see 'SADC_adcIputMode'
+ * @return                   ADC-Channel's status
+ */
+uint16_t ADC_GetChannelStatus(SADC_adcIputMode mode);
 
 /**
  * @brief To get the ADC data in average

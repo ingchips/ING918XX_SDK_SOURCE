@@ -120,6 +120,7 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #include "platform_api.h"
 #include <stdlib.h>
+#include <string.h>
 #include "eflash.h"     
 #define ADC_LEFT_SHIFT(v, s)            ((v) << (s))
 #define ADC_RIGHT_SHIFT(v, s)           ((v) >> (s))
@@ -134,7 +135,6 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 
 static SADC_ftCali_t *ftCali;
 static SADC_adcCal_t ADC_adcCal;
-static SADC_adcAve_t *adcAve[12];
 
 static void ADC_RegClr(SADC_adcReg reg, uint8_t s, uint32_t b)
 {
@@ -287,6 +287,10 @@ void ADC_SetInputMode(SADC_adcIputMode mode)
     if (ADC_adcCal.cb)
         ADC_CbRegister();
 }
+SADC_adcIputMode ADC_GetInputMode(void)
+{
+    return (SADC_adcIputMode)ADC_RegRd(SADC_CFG_0, 8, 1);
+}
 
 void ADC_PgaGainSet(SADC_adcPgaGain gain)
 {
@@ -346,54 +350,17 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
     return 0;
 }
 
-uint16_t ADC_GetAveData(uint32_t data)
+uint16_t ADC_GetChannelStatus(SADC_adcIputMode mode)
 {
-    SADC_channelId ch = ADC_GetDataChannel(data);
-    if (!adcAve[ch]) return ADC_GetData(data);
-    adcAve[ch]->data[adcAve[ch]->cnt % 5] = ADC_GetData(data);
-    adcAve[ch]->cnt++;
-    if (adcAve[ch]->s < 5)
-        adcAve[ch]->s++;
-    uint8_t i;
-    uint32_t sum = 0;
-    for (i = 0; i < adcAve[ch]->s; ++i)
-        sum += adcAve[ch]->data[i];
-    return sum / i;
-}
-static void ADC_AveInitSet(SADC_channelId ch)
-{
-    if (adcAve[ch])
-        memset(adcAve[ch], 0, 3);
-    else
-        adcAve[ch] = malloc(sizeof(SADC_adcAve_t));
-}
-static void ADC_AveInit(void)
-{
-    if (ADC_RegRd(SADC_CFG_0, 8, 1)) {
-        ADC_AveInitSet(ADC_RegRd(SADC_CFG_0, 12, 4) >> 1);
-        return;
-    }
-    SADC_channelId ch;
-    uint16_t reg = ADC_RegRd(SADC_CFG_2, 3, 12);
-    for (ch = 0; ch < 12; ++ch) {
-        if (reg & ADC_LEFT_SHIFT(1, ch))
-            ADC_AveInitSet(ch);
-    }
-}
-void ADC_AveDisable(void)
-{
-    uint8_t i;
-    for (i = 0; i < 12; ++i) {
-        if (!adcAve[i]) continue;
-        free(adcAve[i]);
-        adcAve[i] = 0;
-    }
+    if (mode)
+        return ADC_RegRd(SADC_CFG_0, 12, 4);
+    else 
+        return ADC_RegRd(SADC_CFG_2, 3, 12);
 }
 
 void ADC_Start(uint8_t start)
 {
     if (start) {
-        ADC_AveInit();
         ADC_RegWr(SADC_CFG_2, 1, 2);
         if (ADC_RegRd(SADC_CFG_0, 10, 1) && ADC_RegRd(SADC_CFG_0, 12, 4))
             ADC_RegWr(SADC_CFG_0, 1, 11);
@@ -463,12 +430,13 @@ void ADC_ftInit(void)
     if (ftCali) return;
     ftCali = malloc(sizeof(SADC_ftCali_t));
     memset(ftCali, 0, sizeof(SADC_ftCali_t));
-    uint32_t flg = ReadFlashSecurity(0x1170);
+    uint32_t flg = read_flash_security(0x1170);
+    if (flg & ADC_MK_MASK(16)) return;
     flg = (flg >> 16) & ADC_MK_MASK(16);
     if (flg == 0xadc0) {
-        ftCali->Vp = ReadFlashSecurity(0x1174);
-        ftCali->V1 = ReadFlashSecurity(0x1178);
-        ftCali->V2 = ReadFlashSecurity(0x117c);
+        ftCali->Vp = read_flash_security(0x1174);
+        ftCali->V1 = read_flash_security(0x1178);
+        ftCali->V2 = read_flash_security(0x117c);
     } else if (flg == 0xadcf) {
         ftCali->Vp = 330000;
         ftCali->V1 = 30000;
@@ -476,8 +444,8 @@ void ADC_ftInit(void)
     } else {
         return;
     }
-    uint32_t mbg = ReadFlashSecurity(0x1100);
-    if (mbg < ADC_MK_MASK(32))
+    uint32_t mbg = read_flash_security(0x1100);
+    if (mbg < 0xffffffff)
         *(uint32_t *)0x40102008 |= (mbg & ADC_MK_MASK(6)) << 4;
     uint8_t i;
     uint32_t Cin1, Cin2;
@@ -485,12 +453,12 @@ void ADC_ftInit(void)
     Cin1 = ftCali->V1 * 16384 / ftCali->Vp;
     Cin2 = ftCali->V2 / 10 * 16384 / (ftCali->Vp / 10);
     for (i = 0; i < 8; ++i) {
-        Cout1 = ReadFlashSecurity(0x2002 + 0x20 * i) & ADC_MK_MASK(16);
-        Cout2 = ReadFlashSecurity(0x201e + 0x20 * i) & ADC_MK_MASK(16);
+        Cout1 = read_flash_security(0x2002 + 0x20 * i) & ADC_MK_MASK(16);
+        Cout2 = read_flash_security(0x201e + 0x20 * i) & ADC_MK_MASK(16);
         ftCali->chPara[i].k = (Cout2 - Cout1) * 100000 / (1 * (Cin2 - Cin1));
         ftCali->chPara[i].Coseq = 18192 - (Cin1 * (Cout2 - 8192) + Cin2 * (8192 - Cout1)) / (Cout2 - Cout1);
     }
-    ftCali->V12Data = ReadFlashSecurity(0x1144) & ADC_MK_MASK(16);
+    ftCali->V12Data = read_flash_security(0x1144) & ADC_MK_MASK(16);
     ftCali->f = ADC_FtCal;
     ADC_VrefRegister(ftCali->Vp * 0.00001f, 0.f);
 }
@@ -521,7 +489,6 @@ void ADC_AdcClose(void)
     ADC_Reset();
     free(ftCali);
     ftCali = 0;
-    ADC_AveDisable();
 }
 
 void ADC_Calibration(SADC_adcIputMode mode)

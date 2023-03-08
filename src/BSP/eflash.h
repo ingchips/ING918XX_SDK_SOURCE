@@ -80,20 +80,6 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 #define EFLASH_SECTOR_SIZE      4096
 #define EFLASH_ERASABLE_SIZE    EFLASH_SECTOR_SIZE
 
-typedef void (*rom_FlashWaitBusyDown)(void);
-typedef void (*rom_FlashDisableContinuousMode)(void);
-typedef void (*rom_FlashEnableContinuousMode)(void);
-#define ROM_FlashWaitBusyDown           ((rom_FlashWaitBusyDown)          (0x00000b6d))
-#define ROM_FlashDisableContinuousMode  ((rom_FlashDisableContinuousMode) (0x000007c9))
-#define ROM_FlashEnableContinuousMode   ((rom_FlashEnableContinuousMode)  (0x0000080d))
-
-typedef enum {
-    SPI_CMD_ADDR         = 0x0,
-    SPI_BLOCK_SIZE       = 0x4,
-    RX_STATUS            = 0x10,
-    SPI_CFG              = 0x14,
-} SPI_FLASH_Reg;
-
 /**
  * @brief Erase a sector of flash
  *
@@ -118,7 +104,7 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
  * @param[in] addr              start address (unified address) of the sector
  * @return                      flash data
  */
-uint32_t ReadFlashSecurity(uint32_t addr);
+uint32_t read_flash_security(uint32_t addr);
 
 #endif
 

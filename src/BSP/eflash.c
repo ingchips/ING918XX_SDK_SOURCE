@@ -168,6 +168,20 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #include "rom_tools.h"
 
+typedef enum {
+    SPI_CMD_ADDR         = 0x0,
+    SPI_BLOCK_SIZE       = 0x4,
+    RX_STATUS            = 0x10,
+    SPI_CFG              = 0x14,
+} SPI_FLASH_Reg;
+
+typedef void (*rom_FlashWaitBusyDown)(void);
+typedef void (*rom_FlashDisableContinuousMode)(void);
+typedef void (*rom_FlashEnableContinuousMode)(void);
+#define ROM_FlashWaitBusyDown           ((rom_FlashWaitBusyDown)          (0x00000b6d))
+#define ROM_FlashDisableContinuousMode  ((rom_FlashDisableContinuousMode) (0x000007c9))
+#define ROM_FlashEnableContinuousMode   ((rom_FlashEnableContinuousMode)  (0x0000080d))
+
 #define APB_SPI_FLASH_CTRL_BASE              ((uint32_t)0x40150000UL)
 #define SPI_FLASH_LEFT_SHIFT(v, s)           ((v) << (s))
 #define SPI_FLASH_RIGHT_SHIFT(v, s)          ((v) >> (s))
@@ -206,7 +220,7 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
 }
 
 #define __RAM_CODE    __attribute__((section(".data")))
-__RAM_CODE uint32_t SecurityPageRead(uint32_t addr)
+__RAM_CODE uint32_t security_page_read(uint32_t addr)
  {
     SPI_FLASH_RegWrBits(SPI_CFG, 2, 17, 2);
     SPI_FLASH_RegWrBits(SPI_BLOCK_SIZE, 4, 8, 9);
@@ -214,11 +228,11 @@ __RAM_CODE uint32_t SecurityPageRead(uint32_t addr)
     ROM_FlashWaitBusyDown();
     return SPI_FLASH_RegRd(RX_STATUS, 0, 32);
  }
-__RAM_CODE uint32_t ReadFlashSecurity(uint32_t addr)
+__RAM_CODE uint32_t read_flash_security(uint32_t addr)
 {
     uint32_t ret;
     ROM_FlashDisableContinuousMode();
-    ret = SecurityPageRead(addr);
+    ret = security_page_read(addr);
     ROM_FlashEnableContinuousMode();
     return ret;
 }
