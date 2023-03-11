@@ -44,8 +44,13 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-static SADC_adcAve_t *adcAve[12];
 #define AVE_NUM 5
+typedef struct {
+    uint8_t s;
+    uint8_t cnt;
+    uint16_t data[0];
+} __attribute__((packed)) SADC_adcAve_t;
+static SADC_adcAve_t *adcAve[12];
 uint16_t ADC_GetAveData(uint32_t data)
 {
     SADC_channelId ch = ADC_GetDataChannel(data);
@@ -73,11 +78,11 @@ void ADC_AveInit(void)
 {
     uint16_t ch;
     if (ADC_GetInputMode()) {
-        ch = ADC_GetChannelStatus(DIFFERENTAIL_MODE) >> 1;
+        ch = ADC_GetEnabledChannels(DIFFERENTAIL_MODE) >> 1;
         ADC_AveInitSet((SADC_channelId)ch);
         return;
     }
-    uint16_t reg = ADC_GetChannelStatus(SINGLE_END_MODE);
+    uint16_t reg = ADC_GetEnabledChannels(SINGLE_END_MODE);
     for (ch = 0; ch < 12; ++ch) {
         if (reg & (1 << ch))
             ADC_AveInitSet((SADC_channelId)ch);
