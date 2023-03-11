@@ -158,8 +158,7 @@ void cmd_write(const char *param)
 
 void cmd_reboot(const char *param)
 {
-    NVIC_SystemReset();
-    while(1);
+    platform_reset();
 }
 
 void cmd_version(const char *param)
@@ -208,7 +207,7 @@ void unsub_to_char(int handle);
 
 int parse_addr(uint8_t *output, const char *param)
 {
-    int addr[6];
+    unsigned int addr[6];
     int i = sscanf(param, "%2x:%2x:%2x:%2x:%2x:%2x", &addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]);
 
     if (i != 6)
@@ -599,9 +598,9 @@ void handle_command(char *cmd_line)
             param++;
             break;
         }
-        else            
+        else
             param++;
-    }       
+    }
 
     for (i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
     {
@@ -693,7 +692,7 @@ void console_rx_data(const char *d, uint8_t len)
     append_data(&input, d, len);
 
     if ((input.size > 0) &&
-        ((input.buf[input.size - 1] == '\r') || (input.buf[input.size - 1] == '\r')))
+        ((input.buf[input.size - 1] == '\r') || (input.buf[input.size - 1] == '\n')))
     {
         int16_t t = input.size - 2;
         while ((t > 0) && ((input.buf[t] == '\r') || (input.buf[t] == '\n'))) t--;

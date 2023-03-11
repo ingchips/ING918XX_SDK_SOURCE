@@ -221,8 +221,6 @@ uint8_t *get_slave_addr(const uint8_t index)
 uint8_t is_pending_slave(const uint8_t *addr)
 {
     slave_info_t * slave = get_slave_by_addr(addr);
-    if (NULL != slave)
-        slave = slave;
     if ((NULL == slave) || (slave->conn_handle != INVALID_HANDLE))
         return 0;
     else

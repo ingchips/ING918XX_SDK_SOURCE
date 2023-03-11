@@ -1005,6 +1005,9 @@ void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level);
  *         enable for sleep mode.
  *
  * ING916: `enable_active` and `enable_sleep` should be the same.
+ *         Power consumption is larger when enabled, ~2.x uA.
+ *         When `threshold` is set to 1.5V, a dedicated logic is used, only ~0.x uA is
+ *         consumed.
  *
  * @param[in] threshold         Threshold (available values see `SYSCTRL_BOR_...`)
  *                              default: 0.95V (ING918)

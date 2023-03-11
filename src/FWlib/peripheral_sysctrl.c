@@ -905,9 +905,23 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep)
 {
     uint8_t enable = enable_active || enable_sleep;
 
-    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), threshold, 4, 0);
-    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), enable, 17);
-    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), enable ^ 0x1, 5);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 0x1, 16);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 0x0, 17);
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x3, 2, 4);
+
+    if (0 == enable) return;
+
+    if (SYSCTRL_BOR_1V5 == threshold)
+    {
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 0x0, 16);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x0, 4);
+    }
+    else
+    {
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), threshold, 4, 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 1, 17);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x0, 5);
+    }
 }
 
 void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level)

@@ -579,7 +579,7 @@ void unsub_to_char(int handle)
 
 void set_phy(int phy)
 {
-    phy_bittypes_t phy_bit;
+    phy_bittypes_t phy_bit = 0;
     phy_option_t   phy_opt = HOST_PREFER_S8_CODING;
     switch (phy)
     {
