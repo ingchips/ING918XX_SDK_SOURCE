@@ -150,12 +150,11 @@ typedef struct
 } SADC_ftChPara_t;
 typedef struct
 {
-    uint32_t V1;
-    uint32_t V2;
     uint32_t Vp;
     uint16_t V12Data;
-    uint16_t (*f)(SADC_channelId, uint32_t);
-    SADC_ftChPara_t chPara[8];
+    uint16_t (*f)(SADC_ftChPara_t *, uint32_t);
+    SADC_ftChPara_t chParaSin[8];
+    SADC_ftChPara_t chParaDiff[4];
 } __attribute__((packed)) SADC_ftCali_t;
 
 typedef struct {
