@@ -354,7 +354,7 @@ uint16_t ADC_GetData(uint32_t data)
             chPara = &(ftCali->chParaDiff[ch]);
         else
             chPara = &(ftCali->chParaSin[ch]);
-		return ftCali->f(chPara, data & ADC_MK_MASK(14));
+        return ftCali->f(chPara, data & ADC_MK_MASK(14));
     }
     return (data & ADC_MK_MASK(14));
 }
