@@ -34,6 +34,7 @@ typedef struct {
 // scan.
 typedef struct {
     
+    void (*addr_set)(void);
     void (*param_set)(uint16_t interval_ms, uint16_t window_ms);
     void (*duty_start)(void);
     void (*single_start)(uint16_t scan_timeout_ms);
@@ -51,9 +52,13 @@ typedef struct {
 } mesh_adv_bearer_send_msg_begin_t;
 
 typedef struct {
+    uint8_t status;
+} mesh_adv_bearer_send_msg_end_evt_t;
+
+typedef struct {
     
     void (*send_msg_begin)(mesh_adv_bearer_send_msg_begin_t *msg);
-    void (*send_msg_end)(void);
+    void (*send_msg_end)(mesh_adv_bearer_send_msg_end_evt_t *evt);
     
 } mesh_profile_api_adv_bearer_event_t;
 
