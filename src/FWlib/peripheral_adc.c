@@ -213,13 +213,30 @@ void ADC_EnableChannel(SADC_channelId ch, uint8_t enable)
 {
     if (ch > ADC_CH_11) return;
     ADC_RegClr(SADC_CFG_0, 10, 1);
-    if (ADC_GetInputMode() && (ch & 0x1)) {
+    if (ADC_GetInputMode()) {
         if (ch > ADC_CH_3) return;
-        ADC_RegClr(SADC_CFG_0, 12, 4);
-        if (enable) {
-            ADC_RegWr(SADC_CFG_0, 1, 10);
-            ADC_RegWr(SADC_CFG_0, (ch << 1), 12);
-            ADC_RegWrBits(SADC_CFG_2, 1, 3, 12);
+        if (ch & 0x1) {
+            if (enable) {
+                ADC_RegWr(SADC_CFG_0, 1, 10);
+                ADC_RegWrBits(SADC_CFG_0, (ch << 1), 12, 4);
+                ADC_RegWrBits(SADC_CFG_2, 1, 3, 12);
+            } else {
+                ADC_RegClr(SADC_CFG_0, 12, 4);
+                ADC_RegClr(SADC_CFG_2, 3, 12);
+            }
+        } else {
+            if (enable) {
+                ADC_RegClr(SADC_CFG_2, 5, 10);
+                if (ch)
+                    ADC_RegWr(SADC_CFG_2, 1, 4);
+                else
+                    ADC_RegWr(SADC_CFG_2, 1, 3);
+            } else {
+                if (ch)
+                    ADC_RegClr(SADC_CFG_2, 4, 1);
+                else
+                    ADC_RegClr(SADC_CFG_2, 3, 1);
+            }
         }
     } else {
         ADC_RegClr(SADC_CFG_0, 12, 4);
@@ -230,12 +247,15 @@ void ADC_EnableChannel(SADC_channelId ch, uint8_t enable)
     }
 }
 
-uint16_t ADC_GetEnabledChannels(SADC_adcIputMode mode)
+uint16_t ADC_GetEnabledChannels(void)
 {
-    if (mode)
-        return ADC_RegRd(SADC_CFG_0, 12, 4);
-    else 
-        return ADC_RegRd(SADC_CFG_2, 3, 12);
+    if (ADC_GetInputMode()) {
+        if (ADC_RegRd(SADC_CFG_0, 10, 1))
+            return 1 << (ADC_RegRd(SADC_CFG_0, 12, 4) >> 1);
+        else 
+            return (ADC_RegRd(SADC_CFG_2, 4, 1) << 2) | ADC_RegRd(SADC_CFG_2, 3, 1);
+    } 
+    return ADC_RegRd(SADC_CFG_2, 3, 12);
 }
 
 void ADC_DisableAllChannels(void)
@@ -323,7 +343,7 @@ uint8_t ADC_GetPgaStatus(void)
 void ADC_SetLoopDelay(uint32_t delay)
 {
     ADC_RegWrBits(SADC_CFG_1, delay, 0, 32);
-    if (ADC_GetInputMode() && ADC_GetEnabledChannels(DIFFERENTAIL_MODE))
+    if (ADC_GetInputMode() && ADC_RegRd(SADC_CFG_0, 10, 1))
         ADC_RegWr(SADC_CFG_0, 3, 22);
     else
         ADC_RegClr(SADC_CFG_0, 22, 2);
@@ -340,9 +360,11 @@ uint32_t ADC_PopFifoData(void)
 }
 SADC_channelId ADC_GetDataChannel(uint32_t data)
 {
-    if (ADC_GetInputMode())
-        return (SADC_channelId)((ADC_GetEnabledChannels(DIFFERENTAIL_MODE) | 
-            ADC_GetEnabledChannels(SINGLE_END_MODE)) >> 1);
+    if (ADC_GetInputMode()) {
+        if (ADC_RegRd(SADC_CFG_0, 10, 1))
+            return (SADC_channelId)(ADC_RegRd(SADC_CFG_0, 12, 4) >> 1);
+        return (SADC_channelId)((ADC_RIGHT_SHIFT(data, 14) & ADC_MK_MASK(4)) >> 1);
+    }
     return (SADC_channelId)(ADC_RIGHT_SHIFT(data, 14) & ADC_MK_MASK(4));
 }
 uint16_t ADC_GetData(uint32_t data)
@@ -503,8 +525,7 @@ void ADC_Start(uint8_t start)
 {
     if (start) {
         ADC_RegWr(SADC_CFG_2, 1, 2);
-        if (ADC_RegRd(SADC_CFG_0, 10, 1) && 
-            ADC_GetEnabledChannels(DIFFERENTAIL_MODE))
+        if (ADC_RegRd(SADC_CFG_0, 10, 1) && ADC_RegRd(SADC_CFG_0, 12, 4))
             ADC_RegWr(SADC_CFG_0, 1, 11);
     } else {
         ADC_RegClr(SADC_CFG_2, 2, 1);
@@ -515,6 +536,7 @@ void ADC_Start(uint8_t start)
 
 void ADC_Calibration(SADC_adcIputMode mode)
 {
+    ADC_RegClr(SADC_CFG_0, 9, 1);
     ADC_SetAdcMode(CALIBRATION_MODE);
     ADC_SetAdcCtrlMode(SINGLE_MODE);
     ADC_SetInputMode(mode);
@@ -531,6 +553,7 @@ void ADC_Calibration(SADC_adcIputMode mode)
     ADC_IntEnable(0);
     ADC_SetAdcMode(CONVERSION_MODE);
     ADC_EnableChannel(ADC_CH_0, 0);
+    ADC_RegClr(SADC_CFG_0, 17, 1);
 }
 
 void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, 

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 #include "adc_cali.h"
+#include "profile.h"
 
 // GATT characteristic handles
 #include "../data/gatt.const"
@@ -164,8 +165,8 @@ uint16_t read_adc(uint8_t channel)
 
     return adc_calibrate(ADC_SAMPLE_MODE_SLOW, channel, voltage);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, (SADC_channelId)channel, 5, 0, SINGLE_END_MODE, 
-        LOOP_DELAY(ADC_CLK_MHZ, SAMPLERATE, ADC_CH_NUM));
+    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, (SADC_channelId)channel, AVE_NUM, 0, 
+        SINGLE_END_MODE, LOOP_DELAY(ADC_CLK_MHZ, SAMPLERATE, ADC_CH_NUM));
     ADC_AveInit();
     ADC_Start(1);
     while (!ADC_GetIntStatus()) ;
