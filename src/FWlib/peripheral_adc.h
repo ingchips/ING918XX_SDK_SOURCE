@@ -339,7 +339,6 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id);
 
 /**
  * @brief Get ADC-Channel's enabled status
- * @note It returns enabled channel-Id left-shifted by 1.
  * Example:
  * 1.single-mode with CH0/CH4/CH6 are enabled, it returns 0x51.
  * 2.differential-mode with CH1 is enabled, it returns 0x2.
