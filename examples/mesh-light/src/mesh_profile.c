@@ -149,7 +149,7 @@ static void mesh_profile_adv_bearer_event_send_msg_begin(mesh_adv_bearer_send_ms
 }
 
 // adv bearer send end callback.
-static void mesh_profile_adv_bearer_event_send_msg_end(void){
+static void mesh_profile_adv_bearer_event_send_msg_end(mesh_adv_bearer_send_msg_end_evt_t *evt){
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -429,6 +429,7 @@ static const mesh_profile_api_adv_t mesh_profile_adv_impl = {
 
 // scan
 static const mesh_profile_api_scan_t mesh_profile_scan_impl = {
+    /* void (*addr_set)(..);                */ &mesh_profile_scan_addr_set,
     /* void (*param_set)(..);               */ &mesh_profile_scan_param_set,
     /* void (*duty_start)(..);              */ &mesh_profile_scan_duty_start,
     /* void (*single_start)(..);            */ &mesh_profile_scan_single_start,
