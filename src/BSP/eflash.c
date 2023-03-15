@@ -121,7 +121,7 @@ int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 int program_fota_metadata(const uint32_t entry, const int block_num, const fota_update_block_t *blocks)
 {
 #define START               (EFLASH_BASE + EFLASH_SIZE + 2 * PAGE_SIZE)
-#define	DEF_UPDATE_FLAG     (0x5A5A5A5A)
+#define    DEF_UPDATE_FLAG     (0x5A5A5A5A)
 
     uint32_t backup[4];
     uint32_t addr = START - 4;
@@ -168,6 +168,37 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #include "rom_tools.h"
 
+typedef enum {
+    SPI_CMD_ADDR         = 0x0,
+    SPI_BLOCK_SIZE       = 0x4,
+    RX_STATUS            = 0x10,
+    SPI_CFG              = 0x14,
+} SPI_FLASH_Reg;
+
+typedef void (*rom_FlashWaitBusyDown)(void);
+typedef void (*rom_FlashDisableContinuousMode)(void);
+typedef void (*rom_FlashEnableContinuousMode)(void);
+#define ROM_FlashWaitBusyDown           ((rom_FlashWaitBusyDown)          (0x00000b6d))
+#define ROM_FlashDisableContinuousMode  ((rom_FlashDisableContinuousMode) (0x000007c9))
+#define ROM_FlashEnableContinuousMode   ((rom_FlashEnableContinuousMode)  (0x0000080d))
+
+#define APB_SPI_FLASH_CTRL_BASE              ((uint32_t)0x40150000UL)
+#define SPI_FLASH_LEFT_SHIFT(v, s)           ((v) << (s))
+#define SPI_FLASH_RIGHT_SHIFT(v, s)          ((v) >> (s))
+#define SPI_FLASH_MK_MASK(b)                 ((SPI_FLASH_LEFT_SHIFT(1, b)) - (1))
+#define SPI_FLASH_REG_VAL(reg)               ((*((uint32_t *)((APB_SPI_FLASH_CTRL_BASE) + (reg)))))
+#define REG_CLR(reg, b, s)                   ((SPI_FLASH_REG_VAL(reg)) & (~(SPI_FLASH_LEFT_SHIFT(SPI_FLASH_MK_MASK(b), s))))
+#define SPI_FLASH_REG_WR_BITS(reg, v, s, b)  ((SPI_FLASH_REG_VAL(reg)) = ((REG_CLR(reg, b, s)) | (SPI_FLASH_LEFT_SHIFT(v, s))))
+#define SPI_FLASH_REG_RD(reg, b, s)          ((SPI_FLASH_RIGHT_SHIFT((SPI_FLASH_REG_VAL(reg)), s)) & SPI_FLASH_MK_MASK(b))
+static void SPI_FLASH_RegWrBits(SPI_FLASH_Reg reg, uint32_t v, uint8_t s, uint8_t b)
+{
+    SPI_FLASH_REG_WR_BITS(reg, v, s, b);
+}
+static uint32_t SPI_FLASH_RegRd(SPI_FLASH_Reg reg, uint8_t s, uint8_t b)
+{
+    return SPI_FLASH_REG_RD(reg, b, s);
+}
+
 int erase_flash_sector(const uint32_t addr)
 {
     uint32_t val = (uint32_t)-1;
@@ -187,6 +218,24 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
 {
     return ROM_flash_do_update(block_num, blocks, page_buffer);
+}
+
+#define __RAM_CODE    __attribute__((section(".data")))
+__RAM_CODE uint32_t security_page_read(uint32_t addr)
+ {
+    SPI_FLASH_RegWrBits(SPI_CFG, 2, 17, 2);
+    SPI_FLASH_RegWrBits(SPI_BLOCK_SIZE, 4, 8, 9);
+    SPI_FLASH_RegWrBits(SPI_CMD_ADDR, ((addr&0xffffff)<<8) | 0x48, 0, 32);
+    ROM_FlashWaitBusyDown();
+    return SPI_FLASH_RegRd(RX_STATUS, 0, 32);
+ }
+__RAM_CODE uint32_t read_flash_security(uint32_t addr)
+{
+    uint32_t ret;
+    ROM_FlashDisableContinuousMode();
+    ret = security_page_read(addr);
+    ROM_FlashEnableContinuousMode();
+    return ret;
 }
 
 #endif

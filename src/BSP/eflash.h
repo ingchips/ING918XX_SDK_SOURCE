@@ -98,6 +98,14 @@ int erase_flash_sector(const uint32_t addr);
  */
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *ram_buffer);
 
+/**
+ * @brief Read a sector of flash
+ *
+ * @param[in] addr              start address (unified address) of the sector
+ * @return                      flash data
+ */
+uint32_t read_flash_security(uint32_t addr);
+
 #endif
 
 #ifdef __cplusplus
