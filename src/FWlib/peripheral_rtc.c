@@ -134,4 +134,64 @@ void RTC_EnableDeepSleepWakeupSource(uint8_t enable)
     io_write(AON2_CTRL_BASE + 0x12c, t);
 }
 
+#define bsRTC_SEC_TRIM      0
+#define bsRTC_MIN_TRIM      8
+#define bsRTC_HOUR_TRIM     16
+#define bsRTC_DAY_TRIM      24
+
+#define _RTC_TRIM_MASK   (0x9ful)
+
+void RTC_DayCntTrim(uint8_t trim, rtc_trim_direction_t dir)
+{
+    uint8_t v = trim | (dir << 7);
+    APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_DAY_TRIM;
+    APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_DAY_TRIM;
+}
+
+void RTC_HourCntTrim(uint8_t trim, rtc_trim_direction_t dir)
+{
+    uint8_t v = trim | (dir << 7);
+    APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_HOUR_TRIM;
+    APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_HOUR_TRIM;
+}
+
+void RTC_MinCntTrim(uint8_t trim, rtc_trim_direction_t dir)
+{
+    uint8_t v = trim | (dir << 7);
+    APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_MIN_TRIM;
+    APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_MIN_TRIM;
+}
+
+void RTC_SecCntTrim(uint8_t trim, rtc_trim_direction_t dir)
+{
+    uint8_t v = trim | (dir << 7);
+    APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_SEC_TRIM;
+    APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_SEC_TRIM;
+}
+
+void RTC_SetAllTrimValue(uint8_t day_trim, uint8_t hour_trim, uint8_t min_trim,uint8_t sec_trim)
+{
+    uint32_t v = ((uint32_t)(day_trim & _RTC_TRIM_MASK) << bsRTC_DAY_TRIM)
+                | ((uint32_t)(hour_trim & _RTC_TRIM_MASK) << bsRTC_HOUR_TRIM)
+                | ((uint32_t)(min_trim & _RTC_TRIM_MASK) << bsRTC_MIN_TRIM)
+                | ((uint32_t)(sec_trim & _RTC_TRIM_MASK) << bsRTC_SEC_TRIM);
+    APB_RTC->Trim &= 0;
+    APB_RTC->Trim |= v;
+}
+
+uint8_t RTC_GetAllTrimValue(uint8_t *hour_trim, uint8_t *min_trim,uint8_t *sec_trim)
+{
+    uint32_t s = APB_RTC->Trim;
+    *hour_trim = (s >> bsRTC_HOUR_TRIM) & _RTC_TRIM_MASK;
+    *min_trim = (s >> bsRTC_MIN_TRIM) & _RTC_TRIM_MASK;
+    *sec_trim = (s >> bsRTC_SEC_TRIM) & _RTC_TRIM_MASK;
+
+    return (s >> bsRTC_DAY_TRIM) & _RTC_TRIM_MASK;
+}
+
+void RTC_ClearAllTrimValue(void)
+{
+    APB_RTC->Trim &= 0;
+}
+
 #endif
