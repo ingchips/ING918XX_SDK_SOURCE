@@ -683,7 +683,7 @@ void platform_set_timer(void (* callback)(void), uint32_t delay);
  * For NoOS variants, RTOS stacks can be replaced (modify its size, etc) when implementing
  * the generic OS interface.
  *
- * @param[in]   id              task identifier ({PLATFORM_TASK_CONTROLLER, PLATFORM_TASK_HOST})
+ * @param[in]   id              task identifier
  * @param[in]   start           start address of the new stack
  * @param[in]   size            size of the new stack in bytes
  ****************************************************************************************

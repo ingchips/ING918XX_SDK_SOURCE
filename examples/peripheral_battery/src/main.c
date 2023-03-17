@@ -44,6 +44,7 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 typedef struct {
     uint8_t s;
     uint8_t cnt;
@@ -57,7 +58,7 @@ uint16_t ADC_GetAveData(uint32_t data)
     if (!adcAve[ch]) return ADC_GetData(data);
     adcAve[ch]->data[adcAve[ch]->cnt] = ADC_GetData(data);
     adcAve[ch]->cnt++;
-    if (adcAve[ch]->cnt >= AVE_NUM) 
+    if (adcAve[ch]->cnt >= AVE_NUM)
         adcAve[ch]->cnt = 0;
     if (adcAve[ch]->s < AVE_NUM)
         adcAve[ch]->s++;
@@ -92,6 +93,7 @@ void ADC_AveDisable(void)
         adcAve[i] = 0;
     }
 }
+#endif
 
 void setup_peripherals(void)
 {
