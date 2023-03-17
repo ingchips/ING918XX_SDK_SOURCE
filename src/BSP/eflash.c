@@ -168,36 +168,12 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #include "rom_tools.h"
 
-typedef enum {
-    SPI_CMD_ADDR         = 0x0,
-    SPI_BLOCK_SIZE       = 0x4,
-    RX_STATUS            = 0x10,
-    SPI_CFG              = 0x14,
-} SPI_FLASH_Reg;
-
 typedef void (*rom_FlashWaitBusyDown)(void);
 typedef void (*rom_FlashDisableContinuousMode)(void);
 typedef void (*rom_FlashEnableContinuousMode)(void);
 #define ROM_FlashWaitBusyDown           ((rom_FlashWaitBusyDown)          (0x00000b6d))
 #define ROM_FlashDisableContinuousMode  ((rom_FlashDisableContinuousMode) (0x000007c9))
 #define ROM_FlashEnableContinuousMode   ((rom_FlashEnableContinuousMode)  (0x0000080d))
-
-#define APB_SPI_FLASH_CTRL_BASE              ((uint32_t)0x40150000UL)
-#define SPI_FLASH_LEFT_SHIFT(v, s)           ((v) << (s))
-#define SPI_FLASH_RIGHT_SHIFT(v, s)          ((v) >> (s))
-#define SPI_FLASH_MK_MASK(b)                 ((SPI_FLASH_LEFT_SHIFT(1, b)) - (1))
-#define SPI_FLASH_REG_VAL(reg)               ((*((uint32_t *)((APB_SPI_FLASH_CTRL_BASE) + (reg)))))
-#define REG_CLR(reg, b, s)                   ((SPI_FLASH_REG_VAL(reg)) & (~(SPI_FLASH_LEFT_SHIFT(SPI_FLASH_MK_MASK(b), s))))
-#define SPI_FLASH_REG_WR_BITS(reg, v, s, b)  ((SPI_FLASH_REG_VAL(reg)) = ((REG_CLR(reg, b, s)) | (SPI_FLASH_LEFT_SHIFT(v, s))))
-#define SPI_FLASH_REG_RD(reg, b, s)          ((SPI_FLASH_RIGHT_SHIFT((SPI_FLASH_REG_VAL(reg)), s)) & SPI_FLASH_MK_MASK(b))
-static void SPI_FLASH_RegWrBits(SPI_FLASH_Reg reg, uint32_t v, uint8_t s, uint8_t b)
-{
-    SPI_FLASH_REG_WR_BITS(reg, v, s, b);
-}
-static uint32_t SPI_FLASH_RegRd(SPI_FLASH_Reg reg, uint8_t s, uint8_t b)
-{
-    return SPI_FLASH_REG_RD(reg, b, s);
-}
 
 int erase_flash_sector(const uint32_t addr)
 {
@@ -212,7 +188,19 @@ int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 
 int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-    return ROM_write_flash(dest_addr, buffer, size);
+    uint32_t next_page = (dest_addr & (~((uint32_t)EFLASH_PAGE_SIZE - 1))) + EFLASH_PAGE_SIZE;
+    while (size > 0)
+    {
+        uint32_t block = next_page - dest_addr;
+        if (block >= size) block = size;
+        int r = ROM_write_flash(dest_addr, buffer, block);
+        if (r) return r;
+        dest_addr += block;
+        buffer += block;
+        size -= block;
+        next_page += EFLASH_PAGE_SIZE;
+    }
+    return 0;
 }
 
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
@@ -220,22 +208,125 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
     return ROM_flash_do_update(block_num, blocks, page_buffer);
 }
 
-#define __RAM_CODE    __attribute__((section(".data")))
-__RAM_CODE uint32_t security_page_read(uint32_t addr)
- {
-    SPI_FLASH_RegWrBits(SPI_CFG, 2, 17, 2);
-    SPI_FLASH_RegWrBits(SPI_BLOCK_SIZE, 4, 8, 9);
-    SPI_FLASH_RegWrBits(SPI_CMD_ADDR, ((addr&0xffffff)<<8) | 0x48, 0, 32);
-    ROM_FlashWaitBusyDown();
-    return SPI_FLASH_RegRd(RX_STATUS, 0, 32);
- }
-__RAM_CODE uint32_t read_flash_security(uint32_t addr)
+//#define APB_SPI_FLASH_CTRL_BASE              ((uint32_t)0x40150000UL)
+//uint32_t security_page_read(uint32_t addr)
+//{
+//    io_write(APB_SPI_FLASH_CTRL_BASE + 0x14, (io_read(APB_SPI_FLASH_CTRL_BASE + 0x14) & (~(0x3<<17))) | (0x2<<17));//tx_rx_size
+//    io_write(APB_SPI_FLASH_CTRL_BASE + 0x4, (io_read(APB_SPI_FLASH_CTRL_BASE + 0x4) & (~(0x1ff<<8))) | (4<<8));//tx_block_size
+//    io_write(APB_SPI_FLASH_CTRL_BASE + 0x00, ((addr&0xffffff)<<8) | 0x48);
+//    ROM_FlashWaitBusyDown();
+//    return io_read(APB_SPI_FLASH_CTRL_BASE + 0x10);
+//}
+
+// this is compiled binary of the above `security_page_read`
+static const uint8_t prog_security_page_read[] = {
+    0x80, 0xB5, 0x82, 0xB0, 0x01, 0x90, 0x14, 0x21,
+    0xC4, 0xF2, 0x15, 0x01, 0x08, 0x68, 0x02, 0x22,
+    0x62, 0xF3, 0x52, 0x40, 0x08, 0x60, 0x04, 0x21,
+    0xC4, 0xF2, 0x15, 0x01, 0x08, 0x68, 0x04, 0x22,
+    0x62, 0xF3, 0x10, 0x20, 0x08, 0x60, 0x01, 0x98,
+    0x00, 0x02, 0x48, 0x30, 0x00, 0x21, 0xC4, 0xF2,
+    0x15, 0x01, 0x08, 0x60, 0x40, 0xF6, 0x6D, 0x30,
+    0x80, 0x47, 0x10, 0x20, 0xC4, 0xF2, 0x15, 0x00,
+    0x00, 0x68, 0x02, 0xB0, 0x80, 0xBD, 0x00, 0x00
+};
+
+__attribute__((naked)) static uint32_t security_page_read(uint32_t addr, uint32_t prog)
+{
+    __asm("ADD r1, r1, #1");
+    __asm("BX  r1");
+}
+
+uint32_t read_flash_security(uint32_t addr)
 {
     uint32_t ret;
+    uint32_t prog[sizeof(prog_security_page_read) / 4];
+    memcpy(prog, prog_security_page_read, sizeof(prog));
     ROM_FlashDisableContinuousMode();
-    ret = security_page_read(addr);
+    ret = security_page_read(addr, (uint32_t)prog);
     ROM_FlashEnableContinuousMode();
     return ret;
+}
+
+#define FACTORY_DATA_LOC    (0x02000000 + 0x1000)
+
+#define MAGIC_0             0x494e4743
+#define MAGIC_1             0x48495053
+
+#pragma pack (push, 1)
+typedef struct
+{
+    die_info_t die_info;
+    factory_calib_data_t calib;
+} factory_data_t;
+#pragma pack (pop)
+
+static int is_data_ready(void)
+{
+    const die_info_t *p = (const die_info_t *)FACTORY_DATA_LOC;
+    if ((p->cid[0] == MAGIC_0) && (p->cid[1] == MAGIC_1))
+        return 1;
+    else
+        return 0;
+}
+
+static void copy_security_data(uint32_t dst, uintptr_t src, int word_len)
+{
+    uint32_t buff[16];
+    while (word_len > 0)
+    {
+        int len = 0;
+        while ((word_len > 0) && (len < sizeof(buff) / sizeof(buff[0])))
+        {
+            buff[len] = read_flash_security(src);
+            len++;
+            word_len--;
+            src += 4;
+        }
+        write_flash(dst, (const uint8_t *)buff, len * sizeof(buff[0]));
+        dst += len * sizeof(buff[0]);
+    }
+}
+
+int flash_prepare_factory_data(void)
+{
+    if (is_data_ready()) return 0;
+    uint32_t t = read_flash_security(0x1000);
+    if (t != MAGIC_0) return 1;
+    t = read_flash_security(0x1004);
+    if (t != MAGIC_1) return 2;
+    erase_flash_sector(FACTORY_DATA_LOC);
+    copy_security_data(FACTORY_DATA_LOC,
+        0x1000, sizeof(die_info_t) / 4);
+    copy_security_data(FACTORY_DATA_LOC + sizeof(die_info_t),
+        0x1100, sizeof(factory_calib_data_t) / 4);
+    copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
+        0x2000, 320 / 4);
+    return 0;
+}
+
+const die_info_t *flash_get_die_info(void)
+{
+    if (is_data_ready())
+        return &((const factory_data_t *)FACTORY_DATA_LOC)->die_info;
+    else
+        return NULL;
+}
+
+const factory_calib_data_t *flash_get_factory_calib_data(void)
+{
+    if (is_data_ready())
+        return &((const factory_data_t *)FACTORY_DATA_LOC)->calib;
+    else
+        return NULL;
+}
+
+const void *flash_get_adc_calib_data(void)
+{
+    if (is_data_ready())
+        return (const void *)(FACTORY_DATA_LOC + sizeof(factory_data_t));
+    else
+        return NULL;
 }
 
 #endif
