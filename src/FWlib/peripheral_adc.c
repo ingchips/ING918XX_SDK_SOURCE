@@ -454,19 +454,40 @@ static uint16_t ADC_FtCal(SADC_ftChPara_t *chPara, uint32_t data)
 void ADC_ftInit(void)
 {
     if (ftCali) return;
+    uint8_t readFlg = 0;
+    uint8_t addrType = 0;
+    uint8_t ret = flash_prepare_factory_data();
+    const factory_calib_data_t *p_factoryCali = flash_get_factory_calib_data();
+    const uint16_t *p_adcCali = (const uint16_t *)flash_get_adc_calib_data();
+    if (ret || !p_factoryCali || !p_adcCali) 
+        readFlg = 1;
     ftCali = malloc(sizeof(SADC_ftCali_t));
     memset(ftCali, 0, sizeof(SADC_ftCali_t));
-    uint32_t flg = read_flash_security(0x1170);
-    if (flg & ADC_MK_MASK(16)) return;
+    
+    uint32_t flg;
+    if (readFlg)
+        flg = read_flash_security(0x1170);
+    else
+        flg = p_factoryCali->adc_calib_ver;
+    addrType = flg & ADC_MK_MASK(16);
     flg = (flg >> 16) & ADC_MK_MASK(16);
     uint32_t V1, V2;
     uint32_t V1_diff, V2_diff;
     if (flg == 0xadc0) {
-        ftCali->Vp = read_flash_security(0x1174);
-        V1 = read_flash_security(0x1178);
-        V2 = read_flash_security(0x117c);
-        V1_diff = read_flash_security(0x1180);
-        V2_diff = read_flash_security(0x1184);
+        if (readFlg) {
+            ftCali->Vp = read_flash_security(0x1174);
+            V1 = read_flash_security(0x1178);
+            V2 = read_flash_security(0x117c);
+            V1_diff = read_flash_security(0x1180);
+            V2_diff = read_flash_security(0x1184);
+        } else {
+            const uint32_t *p = (const uint32_t *)&p_factoryCali->slow_rc[0];
+            ftCali->Vp = p[0];
+            V1 = p[1];
+            V2 = p[2];
+            V1_diff = p[3];
+            V2_diff = p[4];
+        }
     } else if (flg == 0xadcf) {
         ftCali->Vp = 330000;
         V1 = 30000;
@@ -476,7 +497,12 @@ void ADC_ftInit(void)
     } else {
         return;
     }
-    uint32_t mbg = read_flash_security(0x1100);
+
+    uint32_t mbg;
+    if (readFlg)
+        mbg = read_flash_security(0x1100);
+    else
+        mbg = p_factoryCali->band_gap;
     if (mbg < 0xffffffff)
         *(uint32_t *)0x40102008 |= (mbg & ADC_MK_MASK(6)) << 4;
     uint8_t i;
@@ -485,20 +511,53 @@ void ADC_ftInit(void)
     Cin1 = V1 * 16384 / ftCali->Vp;
     Cin2 = V2 / 10 * 16384 / (ftCali->Vp / 10);
     for (i = 0; i < 8; ++i) {
-        Cout1 = read_flash_security(0x2002 + 0x20 * i) & ADC_MK_MASK(16);
-        Cout2 = read_flash_security(0x201e + 0x20 * i) & ADC_MK_MASK(16);
+        if (addrType) {
+            if (readFlg) {
+                Cout1 = read_flash_security(0x2000 + 4 * i) & ADC_MK_MASK(16);
+                Cout2 = (read_flash_security(0x2000 + 4 * i) >> 16) & ADC_MK_MASK(16);
+            } else {
+                Cout1 = p_adcCali[2 * i];
+                Cout2 = p_adcCali[1 + 2 * i];
+            }
+        } else {
+            if (readFlg) {
+                Cout1 = read_flash_security(0x2002 + 0x20 * i) & ADC_MK_MASK(16);
+                Cout2 = read_flash_security(0x201e + 0x20 * i) & ADC_MK_MASK(16);
+            } else {
+                Cout1 = p_adcCali[1 + 0x10 * i];
+                Cout2 = p_adcCali[0xf + 0x10 * i];
+            }
+        }
         ftCali->chParaSin[i].k = (Cout2 - Cout1) * 100000 / (Cin2 - Cin1);
         ftCali->chParaSin[i].Coseq = 18192 - (Cin1 * (Cout2 - 8192) + Cin2 * (8192 - Cout1)) / (Cout2 - Cout1);
     }
     Cin2 = (V2_diff - V1_diff) / 10 * 16384 / (ftCali->Vp / 10) + 8192;
     Cin1 = 16384 - Cin2;
     for (i = 0; i < 4; ++i) {
-        Cout1 = read_flash_security(0x2100 + 0x10 * i) & ADC_MK_MASK(16);
-        Cout2 = read_flash_security(0x210e + 0x10 * i) & ADC_MK_MASK(16);
+        if (addrType) {
+            if (readFlg) {
+                Cout1 = read_flash_security(0x2020 + 4 * i) & ADC_MK_MASK(16);
+                Cout2 = (read_flash_security(0x2020 + 4 * i) >> 16) & ADC_MK_MASK(16);
+            } else {
+                Cout1 = p_adcCali[0x10 + 2 * i];
+                Cout2 = p_adcCali[0x11 + 2 * i];
+            }
+        } else {
+            if (readFlg) {
+                Cout1 = read_flash_security(0x2100 + 0x10 * i) & ADC_MK_MASK(16);
+                Cout2 = read_flash_security(0x210e + 0x10 * i) & ADC_MK_MASK(16);
+            } else {
+                Cout1 = p_adcCali[0x80 + 8 * i];
+                Cout2 = p_adcCali[0x87 + 8 * i];
+            }
+        }
         ftCali->chParaDiff[i].k = (Cout2 - Cout1) * 100000 / (Cin2 - Cin1);
         ftCali->chParaDiff[i].Coseq = 18192 - (Cin1 * (Cout2 - 8192) + Cin2 * (8192 - Cout1)) / (Cout2 - Cout1);
     }
-    ftCali->V12Data = read_flash_security(0x1144) & ADC_MK_MASK(16);
+    if (readFlg)
+        ftCali->V12Data = read_flash_security(0x1144) & ADC_MK_MASK(16);
+    else
+        ftCali->V12Data = p_factoryCali->v12_adc[0];
     ftCali->f = ADC_FtCal;
     ADC_VrefRegister(ftCali->Vp * 0.00001f, 0.f);
 }
