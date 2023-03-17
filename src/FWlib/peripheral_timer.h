@@ -6,6 +6,7 @@
  extern "C" {
 #endif
 
+#include <math.h>
 #include "ingsoc.h"
 
 // we have 3 timers in total.
@@ -153,6 +154,39 @@ void TMR0_UNLOCK(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
+typedef enum
+{
+    WDT_INTTIME_INTERVAL_0,       //Clock period × 2^6
+    WDT_INTTIME_INTERVAL_1,       //Clock period × 2^8
+    WDT_INTTIME_INTERVAL_2,       //Clock period × 2^10
+    WDT_INTTIME_INTERVAL_3,       //Clock period × 2^11
+    WDT_INTTIME_INTERVAL_4,       //Clock period × 2^12
+    WDT_INTTIME_INTERVAL_5,       //Clock period × 2^13
+    WDT_INTTIME_INTERVAL_6,       //Clock period × 2^14
+    WDT_INTTIME_INTERVAL_7,       //Clock period × 2^15
+    WDT_INTTIME_INTERVAL_8,       //Clock period × 2^17
+    WDT_INTTIME_INTERVAL_9,       //Clock period × 2^19
+    WDT_INTTIME_INTERVAL_10,      //Clock period × 2^21
+    WDT_INTTIME_INTERVAL_11,      //Clock period × 2^23
+    WDT_INTTIME_INTERVAL_12,      //Clock period × 2^25
+    WDT_INTTIME_INTERVAL_13,      //Clock period × 2^27
+    WDT_INTTIME_INTERVAL_14,      //Clock period × 2^29
+    WDT_INTTIME_INTERVAL_15       //Clock period × 2^31
+}wdt_inttime_interval_t;
+
+typedef enum
+{
+    WDT_RSTTIME_INTERVAL_0,        //Clock period × 2^7
+    WDT_RSTTIME_INTERVAL_1,        //Clock period × 2^8
+    WDT_RSTTIME_INTERVAL_2,        //Clock period × 2^9
+    WDT_RSTTIME_INTERVAL_3,        //Clock period × 2^10
+    WDT_RSTTIME_INTERVAL_4,        //Clock period × 2^11
+    WDT_RSTTIME_INTERVAL_5,        //Clock period × 2^12
+    WDT_RSTTIME_INTERVAL_6,        //Clock period × 2^13
+    WDT_RSTTIME_INTERVAL_7         //Clock period × 2^14
+}wdt_rsttime_interval_t;
+
+
 // timer work mode
 #define TMR_CTL_OP_MODE_32BIT_TIMER_x1            1           // one 32bit timer
 #define TMR_CTL_OP_MODE_16BIT_TIMER_x2            2           // dual 16bit timers
@@ -291,12 +325,12 @@ uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id);
  * Note: The internal counter runs at `RTC_CLOCK_FREQ`, and the actual timeouts are rough appropriations
  * of the specified timeout value.
  *
- * @param[in] int_timeout_ms        timeout interval of "interrupt stage" in milliseconds (<= 65536s)
- * @param[in] reset_timeout_ms      timeout interval of "reset stage" in milliseconds (<= 1s)
+ * @param[in] int_timeout           timeout interval of "interrupt stage" in `wdt_inttime_interval_t`
+ * @param[in] rst_timeout           timeout interval of "reset stage" in `wdt_rsttime_interval_t`
  * @param[in] enable_int            enable interrupt in "interrupt stage"
  ****************************************************************************************
  */
-void TMR_WatchDogEnable3(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uint8_t enable_int);
+void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interval_t rst_timeout, uint8_t enable_int);
 
 /**
  ****************************************************************************************
@@ -309,7 +343,8 @@ void TMR_WatchDogEnable3(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uin
  * @param[in] timeout              see `TMR_WatchDogEnable` in ING918xx
  ****************************************************************************************
  */
-#define TMR_WatchDogEnable(timeout) do { uint32_t TMR_CLK_FREQ = OSC_CLK_FREQ; uint32_t cnt = ((uint64_t)(timeout) * 1000 / OSC_CLK_FREQ); TMR_WatchDogEnable3(cnt, cnt, 0); } while (0)
+#define TMR_WatchDogEnable(timeout) do { uint32_t TMR_CLK_FREQ = OSC_CLK_FREQ;uint32_t cnt = (uint64_t)(timeout) / OSC_CLK_FREQ;  \
+                                            uint32_t mode = 7 + (uint32_t)sqrt((double)cnt) / 2;TMR_WatchDogEnable3(mode, WDT_RSTTIME_MODE_7, 1); } while (0)   \
 
 /**
  ****************************************************************************************
