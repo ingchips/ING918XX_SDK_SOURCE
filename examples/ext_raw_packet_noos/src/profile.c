@@ -5,6 +5,12 @@
 
 #define CH_ID                   10
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#define RX_DELAY                300
+#else
+#define RX_DELAY                600
+#endif
+
 struct ll_raw_packet *raw_packet;
 char data[300];
 
@@ -14,7 +20,7 @@ void show_rx(struct ll_raw_packet *packet)
     uint8_t header;
     int len;
     int rssi;
-    
+
     if (ll_raw_packet_get_rx_data(packet, &air_time, &header, data, &len, &rssi) == 0)
     {
         platform_printf("T: %llu\n", air_time);
@@ -41,7 +47,7 @@ void packet_action(void)
 #else
     show_rx(raw_packet);
 
-    ll_raw_packet_recv(raw_packet, platform_get_us_time() + 300, 1000 * 1000);
+    ll_raw_packet_recv(raw_packet, platform_get_us_time() + RX_DELAY, 1000 * 1000);
 #endif
 }
 
