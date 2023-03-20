@@ -156,34 +156,34 @@ void TMR0_UNLOCK(void);
 
 typedef enum
 {
-    WDT_INTTIME_INTERVAL_0,       //Clock period × 2^6
-    WDT_INTTIME_INTERVAL_1,       //Clock period × 2^8
-    WDT_INTTIME_INTERVAL_2,       //Clock period × 2^10
-    WDT_INTTIME_INTERVAL_3,       //Clock period × 2^11
-    WDT_INTTIME_INTERVAL_4,       //Clock period × 2^12
-    WDT_INTTIME_INTERVAL_5,       //Clock period × 2^13
-    WDT_INTTIME_INTERVAL_6,       //Clock period × 2^14
-    WDT_INTTIME_INTERVAL_7,       //Clock period × 2^15
-    WDT_INTTIME_INTERVAL_8,       //Clock period × 2^17
-    WDT_INTTIME_INTERVAL_9,       //Clock period × 2^19
-    WDT_INTTIME_INTERVAL_10,      //Clock period × 2^21
-    WDT_INTTIME_INTERVAL_11,      //Clock period × 2^23
-    WDT_INTTIME_INTERVAL_12,      //Clock period × 2^25
-    WDT_INTTIME_INTERVAL_13,      //Clock period × 2^27
-    WDT_INTTIME_INTERVAL_14,      //Clock period × 2^29
-    WDT_INTTIME_INTERVAL_15       //Clock period × 2^31
+    WDT_INTTIME_INTERVAL_2MS          = 0,    //0.001953125s
+    WDT_INTTIME_INTERVAL_8MS          = 1,    //0.0078125s
+    WDT_INTTIME_INTERVAL_31MS         = 2,    //0.03125s
+    WDT_INTTIME_INTERVAL_62MS         = 3,    //0.0625s
+    WDT_INTTIME_INTERVAL_125MS        = 4,
+    WDT_INTTIME_INTERVAL_250MS        = 5,
+    WDT_INTTIME_INTERVAL_500MS        = 6,
+    WDT_INTTIME_INTERVAL_1S           = 7,
+    WDT_INTTIME_INTERVAL_4S           = 8,
+    WDT_INTTIME_INTERVAL_16S          = 9,
+    WDT_INTTIME_INTERVAL_1M_4S        = 10,   //64s
+    WDT_INTTIME_INTERVAL_4M_16S       = 11,   //256s
+    WDT_INTTIME_INTERVAL_17M_4S       = 12,   //1024s
+    WDT_INTTIME_INTERVAL_1H_8M_16S    = 13,   //4096s
+    WDT_INTTIME_INTERVAL_4H_33M_6S    = 14,   //16384s
+    WDT_INTTIME_INTERVAL_18H_12M_16S  = 15    //65536s
 }wdt_inttime_interval_t;
 
 typedef enum
 {
-    WDT_RSTTIME_INTERVAL_0,        //Clock period × 2^7
-    WDT_RSTTIME_INTERVAL_1,        //Clock period × 2^8
-    WDT_RSTTIME_INTERVAL_2,        //Clock period × 2^9
-    WDT_RSTTIME_INTERVAL_3,        //Clock period × 2^10
-    WDT_RSTTIME_INTERVAL_4,        //Clock period × 2^11
-    WDT_RSTTIME_INTERVAL_5,        //Clock period × 2^12
-    WDT_RSTTIME_INTERVAL_6,        //Clock period × 2^13
-    WDT_RSTTIME_INTERVAL_7         //Clock period × 2^14
+    WDT_RSTTIME_INTERVAL_4MS          = 0,    //3.90625ms
+    WDT_RSTTIME_INTERVAL_8MS          = 1,    //7.8125ms
+    WDT_RSTTIME_INTERVAL_15MS         = 2,    //15.625ms
+    WDT_RSTTIME_INTERVAL_31MS         = 3,    //31.25ms
+    WDT_RSTTIME_INTERVAL_62MS         = 4,    //62.5ms
+    WDT_RSTTIME_INTERVAL_125MS        = 5,
+    WDT_RSTTIME_INTERVAL_250MS        = 6,
+    WDT_RSTTIME_INTERVAL_500MS        = 7 
 }wdt_rsttime_interval_t;
 
 
@@ -318,9 +318,9 @@ uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id);
  *
  * The watchdog timer provides a two-stage mechanism to prevent a system from lock-up.
  *
- * In the first stage ("interrupt stage"), an interrupt will be asserted after `int_timeout_ms`.
+ * In the first stage ("interrupt stage"), an interrupt will be asserted after `int_timeout`.
  * The second stage ("reset stage") begins right after the interrupt stage, and the reset signal
- * will be asserted after `reset_timeout_ms`.
+ * will be asserted after `rst_timeout`.
  *
  * Note: The internal counter runs at `RTC_CLOCK_FREQ`, and the actual timeouts are rough appropriations
  * of the specified timeout value.
@@ -343,8 +343,10 @@ void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interva
  * @param[in] timeout              see `TMR_WatchDogEnable` in ING918xx
  ****************************************************************************************
  */
-#define TMR_WatchDogEnable(timeout) do { uint32_t TMR_CLK_FREQ = OSC_CLK_FREQ;uint32_t cnt = (uint64_t)(timeout) / OSC_CLK_FREQ;  \
-                                            uint32_t mode = 7 + (uint32_t)sqrt((double)cnt) / 2;TMR_WatchDogEnable3(mode, WDT_RSTTIME_MODE_7, 1); } while (0)   \
+#define TMR_WatchDogEnable(timeout) do { uint64_t TMR_CLK_FREQ = OSC_CLK_FREQ;uint32_t cnt = (uint64_t)(timeout) / OSC_CLK_FREQ;  \
+                                            static const uint32_t modes[] = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15};uint32_t mode;\
+                                            for (uint32_t i = 1; i < 10; i++) { if (cnt < (1UL << (i * 2))) { mode = modes[i];break;}} \
+                                            TMR_WatchDogEnable3(mode, WDT_RSTTIME_INTERVAL_500MS, 1); } while (0)   \
 
 /**
  ****************************************************************************************
