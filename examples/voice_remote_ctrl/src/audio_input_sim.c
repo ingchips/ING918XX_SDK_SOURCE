@@ -49,7 +49,7 @@ void audio_input_setup(void)
     TMR_Reload(APB_TMR1);
     TMR_IntEnable(APB_TMR1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    SYSCTRL_SelectTimerClk(TMR_PORT_1, SYSCTRL_CLK_SLOW_DIV_1 + 3);
+    SYSCTRL_SelectTimerClk(TMR_PORT_1, SYSCTRL_CLK_SLOW_DIV_4);
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_EXTERNAL, 0);
     TMR_SetReload(APB_TMR1, 0, OSC_CLK_FREQ / 4 / SAMPLING_RATE);
     TMR_IntEnable(APB_TMR1, 0, 0x1);
