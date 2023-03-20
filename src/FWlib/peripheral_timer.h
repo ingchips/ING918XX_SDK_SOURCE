@@ -344,7 +344,7 @@ void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interva
  ****************************************************************************************
  */
 #define TMR_WatchDogEnable(timeout) do { uint64_t TMR_CLK_FREQ = OSC_CLK_FREQ;uint32_t cnt = (uint64_t)(timeout) / OSC_CLK_FREQ;  \
-                                            static const uint32_t modes[] = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15};uint32_t mode;\
+                                            static const uint32_t modes[] = {7, 8, 9, 10, 11, 12, 13, 14, 15};uint32_t mode;\
                                             for (uint32_t i = 1; i < 10; i++) { if (cnt < (1UL << (i * 2))) { mode = modes[i];break;}} \
                                             TMR_WatchDogEnable3(mode, WDT_RSTTIME_INTERVAL_500MS, 1); } while (0)   \
 
