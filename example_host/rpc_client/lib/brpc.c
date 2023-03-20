@@ -794,6 +794,47 @@ void platform_set_timer(void (* callback)(void), uint32_t delay)
     call_void_fun(ID_sys_set_timer, &_param, sizeof(_param));
 }
 
+void sys_aligned_read_mem(uint32_t addr, int len, void *p)
+{
+    #pragma pack (push, 1)
+    struct _param
+    {
+        uint32_t addr;
+        int len;
+    } _param =
+    {
+        .addr = addr,
+        .len = len
+    };
+    #pragma pack (pop)
+    struct node * _node = call_fun(ID_sys_aligned_read_mem, &_param, sizeof(_param));
+    int _len;
+    void *_r = extract_ret_param(_node, &_len);
+    if (_len != len)
+        LOG_W("sys_aligned_read_mem: len mismatch");
+    memcpy(p, _r, _len);
+    GEN_OS()->free(_node);
+}
+
+uint32_t sys_aligned_read(uint32_t addr)
+{
+    uint32_t r = 0;
+    sys_aligned_read_mem(addr, sizeof(uint32_t), &r);
+    return r;
+}
+
+void sys_aligned_write_mem(uint32_t addr, void *p, int len)
+{
+    uint8_t _param[len];
+    memcpy(_param, p, len);
+    call_void_fun(ID_sys_aligned_write_mem, &_param, sizeof(_param));
+}
+
+void sys_aligned_write(uint32_t addr, uint32_t value)
+{
+    sys_aligned_write_mem(addr, &value, sizeof(value));
+}
+
 uint8_t gatt_client_get_mtu(hci_con_handle_t con_handle, uint16_t * mtu)
 {
     #pragma pack (push, 1)

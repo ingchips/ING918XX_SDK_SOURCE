@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "profile.h"
 #include "platform_api.h"
 #include "att_db.h"
 #include "gap.h"
@@ -8,6 +9,10 @@
 #include "gatt_client.h"
 
 #include "log.h"
+
+#if (FreeRTOS == 1)
+#warning Shell app may not work with FreeRTOS simulation
+#endif
 
 const uint8_t addr[6] = {0xFE, 0x23, 0x45, 0x78, 0xAB, 0xCD};
 
@@ -46,6 +51,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 void run_os(const char *cmd)
 {
     char path[200] = {0};
+
     FILE *fp = popen(cmd, "r");
     if (fp == NULL)
     {
@@ -54,7 +60,7 @@ void run_os(const char *cmd)
 
     /* Read the output a line at a time - output it. */
     while (fgets(path, sizeof(path) - 1, fp) != NULL) {
-        att_server_notify(0, HANDLE_GENERIC_OUTPUT, path, strlen(path));
+        att_server_notify(0, HANDLE_GENERIC_OUTPUT, (uint8_t *)path, strlen(path));
     }
 
     /* close */

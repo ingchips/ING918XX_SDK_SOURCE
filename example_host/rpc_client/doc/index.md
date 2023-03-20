@@ -52,7 +52,7 @@ provides several examples. Developers can create their own client apps.
         $ sudo dpkg --add-architecture i386
         $ sudo apt-get update
         $ sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386
-        $ sudo apt-get install gcc-multilib
+        $ sudo apt-get install gcc-multilib g++-multilib
         ```
 
     * Enlarge message maximum number of _mqueue_
@@ -66,8 +66,8 @@ provides several examples. Developers can create their own client apps.
 
 1. Windows WSL
 
-    WSL2 is also supported, while WSL1 would not work because it will never
-    support 32bit programs.
+    WSL2 is also supported, while WSL1 would not work because it does not and
+    will never support 32bit programs.
 
 Entering _rpc_client_ directory, run `make rebuild app=shell`. If everything is OK,
 `rpc.exe` is generated no matter which OS is used.
