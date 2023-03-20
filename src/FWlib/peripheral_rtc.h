@@ -67,6 +67,12 @@ typedef enum
     RTC_IRQ_HALF_SECOND = 0x80,
 } rtc_irq_t;
 
+typedef enum
+{
+    RTC_TRIM_SPEED_UP = 0x00,
+    RTC_TRIM_SLOW_DOWN = 0x01,
+}rtc_trim_direction_t;
+
 /**
  ****************************************************************************************
  * @brief Enable/Disable RTC
@@ -164,6 +170,82 @@ void RTC_ClearIntState(uint32_t state);
  ****************************************************************************************
  */
 void RTC_EnableDeepSleepWakeupSource(uint8_t enable);
+
+/**
+ ****************************************************************************************
+ * @brief Digital trimming value for the second on the day boundary. 
+ * 
+ * @param[in] trim  Digital trimming value(1 ~ 31).
+ * @param[in] dir   Set trimming direction in `rtc_trim_direction_t`.
+ **************************************************************************************** 
+ */
+void RTC_DayCntTrim(uint8_t trim, rtc_trim_direction_t dir);
+
+/**
+ ****************************************************************************************
+ * @brief Digital trimming value for the second on the hour boundary. 
+ * 
+ * @param[in] trim  Digital trimming value(1 ~ 31).
+ * @param[in] dir   Set trimming direction in `rtc_trim_direction_t`.
+ **************************************************************************************** 
+ */
+void RTC_HourCntTrim(uint8_t trim, rtc_trim_direction_t dir);
+
+/**
+ ****************************************************************************************
+ * @brief Digital trimming value for the second on the minute boundary.
+ * 
+ * @param[in] trim  Digital trimming value(1 ~ 31).
+ * @param[in] dir   Set trimming direction in `rtc_trim_direction_t`.
+ **************************************************************************************** 
+ */
+void RTC_MinCntTrim(uint8_t trim, rtc_trim_direction_t dir);
+
+/**
+ ****************************************************************************************
+ * @brief Digital trimming value for the rest of seconds.
+ * 
+ * @param[in] trim  Digital trimming value(1 ~ 31).
+ * @param[in] dir   Set trimming direction in `rtc_trim_direction_t`.
+ **************************************************************************************** 
+ */
+void RTC_SecCntTrim(uint8_t trim, rtc_trim_direction_t dir);
+
+/**
+ ****************************************************************************************
+ * @brief Set all settings of TRIM register.
+ * 
+ * @param[in] day_trim      Digital trimming value(1 ~ 31) for the second on the day boundary. 
+ * @param[in] hour_trim     Digital trimming value(1 ~ 31) for the second on the hour boundary. 
+ * @param[in] min_trim      Digital trimming value(1 ~ 31) for the second on the minute boundary. 
+ * @param[in] sec_trim      Digital trimming value(1 ~ 31) for the rest of seconds.
+ * 
+ * @note Each trimming value uses only the lower 5 bits , and the highest bit indicates the 
+ *       direction in `rtc_trim_direction_t`.
+ *       i.e. `uint8_t day_trim = (RTC_TRIM_SPEED_UP << 7) | 0x15`, reduce the count by 21.
+ ****************************************************************************************     
+ */
+void RTC_SetAllTrimValue(uint8_t day_trim, uint8_t hour_trim, uint8_t min_trim,uint8_t sec_trim);
+
+/**
+ ****************************************************************************************
+ * @brief Get all settings of TRIM register.
+ * 
+ * @param[out] hour_trim    Digital trimming value(1 ~ 31) for the second on the hour boundary. 
+ * @param[out] min_trim     Digital trimming value(1 ~ 31) for the second on the minute boundary.
+ * @param[out] sec_trim     Digital trimming value(1 ~ 31) for the rest of seconds.
+ * @return Digital trimming value(1 ~ 31) for the second on the day boundary.
+ ****************************************************************************************
+ */
+uint8_t RTC_GetAllTrimValue(uint8_t *hour_trim, uint8_t *min_trim,uint8_t *sec_trim);
+
+/**
+ ****************************************************************************************
+ * @brief Clear all settings of TRIM register.
+ * 
+ ****************************************************************************************
+ */
+void RTC_ClearAllTrimValue(void);
 
 #endif
 
