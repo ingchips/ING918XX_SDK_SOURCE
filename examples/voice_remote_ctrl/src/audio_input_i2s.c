@@ -48,8 +48,8 @@ void audio_input_setup(void)
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_DMA) |
                               (1 << SYSCTRL_ClkGate_APB_I2S));
     SYSCTRL_ConfigPLLClk(6, 128, 2); // PLL = 256MHz
-    SYSCTRL_SelectHClk((SYSCTRL_ClkMode)(SYSCTRL_CLK_PLL_DIV_1 + 1));      // MCU @ 128MHz
-    SYSCTRL_SelectI2sClk((SYSCTRL_ClkMode)(SYSCTRL_CLK_PLL_DIV_1 + 4));    // I2S Clk @ 51.2MHz
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_2);      // MCU @ 128MHz
+    SYSCTRL_SelectI2sClk(SYSCTRL_CLK_PLL_DIV_5);    // I2S Clk @ 51.2MHz
     I2S_ConfigClk(APB_I2S, 25, 32); // F_bclk = 1.024MHz
     I2S_ConfigIRQ(APB_I2S, 0, 1, 0, TRIGGER_NUMBER);
     I2S_DMAEnable(APB_I2S, 0, 0);

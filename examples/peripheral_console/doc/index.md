@@ -79,6 +79,10 @@ The console supports several commands. Some notable ones are listed below. Check
 
     Show the configured frequency of CPU.
 
+* `m`
+
+    Show memory usage information.
+
 * `latency`
 
     Self-assign a peripheral latency parameter. For example, after issuing command `latency 4`, the buzzing

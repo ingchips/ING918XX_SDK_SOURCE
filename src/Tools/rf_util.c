@@ -21,6 +21,8 @@ void rf_enable_powerboost(void)
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
+#include "peripheral_sysctrl.h"
+
 static const uint32_t rf_data[] = {
 #include "rf_powerboost_916.dat"
 };
@@ -36,6 +38,9 @@ void rf_enable_powerboost(void)
 {
     platform_set_rf_init_data(rf_data);
     platform_set_rf_power_mapping(power_mapping);
+
+    SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BUCK_DCDC_OUTPUT_2V000);
+    SYSCTRL_SetLDOOutputRF(SYSCTRL_LDO_RF_OUTPUT_1V800);
 }
 
 #endif

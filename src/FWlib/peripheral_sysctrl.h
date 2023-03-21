@@ -55,12 +55,12 @@ typedef enum
     SYSCTRL_Reset_APB_TRNG                = 21
 } SYSCTRL_ResetItem;
 
-enum
+typedef enum
 {
     SYSCTRL_LDO_OUPUT_1V60 = 0x13,  // Recommended for Vbat = 1.8V
     SYSCTRL_LDO_OUPUT_1V80 = 0x16,  // Recommended for Vbat = 2.5V
     SYSCTRL_LDO_OUPUT_2V50 = 0x1f,  // Recommended for Vbat = 3.3V
-};
+}SYSCTRL_LDOOutputCore;
 
 enum
 {
@@ -94,6 +94,40 @@ void SYSCTRL_WriteBlockRst(uint32_t data) ;
  * \return Reset/Release state of each components
  */
 uint32_t SYSCTRL_ReadBlockRst(void) ;
+
+typedef enum
+{
+    SYSCTRL_MEM_BLOCK_0 = 0x20,     // block 0 is  8KiB starting from 0x20000000
+    SYSCTRL_MEM_BLOCK_1 = 0x40,     // block 1 is  8KiB following block 0
+    SYSCTRL_MEM_BLOCK_2 = 0x80,     // block 2 is 16KiB following block 1
+    SYSCTRL_MEM_BLOCK_3 = 0x100,    // block 3 is 16KiB following block 2
+    SYSCTRL_MEM_BLOCK_4 = 0x200,    // block 4 is 16KiB following block 3
+    SYSCTRL_SHARE_BLOCK_0 = 0x1,    // share memory block 0 is  8KiB starting from 0x400A0000
+    SYSCTRL_SHARE_BLOCK_1 = 0x2,    // share memory block 1 is  8KiB following block 0 (0x400A2000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x4,    // share memory block 2 is 16KiB following block 1
+    SYSCTRL_SHARE_BLOCK_3 = 0x8,    // share memory block 3 is 16KiB following block 2
+    SYSCTRL_SHARE_BLOCK_4 = 0x10,   // share memory block 4 is 16KiB following block 3
+} SYSCTRL_MemBlock;
+
+// these 3 blocks (16 + 8) KiB are reversed in _mini_bundles
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1 | SYSCTRL_SHARE_BLOCK_0)
+
+/**
+ * \brief Get current HClk (same as MCU working clock) in Hz
+ *
+ * Compatible API with ING916's
+ *
+ * \return              clock in Hz
+ */
+#define SYSCTRL_GetHClk()       48000000
+
+#define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
+#define SYSCTRL_WAKEUP_SOURCE_EXT_INT       2       // waken up by EXT_INT
+
+typedef struct
+{
+    uint32_t source;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
+} SYSCTRL_WakeupSource_t;
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
@@ -164,7 +198,7 @@ typedef SYSCTRL_Item SYSCTRL_ResetItem;
  *
  * Default: 1.200V. Step: 20mV
  */
-enum
+typedef enum
 {
     SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0,      // 1.000V
     SYSCTRL_LDO_OUTPUT_CORE_1V020 = 1,
@@ -182,7 +216,7 @@ enum
     SYSCTRL_LDO_OUTPUT_CORE_1V260 = 13,
     SYSCTRL_LDO_OUTPUT_CORE_1V280 = 14,
     SYSCTRL_LDO_OUTPUT_CORE_1V300 = 15
-};
+} SYSCTRL_LDOOutputCore;
 
 /**
  * @brief LDO Flash Output
@@ -193,7 +227,7 @@ enum
  *
  * Default: 2.100V. Step: 100mV
  */
-enum
+typedef enum
 {
     SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5,     // 2.100V
     SYSCTRL_LDO_OUTPUT_FLASH_2V200 = 6,
@@ -206,7 +240,7 @@ enum
     SYSCTRL_LDO_OUTPUT_FLASH_2V900 = 13,
     SYSCTRL_LDO_OUTPUT_FLASH_3V000 = 14,
     SYSCTRL_LDO_OUTPUT_FLASH_3V100 = 15
-};
+} SYSCTRL_LDOOutputFlash;
 
 /**
  * @brief BOR Threshold on VBAT
@@ -237,29 +271,60 @@ enum
 
 typedef enum
 {
-    SYSCTRL_CLK_SLOW,                           // use slow clock
-    SYSCTRL_CLK_32k = SYSCTRL_CLK_SLOW,         // use 32kHz clock
-    SYSCTRL_CLK_HCLK,                           // use HCLK (same as MCU)
-    SYSCTRL_CLK_ADC_DIV = SYSCTRL_CLK_HCLK,     // use clock from ADC divider
+    SYSCTRL_CLK_SLOW = 0,            // use slow clock
+    SYSCTRL_CLK_32k = 0,             // use 32kHz clock
+    SYSCTRL_CLK_HCLK = 1,            // use HCLK (same as MCU)
+    SYSCTRL_CLK_ADC_DIV = 1,         // use clock from ADC divider
 
-    SYSCTRL_CLK_PLL_DIV_1 = SYSCTRL_CLK_HCLK,   // use (PLL clock div 1)
-                                                // SYSCTRL_TMR_CLK_PLL_DIV_1 + 1: use (PLL clock div 2)
-                                                // ..
-                                                // SYSCTRL_TMR_CLK_PLL_DIV_1 + 14: use (PLL clock div 15)
+    SYSCTRL_CLK_PLL_DIV_1 = 1,       // use (PLL clock div 1)
+                                     // SYSCTRL_TMR_CLK_PLL_DIV_2: use (PLL clock div 2)
+                                     // ..
+                                     // SYSCTRL_TMR_CLK_PLL_DIV_15: use (PLL clock div 15)
+                                     // Feel free to cast [1..15] to SYSCTRL_ClkMode
+    SYSCTRL_CLK_PLL_DIV_2 = 2,
+    SYSCTRL_CLK_PLL_DIV_3 = 3,
+    SYSCTRL_CLK_PLL_DIV_4 = 4,
+    SYSCTRL_CLK_PLL_DIV_5 = 5,
+    SYSCTRL_CLK_PLL_DIV_6 = 6,
+    SYSCTRL_CLK_PLL_DIV_7 = 7,
+    SYSCTRL_CLK_PLL_DIV_8 = 8,
+    SYSCTRL_CLK_PLL_DIV_9 = 9,
+    SYSCTRL_CLK_PLL_DIV_10 = 10,
+    SYSCTRL_CLK_PLL_DIV_11 = 11,
+    SYSCTRL_CLK_PLL_DIV_12 = 12,
+    SYSCTRL_CLK_PLL_DIV_13 = 13,
+    SYSCTRL_CLK_PLL_DIV_14 = 14,
+    SYSCTRL_CLK_PLL_DIV_15 = 15,
 
-    SYSCTRL_CLK_SLOW_DIV_1 = SYSCTRL_CLK_HCLK,  // use RF OSC clock div 1
-                                                // SYSCTRL_CLK_SLOW_DIV_1 + 1: use (RF OSC clock div 2)
-                                                // ..
+    SYSCTRL_CLK_SLOW_DIV_1 = 1,      // use RF OSC clock div 1
+                                     // SYSCTRL_CLK_SLOW_DIV_2: use (RF OSC clock div 2)
+                                     // ..
+                                     // Feel free to cast [1..15] to SYSCTRL_ClkMode
+    SYSCTRL_CLK_SLOW_DIV_2 = 2,
+    SYSCTRL_CLK_SLOW_DIV_3 = 3,
+    SYSCTRL_CLK_SLOW_DIV_4 = 4,
+    SYSCTRL_CLK_SLOW_DIV_5 = 5,
+    SYSCTRL_CLK_SLOW_DIV_6 = 6,
+    SYSCTRL_CLK_SLOW_DIV_7 = 7,
+    SYSCTRL_CLK_SLOW_DIV_8 = 8,
+    SYSCTRL_CLK_SLOW_DIV_9 = 9,
+    SYSCTRL_CLK_SLOW_DIV_10 = 10,
+    SYSCTRL_CLK_SLOW_DIV_11 = 11,
+    SYSCTRL_CLK_SLOW_DIV_12 = 12,
+    SYSCTRL_CLK_SLOW_DIV_13 = 13,
+    SYSCTRL_CLK_SLOW_DIV_14 = 14,
+    SYSCTRL_CLK_SLOW_DIV_15 = 15,
+    SYSCTRL_CLK_SLOW_DIV_4095 = 4095,
 } SYSCTRL_ClkMode;
 
 /**
  * \brief Select clock mode of TIMER
  *
  * All timers share the same clock divider, which means that if timer K is
- * set to use (SYSCTRL_CLK_SLOW_DIV_1 + X), all previously configures timers that
- * uses (SYSCTRL_CLK_SLOW_DIV_1 + ...) are overwritten by (SYSCTRL_CLK_SLOW_DIV_1 + X).
+ * set to use (SYSCTRL_CLK_SLOW_DIV_X), all previously configures timers that
+ * uses (SYSCTRL_CLK_SLOW_DIV_X) are overwritten by (SYSCTRL_CLK_SLOW_DIV_X).
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -270,7 +335,7 @@ void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of PWM
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -281,7 +346,7 @@ void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of KeyScan
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -292,7 +357,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of PDM
  *
- * `mode` should be `SYSCTRL_CLK_SLOW_DIV_1` + N, where N = 0..62;
+ * Clock of PDM is divided from SLOW_CLK.`mode` should be `(SYSCTRL_ClkMode)N`, where N = 1..63;
  *
  * \param port          the timer
  * \param mode          clock mode
@@ -305,7 +370,7 @@ void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode);
  * \param port          the port
  * \param mode          clock mode
  *
- * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
  */
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
@@ -321,7 +386,7 @@ void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
  * \brief Select I2S clock mode
  * \param mode          clock mode
  *
- * Note: mode should be SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_PLL_DIV_1 + N, where N = 0..14.
+ * Note: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;.
  */
 void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode);
 
@@ -347,8 +412,8 @@ uint32_t SYSCTRL_GetPLLClk(void);
  *    1. f_vco should be in [60, 600]MHz;
  *    1. f_pll should not exceed 500MHz.
  *
- * \param loop          loop (6 bits)
  * \param div_pre       div_pre (8 bits)
+ * \param loop          loop (6 bits)
  * \param div_output    div_output (6 bits)
  * \return              0 if config is proper else non-0
  */
@@ -358,8 +423,8 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output);
  * \brief Select HClk clock mode
  * \param mode          clock mode
  *
- * Note: mode should be SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_PLL_DIV_1 + N,
- *       where N = 0..14.
+ * Note: mode should be SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_PLL_DIV_N,
+ *       where N = 1..15.
  *
  * Note: While changing, both clocks (OSC & PLL) must be running.
  */
@@ -420,7 +485,7 @@ void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of USB
  *
- * `mode` should be `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *
  * \param mode          clock mode
  *
@@ -430,9 +495,9 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 /**
  * \brief Select clock mode of Flash
  *
- * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_1` + N, where N = 0..14;
+ * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *
- * Default mode: `SYSCTRL_CLK_PLL_DIV_1` + 1.
+ * Default mode: see `SYSCTRL_ConfigClocksAfterWakeup()`.
  *
  * \param mode          clock mode
  *
@@ -465,11 +530,11 @@ void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 /**
  * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_1` + N,
- *  where N is in [0..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
+ * `mode` should be `SYSCTRL_CLK_32k`, or `(SYSCTRL_ClkMode)N`,
+ *  where N is in [1..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
  *  clock source (32k OSC or 32k RC).
  *
- * Note: The default mode is (`SYSCTRL_CLK_SLOW_DIV_1` + 999), i.e. (SLOW_CLK / 1000).
+ * Note: The default mode is (`(SYSCTRL_ClkMode)750`), i.e. (SLOW_CLK / 750).
  *
  * \param mode                  clock mode
  */
@@ -481,6 +546,59 @@ void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
  * \return                      frequency of the 32k
  */
 int SYSCTRL_GetCLK32k(void);
+
+// default PLL settings for automatic config after wakeup in boot loader
+#define PLL_BOOT_DEF_DIV_PRE        5
+#define PLL_BOOT_DEF_LOOP           70
+#define PLL_BOOT_DEF_DIV_OUTPUT     1
+
+// default hardware PLL settings when automatic config after wakeup in boot loader
+// is disabled
+#define PLL_HW_DEF_DIV_PRE          5
+#define PLL_HW_DEF_LOOP             80
+#define PLL_HW_DEF_DIV_OUTPUT       1
+
+/**
+ * \brief Automatically config core clocks after wakeup
+ *
+ * There is a functionality in the boot loader which can automatically configure
+ * core clocks after wakeup. This function update its parameters.
+ *
+ * This functionality in the boot loader is Enabled by default with following parameters:
+ * - enable_pll:        1
+ * - pll_loop:          PLL_BOOT_DEF_LOOP
+ * - hclk:              SYSCTRL_CLK_PLL_DIV_3
+ * - flash_clk:         SYSCTRL_CLK_PLL_DIV_2
+ * - enable_watchdog:   Disabled
+ *
+ * Note: For PLL, `div_pre` and `div_output` are fixed as PLL_BOOT_DEF_DIV_PRE and
+ *                PLL_BOOT_DEF_DIV_OUTPUT respectively.
+ * So, PLL output is 336MHz, HClk is 112MHz, Flash clock is 168MHz.
+ *
+ * \param   enable_pll          enable(1)/disable(0) PLL
+ * \param   pll_loop            loop of PLL (see `SYSCTRL_ConfigPLLClk`)
+ *                              ignored when PLL is disabled
+ * \param   hclk                HCLK clock mode (see `SYSCTRL_SelectHClk`)
+ * \param   flash_clk           Flash clock mode (see `SYSCTRL_SelectFlashClk`)
+ * \param   enabled_watchdog    enable(1)/disable(0) watchdog
+ *                              When enabled, watchdog is configured to be timed out
+ *                              after about 3 seconds. Developer are free to update
+ *                              its configuration later.
+ */
+void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
+        SYSCTRL_ClkMode hclk,
+        SYSCTRL_ClkMode flash_clk,
+        uint8_t enable_watchdog);
+
+/**
+ * \brief Disable automatic configuration of core clocks after wakeup
+ *
+ * Once disabled, after wake up, following settings of core clocks apply:
+ * - PLL enable is kept with `div_pre`, `loop` and `div_output` defaults to 5, 80 and 1 respectively;
+ * - hclk:          SYSCTRL_CLK_SLOW
+ * - flash_clk:     SYSCTRL_CLK_SLOW
+ */
+void SYSCTRL_DisableConfigClocksAfterWakeup(void);
 
 typedef enum
 {
@@ -543,7 +661,6 @@ typedef enum
     SYSCTRL_SLOW_RC_24M = 3,
     SYSCTRL_SLOW_RC_32M = 7,
     SYSCTRL_SLOW_RC_48M = 0xf,
-    SYSCTRL_SLOW_RC_64M = 0x1f,
 } SYSCTRL_SlowRCClkMode;
 
 /**
@@ -625,9 +742,146 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 /**
  * @brief Set LDO output level for Flash
  *
- * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT_FLASH_...`)
+ * @param[in] level         output level
  */
-void SYSCTRL_SetLDOOutputFlash(int level);
+void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level);
+
+/**
+ * @brief LDO for RF output level
+ *
+ * Range: [1.200, 2.750]V
+ *
+ * Default: 1.500V. Step: 50mV
+ */
+typedef enum
+{
+    SYSCTRL_LDO_RF_OUTPUT_1V200 = 0,    // 1.200V
+    SYSCTRL_LDO_RF_OUTPUT_1V250 = 1,
+    SYSCTRL_LDO_RF_OUTPUT_1V300 = 2,
+    SYSCTRL_LDO_RF_OUTPUT_1V350 = 3,
+    SYSCTRL_LDO_RF_OUTPUT_1V400 = 4,
+    SYSCTRL_LDO_RF_OUTPUT_1V450 = 5,
+    SYSCTRL_LDO_RF_OUTPUT_1V500 = 6,
+    SYSCTRL_LDO_RF_OUTPUT_1V550 = 7,
+    SYSCTRL_LDO_RF_OUTPUT_1V600 = 8,
+    SYSCTRL_LDO_RF_OUTPUT_1V650 = 9,
+    SYSCTRL_LDO_RF_OUTPUT_1V700 = 10,
+    SYSCTRL_LDO_RF_OUTPUT_1V750 = 11,
+    SYSCTRL_LDO_RF_OUTPUT_1V800 = 12,
+    SYSCTRL_LDO_RF_OUTPUT_1V850 = 13,
+    SYSCTRL_LDO_RF_OUTPUT_1V900 = 14,
+    SYSCTRL_LDO_RF_OUTPUT_1V950 = 15,
+    SYSCTRL_LDO_RF_OUTPUT_2V000 = 16,
+    SYSCTRL_LDO_RF_OUTPUT_2V050 = 17,
+    SYSCTRL_LDO_RF_OUTPUT_2V100 = 18,
+    SYSCTRL_LDO_RF_OUTPUT_2V150 = 19,
+    SYSCTRL_LDO_RF_OUTPUT_2V200 = 20,
+    SYSCTRL_LDO_RF_OUTPUT_2V250 = 21,
+    SYSCTRL_LDO_RF_OUTPUT_2V300 = 22,
+    SYSCTRL_LDO_RF_OUTPUT_2V350 = 23,
+    SYSCTRL_LDO_RF_OUTPUT_2V400 = 24,
+    SYSCTRL_LDO_RF_OUTPUT_2V450 = 25,
+    SYSCTRL_LDO_RF_OUTPUT_2V500 = 26,
+    SYSCTRL_LDO_RF_OUTPUT_2V550 = 27,
+    SYSCTRL_LDO_RF_OUTPUT_2V600 = 28,
+    SYSCTRL_LDO_RF_OUTPUT_2V650 = 29,
+    SYSCTRL_LDO_RF_OUTPUT_2V700 = 30,
+    SYSCTRL_LDO_RF_OUTPUT_2V750 = 31,
+} SYSCTRL_LDOOutputRF;
+
+/**
+ * @brief Set LDO output level for RF
+ *
+ * @param[in] level         output level
+ */
+void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level);
+
+/**
+ * @brief ADC V1.2 reference (VREF12_ADC) level
+ *
+ * Range: [1.184, 1.215]V
+ *
+ * Default: 1.200V. Step: 1mV
+ */
+typedef enum
+{
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0,  // 1.184V
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V185 = 1,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V186 = 2,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V187 = 3,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V188 = 4,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V189 = 5,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V190 = 6,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V191 = 7,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V192 = 8,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V193 = 9,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V194 = 10,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V195 = 11,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V196 = 12,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V197 = 13,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V198 = 14,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V199 = 15,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V200 = 16,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V201 = 17,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V202 = 18,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V203 = 19,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V204 = 20,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V205 = 21,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V206 = 22,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V207 = 23,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V208 = 24,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V209 = 25,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V210 = 26,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V211 = 27,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V212 = 28,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V213 = 29,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V214 = 30,
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V215 = 31,
+} SYSCTRL_AdcVrefOutput;
+
+/**
+ * @brief Set LDO output level for RF
+ *
+ * @param[in] level         output level
+ */
+void SYSCTRL_SetAdcVrefOutput(SYSCTRL_AdcVrefOutput level);
+
+/**
+ * @brief BUCK DC-DC output level
+ *
+ * @see `SYSCTRL_SetLDOOutputFlash`
+ *
+ * Range: [1.200, 2.700]V
+ *
+ * Default: 1.800V. Step: 100mV
+ */
+typedef enum
+{
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0, // 1.2V
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 1,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 2,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V500 = 3,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V600 = 4,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V700 = 5,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V800 = 6,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V900 = 7,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V000 = 8,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V100 = 9,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V200 = 10,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V300 = 11,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V400 = 12,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V500 = 13,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V600 = 14,
+    SYSCTRL_BUCK_DCDC_OUTPUT_2V700 = 15,
+} SYSCTRL_BuckDCDCOutput;
+
+/**
+ * @brief Set BUCK DC-DC output level
+ *
+ * @param[in] level         output level
+ */
+void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
+
 
 /**
  * @brief Config USB PHY functionality
@@ -660,12 +914,50 @@ typedef struct
 void SYSCTRL_EnableWakeupSourceDetection(void);
 
 /**
- * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
+ * @brief Enable/Disable p_cap mode for a certain pwm channel
  *
- * @param[out] source           source of the last wake up
- * @return                      1 if any wake up source is found else 0
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ * @param[in] enable            Enable(1)/Disable(0)
  */
-uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
+void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable);
+
+typedef enum
+{
+    SYSCTRL_MEM_BLOCK_0 = 0x10,     // block 0 is 16KiB starting from 0x20000000
+                                    // This block is always ON, and can't be turned off.
+    SYSCTRL_MEM_BLOCK_1 = 0x08,     // block 1 is 16KiB following block 0
+    SYSCTRL_SHARE_BLOCK_0 = 0x01,   // share memory block 0 is  8KiB starting from 0x40120000
+    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 0 (0x40122000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 1
+} SYSCTRL_MemBlock;
+
+// this blocks (16 + 8) KiB are reversed in _mini_bundles
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_SHARE_BLOCK_0)
+
+typedef enum
+{
+    SYSCTRL_MEM_BLOCK_AS_CACHE = 0,
+    SYSCTRL_MEM_BLOCK_AS_SYS_MEM = 1,
+} SYSCTRL_CacheMemCtrl;
+
+/**
+ * @brief Control the usage of cache memory blocks which can be used as Cache or
+ *        system memory.
+ *
+ * Address and size of each block when used as system memory:
+ *     1. D-Cache: 8KiB starting from 0x2000E000
+ *     2. I-Cache: 8KiB starting from 0x20010000
+ *
+ * CAUTION:
+ *     1. When used as system memory, more RAM are available, but performance might be degraded;
+ *     2. When used as system memory, contents are *NOT* retained in sleep modes;
+ *     3. These settings are not kept in sleep modes and will restore to defaults during waking up,
+ *        so this function needs to be called each time the system wakes up.
+ *
+ * @param[in] i_cache           usage of I-Cache (default: AS_CACHE)
+ * @param[in] d_cache           usage of D-Cache (default: AS_CACHE)
+ */
+void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache);
 
 #endif
 
@@ -715,7 +1007,7 @@ void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item);
  *
  * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT...`)
  */
-void SYSCTRL_SetLDOOutput(int level);
+void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level);
 
 /**
  * @brief Config BOR (Brownout Reset) functionality
@@ -726,6 +1018,9 @@ void SYSCTRL_SetLDOOutput(int level);
  *         enable for sleep mode.
  *
  * ING916: `enable_active` and `enable_sleep` should be the same.
+ *         Power consumption is larger when enabled, ~2.x uA.
+ *         When `threshold` is set to 1.5V, a dedicated logic is used, only ~0.x uA is
+ *         consumed.
  *
  * @param[in] threshold         Threshold (available values see `SYSCTRL_BOR_...`)
  *                              default: 0.95V (ING918)
@@ -741,6 +1036,28 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
  * @brief Wait for LDO state ready
  */
 void SYSCTRL_WaitForLDO(void);
+
+/**
+ * @brief Select the set of memory blocks to be used and power off unused blocks.
+ *
+ * Note: Only allowed to be used in _mini_ bundles (and, for ING918 MCU mode,
+ * i.e. without platform/BLE stack). NEVER use this in other ones.
+ *
+ * All blocks are selected as default.
+ *
+ * @param[in] block_map         combination of `SYSCTRL_MemBlock`
+ *                              When a bit is absent from `block_map`, the corresponding
+ *                              memory block is powered off.
+ */
+void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
+
+/**
+ * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
+ *
+ * @param[out] source           source of the last wake up
+ * @return                      1 if any wake up source is found else 0
+ */
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

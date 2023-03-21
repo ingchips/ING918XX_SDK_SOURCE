@@ -116,7 +116,7 @@ int att_server_deferred_read_response(hci_con_handle_t con_handle, uint16_t attr
  * @param value_len              length of value
  * @return                       0 if ok, error otherwise
  */
-int att_server_notify(hci_con_handle_t con_handle, uint16_t attribute_handle, uint8_t *value, uint16_t value_len);
+int att_server_notify(hci_con_handle_t con_handle, uint16_t attribute_handle, const uint8_t *value, uint16_t value_len);
 
 /**
  * @brief indicate value change to client. client is supposed to reply with an indication_response
@@ -126,7 +126,7 @@ int att_server_notify(hci_con_handle_t con_handle, uint16_t attribute_handle, ui
  * @param value_len              length of value
  * @return                       0 if ok, error otherwise
  */
-int att_server_indicate(hci_con_handle_t con_handle, uint16_t attribute_handle, uint8_t *value, uint16_t value_len);
+int att_server_indicate(hci_con_handle_t con_handle, uint16_t attribute_handle, const uint8_t *value, uint16_t value_len);
 
 /*
  * @brief get current MTU size

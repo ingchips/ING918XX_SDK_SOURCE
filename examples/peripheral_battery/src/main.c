@@ -3,7 +3,10 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "adc_cali.h"
+#include "peripheral_adc.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -41,6 +44,57 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+typedef struct {
+    uint8_t s;
+    uint8_t cnt;
+    uint16_t data[AVE_NUM];
+} __attribute__((packed)) SADC_adcAve_t;
+static SADC_adcAve_t *adcAve[12];
+
+uint16_t ADC_GetAveData(uint32_t data)
+{
+    SADC_channelId ch = ADC_GetDataChannel(data);
+    if (!adcAve[ch]) return ADC_GetData(data);
+    adcAve[ch]->data[adcAve[ch]->cnt] = ADC_GetData(data);
+    adcAve[ch]->cnt++;
+    if (adcAve[ch]->cnt >= AVE_NUM)
+        adcAve[ch]->cnt = 0;
+    if (adcAve[ch]->s < AVE_NUM)
+        adcAve[ch]->s++;
+    uint8_t i;
+    uint32_t sum = 0;
+    for (i = 0; i < adcAve[ch]->s; ++i)
+        sum += adcAve[ch]->data[i];
+    return sum / i;
+}
+static void ADC_AveInitSet(SADC_channelId ch)
+{
+    if (adcAve[ch])
+        memset(adcAve[ch], 0, 3);
+    else
+        adcAve[ch] = malloc(sizeof(SADC_adcAve_t));
+}
+void ADC_AveInit(void)
+{
+    uint16_t ch;
+    uint16_t reg = ADC_GetEnabledChannels();
+    for (ch = 0; ch < 12; ++ch) {
+        if (reg & (1 << ch))
+            ADC_AveInitSet((SADC_channelId)ch);
+    }
+}
+void ADC_AveDisable(void)
+{
+    uint8_t i;
+    for (i = 0; i < 12; ++i) {
+        if (!adcAve[i]) continue;
+        free(adcAve[i]);
+        adcAve[i] = 0;
+    }
+}
+#endif
+
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
@@ -65,7 +119,10 @@ void setup_peripherals(void)
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
     SYSCTRL_SetAdcClkDiv(4);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
+    ADC_Reset();
     ADC_Calibration(SINGLE_END_MODE);
+    ADC_ftInit();
+    ADC_VrefCalibration();
 #endif
 #else
     #error unknown or unsupported chip family

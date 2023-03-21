@@ -47,11 +47,20 @@ typedef struct assertion_info_s
     int line_no;
 } assertion_info_t;
 
-#define PLATFORM_ALLOW_DEEP_SLEEP            0x01
+typedef enum
+{
+    PLATFORM_DEEP_SLEEP = 0,
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PLATFORM_DEEPER_SLEEP = 1,
+    PLATFORM_BLE_ONLY_SLEEP = 2,
+#endif
+} platform_sleep_category_b_t;
+
+#define PLATFORM_ALLOW_DEEP_SLEEP            (1 << PLATFORM_DEEP_SLEEP)
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#define PLATFORM_ALLOW_DEEPER_SLEEP          0x02
-#define PLATFORM_ALLOW_BLE_ONLY_SLEEP        0x04
+#define PLATFORM_ALLOW_DEEPER_SLEEP          (1 << PLATFORM_DEEPER_SLEEP)
+#define PLATFORM_ALLOW_BLE_ONLY_SLEEP        (1 << PLATFORM_BLE_ONLY_SLEEP)
 #endif
 
 typedef enum
@@ -64,6 +73,12 @@ typedef enum
                                         // only when `PLATFORM_CFG_ALWAYS_CALL_WAKEUP` is enabled.
 } platform_wakeup_call_reason_t;
 
+typedef struct
+{
+    uint8_t reason; // see `platform_wakeup_call_reason_t`
+    uint8_t mode;   // see `platform_sleep_category_b_t`
+} platform_wakeup_call_info_t;
+
 typedef enum
 {
     // platform callback for putc (for logging)
@@ -75,7 +90,7 @@ typedef enum
     PLATFORM_CB_EVT_PROFILE_INIT,
 
     // peripherals need to be re-initialized after deep-sleep, user can handle this event
-    // Note: param (void *data) is casted from platform_wakeup_call_reason_t.
+    // Note: param (void *data) is casted from (platform_wakeup_call_info_t *).
     PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP,
 
     // return bits combination of `PLATFORM_ALLOW_xxx`
@@ -98,6 +113,10 @@ typedef enum
     PLATFORM_CB_EVT_LLE_INIT,
 
     // when allocation on heap fails (heap out of memory)
+    // NOTE: param (void *data) is cased from an integer identifying which heap is OOM:
+    //      * 0: FreeRTOS's heap;
+    //      * 1: Link Layer's heap;
+    //      * 2: Link Layer's task pool.
     // if this callback is not defined, CPU enters a dead loop
     PLATFORM_CB_EVT_HEAP_OOM,
 
@@ -109,11 +128,40 @@ typedef enum
     // NOTE: param (void *data) is casted from platform_exception_id_t
     PLATFORM_CB_EVT_EXCEPTION,
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    // platform callback for customized IDLE procedure
+    // developers can setup this callback to implement customized IDLE procedure.
+    // a typical IDLE procedure is: `__DSB(); __WFI(); __ISB();`
+    PLATFORM_CB_EVT_IDLE_PROC,
+#endif
+
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;
 
 typedef uint32_t (*f_platform_evt_cb)(void *data, void *user_data);
 typedef uint32_t (*f_platform_irq_cb)(void *user_data);
+
+typedef struct platform_evt_cb_info
+{
+    f_platform_evt_cb  f;
+    void              *user_data;
+} platform_evt_cb_info_t;
+
+typedef struct platform_irq_cb_info
+{
+    f_platform_irq_cb  f;
+    void              *user_data;
+} platform_irq_cb_info_t;
+
+typedef struct
+{
+    platform_evt_cb_info_t callbacks[PLATFORM_CB_EVT_MAX];
+} platform_evt_cb_table_t;
+
+typedef struct
+{
+    platform_irq_cb_info_t callbacks[PLATFORM_CB_IRQ_MAX];
+} platform_irq_cb_table_t;
 
 // A trace item is a combination of data1 and data2. Note:
 // 1. len1 or len2 might be 0, but not both
@@ -175,12 +223,59 @@ void platform_set_evt_callback(platform_evt_callback_type_t type, f_platform_evt
  ****************************************************************************************
  * @brief register callback function for platform interrupt requests
  *
+ * Once registered, the corresponding interrupt is enabled. After waking up from sleep
+ * modes, interrupts enabled previously are disabled again, which is also the default
+ * interrupts enable/disable state.
+ *
+ * Note: "Enabling" an interrupt here is from CPU's point of view.
+ *
  * @param[in] type          the irq
  * @param[in] f             the callback function
  * @param[in] user_data     user data that will be passed into callback function `f`
  ****************************************************************************************
  */
 void platform_set_irq_callback(platform_irq_callback_type_t type, f_platform_irq_cb f, void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief Enable/disable interrupt requests
+ *
+ * Note: "Enabling" an interrupt here is from CPU's point of view.
+ *
+ * @param[in] type          the irq
+ * @param[in] flag          enable(1)/disable(0)
+ ****************************************************************************************
+ */
+void platform_enable_irq(platform_irq_callback_type_t type, uint8_t flag);
+
+/**
+ ****************************************************************************************
+ * @brief register callback function table for all platform events
+ *
+ * Instead of configure callback functions one by one, this function registers a
+ * table for ALL events.
+ *
+ * DO NOT use this if `platform_set_evt_callback` is used.
+ *
+ * @param[in] table         callback function table
+ ****************************************************************************************
+ */
+void platform_set_evt_callback_table(const platform_evt_cb_table_t *table);
+
+/**
+ ****************************************************************************************
+ * @brief register callback function table for all platform interrupt requests
+ *
+ * Instead of configure callback functions one by one, this function registers a
+ * table for ALL interrupt requests. When using this API, interrupts can be enabled
+ * using corresponding IRQ enable/disable functions of MCU.
+ *
+ * DO NOT use this if `platform_set_irq_callback` is used.
+ *
+ * @param[in] table         callback function table
+ ****************************************************************************************
+ */
+void platform_set_irq_callback_table(const platform_irq_cb_table_t *table);
 
 /**
  ****************************************************************************************
@@ -280,8 +375,12 @@ uint8_t platform_read_persistent_reg(void);
  *        Optionally, a portion of SYS memory can be retained during shutdown.
  *
  * External wake up source:
- *      ING918xx: EXT_INT;
- *      ING916xx: GPIOs that are configured as DEEPER sleep wake up source.
+ *      ING918: EXT_INT;
+ *      ING916: GPIOs that are configured as DEEPER sleep wake up source.
+ *
+ * Retainable RAM:
+ *      ING918: starting from 0x20000000, 64KiB
+ *      ING916: starting from 0x20000000, 16KiB
  *
  * @param[in] duration_cycles       Duration before power on again (measured in cycles of 32k clock)
  *                                  Minimum value: 825 cycles (about 25.18ms)
@@ -313,7 +412,7 @@ typedef enum
                                 //          * For RC32K, wait 100us after enabled.
                                 // Note: Wait another 100us before disabling the unused clock.
     PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accuracy in ppm.
-    PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibartion period in seconds. Default: 3600 * 2
+    PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibration period in seconds. Default: 3600 * 2
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter
     PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (deep sleep mode) in us. (default: ~550us)
     PLATFORM_CFG_PS_DBG_1 = PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // obsoleted
@@ -329,13 +428,14 @@ typedef enum
                                             // Note: this feature has negative impact on power consumption.
     PLATFORM_CFG_LL_DELAY_COMPENSATION,     // When system runs at a lower frequency,
                                             // more time (in us) is needed to run Link layer.
-                                            // For example, if ING916 runs at 24MHz, configure this to 1000
-    PLATFORM_CFG_24M_OSC_TUNE,              // 24M OSC tunning (not only available for ING918)
+                                            // For example, if ING916 runs at 24MHz, configure this to 2500
+    PLATFORM_CFG_24M_OSC_TUNE,              // 24M OSC tunning (not available for ING918)
                                             // For ING916: values may vary in 0x16~0x2d, etc.
     PLATFORM_CFG_ALWAYS_CALL_WAKEUP,        // always trigger `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` no matter if deep sleep
                                             // procedure is completed or aborted (failed).
-                                            // Default for ING918: Disabled(0) for backward compatability
-                                            // Default for ING918: Enabled(1)
+                                            // Default for ING918: Disabled(0) for backward compatibility
+                                            // Default for ING916: Enabled(1)
+    PLATFORM_CFG_PS_DBG_3,
 } platform_cfg_item_t;
 
 typedef enum
@@ -552,7 +652,7 @@ void platform_controller_run(void);
  *       1. Comparing to RTOS software timers, this timer may be more accurate in some
  *          circumstance;
  *       1. This will always succeed, except when running out of memory;
- *       1. `callback` is also the identifer of the timer, below two lines defines only
+ *       1. `callback` is also the identifier of the timer, below two lines defines only
  *          a timer expiring after 200 units but not two separate timers:
  *          ```c
  *          platform_set_timer(f, 100);
@@ -575,7 +675,7 @@ void platform_set_timer(void (* callback)(void), uint32_t delay);
  * For NoOS variants, RTOS stacks can be replaced (modify its size, etc) when implementing
  * the generic OS interface.
  *
- * @param[in]   id              task identifier ({PLATFORM_TASK_CONTROLLER, PLATFORM_TASK_HOST})
+ * @param[in]   id              task identifier
  * @param[in]   start           start address of the new stack
  * @param[in]   size            size of the new stack in bytes
  ****************************************************************************************

@@ -13,7 +13,6 @@
 #include "mesh_port_pb.h"
 #include "mesh_profile.h"
 #include "app_config.h"
-#include "mesh_manage_conn_and_scan.h"
 #include "mesh_profile.h"
 #include "app_debug.h"
 
@@ -58,7 +57,6 @@ int mesh_att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_hand
     if(PROV_DATA_OUT_CCCD_HDL == attribute_handle || PROXY_DATA_OUT_CCCD_HDL == attribute_handle ){
         uint16_t notify_en = little_endian_read_16(buffer, 0);
         if(notify_en){
-            mesh_mcas_gatt_notify_enable_callback();
         }
     }
     
@@ -72,13 +70,8 @@ int mesh_att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_hand
 void mesh_stack_ready(void)
 {
     app_log_debug("%s\n", __func__);
-    
     mesh_setup_adv();
-#if defined(ENABLE_MESH_ADV_BEARER)
-    // setup scanning when supporting ADV Bearer
     mesh_setup_scan();
-    mesh_mcas_scan_start();
-#endif
 }
 
 /******************************************************************************************
@@ -88,7 +81,6 @@ void mesh_stack_ready(void)
 void mesh_connected(uint16_t conn_handle)
 {
     app_log_debug("%s\n", __func__);
-    mesh_mcas_connect_callback(conn_handle);
 }
 
 /******************************************************************************************
@@ -101,7 +93,6 @@ void mesh_disconnected(uint16_t conn_handle, uint8_t reason)
     
     // mesh_adv_start();
     mesh_port_proxy_disconnect(conn_handle);
-    mesh_mcas_disconnect_callback(conn_handle);
 }
 
 /******************************************************************************************

@@ -11,7 +11,34 @@ families.
     python icsdw.py /path/to/flash_download.ini
     ```
 
+use 'pip install -r requirements.txt' to install all dependency packages
+
+### usage for UART Flash download
+
+-	type 'icsdw.py' to see the help message for command line format.
+-	check config options in 'flash_download.ini':
+	-	'family': ing916, ing918, etc.
+	-	'Checked': according FileName and Address need to be provided, Address will be used to differentiate Flash or RAM, maximum of 6 bins are allowed.
+
 Note: Python 3 and _pyserial_ is required to use this script.
+
+### usage for USB Flash download
+
+- 	use icsdw.device.query_all_active_usb_ports(timeout) to query all usb port, it will wait and hold&return all ports until timeout(seconds).
+	-	call functin: example: python -c "import icsdw;x=icsdw.device.query_all_active_usb_ports(10);".
+	-	enter boot.
+	-	record all returned ports, if USB is re-connected after last query, the port is not valid anymore.
+- 	use port as input to download:
+    ```shell
+    python icsdw.py /path/to/flash_download.ini --port USB#VID_FFFF#PID_FA2F#25#01#02
+    ```
+- 	if no port provided, it will check and use the first usb port, in this case, you have to enter boot first before call script.
+
+Note: Python 3 and _pyusb_ is required to use this script.
+
+## RAM Downloader
+
+-	same procedure as Flash download,  but need to modify Address to RAM address(the first 0x1500 bytes are reserved, application should use address larger than 0x1500).
 
 ## Flash Dumper
 

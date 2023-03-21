@@ -5,7 +5,7 @@
 #include "app_debug.h"
 
 // Flash distribution.
-#define HAL_FLASH_BANK_SIZE     EFLASH_PAGE_SIZE  //For ingchips eflash, the true unit of bank is page, and one page = 8KB(0x2000). 
+#define HAL_FLASH_BANK_SIZE     EFLASH_PAGE_SIZE  //For ingchips ing918xx eflash, the true unit of bank is page, and one page = 8KB(0x2000). 
 #define HAL_FLASH_BANK_0_ADDR   ((uint32_t)0x00070000)                                      //Bank for mesh stack.
 #define HAL_FLASH_BANK_1_ADDR   ((uint32_t)(HAL_FLASH_BANK_0_ADDR + HAL_FLASH_BANK_SIZE))   //Bank for mesh stack.
 #define HAL_FLASH_BANK_2_ADDR   ((uint32_t)(HAL_FLASH_BANK_1_ADDR + HAL_FLASH_BANK_SIZE))   //Bank for application info.
@@ -97,7 +97,7 @@ void mesh_generate_random_name(uint8_t * name, uint16_t *len){
         }
         
         // write name to database and flash.
-        mesh_storage_name_set(name, *len);
+        mesh_storage_name_set(name, *len, 0);
     } else {
         // read name from database.
         mesh_storage_name_get(name, len);
@@ -129,14 +129,14 @@ void mesh_storage_stack_init(void){
     // setup TLV Flash Sector implementation
     const hal_flash_bank_t * hal_flash_bank_impl = NULL;
     hal_flash_bank_impl = hal_flash_bank_eflash_init_instance(
-    		&hal_flash_bank_context,
-    		HAL_FLASH_BANK_SIZE,
-			HAL_FLASH_BANK_0_ADDR,
-			HAL_FLASH_BANK_1_ADDR);
+            &hal_flash_bank_context,
+            HAL_FLASH_BANK_SIZE,
+            HAL_FLASH_BANK_0_ADDR,
+            HAL_FLASH_BANK_1_ADDR);
     const btstack_tlv_t * btstack_tlv_impl = btstack_tlv_flash_bank_init_instance(
-    		&btstack_tlv_flash_bank_context,
-			hal_flash_bank_impl,
-			&hal_flash_bank_context);
+            &btstack_tlv_flash_bank_context,
+            hal_flash_bank_impl,
+            &hal_flash_bank_context);
 
     // setup global tlv
     btstack_tlv_set_instance(btstack_tlv_impl, &btstack_tlv_flash_bank_context);

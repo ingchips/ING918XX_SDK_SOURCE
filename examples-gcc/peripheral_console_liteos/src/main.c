@@ -6,6 +6,10 @@
 #include "port_gen_os_driver.h"
 #include "los_config.h"
 
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
+#error WIP: Porting to ING916
+#endif
+
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"

@@ -136,7 +136,7 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable)
 {
     uint32_t mask = APB_PWM->Channels[channel_index].Ctrl0 & ~(0x1ful << 20);
-    mask |= (enable ? 0x3 : 0x0) << 20;
+    mask |= (enable ? 0x1 : 0x0) << 20;
     mask |= (trig_cfg & 0x7) << 21;
     APB_PWM->Channels[channel_index].Ctrl0 = mask;
 }

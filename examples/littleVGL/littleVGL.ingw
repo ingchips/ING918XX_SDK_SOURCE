@@ -2,18 +2,18 @@
  "watchdog": true,
  "bundle_meta": {
   "rom": {
-   "size": 133324,
+   "size": 133656,
    "base": 16384
   },
   "ram": {
-   "size": 29980,
+   "size": 29812,
    "base": 536870912
   },
   "app": {
    "base": 155648
   },
   "version": [
-   1,8,6]
+   1,9,12]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -70,8 +70,8 @@
  },
  "keil": true,
  "cmsis": "",
- "app_ram_size": 35552,
- "app_ram_addr": 536900896,
+ "app_ram_size": 35720,
+ "app_ram_addr": 536900728,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",

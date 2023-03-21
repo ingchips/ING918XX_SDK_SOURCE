@@ -92,7 +92,7 @@
 #define configUSE_TICKLESS_IDLE     1
 #endif
 #define configSYSTICK_CLOCK_HZ      ( RTC_CLK_FREQ )
-#define configCPU_CLOCK_HZ          ( PLL_CLK_FREQ )
+#define configCPU_CLOCK_HZ          SYSCTRL_GetHClk()
 #define configTICK_RATE_HZ          ( ( TickType_t ) 1024 )
 #define configMAX_PRIORITIES        ( 15 )
 #define configMINIMAL_STACK_SIZE    ( ( unsigned short ) 128 )

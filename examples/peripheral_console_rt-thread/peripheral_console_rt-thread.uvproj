@@ -9,7 +9,7 @@
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91800</Device>
           <Vendor>INGCHIPS</Vendor>
           <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
           <FlashUtilSpec/>
@@ -294,8 +294,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>139264</StartAddress>
-                <Size>401408</Size>
+                <StartAddress>147456</StartAddress>
+                <Size>393216</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536875424</StartAddress>
-                <Size>61024</Size>
+                <StartAddress>536875264</StartAddress>
+                <Size>61184</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>

@@ -65,12 +65,14 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
-                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
 
 #if    (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
     PINCTRL_EnableAllAntSelPins();
 #elif  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
     // ING916xx's configuration is flexible, check data-sheet.
     static const uint8_t ant_pins[] = {6, 7, 8, 9, 10, 11, 15, 16};
     PINCTRL_EnableAntSelPins(sizeof(ant_pins) / sizeof(ant_pins[0]), ant_pins);
