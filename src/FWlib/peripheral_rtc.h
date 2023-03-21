@@ -247,6 +247,24 @@ uint8_t RTC_GetAllTrimValue(uint8_t *hour_trim, uint8_t *min_trim,uint8_t *sec_t
  */
 void RTC_ClearAllTrimValue(void);
 
+/**
+ ****************************************************************************************
+ * @brief Get current RTC value (lower 32bit)
+ *
+ * @return              Current value
+ ****************************************************************************************
+ */
+uint32_t RTC_Current(void);
+
+/**
+ ****************************************************************************************
+ * @brief Get current full RTC value (full 43bit)
+ *
+ * @return              Current value
+ ****************************************************************************************
+ */
+uint64_t RTC_CurrentFull(void);
+
 #endif
 
 #ifdef __cplusplus

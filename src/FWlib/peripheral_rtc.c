@@ -1,5 +1,13 @@
 #include "ingsoc.h"
 
+static uint32_t RTC_ReadStable(volatile uint32_t * reg)
+{
+    uint32_t r = *reg;
+    while ((r != *reg) || (r != *reg))
+        r = *reg;
+    return r;
+}
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 void RTC_Enable(const uint8_t flag)
@@ -7,14 +15,6 @@ void RTC_Enable(const uint8_t flag)
     volatile uint32_t * reg = (volatile uint32_t *)(APB_RTC_BASE + 0x130);
     const uint32_t mask = 1 << 3;
     *reg = flag == 0 ? *reg & ~mask : *reg | mask;
-}
-
-static uint32_t RTC_ReadStable(volatile uint32_t * reg)
-{
-    uint32_t r = *reg;
-    while ((r != *reg) || (r != *reg))
-        r = *reg;
-    return r;
 }
 
 uint32_t RTC_CurrentHigh(void)
@@ -202,4 +202,41 @@ void RTC_ClearAllTrimValue(void)
     APB_RTC->Trim &= 0;
 }
 
+#define _RTC_CNT_MASK   0x7fful
+
+uint32_t RTC_CurrentHigh(void)
+{
+    volatile uint32_t * reg = (volatile uint32_t *)(AON2_CTRL_BASE + 0xBC);
+    uint32_t r = RTC_ReadStable(reg);
+    return r & _RTC_CNT_MASK;
+}
+
+uint32_t RTC_Current(void)
+{
+    volatile uint32_t * reg = (volatile uint32_t *)(AON2_CTRL_BASE + 0xB8);
+    return RTC_ReadStable(reg);
+}
+
+uint64_t RTC_CurrentFull(void)
+{
+    union
+    {
+        struct
+        {
+            uint32_t low;
+            uint32_t high;
+        } parts;
+        uint64_t v;
+    } r;
+    uint32_t t;
+    r.parts.low = RTC_Current();
+    r.parts.high = RTC_CurrentHigh();
+    t = RTC_Current();
+    if (t < r.parts.low)
+    {
+        r.parts.high = RTC_CurrentHigh();
+        r.parts.low = t;
+    }
+    return r.v;
+}
 #endif
