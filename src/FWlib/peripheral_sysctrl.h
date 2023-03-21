@@ -97,12 +97,20 @@ uint32_t SYSCTRL_ReadBlockRst(void) ;
 
 typedef enum
 {
-    SYSCTRL_MEM_BLOCK_0 = 0x1,    // block 0 is  8KiB starting from 0x20000000
-    SYSCTRL_MEM_BLOCK_1 = 0x2,    // block 1 is  8KiB following block 0
-    SYSCTRL_MEM_BLOCK_2 = 0x4,    // block 2 is 16KiB following block 1
-    SYSCTRL_MEM_BLOCK_3 = 0x8,    // block 3 is 16KiB following block 2
-    SYSCTRL_MEM_BLOCK_4 = 0x10,   // block 4 is 16KiB following block 3
+    SYSCTRL_MEM_BLOCK_0 = 0x20,     // block 0 is  8KiB starting from 0x20000000
+    SYSCTRL_MEM_BLOCK_1 = 0x40,     // block 1 is  8KiB following block 0
+    SYSCTRL_MEM_BLOCK_2 = 0x80,     // block 2 is 16KiB following block 1
+    SYSCTRL_MEM_BLOCK_3 = 0x100,    // block 3 is 16KiB following block 2
+    SYSCTRL_MEM_BLOCK_4 = 0x200,    // block 4 is 16KiB following block 3
+    SYSCTRL_SHARE_BLOCK_0 = 0x1,    // share memory block 0 is  8KiB starting from 0x400A0000
+    SYSCTRL_SHARE_BLOCK_1 = 0x2,    // share memory block 1 is  8KiB following block 0 (0x400A2000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x4,    // share memory block 2 is 16KiB following block 1
+    SYSCTRL_SHARE_BLOCK_3 = 0x8,    // share memory block 3 is 16KiB following block 2
+    SYSCTRL_SHARE_BLOCK_4 = 0x10,   // share memory block 4 is 16KiB following block 3
 } SYSCTRL_MemBlock;
+
+// these 3 blocks (16 + 8) KiB are reversed in _mini_bundles
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1 | SYSCTRL_SHARE_BLOCK_0)
 
 /**
  * \brief Get current HClk (same as MCU working clock) in Hz
@@ -915,11 +923,16 @@ void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable);
 
 typedef enum
 {
-    SYSCTRL_MEM_BLOCK_0 = 0x1,    // block 0 is 16KiB starting from 0x20000000
-                                  // This block is always ON, and can't be turned off.
-    SYSCTRL_MEM_BLOCK_1 = 0x2,    // block 1 is 16KiB following block 0
-                                  // Default: ON
+    SYSCTRL_MEM_BLOCK_0 = 0x10,     // block 0 is 16KiB starting from 0x20000000
+                                    // This block is always ON, and can't be turned off.
+    SYSCTRL_MEM_BLOCK_1 = 0x08,     // block 1 is 16KiB following block 0
+    SYSCTRL_SHARE_BLOCK_0 = 0x01,   // share memory block 0 is  8KiB starting from 0x40120000
+    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 0 (0x40122000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 1
 } SYSCTRL_MemBlock;
+
+// this blocks (16 + 8) KiB are reversed in _mini_bundles
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_SHARE_BLOCK_0)
 
 typedef enum
 {
@@ -1027,7 +1040,12 @@ void SYSCTRL_WaitForLDO(void);
 /**
  * @brief Select the set of memory blocks to be used and power off unused blocks.
  *
- * @param[in] block_map         bit combination of `SYSCTRL_MemBlock`
+ * Note: Only allowed to be used in _mini_ bundles (and, for ING918 MCU mode,
+ * i.e. without platform/BLE stack). NEVER use this in other ones.
+ *
+ * All blocks are selected as default.
+ *
+ * @param[in] block_map         combination of `SYSCTRL_MemBlock`
  *                              When a bit is absent from `block_map`, the corresponding
  *                              memory block is powered off.
  */

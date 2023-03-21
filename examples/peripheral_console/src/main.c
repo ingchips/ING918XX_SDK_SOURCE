@@ -27,10 +27,10 @@ int app_main()
 {
     _app_main();
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     // make sure that RAM does not exceed 0x20004000
-    // then, we can power off the unused block 1
-    SYSCTRL_SelectMemoryBlocks(SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1);
+    // then, we can power off the unused blocks
+    SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #ifdef DETECT_KEY
     // configure it only once
@@ -78,13 +78,11 @@ int app_main()
     #endif
 
     // make sure that RAM does not exceed 0x20004000
-    // then, we can power off the unused block 1
-    SYSCTRL_SelectMemoryBlocks(SYSCTRL_MEM_BLOCK_0);
+    // then, we can power off the unused blocks
+    SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
 #endif
 
     platform_set_rf_power_mapping(power_mapping);
-
-    platform_config(PLATFORM_CFG_USE_MINIMUM_RAM, PLATFORM_CFG_ENABLE);
 
     return 0;
 }

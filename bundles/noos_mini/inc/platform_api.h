@@ -436,8 +436,6 @@ typedef enum
                                             // Default for ING918: Disabled(0) for backward compatibility
                                             // Default for ING916: Enabled(1)
     PLATFORM_CFG_PS_DBG_3,
-    PLATFORM_CFG_USE_MINIMUM_RAM,           // Use minimum RAM (only effective in mini bundles)
-                                            // Default: Disabled(0)
 } platform_cfg_item_t;
 
 typedef enum

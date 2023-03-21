@@ -81,9 +81,10 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
 {
     #define RTC_MEM1 (APB_RTC_BASE + 0x78)
     #define RTC_MEM2 (APB_RTC_BASE + 0x8c)
-    uint32_t mask = ~((uint32_t)0x1f << 27);
-    uint32_t shutdown = ((~block_map) & 0x1f) << 27;
-    io_write(RTC_POR1, (io_read(RTC_MEM1) & mask) | shutdown);
+    uint32_t mask = ~((uint32_t)0x3ff << 22);
+    uint32_t shutdown = ((~block_map) & 0x3ff) << 22;
+    io_write(RTC_MEM1, (io_read(RTC_MEM1) & mask) | shutdown);
+    io_write(RTC_MEM2, (io_read(RTC_MEM2) & mask) | shutdown);
 }
 
 uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
@@ -1025,16 +1026,9 @@ void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
 
 void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
 {
-    if (block_map & SYSCTRL_MEM_BLOCK_1)
-    {
-        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), 1, 17);
-        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), 1, 17);
-    }
-    else
-    {
-        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), 0, 17);
-        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), 0, 17);
-    }
+    uint32_t masked = block_map & 0x1f;
+    set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), masked, 5, 16);
+    set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), masked, 5, 16);
 }
 
 void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache)
