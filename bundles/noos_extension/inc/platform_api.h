@@ -433,9 +433,11 @@ typedef enum
                                             // For ING916: values may vary in 0x16~0x2d, etc.
     PLATFORM_CFG_ALWAYS_CALL_WAKEUP,        // always trigger `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` no matter if deep sleep
                                             // procedure is completed or aborted (failed).
-                                            // Default for ING918: Disabled(0) for backward compatability
+                                            // Default for ING918: Disabled(0) for backward compatibility
                                             // Default for ING916: Enabled(1)
     PLATFORM_CFG_PS_DBG_3,
+    PLATFORM_CFG_USE_MINIMUM_RAM,           // Use minimum RAM (only effective in mini bundles)
+                                            // Default: Disabled(0)
 } platform_cfg_item_t;
 
 typedef enum

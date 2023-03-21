@@ -84,6 +84,8 @@ int app_main()
 
     platform_set_rf_power_mapping(power_mapping);
 
+    platform_config(PLATFORM_CFG_USE_MINIMUM_RAM, PLATFORM_CFG_ENABLE);
+
     return 0;
 }
 

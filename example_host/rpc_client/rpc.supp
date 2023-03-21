@@ -1,0 +1,94 @@
+##
+## RPC suppressions related to initialization
+##
+
+{
+    init task allocation
+    Memcheck:Leak
+    ...
+    fun:port_task_create
+    fun:brpc_init
+    fun:main
+}
+
+{
+    timer helper
+    Memcheck:Leak
+    ...
+    fun:__timer_start_helper_thread
+    ...
+}
+
+{
+  event allocation
+  Memcheck:Leak
+  fun:malloc
+  fun:btstack_mt_event_alloc
+  ...
+}
+
+{
+  event allocation
+  Memcheck:Leak
+  fun:malloc
+  fun:port_event_create
+  fun:btstack_mt_event_alloc
+  ...
+}
+
+{
+  queue allocation
+  Memcheck:Leak
+  fun:malloc
+  fun:port_queue_create
+}
+
+{
+  task allocation
+  Memcheck:Leak
+  ...
+  fun:port_task_create
+  fun:brpc_init
+  fun:main
+}
+
+{
+  task allocation
+  Memcheck:Leak
+  ...
+  fun:port_queue_create
+  fun:brpc_init
+  fun:main
+}
+
+{
+  start up
+  Memcheck:Leak
+  ...
+  fun:vTaskStartScheduler
+  fun:main
+}
+
+{
+  task allocation
+  Memcheck:Leak
+  ...
+  fun:port_task_create
+  fun:main
+}
+
+{
+  skip localtime_r
+  Memcheck:Leak
+  ...
+  fun:localtime_r
+  ...
+}
+
+{
+  skip localtime_r
+  Memcheck:Leak
+  ...
+  fun:printf
+  ...
+}
