@@ -239,4 +239,21 @@ uint64_t RTC_CurrentFull(void)
     }
     return r.v;
 }
+
+void RTC_EnableFreeRun(uint8_t enable)
+{
+    #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE 
+    #define AON1_REG3   (volatile uint32_t *)(AON1_CTRL_BASE + 0XC) 
+
+    if (enable)
+    {
+        *AON1_REG0 |= 1u << 3;
+        *AON1_REG3 |= 1u << 4;
+    }
+    else
+    {
+        *AON1_REG0 &= ~(1u << 3);
+        *AON1_REG3 &= ~(1u << 4);
+    }
+}
 #endif
