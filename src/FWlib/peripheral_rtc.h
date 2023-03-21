@@ -55,6 +55,13 @@ void RTC_SetNextIntOffset(const uint32_t offset);
  */
 void RTC_ClearInt(void);
 
+/**
+ ****************************************************************************************
+ * @brief RTC_EnableFreeRun
+ ****************************************************************************************
+ */
+#define RTC_EnableFreeRun(enable)   do { RTC_Enable(enable); } while(0)
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
@@ -246,6 +253,35 @@ uint8_t RTC_GetAllTrimValue(uint8_t *hour_trim, uint8_t *min_trim,uint8_t *sec_t
  ****************************************************************************************
  */
 void RTC_ClearAllTrimValue(void);
+
+/**
+ ****************************************************************************************
+ * @brief Get current RTC value (lower 32bit)
+ *
+ * @return              Current value
+ ****************************************************************************************
+ */
+uint32_t RTC_Current(void);
+
+/**
+ ****************************************************************************************
+ * @brief Get current full RTC value (full 43bit)
+ *
+ * @return              Current value
+ ****************************************************************************************
+ */
+uint64_t RTC_CurrentFull(void);
+
+/**
+ ****************************************************************************************
+ * @brief Enable/Disable
+ * 
+ * Enabled by default. Disabled to save power.
+ * 
+ * @param[in] enable            Enable(1)/Disable(0)           
+ ****************************************************************************************
+ */
+void RTC_EnableFreeRun(uint8_t enable);
 
 #endif
 
