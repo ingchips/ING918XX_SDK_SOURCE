@@ -110,7 +110,7 @@ void TMR_IntDisable(TMR_TypeDef *pTMR);
  * @param[in] pTMR          timer address
  ****************************************************************************************
  */
-void TMR_IntClr(TMR_TypeDef *pTMR);
+void TMR_ClearIntState(TMR_TypeDef *pTMR);
 
 /**
  ****************************************************************************************
@@ -300,7 +300,7 @@ void TMR_IntEnable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
  * @param[in] mask              mask of interrupts to be cleared
  ****************************************************************************************
  */
-void TMR_IntClr(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
+void TMR_ClearIntState(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
 
 /**
  ****************************************************************************************

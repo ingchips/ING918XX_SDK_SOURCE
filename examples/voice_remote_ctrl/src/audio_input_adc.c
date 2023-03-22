@@ -14,7 +14,7 @@ uint32_t audio_sample_isr(void *user_data)
 {
     pcm_sample_t sample;
 
-    TMR_IntClr(APB_TMR1);
+    TMR_ClearIntState(APB_TMR1);
 
     sample = ADC_ReadChannelData(ADC_CHANNEL_ID) - 512;
 

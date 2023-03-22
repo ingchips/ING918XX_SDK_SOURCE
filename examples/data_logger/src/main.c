@@ -69,7 +69,7 @@ uint32_t ms_timer_isr(void *user_data)
 {
     extern void disk_timerproc (void);
 
-    TMR_IntClr(APB_TMR1);
+    TMR_ClearIntState(APB_TMR1);
     disk_timerproc();
     return 0;
 }

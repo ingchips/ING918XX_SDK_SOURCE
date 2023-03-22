@@ -124,7 +124,7 @@ static void heart_rate_task(void *pdata)
 uint32_t hr_timer_isr(void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
-    TMR_IntClr(APB_TMR2);
+    TMR_ClearIntState(APB_TMR2);
     xSemaphoreGiveFromISR(sem_heart_rate, &xHigherPriorityTaskWoke);
     return 0;
 }

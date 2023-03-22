@@ -151,7 +151,7 @@ trace_rtt_t trace_ctx = {0};
 uint32_t timer1_isr(void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
-    TMR_IntClr(APB_TMR1);
+    TMR_ClearIntState(APB_TMR1);
 	lv_tick_inc(1);//lvgl 1ms heart beat
     return 0;
 }

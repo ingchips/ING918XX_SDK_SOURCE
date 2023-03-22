@@ -99,7 +99,7 @@ int index = 0;
 
 uint32_t dbg_audio_sample_isr(void *user_data)
 {
-    TMR_IntClr(APB_TMR1);
+    TMR_ClearIntState(APB_TMR1);
 
     buffer[index++] = ADC_ReadChannelData(0) - 512;
 
@@ -113,7 +113,7 @@ uint32_t dbg_audio_sample_isr(void *user_data)
 #if (BOARD == BOARD_REM)
 uint32_t kb_scan_isr(void *user_data)
 {
-    TMR_IntClr(APB_TMR2);
+    TMR_ClearIntState(APB_TMR2);
     kb_update();
     return 0;
 }
