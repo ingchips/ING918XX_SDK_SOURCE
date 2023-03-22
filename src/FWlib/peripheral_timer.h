@@ -119,7 +119,7 @@ void TMR_ClearIntState(TMR_TypeDef *pTMR);
  * @param[in] pTMR          timer address
  ****************************************************************************************
  */
-uint8_t TMR_IntHappened(TMR_TypeDef *pTMR);
+uint8_t TMR_GetIntState(TMR_TypeDef *pTMR);
 
 /**
  ****************************************************************************************
@@ -310,7 +310,7 @@ void TMR_ClearIntState(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
  * @param[in] ch_id             channel ID
  ****************************************************************************************
  */
-uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id);
+uint8_t TMR_GetIntState(TMR_TypeDef *pTMR, uint8_t ch_id);
 
 /**
  ****************************************************************************************

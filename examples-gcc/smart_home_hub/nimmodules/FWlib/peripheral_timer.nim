@@ -121,7 +121,7 @@ proc TMR_ClearIntState*(pTMR: ptr TMR_TypeDef) {.importc: "TMR_ClearIntState",
 ## ***************************************************************************************
 ##
 
-proc TMR_IntHappened*(pTMR: ptr TMR_TypeDef): uint8 {.importc: "TMR_IntHappened",
+proc TMR_GetIntState*(pTMR: ptr TMR_TypeDef): uint8 {.importc: "TMR_GetIntState",
     header: "peripheral_timer.h".}
 ## *
 ## ***************************************************************************************
