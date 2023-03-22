@@ -137,13 +137,13 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value)
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 {
     pTMR->ChEn &= ~(0xf << (ch_id * 4));
-    pTMR->ChEn |= mask << (ch_id * 4);
+    pTMR->ChEn |= (mask & 0xf) << (ch_id * 4);
 }
 
 void TMR_IntEnable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 {
     pTMR->IntEn &= ~(0xf << (ch_id * 4));
-    pTMR->IntEn |= mask << (ch_id * 4);
+    pTMR->IntEn |= (mask & 0xf) << (ch_id * 4);
 }
 
 uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint8_t ch_id)
