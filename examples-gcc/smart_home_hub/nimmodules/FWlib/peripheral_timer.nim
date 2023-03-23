@@ -111,7 +111,7 @@ proc TMR_IntDisable*(pTMR: ptr TMR_TypeDef) {.importc: "TMR_IntDisable",
 ## ***************************************************************************************
 ##
 
-proc TMR_ClearIntState*(pTMR: ptr TMR_TypeDef) {.importc: "TMR_ClearIntState",
+proc TMR_IntClr*(pTMR: ptr TMR_TypeDef) {.importc: "TMR_IntClr",
                                       header: "peripheral_timer.h".}
 ## *
 ## ***************************************************************************************
@@ -121,7 +121,7 @@ proc TMR_ClearIntState*(pTMR: ptr TMR_TypeDef) {.importc: "TMR_ClearIntState",
 ## ***************************************************************************************
 ##
 
-proc TMR_GetIntState*(pTMR: ptr TMR_TypeDef): uint8 {.importc: "TMR_GetIntState",
+proc TMR_IntHappened*(pTMR: ptr TMR_TypeDef): uint8 {.importc: "TMR_IntHappened",
     header: "peripheral_timer.h".}
 ## *
 ## ***************************************************************************************

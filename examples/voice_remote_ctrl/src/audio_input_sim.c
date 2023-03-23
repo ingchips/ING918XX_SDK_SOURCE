@@ -22,9 +22,9 @@ uint32_t audio_sample_isr(void *user_data)
 {
     pcm_sample_t sample = 0;
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    TMR_ClearIntState(APB_TMR1);
+    TMR_IntClr(APB_TMR1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    TMR_ClearIntState(APB_TMR1, 0, 0x1);
+    TMR_IntClr(APB_TMR1, 0, 0x1);
 #endif
 
     if (pcm_index < sizeof(pcm) / sizeof(pcm[0]))

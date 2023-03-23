@@ -120,7 +120,7 @@ uint32_t timer_isr(void *user_data)
 {
     extern void trigger_tpt(void);
 
-    TMR_ClearIntState(APB_TMR1);
+    TMR_IntClr(APB_TMR1);
     
     trigger_tpt();
     

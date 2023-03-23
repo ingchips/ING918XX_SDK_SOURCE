@@ -219,7 +219,7 @@ static void battery_task(void *pdata)
 
 uint32_t timer_isr(void *user_data)
 {
-    TMR_ClearIntState(APB_TMR1);
+    TMR_IntClr(APB_TMR1);
     return 0;
 }
 
@@ -256,9 +256,9 @@ uint32_t timer_isr(void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    TMR_ClearIntState(APB_TMR1);
+    TMR_IntClr(APB_TMR1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    TMR_ClearIntState(APB_TMR1, 0, 0xf);
+    TMR_IntClr(APB_TMR1, 0, 0xf);
 #else
     #error unknown or unsupported chip family
 #endif

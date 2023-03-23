@@ -90,12 +90,12 @@ void TMR_WatchDogDisable(void)
 }
 
 //
-uint8_t TMR_GetIntState(TMR_TypeDef *pTMR)
+uint8_t TMR_IntHappened(TMR_TypeDef *pTMR)
 {
 	return ( (pTMR->CTL >> bsTMR_CTL_INT_STATUS) & BW2M(bsTMR_CTL_INT_STATUS) );
 }
 
-void TMR_ClearIntState(TMR_TypeDef *pTMR)
+void TMR_IntClr(TMR_TypeDef *pTMR)
 {
 	pTMR->CTL |= 1 << bsTMR_CTL_INT_STATUS;
 }
@@ -156,12 +156,12 @@ uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint8_t ch_id)
     return pTMR->Channels[ch_id].Reload;
 }
 
-void TMR_ClearIntState(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
+void TMR_IntClr(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 {
     pTMR->IntStatus = (mask & 0xf) << (ch_id * 4);
 }
 
-uint8_t TMR_GetIntState(TMR_TypeDef *pTMR, uint8_t ch_id)
+uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id)
 {
     return (pTMR->IntStatus >> (ch_id * 4)) & 0xf;
 }
