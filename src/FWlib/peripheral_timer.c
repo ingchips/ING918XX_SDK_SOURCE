@@ -146,6 +146,11 @@ void TMR_IntEnable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
     pTMR->IntEn |= (mask & 0xf) << (ch_id * 4);
 }
 
+uint32_t TMR_GetCNT(TMR_TypeDef *pTMR, uint8_t ch_id)
+{
+    return pTMR->Channels[ch_id].Counter;
+}
+
 uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint8_t ch_id)
 {
     return pTMR->Channels[ch_id].Counter;

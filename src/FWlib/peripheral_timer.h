@@ -269,6 +269,14 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value);
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
 
 /**
+ * @brief Get counter value of a timer
+ * 
+ * @param[in] pTMR 
+ * @param[in] ch_id 
+ * @return uint32_t 
+ */
+uint32_t TMR_GetCNT(TMR_TypeDef *pTMR, uint8_t ch_id);
+/**
  ****************************************************************************************
  * @brief Get comparison value (counter value) of a timer
  *
