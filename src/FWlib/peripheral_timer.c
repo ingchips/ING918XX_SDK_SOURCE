@@ -153,7 +153,7 @@ uint32_t TMR_GetCNT(TMR_TypeDef *pTMR, uint8_t ch_id)
 
 uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint8_t ch_id)
 {
-    return pTMR->Channels[ch_id].Counter;
+    return pTMR->Channels[ch_id].Reload;
 }
 
 void TMR_ClearIntState(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
@@ -168,7 +168,7 @@ uint8_t TMR_GetIntState(TMR_TypeDef *pTMR, uint8_t ch_id)
 
 void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable)
 {
-    #define SYS_CTRL0  (volatile uint32_t *)(APB_SYSCTRL + 0X28)
+    #define SYS_CTRL0  (volatile uint32_t *)(APB_SYSCTRL + 0x28)
 
     uint8_t bit_offset = 3;
     if (APB_TMR1 == pTMR) bit_offset = 4;

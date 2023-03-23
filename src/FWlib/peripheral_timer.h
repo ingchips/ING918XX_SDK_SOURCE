@@ -271,14 +271,15 @@ void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
 /**
  * @brief Get counter value of a timer
  * 
- * @param[in] pTMR 
- * @param[in] ch_id 
- * @return uint32_t 
+ * @param[in] pTMR              timer peripheral address 
+ * @param[in] ch_id             channel ID 
+ * @return    Current counter value 
  */
 uint32_t TMR_GetCNT(TMR_TypeDef *pTMR, uint8_t ch_id);
+
 /**
  ****************************************************************************************
- * @brief Get comparison value (counter value) of a timer
+ * @brief Get comparison value (reload value) of a timer
  *
  * @param[in] pTMR              timer peripheral address
  * @param[in] ch_id             channel ID
