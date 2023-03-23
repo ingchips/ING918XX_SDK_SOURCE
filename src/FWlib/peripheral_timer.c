@@ -161,6 +161,18 @@ uint8_t TMR_GetIntState(TMR_TypeDef *pTMR, uint8_t ch_id)
     return (pTMR->IntStatus >> (ch_id * 4)) & 0xf;
 }
 
+void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable)
+{
+    #define SYS_CTRL0  (volatile uint32_t *)(APB_SYSCTRL + 0X28)
+
+    uint8_t bit_offset = 3;
+    if (APB_TMR1 == pTMR) bit_offset = 4;
+    else if (APB_TMR2 == pTMR) bit_offset = 5;
+    else;
+
+    *SYS_CTRL0 = (*SYS_CTRL0 & ~(1 << bit_offset)) | ( enable << bit_offset);
+}
+
 #define WDT_UNLOCK()    APB_WDT->WrEn = 0x5aa5
 
 void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interval_t rst_timeout, uint8_t enable_int)

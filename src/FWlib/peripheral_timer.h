@@ -313,6 +313,14 @@ void TMR_ClearIntState(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
 uint8_t TMR_GetIntState(TMR_TypeDef *pTMR, uint8_t ch_id);
 
 /**
+ * @brief Pause a timer
+ * 
+ * @param[in] pTMR 
+ * @param[in] enable 
+ */
+void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable);
+
+/**
  ****************************************************************************************
  * @brief Enable watchdog.
  *
