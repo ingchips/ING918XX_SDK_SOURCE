@@ -168,14 +168,12 @@ uint8_t TMR_GetIntState(TMR_TypeDef *pTMR, uint8_t ch_id)
 
 void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable)
 {
-    #define SYS_CTRL0  (volatile uint32_t *)(APB_SYSCTRL + 0x28)
+    uint8_t bit_offset = pTMR == APB_TMR0 ? 3 :
+                            pTMR == APB_TMR1 ? 4 : 5;
+    volatile uint32_t * reg = (volatile uint32_t *)(APB_SYSCTRL_BASE + 0x28);
+    uint32_t mask = 1 << bit_offset;
 
-    uint8_t bit_offset = 3;
-    if (APB_TMR1 == pTMR) bit_offset = 4;
-    else if (APB_TMR2 == pTMR) bit_offset = 5;
-    else;
-
-    *SYS_CTRL0 = (*SYS_CTRL0 & ~(1 << bit_offset)) | ( enable << bit_offset);
+    *reg = (*reg & ~mask) | (enable << bit_offset);
 }
 
 #define WDT_UNLOCK()    APB_WDT->WrEn = 0x5aa5

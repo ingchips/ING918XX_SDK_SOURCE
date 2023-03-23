@@ -324,8 +324,8 @@ uint8_t TMR_GetIntState(TMR_TypeDef *pTMR, uint8_t ch_id);
 /**
  * @brief Pause a timer
  * 
- * @param[in] pTMR 
- * @param[in] enable 
+ * @param[in] pTMR              timer peripheral address    
+ * @param[in] enable            pause(1)/not pause(0)
  */
 void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable);
 
