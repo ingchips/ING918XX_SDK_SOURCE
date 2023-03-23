@@ -269,8 +269,17 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value);
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
 
 /**
+ * @brief Get counter value of a timer
+ * 
+ * @param[in] pTMR              timer peripheral address 
+ * @param[in] ch_id             channel ID 
+ * @return    Current counter value 
+ */
+uint32_t TMR_GetCNT(TMR_TypeDef *pTMR, uint8_t ch_id);
+
+/**
  ****************************************************************************************
- * @brief Get comparison value (counter value) of a timer
+ * @brief Get comparison value (reload value) of a timer
  *
  * @param[in] pTMR              timer peripheral address
  * @param[in] ch_id             channel ID
@@ -311,6 +320,14 @@ void TMR_IntClr(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
  ****************************************************************************************
  */
 uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id);
+
+/**
+ * @brief Pause a timer
+ * 
+ * @param[in] pTMR              timer peripheral address    
+ * @param[in] enable            pause(1)/not pause(0)
+ */
+void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable);
 
 /**
  ****************************************************************************************
