@@ -1,3 +1,4 @@
+#include <string.h>
 #include "ingsoc.h"
 #include "peripheral_usb.h"
 
@@ -55,7 +56,7 @@ void USB_FlushTXFifo(uint8_t FifoNum)
   {
     AHB_USB->UsbDControl |= (0x1 << 7);
   }
-  
+
   while(!(AHB_USB->UsbIntStat & (0x1 << 6)));
   while(!(AHB_USB->UsbRControl & (1U << 31)));
   while(AHB_USB->UsbRControl & (0x1 << 5));
@@ -76,74 +77,79 @@ void USB_FlushRXFifo(void)
 
 void USB_DeviceInitialization(void)
 {
-  AHB_USB->UsbIntMask |= (0x1 << 4) ;
+  AHB_USB->UsbIntMask &= ~((0x1 << 3) | (0x1 << 4) | (0x1 << 5) | (0x1 << 15));
+
   AHB_USB->UsbDConfig |= (3 << 0) | (1 << 24);
   AHB_USB->UsbDConfig &= ~(0x7F << 4);
   AHB_USB->UsbDConfig &= (~(1 << 23));
   AHB_USB->UsbDConfig &= (~(0x1 << 2));
   AHB_USB->UsbDControl &= (~(0x1 << 1));
 
-  AHB_USB->UsbIntMask |=  (0x1 << 12) | (0x1 << 13) | (g_UsbVar.UserIntMask);
+  AHB_USB->UsbIntMask |=  (0x1 << 12) | (0x1 << 13) | (g_UsbVar.UserConfig.intmask);
 }
 
-void USB_DeviceSetThreshold(USB_INIT_CONFIG_T *config)
+void USB_DeviceSetThreshold(void)
 {
-  if(config->rx_thr_en)
+  if(g_UsbVar.UserConfig.rx_thr_en)
   {
     AHB_USB->UsbDThreCtrl &= ~(0x1ff<<17);
-    AHB_USB->UsbDThreCtrl |= (1 << 16) | (((config->rx_thr_length)&0x1ff) << 17);
+    AHB_USB->UsbDThreCtrl |= (1 << 16) | (((g_UsbVar.UserConfig.rx_thr_length)&0x1ff) << 17);
   }
-  if((config->iso_tx_thr_en)||(config->non_iso_tx_thr_en))
+  if((g_UsbVar.UserConfig.iso_tx_thr_en)||(g_UsbVar.UserConfig.non_iso_tx_thr_en))
   {
     AHB_USB->UsbDThreCtrl &= ~(0x1ff<<2);
-    AHB_USB->UsbDThreCtrl |= (config->iso_tx_thr_en << 1) | (config->non_iso_tx_thr_en << 1) | (((config->tx_thr_length)&0x1ff) << 2);
+    AHB_USB->UsbDThreCtrl |= (g_UsbVar.UserConfig.iso_tx_thr_en << 1) | (g_UsbVar.UserConfig.non_iso_tx_thr_en << 1) | (((g_UsbVar.UserConfig.tx_thr_length)&0x1ff) << 2);
   }
 }
 
-USB_ERROR_TYPE_E USB_InitConfig(USB_INIT_CONFIG_T *config)
+
+void USB_ResetAndConfig(void)
 {
-  USB_ERROR_TYPE_E status = USB_ERROR_NONE;
-  
-  if(!config){status = USB_ERROR_INVALID_INPUT;}
-  
-  g_UsbVar.DeviceState = USB_DEVICE_NONE;
-  g_UsbVar.Ep0State = EP0_DISCONNECT;
-  g_UsbVar.EventHandler = config->handler;
-  g_UsbVar.UserIntMask = config->intmask;
-  
   AHB_USB->UsbConfig |= 1 << 6;
   USB_CoreReset();
-  
+
   AHB_USB->UsbAConfig |= (1 << 5) | (3 << 1) | (1 << 0);
   AHB_USB->UsbConfig |= (0x1 << 3) | (AHB_USB->UsbConfig & (~(0xF<<10))) | (9 << 10);
-  
+
   AHB_USB->UsbIntMask |= (0x1 << 2) | (0x1 << 1);
 
   USB_SetupDataFifo();
-  
+
   USB_FlushTXFifo(0x10);
   USB_FlushRXFifo();
-  
+
   USB_DeviceInitialization();
-  
+
   AHB_USB->UsbIntStat |= AHB_USB->UsbIntStat;
   AHB_USB->UsbOTGIntStat |= AHB_USB->UsbOTGIntStat;
 
   USB_ResetTransfert();
-
-  return status;
+  USB_DeviceSetThreshold();
 }
 
 void USB_ReInit(void)
 {
   USB_FlushTXFifo(0x10);
   USB_FlushRXFifo();
-  
+
   USB_ClrConfig();
-  
   USB_ResetTransfert();
 }
 
+USB_ERROR_TYPE_E USB_InitConfig(USB_INIT_CONFIG_T *config)
+{
+  USB_ERROR_TYPE_E status = USB_ERROR_NONE;
+
+  if(!config){status = USB_ERROR_INVALID_INPUT;}
+
+  g_UsbVar.DeviceState = USB_DEVICE_NONE;
+  g_UsbVar.Ep0State = EP0_DISCONNECT;
+  memcpy(&(g_UsbVar.UserConfig),config, sizeof(USB_INIT_CONFIG_T));
+
+  USB_ResetAndConfig();
+
+  return status;
+}
 
 void USB_ResetTransfert(void)
 {
@@ -154,12 +160,14 @@ void USB_ResetTransfert(void)
         g_UsbVar.InTransfer[i].sizeRemaining   = -1;
         g_UsbVar.InTransfer[i].sizeTransfered  =  0;
         g_UsbVar.InTransfer[i].sizeTotalLen    =  0;
+        g_UsbVar.InTransfer[i].flags    =  0;
     }
     for(i = 0; i < DOEP_NUM+1; ++i)
     {
         g_UsbVar.OutTransfer[i].sizeRemaining  = -1;
         g_UsbVar.OutTransfer[i].sizeTransfered =  0;
         g_UsbVar.OutTransfer[i].sizeTotalLen    =  0;
+        g_UsbVar.OutTransfer[i].flags    =  0;
     }
 
 }
@@ -174,20 +182,89 @@ void USB_CancelTransfert(uint8_t ep)
         g_UsbVar.InTransfer[epNum].sizeRemaining   = -1;
         g_UsbVar.InTransfer[epNum].sizeTransfered  =  0;
         g_UsbVar.InTransfer[epNum].sizeTotalLen    =  0;
+        g_UsbVar.InTransfer[epNum].flags    =  0;
     }
     else
     {
         g_UsbVar.OutTransfer[epNum].sizeRemaining   = -1;
         g_UsbVar.OutTransfer[epNum].sizeTransfered  =  0;
         g_UsbVar.OutTransfer[epNum].sizeTotalLen    =  0;
+        g_UsbVar.OutTransfer[epNum].flags    =  0;
     }
 }
 
+uint32_t USB_CheckTransferCondition(uint8_t ep)
+{
+    uint8_t                epNum;
+    uint32_t               XferSize = 0;
+    USB_TRANSFERT_T*      transfer;
+    uint32_t               abort = 0;
+
+    epNum = USB_EP_NUM(ep);
+
+    /*
+    For out transfer, we always program recv packet size to a multiple of the maximum packet size.
+    for say, if app wants to receive 7bytes, the real register will be programed to 64bytes(mps)
+    when device received the first 7bytes, we have to abort the transfer and reset state.
+    */
+
+    if(USB_IS_EP_DIRECTION_IN(ep))
+    {
+      transfer = &g_UsbVar.InTransfer[epNum];
+      switch(epNum)
+      {
+        case 0:
+          XferSize = (AHB_USB->UsbDISize0) & 0x7f;
+        break;
+        default:
+          XferSize = (AHB_USB->UsbDIxConfig[epNum-1].DISizex) & 0x7ffff;
+        break;
+      }
+    }
+    else
+    {
+      transfer = &g_UsbVar.OutTransfer[epNum];
+      switch(epNum)
+      {
+        case 0:
+          XferSize = (AHB_USB->UsbDOSize0) & 0x7f;
+        break;
+        default:
+          XferSize = (AHB_USB->UsbDOxConfig[epNum-1].DOSizex) & 0x7ffff;
+        break;
+      }
+    }
+
+    if((transfer->flags)&(1<<USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN))
+    {
+      transfer->sizeTransfered = transfer->sizeTotalLen - XferSize;
+      transfer->sizeRemaining = -1;
+      transfer->sizeTotalLen = 0;
+      abort = 1;
+    }
+
+    return abort;
+}
+
+uint32_t USB_GetTransferedSize(uint8_t ep)
+{
+    uint8_t               epNum;
+    epNum = USB_EP_NUM(ep);
+
+    if(USB_IS_EP_DIRECTION_IN(ep))
+    {
+        return g_UsbVar.InTransfer[epNum].sizeTransfered;
+    }
+    else
+    {
+        return g_UsbVar.OutTransfer[epNum].sizeTransfered;
+    }
+}
 
 void USB_DisableEp(uint8_t ep)
 {
     uint8_t epNum = USB_EP_NUM(ep);
-  
+
     if(USB_IS_EP_DIRECTION_IN(ep))
     {
       if(0 == epNum)
@@ -236,10 +313,10 @@ void USB_DisableEp(uint8_t ep)
         AHB_USB->UsbDIntMask &= ~(1 << (epNum + 16));
       }
     }
-    
+
     USB_FlushTXFifo(epNum);
     USB_CancelTransfert(ep);
-    
+
 }
 
 void USB_ClrConfig(void)
@@ -248,14 +325,19 @@ void USB_ClrConfig(void)
 
     g_UsbVar.DeviceState = USB_DEVICE_NONE;
     g_UsbVar.Ep0State = EP0_DISCONNECT;
-  
+
     // Disable all EP
+    USB_SetStallEp(USB_EP_DIRECTION_IN(0),U_FALSE);
     for(i = 0; i < DIEP_NUM; ++i)
     {
+        USB_SetStallEp(USB_EP_DIRECTION_IN(i+1),U_FALSE);
         USB_DisableEp(USB_EP_DIRECTION_IN (i+1));
     }
+
+    USB_SetStallEp(USB_EP_DIRECTION_OUT(0),U_FALSE);
     for(i = 0; i < DOEP_NUM; ++i)
     {
+        USB_SetStallEp(USB_EP_DIRECTION_OUT(i+1),U_FALSE);
         USB_DisableEp(USB_EP_DIRECTION_OUT(i+1));
     }
 
@@ -298,26 +380,26 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
           /* Program the transfer size and packet count
            *      as follows: xfersize = N * maxpacket +
            *      short_packet pktcnt = N + (short_packet
-           *      exist ? 1 : 0) 
+           *      exist ? 1 : 0)
            */
           size = transfer->sizeRemaining;
           size = (size < maxPacketSize) ? size : maxPacketSize;
           nbPacket = 1;
         }
         break;
-        
+
         default:
         {
           /* Transfer size[epnum] = n * mps[epnum] + sp
               (where n is an integer = 0, and 0 = sp < mps[epnum])
               If (sp > 0), then packet count[epnum] = n + 1.
               Otherwise, packet count[epnum] = n */
-          
+
           size = transfer->sizeRemaining;
           size = (size < USB_GetMaxTransferSize()) ? size : USB_GetMaxTransferSize();
-          
+
           nbPacket = (size <= maxPacketSize) ? 1 : ((size + (maxPacketSize - 1))/maxPacketSize);
-          
+
           if(nbPacket > USB_GetMaxPacketSize())
           {
             nbPacket = USB_GetMaxPacketSize();
@@ -336,29 +418,29 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
           /* Program the transfer size and packet count
            *      as follows: xfersize = N * maxpacket +
            *      short_packet pktcnt = N + (short_packet
-           *      exist ? 1 : 0) 
+           *      exist ? 1 : 0)
            */
           size = maxPacketSize;
           nbPacket = 1;
         }
         break;
-        
+
         default:
         {
           /* For OUT transfers, the Transfer Size field in the endpoint Transfer Size register must be a multiple
               of the maximum packet size of the endpoint, adjusted to the DWORD boundary. */
-          
+
           size = transfer->sizeRemaining;
           size = (size < USB_GetMaxTransferSize()) ? size : USB_GetMaxTransferSize();
-          
+
           nbPacket = (size <= maxPacketSize) ? 1 : ((size + (maxPacketSize - 1))/maxPacketSize);
           nbPacket = (nbPacket < USB_GetMaxPacketSize()) ? nbPacket : USB_GetMaxPacketSize();
-          
+
           size = nbPacket * maxPacketSize;
         }
       }
     }
-    
+
     *size_p = size;
     *nbPacket_p = nbPacket;
 }
@@ -392,7 +474,7 @@ void USB_NewTransfer(uint8_t ep, int32_t size, uint16_t nbPacket)
       {
         case 0:
         {
-          AHB_USB->UsbDOSize0 |= (AHB_USB->UsbDOSize0 & (~(0x7F << 0))) | ((size & 0x7F) << 0) | (nbPacket ? (0x1 << 19) : 0);
+          AHB_USB->UsbDOSize0 = (0x3 << 29) | ((size & 0x7F) << 0) | (nbPacket ? (0x1 << 19) : 0);
           AHB_USB->UsbDOCtrl0 |= (1U << 31) | (0x1 << 26);
         }
         break;
@@ -445,13 +527,14 @@ uint8_t USB_StartTransfer(uint8_t ep, void *data, uint16_t size, uint32_t flag)
     {
       //return 1;
     }
-    
+
     transfer->sizeRemaining  = size;
     transfer->sizeTransfered = 0;
-    
+    transfer->flags = flag;
+
     USB_GetTransferSize(ep, &sc_size, &sc_nbPacket);
     transfer->sizeTotalLen = sc_size;
-    
+
     // Program the EP
     USB_NewTransfer(ep, sc_size, sc_nbPacket);
 
@@ -467,7 +550,7 @@ uint8_t USB_ContinueTransfer(uint8_t ep)
     uint32_t               XferSize = 0;
     uint16_t              sc_nbPacket;
     int32_t               sc_size;
-  
+
     epNum = USB_EP_NUM(ep);
 
     if(USB_IS_EP_DIRECTION_IN(ep))
@@ -497,7 +580,7 @@ uint8_t USB_ContinueTransfer(uint8_t ep)
       }
 
     }
-    
+
     if(transfer->sizeRemaining == -1)
     {
         return 1;
@@ -507,7 +590,7 @@ uint8_t USB_ContinueTransfer(uint8_t ep)
 
     transfer->sizeRemaining  -= size;
     transfer->sizeTransfered += size;
-    
+
     if(transfer->sizeRemaining <= 0)
     {
       // End of transfert
@@ -517,7 +600,7 @@ uint8_t USB_ContinueTransfer(uint8_t ep)
 
     USB_GetTransferSize(ep, &sc_size, &sc_nbPacket);
     transfer->sizeTotalLen = sc_size;
-    
+
     USB_NewTransfer(ep, sc_size, sc_nbPacket);
     return 0;
 }
@@ -564,16 +647,16 @@ USB_ERROR_TYPE_E USB_ConfigureEp(const USB_EP_DESCRIPTOR_REAL_T* ep)
 {
     uint8_t epNum;
     USB_ERROR_TYPE_E error = USB_ERROR_NONE;
-  
+
     epNum = USB_EP_NUM(ep->ep);
 
     g_UsbVar.ep[epNum].type = ep->type;
     g_UsbVar.ep[epNum].maxpacket = ep->mps;
     g_UsbVar.ep[epNum].is_in = USB_IS_EP_DIRECTION_IN(ep->ep) ? 1 : 0;
-  
+
     USB_EnableEp(ep->ep, (USB_EP_TYPE_T)(ep->attributes));
     g_UsbVar.ep[epNum].active = 1;
-  
+
     return(error);
 }
 
@@ -593,7 +676,7 @@ void USB_SetStallEp(uint8_t ep, uint8_t stall)
         diepctrl = &AHB_USB->UsbDIxConfig[epNum-1].DICtrlx;
         doepctrl = &AHB_USB->UsbDOxConfig[epNum-1].DOCtrlx;
     }
-  
+
     if(USB_IS_EP_DIRECTION_IN(ep))
     {
       if(U_TRUE == stall)
@@ -606,6 +689,7 @@ void USB_SetStallEp(uint8_t ep, uint8_t stall)
         {
           *diepctrl |= (0x1 << 21);
         }
+        USB_FlushTXFifo(0x10);
       }
       else
       {
@@ -644,11 +728,11 @@ USB_ERROR_TYPE_E USB_SendData(uint8_t ep, void* buffer, uint16_t size, uint32_t 
     uint8_t   epNum;
     uint32_t  activeEp;
     USB_ERROR_TYPE_E error = USB_ERROR_NONE;
-  
+
     epNum = USB_EP_NUM(ep);
-    
+
     if((epNum > DIEP_NUM)||(((uint32_t)buffer)&0x3)){return USB_ERROR_INVALID_INPUT;}
-  
+
     if(epNum == 0)
     {
         activeEp = AHB_USB->UsbDICtrl0 & (0x1 << 15);
@@ -670,11 +754,11 @@ USB_ERROR_TYPE_E USB_RecvData(uint8_t ep, void* buffer, uint16_t size, uint32_t 
     uint8_t   epNum;
     uint32_t  activeEp;
     USB_ERROR_TYPE_E error = USB_ERROR_NONE;
-  
+
     epNum = USB_EP_NUM(ep);
-  
+
     if((epNum > DOEP_NUM)||(((uint32_t)buffer)&0x3)){return USB_ERROR_INVALID_INPUT;}
-    
+
     if(epNum == 0)
     {
         activeEp = AHB_USB->UsbDOCtrl0 & (0x1 << 15);
@@ -721,7 +805,7 @@ void USB_HandleEp0(void)
   USB_SETUP_T* setup = (USB_SETUP_T*)(g_UsbBufferEp0Out);
   USB_EVNET_HANDLER_T event;
   uint32_t event_status = 0;
-  
+
   switch(g_UsbVar.Ep0State)
   {
     case EP0_IDLE:
@@ -748,10 +832,10 @@ void USB_HandleEp0(void)
         }
         break;
       }
-      
+
       event.id = USB_EVENT_EP0_SETUP;
-      event_status = g_UsbVar.EventHandler(&event);
-      
+      event_status = g_UsbVar.UserConfig.handler(&event);
+
       //setup requset which is not supported, by spec, device should return stall pid to host
       if(USB_ERROR_REQUEST_NOT_SUPPORT == event_status)
       {
@@ -786,8 +870,9 @@ void USB_HandleEp0(void)
       {
         event.id = USB_EVENT_EP_DATA_TRANSFER;
         event.data.ep = 0;
+        event.data.size = 0;//no need to provide size for IN endpoint
         event.data.type = USB_CALLBACK_TYPE_TRANSMIT_END;
-        g_UsbVar.EventHandler(&event);
+        g_UsbVar.UserConfig.handler(&event);
         USB_EP0StatusOut();
       }
     }
@@ -799,8 +884,9 @@ void USB_HandleEp0(void)
         // OUT was complete, prepare to receive IN for status
         event.id = USB_EVENT_EP_DATA_TRANSFER;
         event.data.ep = 0;
+        event.data.size = g_UsbVar.OutTransfer[0].sizeTransfered;
         event.data.type = USB_CALLBACK_TYPE_RECEIVE_END;
-        g_UsbVar.EventHandler(&event);
+        g_UsbVar.UserConfig.handler(&event);
         USB_EP0StatusIn();
       }
     }
@@ -819,7 +905,7 @@ void USB_HandleEp0(void)
     }
     break;
     default:
-      
+
     break;
   }
 }
@@ -829,7 +915,8 @@ uint32_t USB_IrqHandler (void *user_data)
   uint32_t status = AHB_USB->UsbIntStat,i;
   uint32_t statusEp = 0, ep_intr = 0;
   USB_EVNET_HANDLER_T event;
-  
+
+  AHB_USB->UsbIntStat |= status;
   if(status & (0x1 << 12))
   {
     //1. Set the NAK bit for all OUT endpoints:
@@ -840,20 +927,21 @@ uint32_t USB_IrqHandler (void *user_data)
     }
 
     USB_ReInit();
-    
+
     AHB_USB->UsbDIntMask |= (0x1 << 0) | (0x1 << 16);
     AHB_USB->UsbDIMask |=  (0x1 << 0) | (0x1 << 2) | (0x1 << 3);
     AHB_USB->UsbDOMask |=  (0x1 << 0) | (0x1 << 2) | (0x1 << 3) | (0x1 << 12) | (0x1 << 8) | (0x1 << 5);
     AHB_USB->UsbDConfig &= ~(0x7F << 4);
-    
+
     //USB_GetSetupPacket();
     AHB_USB->UsbIntMask |= (0x1 << 19) | (0x1 << 18);
-    
+
     event.id = USB_EVENT_DEVICE_RESET;
-    g_UsbVar.EventHandler(&event);
+    g_UsbVar.UserConfig.handler(&event);
     g_UsbVar.DeviceState = (USB_DEVICE_STATE_E)((1<<USB_DEVICE_ATTACHED) | (1<<USB_DEVICE_POWERED));
+
   }
-  
+
   if(status & (0x1 << 13))
   {
     g_UsbVar.Ep0State = EP0_IDLE;
@@ -871,10 +959,11 @@ uint32_t USB_IrqHandler (void *user_data)
   if((status & (0x1 << 18)) && (g_UsbVar.DeviceState & (1<<USB_DEVICE_DEFAULT)))
   {
     ep_intr = (AHB_USB->UsbDInt) & (AHB_USB->UsbDIntMask);
+
     uint32_t epnum = 0;
-    
+
     ep_intr = ep_intr & 0xffff;
-    for(epnum = 0; epnum < DIEP_NUM; epnum++)
+    for(epnum = 0; epnum <= DIEP_NUM; epnum++)
     {
       if ((ep_intr >> epnum) & 0x1)
       {
@@ -899,7 +988,7 @@ uint32_t USB_IrqHandler (void *user_data)
         else
         {
           statusEp            = AHB_USB->UsbDIxConfig[epnum-1].DIIntx;
-          
+
           AHB_USB->UsbDIxConfig[epnum-1].DIIntx = statusEp;
           if(statusEp & (0x1 << 0))
           {
@@ -907,29 +996,31 @@ uint32_t USB_IrqHandler (void *user_data)
             {
               event.id = USB_EVENT_EP_DATA_TRANSFER;
               event.data.ep = epnum;
+              event.data.size = 0;//no need to provide size for IN endpoint
               event.data.type = USB_CALLBACK_TYPE_TRANSMIT_END;
-              g_UsbVar.EventHandler(&event);
+              g_UsbVar.UserConfig.handler(&event);
             }
           }
         }
       }
     }
-    
+
   }
-  
+
   if((status & (0x1 << 19)) && (g_UsbVar.DeviceState & (1<<USB_DEVICE_DEFAULT)))
   {
     ep_intr = (AHB_USB->UsbDInt) & (AHB_USB->UsbDIntMask);
     uint32_t epnum = 0;
 
     ep_intr = ep_intr >> 16;
-    for(epnum = 0; epnum < DOEP_NUM; epnum++)
+    for(epnum = 0; epnum <= DOEP_NUM; epnum++)
     {
       if ((ep_intr >> epnum) & 0x1)
       {
         if(0 == epnum)
         {
           statusEp            = AHB_USB->UsbDOInt0;
+          AHB_USB->UsbDOInt0 = statusEp;
 
           if(statusEp & (0x1 << 0))
           {
@@ -948,62 +1039,59 @@ uint32_t USB_IrqHandler (void *user_data)
           }
           else
           {
+            if((statusEp & (0x1 << 5))&&(g_UsbVar.Ep0State == EP0_OUT_DATA_PHASE))
+            {
+              USB_EP0StatusIn();
+            }
             if((statusEp & (0x1 << 3)))
             {
               USB_GetSetupPacket();
             }
           }
-
-          if(statusEp & (0x1 << 5))
-          {
-            USB_EP0StatusIn();
-          }
-
-          AHB_USB->UsbDOInt0 = statusEp;
         }
         else
         {
           statusEp            = AHB_USB->UsbDOxConfig[epnum-1].DOIntx;
-          
+
           AHB_USB->UsbDOxConfig[epnum-1].DOIntx = statusEp;
           if(statusEp & (0x1 << 0))
           {
-            if(USB_ContinueTransfer(USB_EP_DIRECTION_OUT(epnum)))
+            if(USB_CheckTransferCondition(USB_EP_DIRECTION_OUT(epnum)) ||
+               USB_ContinueTransfer(USB_EP_DIRECTION_OUT(epnum)))
             {
               event.id = USB_EVENT_EP_DATA_TRANSFER;
               event.data.ep = epnum;
+              event.data.size = g_UsbVar.OutTransfer[epnum].sizeTransfered;
               event.data.type = USB_CALLBACK_TYPE_RECEIVE_END;
-              g_UsbVar.EventHandler(&event);
+              g_UsbVar.UserConfig.handler(&event);
             }
           }
         }
       }
     }
   }
-  
-  if((status & USBINTMASK_SOF) && (g_UsbVar.DeviceState & (1<<USB_DEVICE_DEFAULT)))
+
+  if((status & USBINTMASK_SOF) && (g_UsbVar.UserConfig.intmask & USBINTMASK_SOF) && (g_UsbVar.DeviceState & (1<<USB_DEVICE_DEFAULT)))
   {
     event.id = USB_EVENT_DEVICE_SOF;
-    g_UsbVar.EventHandler(&event);
+    g_UsbVar.UserConfig.handler(&event);
   }
-  
+
   if((status & USBINTMASK_SUSP) && (g_UsbVar.DeviceState & (1<<USB_DEVICE_DEFAULT)))
   {
     g_UsbVar.DeviceState |= USB_DEVICE_SUSPENDED;
     USB_PCStopPhyClcok(U_TRUE);
     event.id = USB_EVENT_DEVICE_SUSPEND;
-    g_UsbVar.EventHandler(&event);
+    g_UsbVar.UserConfig.handler(&event);
   }
-  
+
   if((status & USBINTMASK_RESUME) && (g_UsbVar.DeviceState & (1<<USB_DEVICE_DEFAULT)))
   {
     g_UsbVar.DeviceState &= ~USB_DEVICE_SUSPENDED;
     USB_PCStopPhyClcok(U_FALSE);
     event.id = USB_EVENT_DEVICE_RESUME;
-    g_UsbVar.EventHandler(&event);
+    g_UsbVar.UserConfig.handler(&event);
   }
-  
-  AHB_USB->UsbIntStat |= status;
 
   return 0;
 }
@@ -1040,11 +1128,11 @@ void USB_Close(void)
 {
   USB_ClrConfig();
   USB_ResetTransfert();
-  
+
   AHB_USB->UsbIntMask = 0;
   AHB_USB->UsbDIntMask = 0;
-  g_UsbVar.EventHandler = 0;
-  g_UsbVar.UserIntMask = 0;
+  g_UsbVar.UserConfig.handler = 0;
+  g_UsbVar.UserConfig.intmask = 0;
 }
 
 void USB_SetGlobalOutNak(uint8_t enable)
