@@ -305,6 +305,7 @@ typedef struct
 {
   uint8_t  ep;
   USB_CALLBACK_EP_TYPE_T type;
+  uint32_t size;
 }USB_EVNET_DATA_TYPE_T ;
 
 typedef struct
@@ -332,11 +333,19 @@ typedef struct
 // -----------------------------------------------------------------------------
 /// Structure containt the transfert parameter
 // =============================================================================
+
+typedef enum
+{
+  USB_TRANSFERT_FLAG_NONE,
+  USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN
+} USB_TRANSFERT_FLAGS_E;
+
 typedef struct
 {
     int32_t  sizeRemaining;
     int32_t  sizeTransfered;
     int32_t  sizeTotalLen;
+    uint32_t flags;
 } USB_TRANSFERT_T;
 
 typedef struct {
@@ -363,10 +372,8 @@ typedef struct
   // Transfert data
   USB_TRANSFERT_T             InTransfer [DIEP_NUM+1];
   USB_TRANSFERT_T             OutTransfer[DOEP_NUM+1];
-
-  USB_VAR_EP_T               ep[TOTAL_EP_NUM];
-  USB_USER_EVENT_HANDLER     EventHandler;
-  uint32_t                   UserIntMask;
+  USB_VAR_EP_T                ep[TOTAL_EP_NUM];
+  USB_INIT_CONFIG_T           UserConfig;
 } USB_GLOBAL_VAR_S;
 
 // =============================================================================
@@ -376,143 +383,157 @@ typedef struct
 // =============================================================================
 
 /**
- * @brief interface API. initilize usb module and related variables, must be called before any usb usage 
+ * @brief interface API. initilize usb module and related variables, must be called before any usb usage
  *
- * @param[in] device callback function with structure USB_INIT_CONFIG_T. 
+ * @param[in] device callback function with structure USB_INIT_CONFIG_T.
  *            When this function has been called your device is ready to be enumerated by the USB host.
- * @param[out] null. 
+ * @param[out] null.
  */
 extern USB_ERROR_TYPE_E USB_InitConfig(USB_INIT_CONFIG_T *config);
 /**
  * @brief interface API. send usb device data packet.
  *
  * @param[in] ep, endpoint number, the highest bit represent direction, use USB_EP_DIRECTION_IN/OUT
- * @param[in] buffer, global buffer to hold data of the packet, it must be a DWORD-aligned address. 
+ * @param[in] buffer, global buffer to hold data of the packet, it must be a DWORD-aligned address.
  * @param[in] size. it should be a value smaller than 512*mps(eg, for EP0, mps is 64byte, maximum packet number is 512, MPS is 64).
  * @param[in] flag. null
- * @param[out] return U_TRUE if successful, otherwise U_FALSE. 
+ * @param[out] return U_TRUE if successful, otherwise U_FALSE.
  */
 extern USB_ERROR_TYPE_E USB_SendData(uint8_t ep, void* buffer, uint16_t size, uint32_t flag);
 /**
  * @brief interface API. receive usb device data packet.
  *
  * @param[in] ep, endpoint number, the highest bit represent direction, use USB_EP_DIRECTION_IN/OUT
- * @param[in] buffer, global buffer to hold data of the packet, it must be a DWORD-aligned address. 
+ * @param[in] buffer, global buffer to hold data of the packet, it must be a DWORD-aligned address.
  * @param[in] size. For OUT transfers, the Transfer Size field in the endpoint Transfer Size register must be a multiple
  *            of the maximum packet size of the endpoint(eg, EP0 is 64byte), adjusted to the DWORD boundary
  * @param[in] flag. null
- * @param[out] return U_TRUE if successful, otherwise U_FALSE. 
+ * @param[out] return U_TRUE if successful, otherwise U_FALSE.
+              for example, if the MPS of ep is 64bytes, there are two options:
+              1. you know that you need to recieve exactly 64bytes, then set size to 64 and set flag to 0.
+                 the driver will only call the event handler when it has received all 64bytes.
+              2. you do know that size of next OUT packet, then set size to 64 and set to flag to 1<<USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN.
+                 in this case, driver will call back the event handler when it receives its first packet(no matter what the size is).
+ * @param[out] return U_TRUE if successful, otherwise U_FALSE.
  */
 extern USB_ERROR_TYPE_E USB_RecvData(uint8_t ep, void* buffer, uint16_t size, uint32_t flag);
 /**
  * @brief interface API. These functions terminate transfers that are initiated, normally it can be used to prepare for next
  *        new transfer. it will abort all active transfer .
- * @param[in] null. 
- * @param[out] null. 
+ * @param[in] null.
+ * @param[out] null.
  */
 extern void USB_ResetTransfert(void);
 /**
  * @brief interface API. These functions terminate transfers that are initiated, normally it can be used to prepare for next
  *        new transfer. it will only abort the specific transfer .
- * @param[in] ep number. 
- * @param[out] null. 
+ * @param[in] ep number.
+ * @param[out] null.
  */
 extern void USB_CancelTransfert(uint8_t ep);
 /**
  * @brief interface API. the function erase all usb software configuration including descriptor settings.
  *        it will also break current connection, put the state machine into default status.
- * @param[in] null. 
- * @param[out] null. 
+ * @param[in] null.
+ * @param[out] null.
  */
 extern void USB_ClrConfig(void);
 /**
  * @brief interface API. shutdown usb module and reset all status data.
  *
- * @param[in] null. 
- * @param[out] null. 
+ * @param[in] null.
+ * @param[out] null.
  */
 extern void USB_Close(void);
 /**
  * @brief interface API. get current state of usb process, refer to USB_DEVICE_STATE_E for each state.
  *
- * @param[in] null. 
- * @param[out] refer to USB_DEVICE_STATE_E. 
+ * @param[in] null.
+ * @param[out] refer to USB_DEVICE_STATE_E.
  */
 extern USB_DEVICE_STATE_E USB_GetDeviceState(void);
 /**
  * @brief interface API. get setup data for ep0.
  *
- * @param[in] null. 
- * @param[out] refer to USB_SETUP_T. 
+ * @param[in] null.
+ * @param[out] refer to USB_SETUP_T.
  */
 extern USB_SETUP_T* USB_GetEp0SetupData(void);
 /**
  * @brief interface API. used in enum process to enable a configured EP number.
  *
- * @param[in] ep descriptor structure. 
- * @param[out] refer to USB_ERROR_TYPE_E. 
+ * @param[in] ep descriptor structure.
+ * @param[out] refer to USB_ERROR_TYPE_E.
  */
 extern USB_ERROR_TYPE_E USB_ConfigureEp(const USB_EP_DESCRIPTOR_REAL_T* ep);
 /**
  * @brief interface APIs. use this pair for enable/disable certain ep.
  *
- * @param[in] ep number with USB_EP_DIRECTION_IN/OUT. 
- * @param[out] null 
+ * @param[in] ep number with USB_EP_DIRECTION_IN/OUT.
+ * @param[out] null
  */
 extern void USB_EnableEp(uint8_t ep, USB_EP_TYPE_T type);
 extern void USB_DisableEp(uint8_t ep);
 /**
  * @brief internal API.
  *
- * @param[in] convert asicc to utf8. 
- * @param[out] null. 
+ * @param[in] convert asicc to utf8.
+ * @param[out] null.
  */
 extern void USB_AsciiToUtf8(uint8_t *utf8, uint8_t *acsii);
 /**
  * @brief interface API. system USB handler, config with "platform_set_irq_callback"
  *
- * @param[in] custom user data. 
- * @param[out] null. 
+ * @param[in] custom user data.
+ * @param[out] null.
  */
 extern uint32_t USB_IrqHandler (void *user_data);
 /**
  * @brief interface API. set ep0 stall pid for current transfer
  *
- * @param[in] ep 0 with direction. 
- * @param[out] null. 
+ * @param[in] ep 0 with direction.
+ * @param[out] null.
  */
 extern void USB_SetEp0Stall(uint8_t ep);
 /**
  * @brief interface API. set ep stall pid for current transfer
  *
- * @param[in] ep num with direction. 
- * @param[in] U_TRUE: stall, U_FALSE: set back to normal 
- * @param[out] null. 
+ * @param[in] ep num with direction.
+ * @param[in] U_TRUE: stall, U_FALSE: set back to normal
+ * @param[out] null.
  */
 extern void USB_SetStallEp(uint8_t ep, uint8_t stall);
 /**
- * @brief interface API. use this reg to set resume signal on bus, 
+ * @brief interface API. use this reg to set resume signal on bus,
  * according to spec, the duration should be value large than 1ms but less than 15ms
  *
- * @param[in] U_TRUE: send resume signal; others: stop sending resume signal. 
- * @param[out] null. 
+ * @param[in] U_TRUE: send resume signal; others: stop sending resume signal.
+ * @param[out] null.
  */
 extern void USB_DeviceSetRemoteWakeupBit(uint8_t enable);
 /**
  * @brief interface API. use this api to set global NAK(the core will stop writing data on all out ep except setup packet)
  *
  * @param[in] U_TRUE: enable global NAK on all out ep. U_FALSE: stop global NAK
- * @param[out] null. 
+ * @param[out] null.
  */
 extern void USB_SetGlobalOutNak(uint8_t enable);
 /**
  * @brief interface API. use this api to set NAK on a specific IN ep
  *
  * @param[in] U_TRUE: enable NAK on required IN ep. U_FALSE: stop NAK
- * @param[in] ep: ep number with USB_EP_DIRECTION_IN/OUT. 
- * @param[out] null. 
+ * @param[in] ep: ep number with USB_EP_DIRECTION_IN/OUT.
+ * @param[out] null.
  */
 extern void USB_SetInEndpointNak(uint8_t ep, uint8_t enable);
+/**
+ * @brief interface API. use this api to get the real received size of OUT endpoint, normally this value is provided in event handler callback
+ *
+ * @param[in] ep: ep number with USB_EP_DIRECTION_IN/OUT.
+ * @param[out] null.
+ */
+extern uint32_t USB_GetTransferedSize(uint8_t ep);
+
 #ifdef __cplusplus
   }
 #endif
