@@ -120,6 +120,48 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
 
 /**
  ****************************************************************************************
+ * @brief Get connection basic information of a connection
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[out] access_addr      Access address
+ * @param[out] crc_init         CRC init value
+ * @param[out] interval         interval (unit: us)
+ * @return                      0 if successful else non-0
+ ****************************************************************************************
+ */
+int ll_get_conn_info(const uint16_t conn_handle,
+                    uint32_t *access_addr,
+                    uint32_t *crc_init,
+                    uint32_t *interval);
+
+/**
+ ****************************************************************************************
+ * @brief Get information of upcoming connection events of a connection
+ *
+ * Information of consecutive N connection events after `from_time` can be retrieved,
+ * where N = `number`.
+ *
+ * Sub-rating is ignored. If channel map updated within these events, then `channel_ids`
+ * are not reliable.
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[in]  number           number of connection events to be queried
+ * @param[in]  from_time        the first connection event shall be after `from_time` (unit: us)
+ * @param[out] time_offset      time offset between the start of the first connection event and `from_time` (unit: us)
+ * @param[out] event_count      connection event count of the first connection event
+ * @param[out] channel_ids      physical channel IDs of the upcoming `number` connection events
+ * @return                      0 if successful else non-0
+ ****************************************************************************************
+ */
+int ll_get_conn_events_info(const uint16_t conn_handle,
+                            int number,
+                            uint64_t from_time,
+                            uint32_t *time_offset,
+                            uint16_t *event_count,
+                            uint8_t *channel_ids);
+
+/**
+ ****************************************************************************************
  * @brief Set default antenna ID
  *
  *          Note: This ID restored to default value (i.e. 0) when LLE is resetted.

@@ -4,6 +4,7 @@
 #include "gap.h"
 #include "btstack_event.h"
 #include "btstack_defines.h"
+#include "bluetooth_hci.h"
 
 #include "sm.h"
 
@@ -121,20 +122,6 @@ static void setup_adv(void)
 
 extern void connection_changed(int connected);
 
-#define OGF_STATUS_PARAMETERS       0x05
-#define OPCODE(ogf, ocf)            (ocf | ogf << 10)
-#define OPCODE_READ_RSSI            OPCODE(OGF_STATUS_PARAMETERS, 0x05)
-
-#pragma pack (push, 1)
-typedef struct read_rssi_complete
-{
-    uint8_t  status;
-    uint16_t handle;
-    int8_t   rssi;
-} read_rssi_complete_t;
-
-#pragma pack (pop)
-
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -158,10 +145,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_COMMAND_COMPLETE:
         switch (hci_event_command_complete_get_command_opcode(packet))
         {
-        case OPCODE_READ_RSSI:
+        case HCI_RD_RSSI_CMD_OPCODE:
             {
-                const read_rssi_complete_t *cmpl =
-                    (const read_rssi_complete_t *)hci_event_command_complete_get_return_parameters(packet);
+                const event_command_complete_return_param_read_rssi_t *cmpl =
+                    (const event_command_complete_return_param_read_rssi_t *)hci_event_command_complete_get_return_parameters(packet);
                 if (cmpl->rssi > -50)
                 {
                     connection_changed(1);
