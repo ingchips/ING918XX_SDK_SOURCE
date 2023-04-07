@@ -781,6 +781,21 @@ void ll_dhkey_generated(int status, const uint8_t *dh_key);
  */
 void ll_install_ecc_engine(f_start_generate_p256_key_pair start_generate_p256_key_pair,
                           f_start_generate_dhkey start_generate_dhkey);
+
+/**
+ ****************************************************************************************
+ * @brief Low level AES encryption in blocking mode
+ *
+ * @param[in]  key                      key (little-endian)
+ * @param[in]  plaintext                plaintext (little-endian)
+ * @param[out] ciphertext               ciphertext (big-endian)
+ * @return                              0 if completed successfully; non-0 if hardware is not ready or busy
+ *                                      When non-0 is returned, it is possible to retry later.
+ ****************************************************************************************
+ */
+int ll_aes_encrypt(const uint8_t *key, const uint8_t *plaintext,
+                  uint8_t *ciphertext);
+
 #ifdef __cplusplus
 }
 #endif

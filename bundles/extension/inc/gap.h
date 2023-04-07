@@ -47,14 +47,15 @@ typedef enum scan_type
  * @brief set random address device
  *
  * @param address               random address
+ * @return                      0: Message is sent to controller; others: failed
  */
-void gap_set_random_device_address(const uint8_t *address);
+uint8_t gap_set_random_device_address(const uint8_t *address);
 
 /**
  * @brief Disconnect connection with handle
  *
  * @param handle                Used to identify an advertising set. Range: 0x00 to 0xEF
- * @return                      0: Message is sent out or the connection alreay release
+ * @return                      0: Message is sent out or the connection already release
  */
 uint8_t gap_disconnect(hci_con_handle_t handle);
 
@@ -67,7 +68,7 @@ void gap_disconnect_all(void);
  *
  * @param[in] address               BLE address
  * @param[in] addtype               BLE address type
- * @return                      0: Message is sent to controller
+ * @return                          0: Message is sent to controller
  */
 uint8_t gap_add_whitelist(const uint8_t *address,bd_addr_type_t  addtype);
 
@@ -1326,30 +1327,27 @@ uint8_t gap_vendor_tx_continuous_wave(uint8_t enable, uint8_t power_level_index,
 #define HCI_VENDOR_CCM  0xFC01
 
 /**
- * @brief host require controller to do AES-CCM functionality, and CCM referece to
+ * @brief Host require controller to do AES-CCM functionality, and CCM reference to
  *        the document rfc3610:Counter with CBC-MAC (CCM)
  *
- * @param type                  0: encrypt     1:decrypt
+ * All input buffers (key, nonce, msg, aad) must be kept in memory until AES-CCM completed.
  *
- * @param mic_size              8: mic size in 8 bytes  4: mic size in 4 bytes
+ * `return_param` passed to `cb` is casted from `event_vendor_ccm_complete_t`.
  *
- * @param msg_len               messge length to be encrypt or decrypt
+ * @param[in]  type                  0: encrypt     1:decrypt
+ * @param[in]  mic_size              8: mic size in 8 bytes  4: mic size in 4 bytes
+ * @param[in]  msg_len               message length to be encrypt or decrypt (<= 384 bytes)
+ * @param[in]  aad_len               Additional authenticated data length (<= 16 bytes)
+ * @param[in]  tag                   a value to identify a AES-CCM request.
+ * @param[in]  key                   128 bits long key as required by AES-CCM
+ * @param[in]  nonce                 random value of each AES-CCM require 13 bytes long
+ * @param[in]  msg                   pointer to the message input
+ * @param[in]  aad                   Additional authenticated data
+ * @param[out] out_msg               the output buffer to store the result of the AES-CCM
+ * @param[in]  cb                    callback function on the corresponding command complete event
+ * @param[in]  user_data             user data for the callback function
  *
- * @param aad_len               Additional authenticated data length
- *
- * @param tag                   a value to identify a AES-CCM request.
- *
- * @param key                   128 bits long key as required by AES-CCM
- *
- * @param nonce                 random value of each AES-CCM require 13 bytes long
- *
- * @param msg                   pointer to the message input
- *
- * @param aad                   Additional authenticated data
- *
- * @param out_msg               the output buffer to store the result of the AES-CCM ,calculated by controller.
- *
- * @return                      0: success    others: failed
+ * @return                           0: success    others: failed
  */
 uint8_t gap_start_ccm(
         uint8_t  type,          // 0: encrypt  1: decrypt
@@ -1357,11 +1355,13 @@ uint8_t gap_start_ccm(
         uint16_t msg_len,
         uint16_t aad_len,
         uint32_t tag,          // same value will be reported in event
-        uint8_t *key,
-        uint8_t *nonce,
-        uint8_t *msg,
-        uint8_t *aad,
-        uint8_t *out_msg);
+        const uint8_t *key,
+        const uint8_t *nonce,
+        const uint8_t *msg,
+        const uint8_t *aad,
+        uint8_t *out_msg,
+        gap_hci_cmd_complete_cb_t cb,
+        void *user_data);
 
 //HCI func interface
 
