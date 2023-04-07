@@ -137,18 +137,23 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value)
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 {
     pTMR->ChEn &= ~(0xf << (ch_id * 4));
-    pTMR->ChEn |= mask << (ch_id * 4);
+    pTMR->ChEn |= (mask & 0xf) << (ch_id * 4);
 }
 
 void TMR_IntEnable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 {
     pTMR->IntEn &= ~(0xf << (ch_id * 4));
-    pTMR->IntEn |= mask << (ch_id * 4);
+    pTMR->IntEn |= (mask & 0xf) << (ch_id * 4);
+}
+
+uint32_t TMR_GetCNT(TMR_TypeDef *pTMR, uint8_t ch_id)
+{
+    return pTMR->Channels[ch_id].Counter;
 }
 
 uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint8_t ch_id)
 {
-    return pTMR->Channels[ch_id].Counter;
+    return pTMR->Channels[ch_id].Reload;
 }
 
 void TMR_IntClr(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
@@ -159,6 +164,16 @@ void TMR_IntClr(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id)
 {
     return (pTMR->IntStatus >> (ch_id * 4)) & 0xf;
+}
+
+void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable)
+{
+    uint8_t bit_offset = pTMR == APB_TMR0 ? 3 :
+                            pTMR == APB_TMR1 ? 4 : 5;
+    volatile uint32_t * reg = (volatile uint32_t *)(APB_SYSCTRL_BASE + 0x28);
+    uint32_t mask = 1 << bit_offset;
+
+    *reg = (*reg & ~mask) | (enable << bit_offset);
 }
 
 #define WDT_UNLOCK()    APB_WDT->WrEn = 0x5aa5

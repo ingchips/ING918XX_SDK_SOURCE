@@ -840,7 +840,7 @@ typedef enum
 } SYSCTRL_AdcVrefOutput;
 
 /**
- * @brief Set LDO output level for RF
+ * @brief Set LDO ADC V1.2 reference (VREF12_ADC) output level
  *
  * @param[in] level         output level
  */
@@ -882,6 +882,54 @@ typedef enum
  */
 void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
 
+/**
+ * @brief Enable BUCK DC-DC
+ *
+ * Default: Enabled.
+ *
+ * @param[in] enable        enable(1)/disable(0)
+ */
+void SYSCTRL_EnableBuckDCDC(uint8_t enable);
+
+/**
+ * @brief Enable PVD interrupt
+ *
+ * Note: BOR of ING916 relies on both PVD (Power Voltage Detector) & PDR (Power Down Reset):
+ *      * If BOR threshold > SYSCTRL_BOR_1V5:
+ *          1) PDR disabled;
+ *          2) PVD is enabled, threshold is configured, and PVD is configured to reset the SoC.
+ *      * If BOR threshold == SYSCTRL_BOR_1V5:
+ *          1) PVD disabled;
+ *          2) PDR is enabled and configured to reset the SoC.
+ *
+ * Effects of PVD & PDR are: either raise an interrupt or reset the SoC.
+ *
+ * This function reconfigures PVD to raise an interrupt.
+ *
+ * @param[in] enable        Enable(1)/disable(0)
+ * @param[in] polarity      Generate interrupt when V-bat becomes lower(0)/higher(1) than `level`
+ * @param[in] level         trigger level (see SYSCTRL_BOR_...)
+ */
+void SYSCTRL_EnablePVDInt(uint8_t enable, uint8_t polarity, uint8_t level);
+
+/**
+ * @brief Clear PVD interrupt state
+ */
+void SYSCTRL_ClearPVDInt(void);
+
+/**
+ * @brief Enable PDR interrupt
+ *
+ * See also `SYSCTRL_EnablePVDInt`.
+ *
+ * @param[in] enable        Enable(1)/disable(0)
+ */
+void SYSCTRL_EnablePDRInt(uint8_t enable);
+
+/**
+ * @brief Clear PDR interrupt state
+ */
+void SYSCTRL_ClearPDRInt(void);
 
 /**
  * @brief Config USB PHY functionality
@@ -1019,8 +1067,10 @@ void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level);
  *
  * ING916: `enable_active` and `enable_sleep` should be the same.
  *         Power consumption is larger when enabled, ~2.x uA.
- *         When `threshold` is set to 1.5V, a dedicated logic is used, only ~0.x uA is
+ *         When `threshold` is set to 1.5V, a dedicated logic (PDR) is used, only ~0.x uA is
  *         consumed.
+ *
+ *         See also `SYSCTRL_EnablePVDInt`, `SYSCTRL_EnablePDRInt`.
  *
  * @param[in] threshold         Threshold (available values see `SYSCTRL_BOR_...`)
  *                              default: 0.95V (ING918)

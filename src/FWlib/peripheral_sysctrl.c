@@ -89,6 +89,8 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
 
 uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
 {
+    int i = 0;
+    while (((io_read(BB_REG_BASE + 0x58) & 0x20) == 0) && (i < 1000)) i++;
     source->source = (io_read(BB_REG_BASE + 0x304) >> 8) & 0x3;
     return source->source != 0;
 }
@@ -925,6 +927,36 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep)
     }
 }
 
+void SYSCTRL_EnablePVDInt(uint8_t enable, uint8_t polarity, uint8_t level)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 0, 17);
+    if (0 == enable) return;
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), level, 4, 0);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1, 5);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 1, 17);
+    set_reg_bit(&APB_SYSCTRL->AnaCtrl, polarity, 2);
+    APB_SYSCTRL->AnaCtrl |= (1ul << 4);
+}
+
+void SYSCTRL_ClearPVDInt(void)
+{
+    APB_SYSCTRL->AnaCtrl |= (1ul << 11);
+}
+
+void SYSCTRL_EnablePDRInt(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 1, 16);
+    if (0 == enable) return;
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1, 4);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 0, 16);
+    APB_SYSCTRL->AnaCtrl |= (1ul << 3);
+}
+
+void SYSCTRL_ClearPDRInt(void)
+{
+    APB_SYSCTRL->AnaCtrl |= (1ul << 10);
+}
+
 void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level)
 {
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), level & 0xf, 4, 11);
@@ -939,6 +971,11 @@ void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level)
 void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level)
 {
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), level & 0xf, 4, 27);
+}
+
+void SYSCTRL_EnableBuckDCDC(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x0), enable & 1, 0);
 }
 
 void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level)

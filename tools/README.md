@@ -61,3 +61,28 @@ gen_files /path/to/sdk/bundles
 ```
 
 Note: [Nim](https://nim-lang.org/) is required to build this tool.
+
+## RTT Logger
+
+_rtt_logger.py_ is based on [pyocd](https://pyocd.io/), and supports J-Link,
+DAP-Link, etc.
+
+Usage:
+
+```shell
+python rtt_logger.py -RTTSearchRanges "0x2000XXXX 0xYYYY" log_file
+```
+
+### Command line options
+
+|Option  | Explanation                              |
+|:--------------------|:-----------------------------------------|
+|-Speed `SpeedInKHZ`  |Sets speed in kHz              |
+|-ID `id`             | Connects to the probe with unique `id`   |
+|-RTTAddress `RTTAddress` | Sets RTT address to `RTTAddress`     |
+|-RTTSearchRanges "`Ranges`" |Sets RTT search ranges to `Ranges` |
+|-RTTChannel `RTTChannel` | Sets RTT channel to `RTTChannel`     |
+
+`Ranges` is specified as `start` address and `size`, for example
+"0x2000XXXX 0xYYYY" tells this tool to search for RTT in the memory range
+from `0x2000XXXX` to `(0x2000XXXX + 0xYYYY)`.
