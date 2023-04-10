@@ -21,14 +21,18 @@
 
 #include "../../peripheral_console/src/key_detector.h"
 
-#define KV_KEY_IR           (KV_USER_KEY_START)
+enum
+{
+    KV_KEY_IR = KV_USER_KEY_START,
+    KV_KEY_PEER_USE_RPA
+};
 
 static sm_persistent_t sm_persistent =
 {
     .er = {1, 2, 3},
     .ir = {0},
     .identity_addr_type     = BD_ADDR_TYPE_LE_RANDOM,
-    .identity_addr          = {0xC3, 0x32, 0x33, 0x4e, 0x5d, 0x7d}
+    .identity_addr          = {0xC3, 0x32, 0x33, 0x4e, 0x5d, 0x9d}
 };
 
 extern void show_app_state(enum app_state state);
@@ -74,6 +78,8 @@ hci_con_handle_t handle_send = INVALID_HANDLE;
 int is_advertising = 0;
 int is_clear_pairing_pending = 0;
 int waiting_for_paring = 0;
+bd_addr_type_t      peer_addr_type;
+bd_addr_t           peer_addr;
 
 uint16_t att_handle_protocol_mode;
 uint16_t att_handle_hid_ctrl_point;
@@ -210,7 +216,7 @@ void mouse_report_movement(void)
     }
 }
 
-void enable_adv(void);
+void enable_adv(uint8_t use_dir_adv);
 void clear_pairing_data(void);
 
 void hex_print(const char *s, const uint8_t *data, int len)
@@ -260,7 +266,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 2000, .max_events = 0}};
 
-void setup_adv(void)
+static void setup_pairing_adv(void)
 {
     gap_set_ext_adv_para(0,
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
@@ -278,6 +284,67 @@ void setup_adv(void)
                             0x00);                     // Scan_Request_Notification_Enable
     gap_set_ext_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
     gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
+}
+
+// Reference: BLUETOOTH CORE SPECIFICATION Version 5.4 | Vol 6, Part B
+// 1.3.2.2 Private device address generation
+void generate_rpa(uint8_t *addr, const uint8_t *irk)
+{
+    uint8_t key[16];
+    uint8_t plain[16];
+    uint8_t cipher[16];
+
+    reverse_bytes(irk, key, sizeof(key));
+
+    reverse_24(addr, plain);
+    memset(plain + 3, 0, 13);
+
+    while (ll_aes_encrypt(key, plain, cipher) != 0)
+        vTaskDelay(10);
+
+    memcpy(addr + 3, cipher + 13, 3);
+}
+
+static void setup_directed_adv(void)
+{
+    bd_addr_t      dir_peer_addr;
+    bd_addr_type_t dir_peer_type;
+
+    platform_printf("setup_directed_adv\n");
+    le_device_memory_db_iter_t device_db_iter;
+    le_device_db_iter_init(&device_db_iter);
+    const le_device_memory_db_t *dev = le_device_db_iter_next(&device_db_iter);
+
+    if (kv_get(KV_KEY_PEER_USE_RPA, NULL) != NULL)
+    {
+        dir_peer_type = BD_ADDR_TYPE_LE_RANDOM;
+
+        platform_hrng(dir_peer_addr, 3);
+        dir_peer_addr[0] = (dir_peer_addr[0] & 0x0f) | 0x40;
+        generate_rpa(dir_peer_addr, dev->irk);
+    }
+    else
+    {
+        dir_peer_type = dev->addr_type;
+        memcpy(dir_peer_addr, dev->addr, sizeof(dir_peer_addr));
+    }
+
+    platform_printf("dir peer addr: "); printf_hexdump(dir_peer_addr, 6); platform_printf("\n");
+
+    gap_set_ext_adv_para(0,
+                            CONNECTABLE_ADV_BIT | DIRECT_ADV_BIT | LEGACY_PDU_BIT | HIGH_DUTY_CIR_DIR_ADV_BIT,
+                            0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
+                            PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
+                            BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
+                            dir_peer_type,             // Peer_Address_Type
+                            dir_peer_addr,             // Peer_Address
+                            ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
+                            0x00,                      // Advertising_Tx_Power
+                            PHY_1M,                    // Primary_Advertising_PHY
+                            0,                         // Secondary_Advertising_Max_Skip
+                            PHY_1M,                    // Secondary_Advertising_PHY
+                            0x00,                      // Advertising_SID
+                            0x00);                     // Scan_Request_Notification_Enable
 }
 
 uint8_t *init_service(void);
@@ -301,10 +368,15 @@ void clear_pairing_data(void)
     platform_reset();
 }
 
-void enable_adv(void)
+void enable_adv(uint8_t use_dir_adv)
 {
     if (is_advertising) return;
     if (handle_send != INVALID_HANDLE) return;
+
+    if (waiting_for_paring || (use_dir_adv == 0))
+        setup_pairing_adv();
+    else
+        setup_directed_adv();
 
     is_advertising = 1;
     gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
@@ -324,7 +396,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
         sm_private_random_address_generation_set_mode(GAP_RANDOM_ADDRESS_RESOLVABLE);
-        setup_adv();
         waiting_for_paring = platform_read_persistent_reg();
         platform_write_persistent_reg(0);
         break;
@@ -333,9 +404,22 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
-            handle_send = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle;
-            att_set_db(handle_send, att_db_util_get_address());
-            show_app_state(APP_CONN);
+            {
+                const le_meta_event_enh_create_conn_complete_t *complete =
+                    decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
+                if (complete->status != 0)
+                {
+                    is_advertising = 0;
+                    platform_printf("DIR_ADV no responding. Retry.\n");
+                    enable_adv(platform_get_us_time() < 2000000);
+                    break;
+                }
+                handle_send = complete->handle;
+                peer_addr_type = complete->peer_addr_type;
+                reverse_bd_addr(complete->peer_addr, peer_addr);
+                att_set_db(handle_send, att_db_util_get_address());
+                show_app_state(APP_CONN);
+            }
             break;
         case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:
             is_advertising = 0;
@@ -360,7 +444,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         {
             if (is_already_paired())
             {
-                enable_adv();
+                enable_adv(1);
             }
         }
         break;
@@ -394,7 +478,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         hex_print("RA", sm_private_random_addr_update_get_address(packet), 6);
         gap_set_adv_set_random_addr(0, sm_private_random_addr_update_get_address(packet));
         if (is_already_paired() || waiting_for_paring)
-            enable_adv();
+            enable_adv(1);
         break;
     case SM_EVENT_JUST_WORKS_REQUEST:
         if (waiting_for_paring)
@@ -429,6 +513,31 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         platform_printf("RESOLVING_FAILED\n");
         if (0 == waiting_for_paring)
             gap_disconnect(sm_event_identity_resolving_failed_get_handle(packet));
+        break;
+    case SM_EVENT_STATE_CHANGED:
+        {
+            const sm_event_state_changed_t *state_changed = decode_hci_event(packet, sm_event_state_changed_t);
+            switch (state_changed->reason)
+            {
+            case SM_FINAL_PAIRED:
+                platform_printf("SM: PAIRED\n");
+                platform_printf("%d: ", peer_addr_type);
+                printf_hexdump(peer_addr, sizeof(peer_addr));
+                platform_printf("\n");
+                if ((peer_addr_type == BD_ADDR_TYPE_LE_RANDOM)
+                    && ((peer_addr[0] & 0xC0) == 0x40))
+                {
+                    uint8_t flag = 1;
+                    kv_put(KV_KEY_PEER_USE_RPA, &flag, sizeof(flag));
+                }
+                else
+                    kv_remove(KV_KEY_PEER_USE_RPA);
+                kv_commit(1);
+                break;
+            default:
+                break;
+            }
+        }
         break;
     default:
         break;
