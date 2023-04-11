@@ -185,6 +185,17 @@ const void *flash_get_adc_calib_data(void);
 
 uint32_t read_flash_security(uint32_t addr);
 
+/**
+ * @brief Erase a block of data in flash then write data in a fashion of page.
+ *
+ * Note: For ING916, `buffer` must not be in Flash.
+ *
+ * @param[in] dest_addr         target address (unified address, aligned at EFLASH_PAGE_SIZE) in flash
+ * @param[in] buffer            buffer to be written
+ * @param[in] size              byte number to be written (must be multiple of 4 bytes)
+ * @return                      0 if successful else non-0
+ */
+int program_flash_page(uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
 #endif
 
 #ifdef __cplusplus

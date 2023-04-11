@@ -208,6 +208,49 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
     return ROM_flash_do_update(block_num, blocks, page_buffer);
 }
 
+void erase_flash_page(const uint32_t addr)
+{
+    ROM_erase_page(addr);
+    ROM_write_disable();
+}
+
+void write_flash_page(uint32_t addr, const uint8_t *data, uint32_t len)
+{
+    ROM_write_page(addr, data, len);
+    ROM_write_disable();
+}
+
+#define FLASH_PRE_OPS()                     \
+    uint32_t prim = __get_PRIMASK();        \
+    __disable_irq();                        \
+    ROM_disable_continuous_mode();
+
+#define FLASH_POST_OPS()                    \
+    ROM_dcache_flash();                          \
+    ROM_enable_continuous_mode();            \
+    if (!prim) __enable_irq()
+
+int program_flash_page(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
+{
+    if (dest_addr & (EFLASH_PAGE_SIZE - 1)) return -1;
+
+    FLASH_PRE_OPS();
+    {
+        while (size > 0)
+        {
+            ROM_erase_page(dest_addr);
+            uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
+            write_flash_page(dest_addr, buffer, cnt);
+            dest_addr += cnt;
+            buffer += cnt;
+            size -= cnt;
+        }
+    }
+    FLASH_POST_OPS();
+
+    return 0;
+}
+
 //#define APB_SPI_FLASH_CTRL_BASE              ((uint32_t)0x40150000UL)
 //uint32_t security_page_read(uint32_t addr)
 //{
