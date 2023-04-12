@@ -7,22 +7,30 @@
 #include "ota_service.h"
 
 /* User defined area */
-#define BSP_USB_MSC_FUNC BSP_USB_MSC_FLASH_DISK
 
-#if BSP_USB_MSC_FUNC == BSP_USB_MSC_RAM_DISK
-#define VFS_DISK_BLOCK_NUM (16) /*8K is the minimum size, 8 * 512 = 8KB*/
-#define VFS_DISK_BLOCK_SIZE (512)
-#define VFS_TOTAL_MEM_SIZE KB(8)
-#elif BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK || BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_NO_VFS \
+#if BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK || BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_NO_VFS \
       || BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_DOWNLOADER
-#define VFS_START_ADDR (0x02040000)
-#define VFS_DISK_BLOCK_NUM (512)
-#define VFS_DISK_BLOCK_SIZE (512)
-#define VFS_TOTAL_MEM_SIZE KB(256)
+
+/* empty flash start address, used for usb stick */
+#ifndef VFS_START_ADDR
+#define VFS_START_ADDR 0x02040000
 #endif
 
-/* declaration */
-static void bsp_msc_image_detect_and_download(uint32_t sector, uint8_t *buf, uint32_t num_of_sectors);
+/* total size of usb disk, the size must be aligned with vector size and cnt */
+#ifndef VFS_TOTAL_MEM_SIZE
+#define VFS_TOTAL_MEM_SIZE MB(128)
+#endif
+
+/* block/sector size of usb disk, for total size of 256M, block size should be 4K.
+   ATTENTION: flash operation requires that the minimum value of block size must be 4K */
+#ifndef VFS_DISK_BLOCK_SIZE
+#define VFS_DISK_BLOCK_SIZE KB(4)
+#endif
+
+#define VFS_DISK_BLOCK_NUM (VFS_TOTAL_MEM_SIZE/VFS_DISK_BLOCK_SIZE)
+#define VFS_DISK_FATSZ_16 ((VFS_DISK_BLOCK_NUM*2)/VFS_DISK_BLOCK_SIZE)
+COMPILER_ASSERT((VFS_DISK_BLOCK_NUM > FAT_CLUSTERS_MIN) && (VFS_DISK_BLOCK_NUM < FAT_CLUSTERS_MAX));
+#endif
 
 /* variables and functions area */
 const USB_DEVICE_DESCRIPTOR_REAL_T DeviceDescriptor __attribute__ ((aligned (4))) = USB_DEVICE_DESCRIPTOR;
@@ -41,25 +49,25 @@ uint8_t DataRecvBuf[EP_X_MPS_BYTES] __attribute__ ((aligned (4)));
 uint8_t DataSendBuf[EP_X_MPS_BYTES] __attribute__ ((aligned (4)));
 uint8_t DataMscBuffer[VFS_DISK_BLOCK_SIZE];
 
-#if BSP_USB_MSC_FUNC == BSP_USB_MSC_RAM_DISK
-uint8_t msc_disk[VFS_DISK_BLOCK_NUM][VFS_DISK_BLOCK_SIZE] =
-#endif
 #if BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK || BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_DOWNLOADER
-const uint8_t msc_disk[5][VFS_DISK_BLOCK_SIZE] =
+const uint8_t msc_disk[19][VFS_DISK_BLOCK_SIZE] __MEMORY_AT(VFS_START_ADDR) =
 #endif
 #if BSP_USB_MSC_FUNC != BSP_USB_MSC_FLASH_DISK_NO_VFS
 {
   //------------- Block0: Boot Sector -------------//
   // BS_jmpBoot = EB; BS_OEMName = MSDOS; BPB_BytsPerSec = VFS_DISK_BLOCK_SIZE; BPB_RsvdSecCnt = 1;
-  // BPB_NumFATs = 1; BPB_RootEntCnt = 16; BPB_TotSec16 = VFS_DISK_BLOCK_NUM; BPB_Media = F8; BPB_FATSz16 = 2;
+  // BPB_NumFATs = 1; BPB_RootEntCnt = VFS_DISK_BLOCK_SIZE/32; BPB_TotSec16 = VFS_DISK_BLOCK_NUM; 
+  // BPB_Media = F8; BPB_FATSz16 = VFS_DISK_FATSZ_16;
   // BPB_SecPerTrk = 1; BPB_NumHeads = 1; BPB_HiddSec = 0;
-  // BPB_TotSec32 = 0; BS_DrvNum = 80; BS_VolID = 1234; BS_VolLab = INGCHIPSMSC; BS_FilSysType = FAT12
+  // BPB_TotSec32 = 0; BS_DrvNum = 80; BS_VolID = 1234; BS_VolLab = INGCHIPSMSC; BS_FilSysType = FAT16
   {
-      0xEB, 0x3C, 0x90, 0x4D, 0x53, 0x44, 0x4F, 0x53, 0x35, 0x2E, 0x30, 0x00, 0x02, 0x01, 0x01, 0x00,
-      0x01, 0x10, 0x00, VFS_DISK_BLOCK_NUM&0xFF, (VFS_DISK_BLOCK_NUM>>8)&0xFF, 0xF8, 0x02, 0x00,
+      0xEB, 0x3C, 0x90, 0x4D, 0x53, 0x44, 0x4F, 0x53, 0x35, 0x2E, 0x30, VFS_DISK_BLOCK_SIZE&0xFF, 
+      (VFS_DISK_BLOCK_SIZE>>8)&0xFF, 0x01, 0x01, 0x00,
+      0x01, (VFS_DISK_BLOCK_SIZE/32)&0xFF, ((VFS_DISK_BLOCK_SIZE/32)>>8)&0xFF, VFS_DISK_BLOCK_NUM&0xFF, 
+      (VFS_DISK_BLOCK_NUM>>8)&0xFF, 0xF8, VFS_DISK_FATSZ_16&0xFF, (VFS_DISK_FATSZ_16>>8)&0xFF,
       0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x29, 0x34, 0x12, 0x00, 0x00, 'I' , 'N' , 'G' , 'C' , 'H' ,
-      'I' , 'P' , 'S' , 'M' , 'S' , 'C' , 0x46, 0x41, 0x54, 0x31, 0x32, 0x20, 0x20, 0x20, 0x00, 0x00,
+      'I' , 'P' , 'S' , 'M' , 'S' , 'C' , 0x46, 0x41, 0x54, 0x31, 0x36, 0x20, 0x20, 0x20, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -90,14 +98,13 @@ const uint8_t msc_disk[5][VFS_DISK_BLOCK_SIZE] =
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x55, 0xAA
   },
 
-  //------------- Block1: FAT12 Table -------------//
+  //------------- Block1-16: FAT16 Table -------------//
   {
-      0xF8, 0xFF, 0xFF, 0xFF, 0x0F // first 2 entries are reserved
+      0xF8, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF // first 2 entries are reserved
   },
-  {
-      0x00,
-  },
-  //------------- Block3: Root Directory -------------//
+  {0x00,},{0x00,},{0x00,},{0x00,},{0x00,},{0x00,},{0x00,},
+  {0x00,},{0x00,},{0x00,},{0x00,},{0x00,},{0x00,},{0x00,},{0x00,},
+  //------------- Block17: Root Directory -------------//
   // DIR_Name = ; DIR_Attr = VOLUME ID; DIR_CrtTime = 0; DIR_CrtDate = 0;
   // DIR_CrtDate = 0; DIR_LstAccDate = 0; DIR_FileSize = SIZEOF()
   {
@@ -110,19 +117,15 @@ const uint8_t msc_disk[5][VFS_DISK_BLOCK_SIZE] =
       sizeof(README_CONTENTS)-1, 0x00, 0x00, 0x00 // readme's files size (4 Bytes)
   },
 
-  //------------- Block4: Readme Content -------------//
+  //------------- Block18: Readme Content -------------//
   README_CONTENTS
 };
 #endif
 
 void bsp_msc_write_sect(uint32_t sector, uint8_t *buf, uint32_t num_of_sectors)
 {
-    #if BSP_USB_MSC_FUNC == BSP_USB_MSC_RAM_DISK
-    memcpy((void*)(msc_disk[sector]), buf, num_of_sectors * VFS_DISK_BLOCK_SIZE);
-    #endif
-
     #if BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK || BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_NO_VFS
-    program_flash_page(VFS_START_ADDR + (sector * VFS_DISK_BLOCK_SIZE), buf, num_of_sectors * VFS_DISK_BLOCK_SIZE);
+    program_flash(VFS_START_ADDR + (sector * VFS_DISK_BLOCK_SIZE), buf, num_of_sectors * VFS_DISK_BLOCK_SIZE);
     #endif
 
     #if BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_DOWNLOADER
@@ -132,10 +135,6 @@ void bsp_msc_write_sect(uint32_t sector, uint8_t *buf, uint32_t num_of_sectors)
 
 void bsp_msc_read_sect(uint32_t sector, uint8_t *buf, uint32_t num_of_sectors)
 {
-    #if BSP_USB_MSC_FUNC == BSP_USB_MSC_RAM_DISK
-    memcpy(buf, msc_disk[sector], num_of_sectors * VFS_DISK_BLOCK_SIZE);
-    #endif
-
     #if BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK || BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_NO_VFS \
         || BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_DOWNLOADER
     memcpy(buf, (void*)(VFS_START_ADDR + (sector * VFS_DISK_BLOCK_SIZE)), num_of_sectors * VFS_DISK_BLOCK_SIZE);
@@ -161,14 +160,12 @@ void bsp_msc_clr_stall_ep_ (uint32_t EPNum)
 
 uint32_t bsp_msc_write_ep (uint32_t EPNum, uint8_t *pData, uint32_t cnt)
 {
-    uint32_t status = USB_ERROR_NONE;
-
     if(!USB_IS_EP_DIRECTION_IN(EPNum)){
       return 0;
     }
 
     memcpy(DataSendBuf, pData, cnt);
-    status |= USB_SendData(EPNum, (void*)DataSendBuf, cnt, 0);
+    USB_SendData(EPNum, (void*)DataSendBuf, cnt, 0);
 
     return cnt;
 }
@@ -184,7 +181,6 @@ uint32_t bsp_msc_read_ep (uint32_t EPNum, uint8_t *pData, uint32_t size)
 
     if(0 == USB_EP_NUM(EPNum))
     {
-      cnt = size;//sizeof(USB_SETUP_T);
       memcpy(pData, setup, cnt);
       return cnt;
     }
@@ -1047,14 +1043,6 @@ void bsp_msc_init(void)
     USB_Var.uBlockCount = USB_Var.uMemorySize / USB_Var.uBlockSize;
     USB_Var.uBlockBuf   = (uint8_t *)DataMscBuffer;
     memset(DataMscBuffer,0,sizeof(DataMscBuffer));
-
-    #if BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK || BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_DOWNLOADER
-    //vfs system only has to be initialized once
-    if(!( (((uint8_t*)VFS_START_ADDR)[0]==0xEB) && (((uint8_t*)VFS_START_ADDR)[510]==0x55) && (((uint8_t*)VFS_START_ADDR)[511]==0xAA)))
-    {
-      program_flash_page(VFS_START_ADDR, (const uint8_t*)&(msc_disk[0][0]), sizeof(msc_disk));
-    }
-    #endif
 }
 
 static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
@@ -1356,10 +1344,10 @@ void bsp_usb_device_disconn_timeout(void)
 #endif
 
 #if BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_DOWNLOADER
-static void bsp_msc_image_detect_and_download(uint32_t sector, uint8_t *buf, uint32_t num_of_sectors)
+void bsp_msc_image_detect_and_download(uint32_t sector, uint8_t *buf, uint32_t num_of_sectors)
 {
-    #define ROOT_DIR_SECTOR_NUM (3)
-    #define ROOT_DIR_CNT (16)
+    #define ROOT_DIR_SECTOR_NUM (VFS_DISK_FATSZ_16 + 1)
+    #define ROOT_DIR_CNT (VFS_DISK_BLOCK_SIZE/32)
     uint32_t i;
     static uint8_t bin_type = 0;
     static int32_t file_size = 0;
@@ -1371,7 +1359,7 @@ static void bsp_msc_image_detect_and_download(uint32_t sector, uint8_t *buf, uin
         if (0 == strncmp("BIN", &(new_dir[i].fileName[8]), 3)) {
           bin_type = 1;
           file_size = new_dir[i].fileSize;
-          file_sector = 4 + new_dir[i].firstClusterLow16 - 2;
+          file_sector = ROOT_DIR_SECTOR_NUM + 1 + new_dir[i].firstClusterLow16 - 2;
           meta_size = file_size;
           meta_addr = VFS_START_ADDR + (file_sector * VFS_DISK_BLOCK_SIZE);
           break;
@@ -1379,7 +1367,7 @@ static void bsp_msc_image_detect_and_download(uint32_t sector, uint8_t *buf, uin
       }
     }
 
-    program_flash_page(VFS_START_ADDR + (sector * VFS_DISK_BLOCK_SIZE), buf, num_of_sectors * VFS_DISK_BLOCK_SIZE);
+    program_flash(VFS_START_ADDR + (sector * VFS_DISK_BLOCK_SIZE), buf, num_of_sectors * VFS_DISK_BLOCK_SIZE);
 
     if((bin_type == 1) && (sector == file_sector)){
       file_size = file_size - num_of_sectors * VFS_DISK_BLOCK_SIZE;

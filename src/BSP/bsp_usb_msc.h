@@ -8,6 +8,11 @@
 extern "C" {
 #endif
 
+/* Several functions of usb msc, see the macro definition in .h file */
+#ifndef BSP_USB_MSC_FUNC
+#define BSP_USB_MSC_FUNC BSP_USB_MSC_FLASH_DISK
+#endif
+
 // the flag to enable disconnection(cable unplugged), valid only when DP and DM are powered by VBUS
 //#define FEATURE_DISCONN_DETECT
 
@@ -43,6 +48,18 @@ extern "C" {
 // append to 'compiler_assert_' to create a unique token.  This prevents
 // conflicts resulting from the same enum being declared multiple times.
 #define COMPILER_ASSERT(e) enum { COMPILER_CONCAT(compiler_assert_, __COUNTER__) = 1/((e) ? 1 : 0) }
+
+#ifndef __MEMORY_AT
+  #if (defined (__CC_ARM))
+    #define  __MEMORY_AT(x)     __attribute__((at(x)))
+  #elif (defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050))
+    #define  __MEMORY_AT__(x)   __attribute__((section(".ARM.__at_"#x)))
+    #define  __MEMORY_AT(x)     __MEMORY_AT__(x)
+  #else
+    #define  __MEMORY_AT(x)
+    #warning Position memory containing __MEMORY_AT macro at absolute address!
+  #endif
+#endif
 
 // ATTENTION ! FIXED IO FOR USB on 916 series
 #define USB_PIN_DP GIO_GPIO_16
@@ -140,11 +157,9 @@ typedef struct
   .interval = 0 \
 }
 
-/* USB disk with all data stored in ram, for demo or debug purpose */
-#define BSP_USB_MSC_RAM_DISK 0x02
 /* USB disk with all data stored in flash, with a fat12 file system */
 #define BSP_USB_MSC_FLASH_DISK 0x03
-/* USB disk with all data stored in flash, no file system, need to be formated by host */
+/* USB disk with all data stored in flash, no file system, need to be formatted by host */
 #define BSP_USB_MSC_FLASH_DISK_NO_VFS 0x04
 /* USB disk with drag-n-drop bin file downloading function */
 #define BSP_USB_MSC_FLASH_DISK_DOWNLOADER 0x05
@@ -226,6 +241,10 @@ typedef __PACKED_STRUCT _MSC_CSW {
 "This is ingchips's MassStorage Class demo.\r\n\r\n\
 access https://ingchips.github.io/ for more information."
 
+// FAT16 limitations +- safety margin
+#define FAT_CLUSTERS_MAX (65525 - 100)
+#define FAT_CLUSTERS_MIN (4086 + 100)
+
 typedef enum
 {
   BSP_USB_PHY_DISABLE,
@@ -301,7 +320,9 @@ extern void bsp_usb_device_remote_wakeup(void);
 #ifdef FEATURE_DISCONN_DETECT
 void bsp_usb_device_disconn_timeout(void);
 #endif
-
+#if BSP_USB_MSC_FUNC == BSP_USB_MSC_FLASH_DISK_DOWNLOADER
+void bsp_msc_image_detect_and_download(uint32_t sector, uint8_t *buf, uint32_t num_of_sectors);
+#endif
 #ifdef __cplusplus
 }
 #endif
