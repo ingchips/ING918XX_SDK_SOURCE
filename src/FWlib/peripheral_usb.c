@@ -140,11 +140,11 @@ USB_ERROR_TYPE_E USB_InitConfig(USB_INIT_CONFIG_T *config)
 {
   USB_ERROR_TYPE_E status = USB_ERROR_NONE;
 
-  if(!config){status = USB_ERROR_INVALID_INPUT;}
+  if(!config){return USB_ERROR_INVALID_INPUT;}
 
   g_UsbVar.DeviceState = USB_DEVICE_NONE;
   g_UsbVar.Ep0State = EP0_DISCONNECT;
-  memcpy(&(g_UsbVar.UserConfig),config, sizeof(USB_INIT_CONFIG_T));
+  memcpy(&(g_UsbVar.UserConfig), config, sizeof(USB_INIT_CONFIG_T));
 
   USB_ResetAndConfig();
 
@@ -804,7 +804,6 @@ void USB_HandleEp0(void)
 {
   USB_SETUP_T* setup = (USB_SETUP_T*)(g_UsbBufferEp0Out);
   USB_EVNET_HANDLER_T event;
-  uint32_t event_status = 0;
 
   switch(g_UsbVar.Ep0State)
   {
@@ -834,7 +833,7 @@ void USB_HandleEp0(void)
       }
 
       event.id = USB_EVENT_EP0_SETUP;
-      event_status = g_UsbVar.UserConfig.handler(&event);
+      uint32_t event_status = g_UsbVar.UserConfig.handler(&event);
 
       //setup requset which is not supported, by spec, device should return stall pid to host
       if(USB_ERROR_REQUEST_NOT_SUPPORT == event_status)
