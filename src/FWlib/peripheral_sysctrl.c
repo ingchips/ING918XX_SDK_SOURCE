@@ -742,7 +742,7 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
 void SYSCTRL_SetAdcClkDiv(uint8_t denom)
 {
     APB_SYSCTRL->CguCfg8 &= ~0x1fff;
-    APB_SYSCTRL->CguCfg8 |= 0x1000 | (denom & 0x2f);
+    APB_SYSCTRL->CguCfg8 |= 0x1000 | 0x40 | (denom & 0x2f);
 }
 
 uint32_t SYSCTRL_GetAdcClkDiv(void)
