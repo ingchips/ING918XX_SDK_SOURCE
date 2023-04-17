@@ -1,9 +1,9 @@
 #ifndef __PERIPHERAL_PTE_H__
 #define __PERIPHERAL_PTE_H__
 
-#ifdef	__cplusplus
-extern "C" {	/* allow C++ to use these headers */
-#endif	/* __cplusplus */
+#ifdef    __cplusplus
+extern "C" {    /* allow C++ to use these headers */
+#endif    /* __cplusplus */
 
 #include "ingsoc.h"
 #include "peripheral_sysctrl.h"
@@ -78,21 +78,21 @@ typedef enum
  *
  * @param[in] ch             PTE channel ID
  */
-void PTE_IrqProcess(SYSCTRL_PTE_CHANNEL_ID ch);
+void PTE_IrqProc(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Standard process of out peripheral's irq-function with channel continue enabled.
  *
  * @param[in] ch             PTE channel ID
  */
-void PTE_OutPeripheralContinueProcess(SYSCTRL_PTE_CHANNEL_ID ch);
+void PTE_OutPeripheralContinueProc(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Standard process of out peripheral's irq-function with channel disabled.
  *
  * @param[in] ch             PTE channel ID
  */
-void PTE_OutPeripheralEndProcess(SYSCTRL_PTE_CHANNEL_ID ch);
+void PTE_OutPeripheralEndProc(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Close PTE channel
@@ -122,7 +122,7 @@ int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch,
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
-#endif	/* __cplusplus */
+#endif    /* __cplusplus */
 
 #endif
 

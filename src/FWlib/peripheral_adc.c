@@ -338,8 +338,8 @@ SADC_adcPgaGain ADC_PgaGainGet(void)
 void ADC_PgaEnable(uint8_t enable)
 {
     ADC_RegClr(SADC_CFG_0, 1, 1);
-    // if (enable)
-    ADC_RegWr(SADC_CFG_0, 1, 1);
+    if (enable)
+        ADC_RegWr(SADC_CFG_0, 1, 1);
 }
 
 uint8_t ADC_GetPgaStatus(void)
@@ -378,7 +378,7 @@ uint16_t ADC_GetData(uint32_t data)
 {
     SADC_channelId ch = ADC_GetDataChannel(data);
     SADC_ftChPara_t *chPara;
-    if ((ch <= ADC_CH_7) && ftCali->f) {
+    if ((ch <= ADC_CH_7) && ftCali && ftCali->f) {
         if (ADC_GetInputMode() && (ch <= ADC_CH_3))
             chPara = &(ftCali->chParaDiff[ch]);
         else
@@ -414,6 +414,7 @@ static void ADC_VrefRegister(float VP, float VN)
 
 void ADC_VrefCalibration(void)
 {
+    if (!SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC)) return;
     if (!ftCali) return;
     ADC_DisableAllChannels();
     ADC_ClrFifo();
@@ -502,6 +503,7 @@ void ADC_ftInit(void)
         V1_diff = 90000;
         V2_diff = 230000;
     } else {
+        ftCali->f = 0;
         return;
     }
 
@@ -634,7 +636,7 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
     ADC_SetAdcMode(CONVERSION_MODE);
     ADC_SetAdcCtrlMode(ctrlMode);
     ADC_PgaGainSet(pgaGain);
-    ADC_PgaEnable(pgaEnable);
+    ADC_PgaEnable(1);
     ADC_SetInputMode(inputMode);
     ADC_EnableChannel(ch, 1);
     if (enNum) {

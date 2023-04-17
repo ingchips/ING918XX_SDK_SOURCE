@@ -34,17 +34,17 @@ void PTE_SetChannelIntMask(SYSCTRL_PTE_CHANNEL_ID ch, uint32_t options)
     }
 }
 
-void PTE_IrqProcess(SYSCTRL_PTE_CHANNEL_ID ch)
+void PTE_IrqProc(SYSCTRL_PTE_CHANNEL_ID ch)
 {
     PTE_SetChannelIntMask(ch, 0);
 }
 
-void PTE_OutPeripheralContinueProcess(SYSCTRL_PTE_CHANNEL_ID ch)
+void PTE_OutPeripheralContinueProc(SYSCTRL_PTE_CHANNEL_ID ch)
 {
     PTE_ClearInt(ch);
 }
 
-void PTE_OutPeripheralEndProcess(SYSCTRL_PTE_CHANNEL_ID ch)
+void PTE_OutPeripheralEndProc(SYSCTRL_PTE_CHANNEL_ID ch)
 {
     PTE_ClearInt(ch);
     PTE_DisableChannel(ch);
