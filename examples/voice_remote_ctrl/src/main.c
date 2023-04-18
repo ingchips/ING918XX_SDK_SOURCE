@@ -9,6 +9,7 @@
 #include "kb_scan.h"
 
 #include "app_cfg.h"
+#include "log.h"
 
 #define PRINT_PORT    APB_UART0
 
@@ -165,8 +166,10 @@ int app_main()
     // setup putc handle
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
+    LOG_PRINTF(LOG_LEVEL_INFO,"Initializing audio device...");
     audio_init();
-
+    LOG_PRINTF(LOG_LEVEL_INFO,"Device started successfully.");
+    printf("--------------------------------------------------\n");
 #if (BOARD == BOARD_REM)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER2, kb_scan_isr, NULL);
     TMR_Enable(APB_TMR2);

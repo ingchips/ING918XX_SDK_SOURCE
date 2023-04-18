@@ -81,16 +81,16 @@ struct sbc_frame {
 	uint8_t joint;
 
 	/* only the lower 4 bits of every element are to be used */
-	uint32_t SBC_ALIGNED scale_factor[2][8];
+	uint32_t scale_factor[2][8];
 
 	/* raw integer subband samples in the frame */
-	int32_t SBC_ALIGNED sb_sample_f[16][2][8];
+	int32_t sb_sample_f[16][2][8];
 
 	/* modified subband samples */
-	int32_t SBC_ALIGNED sb_sample[16][2][8];
+	int32_t sb_sample[16][2][8];
 
 	/* original pcm audio samples */
-	int16_t SBC_ALIGNED pcm_sample[2][16*8];
+	int16_t pcm_sample[2][16*8];
 };
 
 struct sbc_encoder_state {
@@ -107,11 +107,11 @@ struct sbc_decoder_state {
 };
 
 
-static inline void __sbc_analyze_four(const int32_t *in, int32_t *out);
-static inline void __sbc_analyze_eight(const int32_t *in, int32_t *out);
-static inline void sbc_analyze_four(struct sbc_encoder_state *state,
+static void __sbc_analyze_four(const int32_t *in, int32_t *out);
+static void __sbc_analyze_eight(const int32_t *in, int32_t *out);
+static void sbc_analyze_four(struct sbc_encoder_state *state,
 				struct sbc_frame *frame, int ch, int blk);
-static inline void sbc_analyze_eight(struct sbc_encoder_state *state,
+static void sbc_analyze_eight(struct sbc_encoder_state *state,
 				struct sbc_frame *frame, int ch, int blk);
 
 
@@ -179,7 +179,7 @@ static uint8_t sbc_crc8(const uint8_t *data, int len)
  * Takes a pointer to the frame in question, a pointer to the bits array and
  * the sampling frequency (as 2 bit integer)
  */
-static SBC_ALWAYS_INLINE void sbc_calculate_bits_internal(
+static void sbc_calculate_bits_internal(
 		const struct sbc_frame *frame, int (*bits)[8], int subbands)
 {
 	uint8_t sf = frame->frequency;
@@ -385,7 +385,7 @@ static void sbc_calculate_bits(const struct sbc_frame *frame, int (*bits)[8])
 		sbc_calculate_bits_internal(frame, bits, 8);
 }
 
-static SBC_ALWAYS_INLINE int16_t sbc_clip16(int32_t s)
+static  int16_t sbc_clip16(int32_t s)
 {
 	if (s > 0x7FFF)    //32767
 		return 0x7FFF;
@@ -531,7 +531,7 @@ static int sbc_analyze_audio(struct sbc_encoder_state *state,
  * -99 not implemented
  */
 
-static SBC_ALWAYS_INLINE int sbc_pack_frame_internal(uint8_t *data,
+static  int sbc_pack_frame_internal(uint8_t *data,
 					struct sbc_frame *frame, int len,
 					int frame_subbands, int frame_channels,
 					int joint)
@@ -937,7 +937,7 @@ static inline void sbc_analyze_four(struct sbc_encoder_state *state,
 		state->position[ch] = 36;
 }
 
-SBC_EXPORT void sbc_analyze_eight(struct sbc_encoder_state *state,
+void sbc_analyze_eight(struct sbc_encoder_state *state,
 					struct sbc_frame *frame, int ch,
 					int blk)
 {
@@ -1002,7 +1002,7 @@ static void sbc_calc_scalefactors(
 
 
 
-SBC_EXPORT int sbc_encode(sbc_t *sbc, void *input, int input_len,
+int sbc_encode(sbc_t *sbc, void *input, int input_len,
 			void *output, int output_len, int *written)
 {
 	struct sbc_priv *priv;
@@ -1107,7 +1107,7 @@ SBC_EXPORT int sbc_encode(sbc_t *sbc, void *input, int input_len,
 	return samples * priv->frame.channels * 2;
 }
 
-SBC_EXPORT void sbc_finish(sbc_t *sbc)
+void sbc_finish(sbc_t *sbc)
 {
 	if (!sbc)
 		return;
@@ -1117,7 +1117,7 @@ SBC_EXPORT void sbc_finish(sbc_t *sbc)
 	memset(sbc, 0, sizeof(sbc_t));
 }
 
-SBC_EXPORT int sbc_get_frame_length(sbc_t *sbc)
+int sbc_get_frame_length(sbc_t *sbc)
 {
 	int ret;
 	uint8_t subbands, channels, blocks, joint, bitpool;
@@ -1146,7 +1146,7 @@ SBC_EXPORT int sbc_get_frame_length(sbc_t *sbc)
 	return ret;
 }
 
-SBC_EXPORT int sbc_get_codesize(sbc_t *sbc)
+int sbc_get_codesize(sbc_t *sbc)
 {
 	uint16_t subbands, channels, blocks;
 	struct sbc_priv *priv;
@@ -1167,7 +1167,7 @@ SBC_EXPORT int sbc_get_codesize(sbc_t *sbc)
 	return subbands * blocks * channels * 2;
 }
 
-SBC_EXPORT int sbc_reinit(sbc_t *sbc, unsigned long flags)
+int sbc_reinit(sbc_t *sbc, unsigned long flags)
 {
 	struct sbc_priv *priv;
 
@@ -1185,7 +1185,7 @@ SBC_EXPORT int sbc_reinit(sbc_t *sbc, unsigned long flags)
 }
 
 
-static inline void __sbc_analyze_four(const int32_t *in, int32_t *out)
+static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 {
 	sbc_fixed_t t[8], s[5];
 

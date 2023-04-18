@@ -7,17 +7,17 @@ extern "C" {
 
 #include <stdint.h>
 //#include <sys/types.h>
-#if defined(_MSC_VER)
-#define SBC_EXPORT __declspec(dllexport)
-#else
-#define SBC_EXPORT __attribute__ ((visibility("default")))
-#endif
+// #if defined(_MSC_VER)
+// #define  __declspec(dllexport)
+// #else
+// #define  __attribute__ ((visibility("default")))
+// #endif
 
-#ifdef __GNUC__
-#define SBC_ALWAYS_INLINE inline __attribute__((always_inline))
-#else
-#define SBC_ALWAYS_INLINE inline
-#endif
+// #ifdef __GNUC__
+// #define SBC_ALWAYS_INLINE inline __attribute__((always_inline))
+// #else
+// #define SBC_ALWAYS_INLINE inline
+// #endif
 
 typedef int8_t sbc_sample_t;
 
@@ -71,20 +71,20 @@ struct sbc_struct {
 typedef struct sbc_struct sbc_t;
 
 int sbc_init(sbc_t *sbc, unsigned long flags);
-SBC_EXPORT int sbc_reinit(sbc_t *sbc, unsigned long flags);
+int sbc_reinit(sbc_t *sbc, unsigned long flags);
 
 /* Encodes ONE input block into ONE output block */
-SBC_EXPORT int sbc_encode(sbc_t *sbc, void *input, int input_len,
+int sbc_encode(sbc_t *sbc, void *input, int input_len,
 			void *output, int output_len, int *written);
 
 /* Returns the compressed block size in bytes */
-SBC_EXPORT int sbc_get_frame_length(sbc_t *sbc);
+int sbc_get_frame_length(sbc_t *sbc);
 
 
 /* Returns the uncompressed block size in bytes */
-SBC_EXPORT int sbc_get_codesize(sbc_t *sbc);
+int sbc_get_codesize(sbc_t *sbc);
 
-SBC_EXPORT void sbc_finish(sbc_t *sbc);
+void sbc_finish(sbc_t *sbc);
 
 
 #ifdef __cplusplus
