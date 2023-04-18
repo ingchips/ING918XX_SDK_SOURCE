@@ -1,9 +1,9 @@
 #ifndef __PERIPHERAL_PTE_H__
 #define __PERIPHERAL_PTE_H__
 
-#ifdef	__cplusplus
-extern "C" {	/* allow C++ to use these headers */
-#endif	/* __cplusplus */
+#ifdef    __cplusplus
+extern "C" {    /* allow C++ to use these headers */
+#endif    /* __cplusplus */
 
 #include "ingsoc.h"
 #include "peripheral_sysctrl.h"
@@ -12,11 +12,11 @@ extern "C" {	/* allow C++ to use these headers */
 
 typedef enum
 {
-    SYSCTRL_PTE_CHENNEL_0     = 0,
-    SYSCTRL_PTE_CHENNEL_1     = 1,
-    SYSCTRL_PTE_CHENNEL_2     = 2,
-    SYSCTRL_PTE_CHENNEL_3     = 3,
-} SYSCTRL_PTE_CHENNEL_ID;
+    SYSCTRL_PTE_CHANNEL_0     = 0,
+    SYSCTRL_PTE_CHANNEL_1     = 1,
+    SYSCTRL_PTE_CHANNEL_2     = 2,
+    SYSCTRL_PTE_CHANNEL_3     = 3,
+} SYSCTRL_PTE_CHANNEL_ID;
 
 typedef enum
 {
@@ -71,47 +71,42 @@ typedef enum
 } SYSCTRL_PTE_DST_EN;
 
 #define PTE_MAKE_MASK_SIZE_OPTION(size)                 (((1) << ((uint32_t)(size))) - (1))
-#define PTE_MAKE_CHENNAL_INT_MASK_OPTION(options)       ((~((0x1) << (1))) & (~((options) << (26))))
+#define PTE_MAKE_CHANNEL_INT_MASK_OPTION(options)       ((~((0x1) << (1))) & (~((options) << (26))))
 
 /**
  * @brief Standard process of PTE's irq-function
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
-void PTE_IrqProcess(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_IrqProc(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
- * @brief Standard process of out peripheral's irq-function with chennal continue enabled.
+ * @brief Standard process of out peripheral's irq-function with channel continue enabled.
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
-void PTE_OutPeripheralContinueProcess(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_OutPeripheralContinueProc(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
- * @brief Standard process of out peripheral's irq-function with chennal disenabled.
+ * @brief Standard process of out peripheral's irq-function with channel disabled.
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
-void PTE_OutPeripheralEndProcess(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_OutPeripheralEndProc(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Close PTE channel
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
-void PTE_ChennelClose(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_ChannelClose(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Enable PTE channel
  *
  * @param[in] ch             PTE channel ID
- * @return                   null
  */
-void PTE_EnableChennel(SYSCTRL_PTE_CHENNEL_ID ch);
+void PTE_EnableChannel(SYSCTRL_PTE_CHANNEL_ID ch);
 
 /**
  * @brief Connect two peripherals with PTE
@@ -121,13 +116,13 @@ void PTE_EnableChennel(SYSCTRL_PTE_CHENNEL_ID ch);
  * @param[in] dst            destination peripheral
  * @return                   0 if no error else non-0
  */
-int PTE_ConnectPeripheral(SYSCTRL_PTE_CHENNEL_ID ch, 
+int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch, 
                           SYSCTRL_PTE_SRC_INT src, 
                           SYSCTRL_PTE_DST_EN dst);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
-#endif	/* __cplusplus */
+#endif    /* __cplusplus */
 
 #endif
 

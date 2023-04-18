@@ -183,7 +183,10 @@ proc platform_switch_app*(app_addr: uint32) {.importc: "platform_switch_app",
 ##  @brief Write value to the persistent register, of which the value is kept even
 ##         in power saving mode.
 ##
-##  @param[in] value              a FOUR bit value
+## For ING918: the least FOUR significant bits of `value` are saved;
+## For ING916: the least TWO  significant bits of `value` are saved.
+##
+## @param[in] value              value
 ## ***************************************************************************************
 ##
 

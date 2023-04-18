@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 #include "adc_cali.h"
+#include "profile.h"
 
 // GATT characteristic handles
 #include "../data/gatt.const"
@@ -133,6 +134,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     }
 }
 
+#define SAMPLERATE  100
+#define ADC_CLK_MHZ 6
+#define ADC_CH_NUM  1
+#define LOOP_DELAY(c, s, ch)      ((((c) * (1000000)) / (s)) - (((16) * (ch)) + (5)))
+void ADC_AveInit(void);
 uint16_t read_adc(uint8_t channel)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
@@ -159,10 +165,22 @@ uint16_t read_adc(uint8_t channel)
 
     return adc_calibrate(ADC_SAMPLE_MODE_SLOW, channel, voltage);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    ADC_ConvCfg(SINGLE_MODE, PGA_GAIN_2, 1, channel, 1, 0, SINGLE_END_MODE, 0);
+    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, (SADC_channelId)channel, AVE_NUM, 0, 
+        SINGLE_END_MODE, LOOP_DELAY(ADC_CLK_MHZ, SAMPLERATE, ADC_CH_NUM));
+    ADC_AveInit();
     ADC_Start(1);
     while (!ADC_GetIntStatus()) ;
-    return ADC_ReadChannelData(channel);
+    ADC_Start(0);
+    ADC_EnableChannel((SADC_channelId)channel, 0);
+    ADC_IntEnable(0);
+    uint32_t data;
+    uint16_t sample;
+    while (!ADC_GetFifoEmpty()) {
+        data = ADC_PopFifoData();
+        sample = ADC_GetAveData(data);
+    }
+    ADC_AveDisable();
+    return sample;
 #endif
 }
 

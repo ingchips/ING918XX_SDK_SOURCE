@@ -44,10 +44,10 @@ static void mesh_ble_params_reset_delay_timer_timeout_handler(mesh_timer_source_
     
     // mesh network reset.
     mesh_node_reset();    
-    // mesh storage clear and reload.
-    mesh_storage_app_reinit();
-    // mesh platform reinit.
-    mesh_platform_init();
+//    // mesh storage clear and reload.
+//    mesh_storage_app_reinit();
+//    // mesh platform reinit.
+//    mesh_platform_init();
 }
 
 static void mesh_ble_params_reset_delay_timer_start(uint32_t timeout_in_ms){

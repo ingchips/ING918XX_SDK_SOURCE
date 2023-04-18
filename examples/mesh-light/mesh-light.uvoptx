@@ -254,8 +254,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\mesh_manage_conn_and_scan.c</PathWithFileName>
-      <FilenameWithoutPath>mesh_manage_conn_and_scan.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\mesh_port_low_level_init.c</PathWithFileName>
+      <FilenameWithoutPath>mesh_port_low_level_init.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -266,8 +266,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\mesh_port_low_level_init.c</PathWithFileName>
-      <FilenameWithoutPath>mesh_port_low_level_init.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\hal_flash_bank_eflash.c</PathWithFileName>
+      <FilenameWithoutPath>hal_flash_bank_eflash.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -278,8 +278,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\hal_flash_bank_eflash.c</PathWithFileName>
-      <FilenameWithoutPath>hal_flash_bank_eflash.c</FilenameWithoutPath>
+      <PathWithFileName>.\src\ble_status.c</PathWithFileName>
+      <FilenameWithoutPath>ble_status.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -311,7 +311,7 @@
 
   <Group>
     <GroupName>TEST_CODE</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -354,7 +354,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\bundles\noos_typical\ING9187xx\symdefs.m</PathWithFileName>
+      <PathWithFileName>../..\bundles\noos_exp\ING9187xx\symdefs.m</PathWithFileName>
       <FilenameWithoutPath>symdefs.m</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -395,7 +395,7 @@
 
   <Group>
     <GroupName>FWlib</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

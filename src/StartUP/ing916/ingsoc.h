@@ -256,6 +256,8 @@ typedef struct
     __IO uint32_t Alarm;                // 0x14
     __IO uint32_t Ctrl;                 // 0x18
     __IO uint32_t St;                   // 0x1c
+    __IO uint32_t Trim;                 // 0x20
+    __IO uint32_t SEC_CFG;              // 0x24
 } RTC_TypeDef;
 
 typedef struct tagDMA_Descriptor

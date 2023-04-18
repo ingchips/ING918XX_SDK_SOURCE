@@ -24,7 +24,6 @@
 #include "app_config.h"
 #include "mesh_port_low_level_init.h"
 #include "mesh_profile.h"
-#include "mesh_manage_conn_and_scan.h"
 #include "mesh_btstack_event.h"
 
 
@@ -133,7 +132,6 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
                             {
                                 case MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER:{                                
                                         // Set Generic On/Off state
-                                        mesh_mcas_on_off_server_control_callback();
                                     }break;
                                 
                                 default:
@@ -157,7 +155,6 @@ static void mesh_state_update_message_handler(uint8_t packet_type, uint16_t chan
                             {
                                 case MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER:{                                
                                         // Set Generic level
-                                        mesh_mcas_on_off_server_control_callback();
                                     }break;
                                 
                                 default:
@@ -290,8 +287,8 @@ void mesh_prov_ll_init(const bt_mesh_prov_t *prov)
     // Set uuid.    
 #ifdef MESH_UUID_USE_FLASH
     uint8_t rand_uuid[16];
-    uint16_t len = sizeof(rand_uuid);
-    mesh_generate_random_uuid(rand_uuid, &len);// generate random uuid and store.
+    uint16_t uuid_len = 16;
+    mesh_generate_random_uuid(rand_uuid, &uuid_len);// generate random uuid and store.
     mesh_node_set_device_uuid(rand_uuid);
 #else
     app_assert(pMesh_prov != NULL);

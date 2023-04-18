@@ -296,7 +296,7 @@ static void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, c
     case GATT_EVENT_CHARACTERISTIC_QUERY_RESULT:
         {
             const gatt_event_characteristic_query_result_t *result = gatt_event_characteristic_query_result_parse(packet);
-            uint16_t con_handle = result->handle;
+            con_handle = result->handle;
             char_node_t *node = (char_node_t *)malloc(sizeof(char_node_t));
             node->next = cur_disc_service->chars;
             cur_disc_service->chars = node;

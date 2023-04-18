@@ -9,9 +9,9 @@
 * @enum platform config
 */
 typedef enum {
-	MESH_CFG_NAME,
-	MESH_CFG_GATT_ADV_ADDR,
-	MESH_CFG_BEACON_ADV_ADDR,
+    MESH_CFG_NAME,
+    MESH_CFG_GATT_ADV_ADDR,
+    MESH_CFG_BEACON_ADV_ADDR,
 } bt_mesh_config_t;
 
 

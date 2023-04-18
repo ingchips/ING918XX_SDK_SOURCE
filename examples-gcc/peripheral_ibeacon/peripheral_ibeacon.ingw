@@ -1,18 +1,18 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133324,
+   "size": 133716,
    "base": 16384
   },
   "ram": {
-   "size": 29980,
+   "size": 29812,
    "base": 536870912
   },
   "app": {
    "base": 155648
   },
   "version": [
-   1,8,6]
+   1,9,16]
  },
  "tc_dir": "C:\\Programs\\gcc-arm-none-eabi-10.3-2021.10\\bin",
  "ide_ver": "",
@@ -50,8 +50,8 @@
   "proxy": true
  },
  "cmsis": "C:\/projects\/ingchips\/ingWizard\/CMSIS",
- "app_ram_size": 35552,
- "app_ram_addr": 536900896,
+ "app_ram_size": 35720,
+ "app_ram_addr": 536900728,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",

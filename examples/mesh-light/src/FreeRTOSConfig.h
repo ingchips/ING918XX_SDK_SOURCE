@@ -114,8 +114,8 @@
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
 
 #define configTIMER_TASK_PRIORITY               1
-#define configTIMER_QUEUE_LENGTH				10
-#define configTIMER_TASK_STACK_DEPTH			configMINIMAL_STACK_SIZE
+#define configTIMER_QUEUE_LENGTH                10
+#define configTIMER_TASK_STACK_DEPTH            configMINIMAL_STACK_SIZE
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES           0
@@ -177,7 +177,7 @@ standard names. */
     } while (0)
 
 #define configPOST_SLEEP_PROCESSING( xExpectedIdleTime )                            \
-   		do {    extern void sysPostSleepProcessing(TickType_t idleTime);            \
+           do {    extern void sysPostSleepProcessing(TickType_t idleTime);            \
                 sysPostSleepProcessing(xModifiableIdleTime);                        \
         } while (0)
 #else

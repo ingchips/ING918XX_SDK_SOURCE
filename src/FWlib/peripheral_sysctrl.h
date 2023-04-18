@@ -97,12 +97,37 @@ uint32_t SYSCTRL_ReadBlockRst(void) ;
 
 typedef enum
 {
-    SYSCTRL_MEM_BLOCK_0 = 0x1,    // block 0 is  8KiB starting from 0x20000000
-    SYSCTRL_MEM_BLOCK_1 = 0x2,    // block 1 is  8KiB following block 0
-    SYSCTRL_MEM_BLOCK_2 = 0x4,    // block 2 is 16KiB following block 1
-    SYSCTRL_MEM_BLOCK_3 = 0x8,    // block 3 is 16KiB following block 2
-    SYSCTRL_MEM_BLOCK_4 = 0x10,   // block 4 is 16KiB following block 3
+    SYSCTRL_MEM_BLOCK_0 = 0x20,     // block 0 is  8KiB starting from 0x20000000
+    SYSCTRL_MEM_BLOCK_1 = 0x40,     // block 1 is  8KiB following block 0
+    SYSCTRL_MEM_BLOCK_2 = 0x80,     // block 2 is 16KiB following block 1
+    SYSCTRL_MEM_BLOCK_3 = 0x100,    // block 3 is 16KiB following block 2
+    SYSCTRL_MEM_BLOCK_4 = 0x200,    // block 4 is 16KiB following block 3
+    SYSCTRL_SHARE_BLOCK_0 = 0x1,    // share memory block 0 is  8KiB starting from 0x400A0000
+    SYSCTRL_SHARE_BLOCK_1 = 0x2,    // share memory block 1 is  8KiB following block 0 (0x400A2000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x4,    // share memory block 2 is 16KiB following block 1
+    SYSCTRL_SHARE_BLOCK_3 = 0x8,    // share memory block 3 is 16KiB following block 2
+    SYSCTRL_SHARE_BLOCK_4 = 0x10,   // share memory block 4 is 16KiB following block 3
 } SYSCTRL_MemBlock;
+
+// these 3 blocks (16 + 8) KiB are reversed in _mini_bundles
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1 | SYSCTRL_SHARE_BLOCK_0)
+
+/**
+ * \brief Get current HClk (same as MCU working clock) in Hz
+ *
+ * Compatible API with ING916's
+ *
+ * \return              clock in Hz
+ */
+#define SYSCTRL_GetHClk()       48000000
+
+#define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
+#define SYSCTRL_WAKEUP_SOURCE_EXT_INT       2       // waken up by EXT_INT
+
+typedef struct
+{
+    uint32_t source;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
+} SYSCTRL_WakeupSource_t;
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
@@ -815,7 +840,7 @@ typedef enum
 } SYSCTRL_AdcVrefOutput;
 
 /**
- * @brief Set LDO output level for RF
+ * @brief Set LDO ADC V1.2 reference (VREF12_ADC) output level
  *
  * @param[in] level         output level
  */
@@ -857,6 +882,54 @@ typedef enum
  */
 void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
 
+/**
+ * @brief Enable BUCK DC-DC
+ *
+ * Default: Enabled.
+ *
+ * @param[in] enable        enable(1)/disable(0)
+ */
+void SYSCTRL_EnableBuckDCDC(uint8_t enable);
+
+/**
+ * @brief Enable PVD interrupt
+ *
+ * Note: BOR of ING916 relies on both PVD (Power Voltage Detector) & PDR (Power Down Reset):
+ *      * If BOR threshold > SYSCTRL_BOR_1V5:
+ *          1) PDR disabled;
+ *          2) PVD is enabled, threshold is configured, and PVD is configured to reset the SoC.
+ *      * If BOR threshold == SYSCTRL_BOR_1V5:
+ *          1) PVD disabled;
+ *          2) PDR is enabled and configured to reset the SoC.
+ *
+ * Effects of PVD & PDR are: either raise an interrupt or reset the SoC.
+ *
+ * This function reconfigures PVD to raise an interrupt.
+ *
+ * @param[in] enable        Enable(1)/disable(0)
+ * @param[in] polarity      Generate interrupt when V-bat becomes lower(0)/higher(1) than `level`
+ * @param[in] level         trigger level (see SYSCTRL_BOR_...)
+ */
+void SYSCTRL_EnablePVDInt(uint8_t enable, uint8_t polarity, uint8_t level);
+
+/**
+ * @brief Clear PVD interrupt state
+ */
+void SYSCTRL_ClearPVDInt(void);
+
+/**
+ * @brief Enable PDR interrupt
+ *
+ * See also `SYSCTRL_EnablePVDInt`.
+ *
+ * @param[in] enable        Enable(1)/disable(0)
+ */
+void SYSCTRL_EnablePDRInt(uint8_t enable);
+
+/**
+ * @brief Clear PDR interrupt state
+ */
+void SYSCTRL_ClearPDRInt(void);
 
 /**
  * @brief Config USB PHY functionality
@@ -889,14 +962,6 @@ typedef struct
 void SYSCTRL_EnableWakeupSourceDetection(void);
 
 /**
- * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
- *
- * @param[out] source           source of the last wake up
- * @return                      1 if any wake up source is found else 0
- */
-uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
-
-/**
  * @brief Enable/Disable p_cap mode for a certain pwm channel
  *
  * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
@@ -906,11 +971,16 @@ void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable);
 
 typedef enum
 {
-    SYSCTRL_MEM_BLOCK_0 = 0x1,    // block 0 is 16KiB starting from 0x20000000
-                                  // This block is always ON, and can't be turned off.
-    SYSCTRL_MEM_BLOCK_1 = 0x2,    // block 1 is 16KiB following block 0
-                                  // Default: ON
+    SYSCTRL_MEM_BLOCK_0 = 0x10,     // block 0 is 16KiB starting from 0x20000000
+                                    // This block is always ON, and can't be turned off.
+    SYSCTRL_MEM_BLOCK_1 = 0x08,     // block 1 is 16KiB following block 0
+    SYSCTRL_SHARE_BLOCK_0 = 0x01,   // share memory block 0 is  8KiB starting from 0x40120000
+    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 0 (0x40122000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 1
 } SYSCTRL_MemBlock;
+
+// this blocks (16 + 8) KiB are reversed in _mini_bundles
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_SHARE_BLOCK_0)
 
 typedef enum
 {
@@ -996,6 +1066,11 @@ void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level);
  *         enable for sleep mode.
  *
  * ING916: `enable_active` and `enable_sleep` should be the same.
+ *         Power consumption is larger when enabled, ~2.x uA.
+ *         When `threshold` is set to 1.5V, a dedicated logic (PDR) is used, only ~0.x uA is
+ *         consumed.
+ *
+ *         See also `SYSCTRL_EnablePVDInt`, `SYSCTRL_EnablePDRInt`.
  *
  * @param[in] threshold         Threshold (available values see `SYSCTRL_BOR_...`)
  *                              default: 0.95V (ING918)
@@ -1015,11 +1090,24 @@ void SYSCTRL_WaitForLDO(void);
 /**
  * @brief Select the set of memory blocks to be used and power off unused blocks.
  *
- * @param[in] block_map         bit combination of `SYSCTRL_MemBlock`
+ * Note: Only allowed to be used in _mini_ bundles (and, for ING918 MCU mode,
+ * i.e. without platform/BLE stack). NEVER use this in other ones.
+ *
+ * All blocks are selected as default.
+ *
+ * @param[in] block_map         combination of `SYSCTRL_MemBlock`
  *                              When a bit is absent from `block_map`, the corresponding
  *                              memory block is powered off.
  */
 void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
+
+/**
+ * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
+ *
+ * @param[out] source           source of the last wake up
+ * @return                      1 if any wake up source is found else 0
+ */
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

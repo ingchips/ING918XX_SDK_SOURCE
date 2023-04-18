@@ -6,10 +6,11 @@
 #include "mesh_port_low_level_init.h"
 #include "board.h"
 #include "mesh_version.h"
-
-#define APP_LOG_INFO_EN
-
+#include "adv_bearer.h"
+#include "mesh_profile.h"
 #include "app_debug.h"
+#include "mesh_debug.h"
+
 
 /*--------------------------------------------------------------------
  *----------------------------> MODEL <-------------------------------
@@ -30,8 +31,10 @@ static bt_mesh_cfg_srv_t cfg_srv = {
     .low_pwr = BT_MESH_LOW_POWER_NOT_SUPPORTED,
     .beacon = BT_MESH_BEACON_DISABLED,
     .default_ttl = 7,
-    .net_transmit = 3,
-    .relay_retransmit = 3,
+
+    /* 3 transmissions with 20ms interval */
+    .net_transmit = BT_MESH_TRANSMIT(3, 100),
+    .relay_retransmit = BT_MESH_TRANSMIT(3, 100),
 
 };
 
@@ -182,12 +185,12 @@ static int input_request(void)
 static void prov_complete(uint16_t net_idx, uint16_t addr)
 {
     app_log_info("provisioning complete for net_idx 0x%04x addr 0x%04x\n",net_idx, addr);
-
 }
 
 static void prov_reset(void)
 {
     app_log_info("====>node reset.\n");
+    platform_reset();
 }
 
 #define BLE_MESH_DEV_UUID ((uint8_t[16]){0xA8, 0x01, 0x61,0x00,0x04,0x20,0x30,0x75,0x9a,0x00,0x09,0xda,0x78,0x00,0x00,0x00})
@@ -252,13 +255,46 @@ static void mesh_provising_init(void){
     mesh_prov_ll_init(&prov);
 }
 
+static void print_addr(char *str, bd_addr_t addr)
+{
+    platform_printf("%s: %02X:%02X:%02X:%02X:%02X:%02X\n", str, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+}
+
+static void mesh_basic_info_print(void){
+    
+    // name
+    uint8_t name[30];
+    uint8_t name_len = sizeof(name);
+    adv_bearer_adv_get_scan_rsp_data(name, &name_len);
+    name[name_len] = '\0';
+    platform_printf("dev name: %s\n", name);
+
+    // uuid
+    uint8_t uuid[16];
+    const uint8_t * pUuid = mesh_node_get_device_uuid();
+    memcpy(uuid, pUuid, 16);
+    platform_printf("mesh uuid: ");
+    printf_hexdump(uuid, sizeof(uuid));
+
+    // addr
+    bd_addr_t gatt_adv_addr;
+    bd_addr_t beacon_adv_addr;
+    mesh_gatt_adv_addr_get(gatt_adv_addr);
+    mesh_beacon_adv_addr_get(beacon_adv_addr);
+    print_addr((char*)"gatt adv addr", gatt_adv_addr);
+    print_addr((char*)"beacon adv addr", beacon_adv_addr);
+}
+
+
 
 void mesh_init(void){
     app_log_info("mesh start.\n");
+    // mesh_trace_config(FLASH_FEA, ALL_LVL);
     mesh_get_ver_info();
     mesh_flash_init();
     mesh_platform_init();
     mesh_stack_init(&mesh_elements_init);
     mesh_provising_init();
+    mesh_basic_info_print();
 }
 

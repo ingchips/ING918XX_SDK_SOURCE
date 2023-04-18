@@ -22,6 +22,8 @@
 #include "timers.h"
 #include "log_util.h"
 
+#include "bluetooth_hci.h"
+
 #define INVALID_HANDLE      (0xffff)
 const uint8_t UUID_TPT[]            = {0x24,0x45,0x31,0x4a,0xa1,0xd4,0x48,0x74,0xb4,0xd1,0xfd,0xfb,0x6f,0x50,0x14,0x85};
 const uint8_t UUID_CHAR_GEN_IN[]    = {0xbf,0x83,0xf3,0xf1,0x39,0x9a,0x41,0x4d,0x90,0x35,0xce,0x64,0xce,0xb3,0xff,0x67};
@@ -506,10 +508,6 @@ static initiating_phy_config_t phy_configs[] =
 bd_addr_t rand_addr = {0xC0, 0x00, 0x00, 0x11, 0x11, 0x11};
 bd_addr_t peer_addr;
 
-#define OGF_STATUS_PARAMETERS       0x05
-#define OPCODE(ogf, ocf)            (ocf | ogf << 10)
-#define OPCODE_READ_RSSI            OPCODE(OGF_STATUS_PARAMETERS, 0x05)
-
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -592,7 +590,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_COMMAND_COMPLETE:
         {
-            if (hci_event_command_complete_get_command_opcode(packet) == OPCODE_READ_RSSI)
+            if (hci_event_command_complete_get_command_opcode(packet) == HCI_RD_RSSI_CMD_OPCODE)
             {
                 const event_command_complete_return_param_read_rssi_t *cmpl =
                     (const event_command_complete_return_param_read_rssi_t *)hci_event_command_complete_get_return_parameters(packet);

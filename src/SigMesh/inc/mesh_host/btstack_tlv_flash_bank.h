@@ -17,11 +17,11 @@ extern "C" {
 #endif
 
 typedef struct {
-	const hal_flash_bank_t * hal_flash_bank_impl;
-	void * hal_flash_bank_context;
-	int current_bank;
-	int write_offset;
-	int delete_tag_len;
+    const hal_flash_bank_t * hal_flash_bank_impl;
+    void * hal_flash_bank_context;
+    int current_bank;
+    int write_offset;
+    int delete_tag_len;
 } btstack_tlv_flash_bank_t;
 
 /**

@@ -226,13 +226,11 @@ __asm void prvStartFirstTask( void )
 {
 	PRESERVE8
 
-	/* Use the NVIC offset register to locate the stack. */
-	ldr r0, =0xE000ED08
-	ldr r0, [r0]
-	ldr r0, [r0]
-
 	/* Set the msp back to the start of the stack. */
+	extern __initial_sp
+	ldr r0, =__initial_sp
 	msr msp, r0
+
 	/* Globally enable interrupts. */
 	cpsie i
 	cpsie f
@@ -523,13 +521,13 @@ void xPortSysTickHandler( void )
 			__disable_irq();
 			__dsb( portSY_FULL_READ_WRITE );
 			__isb( portSY_FULL_READ_WRITE );
-			
-			/* Disable the SysTick clock without reading the 
+
+			/* Disable the SysTick clock without reading the
 			portNVIC_SYSTICK_CTRL_REG register to ensure the
-			portNVIC_SYSTICK_COUNT_FLAG_BIT is not cleared if it is set.  Again, 
-			the time the SysTick is stopped for is accounted for as best it can 
-			be, but using the tickless mode will inevitably result in some tiny 
-			drift of the time maintained by the kernel with respect to calendar 
+			portNVIC_SYSTICK_COUNT_FLAG_BIT is not cleared if it is set.  Again,
+			the time the SysTick is stopped for is accounted for as best it can
+			be, but using the tickless mode will inevitably result in some tiny
+			drift of the time maintained by the kernel with respect to calendar
 			time*/
 			portNVIC_SYSTICK_CTRL_REG = ( portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT );
 

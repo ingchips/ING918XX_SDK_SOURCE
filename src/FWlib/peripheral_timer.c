@@ -137,18 +137,23 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value)
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 {
     pTMR->ChEn &= ~(0xf << (ch_id * 4));
-    pTMR->ChEn |= mask << (ch_id * 4);
+    pTMR->ChEn |= (mask & 0xf) << (ch_id * 4);
 }
 
 void TMR_IntEnable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 {
     pTMR->IntEn &= ~(0xf << (ch_id * 4));
-    pTMR->IntEn |= mask << (ch_id * 4);
+    pTMR->IntEn |= (mask & 0xf) << (ch_id * 4);
+}
+
+uint32_t TMR_GetCNT(TMR_TypeDef *pTMR, uint8_t ch_id)
+{
+    return pTMR->Channels[ch_id].Counter;
 }
 
 uint32_t TMR_GetCMP(TMR_TypeDef *pTMR, uint8_t ch_id)
 {
-    return pTMR->Channels[ch_id].Counter;
+    return pTMR->Channels[ch_id].Reload;
 }
 
 void TMR_IntClr(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
@@ -161,41 +166,22 @@ uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id)
     return (pTMR->IntStatus >> (ch_id * 4)) & 0xf;
 }
 
+void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable)
+{
+    uint8_t bit_offset = pTMR == APB_TMR0 ? 3 :
+                            pTMR == APB_TMR1 ? 4 : 5;
+    volatile uint32_t * reg = (volatile uint32_t *)(APB_SYSCTRL_BASE + 0x28);
+    uint32_t mask = 1 << bit_offset;
+
+    *reg = (*reg & ~mask) | (enable << bit_offset);
+}
+
 #define WDT_UNLOCK()    APB_WDT->WrEn = 0x5aa5
 
-void TMR_WatchDogEnable3(uint32_t int_timeout_ms, uint32_t reset_timeout_ms, uint8_t enable_int)
+void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interval_t rst_timeout, uint8_t enable_int)
 {
-    uint32_t inttime = 15;
-    uint32_t rsttime = 7;
-
-    if (int_timeout_ms <= 2) inttime = 0;
-    else if (int_timeout_ms <= 8) inttime = 1;
-    else if (int_timeout_ms <= 32) inttime = 2;
-    else if (int_timeout_ms <= 63) inttime = 3;
-    else if (int_timeout_ms <= 125) inttime = 4;
-    else if (int_timeout_ms <= 250) inttime = 5;
-    else if (int_timeout_ms <= 500) inttime = 6;
-    else if (int_timeout_ms <= 1000) inttime = 7;
-    else if (int_timeout_ms <= 4000) inttime = 8;
-    else if (int_timeout_ms <= 16000) inttime = 9;
-    else if (int_timeout_ms <= 64000) inttime = 10;
-    else if (int_timeout_ms <= 256000) inttime = 11;
-    else if (int_timeout_ms <= 1024000) inttime = 12;
-    else if (int_timeout_ms <= 4096000) inttime = 13;
-    else if (int_timeout_ms <= 16384000) inttime = 14;
-    else;
-
-    if (reset_timeout_ms <= 4) rsttime = 0;
-    else if (reset_timeout_ms <= 8) rsttime = 1;
-    else if (reset_timeout_ms <= 16) rsttime = 2;
-    else if (reset_timeout_ms <= 32) rsttime = 3;
-    else if (reset_timeout_ms <= 63) rsttime = 4;
-    else if (reset_timeout_ms <= 125) rsttime = 5;
-    else if (reset_timeout_ms <= 250) rsttime = 6;
-    else;
-
     WDT_UNLOCK();
-    APB_WDT->Ctrl = (rsttime << 8) | (inttime << 4) | (enable_int ? 0xd : 0x9);
+    APB_WDT->Ctrl = (rst_timeout << 8) | (int_timeout << 4) | (enable_int ? 0xd : 0x9);
 
     #define AON1_BOOT   (volatile uint32_t *)(AON1_CTRL_BASE + 0x14)
     *AON1_BOOT |= 1u << 28;
