@@ -143,7 +143,7 @@ pcm_sample_t fir_push_run(fir_t *fir, pcm_sample_t x)
 
 void audio_start(void)
 {
-    LOG_PRINTF(LOG_LEVEL_INFO,"[%x] %s函数调用:启动/重启音频输入",audio_t.audio_dev_start, __func__); 
+    LOG_PRINTF(LOG_LEVEL_INFO,"函数调用:启动/重启音频输入."); 
     sample_buf_index = 0;
     sample_index = 0;
 #if (AUDIO_CODEC_ALGORITHM == AUDIO_CODEC_ALGORITHM_ADPCM)
@@ -156,7 +156,7 @@ void audio_start(void)
 
 void audio_stop(void)
 {
-    LOG_PRINTF(LOG_LEVEL_INFO,"%s函数调用: 停止音频输入",__func__); 
+    LOG_PRINTF(LOG_LEVEL_INFO,"函数调用: 停止音频输入."); 
     xQueueReset(xSampleQueue);
     audio_input_stop();
 }
@@ -201,11 +201,10 @@ static void audio_sbc_task(void *pdata)
 
     //获取编码一个frame所需的原始数据量
     codesize = sbc_get_codesize(&sbc);
-    LOG_PRINTF(LOG_LEVEL_INFO,"codesize = %d\r\n", codesize); 
-
     //一帧编码后的数据长度
     framelen = sbc_get_frame_length(&sbc);
-    LOG_PRINTF(LOG_LEVEL_INFO,"framelen = %d\r\n",framelen); 
+
+    LOG_PRINTF(LOG_LEVEL_INFO,"codesize = %d framelen = %d\r\n", codesize, framelen); 
 
     sbc_sample_t *inp, *outp;
     outp = malloc(framelen * sizeof(sbc_sample_t));
@@ -220,11 +219,10 @@ static void audio_sbc_task(void *pdata)
         int16_t index;
         int i;
 
-        //若此次无数据，则进入下一次循环
         if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
             continue;
         if (xQueueIsQueueFullFromISR(xSampleQueue) != pdFALSE)
-            LOG_PRINTF(LOG_LEVEL_INFO,"Full\r\n");
+            LOG_PRINTF(LOG_LEVEL_ERROR,"xSampleQueue is Full.");
         
         inp = (sbc_sample_t *)(sample_buf[index]);    //获取单行数首地址        
         
@@ -326,6 +324,34 @@ int create_input_data_buff(int row, int column, pcm_sample_t **buff)
 	return 0;
 }
 
+#if defined(KB_TEST)
+#define CTRL_KEY    GIO_GPIO_6
+
+uint32_t gpio_isr(void *user_data)
+{
+    uint32_t current = ~GIO_ReadAll();
+
+    // report which keys are pressed
+    if (current & (1 << CTRL_KEY))
+    {
+        static int last = 0;
+
+        if (last)
+        {
+            audio_input_stop();
+            last = 0;
+        }
+        else
+        {
+            audio_input_start();
+            last = 1;
+        }
+    }
+    
+    GIO_ClearAllIntStatus();
+    return 0;
+}
+#endif
 
 static void enc_state_init(audio_enc_t *audio);
 static void audio_task_register();
@@ -334,9 +360,7 @@ void audio_init(void)
 {
     //结构体初始化
     enc_state_init(&audio_t);
-    LOG_PRINTF(LOG_LEVEL_INFO,"编码器状态初始化.");
-    // LOG(LOG_LEVEL_INFO,"编码器状态初始化.");
-    // platform_printf("\n[INFO] \r\n");
+    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"编码器状态初始化.");
     
     //创建音频输ru数组
     //create_input_data_buff(audio_t.sample_buf_num, audio_t.sample_buf_size, sample_buf);
@@ -347,8 +371,7 @@ void audio_init(void)
 
     //注册task函数
     audio_task_register();
-
-    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"[INFO] 音频任务函数注册.");
+    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"音频任务函数注册.");
 
     xSampleQueue = xQueueCreateStatic(QUEUE_LENGTH,
                                  ITEM_SIZE,
@@ -362,7 +385,14 @@ void audio_init(void)
                NULL);
     
     audio_input_setup();
-    LOG_PRINTF(LOG_LEVEL_INFO,"初始化配置.");
+    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"初始化配置.");
+#if defined(KB_TEST)
+    PINCTRL_SetPadMux(CTRL_KEY, IO_SOURCE_GENERAL);
+    GIO_SetDirection(CTRL_KEY, GIO_DIR_INPUT);
+    GIO_ConfigIntSource(CTRL_KEY, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE,
+                        GIO_INT_EDGE);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
+#endif
 }
 
 static void enc_state_init(audio_enc_t *audio)
@@ -377,10 +407,10 @@ static void enc_state_init(audio_enc_t *audio)
     audio->voice_buf_block_size = adpcm_priv.voice_buf_block_size;
     audio->sample_buf_num = adpcm_priv.sample_buf_num;
     audio->sample_buf_size = adpcm_priv.sample_buf_size;
-    LOG_PRINTF(LOG_LEVEL_INFO,"block_num=[%d]  block_size=[%d]\r\nbuf_num=[%d]  buf_size=[%d]",audio->voice_buf_block_num, 
+    LOG_PRINTF(LOG_LEVEL_INFO,"block_num=[%d] block_size=[%d] buf_num=[%d] buf_size=[%d]",audio->voice_buf_block_num, 
                                     audio->voice_buf_block_size, audio->sample_buf_num, audio->sample_buf_size);
 #elif (AUDIO_CODEC_ALGORITHM == AUDIO_CODEC_ALGORITHM_SBC)
-    LOG_PRINTF(LOG_LEVEL_INFO,"编码器选择-->SBC");
+    LOG_PRINTF(LOG_LEVEL_INFO,"Encoder select 'SBC'");
     sbc_init(&sbc, 0L);
     sbc_priv.voice_buf_block_size = sbc_get_frame_length(&sbc);
     sbc_priv.voice_buf_block_num = 4100 / sbc_priv.voice_buf_block_size;

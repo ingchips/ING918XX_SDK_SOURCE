@@ -168,7 +168,10 @@ int app_main()
 
     LOG_PRINTF(LOG_LEVEL_INFO,"Initializing audio device...");
     audio_init();
-    LOG_PRINTF(LOG_LEVEL_INFO,"Device started successfully.");
+    LOG_PRINTF(LOG_LEVEL_INFO,"Device started successfully.\n");
+#if defined(KB_TEST)
+    LOG_PRINTF(LOG_LEVEL_INFO,"Press [KEY1] to turn  on or off.");
+#endif
     printf("--------------------------------------------------\n");
 #if (BOARD == BOARD_REM)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER2, kb_scan_isr, NULL);
