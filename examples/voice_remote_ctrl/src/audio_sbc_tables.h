@@ -1,12 +1,16 @@
+#ifndef _AUDIO_SBC_TABLES_H_
+#define _AUDIO_SBC_TABLES_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
+#include "audio_sbc_math.h"
 
 #define SBC_ALIGN_BITS 4
 #define SBC_ALIGN_MASK ((1 << (SBC_ALIGN_BITS)) - 1)
-
-#ifdef __GNUC__
-#define SBC_ALIGNED __attribute__((aligned(1 << (SBC_ALIGN_BITS))))
-#endif
 
 /* A2DP specification: Appendix B, page 69 */
 static const int sbc_offset4[4][4] = {
@@ -107,3 +111,9 @@ static const int32_t _anamatrix8[8] = {
 	SA8(0x3b20d780), SA8(0x187de2a0), SA8(0x3ec52f80), SA8(0x3536cc40),
 	SA8(0x238e7680), SA8(0x0c7c5c20), SA8(0x2d413cc0), SA8(0x40000000)
 };
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _SBC_H_ */

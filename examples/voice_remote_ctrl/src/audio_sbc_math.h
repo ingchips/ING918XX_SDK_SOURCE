@@ -1,4 +1,41 @@
+#ifndef _AUDIO_SBC_MATH_H_
+#define _AUDIO_SBC_MATH_H_
+
+
+
 #include <stdint.h>
+
+#define SBC_SYNCWORD	0x9C
+
+#define MSBC_SYNCWORD	0xAD
+#define MSBC_BLOCKS	15
+
+#define A2DP_SAMPLING_FREQ_16000		(1 << 3)
+#define A2DP_SAMPLING_FREQ_32000		(1 << 2)
+#define A2DP_SAMPLING_FREQ_44100		(1 << 1)
+#define A2DP_SAMPLING_FREQ_48000		(1 << 0)
+
+#define A2DP_CHANNEL_MODE_MONO			(1 << 3)
+#define A2DP_CHANNEL_MODE_DUAL_CHANNEL		(1 << 2)
+#define A2DP_CHANNEL_MODE_STEREO		(1 << 1)
+#define A2DP_CHANNEL_MODE_JOINT_STEREO		(1 << 0)
+
+#define A2DP_BLOCK_LENGTH_4			(1 << 3)
+#define A2DP_BLOCK_LENGTH_8			(1 << 2)
+#define A2DP_BLOCK_LENGTH_12			(1 << 1)
+#define A2DP_BLOCK_LENGTH_16			(1 << 0)
+
+#define A2DP_SUBBANDS_4				(1 << 1)
+#define A2DP_SUBBANDS_8				(1 << 0)
+
+#define A2DP_ALLOCATION_SNR			(1 << 1)
+#define A2DP_ALLOCATION_LOUDNESS		(1 << 0)
+
+#define SCALE_OUT_BITS 15
+
+#define EIO 5
+#define ENOSPC 28
+
 #define fabs(x) ((x) < 0 ? -(x) : (x))
 /* C does not provide an explicit arithmetic shift right but this will
    always be correct and every compiler *should* generate optimal code */
@@ -53,3 +90,6 @@ typedef int32_t sbc_fixed_t;
 #define SBC_EXPORT __attribute__ ((visibility("default")))
 #define FMT_EXPORT __attribute__ ((visibility("default")))
 #endif
+
+
+#endif // _AUDIO_SBC_MATH_H_

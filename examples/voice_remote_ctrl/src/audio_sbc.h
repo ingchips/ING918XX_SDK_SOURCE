@@ -1,23 +1,11 @@
-#ifndef __SBC_H
-#define __SBC_H
+#ifndef _SBC_H_
+#define _SBC_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
-//#include <sys/types.h>
-// #if defined(_MSC_VER)
-// #define  __declspec(dllexport)
-// #else
-// #define  __attribute__ ((visibility("default")))
-// #endif
-
-// #ifdef __GNUC__
-// #define SBC_ALWAYS_INLINE inline __attribute__((always_inline))
-// #else
-// #define SBC_ALWAYS_INLINE inline
-// #endif
 
 typedef int8_t sbc_sample_t;
 
@@ -74,8 +62,12 @@ int sbc_init(sbc_t *sbc, unsigned long flags);
 int sbc_reinit(sbc_t *sbc, unsigned long flags);
 
 /* Encodes ONE input block into ONE output block */
-int sbc_encode(sbc_t *sbc, void *input, int input_len,
-			void *output, int output_len, int *written);
+int sbc_encode(sbc_t *sbc, 
+			   void *input, 
+			   int input_len,
+			   void *output, 
+			   int output_len, 
+			   int *written);
 
 /* Returns the compressed block size in bytes */
 int sbc_get_frame_length(sbc_t *sbc);
@@ -91,7 +83,7 @@ void sbc_finish(sbc_t *sbc);
 }
 #endif
 
-#endif /* __SBC_H */
+#endif // _SBC_H_
 
 
  

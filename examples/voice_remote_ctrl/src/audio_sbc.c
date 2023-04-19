@@ -17,102 +17,22 @@
 #include "platform_api.h"
 
 #include "audio_sbc.h"
-#include "audio_sbc_math.h"
 #include "audio_sbc_tables.h"
-
-
-#define SBC_SYNCWORD	0x9C
-
-#define MSBC_SYNCWORD	0xAD
-#define MSBC_BLOCKS	15
-
-#define A2DP_SAMPLING_FREQ_16000		(1 << 3)
-#define A2DP_SAMPLING_FREQ_32000		(1 << 2)
-#define A2DP_SAMPLING_FREQ_44100		(1 << 1)
-#define A2DP_SAMPLING_FREQ_48000		(1 << 0)
-
-#define A2DP_CHANNEL_MODE_MONO			(1 << 3)
-#define A2DP_CHANNEL_MODE_DUAL_CHANNEL		(1 << 2)
-#define A2DP_CHANNEL_MODE_STEREO		(1 << 1)
-#define A2DP_CHANNEL_MODE_JOINT_STEREO		(1 << 0)
-
-#define A2DP_BLOCK_LENGTH_4			(1 << 3)
-#define A2DP_BLOCK_LENGTH_8			(1 << 2)
-#define A2DP_BLOCK_LENGTH_12			(1 << 1)
-#define A2DP_BLOCK_LENGTH_16			(1 << 0)
-
-#define A2DP_SUBBANDS_4				(1 << 1)
-#define A2DP_SUBBANDS_8				(1 << 0)
-
-#define A2DP_ALLOCATION_SNR			(1 << 1)
-#define A2DP_ALLOCATION_LOUDNESS		(1 << 0)
-
-#define SCALE_OUT_BITS 15
-
-#define EIO 5
-#define ENOSPC 28
-
-/* This structure contains an unpacked SBC frame.
-   Yes, there is probably quite some unused space herein */
-struct sbc_frame {
-	uint8_t frequency;
-	uint8_t block_mode;
-	uint8_t blocks;
-	enum {
-		MONO		= SBC_MODE_MONO,
-		DUAL_CHANNEL	= SBC_MODE_DUAL_CHANNEL,
-		STEREO		= SBC_MODE_STEREO,
-		JOINT_STEREO	= SBC_MODE_JOINT_STEREO
-	} mode;
-	uint8_t channels;
-	enum {
-		LOUDNESS	= SBC_AM_LOUDNESS,
-		SNR		= SBC_AM_SNR
-	} allocation;
-	uint8_t subband_mode;
-	uint8_t subbands;
-	uint8_t bitpool;
-	uint16_t codesize;
-	uint16_t length;
-	//计数
-	uint16_t frame_count;
-
-	/* bit number x set means joint stereo has been used in subband x */
-	uint8_t joint;
-
-	/* only the lower 4 bits of every element are to be used */
-	uint32_t scale_factor[2][8];
-
-	/* raw integer subband samples in the frame */
-	int32_t sb_sample_f[16][2][8];
-
-	/* modified subband samples */
-	int32_t sb_sample[16][2][8];
-
-	/* original pcm audio samples */
-	int16_t pcm_sample[2][16*8];
-};
-
-struct sbc_encoder_state {
-	int subbands;
-	int position[2];
-	int32_t X[2][160];
-};
-
-
-struct sbc_decoder_state {
-	int subbands;
-	int32_t  V[2][170];
-	int offset[2][16];
-};
-
+#include "audio_sbc_types.h"
 
 static void __sbc_analyze_four(const int32_t *in, int32_t *out);
+
 static void __sbc_analyze_eight(const int32_t *in, int32_t *out);
-static void sbc_analyze_four(struct sbc_encoder_state *state,
-				struct sbc_frame *frame, int ch, int blk);
-static void sbc_analyze_eight(struct sbc_encoder_state *state,
-				struct sbc_frame *frame, int ch, int blk);
+
+static void sbc_analyze_four(sbc_encoder_state *state,
+							 sbc_frame *frame, 
+							 int ch, 
+							 int blk);
+
+static void sbc_analyze_eight(sbc_encoder_state *state,
+							  sbc_frame *frame, 
+							  int ch, 
+							  int blk);
 
 
 /*
@@ -179,8 +99,9 @@ static uint8_t sbc_crc8(const uint8_t *data, int len)
  * Takes a pointer to the frame in question, a pointer to the bits array and
  * the sampling frequency (as 2 bit integer)
  */
-static void sbc_calculate_bits_internal(
-		const struct sbc_frame *frame, int (*bits)[8], int subbands)
+static void sbc_calculate_bits_internal(const sbc_frame *frame, 
+										int (*bits)[8], 
+										int subbands)
 {
 	uint8_t sf = frame->frequency;
 
@@ -376,9 +297,8 @@ static void sbc_calculate_bits_internal(
 
 }
 
-static void sbc_calculate_bits(const struct sbc_frame *frame, int (*bits)[8])
+static void sbc_calculate_bits(const sbc_frame *frame, int (*bits)[8])
 {
-		// printf("eeeeeeeeeee\r\n");
 	if (frame->subbands == 4)
 		sbc_calculate_bits_internal(frame, bits, 4);
 	else
@@ -394,7 +314,6 @@ static  int16_t sbc_clip16(int32_t s)
 	else
 		return s;
 }
-
 
 static void pritnf_alignment_hex(uint32_t sample)
 {
@@ -429,8 +348,7 @@ static void pritnf_alignment_16hex(uint16_t sample)
 }
 
 
-static void printf_samples(struct sbc_encoder_state *state,
-						struct sbc_frame *frame)
+static void printf_samples(sbc_encoder_state *state, sbc_frame *frame)
 {
 	int blk, ch, sb;
 	printf("*************************NO.%d******************************\r\n", ++frame->frame_count);
@@ -458,10 +376,7 @@ static void printf_samples(struct sbc_encoder_state *state,
 	printf("\r\n");
 }
 
-
-//针对encoder
-static int sbc_analyze_audio(struct sbc_encoder_state *state,
-						struct sbc_frame *frame)
+static int sbc_analyze_audio(sbc_encoder_state *state, sbc_frame *frame)
 {
 	int ch, blk;
 
@@ -532,9 +447,11 @@ static int sbc_analyze_audio(struct sbc_encoder_state *state,
  */
 
 static  int sbc_pack_frame_internal(uint8_t *data,
-					struct sbc_frame *frame, int len,
-					int frame_subbands, int frame_channels,
-					int joint)
+									sbc_frame *frame, 
+									int len,
+									int frame_subbands, 
+									int frame_channels,
+									int joint)
 {
 	/* Bitstream writer starts from the fourth byte */
 	//
@@ -654,7 +571,7 @@ static  int sbc_pack_frame_internal(uint8_t *data,
 
 
 //SBC编码数据组帧
-static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len)
+static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 {
 	int produced;
 	/* Will copy the header parts for CRC-8 calculation here */
@@ -862,8 +779,7 @@ static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len)
 }
 
 
-static void sbc_encoder_init(struct sbc_encoder_state *state,
-						const struct sbc_frame *frame)
+static void sbc_encoder_init(sbc_encoder_state *state, const sbc_frame *frame)
 {
 	memset(&state->X, 0, sizeof(state->X));
 	state->subbands = frame->subbands;
@@ -872,8 +788,8 @@ static void sbc_encoder_init(struct sbc_encoder_state *state,
 
 struct sbc_priv {
 	bool init;
-	struct sbc_frame frame;
-	struct sbc_encoder_state enc_state;
+	sbc_frame frame;
+	sbc_encoder_state enc_state;
 };
 
 static void sbc_set_defaults(sbc_t *sbc, unsigned long flags)
@@ -918,8 +834,10 @@ int sbc_init(sbc_t *sbc, unsigned long flags)
 	return 0;
 }
 
-static inline void sbc_analyze_four(struct sbc_encoder_state *state,
-				struct sbc_frame *frame, int ch, int blk)
+static inline void sbc_analyze_four(sbc_encoder_state *state,
+									sbc_frame *frame, 
+									int ch, 
+									int blk)
 {
 	int32_t *x = &state->X[ch][state->position[ch]];
 	int16_t *pcm = &frame->pcm_sample[ch][blk * 4];
@@ -937,9 +855,10 @@ static inline void sbc_analyze_four(struct sbc_encoder_state *state,
 		state->position[ch] = 36;
 }
 
-void sbc_analyze_eight(struct sbc_encoder_state *state,
-					struct sbc_frame *frame, int ch,
-					int blk)
+void sbc_analyze_eight(sbc_encoder_state *state,
+					   sbc_frame *frame, 
+		   			   int ch,
+		   			   int blk)
 {
 	int32_t *x = &state->X[ch][state->position[ch]];
 	int16_t *pcm = &frame->pcm_sample[ch][blk * 8];
@@ -979,20 +898,20 @@ static inline int sbc_clz(uint32_t x)
 #endif
 }
 
-
-static void sbc_calc_scalefactors(
-	int32_t sb_sample_f[16][2][8],
-	uint32_t scale_factor[2][8],
-	int blocks, int channels, int subbands)
+static void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
+								  uint32_t scale_factor[2][8],
+								  int blocks, 
+								  int channels, 
+								  int subbands)
 {
 	int ch, sb, blk;
 	for (ch = 0; ch < channels; ch++) {
 		for (sb = 0; sb < subbands; sb++) {
 			uint32_t x = 1 << SCALE_OUT_BITS;
 			for (blk = 0; blk < blocks; blk++) {
-				int32_t tmp = fabs(sb_sample_f[blk][ch][sb]);//绝对值
+				int32_t tmp = fabs(sb_sample_f[blk][ch][sb]);
 				if (tmp != 0)
-					x |= tmp - 1; //或运算
+					x |= tmp - 1;
 			}
 			scale_factor[ch][sb] = (31 - SCALE_OUT_BITS) -
 				sbc_clz(x);
@@ -1000,10 +919,12 @@ static void sbc_calc_scalefactors(
 	}
 }
 
-
-
-int sbc_encode(sbc_t *sbc, void *input, int input_len,
-			void *output, int output_len, int *written)
+int sbc_encode(sbc_t *sbc, 
+			   void *input, 
+			   int input_len,
+			   void *output, 
+			   int output_len, 
+			   int *written)
 {
 	struct sbc_priv *priv;
 	int samples, ch;
@@ -1015,7 +936,6 @@ int sbc_encode(sbc_t *sbc, void *input, int input_len,
 
 	priv = sbc->priv;
 
-	//指针清零
 	if (written)
 		*written = 0;
 
@@ -1031,17 +951,10 @@ int sbc_encode(sbc_t *sbc, void *input, int input_len,
 		priv->frame.block_mode = sbc->blocks;
 		priv->frame.blocks = 4 + (sbc->blocks * 4);
 		priv->frame.bitpool = sbc->bitpool;
-		//帧计数初始化
 		priv->frame.frame_count = 0;
-		//计算subband * blocks * channels * 2
-		//输入编码数据的长度
 		priv->frame.codesize = sbc_get_codesize(sbc);
-		//计算输出SBC完整数据帧长度
 		priv->frame.length = sbc_get_frame_length(sbc);
-
-		//初始化编码器
 		sbc_encoder_init(&priv->enc_state, &priv->frame);
-		//初始化标志位
 		priv->init = true;
 	} else if (priv->frame.bitpool != sbc->bitpool) {
 		//参考A2DP协议的12.9节
@@ -1084,7 +997,6 @@ int sbc_encode(sbc_t *sbc, void *input, int input_len,
 	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
 	//samples = 64;
 
-
 	//如果是sbc编码而非msbc
 	//priv->pack_frame指的是
 	//static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len,
@@ -1124,7 +1036,7 @@ int sbc_get_frame_length(sbc_t *sbc)
 	struct sbc_priv *priv;
 
 	priv = sbc->priv;
-	//若完成初始化，则相关的参数都存在priv->frame对应的结构体中
+
 	if (priv->init && priv->frame.bitpool == sbc->bitpool)
 		return priv->frame.length;
 
@@ -1137,10 +1049,10 @@ int sbc_get_frame_length(sbc_t *sbc)
 	ret = 4 + (4 * subbands * channels) / 8;
 	/* This term is not always evenly divide so we round it up */
 	if (channels == 1 || sbc->mode == SBC_MODE_DUAL_CHANNEL)
-		//如果是MONO或者DUAL_CHANNEL
+		//''MONO' or 'DUAL_CHANNEL'
 		ret += ((blocks * channels * bitpool) + 7) / 8;
 	else
-		//如果是STEREO或者JOINT STEREO
+		//'STEREO' or 'JOINT STEREO'
 		ret += (((joint ? subbands : 0) + blocks * bitpool) + 7) / 8;
 
 	return ret;
@@ -1150,15 +1062,14 @@ int sbc_get_codesize(sbc_t *sbc)
 {
 	uint16_t subbands, channels, blocks;
 	struct sbc_priv *priv;
-
+	
 	priv = sbc->priv;
-	//若未初始化
+
 	if (!priv->init) {
 		subbands = sbc->subbands ? 8 : 4;
         blocks = 4 + (sbc->blocks * 4);
 		channels = sbc->mode == SBC_MODE_MONO ? 1 : 2;
 	} else {
-		//已完成初始化
 		subbands = priv->frame.subbands;
 		blocks = priv->frame.blocks;
 		channels = priv->frame.channels;
@@ -1184,64 +1095,54 @@ int sbc_reinit(sbc_t *sbc, unsigned long flags)
 	return 0;
 }
 
-
 static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 {
 	sbc_fixed_t t[8], s[5];
 
-	t[0] = SCALE4_STAGE1( /* Q8 */
-		MULA(_sbc_proto_4[0], in[8] - in[32], /* Q18 */
-		MUL( _sbc_proto_4[1], in[16] - in[24])));
+	t[0] = SCALE4_STAGE1(MULA(_sbc_proto_4[0], in[8] - in[32],
+						 MUL( _sbc_proto_4[1], in[16] - in[24])));
 
-	t[1] = SCALE4_STAGE1(
-		MULA(_sbc_proto_4[2], in[1],
-		MULA(_sbc_proto_4[3], in[9],
-		MULA(_sbc_proto_4[4], in[17],
-		MULA(_sbc_proto_4[5], in[25],
-		MUL( _sbc_proto_4[6], in[33]))))));
+	t[1] = SCALE4_STAGE1(MULA(_sbc_proto_4[2], in[1],
+						 MULA(_sbc_proto_4[3], in[9],
+						 MULA(_sbc_proto_4[4], in[17],
+						 MULA(_sbc_proto_4[5], in[25],
+						 MUL( _sbc_proto_4[6], in[33]))))));
 
-	t[2] = SCALE4_STAGE1(
-		MULA(_sbc_proto_4[7], in[2],
-		MULA(_sbc_proto_4[8], in[10],
-		MULA(_sbc_proto_4[9], in[18],
-		MULA(_sbc_proto_4[10], in[26],
-		MUL( _sbc_proto_4[11], in[34]))))));
+	t[2] = SCALE4_STAGE1(MULA(_sbc_proto_4[7], in[2],
+						 MULA(_sbc_proto_4[8], in[10],
+						 MULA(_sbc_proto_4[9], in[18],
+						 MULA(_sbc_proto_4[10], in[26],
+						 MUL( _sbc_proto_4[11], in[34]))))));
 
-	t[3] = SCALE4_STAGE1(
-		MULA(_sbc_proto_4[12], in[3],
-		MULA(_sbc_proto_4[13], in[11],
-		MULA(_sbc_proto_4[14], in[19],
-		MULA(_sbc_proto_4[15], in[27],
-		MUL( _sbc_proto_4[16], in[35]))))));
+	t[3] = SCALE4_STAGE1(MULA(_sbc_proto_4[12], in[3],
+						 MULA(_sbc_proto_4[13], in[11],
+						 MULA(_sbc_proto_4[14], in[19],
+						 MULA(_sbc_proto_4[15], in[27],
+						 MUL( _sbc_proto_4[16], in[35]))))));
 
-	t[4] = SCALE4_STAGE1(
-		MULA(_sbc_proto_4[17], in[4] + in[36],
-		MULA(_sbc_proto_4[18], in[12] + in[28],
-		MUL( _sbc_proto_4[19], in[20]))));
+	t[4] = SCALE4_STAGE1(MULA(_sbc_proto_4[17], in[4] + in[36],
+						 MULA(_sbc_proto_4[18], in[12] + in[28],
+						 MUL( _sbc_proto_4[19], in[20]))));
 
-	t[5] = SCALE4_STAGE1(
-		MULA(_sbc_proto_4[16], in[5],
-		MULA(_sbc_proto_4[15], in[13],
-		MULA(_sbc_proto_4[14], in[21],
-		MULA(_sbc_proto_4[13], in[29],
-		MUL( _sbc_proto_4[12], in[37]))))));
+	t[5] = SCALE4_STAGE1(MULA(_sbc_proto_4[16], in[5],
+						 MULA(_sbc_proto_4[15], in[13],
+						 MULA(_sbc_proto_4[14], in[21],
+						 MULA(_sbc_proto_4[13], in[29],
+						 MUL( _sbc_proto_4[12], in[37]))))));
 
 	/* don't compute t[6]... this term always multiplies
 	 * with cos(pi/2) = 0 */
 
-	t[7] = SCALE4_STAGE1(
-		MULA(_sbc_proto_4[6], in[7],
-		MULA(_sbc_proto_4[5], in[15],
-		MULA(_sbc_proto_4[4], in[23],
-		MULA(_sbc_proto_4[3], in[31],
-		MUL( _sbc_proto_4[2], in[39]))))));
+	t[7] = SCALE4_STAGE1(MULA(_sbc_proto_4[6], in[7],
+						 MULA(_sbc_proto_4[5], in[15],
+						 MULA(_sbc_proto_4[4], in[23],
+						 MULA(_sbc_proto_4[3], in[31],
+						 MUL( _sbc_proto_4[2], in[39]))))));
 
 	s[0] = MUL( _anamatrix4[0], t[0] + t[4]);
 	s[1] = MUL( _anamatrix4[2], t[2]);
-	s[2] = MULA(_anamatrix4[1], t[1] + t[3],
-		MUL(_anamatrix4[3], t[5]));
-	s[3] = MULA(_anamatrix4[3], t[1] + t[3],
-		MUL(_anamatrix4[1], -t[5] + t[7]));
+	s[2] = MULA(_anamatrix4[1], t[1] + t[3], MUL(_anamatrix4[3], t[5]));
+	s[3] = MULA(_anamatrix4[3], t[1] + t[3], MUL(_anamatrix4[1], -t[5] + t[7]));
 	s[4] = MUL( _anamatrix4[3], t[7]);
 
 	out[0] = SCALE4_STAGE2( s[0] + s[1] + s[2] - s[4]); /* Q0 */
@@ -1250,142 +1151,114 @@ static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 	out[3] = SCALE4_STAGE2( s[0] + s[1] - s[2] + s[4]);
 }
 
-static inline void __sbc_analyze_eight(const int32_t *in, int32_t *out)
+static void __sbc_analyze_eight(const int32_t *in, int32_t *out)
 {
 	sbc_fixed_t t[8], s[10];
 
-	t[2] = SCALE8_STAGE1(
-		MULA(_sbc_proto_8[6], in[2],
-		MULA(_sbc_proto_8[7], in[18],
-		MULA(_sbc_proto_8[8], in[34],
-		MULA(_sbc_proto_8[9], in[50],
-		MULA(_sbc_proto_8[10], in[66],
-		MULA(_sbc_proto_8[26], in[6],
-		MULA(_sbc_proto_8[27], in[22],
-		MULA(_sbc_proto_8[28], in[38],
-		MULA(_sbc_proto_8[29], in[54],
-		MUL( _sbc_proto_8[30], in[70])))))))))));
+	t[2] = SCALE8_STAGE1(MULA(_sbc_proto_8[6], in[2],
+						 MULA(_sbc_proto_8[7], in[18],
+		                 MULA(_sbc_proto_8[8], in[34],
+		                 MULA(_sbc_proto_8[9], in[50],
+		                 MULA(_sbc_proto_8[10], in[66],
+		                 MULA(_sbc_proto_8[26], in[6],
+		                 MULA(_sbc_proto_8[27], in[22],
+		                 MULA(_sbc_proto_8[28], in[38],
+		                 MULA(_sbc_proto_8[29], in[54],
+		                 MUL( _sbc_proto_8[30], in[70])))))))))));
 
-	t[4] = SCALE8_STAGE1(
-		MULA(_sbc_proto_8[2], in[4],
-		MULA(_sbc_proto_8[3], in[20],
-		MULA(_sbc_proto_8[4], in[36],
-		MULA(_sbc_proto_8[5], in[52],
-		MUL(_sbc_proto_8[39], in[68]))))));
+	t[4] = SCALE8_STAGE1(MULA(_sbc_proto_8[2], in[4],
+		                 MULA(_sbc_proto_8[3], in[20],
+		                 MULA(_sbc_proto_8[4], in[36],
+		                 MULA(_sbc_proto_8[5], in[52],
+		                 MUL(_sbc_proto_8[39], in[68]))))));
 
-	t[3] = SCALE8_STAGE1(
-		MULA(_sbc_proto_8[16], in[3],
-		MULA(_sbc_proto_8[17], in[19],
-		MULA(_sbc_proto_8[18], in[35],
-		MULA(_sbc_proto_8[19], in[51],
-		MULA(_sbc_proto_8[20], in[67],
-		MULA(_sbc_proto_8[21], in[5],
-		MULA(_sbc_proto_8[22], in[21],
-		MULA(_sbc_proto_8[23], in[37],
-		MULA(_sbc_proto_8[24], in[53],
-		MUL( _sbc_proto_8[25], in[69])))))))))));
+	t[3] = SCALE8_STAGE1(MULA(_sbc_proto_8[16], in[3],
+		                 MULA(_sbc_proto_8[17], in[19],
+		                 MULA(_sbc_proto_8[18], in[35],
+		                 MULA(_sbc_proto_8[19], in[51],
+		                 MULA(_sbc_proto_8[20], in[67],
+		                 MULA(_sbc_proto_8[21], in[5],
+		                 MULA(_sbc_proto_8[22], in[21],
+		                 MULA(_sbc_proto_8[23], in[37],
+		                 MULA(_sbc_proto_8[24], in[53],
+		                 MUL( _sbc_proto_8[25], in[69])))))))))));
 
-	t[1] = SCALE8_STAGE1(
-		MULA( _sbc_proto_8[11], in[1],
-		MULA( _sbc_proto_8[12], in[17],
-		MULA( _sbc_proto_8[13], in[33],
-		MULA( _sbc_proto_8[14], in[49],
-		MULA( _sbc_proto_8[15], in[65],
-		MULA( _sbc_proto_8[31], in[7],
-		MULA( _sbc_proto_8[32], in[23],
-		MULA( _sbc_proto_8[33], in[39],
-		MULA( _sbc_proto_8[34], in[55],
-		MUL(  _sbc_proto_8[35], in[71])))))))))));
+	t[1] = SCALE8_STAGE1(MULA( _sbc_proto_8[11], in[1],
+		                 MULA( _sbc_proto_8[12], in[17],
+		                 MULA( _sbc_proto_8[13], in[33],
+		                 MULA( _sbc_proto_8[14], in[49],
+		                 MULA( _sbc_proto_8[15], in[65],
+		                 MULA( _sbc_proto_8[31], in[7],
+		                 MULA( _sbc_proto_8[32], in[23],
+		                 MULA( _sbc_proto_8[33], in[39],
+		                 MULA( _sbc_proto_8[34], in[55],
+		                 MUL(  _sbc_proto_8[35], in[71])))))))))));
 
-	t[0] = SCALE8_STAGE1(
-		MULA( _sbc_proto_8[0], (in[16] - in[64]),
-		MULA( _sbc_proto_8[1], (in[32] - in[48]),
-		MULA( _sbc_proto_8[36],(in[8] + in[72]),
-		MULA( _sbc_proto_8[37],(in[24] + in[56]),
-		MUL(  _sbc_proto_8[38], in[40]))))));
+	t[0] = SCALE8_STAGE1(MULA( _sbc_proto_8[0], (in[16] - in[64]),
+		                 MULA( _sbc_proto_8[1], (in[32] - in[48]),
+		                 MULA( _sbc_proto_8[36],(in[8] + in[72]),
+		                 MULA( _sbc_proto_8[37],(in[24] + in[56]),
+		                 MUL(  _sbc_proto_8[38], in[40]))))));
 
-	t[5] = SCALE8_STAGE1(
-		MULA( _sbc_proto_8[35], in[9],
-		MULA( _sbc_proto_8[34], in[25],
-		MULA( _sbc_proto_8[33], in[41],
-		MULA( _sbc_proto_8[32], in[57],
-		MULA( _sbc_proto_8[31], in[73],
-		MULA(-_sbc_proto_8[15], in[15],
-		MULA(-_sbc_proto_8[14], in[31],
-		MULA(-_sbc_proto_8[13], in[47],
-		MULA(-_sbc_proto_8[12], in[63],
-		MUL( -_sbc_proto_8[11], in[79])))))))))));
+	t[5] = SCALE8_STAGE1(MULA( _sbc_proto_8[35], in[9],
+		                 MULA( _sbc_proto_8[34], in[25],
+		                 MULA( _sbc_proto_8[33], in[41],
+		                 MULA( _sbc_proto_8[32], in[57],
+		                 MULA( _sbc_proto_8[31], in[73],
+		                 MULA(-_sbc_proto_8[15], in[15],
+		                 MULA(-_sbc_proto_8[14], in[31],
+		                 MULA(-_sbc_proto_8[13], in[47],
+		                 MULA(-_sbc_proto_8[12], in[63],
+		                 MUL( -_sbc_proto_8[11], in[79])))))))))));
 
-	t[6] = SCALE8_STAGE1(
-		MULA( _sbc_proto_8[30], in[10],
-		MULA( _sbc_proto_8[29], in[26],
-		MULA( _sbc_proto_8[28], in[42],
-		MULA( _sbc_proto_8[27], in[58],
-		MULA( _sbc_proto_8[26], in[74],
-		MULA(-_sbc_proto_8[10], in[14],
-		MULA(-_sbc_proto_8[9], in[30],
-		MULA(-_sbc_proto_8[8], in[46],
-		MULA(-_sbc_proto_8[7], in[62],
-		MUL( -_sbc_proto_8[6], in[78])))))))))));
+	t[6] = SCALE8_STAGE1(MULA( _sbc_proto_8[30], in[10],
+		                 MULA( _sbc_proto_8[29], in[26],
+		                 MULA( _sbc_proto_8[28], in[42],
+		                 MULA( _sbc_proto_8[27], in[58],
+		                 MULA( _sbc_proto_8[26], in[74],
+		                 MULA(-_sbc_proto_8[10], in[14],
+		                 MULA(-_sbc_proto_8[9], in[30],
+		                 MULA(-_sbc_proto_8[8], in[46],
+		                 MULA(-_sbc_proto_8[7], in[62],
+		                 MUL( -_sbc_proto_8[6], in[78])))))))))));
 
-	t[7] = SCALE8_STAGE1(
-		MULA( _sbc_proto_8[25], in[11],
-		MULA( _sbc_proto_8[24], in[27],
-		MULA( _sbc_proto_8[23], in[43],
-		MULA( _sbc_proto_8[22], in[59],
-		MULA( _sbc_proto_8[21], in[75],
-		MULA(-_sbc_proto_8[20], in[13],
-		MULA(-_sbc_proto_8[19], in[29],
-		MULA(-_sbc_proto_8[18], in[45],
-		MULA(-_sbc_proto_8[17], in[61],
-		MUL( -_sbc_proto_8[16], in[77])))))))))));
-
+	t[7] = SCALE8_STAGE1(MULA( _sbc_proto_8[25], in[11],
+		                 MULA( _sbc_proto_8[24], in[27],
+		                 MULA( _sbc_proto_8[23], in[43],
+		                 MULA( _sbc_proto_8[22], in[59],
+		                 MULA( _sbc_proto_8[21], in[75],
+		                 MULA(-_sbc_proto_8[20], in[13],
+		                 MULA(-_sbc_proto_8[19], in[29],
+		                 MULA(-_sbc_proto_8[18], in[45],
+		                 MULA(-_sbc_proto_8[17], in[61],
+		                 MUL( -_sbc_proto_8[16], in[77])))))))))));
 
 		s[0] = MUL(_anamatrix8[7],t[4]); 
-
 		s[1] = MUL(_anamatrix8[6],t[0]);	
-
         s[2] = MUL(_anamatrix8[0],t[2]);  // 0 2
-
-		s[3] = MUL(_anamatrix8[1],t[6]);  // 1 6
-		
+		s[3] = MUL(_anamatrix8[1],t[6]);  // 1 6	
 		s[8] = MUL(_anamatrix8[1],t[2]); //  1 2
-
 		s[9] = MUL(_anamatrix8[0],t[6]); // 0 6
 
-		s[4] = MULA( _anamatrix8[2], t[3],
-		            MULA( _anamatrix8[3], t[1],
-		            MULA( _anamatrix8[4], t[5],
-		            MUL(  _anamatrix8[5], t[7]))));
-
-		s[5] = MULA(-_anamatrix8[2], t[5],
-		            MULA( _anamatrix8[3], t[3],
-		            MULA(-_anamatrix8[4], t[7],
-		            MUL( -_anamatrix8[5], t[1]))));
-
-		s[6] = MULA( _anamatrix8[4], t[3],
-		            MULA( -_anamatrix8[2], t[1],
-		            MULA( _anamatrix8[5], t[5],
-		            MUL(  _anamatrix8[3], t[7]))));
-
-		s[7] = MULA(-_anamatrix8[2], t[7],
-		            MULA( _anamatrix8[3], t[5],
-		            MULA(-_anamatrix8[4], t[1],
-		            MUL(  _anamatrix8[5], t[3]))));
-        //int32_t cut[8];
-		out[0] = SCALE8_STAGE2( (s[0] + s[1]) + (s[2] + s[3]) + s[4]);
+		s[4] = MULA( _anamatrix8[2], t[3], MULA( _anamatrix8[3], t[1],
+		            					   MULA( _anamatrix8[4], t[5],
+		            					   MUL(  _anamatrix8[5], t[7]))));										   
+		s[5] = MULA(-_anamatrix8[2], t[5], MULA( _anamatrix8[3], t[3],
+		            					   MULA(-_anamatrix8[4], t[7],
+		            					   MUL( -_anamatrix8[5], t[1]))));
+		s[6] = MULA( _anamatrix8[4], t[3], MULA( -_anamatrix8[2], t[1],
+		            					   MULA( _anamatrix8[5], t[5],
+		            					   MUL(  _anamatrix8[3], t[7]))));
+		s[7] = MULA(-_anamatrix8[2], t[7], MULA( _anamatrix8[3], t[5],
+		            					   MULA(-_anamatrix8[4], t[1],
+		            					   MUL(  _anamatrix8[5], t[3]))));
         
+		out[0] = SCALE8_STAGE2( (s[0] + s[1]) + (s[2] + s[3]) + s[4]);     
 		out[1] = SCALE8_STAGE2( (s[0] - s[1]) + (s[8] - s[9]) + s[5]);
-
         out[2] = SCALE8_STAGE2( (s[0] - s[1]) - s[8] + (s[9] + s[6]));
-
         out[3] = SCALE8_STAGE2( (s[0] + s[1]) - (s[2] + s[3]) + s[7]);
-
         out[4] = SCALE8_STAGE2( (s[0] + s[1]) - (s[2] + s[3]) - s[7]);
-
         out[5] = SCALE8_STAGE2( (s[0] - s[1]) - s[8] + (s[9] - s[6]));
-
-        out[6] = SCALE8_STAGE2( (s[0] - s[1]) + (s[8] - s[9]) - s[5]);
-		
+        out[6] = SCALE8_STAGE2( (s[0] - s[1]) + (s[8] - s[9]) - s[5]);	
 		out[7] = SCALE8_STAGE2( (s[0] + s[1]) + (s[2] + s[3]) - s[4] );
 }
