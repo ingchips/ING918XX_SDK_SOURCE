@@ -20,16 +20,30 @@ extern "C" {
 
 // 定义日志输出宏
 #define LOG_PRINTF(level, ...) do { \
-    PRINTF("[%s] 2023-04-18 ", level == LOG_LEVEL_INFO ? "INFO" : \
+    PRINTF("[%s] 2023-04-19 ", level == LOG_LEVEL_INFO ? "INFO" : \
                         level == LOG_LEVEL_WARNING ? "WARNING" : \
                                     level == LOG_LEVEL_ERROR ? "ERROR" : "MSG"); \
     PRINTF(__VA_ARGS__); \
     PRINTF("\n"); \
 } while (0)
 
-
+//3 Space character
 #define LOG_PRINTF_TAB(level, ...) do { \
     char blank[] = "  ";\
+    PRINTF("%s",blank);\
+    LOG_PRINTF(level,__VA_ARGS__);\
+} while (0)
+
+//6 Space character
+#define LOG_PRINTF_TAB2(level, ...) do { \
+    char blank[] = "     ";\
+    PRINTF("%s",blank);\
+    LOG_PRINTF(level,__VA_ARGS__);\
+} while (0)
+
+//9 Space character
+#define LOG_PRINTF_TAB3(level, ...) do { \
+    char blank[] = "        ";\
     PRINTF("%s",blank);\
     LOG_PRINTF(level,__VA_ARGS__);\
 } while (0)
