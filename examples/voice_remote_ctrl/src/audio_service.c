@@ -156,8 +156,10 @@ void audio_start(void)
 
 void audio_stop(void)
 {
-    LOG_PRINTF(LOG_LEVEL_INFO,"函数调用: 停止音频输入."); 
+    LOG_PRINTF(LOG_LEVEL_INFO,"函数调用: 停止音频输入.");
+#if defined(KB_TEST) 
     xQueueReset(xSampleQueue);
+#endif
     audio_input_stop();
 }
 
