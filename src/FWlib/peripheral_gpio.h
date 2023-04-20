@@ -331,6 +331,8 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
  * Once enabled, all GPIOs in Group A that have been configured as INPUT act as wakeup
  * sources from DEEPER SLEEP mode.
  *
+ * `GIO_EnableRetentionGroupA(1)` MUST be called after all related GPIOs are configured.
+ *
  * @param[in] enable            Enable(1)/disable(0)
  * @param[in] level             wake up by high level(1)/low level(0)
  */
