@@ -31,13 +31,6 @@ static adpcm_priv_t adpcm_priv=
 };
 
 static sbc_priv_t sbc_priv= {0};
-// {
-//     .voice_buf_block_num = 0,
-//     .voice_buf_block_size = 0,
-
-//     .sample_buf_num = 0,
-//     .sample_buf_size = 0,    
-// };
 
 uint8_t data_buffer[VOICE_BUF_BLOCK_NUM][VOICE_BUF_BLOCK_SIZE] = {0};
 uint16_t block_index;
@@ -133,7 +126,7 @@ pcm_sample_t fir_push_run(fir_t *fir, pcm_sample_t x)
 
 void audio_start(void)
 {
-    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"函数调用:启动/重启音频输入."); 
+    LOG_PRINTF_TAB(LOG_LEVEL_DEBUG,"Start audio input."); 
     sample_buf_index = 0;
     sample_index = 0;
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
@@ -146,7 +139,7 @@ void audio_start(void)
 
 void audio_stop(void)
 {
-    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"函数调用: 停止音频输入.");
+    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Stop audio input.");
     xQueueReset(xSampleQueue);
     audio_input_stop();
 }
