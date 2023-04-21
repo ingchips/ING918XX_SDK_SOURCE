@@ -169,6 +169,23 @@ uint32_t PCAP_ReadCounter(void)
     return APB_PWM->CapCounter;
 }
 
+void PWM_FifoTriggerEnable(const uint8_t channel_index, uint8_t enable, uint32_t mask)
+{
+    if(enable)
+    {
+        APB_PWM->Channels[channel_index].Ctrl0 |= mask;
+    }
+    else
+    {
+        APB_PWM->Channels[channel_index].Ctrl0 &= ~(mask);
+    }
+}
+
+uint32_t PWM_GetFifoStatus(const uint8_t channel_index)
+{
+    return(APB_PWM->Channels[channel_index].Ctrl1);
+}
+
 #endif
 
 void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty)

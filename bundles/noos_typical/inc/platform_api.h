@@ -353,7 +353,10 @@ void platform_switch_app(const uint32_t app_addr);
  * @brief Write value to the persistent register, of which the value is kept even
  *        in power saving mode.
  *
- * @param[in] value              a FOUR bit value
+ * For ING918: the least FOUR significant bits of `value` are saved;
+ * For ING916: the least TWO  significant bits of `value` are saved.
+ *
+ * @param[in] value              value
  ****************************************************************************************
  */
 void platform_write_persistent_reg(const uint8_t value);
@@ -406,11 +409,8 @@ typedef enum
     PLATFORM_CFG_RC32K_EN,      // Enable/Disable RC 32k clock. Default: Enable
     PLATFORM_CFG_OSC32K_EN,     // Enable/Disable 32k crystal oscillator. Default: Enable
     PLATFORM_CFG_32K_CLK,       // 32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
-                                // Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED.
-                                //       For ING918, both clocks must be running:
-                                //          * For OSC32K, wait until status of OSC32K is OK;
-                                //          * For RC32K, wait 100us after enabled.
-                                // Note: Wait another 100us before disabling the unused clock.
+                                // Note 1: When modifying this configuration, both RC32K and OSC32K should be ENABLED.
+                                // Note 2: Unused clock can be disabled.
     PLATFORM_CFG_32K_CLK_ACC,   // Configure 32k clock accuracy in ppm.
     PLATFORM_CFG_32K_CALI_PERIOD, // 32K clock auto-calibration period in seconds. Default: 3600 * 2
     PLATFORM_CFG_PS_DBG_0,      // debugging parameter

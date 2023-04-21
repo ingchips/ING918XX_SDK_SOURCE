@@ -106,6 +106,14 @@ typedef enum
 
 typedef enum
 {
+  USB_REQUEST_TYPE_STANDARD          = 0,
+  USB_REQUEST_TYPE_CLASS             = 1,
+  USB_REQUEST_TYPE_VENDOR            = 2,
+  USB_REQUEST_TYPE_RESERVED          = 3
+} USB_REQUEST_TYPE_E ;
+
+typedef enum
+{
   USB_REQUEST_DEVICE_GET_STATUS = 0x00,
   USB_REQUEST_DEVICE_CLEAR_FEATURE = 0x01,
   USB_REQUEST_DEVICE_SET_FEATURE = 0x03,
@@ -117,6 +125,10 @@ typedef enum
   USB_REQUEST_DEVICE_GET_INTERFACE = 0x0a,
   USB_REQUEST_DEVICE_SET_INTERFACE = 0x0b
 } USB_REQUEST_DEVICE_E ;
+
+/* USB Standard Feature selectors */
+#define USB_FEATURE_ENDPOINT_STALL             0
+#define USB_FEATURE_REMOTE_WAKEUP              1
 
 typedef enum
 {

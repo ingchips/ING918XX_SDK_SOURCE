@@ -7,6 +7,7 @@ This example demonstrates how to:
 * Manage bonding/paring data;
 * Report _fake_ mouse movements;
 * Use resolvable address;
+* Use high duty adv;
 * Use QDEC (ING916xx).
 
 Note:

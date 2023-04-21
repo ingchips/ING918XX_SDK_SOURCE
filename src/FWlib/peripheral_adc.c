@@ -121,7 +121,7 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 #include "platform_api.h"
 #include <stdlib.h>
 #include <string.h>
-#include "eflash.h"     
+#include "eflash.h"
 #define ADC_LEFT_SHIFT(v, s)            ((v) << (s))
 #define ADC_RIGHT_SHIFT(v, s)           ((v) >> (s))
 #define ADC_MK_MASK(b)                  ((ADC_LEFT_SHIFT(1, b)) - (1))
@@ -135,6 +135,13 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 
 static SADC_ftCali_t *ftCali;
 static SADC_adcCal_t ADC_adcCal;
+
+#define DEF_WEAK_FUNC(prototype)    __attribute__((weak)) prototype { platform_raise_assertion("missing eflash.c", __LINE__); return 0; }
+
+DEF_WEAK_FUNC(int flash_prepare_factory_data(void))
+DEF_WEAK_FUNC(const factory_calib_data_t *flash_get_factory_calib_data(void))
+DEF_WEAK_FUNC(const void *flash_get_adc_calib_data(void))
+DEF_WEAK_FUNC(uint32_t read_flash_security(uint32_t addr))
 
 static void ADC_RegClr(SADC_adcReg reg, uint8_t s, uint32_t b)
 {
@@ -252,9 +259,9 @@ uint16_t ADC_GetEnabledChannels(void)
     if (ADC_GetInputMode()) {
         if (ADC_RegRd(SADC_CFG_0, 10, 1))
             return 1 << (ADC_RegRd(SADC_CFG_0, 12, 4) >> 1);
-        else 
+        else
             return (ADC_RegRd(SADC_CFG_2, 4, 1) << 2) | ADC_RegRd(SADC_CFG_2, 3, 1);
-    } 
+    }
     return ADC_RegRd(SADC_CFG_2, 3, 12);
 }
 
@@ -331,8 +338,8 @@ SADC_adcPgaGain ADC_PgaGainGet(void)
 void ADC_PgaEnable(uint8_t enable)
 {
     ADC_RegClr(SADC_CFG_0, 1, 1);
-    // if (enable)
-    ADC_RegWr(SADC_CFG_0, 1, 1);
+    if (enable)
+        ADC_RegWr(SADC_CFG_0, 1, 1);
 }
 
 uint8_t ADC_GetPgaStatus(void)
@@ -371,7 +378,7 @@ uint16_t ADC_GetData(uint32_t data)
 {
     SADC_channelId ch = ADC_GetDataChannel(data);
     SADC_ftChPara_t *chPara;
-    if ((ch <= ADC_CH_7) && ftCali->f) {
+    if ((ch <= ADC_CH_7) && ftCali && ftCali->f) {
         if (ADC_GetInputMode() && (ch <= ADC_CH_3))
             chPara = &(ftCali->chParaDiff[ch]);
         else
@@ -407,10 +414,11 @@ static void ADC_VrefRegister(float VP, float VN)
 
 void ADC_VrefCalibration(void)
 {
+    if (!SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC)) return;
     if (!ftCali) return;
     ADC_DisableAllChannels();
     ADC_ClrFifo();
-    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, ADC_CH_9, 15, 0, 
+    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, ADC_CH_9, 15, 0,
         SINGLE_END_MODE, SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC) / 63000);
     ADC_Start(1);
     while (!ADC_GetIntStatus());
@@ -459,11 +467,11 @@ void ADC_ftInit(void)
     uint8_t ret = flash_prepare_factory_data();
     const factory_calib_data_t *p_factoryCali = flash_get_factory_calib_data();
     const uint16_t *p_adcCali = (const uint16_t *)flash_get_adc_calib_data();
-    if (ret || !p_factoryCali || !p_adcCali) 
+    if (ret || !p_factoryCali || !p_adcCali)
         readFlg = 1;
     ftCali = malloc(sizeof(SADC_ftCali_t));
     memset(ftCali, 0, sizeof(SADC_ftCali_t));
-    
+
     uint32_t flg;
     if (readFlg)
         flg = read_flash_security(0x1170);
@@ -495,6 +503,7 @@ void ADC_ftInit(void)
         V1_diff = 90000;
         V2_diff = 230000;
     } else {
+        ftCali->f = 0;
         return;
     }
 
@@ -615,19 +624,19 @@ void ADC_Calibration(SADC_adcIputMode mode)
     ADC_RegClr(SADC_CFG_0, 17, 1);
 }
 
-void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, 
+void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
                  SADC_adcPgaGain pgaGain,
                  uint8_t pgaEnable,
-                 SADC_channelId ch, 
-                 uint8_t enNum, 
-                 uint8_t dmaEnNum, 
-                 SADC_adcIputMode inputMode, 
+                 SADC_channelId ch,
+                 uint8_t enNum,
+                 uint8_t dmaEnNum,
+                 SADC_adcIputMode inputMode,
                  uint32_t loopDelay)
 {
     ADC_SetAdcMode(CONVERSION_MODE);
     ADC_SetAdcCtrlMode(ctrlMode);
     ADC_PgaGainSet(pgaGain);
-    ADC_PgaEnable(pgaEnable);
+    ADC_PgaEnable(1);
     ADC_SetInputMode(inputMode);
     ADC_EnableChannel(ch, 1);
     if (enNum) {

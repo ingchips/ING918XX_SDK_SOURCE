@@ -56,11 +56,11 @@ void audio_input_stop(void)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #include "pingpong.h"
 
-#define ADC_CHANNEL           ADC_CH_0
-#define DMA_CHANNEL           0
-#define ADC_CLK_MHZ           6
-#define LOOP_DELAY(c, s)      ((((c) * (1000000)) / (s)) - (21))
-
+#define ADC_CHANNEL             ADC_CH_0
+#define ADC_CLK_MHZ             6
+#define ADC_CHANNEL_NUM         1
+#define LOOP_DELAY(c, s, ch)    ((((c) * (1000000)) / (s)) - (((16) * (ch)) + (5)))
+#define DMA_CHANNEL             0
 static DMA_PingPong_t PingPong;
 
 static uint32_t DMA_cb_isr(void *user_data)
@@ -79,16 +79,16 @@ static uint32_t DMA_cb_isr(void *user_data)
 }
 void audio_input_setup(void)
 {
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_DMA));
-
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
     SYSCTRL_SetAdcClkDiv(24 / ADC_CLK_MHZ);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Reset();
     ADC_Calibration(DIFFERENTAIL_MODE);
-    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_16, 1, ADC_CHANNEL, 0, 8, 
-                DIFFERENTAIL_MODE, LOOP_DELAY(ADC_CLK_MHZ, SAMPLING_RATE));
+    ADC_ftInit();
+    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_16, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 
+                LOOP_DELAY(ADC_CLK_MHZ, SAMPLING_RATE, ADC_CHANNEL_NUM));
 
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_DMA));
     SYSCTRL_SelectUsedDmaItems(1 << 9);
     DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_ADC, 80, 8);
     platform_set_irq_callback(PLATFORM_CB_IRQ_DMA, DMA_cb_isr, 0);
