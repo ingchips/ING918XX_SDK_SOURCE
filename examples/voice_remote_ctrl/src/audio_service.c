@@ -30,14 +30,14 @@ static adpcm_priv_t adpcm_priv=
     .sample_buf_size = 20,
 };
 
-static sbc_priv_t sbc_priv=
-{
-    .voice_buf_block_num = 0,
-    .voice_buf_block_size = 0,
+static sbc_priv_t sbc_priv= {0};
+// {
+//     .voice_buf_block_num = 0,
+//     .voice_buf_block_size = 0,
 
-    .sample_buf_num = 0,
-    .sample_buf_size = 0,    
-};
+//     .sample_buf_num = 0,
+//     .sample_buf_size = 0,    
+// };
 
 uint8_t data_buffer[VOICE_BUF_BLOCK_NUM][VOICE_BUF_BLOCK_SIZE] = {0};
 uint16_t block_index;
@@ -193,9 +193,7 @@ static void audio_sbc_task(void *pdata)
     uint8_t encoded;
 
     codesize = sbc_get_codesize(&sbc);
-    framelen = sbc_get_frame_length(&sbc);
-
-    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"codesize = %d framelen = %d\r\n", codesize, framelen); 
+    framelen = sbc_get_frame_length(&sbc); 
 
     sbc_sample_t *inp, *outp;
     outp = malloc(framelen * sizeof(sbc_sample_t));
