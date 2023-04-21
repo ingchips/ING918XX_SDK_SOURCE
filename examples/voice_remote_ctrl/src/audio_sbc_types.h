@@ -37,7 +37,6 @@ typedef struct
 	uint8_t bitpool;
 	uint16_t codesize;
 	uint16_t length;
-	//计数
 	uint16_t frame_count;
 
 	/* bit number x set means joint stereo has been used in subband x */

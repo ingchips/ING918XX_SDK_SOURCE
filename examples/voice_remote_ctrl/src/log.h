@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-#include <time.h>
 
 #ifndef PRINTF
 #define PRINTF platform_printf
@@ -20,7 +19,7 @@ extern "C" {
 
 // 定义日志输出宏
 #define LOG_PRINTF(level, ...) do { \
-    PRINTF("[%s] 2023-04-19 ", level == LOG_LEVEL_INFO ? "INFO" : \
+    PRINTF("[%s] ", level == LOG_LEVEL_INFO ? "INFO" : \
                         level == LOG_LEVEL_WARNING ? "WARNING" : \
                                     level == LOG_LEVEL_ERROR ? "ERROR" : "MSG"); \
     PRINTF(__VA_ARGS__); \
@@ -29,7 +28,7 @@ extern "C" {
 
 //3 Space character
 #define LOG_PRINTF_TAB(level, ...) do { \
-    char blank[] = "  ";\
+    char blank[] = "     ";\
     PRINTF("%s",blank);\
     LOG_PRINTF(level,__VA_ARGS__);\
 } while (0)

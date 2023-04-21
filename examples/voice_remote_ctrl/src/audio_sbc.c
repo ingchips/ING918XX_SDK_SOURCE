@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-//include <sys/types.h>
 #include <limits.h>
 
 #include "audio_adpcm.h"
@@ -108,7 +107,6 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 	if (frame->mode == MONO || frame->mode == DUAL_CHANNEL) {
 			int bitneed[2][8], loudness, max_bitneed, bitcount, slicecount, bitslice;
 			int ch, sb;
-			printf("mono\r\n");
 		for (ch = 0; ch < frame->channels; ch++) {
 
 			max_bitneed = 0;
@@ -189,7 +187,6 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 		} 
 	}
 	else if (frame->mode == STEREO || frame->mode == JOINT_STEREO) {
-		printf("stero\r\n");
 		int bitneed[2][8], loudness, max_bitneed, bitcount, slicecount, bitslice;
 		int ch, sb;
 
@@ -315,67 +312,6 @@ static  int16_t sbc_clip16(int32_t s)
 		return s;
 }
 
-static void pritnf_alignment_hex(uint32_t sample)
-{
-	uint32_t sample_div = sample;
-	int div_cnt = 1;
-
-
-	while ((sample_div >>= 4) != 0) {
-		div_cnt++;		
-	}
-
-	printf("0x");
-	for (int i=0; i < 8 - div_cnt; i++)
-		printf("0");
-	printf("%x ", sample);
-}
-
-static void pritnf_alignment_16hex(uint16_t sample)
-{
-	uint16_t sample_div = sample;
-	int div_cnt = 1;
-
-
-	while ((sample_div >>= 4) != 0) {
-		div_cnt++;		
-	}
-
-	printf("0x");
-	for (int i=0; i < 4 - div_cnt; i++)
-		printf("0");
-	printf("%x ", sample);
-}
-
-
-static void printf_samples(sbc_encoder_state *state, sbc_frame *frame)
-{
-	int blk, ch, sb;
-	printf("*************************NO.%d******************************\r\n", ++frame->frame_count);
-	printf("");
-    printf("STEP1---Polyphase analysis\r\n");
-	printf("*******ch0*********ch1****\r\n");
-	printf("**blk0--|-----------|-----\r\n");
-	printf("********|***********|*****\r\n");
-	printf("**blkn--|-----------|-----\r\n");
-	printf("********|***********|*****\r\n");
-	printf("\r\n******Subband_Sample******\r\n");
-	for (blk = 0; blk < frame->blocks; blk++) {
-		for (ch = 0; ch < frame->channels; ch++) {
-			for (sb = 0; sb < frame->subbands; sb++) {
-				pritnf_alignment_hex(frame->sb_sample_f[blk][ch][sb]);
-				/* if(frame->sb_sample_f[blk][ch][sb] == 0)
-					printf("0x0000000%x ", frame->sb_sample_f[blk][ch][sb]);
-				else
-					printf("%hhd ", frame->sb_sample_f[blk][ch][sb]); */
-			}
-			printf("    ");
-		}
-		printf("\r\n");
-	}
-	printf("\r\n");
-}
-
 static int sbc_analyze_audio(sbc_encoder_state *state, sbc_frame *frame)
 {
 	int ch, blk;
@@ -399,9 +335,6 @@ static int sbc_analyze_audio(sbc_encoder_state *state, sbc_frame *frame)
 }
 
 /* Supplementary bitstream writing macros for 'sbc_pack_frame' */
-
-//v表示joint 0or1    n表示subbands 4or8
-//v对应scale_factor后四个比特
 #define PUT_BITS(data_ptr, bits_cache, bits_count, v, n)		\
 	do {								\
 		bits_cache = (v) | (bits_cache << (n));			\
@@ -480,20 +413,16 @@ static  int sbc_pack_frame_internal(uint8_t *data,
 		crc_header[crc_pos >> 3] = joint;
 		crc_pos += frame_subbands;
 	}
-	printf("STEP2---scale_factor\r\n");
+
 	for (ch = 0; ch < frame_channels; ch++) {
-		printf("ch%d  ",ch);
 		for (sb = 0; sb < frame_subbands; sb++) {
 			PUT_BITS(data_ptr, bits_cache, bits_count,
 				frame->scale_factor[ch][sb] & 0x0F, 4);
-			printf("%x ", frame->scale_factor[ch][sb] & 0x0F);
 			crc_header[crc_pos >> 3] <<= 4;
 			crc_header[crc_pos >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
 			crc_pos += 4;
 		}
-		printf("\r\n");
 	}
-	printf("\r\n");
 
 	/* align the last crc byte */
 	if (crc_pos % 8)
@@ -501,13 +430,7 @@ static  int sbc_pack_frame_internal(uint8_t *data,
 
 	data[3] = sbc_crc8(crc_header, crc_pos);
 
-	// sbc_calculate_bits(frame, bits);
-	//printf("calculated bits:%d");
-
-
-	printf("STEP3---Derive allocation:\r\n");
-	printf("levels | sb_samples_delta*\r\n");
-	//进行levels分配
+	/* calculate levels*/
 	for (ch = 0; ch < frame_channels; ch++) {
 		for (sb = 0; sb < frame_subbands; sb++) {
 			levels[ch][sb] = ((1 << bits[ch][sb]) - 1) <<
@@ -518,57 +441,30 @@ static  int sbc_pack_frame_internal(uint8_t *data,
 					SCALE_OUT_BITS + 1);
 		}
 	}
-	printf("\r\n");
 
-	printf("STEP4---Quantizing Subband Samples:\r\n");
-	printf("***audio sample | bit allocation***\r\n");
-	//量化
+	//quantization
 	for (blk = 0; blk < frame->blocks; blk++) {
-		printf("block%x ",blk);
 		for (ch = 0; ch < frame_channels; ch++) {
 			for (sb = 0; sb < frame_subbands; sb++) {
 
 				if (bits[ch][sb] == 0) {
-					printf("0 ");
 					continue;
 				}
 
-				//audio_sample对应的是
 				audio_sample = ((uint64_t) levels[ch][sb] *
 					(sb_sample_delta[ch][sb] +
 					frame->sb_sample_f[blk][ch][sb])) >> 32;
 
-				//方法二：对端逆运算
-				//audio_sample = (((frame->sb_sample_f[blk][ch][sb] << (frame->scale_factor[ch][sb] + 1)) + 1) * levels[ch][sb]) >> 1;
-				
-				//方法三：
-				/* audio_sample = 
-				(uint16_t) ((((frame->sb_sample_f[blk][ch][sb]*levels[ch][sb]) >>
-									(frame->scale_factor[ch][sb] + 1)) +
-								levels[ch][sb]) >> 1); */
 				PUT_BITS(data_ptr, bits_cache, bits_count,
 					audio_sample, bits[ch][sb]);
-				pritnf_alignment_hex(audio_sample);
-			}
-			//打印bit allocation
-			printf(" |  ");
-			for (sb = 0; sb < frame_subbands; sb++) {
-				printf("%d ",bits[ch][sb]);
 			}
 		}
-		printf("\r\n");
 	}
-	printf("\r\n");
-
-
 	
 	FLUSH_BITS(data_ptr, bits_cache, bits_count);
-
 	return data_ptr - data;
 }
 
-
-//SBC编码数据组帧
 static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 {
 	int produced;
@@ -704,23 +600,18 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 		crc_pos += frame->subbands;
 	}
 
-//STEP3
-	//platform_printf("scale_factor[][]\r\n");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
 			data[produced >> 3] <<= 4;
 			crc_header[crc_pos >> 3] <<= 4;
 			data[produced >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
-			//platform_printf("%d ", frame->scale_factor[ch][sb]);
 			crc_header[crc_pos >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
 
 			produced += 4;
 			crc_pos += 4;
 		}
-		//platform_printf("\r\n");
 	}
 
-//STEP4
 	/* align the last crc byte */
 	if (crc_pos % 8)
 		crc_header[crc_pos >> 3] <<= 8 - (crc_pos % 8);
@@ -752,9 +643,6 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 					(uint16_t) ((((frame->sb_sample_f[blk][ch][sb]*levels[ch][sb]) >>
 									(frame->scale_factor[ch][sb] + 1)) +
 								levels[ch][sb]) >> 1);
-					  //audio_sample = 
-						//  (uint16_t) ((frame->sb_sample_f[blk][ch][sb]>>(frame->scale_factor[ch][sb] + 1)) *(levels[ch][sb]>>1) +levels[ch][sb]/2);
-				//	printf(" a_s %d ", audio_sample);
 					audio_sample <<= 16 - bits[ch][sb];
 					for (bit = 0; bit < bits[ch][sb]; bit++) {
 						data[produced >> 3] <<= 1;
@@ -871,7 +759,6 @@ void sbc_analyze_eight(sbc_encoder_state *state,
 	x[86] = x[6] = pcm[1];
 	x[87] = x[7] = pcm[0];
 
-
 	__sbc_analyze_eight(x, frame->sb_sample_f[blk][ch]);
 
 	state->position[ch] -= 8;
@@ -879,8 +766,7 @@ void sbc_analyze_eight(sbc_encoder_state *state,
 		state->position[ch] = 72;
 }
 
-
-static inline int sbc_clz(uint32_t x)
+static int sbc_clz(uint32_t x)
 {
 #ifdef __GNUC__
 	return __builtin_clz(x);
@@ -952,7 +838,7 @@ int sbc_encode(sbc_t *sbc,
 		sbc_encoder_init(&priv->enc_state, &priv->frame);
 		priv->init = true;
 	} else if (priv->frame.bitpool != sbc->bitpool) {
-		//参考A2DP协议的12.9节
+		//ref section 12.9 of A2DP 
 		priv->frame.length = sbc_get_frame_length(sbc);
 		priv->frame.bitpool = sbc->bitpool;
 	}
@@ -977,17 +863,13 @@ int sbc_encode(sbc_t *sbc,
 				s = (ptr[0] & 0xff) << 8 | ((ptr[1] >> 8) & 0xff);
 			ptr++;
 
-			priv->frame.pcm_sample[ch][i] = s; //通道交替传输
+			priv->frame.pcm_sample[ch][i] = s;
 		}
 	}
 
 	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
-
-	// pack_timer_tick_ms = platform_get_us_time();
-	framelen = sbc_pack_frame(output,&priv->frame, output_len);
-	// now = platform_get_us_time();
-	// platform_printf("[%llu][SBC PACK FRAME] Consumption of time:%dus\r\n", now, (now - pack_timer_tick_ms));     
-
+	framelen = sbc_pack_frame(output,&priv->frame, output_len);  
+	 
 	return samples * priv->frame.channels * 2;
 }
 
