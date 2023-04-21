@@ -16,7 +16,7 @@
 #define AUDIO_CODEC_ALGORITHM_ADPCM     0
 #define AUDIO_CODEC_ALGORITHM_SBC       1
 #define AUDIO_CODEC_ALGORITHM_LC3       2
-#define AUDIO_CODEC_ALGORITHM   AUDIO_CODEC_ALGORITHM_SBC
+#define AUDIO_CODEC_ALGORITHM   AUDIO_CODEC_ALGORITHM_ADPCM
 
 extern void audio_input_setup(void);
 extern void audio_input_start(void);
@@ -199,7 +199,8 @@ static void audio_adpcm_task(void *pdata)
 
 static void audio_sbc_task(void *pdata)
 {
-    int size, codesize, framelen, encodelen,encoded;
+    int size, codesize, framelen, encodelen;
+    uint8_t encoded;
 
     //获取编码一个frame所需的原始数据量
     codesize = sbc_get_codesize(&sbc);
@@ -242,7 +243,7 @@ static void audio_sbc_task(void *pdata)
                 sample = fir_push_run(&fir, sample);
 #endif
         }
-        encodelen = sbc_encode(&sbc, inp, codesize, outp, framelen, &encoded);
+        encodelen = sbc_encode(&sbc, inp, codesize, outp, framelen);
         if(encodelen == codesize) 
         {
             for (int i=0; i<framelen; i++) {

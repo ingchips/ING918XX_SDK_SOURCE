@@ -385,14 +385,12 @@ static int sbc_analyze_audio(sbc_encoder_state *state, sbc_frame *frame)
 		for (ch = 0; ch < frame->channels; ch++)
 			for (blk = 0; blk < frame->blocks; blk++)
 				sbc_analyze_four(state, frame, ch, blk);
-		//printf_samples(state, frame);
 		return frame->blocks * 4;
 
 	case 8:
 		for (ch = 0; ch < frame->channels; ch++)
 			for (blk = 0; blk < frame->blocks; blk++)
 				sbc_analyze_eight(state, frame, ch, blk);
-		//printf_samples(state, frame);
 		return frame->blocks * 8;
 
 	default:
@@ -792,7 +790,7 @@ struct sbc_priv {
 	sbc_encoder_state enc_state;
 };
 
-static void sbc_set_defaults(sbc_t *sbc, unsigned long flags)
+static void sbc_set_defaults(sbc_t *sbc, uint8_t flags)
 {
 	struct sbc_priv *priv = sbc->priv;
 
@@ -813,7 +811,7 @@ static void sbc_set_defaults(sbc_t *sbc, unsigned long flags)
 #endif
 }
 
-int sbc_init(sbc_t *sbc, unsigned long flags)
+int sbc_init(sbc_t *sbc, uint8_t flags)
 {
 	if (!sbc)
 		return -EIO;
@@ -919,28 +917,25 @@ static void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
 	}
 }
 
+static uint64_t pack_timer_tick_ms = 0;
+static uint64_t now = 0;
+
 int sbc_encode(sbc_t *sbc, 
 			   void *input, 
 			   int input_len,
 			   void *output, 
-			   int output_len, 
-			   int *written)
+			   int output_len)
 {
 	struct sbc_priv *priv;
 	int samples, ch;
 	int  framelen;
-	int8_t *ptr;
+	int16_t *ptr;
 
 	if (!sbc || !input)
 		return -EIO;
 
 	priv = sbc->priv;
 
-	if (written)
-		*written = 0;
-
-//初始化priv->frame
-//priv->frame包含一个未打包的SBC数据包
 	if (!priv->init) {
 		priv->frame.frequency = sbc->frequency;
 		priv->frame.mode = sbc->mode;
@@ -970,51 +965,28 @@ int sbc_encode(sbc_t *sbc,
 	if (!output || output_len < priv->frame.length)
 		return -ENOSPC;
 
-	//端序转换
+	ptr = (int16_t *)input;
 
-	//指针同步
-	ptr = (int8_t *)input;
-
-	//一次走两个字节
 	for (int i = 0; i < priv->frame.subbands * priv->frame.blocks; i++) {
 		for (ch = 0; ch < sbc->channels; ch++) {
 			int16_t s;
 
-			//platform_printf("[%x][%x] ", ptr[0], ptr[1]);
-			//sbc->swap参数决定是大端序(BE)还是小端序(LE)
 			if (sbc->endian == SBC_LE)
-				s = (ptr[0] & 0xff) | (ptr[1] & 0xff) << 8 ;
+				s = ptr[0];
 			else
-				s = (ptr[0] & 0xff) << 8 | (ptr[1] & 0xff);
-			ptr += 2;
-			//platform_printf("%x  ",s);
-			//按字节交替分通道
-			priv->frame.pcm_sample[ch][i] = s;
+				s = (ptr[0] & 0xff) << 8 | ((ptr[1] >> 8) & 0xff);
+			ptr++;
+
+			priv->frame.pcm_sample[ch][i] = s; //通道交替传输
 		}
-		//platform_printf("\r\n");
 	}
 
 	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
-	//samples = 64;
 
-	//如果是sbc编码而非msbc
-	//priv->pack_frame指的是
-	//static int sbc_pack_frame(uint8_t *data, struct sbc_frame *frame, int len,
-	//							int joint)
-	static uint64_t pack_timer_tick_ms = 0;
-	uint64_t now = platform_get_us_time()/1000000;
-	platform_printf("sbc_pack_frame(%d)\r\n", now);     
-	pack_timer_tick_ms = now;
-	sbc_pack_frame(output,&priv->frame, output_len);
-	now = platform_get_us_time()/1000000;
-	platform_printf("sbc_pack_frame(%d) diff:%dms\r\n", now, (now-pack_timer_tick_ms));     
-	framelen = 24;
-
-	//printf("codesize = %d length = %d\r\n", priv->frame.codesize, priv->frame.length);
-	//printf("samples = %d framelen = %d\r\n", samples, framelen);
-
-	if (written)
-		*written = framelen;
+	// pack_timer_tick_ms = platform_get_us_time();
+	framelen = sbc_pack_frame(output,&priv->frame, output_len);
+	// now = platform_get_us_time();
+	// platform_printf("[%llu][SBC PACK FRAME] Consumption of time:%dus\r\n", now, (now - pack_timer_tick_ms));     
 
 	return samples * priv->frame.channels * 2;
 }
@@ -1025,7 +997,6 @@ void sbc_finish(sbc_t *sbc)
 		return;
 
 	free(sbc->priv_alloc_base);
-
 	memset(sbc, 0, sizeof(sbc_t));
 }
 
@@ -1078,7 +1049,7 @@ int sbc_get_codesize(sbc_t *sbc)
 	return subbands * blocks * channels * 2;
 }
 
-int sbc_reinit(sbc_t *sbc, unsigned long flags)
+int sbc_reinit(sbc_t *sbc, uint8_t flags)
 {
 	struct sbc_priv *priv;
 

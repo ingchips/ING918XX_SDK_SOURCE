@@ -7,7 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 
-typedef int8_t sbc_sample_t;
+typedef int16_t sbc_sample_t;
 
 /* sampling frequency */
 #define SBC_FREQ_16000		0x00
@@ -39,11 +39,9 @@ typedef int8_t sbc_sample_t;
 #define SBC_LE			0x00
 #define SBC_BE			0x01
 
-struct sbc_struct {
-	unsigned long flags;
-
+typedef struct{
+	uint8_t flags;
 	uint8_t frequency;
-
 	uint8_t blocks;
 	uint8_t channels;
 	uint8_t subbands;
@@ -54,24 +52,20 @@ struct sbc_struct {
 
 	void *priv;
 	void *priv_alloc_base;
-};
+}sbc_t;
 
-typedef struct sbc_struct sbc_t;
-
-int sbc_init(sbc_t *sbc, unsigned long flags);
-int sbc_reinit(sbc_t *sbc, unsigned long flags);
+int sbc_init(sbc_t *sbc, uint8_t flags);
+int sbc_reinit(sbc_t *sbc, uint8_t flags);
 
 /* Encodes ONE input block into ONE output block */
 int sbc_encode(sbc_t *sbc, 
 			   void *input, 
 			   int input_len,
 			   void *output, 
-			   int output_len, 
-			   int *written);
+			   int output_len);
 
 /* Returns the compressed block size in bytes */
 int sbc_get_frame_length(sbc_t *sbc);
-
 
 /* Returns the uncompressed block size in bytes */
 int sbc_get_codesize(sbc_t *sbc);
