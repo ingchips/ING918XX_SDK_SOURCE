@@ -39,8 +39,9 @@ uint16_t seq_cnt;
 int8_t mic_dig_gain = 0;
 
 #define SAMPLE_BUF_LEN  128
+#define SAMPLE_BUF_CNT  2
 
-pcm_sample_t sample_buf[2][SAMPLE_BUF_LEN];
+pcm_sample_t sample_buf[SAMPLE_BUF_CNT][SAMPLE_BUF_LEN];
 
 int sample_buf_index = 0;
 int sample_index = 0;
