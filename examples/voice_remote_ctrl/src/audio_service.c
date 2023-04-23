@@ -127,7 +127,7 @@ pcm_sample_t fir_push_run(fir_t *fir, pcm_sample_t x)
 
 void audio_start(void)
 {
-    LOG_PRINTF_TAB(LOG_LEVEL_DEBUG,"Start audio input."); 
+    LOG_PRINTF(LOG_LEVEL_DEBUG,"Start audio input."); 
     sample_buf_index = 0;
     sample_index = 0;
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
@@ -140,7 +140,7 @@ void audio_start(void)
 
 void audio_stop(void)
 {
-    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Stop audio input.");
+    LOG_PRINTF(LOG_LEVEL_DEBUG,"Stop audio input.");
     xQueueReset(xSampleQueue);
     audio_input_stop();
 }
@@ -187,8 +187,9 @@ static void audio_sbc_task(void *pdata)
     codesize = sbc_get_codesize(&sbc);
     framelen = sbc_get_frame_length(&sbc); 
 
-    sbc_sample_t *inp, *outp;
-    outp = malloc(framelen * sizeof(sbc_sample_t));
+    sbc_sample_t *inp;
+    uint8_t *outp;
+    outp = malloc(framelen * sizeof(uint8_t*));
 
 #if (OVER_SAMPLING_MASK != 0)
     int oversample_cnt = 0;
@@ -224,8 +225,10 @@ static void audio_sbc_task(void *pdata)
         if(encodelen == codesize) 
         {
             for (int i=0; i<framelen; i++) {
-                enc_output_cb((uint8_t)(*(outp + i)), 0); 
+                enc_output_cb(*(outp + i), 0); 
+		        printf("%x ",*(outp+i));	
             } 
+            printf("\n");
         }
  
     }
@@ -288,6 +291,7 @@ void audio_init(void)
     
     audio_input_setup();
     LOG_PRINTF(LOG_LEVEL_INFO,"Initialization completed.");
+    audio_start();
 }
 
 static void enc_state_init(audio_enc_t *audio)

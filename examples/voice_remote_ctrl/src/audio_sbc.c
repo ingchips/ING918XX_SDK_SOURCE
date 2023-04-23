@@ -515,7 +515,6 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 	/* Can't fill in crc yet */
 
 	produced = 32;
-
 	crc_header[0] = data[1];
 	crc_header[1] = data[2];
 	crc_pos = 16;
@@ -606,17 +605,28 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 			crc_header[crc_pos >> 3] <<= 4;
 			data[produced >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
 			crc_header[crc_pos >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
-
+			for(int k=0; k<11; k++)
+			{
+			printf("【%d】 ",crc_header[k]);
+			}
+			printf("\n");
 			produced += 4;
 			crc_pos += 4;
 		}
 	}
 
 	/* align the last crc byte */
+	printf("【2】crc_pos = %d\n",crc_pos);
 	if (crc_pos % 8)
 		crc_header[crc_pos >> 3] <<= 8 - (crc_pos % 8);
 
 	data[3] = sbc_crc8(crc_header, crc_pos);
+	printf("data[1]=%d data[3]=%d crc_header=%d crc_pos=%d\n",data[1],data[3],crc_header,crc_pos);
+	for(int k=0; k<11; k++)
+	{
+		printf("【%d】 ",crc_header[k]);
+	}
+	printf("\n");
 
 	sbc_calculate_bits(frame, bits);
 
@@ -625,7 +635,6 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 		for (int j=0; j<8; j++) {
 			bits[i][j] = 3;
 		}
-
 	}
 
 
@@ -661,6 +670,7 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 		data[produced >> 3] <<= 8 - (produced % 8);
 	}
 
+	printf("data[1]=%d\n",data[1]);
 	return (produced + 7) >> 3;
 }
 
@@ -868,8 +878,8 @@ int sbc_encode(sbc_t *sbc,
 	}
 
 	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
-	framelen = sbc_pack_frame(output,&priv->frame, output_len);  
-	 
+	framelen = sbc_pack_frame(output,&priv->frame, output_len); 
+
 	return samples * priv->frame.channels * 2;
 }
 
