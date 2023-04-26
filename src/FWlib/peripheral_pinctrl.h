@@ -2,6 +2,7 @@
 #define __PERIPHERAL_PINCTRL_H__
 
 #include <stdint.h>
+#include "ingsoc.h"
 
 #ifdef    __cplusplus
 extern "C" {    /* allow C++ to use these headers */
