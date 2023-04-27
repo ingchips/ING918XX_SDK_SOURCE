@@ -2,6 +2,8 @@
 #include "ingsoc.h"
 #include "peripheral_usb.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
 // =============================================================================
 // PRIVATE VARIABLES
 // =============================================================================
@@ -1178,4 +1180,6 @@ void USB_SetInEndpointNak(uint8_t ep, uint8_t enable)
     }
   }
 }
+
+#endif
 

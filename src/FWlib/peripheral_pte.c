@@ -1,5 +1,7 @@
 #include "peripheral_pte.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
 void PTE_ClearInt(SYSCTRL_PTE_CHANNEL_ID ch)
 {
     APB_PTE->Channels[ch].Int = 1;
@@ -80,3 +82,4 @@ int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch,
     return 0;
 }
 
+#endif
