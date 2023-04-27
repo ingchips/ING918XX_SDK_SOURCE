@@ -107,8 +107,8 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 	if (frame->mode == MONO || frame->mode == DUAL_CHANNEL) {
 			int bitneed[2][8], loudness, max_bitneed, bitcount, slicecount, bitslice;
 			int ch, sb;
-		for (ch = 0; ch < frame->channels; ch++) {
 
+		for (ch = 0; ch < frame->channels; ch++) {
 			max_bitneed = 0;
 			if (frame->allocation == SNR) {
 				for (sb = 0; sb < subbands; sb++) {
@@ -117,7 +117,6 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 						max_bitneed = bitneed[ch][sb];
 				}
 			} else {
-
 				for (sb = 0; sb < subbands; sb++) {
 					if (frame->scale_factor[ch][sb] == 0)
 						bitneed[ch][sb] = -5;
@@ -520,6 +519,7 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 	crc_pos = 16;
 
 	//scale_factor计算结果相对于官方编码多了7
+	printf("[scale_factor]=(");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
 			frame->scale_factor[ch][sb] = 0;
@@ -532,10 +532,12 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 			}
 			//+
 			//frame->scale_factor[ch][sb] -= 7;
+			printf("%d, ", frame->scale_factor[ch][sb]);
 		}
+		printf(")\r\n");
 	}
 
-//STEP2
+	//STEP2
 	if (frame->mode == SBC_MODE_JOINT_STEREO) {
 		/* like frame->sb_sample but joint stereo */
 		int32_t sb_sample_j[16][2];
@@ -605,43 +607,37 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 			crc_header[crc_pos >> 3] <<= 4;
 			data[produced >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
 			crc_header[crc_pos >> 3] |= frame->scale_factor[ch][sb] & 0x0F;
-			for(int k=0; k<11; k++)
-			{
-			printf("【%d】 ",crc_header[k]);
-			}
-			printf("\n");
 			produced += 4;
 			crc_pos += 4;
 		}
 	}
 
 	/* align the last crc byte */
-	printf("【2】crc_pos = %d\n",crc_pos);
 	if (crc_pos % 8)
 		crc_header[crc_pos >> 3] <<= 8 - (crc_pos % 8);
 
 	data[3] = sbc_crc8(crc_header, crc_pos);
-	printf("data[1]=%d data[3]=%d crc_header=%d crc_pos=%d\n",data[1],data[3],crc_header,crc_pos);
-	for(int k=0; k<11; k++)
-	{
-		printf("【%d】 ",crc_header[k]);
+	printf("[----bits----]=(");
+	for (ch = 0; ch < frame->channels; ch++) {
+		for (sb = 0; sb < frame->subbands; sb++) {
+			printf("%d, ", bits[ch][sb]);
+		}
+		printf(")\r\n");
 	}
-	printf("\n");
 
 	sbc_calculate_bits(frame, bits);
 
-	//for test
-	for (int i=0; i<2; i++) {
-		for (int j=0; j<8; j++) {
-			bits[i][j] = 3;
-		}
-	}
-
-
-	for (ch = 0; ch < frame->channels; ch++) {
+	printf("[---levels---]=(");
+	for (ch = 0; ch < frame->channels; ch++)
+	{
 		for (sb = 0; sb < frame->subbands; sb++)
+		{
 			levels[ch][sb] = (1 << bits[ch][sb]) - 1;
+			printf("%d, ", levels[ch][sb]);
+		}
+		printf(")\r\n");
 	}
+	printf("\r\n");
 
 
 	for (blk = 0; blk < frame->blocks; blk++) {
@@ -670,7 +666,6 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 		data[produced >> 3] <<= 8 - (produced % 8);
 	}
 
-	printf("data[1]=%d\n",data[1]);
 	return (produced + 7) >> 3;
 }
 
@@ -700,13 +695,13 @@ static void sbc_set_defaults(sbc_t *sbc, uint8_t flags)
 	sbc->blocks = SBC_BLK_16;
     sbc->allocation = SBC_AM_SNR;
 	sbc->bitpool = 9;
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+// #if __BYTE_ORDER == __LITTLE_ENDIAN
 	sbc->endian = SBC_LE;
-#elif __BYTE_ORDER == __BIG_ENDIAN
-	sbc->endian = SBC_BE;
-#else
-#error "Unknown byte order"
-#endif
+// #elif __BYTE_ORDER == __BIG_ENDIAN
+	// sbc->endian = SBC_BE;
+// #else
+// #error "Unknown byte order"
+// #endif
 }
 
 int sbc_init(sbc_t *sbc, uint8_t flags)
@@ -832,6 +827,13 @@ int sbc_encode(sbc_t *sbc,
 
 	priv = sbc->priv;
 
+	//打印输入数组
+	// for(int i=0;i<input_len;i++)
+	// {
+	// 	printf("[%d] ",*((int16_t *)input + i));
+	// }
+	// printf("\n");
+
 	if (!priv->init) {
 		priv->frame.frequency = sbc->frequency;
 		priv->frame.mode = sbc->mode;
@@ -868,9 +870,9 @@ int sbc_encode(sbc_t *sbc,
 			int16_t s;
 
 			if (sbc->endian == SBC_LE)
-				s = ptr[0];
+				s = ((ptr[0] & 0x00ff) << 8) | ((ptr[0] & 0xff00) >> 8);
 			else
-				s = (ptr[0] & 0xff) << 8 | ((ptr[1] >> 8) & 0xff);
+				s = ptr[0];
 			ptr++;
 
 			priv->frame.pcm_sample[ch][i] = s;

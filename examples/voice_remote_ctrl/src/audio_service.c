@@ -226,11 +226,10 @@ static void audio_sbc_task(void *pdata)
         {
             for (int i=0; i<framelen; i++) {
                 enc_output_cb(*(outp + i), 0); 
-		        printf("%x ",*(outp+i));	
+		        printf("%c ",*(outp+i));	
             } 
             printf("\n");
         }
- 
     }
 }
 
@@ -291,7 +290,7 @@ void audio_init(void)
     
     audio_input_setup();
     LOG_PRINTF(LOG_LEVEL_INFO,"Initialization completed.");
-    audio_start();
+    // audio_start();
 }
 
 static void enc_state_init(audio_enc_t *audio)

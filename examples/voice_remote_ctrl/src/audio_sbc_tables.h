@@ -32,10 +32,6 @@ static const int sbc_offset8[4][8] = {
 #define SA4(val) ASR(val, SCALE_ANA4_TBL)
 #define SP8(val) ASR(val, SCALE_PROTO8_TBL)
 #define SA8(val) ASR(val, SCALE_ANA8_TBL)
-#define SS4(val) ASR(val, SCALE_SPROTO4_TBL)
-#define SS8(val) ASR(val, SCALE_SPROTO8_TBL)
-#define SN4(val) ASR(val, SCALE_NPROTO4_TBL)
-#define SN8(val) ASR(val, SCALE_NPROTO8_TBL)
 
 static const int32_t _sbc_proto_4[20] = {
 	SP4(0x02cb3e8c), SP4(0x22b63dc0), SP4(0x002329cc), SP4(0x053b7548),
@@ -62,6 +58,11 @@ static const int32_t _sbc_proto_8[40] = {
 	SP8(0x0107b1a8), SP8(0x069fb3c0), SP8(0x4b3db200), SP8(0x00763f48)
 };
 
+
+#define SS4(val) ASR(val, SCALE_SPROTO4_TBL)
+#define SS8(val) ASR(val, SCALE_SPROTO8_TBL)
+#define SN4(val) ASR(val, SCALE_NPROTO4_TBL)
+#define SN8(val) ASR(val, SCALE_NPROTO8_TBL)
 
 static const int32_t sbc_proto_4_40m0[] = {
 	SS4(0x00000000), SS4(0xffa6982f), SS4(0xfba93848), SS4(0x0456c7b8),
