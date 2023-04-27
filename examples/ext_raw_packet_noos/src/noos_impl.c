@@ -51,8 +51,8 @@ static const gen_os_driver_t driver =
     .queue_recv_msg = NULL,
     .queue_send_msg = NULL,
     
-    .free = NULL,
-    .malloc = NULL,
+    .free = free,
+    .malloc = malloc,
     
     .enter_critical = enter_critical,
     .leave_critical = leave_critical,
