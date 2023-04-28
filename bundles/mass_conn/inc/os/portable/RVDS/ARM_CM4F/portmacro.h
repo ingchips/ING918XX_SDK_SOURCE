@@ -1,6 +1,6 @@
 /*
- * FreeRTOS Kernel V10.2.1
- * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V10.1.1
+ * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,6 +25,7 @@
  * 1 tab == 4 spaces!
  */
 
+
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
 
@@ -41,9 +42,6 @@ extern "C" {
  * These settings should not be altered.
  *-----------------------------------------------------------
  */
-
-/* IAR includes. */
-#include <intrinsics.h>
 
 /* Type definitions. */
 #define portCHAR		char
@@ -75,30 +73,57 @@ typedef unsigned long UBaseType_t;
 #define portSTACK_GROWTH			( -1 )
 #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
 #define portBYTE_ALIGNMENT			8
+
+/* Constants used with memory barrier intrinsics. */
+#define portSY_FULL_READ_WRITE		( 15 )
+
 /*-----------------------------------------------------------*/
 
 /* Scheduler utilities. */
-#define portYIELD()											\
-{															\
-	/* Set a PendSV to request a context switch. */			\
-	portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;			\
-	__DSB();												\
-	__ISB();												\
+#define portYIELD()																\
+{																				\
+	/* Set a PendSV to request a context switch. */								\
+	portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;								\
+																				\
+	/* Barriers are normally not required but do ensure the code is completely	\
+	within the specified behaviour for the architecture. */						\
+	__dsb( portSY_FULL_READ_WRITE );											\
+	__isb( portSY_FULL_READ_WRITE );											\
 }
+/*-----------------------------------------------------------*/
 
 #define portNVIC_INT_CTRL_REG		( * ( ( volatile uint32_t * ) 0xe000ed04 ) )
 #define portNVIC_PENDSVSET_BIT		( 1UL << 28UL )
 #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired != pdFALSE ) portYIELD()
 #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
+/*-----------------------------------------------------------*/
+
+/* Critical section management. */
+extern void vPortEnterCritical( void );
+extern void vPortExitCritical( void );
+
+#define portDISABLE_INTERRUPTS()				vPortRaiseBASEPRI()
+#define portENABLE_INTERRUPTS()					vPortSetBASEPRI( 0 )
+#define portENTER_CRITICAL()					vPortEnterCritical()
+#define portEXIT_CRITICAL()						vPortExitCritical()
+#define portSET_INTERRUPT_MASK_FROM_ISR()		ulPortRaiseBASEPRI()
+#define portCLEAR_INTERRUPT_MASK_FROM_ISR(x)	vPortSetBASEPRI(x)
 
 /*-----------------------------------------------------------*/
 
-/* Architecture specific optimisations. */
+/* Tickless idle/low power functionality. */
+#ifndef portSUPPRESS_TICKS_AND_SLEEP
+	extern void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime );
+	#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdleTime )
+#endif
+/*-----------------------------------------------------------*/
+
+/* Port specific optimisations. */
 #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
 	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 #endif
 
-#if( configUSE_PORT_OPTIMISED_TASK_SELECTION == 1 )
+#if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
 
 	/* Check the configuration. */
 	#if( configMAX_PRIORITIES > 32 )
@@ -111,35 +136,9 @@ typedef unsigned long UBaseType_t;
 
 	/*-----------------------------------------------------------*/
 
-	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - ( ( uint32_t ) __CLZ( ( uxReadyPriorities ) ) ) )
+	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - ( uint32_t ) __clz( ( uxReadyPriorities ) ) )
 
-#endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
-/*-----------------------------------------------------------*/
-
-/* Critical section management. */
-extern void vPortEnterCritical( void );
-extern void vPortExitCritical( void );
-
-#define portDISABLE_INTERRUPTS()							\
-{															\
-	__set_BASEPRI( configMAX_SYSCALL_INTERRUPT_PRIORITY );	\
-	__DSB();												\
-	__ISB();												\
-}
-
-#define portENABLE_INTERRUPTS()					__set_BASEPRI( 0 )
-#define portENTER_CRITICAL()					vPortEnterCritical()
-#define portEXIT_CRITICAL()						vPortExitCritical()
-#define portSET_INTERRUPT_MASK_FROM_ISR()		__get_BASEPRI(); portDISABLE_INTERRUPTS()
-#define portCLEAR_INTERRUPT_MASK_FROM_ISR(x)	__set_BASEPRI( x )
-/*-----------------------------------------------------------*/
-
-/* Tickless idle/low power functionality. */
-#ifndef portSUPPRESS_TICKS_AND_SLEEP
-	extern void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime );
-	#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdleTime )
-#endif
-
+#endif /* taskRECORD_READY_PRIORITY */
 /*-----------------------------------------------------------*/
 
 /* Task function macros as described on the FreeRTOS.org WEB site.  These are
@@ -157,13 +156,93 @@ not necessary for to use this port.  They are defined so the common demo files
 /* portNOP() is not required by this port. */
 #define portNOP()
 
+#define portINLINE __inline
+
+#ifndef portFORCE_INLINE
+	#define portFORCE_INLINE __forceinline
+#endif
+
 /*-----------------------------------------------------------*/
 
-/* Suppress warnings that are generated by the IAR tools, but cannot be fixed in
-the source code because to do so would cause other compilers to generate
-warnings. */
-#pragma diag_suppress=Pe191
-#pragma diag_suppress=Pa082
+static portFORCE_INLINE void vPortSetBASEPRI( uint32_t ulBASEPRI )
+{
+	__asm
+	{
+		/* Barrier instructions are not used as this function is only used to
+		lower the BASEPRI value. */
+		msr basepri, ulBASEPRI
+	}
+}
+/*-----------------------------------------------------------*/
+
+static portFORCE_INLINE void vPortRaiseBASEPRI( void )
+{
+uint32_t ulNewBASEPRI = configMAX_SYSCALL_INTERRUPT_PRIORITY;
+
+	__asm
+	{
+		/* Set BASEPRI to the max syscall priority to effect a critical
+		section. */
+		msr basepri, ulNewBASEPRI
+		dsb
+		isb
+	}
+}
+/*-----------------------------------------------------------*/
+
+static portFORCE_INLINE void vPortClearBASEPRIFromISR( void )
+{
+	__asm
+	{
+		/* Set BASEPRI to 0 so no interrupts are masked.  This function is only
+		used to lower the mask in an interrupt, so memory barriers are not 
+		used. */
+		msr basepri, #0
+	}
+}
+/*-----------------------------------------------------------*/
+
+static portFORCE_INLINE uint32_t ulPortRaiseBASEPRI( void )
+{
+uint32_t ulReturn, ulNewBASEPRI = configMAX_SYSCALL_INTERRUPT_PRIORITY;
+
+	__asm
+	{
+		/* Set BASEPRI to the max syscall priority to effect a critical
+		section. */
+		mrs ulReturn, basepri
+		msr basepri, ulNewBASEPRI
+		dsb
+		isb
+	}
+
+	return ulReturn;
+}
+/*-----------------------------------------------------------*/
+
+static portFORCE_INLINE BaseType_t xPortIsInsideInterrupt( void )
+{
+uint32_t ulCurrentInterrupt;
+BaseType_t xReturn;
+
+	/* Obtain the number of the currently executing interrupt. */
+	__asm
+	{
+		mrs ulCurrentInterrupt, ipsr
+	}
+
+	if( ulCurrentInterrupt == 0 )
+	{
+		xReturn = pdFALSE;
+	}
+	else
+	{
+		xReturn = pdTRUE;
+	}
+
+	return xReturn;
+}
+
 
 #ifdef __cplusplus
 }

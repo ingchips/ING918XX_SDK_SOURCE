@@ -6,6 +6,7 @@ extern "C" {	/* allow C++ to use these headers */
 #endif	/* __cplusplus */
 
 #include <stdint.h>
+#include "ingsoc.h"
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
