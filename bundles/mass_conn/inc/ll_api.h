@@ -20,6 +20,24 @@
 extern "C" {
 #endif
 
+typedef enum ll_config_item_e
+{
+    // Pre-wake up to schedule connection events properly
+    // when slave latency is used.
+    // Range: 1~255. Default: 4 (Unit: 0.625ms)
+    LL_CFG_SLAVE_LATENCY_PRE_WAKE_UP,
+} ll_config_item_t;
+
+/**
+ ****************************************************************************************
+ * @brief Config LL specific parameters
+ *
+ * @param[in]  item             parameter to be configured (see `ll_config_item_t`)
+ * @param[in]  value            value of the parameter
+ ****************************************************************************************
+ */
+void ll_config(ll_config_item_t item, uint32_t value);
+
 /**
  ****************************************************************************************
  * @brief set Tx power range
