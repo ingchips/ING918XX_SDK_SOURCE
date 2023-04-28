@@ -104,23 +104,31 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 {
 	uint8_t sf = frame->frequency;
 
-	if (frame->mode == MONO || frame->mode == DUAL_CHANNEL) {
-			int bitneed[2][8], loudness, max_bitneed, bitcount, slicecount, bitslice;
-			int ch, sb;
+	if(frame->mode == MONO || frame->mode == DUAL_CHANNEL)
+	{
+		int bitneed[2][8], loudness, max_bitneed, bitcount, slicecount, bitslice;
+		int ch, sb;
 
-		for (ch = 0; ch < frame->channels; ch++) {
+		for(ch = 0; ch < frame->channels; ch++)
+		{
 			max_bitneed = 0;
-			if (frame->allocation == SNR) {
-				for (sb = 0; sb < subbands; sb++) {
+			if(frame->allocation == SNR)
+			{
+				for(sb = 0; sb < subbands; sb++)
+				{
 					bitneed[ch][sb] = frame->scale_factor[ch][sb];
 					if (bitneed[ch][sb] > max_bitneed)
 						max_bitneed = bitneed[ch][sb];
 				}
-			} else {
-				for (sb = 0; sb < subbands; sb++) {
-					if (frame->scale_factor[ch][sb] == 0)
+			} 
+			else
+			{
+				for(sb = 0; sb < subbands; sb++)
+				{
+					if(frame->scale_factor[ch][sb] == 0)
 						bitneed[ch][sb] = -5;
-					else {
+					else
+					{
 						if (subbands == 4)
 							loudness = frame->scale_factor[ch][sb] - sbc_offset4[sf][sb];
 						else
@@ -142,7 +150,8 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 				bitslice--;
 				bitcount += slicecount;
 				slicecount = 0;
-				for (sb = 0; sb < subbands; sb++) {
+				for(sb = 0; sb < subbands; sb++)
+				{
 					if ((bitneed[ch][sb] > bitslice + 1) && (bitneed[ch][sb] < bitslice + 16))
 						slicecount++;
 					else if (bitneed[ch][sb] == bitslice + 1)
@@ -150,35 +159,42 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 				}
 			} while (bitcount + slicecount < frame->bitpool);
 
-			if (bitcount + slicecount == frame->bitpool) {
+			if(bitcount + slicecount == frame->bitpool)
+			{
 				bitcount += slicecount;
 				bitslice--;
 			}
 
-			for (sb = 0; sb < subbands; sb++) {
+			for(sb = 0; sb < subbands; sb++)
+			{
 				if (bitneed[ch][sb] < bitslice + 2)
 					bits[ch][sb] = 0;
-				else {
+				else
+				{
 					bits[ch][sb] = bitneed[ch][sb] - bitslice;
 					if (bits[ch][sb] > 16)
 						bits[ch][sb] = 16;
 				}
 			}
 
-			for (sb = 0; bitcount < frame->bitpool &&
-							sb < subbands; sb++) {
-				if ((bits[ch][sb] >= 2) && (bits[ch][sb] < 16)) {
+			for(sb = 0; bitcount < frame->bitpool && sb < subbands; sb++)
+			{
+				if((bits[ch][sb] >= 2) && (bits[ch][sb] < 16))
+				{
 					bits[ch][sb]++;
 					bitcount++;
-				} else if ((bitneed[ch][sb] == bitslice + 1) && (frame->bitpool > bitcount + 1)) {
+				}
+				else if((bitneed[ch][sb] == bitslice + 1) && (frame->bitpool > bitcount + 1))
+				{
 					bits[ch][sb] = 2;
 					bitcount += 2;
 				}
 			}
 
-			for (sb = 0; bitcount < frame->bitpool &&
-							sb < subbands; sb++) {
-				if (bits[ch][sb] < 16) {
+			for(sb = 0; bitcount < frame->bitpool && sb < subbands; sb++)
+			{
+				if(bits[ch][sb] < 16)
+				{
 					bits[ch][sb]++;
 					bitcount++;
 				}
