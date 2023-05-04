@@ -127,15 +127,15 @@ void handle_command(char *cmd_line)
     int i;
     while ((*param != ' ') && (*param != '\0')) param++;
     *param = '\0'; param++;
-    
+
     for (i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
     {
         if (strcasecmp(cmds[i].cmd, cmd_line) == 0)
             break;
     }
     if (i >= sizeof(cmds) / sizeof(cmds[0]))
-        goto show_help;   
-    
+        goto show_help;
+
     cmds[i].handler(param);
     return;
 
@@ -157,7 +157,7 @@ static void append_data(str_buf_t *buf, const char *d, const uint16_t len)
 {
     if (buf->size + len > sizeof(buf->buf))
         buf->size = 0;
-    
+
     if (buf->size + len <= sizeof(buf->buf))
     {
         memcpy(buf->buf + buf->size, d, len);
@@ -176,11 +176,11 @@ void console_rx_data(const char *d, uint8_t len)
         }
     }
     if (len == 0) return;
-    
+
     append_data(&input, d, len);
 
-    if ((input.size > 0) && 
-        ((input.buf[input.size - 1] == '\r') || (input.buf[input.size - 1] == '\r')))
+    if ((input.size > 0) &&
+        ((input.buf[input.size - 1] == '\r') || (input.buf[input.size - 1] == '\n')))
     {
         int16_t t = input.size - 2;
         while ((t > 0) && ((input.buf[t] == '\r') || (input.buf[t] == '\n'))) t--;

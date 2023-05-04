@@ -1,7 +1,7 @@
-#include "profile.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "profile.h"
 #include "platform_api.h"
 #include "att_db.h"
 #include "gap.h"
@@ -165,9 +165,6 @@ void run_test(struct btstack_synced_runner *runner,
     LOG_PLAIN("INIT : %d (%.1f%%)", init_pass, init_pass * 100. / n);
     LOG_PLAIN("KEEP : %d (%.1f%%)", keep_pass, keep_pass * 100. / n);
 
-
-    //exit(0);
-
     LOG_PLAIN("Disconnect status code statistics (code, number)");
     for (int i = 0; i < sizeof(error_codes_stat) / sizeof(error_codes_stat[0]); i++)
     {
@@ -184,10 +181,10 @@ extern "C" void synced_run_test(struct btstack_synced_runner *runner, void *user
     run_test(runner,
              target,
              2000,
-             10000,
              1000,
              1000,
-             5);
+             1000,
+             2);
 }
 
 static struct btstack_synced_runner *runner = NULL;

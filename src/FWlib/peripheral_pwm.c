@@ -136,7 +136,7 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable)
 {
     uint32_t mask = APB_PWM->Channels[channel_index].Ctrl0 & ~(0x1ful << 20);
-    mask |= (enable ? 0x3 : 0x0) << 20;
+    mask |= (enable ? 0x1 : 0x0) << 20;
     mask |= (trig_cfg & 0x7) << 21;
     APB_PWM->Channels[channel_index].Ctrl0 = mask;
 }
@@ -169,6 +169,23 @@ uint32_t PCAP_ReadCounter(void)
     return APB_PWM->CapCounter;
 }
 
+void PWM_FifoTriggerEnable(const uint8_t channel_index, uint8_t enable, uint32_t mask)
+{
+    if(enable)
+    {
+        APB_PWM->Channels[channel_index].Ctrl0 |= mask;
+    }
+    else
+    {
+        APB_PWM->Channels[channel_index].Ctrl0 &= ~(mask);
+    }
+}
+
+uint32_t PWM_GetFifoStatus(const uint8_t channel_index)
+{
+    return(APB_PWM->Channels[channel_index].Ctrl1);
+}
+
 #endif
 
 void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty)
@@ -188,10 +205,9 @@ void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, cons
     PWM_HaltCtrlEnable(channel_index, 0);
 }
 
-#define PWM_LED_BASE_FREQ    1000000
 void PWM_SetupSingle(const uint8_t channel_index, const uint32_t pulse_width)
-{ 
-    uint32_t pera = PWM_CLOCK_FREQ / (PWM_LED_BASE_FREQ * 1000 / pulse_width);
+{
+    uint32_t pera = PWM_CLOCK_FREQ / (1000000000 / pulse_width);
     PWM_Enable(channel_index, 0);
     PWM_SetPeraThreshold(channel_index, pera);
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)

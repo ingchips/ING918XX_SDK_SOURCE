@@ -183,7 +183,10 @@ proc platform_switch_app*(app_addr: uint32) {.importc: "platform_switch_app",
 ##  @brief Write value to the persistent register, of which the value is kept even
 ##         in power saving mode.
 ##
-##  @param[in] value              a FOUR bit value
+## For ING918: the least FOUR significant bits of `value` are saved;
+## For ING916: the least TWO  significant bits of `value` are saved.
+##
+## @param[in] value              value
 ## ***************************************************************************************
 ##
 
@@ -550,6 +553,8 @@ type
 ##  @param[out]  size                data size
 ##  @param[out]  rssi                RSSI in dBm
 ##  @return                          0 if successful else error code
+##                                   Note: `air_time`, `header` and `rssi` are also available
+##                                         even if error code is not in {1, 2}.
 ## ***************************************************************************************
 ##
 ##  int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,

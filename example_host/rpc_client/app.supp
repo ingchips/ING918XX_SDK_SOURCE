@@ -1,0 +1,19 @@
+#
+# App specific suppressions
+#
+
+{
+  sync runner initialization
+  Memcheck:Leak
+  ...
+  src:conn_test.cpp:207
+  ...
+}
+
+{
+  initialization
+  Memcheck:Leak
+  ...
+  src:conn_test.cpp:208
+  ...
+}

@@ -1,13 +1,9 @@
 #ifndef INGSOC_H
 #define INGSOC_H
 
-#include "../__ingsoc.h"
-
 #ifdef __cplusplus
  extern "C" {
 #endif
-
-#define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_916
 
 typedef enum IRQn
 {
@@ -62,7 +58,7 @@ typedef enum
     PLATFORM_CB_IRQ_PTE1,
     PLATFORM_CB_IRQ_PTE2,
     PLATFORM_CB_IRQ_PTE3,
-    PLATFORM_CB_IRQ_RC64M_TUNE,
+    PLATFORM_CB_IRQ_SLOWRC_TUNE,
     PLATFORM_CB_IRQ_32K_CNT,
 
     PLATFORM_CB_IRQ_MAX
@@ -84,6 +80,10 @@ typedef enum
 
 #include <core_cm4.h>                       /* Processor and core peripherals                    */
 #include <stdint.h>
+
+#include "../__ingsoc.h"
+
+#define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_916
 
 /* ================================================================================ */
 /* ================       Device Specific Peripheral Section       ================ */
@@ -256,6 +256,8 @@ typedef struct
     __IO uint32_t Alarm;                // 0x14
     __IO uint32_t Ctrl;                 // 0x18
     __IO uint32_t St;                   // 0x1c
+    __IO uint32_t Trim;                 // 0x20
+    __IO uint32_t SEC_CFG;              // 0x24
 } RTC_TypeDef;
 
 typedef struct tagDMA_Descriptor
@@ -497,6 +499,20 @@ typedef struct
     __IO uint32_t      UsbPCConfig;     //0x0E00
 } USB_TypeDef;
 
+typedef struct
+{
+    __IO uint32_t      key_scanner_ctrl0; //0x0000
+    __IO uint32_t      key_scanner_ctrl1; //0x0004
+    __IO uint32_t      key_row_mask_ctrl; //0x0008
+    __IO uint32_t      key_col_mask_ctrl; //0x000C
+    __IO uint32_t      key_int_en;        //0x0010
+    __IO uint32_t      key_int;           //0x0014
+    __IO uint32_t      fifo_status;       //0x0018
+    __IO uint32_t      key_data;          //0x001C
+    __IO uint32_t      key_trig;          //0x0020
+    __IO uint32_t      key_err_cfg;       //0x0024
+} KEYSCAN_TypeDef;
+
 /******************************************************************************/
 /*                         memory map                                         */
 /******************************************************************************/
@@ -564,6 +580,7 @@ typedef struct
 #define APB_EFUSE          ((EFUSE_TypeDef *)APB_EFUSE_BASE)
 #define APB_IR             ((IR_TypeDef *)APB_IR_BASE)
 #define AHB_USB            ((USB_TypeDef *)AHB_USB_BASE)
+#define APB_KEYSCAN        ((KEYSCAN_TypeDef *)APB_KEYSCAN_BASE)
 
 #define APB_SPI            APB_SSP1
 #define AHB_QSPI           AHB_SSP0
@@ -576,20 +593,23 @@ typedef struct
 
 #ifdef USE_STDPERIPH_DRIVER
     #include "peripheral_pinctrl.h"
-    #include "peripheral_sysctrl.h"
-    #include "peripheral_uart.h"
-    #include "peripheral_ssp.h"
+    #include "peripheral_adc.h"
+    #include "peripheral_comparator.h"
+    #include "peripheral_dma.h"
+    #include "peripheral_efuse.h"
     #include "peripheral_gpio.h"
-    #include "peripheral_timer.h"
-    #include "peripheral_pwm.h"
     #include "peripheral_i2c.h"
     #include "peripheral_i2s.h"
-    #include "peripheral_pdm.h"
-    #include "peripheral_rtc.h"
-    #include "peripheral_adc.h"
-    #include "peripheral_efuse.h"
-    #include "peripheral_dma.h"
     #include "peripheral_ir.h"
+    #include "peripheral_pdm.h"
+    #include "peripheral_pte.h"
+    #include "peripheral_pwm.h"
+    #include "peripheral_qdec.h"
+    #include "peripheral_rtc.h"
+    #include "peripheral_ssp.h"
+    #include "peripheral_sysctrl.h"
+    #include "peripheral_timer.h"
+    #include "peripheral_uart.h"
     #include "peripheral_usb.h"
 #endif
 

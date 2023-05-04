@@ -41,15 +41,9 @@ typedef struct le_device_memory_db {
 
 #pragma pack (pop)
 
-typedef struct white_list
-{
-    uint8_t addr_type;
-    bd_addr_t addr;
-}white_list_t;
-
 /**
 
-	LE Device DB for pure LE Peripherals is only required for signed writes
+	LE Device DB is only required for signed writes
 
 	Per bonded device, it can store
 	- it stores the Identity Resolving Key (IRK) and its address to resolve private addresses
@@ -59,7 +53,6 @@ typedef struct white_list
 		The Counter is necessary to prevent reply attacks
 
 */
-
 
 // LE Device db interface
 

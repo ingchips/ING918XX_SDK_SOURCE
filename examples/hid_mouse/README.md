@@ -6,7 +6,9 @@ This example demonstrates how to:
 * Enable simple paring;
 * Manage bonding/paring data;
 * Report _fake_ mouse movements;
-* Use resolvable address.
+* Use resolvable address;
+* Use high duty adv;
+* Use QDEC (ING916xx).
 
 Note:
     * Press `KEY_4` for sevaral seconds to clear bonding

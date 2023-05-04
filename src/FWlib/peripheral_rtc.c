@@ -1,5 +1,13 @@
 #include "ingsoc.h"
 
+static uint32_t RTC_ReadStable(volatile uint32_t * reg)
+{
+    uint32_t r = *reg;
+    while ((r != *reg) || (r != *reg))
+        r = *reg;
+    return r;
+}
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 void RTC_Enable(const uint8_t flag)
@@ -7,14 +15,6 @@ void RTC_Enable(const uint8_t flag)
     volatile uint32_t * reg = (volatile uint32_t *)(APB_RTC_BASE + 0x130);
     const uint32_t mask = 1 << 3;
     *reg = flag == 0 ? *reg & ~mask : *reg | mask;
-}
-
-static uint32_t RTC_ReadStable(volatile uint32_t * reg)
-{
-    uint32_t r = *reg;
-    while ((r != *reg) || (r != *reg))
-        r = *reg;
-    return r;
 }
 
 uint32_t RTC_CurrentHigh(void)
@@ -129,9 +129,131 @@ void RTC_ClearIntState(uint32_t state)
 void RTC_EnableDeepSleepWakeupSource(uint8_t enable)
 {
     uint32_t t = io_read(AON2_CTRL_BASE + 0x12c);
-    if (enable) t |= 1 << 6;
-    else t &= ~(1u << 6);
+    if (enable) 
+    {
+        t |= 1 << 6;
+        APB_RTC->Ctrl |= 1 << 1;
+    }
+    else
+    {
+        t &= ~(1u << 6);
+        APB_RTC->Ctrl &= ~((uint32_t)0x1 << 1);
+    }
     io_write(AON2_CTRL_BASE + 0x12c, t);
 }
 
+#define bsRTC_SEC_TRIM      0
+#define bsRTC_MIN_TRIM      8
+#define bsRTC_HOUR_TRIM     16
+#define bsRTC_DAY_TRIM      24
+
+#define _RTC_TRIM_MASK   (0x9ful)
+
+void RTC_DayCntTrim(uint8_t trim, rtc_trim_direction_t dir)
+{
+    uint8_t v = trim | (dir << 7);
+    APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_DAY_TRIM;
+    APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_DAY_TRIM;
+}
+
+void RTC_HourCntTrim(uint8_t trim, rtc_trim_direction_t dir)
+{
+    uint8_t v = trim | (dir << 7);
+    APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_HOUR_TRIM;
+    APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_HOUR_TRIM;
+}
+
+void RTC_MinCntTrim(uint8_t trim, rtc_trim_direction_t dir)
+{
+    uint8_t v = trim | (dir << 7);
+    APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_MIN_TRIM;
+    APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_MIN_TRIM;
+}
+
+void RTC_SecCntTrim(uint8_t trim, rtc_trim_direction_t dir)
+{
+    uint8_t v = trim | (dir << 7);
+    APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_SEC_TRIM;
+    APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_SEC_TRIM;
+}
+
+void RTC_SetAllTrimValue(uint8_t day_trim, uint8_t hour_trim, uint8_t min_trim,uint8_t sec_trim)
+{
+    uint32_t v = ((uint32_t)(day_trim & _RTC_TRIM_MASK) << bsRTC_DAY_TRIM)
+                | ((uint32_t)(hour_trim & _RTC_TRIM_MASK) << bsRTC_HOUR_TRIM)
+                | ((uint32_t)(min_trim & _RTC_TRIM_MASK) << bsRTC_MIN_TRIM)
+                | ((uint32_t)(sec_trim & _RTC_TRIM_MASK) << bsRTC_SEC_TRIM);
+    APB_RTC->Trim &= 0;
+    APB_RTC->Trim |= v;
+}
+
+uint8_t RTC_GetAllTrimValue(uint8_t *hour_trim, uint8_t *min_trim,uint8_t *sec_trim)
+{
+    uint32_t s = APB_RTC->Trim;
+    *hour_trim = (s >> bsRTC_HOUR_TRIM) & _RTC_TRIM_MASK;
+    *min_trim = (s >> bsRTC_MIN_TRIM) & _RTC_TRIM_MASK;
+    *sec_trim = (s >> bsRTC_SEC_TRIM) & _RTC_TRIM_MASK;
+
+    return (s >> bsRTC_DAY_TRIM) & _RTC_TRIM_MASK;
+}
+
+void RTC_ClearAllTrimValue(void)
+{
+    APB_RTC->Trim &= 0;
+}
+
+#define _RTC_CNT_MASK   0x7fful
+
+uint32_t RTC_CurrentHigh(void)
+{
+    volatile uint32_t * reg = (volatile uint32_t *)(AON2_CTRL_BASE + 0xBC);
+    uint32_t r = RTC_ReadStable(reg);
+    return r & _RTC_CNT_MASK;
+}
+
+uint32_t RTC_Current(void)
+{
+    volatile uint32_t * reg = (volatile uint32_t *)(AON2_CTRL_BASE + 0xB8);
+    return RTC_ReadStable(reg);
+}
+
+uint64_t RTC_CurrentFull(void)
+{
+    union
+    {
+        struct
+        {
+            uint32_t low;
+            uint32_t high;
+        } parts;
+        uint64_t v;
+    } r;
+    uint32_t t;
+    r.parts.low = RTC_Current();
+    r.parts.high = RTC_CurrentHigh();
+    t = RTC_Current();
+    if (t < r.parts.low)
+    {
+        r.parts.high = RTC_CurrentHigh();
+        r.parts.low = t;
+    }
+    return r.v;
+}
+
+void RTC_EnableFreeRun(uint8_t enable)
+{
+    #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE 
+    #define AON1_REG3   (volatile uint32_t *)(AON1_CTRL_BASE + 0XC) 
+
+    if (enable)
+    {
+        *AON1_REG0 |= 1u << 3;
+        *AON1_REG3 |= 1u << 4;
+    }
+    else
+    {
+        *AON1_REG0 &= ~(1u << 3);
+        *AON1_REG3 &= ~(1u << 4);
+    }
+}
 #endif

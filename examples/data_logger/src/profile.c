@@ -755,7 +755,7 @@ static int ring_peek_data(const void *data, int len, int has_more, FIL *fil)
 
 static void write_back_task(void *pdata)
 {
-    unsigned int cnt;
+    unsigned int cnt = 0;
     for (;;)
     {
         xSemaphoreTake(sem_datamark,  500);

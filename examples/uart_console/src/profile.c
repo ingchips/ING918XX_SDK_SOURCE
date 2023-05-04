@@ -34,9 +34,6 @@ extern trace_air_t trace_ctx;
 #define RX_GOLDEN_RAGE_MIN (-75)
 #define RX_GOLDEN_RAGE_MAX (-50)
 
-#define OPCODE(ogf, ocf)            (ocf | ogf << 10)
-#define OPCODE_READ_RSSI            OPCODE(OGF_STATUS_PARAMETERS, 0x05)
-
 sm_persistent_t sm_persistent =
 {
     .er = {1, 2, 3},
@@ -579,7 +576,7 @@ void unsub_to_char(int handle)
 
 void set_phy(int phy)
 {
-    phy_bittypes_t phy_bit;
+    phy_bittypes_t phy_bit = 0;
     phy_option_t   phy_opt = HOST_PREFER_S8_CODING;
     switch (phy)
     {

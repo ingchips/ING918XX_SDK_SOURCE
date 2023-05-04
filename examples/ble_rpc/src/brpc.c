@@ -843,6 +843,42 @@ static void handle_call(struct rpc_call_frame *call, int len)
         }
         return;
 
+    case ID_sys_aligned_read_mem:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                uint32_t addr;
+                int      len;
+            } *_param = (struct _param *)call->body;
+            #pragma pack (pop)
+            uint32_t *b = (uint32_t *)GEN_OS()->malloc(_param->len);
+            uint32_t *p = (uint32_t *)(uintptr_t)_param->addr;
+            int i;
+            for (i = 0; i < _param->len / sizeof(uint32_t); i++)
+                b[i] = p[i];
+            send_ret_response(ID_sys_aligned_read_mem, _param->len, b);
+            GEN_OS()->free(b);
+        }
+        return;
+
+    case ID_sys_aligned_write_mem:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                uint32_t addr;
+                uint32_t data[0];
+            } *_param = (struct _param *)call->body;
+            #pragma pack (pop)
+            len -= sizeof(_param->addr);
+            uint32_t *p = (uint32_t *)(uintptr_t)_param->addr;
+            int i;
+            for (i = 0; i < len / sizeof(uint32_t); i++)
+                p[i] = _param->data[i];
+        }
+        return;
+
     case ID_att_set_db:
         {
             #pragma pack (push, 1)

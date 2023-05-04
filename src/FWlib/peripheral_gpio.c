@@ -43,6 +43,11 @@ uint8_t GIO_ReadValue(const GIO_Index_t io_index)
     return (*GPIO_DI >> io_index) & 1;
 }
 
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index)
+{
+    return (*GPIO_DO >> io_index) & 1;
+}
+
 void GIO_ConfigIntSource(const GIO_Index_t io_index, const uint8_t enable, const GIO_IntTriggerType_t type)
 {
     GIO_MaskedWrite(GPIO_LV, io_index, type);
@@ -104,6 +109,12 @@ uint8_t GIO_ReadValue(const GIO_Index_t io_index)
 {
     DEF_GIO_AND_PIN(io_index);
     return (pDef->DataIn >> index) & 1;
+}
+
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    return (pDef->DataOut >> index) & 1;
 }
 
 static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t type)
@@ -210,11 +221,7 @@ void GIO_EnableRetentionGroupA(uint8_t enable)
 
 #define AON2_SLEEP_CTRL     (AON2_CTRL_BASE + 0x1A8)
 
-#ifdef __GNUC__
-#define nop(n) do { int i = n; while (i--) __asm("NOP"); } while (0)
-#else
-#define nop(n) do { int i = n; while (i--) __nop(); } while (0)
-#endif
+#define nop(n) do { int i = n; while (i--) __NOP(); } while (0)
 
 void GIO_EnableRetentionGroupB(uint8_t enable)
 {
@@ -255,7 +262,7 @@ void GIO_EnableHighZGroupB(uint8_t enable)
 int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
         uint8_t level, pinctrl_pull_mode_t pull)
 {
-    if ((0 <= io_index) && (io_index <= 17)
+    if ((io_index <= 17)
      || (21 <= io_index) && (io_index <= 25)
      || (29 <= io_index) && (io_index <= 37))
     {
@@ -300,8 +307,9 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
     return 0;
 }
 
-void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable)
+void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level)
 {
+    GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 9, (level & 1) ^ 1);
     GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 10, enable);
 }
 
@@ -315,6 +323,12 @@ void GIO_ClearBits(const uint64_t index_mask)
 {
     APB_GPIO0->DoutClear |= index_mask & 0x1fffff;
     APB_GPIO1->DoutClear |= index_mask >> 21;
+}
+
+void GIO_ToggleBits(const uint64_t index_mask)
+{
+    APB_GPIO0->DataOut ^= index_mask & 0x1fffff;
+    APB_GPIO1->DataOut ^= index_mask >> 21;
 }
 
 #endif

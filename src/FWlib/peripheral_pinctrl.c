@@ -310,6 +310,8 @@ const uint8_t io_output_source_map[IO_PIN_NUMBER][19] =
 
 static int source_id_on_pin(uint8_t io_pin_index, io_source_t source)
 {
+    if (io_pin_index >= IO_PIN_NUMBER) return -1;
+
     const uint8_t *map = io_output_source_map[io_pin_index];
     int r = 0;
     int i = source - 1;
@@ -361,10 +363,11 @@ static int PINCTRL_SelInput(uint8_t io_pin,
     return 0;
 }
 
-int PINCTRL_SelSwIn(uint8_t io_pin_tms, uint8_t io_pin_tck)
+int PINCTRL_SelSwIn(uint8_t io_pin_dio, uint8_t io_pin_clk)
 {
-    if (PINCTRL_SelInput(io_pin_tms, IO_SOURCE_SW_TMS, 0, 5, 0)) return -1;
-    if (PINCTRL_SelInput(io_pin_tck, IO_SOURCE_SW_TCK, 0, 5, 5)) return -2;
+    if (PINCTRL_SelInput(io_pin_dio, IO_SOURCE_SW_DIO, 0, 5, 0)) return -1;
+    if (PINCTRL_SelInput(io_pin_clk, IO_SOURCE_SW_CLK, 0, 5, 5)) return -2;
+    PINCTRL_SetPadMux(io_pin_dio, IO_SOURCE_SW_DATA_OUT);
     return 0;
 }
 
@@ -438,6 +441,36 @@ int PINCTRL_SelUartIn(uart_port_t port,
     return 0;
 }
 
+void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index)
+{
+    switch (port)
+    {
+    case UART_PORT_0:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART0_RXD, 3, 5, 15);
+        break;
+    case UART_PORT_1:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART1_RXD, 4, 5, 0);
+        break;
+    default:
+        break;
+    }
+}
+
+void PINCTRL_SelUartCtsIn(const uart_port_t port, const uint8_t io_pin_index)
+{
+    switch (port)
+    {
+    case UART_PORT_0:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART0_CTS, 3, 5, 20);
+        break;
+    case UART_PORT_1:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART1_CTS, 4, 5, 5);
+        break;
+    default:
+        break;
+    }
+}
+
 int PINCTRL_SelI2cIn(i2c_port_t port,
                       uint8_t io_pin_scl,
                       uint8_t io_pin_sda)
@@ -447,15 +480,42 @@ int PINCTRL_SelI2cIn(i2c_port_t port,
     case I2C_PORT_0:
         if (PINCTRL_SelInput(io_pin_scl, IO_SOURCE_I2C0_SCL_IN, 4, 5, 10)) return -1;
         if (PINCTRL_SelInput(io_pin_sda, IO_SOURCE_I2C0_SDA_IN, 4, 5, 15)) return -1;
+        PINCTRL_SetPadMux(io_pin_scl, IO_SOURCE_I2C0_SCL_OUT);
+        PINCTRL_SetPadMux(io_pin_sda, IO_SOURCE_I2C0_SDA_OUT);
         break;
     case I2C_PORT_1:
         if (PINCTRL_SelInput(io_pin_scl, IO_SOURCE_I2C1_SCL_IN, 4, 5, 20)) return -1;
         if (PINCTRL_SelInput(io_pin_sda, IO_SOURCE_I2C1_SDA_IN, 5, 5, 0)) return -1;
+        PINCTRL_SetPadMux(io_pin_scl, IO_SOURCE_I2C1_SCL_OUT);
+        PINCTRL_SetPadMux(io_pin_sda, IO_SOURCE_I2C1_SDA_OUT);
         break;
     default:
         break;
     }
+    if (io_pin_scl < IO_PIN_NUMBER)
+        PINCTRL_Pull(io_pin_scl, PINCTRL_PULL_UP);
+    if (io_pin_sda < IO_PIN_NUMBER)
+        PINCTRL_Pull(io_pin_sda, PINCTRL_PULL_UP);
     return 0;
+}
+
+void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index)
+{
+    switch (port)
+    {
+    case I2C_PORT_0:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_I2C0_SCL_IN, 4, 5, 10);
+        PINCTRL_SetPadMux(io_pin_index, IO_SOURCE_I2C0_SCL_OUT);
+        break;
+    case I2C_PORT_1:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_I2C1_SCL_IN, 4, 5, 20);
+        PINCTRL_SetPadMux(io_pin_index, IO_SOURCE_I2C1_SCL_OUT);
+        break;
+    default:
+        break;
+    }
+    if (io_pin_index < IO_PIN_NUMBER)
+        PINCTRL_Pull(io_pin_index, PINCTRL_PULL_UP);
 }
 
 int PINCTRL_SelPdmIn(uint8_t io_pin_dmic)
@@ -556,7 +616,7 @@ void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_st
     int index = io_pin_index & 0xf;
     uint32_t mask = 3 << (2 * index);
     uint32_t val = ((uint32_t)strength) << (index * 2);
-    if (io_pin_index == 1) val ^= 0x1ul;
+    if (io_pin_index == 1) val ^= 0x4ul;
     volatile uint32_t *dr = (volatile uint32_t *)&APB_PINCTRL->DR_CTRL[reg];
     *dr &= ~mask;
     *dr |= val;
@@ -566,8 +626,11 @@ int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins)
 {
     int i;
     for (i = 0; i < count; i++)
-        if(PINCTRL_SetPadMux(io_pins[i], (io_source_t)(IO_SOURCE_ANT_SW0 + i)))
+    {
+        if (io_pins[i] == IO_NOT_A_PIN) continue;
+        if (PINCTRL_SetPadMux(io_pins[i], (io_source_t)(IO_SOURCE_ANT_SW0 + i)))
             return -(i + 1);
+    }
     return 0;
 }
 
@@ -586,7 +649,14 @@ void PINCTRL_EnableAnalog(const uint8_t io_index)
 {
     PINCTRL_SetPadMux(io_index, IO_SOURCE_GPIO);
     PINCTRL_Pull(io_index, PINCTRL_PULL_DISABLE);
-    GIO_SetDirection((GIO_Index_t)io_index, GIO_DIR_NONE);
+
+    // GIO_SetDirection(io_index, GIO_DIR_NONE)
+    uint8_t start_gpio1 = GIO_GPIO_NUMBER / 2;
+    GIO_TypeDef *pDef = io_index >= start_gpio1 ? APB_GPIO1 : APB_GPIO0;
+    int index = io_index >= start_gpio1 ? io_index - start_gpio1 : io_index;
+    uint32_t mask = ~(1ul << index);
+    pDef->ChDir &= mask;
+    pDef->IOIE &= mask;
 }
 
 #endif

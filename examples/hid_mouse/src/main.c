@@ -151,7 +151,7 @@ uint32_t timer_isr(void *user_data)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define DB_FLASH_ADDRESS  0x42000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#define DB_FLASH_ADDRESS  0x20e0000
+#define DB_FLASH_ADDRESS  0x2042000
 #else
 #error unknown or unsupported chip family
 #endif
@@ -170,33 +170,38 @@ int read_from_flash(void *db, const int max_size)
 }
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+// make sure that PClk is <= slow_clk
 static void QDEC_PclkCfg(void)
 {
-    if ((APB_SYSCTRL->QdecCfg >> 15) & 1)
-        return;
     uint32_t hclk = SYSCTRL_GetHClk();
     uint32_t slowClk = SYSCTRL_GetSlowClk();
     uint8_t div = hclk / slowClk;
     if (hclk % slowClk)
         div++;
-    if (!(div >> 4))    // This div has 4 bits at most
+    if (div <= 15)      // This div has 4 bits at most
         SYSCTRL_SetPClkDiv(div);
+    else;               // ERROR
 }
 static void QDEC_Setup(void)
 {
-    uint32_t pclk;
+    uint8_t div = SYSCTRL_GetPClkDiv();
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_QDEC);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_PinCtrl |
                          SYSCTRL_ITEM_APB_QDEC);
     PINCTRL_SelQDECIn(21, 22);
 
     SYSCTRL_SelectQDECClk(SYSCTRL_CLK_SLOW, 25);
-    pclk = SYSCTRL_GetPClk();
+
+    // PClk must be <= slow_clk
+    // when configuring QDEC
     QDEC_PclkCfg();
+
     QDEC_EnableQdecDiv(QDEC_DIV_1024);
     QDEC_QdecCfg(63, 0);
     QDEC_ChannelEnable(1);
-    SYSCTRL_SetPClkDiv(SYSCTRL_GetHClk() / pclk);
+
+    // restore PClk
+    SYSCTRL_SetPClkDiv(div);
 }
 #endif
 

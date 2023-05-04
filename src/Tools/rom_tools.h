@@ -43,14 +43,10 @@ typedef void (* f_prog_page)(uint32_t addr, const uint8_t data[256], uint32_t le
 
 typedef int (* f_program_flash)(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
 typedef int (* f_write_flash)(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
-typedef int (* f_erase_flash_sector)(const uint32_t addr);
 typedef int (* f_flash_do_update)(const int block_num, const fota_update_block_t *blocks, uint8_t *ram_buffer);
 
-#define ROM_NVIC_SystemReset            ((f_void)0x00000cd4)
-
 #define ROM_program_flash               ((f_program_flash)0x00003b9b)
-#define ROM_write_flash                 ((f_write_flash)0x00003cfe)
-#define ROM_erase_flash_sector          ((f_erase_flash_sector)0x00001d59)
+#define ROM_write_flash                 ((f_write_flash)0x00003cff)
 #define ROM_flash_do_update             ((f_flash_do_update)0x00001d73)
 
 #endif

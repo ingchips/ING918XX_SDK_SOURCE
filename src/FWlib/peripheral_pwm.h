@@ -32,8 +32,28 @@ typedef enum
     PWM_WORK_MODE_SINGLE_WITHOUT_DIED_ZONE      = 0x4,
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     PWM_WORK_MODE_DMA                           = 0x5,
+    PWM_WORK_MODE_PCAP                          = 0x6
 #endif
 } PWM_WorkMode_t;
+
+typedef enum
+{
+    PWM_FIFO_CLEAR           = (1 << 15),
+    PWM_FIFO_EMPTY_EN        = (1 << 16),
+    PWM_FIFO_FULL_EN         = (1 << 17),
+    PWM_FIFO_HALFFULL_EN     = (1 << 18),
+    PWM_FIFO_TRIGGER_EN      = (1 << 19)
+} PWM_FIFO_MASK_t;
+
+typedef struct
+{
+    uint32_t fifo_empty     :1;
+    uint32_t fifo_full      :1;
+    uint32_t fifo_halffull  :1;
+    uint32_t fifo_trig      :1;
+    uint32_t fifo_cnt       :3;
+    uint32_t unused         :25;
+} PWM_FIFO_STATUS_t;
 
 // compatibility for the typo
 #define PWM_WordMode_t  PWM_WorkMode_t
@@ -64,8 +84,8 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
 void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, const uint16_t on_duty);
 
 //for Single Step Mode:
-//generate one pulse 
-// `pulse_width` is in ns 
+//generate one pulse
+// `pulse_width` is in ns
 void PWM_SetupSingle(const uint8_t channel_index, const uint32_t pulse_width);
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
@@ -104,7 +124,9 @@ void PWM_SetInvertOutput(const uint8_t channel_index, const uint8_t inv_a, const
  * @brief Enable/Disable DMA transfer
  *
  * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
- * @param[in] trig_cfg          DMA trigger configure
+ * @param[in] trig_cfg          DMA trigger configure (0..7)
+ *                              PCAP mode: DMA triggered when >= trig_cfg
+ *                              Other modes: DMA triggered when < trig_cfg
  * @param[in] enable            enable(1)/disable(0)
  */
 void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable);
@@ -188,6 +210,23 @@ uint32_t PCAP_ReadData(const uint8_t channel_index);
  */
 uint32_t PCAP_ReadCounter(void);
 
+/**
+ * @brief Enable/Disable PCAP fifo trigger when in isr mode, this is not needed for dma mode.
+ *
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ * @param[in] enable            Enable (1) or disable (0)
+ * @param[in] mask              use combination PWM_FIFO_MASK_t, 
+ *                              'PWM_FIFO_HALFFULL_EN | PWM_FIFO_TRIGGER_EN' for example
+ */
+void PWM_FifoTriggerEnable(const uint8_t channel_index, uint8_t enable, uint32_t mask);
+
+/**
+ * @brief Get fifo status in fifo isr.
+ *
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ * @return                      use structure PWM_FIFO_STATUS_t to interpret the return value
+ */
+uint32_t PWM_GetFifoStatus(const uint8_t channel_index);
 #endif
 
 #ifdef __cplusplus

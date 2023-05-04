@@ -54,12 +54,12 @@ void config_uart(uint32_t freq, uint32_t baud)
     config.UART_en           = 1;
     config.cts_en            = 0;
     config.rts_en            = 0;
-    config.rxfifo_waterlevel = 1;
+    config.rxfifo_waterlevel = 4;
     config.txfifo_waterlevel = 1;
     config.ClockFrequency    = freq;
     config.BaudRate          = baud;
 
-    apUART_Initialize(PRINT_PORT, &config, 1 << bsUART_RECEIVE_INTENAB);
+    apUART_Initialize(PRINT_PORT, &config, (1 << bsUART_RECEIVE_INTENAB) | (1 << bsUART_TIMEOUT_INTENAB));
 
 #ifdef TRACE_TO_UART
     //config.BaudRate          = 921600;
