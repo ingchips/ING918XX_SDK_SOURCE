@@ -125,7 +125,7 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 #define ADC_LEFT_SHIFT(v, s)            ((v) << (s))
 #define ADC_RIGHT_SHIFT(v, s)           ((v) >> (s))
 #define ADC_MK_MASK(b)                  ((ADC_LEFT_SHIFT(1, b)) - (1))
-#define ADC_REG_VAL(reg)                ((*((uint32_t *)((APB_SARADC_BASE) + (reg)))))
+#define ADC_REG_VAL(reg)                ((*((volatile uint32_t *)((APB_SARADC_BASE) + (reg)))))
 #define REG_CLR(reg, b, s)              ((ADC_REG_VAL(reg)) & (~(ADC_LEFT_SHIFT(ADC_MK_MASK(b), s))))
 #define REG_OR(v, s)                    ((ADC_REG_VAL(reg)) | (ADC_LEFT_SHIFT(v, s)))
 #define ADC_REG_CLR(reg, b, s)          ((ADC_REG_VAL(reg)) = (REG_CLR(reg, b, s)))
@@ -513,7 +513,7 @@ void ADC_ftInit(void)
     else
         mbg = p_factoryCali->band_gap;
     if (mbg < 0xffffffff)
-        *(uint32_t *)0x40102008 |= (mbg & ADC_MK_MASK(6)) << 4;
+        *(volatile uint32_t *)0x40102008 = *(volatile uint32_t *)0x40102008 & (~(0x3f << 4)) | (mbg & ADC_MK_MASK(6)) << 4;
     uint8_t i;
     uint32_t Cin1, Cin2;
     uint32_t Cout1, Cout2;

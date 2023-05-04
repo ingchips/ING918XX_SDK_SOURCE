@@ -4,7 +4,7 @@
 #define QDEC_LEFT_SHIFT(v, s)        ((v) << (s))
 #define QDEC_RIGHT_SHIFT(v, s)       ((v) >> (s))
 #define QDEC_MK_MASK(b)              ((QDEC_LEFT_SHIFT(1, b)) - (1))
-#define QDEC_REG_VAL(reg)            ((*((uint32_t *)((APB_QDEC_BASE) + (reg)))))
+#define QDEC_REG_VAL(reg)            ((*((volatile uint32_t *)((APB_QDEC_BASE) + (reg)))))
 #define QDEC_REG_WR(reg, v, s)       ((QDEC_REG_VAL(reg)) |= (QDEC_LEFT_SHIFT(v, s)))
 #define QDEC_REG_RD(reg, b, s)       ((QDEC_RIGHT_SHIFT((QDEC_REG_VAL(reg)), s)) & QDEC_MK_MASK(b))
 #define QDEC_REG_CLR(reg, b, s)      ((QDEC_REG_VAL(reg)) &= (~(QDEC_LEFT_SHIFT(QDEC_MK_MASK(b), s))))
