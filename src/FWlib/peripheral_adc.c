@@ -506,7 +506,7 @@ void ADC_ftInit(void)
     else
         mbg = p_factoryCali->band_gap;
     if (mbg < 0xffffffff)
-        *(uint32_t *)0x40102008 |= (mbg & ADC_MK_MASK(6)) << 4;
+        *(volatile uint32_t *)0x40102008 = *(volatile uint32_t *)0x40102008 & (~(0x3f << 4)) | (mbg & ADC_MK_MASK(6)) << 4;
     uint8_t i;
     uint32_t Cin1, Cin2;
     uint32_t Cout1, Cout2;
