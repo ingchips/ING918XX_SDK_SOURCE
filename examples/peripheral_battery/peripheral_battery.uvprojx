@@ -7,11 +7,11 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6160000::V6.16::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91800</Device>
           <Vendor>INGChips</Vendor>
           <PackID>INGChips.INGCHIPS_DeviceFamilyPack.0.9.0</PackID>
           <PackURL>http://www.ingchips.com</PackURL>
@@ -30,7 +30,7 @@
           <SLE66CMisc/>
           <SLE66AMisc/>
           <SLE66LinkerMisc/>
-          <SFDFile>$$Device:ING91800$SVD\ING91800.svd</SFDFile>
+          <SFDFile>$$Device:ing91800$SVD\ing91800.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath/>
@@ -183,6 +183,7 @@
             <RvdsVP>0</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -297,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536900728</StartAddress>
-                <Size>35720</Size>
+                <StartAddress>536900736</StartAddress>
+                <Size>35712</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -414,6 +415,13 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\eflash.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>

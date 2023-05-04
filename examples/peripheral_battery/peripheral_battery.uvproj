@@ -9,9 +9,9 @@
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91800</Device>
           <Vendor>INGCHIPS</Vendor>
-          <Cpu>CLOCK(48000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
+          <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
           <FlashUtilSpec/>
           <StartupFile/>
           <FlashDriverDll/>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536900728</StartAddress>
-                <Size>35720</Size>
+                <StartAddress>536900736</StartAddress>
+                <Size>35712</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -423,6 +423,13 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\eflash.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>

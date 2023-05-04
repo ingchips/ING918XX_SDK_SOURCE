@@ -553,6 +553,8 @@ type
 ##  @param[out]  size                data size
 ##  @param[out]  rssi                RSSI in dBm
 ##  @return                          0 if successful else error code
+##                                   Note: `air_time`, `header` and `rssi` are also available
+##                                         even if error code is not in {1, 2}.
 ## ***************************************************************************************
 ##
 ##  int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,

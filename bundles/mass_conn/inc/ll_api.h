@@ -48,7 +48,9 @@ void ll_config(ll_config_item_t item, uint32_t value);
  * @param[in]  max_dBm          maximum Tx power in dBm
  ****************************************************************************************
  */
-void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
+// void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
+// WARNING: ^^^ this API is not available in this release
+
 
 typedef enum coded_scheme_e
 {
@@ -114,7 +116,9 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
  *                                    power level.
  ****************************************************************************************
  */
-void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
+// void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
@@ -436,6 +440,8 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @param[out]  size                data size
  * @param[out]  rssi                RSSI in dBm
  * @return                          0 if successful else error code
+ *                                  Note: `air_time`, `header` and `rssi` are also available
+ *                                        even if error code is not in {1, 2}.
  ****************************************************************************************
  */
 // int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
