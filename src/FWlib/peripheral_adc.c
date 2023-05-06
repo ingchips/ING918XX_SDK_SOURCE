@@ -617,6 +617,7 @@ void ADC_Calibration(SADC_adcIputMode mode)
     ADC_SetAdcMode(CONVERSION_MODE);
     ADC_EnableChannel(ADC_CH_0, 0);
     ADC_RegClr(SADC_CFG_0, 17, 1);
+    ADC_ClrFifo();
 }
 
 void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, 
