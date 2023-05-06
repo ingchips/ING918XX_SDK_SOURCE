@@ -68,6 +68,7 @@ static const char help[] =  "commands:\n"
                             "auto   0/1                          enable/disable auto power control\n"
                             "subr   factor                       subrate with factor\n"
                             "syncgap                             demo sync GAP APIs\n"
+                            "lock   freq                         lock to freq (MHz). 0 to unlock"
                             ;
 
 void cmd_help(const char *param)
@@ -157,8 +158,7 @@ void cmd_write(const char *param)
 
 void cmd_reboot(const char *param)
 {
-    NVIC_SystemReset();
-    while(1);
+    platform_reset();
 }
 
 void cmd_version(const char *param)
@@ -207,11 +207,13 @@ void unsub_to_char(int handle);
 
 int parse_addr(uint8_t *output, const char *param)
 {
-    int addr[6];
-    int i;
-    if (sscanf(param, "%2x:%2x:%2x:%2x:%2x:%2x", &addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]) != 6)
+    unsigned int addr[6];
+    int i = sscanf(param, "%2x:%2x:%2x:%2x:%2x:%2x", &addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]);
+
+    if (i != 6)
     {
-        tx_data(error, strlen(error) + 1);
+        if (i > 0)
+            tx_data(error, strlen(error) + 1);
         return -1;
     }
     for (i = 0; i < 6; i++) output[i] = addr[i];
@@ -426,6 +428,23 @@ void cmd_assert(const char *param)
     platform_raise_assertion("uart_console.c", __LINE__);
 }
 
+int lock_to_freq = 0;
+
+void cmd_lock(const char *param)
+{
+    sscanf(param, "%d", &lock_to_freq);
+    if (lock_to_freq > 0)
+    {
+        ll_lock_frequency(lock_to_freq);
+        platform_printf("locked to %dMHz\n", lock_to_freq);
+    }
+    else
+    {
+        ll_unlock_frequency();
+        platform_printf("unlocked\n");
+    }
+}
+
 static cmd_t cmds[] =
 {
     {
@@ -559,6 +578,10 @@ static cmd_t cmds[] =
     {
         .cmd = "syncgap",
         .handler = cmd_sync_gap
+    },
+    {
+        .cmd = "lock",
+        .handler = cmd_lock
     }
 };
 
@@ -567,8 +590,17 @@ void handle_command(char *cmd_line)
     static const char unknow_cmd[] =  "unknown command\n";
     char *param = cmd_line;
     int i;
-    while ((*param != ' ') && (*param != '\0')) param++;
-    *param = '\0'; param++;
+    while (*param)
+    {
+        if (*param == ' ')
+        {
+            *param = '\0';
+            param++;
+            break;
+        }
+        else
+            param++;
+    }
 
     for (i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++)
     {
@@ -660,7 +692,7 @@ void console_rx_data(const char *d, uint8_t len)
     append_data(&input, d, len);
 
     if ((input.size > 0) &&
-        ((input.buf[input.size - 1] == '\r') || (input.buf[input.size - 1] == '\r')))
+        ((input.buf[input.size - 1] == '\r') || (input.buf[input.size - 1] == '\n')))
     {
         int16_t t = input.size - 2;
         while ((t > 0) && ((input.buf[t] == '\r') || (input.buf[t] == '\n'))) t--;

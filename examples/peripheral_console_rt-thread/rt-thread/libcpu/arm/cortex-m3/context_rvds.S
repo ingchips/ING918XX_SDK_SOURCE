@@ -158,9 +158,8 @@ rt_hw_context_switch_to    PROC
     STR     r1, [r0]
 
     ; restore MSP
-    LDR     r0, =SCB_VTOR
-    LDR     r0, [r0]
-    LDR     r0, [r0]
+	extern  __initial_sp
+    LDR     r0, =__initial_sp
     MSR     msp, r0
 
     ; enable interrupts at processor level

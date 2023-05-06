@@ -231,11 +231,20 @@ static const uint8_t prog_security_page_read[] = {
     0x00, 0x68, 0x02, 0xB0, 0x80, 0xBD, 0x00, 0x00
 };
 
+
+#if ((defined __ARMCC_VERSION) && (__ARMCC_VERSION < 6000000))
+asm static uint32_t security_page_read(uint32_t addr, uint32_t prog)
+{
+    ADD r1, r1, #1
+    BX  r1
+}
+#else
 __attribute__((naked)) static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 {
     __asm("ADD r1, r1, #1");
     __asm("BX  r1");
 }
+#endif
 
 uint32_t read_flash_security(uint32_t addr)
 {

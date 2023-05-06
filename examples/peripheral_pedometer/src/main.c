@@ -53,7 +53,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals_i2c_pin(void)
 {
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
                                 | (1 << SYSCTRL_ClkGate_APB_GPIO0)
                                 | (1 << SYSCTRL_ClkGate_APB_GPIO1)
@@ -67,12 +67,8 @@ void setup_peripherals_i2c_pin(void)
                                 | (1 << SYSCTRL_ITEM_APB_PinCtrl)
                                 | (1 << SYSCTRL_ITEM_APB_GPIO1)
                                 | (1 << SYSCTRL_ITEM_APB_GPIO0));
-    
-    PINCTRL_Pull(I2C_SCL,PINCTRL_PULL_UP);
-    PINCTRL_Pull(I2C_SDA,PINCTRL_PULL_UP);
-    PINCTRL_SelI2cIn(I2C_PORT_0,I2C_SCL,I2C_SDA);
-    PINCTRL_SetPadMux(I2C_SCL,IO_SOURCE_I2C0_SCL_OUT);
-    PINCTRL_SetPadMux(I2C_SDA,IO_SOURCE_I2C0_SDA_OUT);
+
+    PINCTRL_SelI2cIn(I2C_PORT_0, I2C_SCL, I2C_SDA);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -154,7 +150,7 @@ uint32_t timer_isr(void *user_data)
 #else
     #error unknown or unsupported chip family
 #endif
-    
+
     xSemaphoreGiveFromISR(sem_pedometer, &xHigherPriorityTaskWoke);
     return 0;
 }
@@ -173,7 +169,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
-    
+
     xTaskCreate(pedometer_task,
                "b",
                150,

@@ -50,7 +50,7 @@ type
 ##  @param[in]   persistent          persistent data for security & privacy
 ##
 
-proc sm_config*(io_capability: io_capability_t; request_security: cint;
+proc sm_config*(enable: uint8; io_capability: io_capability_t; request_security: cint;
                persistent: ptr sm_persistent_t) {.importc: "sm_config",
     header: "sm.h".}
 ## *

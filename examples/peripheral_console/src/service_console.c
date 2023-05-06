@@ -33,6 +33,7 @@ void cmd_help(const char *param)
                                 "ps 1/0     enable/disable power saving\n"
                                 "ver        show platform version\n"
                                 "f          show 32k freq\n"
+                                "f-cpu      show CPU freq\n"
                                 "advpwr ..  set adv power\n"
                                 "latency .. self assigned peripheral latency\n"
                                 ;
@@ -114,12 +115,21 @@ void cmd_version(const char *param)
 
 extern void platform_get_heap_status(platform_heap_status_t *status);
 
+__attribute((weak)) void show_stack_mem(char *buffer)
+{
+}
+
 void cmd_mem(const char *param)
 {
     platform_heap_status_t status;
     platform_get_heap_status(&status);
     sprintf(buffer, "heap:\nfree: %dB\nmin free:%dB", status.bytes_free, status.bytes_minimum_ever_free);
     tx_data(buffer, strlen(buffer) + 1);
+    buffer[0] = '\0';
+    show_stack_mem(buffer);
+    int l = strlen(buffer);
+    if (l > 0)
+        tx_data(buffer, l + 1);
 }
 
 void cmd_freq(const char *param)
@@ -127,6 +137,16 @@ void cmd_freq(const char *param)
     uint32_t cali = platform_read_info(PLATFORM_INFO_32K_CALI_VALUE);
     float f = 1000000. / (cali / 65536.);
     sprintf(buffer, "32k @ %.1f Hz", f);
+    tx_data(buffer, strlen(buffer) + 1);
+}
+
+void cmd_fcpu(const char *param)
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    sprintf(buffer, "cpu @ 48MHz");
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    sprintf(buffer, "cpu @ %u Hz", SYSCTRL_GetHClk());
+#endif
     tx_data(buffer, strlen(buffer) + 1);
 }
 
@@ -191,6 +211,10 @@ static cmd_t cmds[] =
     {
         .cmd = "f",
         .handler = cmd_freq
+    },
+    {
+        .cmd = "f-cpu",
+        .handler = cmd_fcpu
     },
     {
         .cmd = "c",

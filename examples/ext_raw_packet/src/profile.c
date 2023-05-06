@@ -13,7 +13,13 @@
 #define SAMPLING_OFFSET         12
 #define CH_ID                   10
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#define RX_DELAY                300
+#else
+#define RX_DELAY                600
+#endif
+
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -24,7 +30,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     }
 }
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -109,14 +115,14 @@ le_proprietary_iq_report_full_t full_report =
 };
 
 void show_iq(struct ll_raw_packet *packet)
-{    
+{
     int count = 0;
     if ((0 != ll_raw_packet_get_iq_samples(packet, samples, &count, 0)) || (count < 1))
     {
         platform_printf("No IQ samples\n");
         return;
     }
-    
+
     static char iq_str_buffer[3500];
     int len;
     sprintf(iq_str_buffer, "PRO%d:", pattern_index);
@@ -131,7 +137,7 @@ void show_iq(struct ll_raw_packet *packet)
 
 #else
 void show_iq(struct ll_raw_packet *packet)
-{    
+{
     int count = 0;
     int i;
     if ((0 != ll_raw_packet_get_iq_samples(packet, samples, &count, 0)) || (count < 1))
@@ -139,7 +145,7 @@ void show_iq(struct ll_raw_packet *packet)
         platform_printf("No IQ samples\n");
         return;
     }
-    
+
     platform_printf("Pattern Index: %d\n", pattern_index);
     platform_printf("IQ samples:");
     for (i = 0; i < count; i++)
@@ -158,7 +164,7 @@ void show_rx(struct ll_raw_packet *packet)
     uint8_t header;
     int len;
     int rssi;
-    
+
     if (ll_raw_packet_get_rx_data(packet, &air_time, &header, data, &len, &rssi) == 0)
     {
         platform_printf("T: %llu\n", air_time);
@@ -168,7 +174,7 @@ void show_rx(struct ll_raw_packet *packet)
         platform_printf("Rx: ");
         platform_printf(data);
         platform_printf("\n");
-        
+
 #ifdef CTE_ON
         show_iq(packet);
 #endif
@@ -185,12 +191,12 @@ void packet_action(void)
     sprintf(data, "RAW PACKET #%d", counter++);
 #ifdef CTE_ON
     ll_raw_packet_set_tx_cte(raw_packet, 0, 20, 0, NULL);
-#endif    
+#endif
     ll_raw_packet_set_tx_data(raw_packet, counter & 0x7f, data, strlen(data));
     ll_raw_packet_send(raw_packet, platform_get_us_time() + 500000);
 #else
     show_rx(raw_packet);
-    
+
 #ifdef CTE_ON
     {
         pattern_index = pattern_index >= sizeof(patterns) / sizeof(patterns[0]) - 1 ? 0 : pattern_index + 1;
@@ -200,10 +206,10 @@ void packet_action(void)
                               patterns[pattern_index].len,
                               patterns[pattern_index].ant_ids,
                               SAMPLING_OFFSET,
-                              SAMPLES_PER_SLOT);        
+                              SAMPLES_PER_SLOT);
     }
 #endif
-    ll_raw_packet_recv(raw_packet, platform_get_us_time() + 300, 1000 * 1000);
+    ll_raw_packet_recv(raw_packet, platform_get_us_time() + RX_DELAY, 1000 * 1000);
 #endif
 }
 

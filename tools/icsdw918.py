@@ -100,7 +100,7 @@ def wait_handshaking3(ser: serial.Serial, timeout: int, hello: str):
             return False
 
 def wait_handshaking(ser: serial.Serial, timeout: int):
-    return wait_handshaking(ser, timeout, BOOT_HELLO)
+    return wait_handshaking3(ser, timeout, BOOT_HELLO)
 
 def do_run(mod: ModuleType, ser, config, go, timeout, counter, user_data):
     global SCRIPT_MOD

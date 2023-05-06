@@ -19,6 +19,10 @@ extern "C" {
 // Bits Width change to Mask Bits
 #define BW2M(a)          ((1 << (a)) -1)
 
+#ifndef __NOP
+#define __NOP()             __asm("nop")
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -13,15 +13,18 @@ static void QDEC_RegClr(QDEC_qdecReg reg, uint8_t s, uint32_t b)
 {
     QDEC_REG_CLR(reg, b, s);
 }
+
 void QDEC_RegWrBit(QDEC_qdecReg reg, uint32_t v, uint8_t s)
 {
     QDEC_REG_WR(reg, v, s);
 }
+
 void QDEC_RegWrBits(QDEC_qdecReg reg, uint32_t v, uint8_t s, uint8_t b)
 {
     QDEC_REG_CLR(reg, b, s);
     QDEC_REG_WR(reg, v, s);
 }
+
 static uint32_t QDEC_RegRd(QDEC_qdecReg reg, uint8_t s, uint8_t b)
 {
     return QDEC_REG_RD(reg, b, s);

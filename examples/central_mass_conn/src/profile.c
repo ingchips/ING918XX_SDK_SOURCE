@@ -14,7 +14,15 @@
 #include "FreeRTOS.h"
 #include "timers.h"
 
-#define MAX_CONN_NUMBER     24
+#ifndef MAX_CONN_NUMBER
+    #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+        #define MAX_CONN_NUMBER     24
+    #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+        #define MAX_CONN_NUMBER     10
+    #else
+        #error unknown INGCHIPS_FAMILY
+    #endif
+#endif
 
 #define INVALID_HANDLE  0xffff
 

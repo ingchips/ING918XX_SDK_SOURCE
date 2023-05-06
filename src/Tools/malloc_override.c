@@ -12,6 +12,9 @@
 
 #elif (HEAP_OVERRIDE_TYPE == 1)
 
+// IMPORTANT: `malloc`, `free`, etc, CAN'T be used in `app_main`. They are available after
+//            `PLATFORM_CB_EVT_PROFILE_INIT` callback is invoked.
+
 #include "ll_api.h"
 
 #define _override_malloc    ll_malloc

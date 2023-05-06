@@ -23,7 +23,7 @@ Following types of I/O are defined:
 
 1. `IO_TYPE_USB_BIN`
 
-    Valid only for 916 series. Receive data from USB of device A( _Central_ or _Peripheral_), transfer the data through 
+    Valid only for 916 series. Receive data from USB of device A( _Central_ or _Peripheral_), transfer the data through
     wireless ble to device B( _Central_ or _Peripheral_), and then send the data to USB of device B.
 
 ## Hardware Setup
@@ -41,13 +41,10 @@ transmission.
 
 ### IO_TYPE_USB_BIN type
 
--   files `usb_driver.c` need to be included(locate in path `\io_over_ble_mas\src\usb_driver.c`) for IO_TYPE_USB_BIN type. Note: this file is shared by both
-_Central_ and _Peripheral_ (project io_over_ble_mas and io_over_ble_sla).
--   file `peripheral_usb.c` need to be included(located in path `src\FWlib\peripheral_usb.c`) to support USB device operation.
--   change IO_TYPE to IO_TYPE_USB_BIN in macro definition in both io_over_ble_mas and io_over_ble_sla.
--   usb driver is initialized at io_interf_init(), after initialization, usb device should be identified by host(or pc), default usb class in `usb_driver.c` is WINUSB,
-refer to `peripheral documents -> USB -> example 0: WINUSB` for more information.
--   io_interf_push_data() is called in `usb_driver.c` whenever there is data received on USB OUT endpoint.
--   similarly, HANDLE_FUNC() will send any data received by wireless ble to USB IN endpoint.
--   io over ble of USB tyep can be verified via write and read command with `ing_usb.exe`, refer to `peripheral documents -> USB -> example 0: WINUSB` for more information.
+-   Change IO_TYPE to IO_TYPE_USB_BIN in macro definition in both _Central_ and _Peripheral_.
+-   USB driver is initialized at `io_interf_init()`, after initialization, usb device should be identified by host(or PC), default usb class in `usb_driver.c` is WINUSB.
+Refer to chapter `USB -> example 0: WINUSB` in _Programmer's Guide - ING916xx Peripherals_ for more information.
+-   `io_interf_push_data()` is called in `usb_driver.c` whenever there is data received on USB OUT endpoint.
+-   Similarly, `HANDLE_FUNC()` will send any data received by wireless ble to USB IN endpoint.
+-   Test this app via write and read command with `ing_usb.exe`. Refer to chapter `USB -> example 0: WINUSB` in _Programmer's Guide - ING916xx Peripherals_ for more information.
 

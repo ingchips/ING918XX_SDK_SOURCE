@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 //
 // INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018 by INGCHIPS
+// COPYRIGHT (c) 2018-2023 by INGCHIPS
 //
 // All rights are reserved. Reproduction in whole or in part is
 // prohibited without the written consent of the copyright owner.
@@ -53,9 +53,14 @@
 
 #define L2CAP_SERVICE_ALREADY_REGISTERED                   0x69
 #define L2CAP_DATA_LEN_EXCEEDS_REMOTE_MTU                  0x6A
+#define L2CAP_SERVICE_NOT_REGISTERED                       0x6B
+#define L2CAP_CONNECTION_INSUFFICIENT_SECURITY             0x6C
 
-#define ATT_HANDLE_VALUE_INDICATION_IN_PORGRESS            0x90
+#define ATT_HANDLE_VALUE_INDICATION_IN_PROGRESS            0x90
 #define ATT_HANDLE_VALUE_INDICATION_TIMEOUT                0x91
+
+// compatibility for typo
+#define ATT_HANDLE_VALUE_INDICATION_IN_PORGRESS            ATT_HANDLE_VALUE_INDICATION_IN_PROGRESS
 
 #define GATT_CLIENT_NOT_CONNECTED                          0x93
 #define GATT_CLIENT_BUSY                                   0x94
@@ -88,22 +93,14 @@
 // L2CAP EVENTS
 
 /**
- * @format 1BH222222
- * @param status
- * @param address
- * @param handle
- * @param psm
- * @param local_cid
- * @param remote_cid
- * @param local_mtu
- * @param remote_mtu
- * @param flush_timeout
+ * @brief an L2CAP channel is opened
+ * @ref `l2cap_event_channel_opened_t`
  */
 #define L2CAP_EVENT_CHANNEL_OPENED                         0x70
 
 /*
- * @format 2
- * @param local_cid
+ * @brief an L2CAP channel is closed
+ * @ref `l2cap_event_channel_closed_t`
  */
 #define L2CAP_EVENT_CHANNEL_CLOSED                         0x71
 
@@ -152,6 +149,24 @@
   * @result
   */
 #define L2CAP_EVENT_COMMAND_REJECT_RESPONSE                0x79
+
+/**
+ * @brief LE credit channel : an SDU (complete package) event
+ *
+ * Use `decode_l2cap_event(l2cap_event_complete_sdu_t, package)` to decode this event.
+ *
+ * @ref `l2cap_event_complete_sdu_t`
+*/
+#define L2CAP_EVENT_COMPLETED_SDU_PACKET                   0x7A
+
+/**
+ * @brief LE credit channel : a fragment (K-frame) of an SDU event
+ *
+ * Use `decode_l2cap_event(l2cap_event_fragment_sdu_t, package)` to decode this event.
+ *
+ * @ref `l2cap_event_fragment_sdu_t`
+*/
+#define L2CAP_EVENT_FRAGMENT_SDU_PACKET                    0x7B
 
 /**
  * @format H1

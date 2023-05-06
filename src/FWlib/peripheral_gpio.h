@@ -53,6 +53,7 @@ typedef enum
     GIO_GPIO_40 ,
     GIO_GPIO_41 ,
 #endif
+    GIO_GPIO_NUMBER,
 } GIO_Index_t;
 
 typedef enum
@@ -100,12 +101,20 @@ GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index);
 void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit);
 
 /**
- * @brief Get current value of a GPIO
+ * @brief Get current value of a GPIO which configured as input or both.
  *
  * @param[in] io_index          the GPIO
  * @return                      value
  */
 uint8_t GIO_ReadValue(const GIO_Index_t io_index);
+
+/**
+ * @brief Get current value of a GPIO which configured as output or both.
+ *
+ * @param[in] io_index          the GPIO
+ * @return                      value
+ */
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index);
 
 /**
  * @brief Config interrupt trigger type of a GPIO
@@ -322,9 +331,12 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
  * Once enabled, all GPIOs in Group A that have been configured as INPUT act as wakeup
  * sources from DEEPER SLEEP mode.
  *
+ * `GIO_EnableRetentionGroupA(1)` MUST be called after all related GPIOs are configured.
+ *
  * @param[in] enable            Enable(1)/disable(0)
+ * @param[in] level             wake up by high level(1)/low level(0)
  */
-void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable);
+void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level);
 
 /**
  * @brief Set some or all of GPIO to 1
@@ -337,6 +349,12 @@ void GIO_SetBits(const uint64_t index_mask);
  *
  */
 void GIO_ClearBits(const uint64_t index_mask);
+
+/**
+ * @brief Toggle some or all of GPIO to 0
+ *
+ */
+void GIO_ToggleBits(const uint64_t index_mask);
 
 #endif
 

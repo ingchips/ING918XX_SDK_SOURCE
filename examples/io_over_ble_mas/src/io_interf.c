@@ -167,6 +167,7 @@ void io_interf_init()
 
 #elif (IO_TYPE == IO_TYPE_USB_BIN)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#include "peripheral_usb.c"
 #include "usb_driver.c"
 
 void HANDLE_FUNC(const uint8_t *data, const int len)
