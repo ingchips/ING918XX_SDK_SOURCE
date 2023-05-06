@@ -49,10 +49,10 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    
+
     PINCTRL_DisableAllInputs();
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)    
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
                               | (1 << SYSCTRL_ClkGate_APB_TMR2)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
@@ -154,6 +154,8 @@ int app_main()
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
+
+    SYSCTRL_Init();
 
     setup_peripherals();
 

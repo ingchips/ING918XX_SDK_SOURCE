@@ -185,8 +185,10 @@ int app_main()
 {
     // setup handlers
     platform_set_evt_callback_table(&evt_cb_table);
-    
+
     setup_peripherals();
+
+    SYSCTRL_Init();
 
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
 

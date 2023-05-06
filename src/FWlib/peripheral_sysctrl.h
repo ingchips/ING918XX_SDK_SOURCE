@@ -1109,6 +1109,25 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
  */
 uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
 
+/**
+ * @brief Extra initialization of system
+ *
+ * This function shall be called once after power up.
+ *
+ * For ING916:
+ *      Use factory calibration data from Flash to initialize PMU registers/settings:
+ *          - VREF 0.800V
+ *          - VCore 1.200V
+ *          - VAON 1.200V
+ *
+ *      Depend on `flash_get_factory_calib_data` of `eflash.c`.
+ *
+ * For ING918: This function does nothing.
+ *
+ * @return                      0 if initialized else failed
+ */
+int SYSCTRL_Init(void);
+
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
 #endif	/* __cplusplus */
