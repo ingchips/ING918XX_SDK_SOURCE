@@ -316,7 +316,7 @@ int flash_prepare_factory_data(void)
 
 const die_info_t *flash_get_die_info(void)
 {
-    if (is_data_ready())
+    if (flash_prepare_factory_data() == 0)
         return &((const factory_data_t *)FACTORY_DATA_LOC)->die_info;
     else
         return NULL;
@@ -324,7 +324,7 @@ const die_info_t *flash_get_die_info(void)
 
 const factory_calib_data_t *flash_get_factory_calib_data(void)
 {
-    if (is_data_ready())
+    if (flash_prepare_factory_data() == 0)
         return &((const factory_data_t *)FACTORY_DATA_LOC)->calib;
     else
         return NULL;
@@ -332,7 +332,7 @@ const factory_calib_data_t *flash_get_factory_calib_data(void)
 
 const void *flash_get_adc_calib_data(void)
 {
-    if (is_data_ready())
+    if (flash_prepare_factory_data() == 0)
         return (const void *)(FACTORY_DATA_LOC + sizeof(factory_data_t));
     else
         return NULL;

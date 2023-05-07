@@ -125,7 +125,7 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 #define ADC_LEFT_SHIFT(v, s)            ((v) << (s))
 #define ADC_RIGHT_SHIFT(v, s)           ((v) >> (s))
 #define ADC_MK_MASK(b)                  ((ADC_LEFT_SHIFT(1, b)) - (1))
-#define ADC_REG_VAL(reg)                ((*((uint32_t *)((APB_SARADC_BASE) + (reg)))))
+#define ADC_REG_VAL(reg)                ((*((volatile uint32_t *)((APB_SARADC_BASE) + (reg)))))
 #define REG_CLR(reg, b, s)              ((ADC_REG_VAL(reg)) & (~(ADC_LEFT_SHIFT(ADC_MK_MASK(b), s))))
 #define REG_OR(v, s)                    ((ADC_REG_VAL(reg)) | (ADC_LEFT_SHIFT(v, s)))
 #define ADC_REG_CLR(reg, b, s)          ((ADC_REG_VAL(reg)) = (REG_CLR(reg, b, s)))
@@ -463,7 +463,6 @@ void ADC_ftInit(void)
 {
     if (ftCali) return;
     uint8_t readFlg = 0;
-    uint8_t addrType = 0;
     uint8_t ret = flash_prepare_factory_data();
     const factory_calib_data_t *p_factoryCali = flash_get_factory_calib_data();
     const uint16_t *p_adcCali = (const uint16_t *)flash_get_adc_calib_data();
@@ -472,12 +471,13 @@ void ADC_ftInit(void)
     ftCali = malloc(sizeof(SADC_ftCali_t));
     memset(ftCali, 0, sizeof(SADC_ftCali_t));
 
+    uint8_t ver;
     uint32_t flg;
     if (readFlg)
         flg = read_flash_security(0x1170);
     else
         flg = p_factoryCali->adc_calib_ver;
-    addrType = flg & ADC_MK_MASK(16);
+    ver = flg & ADC_MK_MASK(16);
     flg = (flg >> 16) & ADC_MK_MASK(16);
     uint32_t V1, V2;
     uint32_t V1_diff, V2_diff;
@@ -513,14 +513,14 @@ void ADC_ftInit(void)
     else
         mbg = p_factoryCali->band_gap;
     if (mbg < 0xffffffff)
-        *(uint32_t *)0x40102008 |= (mbg & ADC_MK_MASK(6)) << 4;
+        *(volatile uint32_t *)0x40102008 = *(volatile uint32_t *)0x40102008 & (~(0x3f << 4)) | (mbg & ADC_MK_MASK(6)) << 4;
     uint8_t i;
     uint32_t Cin1, Cin2;
     uint32_t Cout1, Cout2;
     Cin1 = V1 * 16384 / ftCali->Vp;
     Cin2 = V2 / 10 * 16384 / (ftCali->Vp / 10);
     for (i = 0; i < 8; ++i) {
-        if (addrType) {
+        if (ver) {
             if (readFlg) {
                 Cout1 = read_flash_security(0x2000 + 4 * i) & ADC_MK_MASK(16);
                 Cout2 = (read_flash_security(0x2000 + 4 * i) >> 16) & ADC_MK_MASK(16);
@@ -543,7 +543,7 @@ void ADC_ftInit(void)
     Cin2 = (V2_diff - V1_diff) / 10 * 16384 / (ftCali->Vp / 10) + 8192;
     Cin1 = 16384 - Cin2;
     for (i = 0; i < 4; ++i) {
-        if (addrType) {
+        if (ver) {
             if (readFlg) {
                 Cout1 = read_flash_security(0x2020 + 4 * i) & ADC_MK_MASK(16);
                 Cout2 = (read_flash_security(0x2020 + 4 * i) >> 16) & ADC_MK_MASK(16);
@@ -567,6 +567,8 @@ void ADC_ftInit(void)
         ftCali->V12Data = read_flash_security(0x1144) & ADC_MK_MASK(16);
     else
         ftCali->V12Data = p_factoryCali->v12_adc[0];
+    if (ver == 1)
+        ftCali->V12Data -= 14;
     ftCali->f = ADC_FtCal;
     ADC_VrefRegister(ftCali->Vp * 0.00001f, 0.f);
 }
@@ -622,6 +624,7 @@ void ADC_Calibration(SADC_adcIputMode mode)
     ADC_SetAdcMode(CONVERSION_MODE);
     ADC_EnableChannel(ADC_CH_0, 0);
     ADC_RegClr(SADC_CFG_0, 17, 1);
+    ADC_ClrFifo();
 }
 
 void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,

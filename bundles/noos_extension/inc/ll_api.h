@@ -20,6 +20,24 @@
 extern "C" {
 #endif
 
+typedef enum ll_config_item_e
+{
+    // Pre-wake up to schedule connection events properly
+    // when slave latency is used.
+    // Range: 1~255. Default: 4 (Unit: 0.625ms)
+    LL_CFG_SLAVE_LATENCY_PRE_WAKE_UP,
+} ll_config_item_t;
+
+/**
+ ****************************************************************************************
+ * @brief Config LL specific parameters
+ *
+ * @param[in]  item             parameter to be configured (see `ll_config_item_t`)
+ * @param[in]  value            value of the parameter
+ ****************************************************************************************
+ */
+void ll_config(ll_config_item_t item, uint32_t value);
+
 /**
  ****************************************************************************************
  * @brief set Tx power range
@@ -30,7 +48,9 @@ extern "C" {
  * @param[in]  max_dBm          maximum Tx power in dBm
  ****************************************************************************************
  */
-void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
+// void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
+// WARNING: ^^^ this API is not available in this release
+
 
 typedef enum coded_scheme_e
 {
@@ -96,7 +116,9 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
  *                                    power level.
  ****************************************************************************************
  */
-void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
+// void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
@@ -266,15 +288,17 @@ int ll_scanner_enable_iq_sampling(uint8_t cte_type,
  * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
-int ll_scanner_enable_iq_sampling_on_legacy(
-                          uint16_t sampling_offset,
-                          uint8_t cte_type,
-                          uint8_t cte_time,
-                          uint8_t slot_len,
-                          uint8_t switching_pattern_len,
-                          const uint8_t *switching_pattern,
-                          uint8_t slot_sampling_offset,
-                          uint8_t slot_sample_count);
+// int ll_scanner_enable_iq_sampling_on_legacy(
+//                           uint16_t sampling_offset,
+//                           uint8_t cte_type,
+//                           uint8_t cte_time,
+//                           uint8_t slot_len,
+//                           uint8_t switching_pattern_len,
+//                           const uint8_t *switching_pattern,
+//                           uint8_t slot_sampling_offset,
+//                           uint8_t slot_sample_count);
+// WARNING: ^^^ this API is not available in this release
+
 
 struct ll_raw_packet;
 
@@ -398,6 +422,8 @@ int ll_raw_packet_send(struct ll_raw_packet *packet,
  * @param[out]  size                data size
  * @param[out]  rssi                RSSI in dBm
  * @return                          0 if successful else error code
+ *                                  Note: `air_time`, `header` and `rssi` are also available
+ *                                        even if error code is not in {1, 2}.
  ****************************************************************************************
  */
 int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
@@ -477,11 +503,9 @@ int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
-//                           uint8_t cte_type,
-//                           uint8_t cte_len);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
+                          uint8_t cte_type,
+                          uint8_t cte_len);
 
 /**
  ****************************************************************************************
@@ -705,7 +729,9 @@ void ll_set_conn_interval_unit(uint16_t unit);
  *                          For example, standard value for channel 37 is 0x53.
  ****************************************************************************************
  */
-void ll_override_whitening_init_value(uint8_t override, uint8_t value);
+// void ll_override_whitening_init_value(uint8_t override, uint8_t value);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
@@ -715,7 +741,9 @@ void ll_override_whitening_init_value(uint8_t override, uint8_t value);
  * @param[in]  type         nonstandard ADV TYPE
  ****************************************************************************************
  */
-void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
+// void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
@@ -724,7 +752,9 @@ void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
  * @param[in]  bit          CTE bit: 0/1 (default: 1)
  ****************************************************************************************
  */
-void ll_set_cte_bit(uint8_t bit);
+// void ll_set_cte_bit(uint8_t bit);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  ****************************************************************************************
