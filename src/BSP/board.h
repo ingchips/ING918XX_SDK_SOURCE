@@ -7,6 +7,7 @@
 #define BOARD_ING91881B_02_02_05        2
 #define BOARD_ING91881B_02_02_06        3
 #define BOARD_DB682AC1A                 4
+#define BOARD_DB72C8K1A                 5
 
 #ifndef BOARD_ID
 #if   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
