@@ -7,7 +7,7 @@
 
 #define AUDIO_CODEC_ALG_ADPCM     0
 #define AUDIO_CODEC_ALG_SBC       1
-#define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_SBC
+#define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_ADPCM
 
 #if (APP_TYPE == APP_ING)
 // 4KB per sec
