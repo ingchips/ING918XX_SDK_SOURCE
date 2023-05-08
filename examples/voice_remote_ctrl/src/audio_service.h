@@ -32,13 +32,14 @@ static void (*audio_enc_task)(void *pdata);
 
 typedef int16_t sample_t;
 
-struct audio_enc_state
+typedef struct
 {
     void (*audio_dev_start)(void);
     void (*audio_dev_stop)(void);
 
     int voice_buf_block_num;
     int voice_buf_block_size;
+
     int (*create_input_buf)(int buf_row, int buf_column, void **buff);
     int (*create_output_buf)(int buf_row, int buf_column, void **buff);
 
@@ -47,9 +48,7 @@ struct audio_enc_state
     
     int sample_buf_num;
     int sample_buf_size;
-};
-
-typedef struct audio_enc_state audio_enc_t;
+}audio_enc_t;
 
 extern audio_enc_t audio_t;
 
@@ -79,5 +78,20 @@ struct sbc_enc_priv
     int sample_buf_size;
 };
 typedef struct sbc_enc_priv sbc_priv_t;
+
+typedef struct
+{
+    //编码器类型
+    enum{
+        ADPCM_ENCODER,
+        SBC_ENCODER,
+        LC3_ENCODER,
+    }type;
+
+    //编码器函数
+    void (*encoder)(void *enc, void *in_data, int in_len, void *out_data, int out_len);
+
+
+}audio_encoder_t;
 
 #endif
