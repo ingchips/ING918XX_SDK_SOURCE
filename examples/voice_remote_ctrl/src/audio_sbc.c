@@ -720,7 +720,7 @@ static void sbc_set_defaults(sbc_t *sbc, uint8_t flags)
 // #endif
 }
 
-int sbc_init(sbc_t *sbc, uint8_t flags)
+int sbc_enc_init(sbc_t *sbc,  sbc_encode_output_cb_f callback, uint8_t flags)
 {
 	if (!sbc)
 		return -EIO;
@@ -737,6 +737,8 @@ int sbc_init(sbc_t *sbc, uint8_t flags)
 	memset(sbc->priv, 0, sizeof(struct sbc_priv));
 
 	sbc_set_defaults(sbc, flags);
+
+	sbc->callback = callback;
 
 	return 0;
 }
