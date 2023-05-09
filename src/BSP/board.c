@@ -116,7 +116,6 @@ static void ws2881_write(uint32_t value)
 void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
     uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
-    printf("value:0x%x\n", cmd);
 
     ws2881_write(cmd);
 }
