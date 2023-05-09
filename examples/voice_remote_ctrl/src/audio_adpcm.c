@@ -53,44 +53,50 @@ static void adpcm_update(adpcm_state_t* state, const uint8_t sample)
         state->index = 88;
 }
 
-void adpcm_encode(adpcm_enc_t *adpcm, pcm_sample_t sample)
+void adpcm_encode(adpcm_enc_t *adpcm, void *input, int input_size, void *output, int output_size)
 {
-    int32_t diff = (int32_t)sample - adpcm->state.predicated;
-    uint8_t new_sample = 0;
-    uint8_t mask = 4;
-    int16_t temp_step_size = stepsizeTable[adpcm->state.index];
-    uint8_t i;
+    pcm_sample_t *sample = (pcm_sample_t *)input;
 
-    if (diff < 0)
+    for(int i = 0; i < input_size; i++)
     {
-        new_sample = 8;
-        diff = -diff;
-    }
+        int32_t diff = (int32_t)sample[i] - adpcm->state.predicated;
+        uint8_t new_sample = 0;
+        uint8_t mask = 4;
+        int16_t temp_step_size = stepsizeTable[adpcm->state.index];
+        uint8_t i;
 
-    for (i = 0; i < 3; i++)
-    {
-        if (diff >= temp_step_size)
+        if (diff < 0)
         {
-            new_sample |= mask;
-            diff -= temp_step_size;
+            new_sample = 8;
+            diff = -diff;
         }
-        temp_step_size >>= 1;
-        mask >>= 1;
+
+        for (i = 0; i < 3; i++)
+        {
+            if (diff >= temp_step_size)
+            {
+                new_sample |= mask;
+                diff -= temp_step_size;
+            }
+            temp_step_size >>= 1;
+            mask >>= 1;
+        }
+
+        /* 4-bit newSample can be stored at this point */
+        if (adpcm->output_index)
+        {
+            adpcm->callback((adpcm->output << 4) | new_sample, adpcm->param);
+            adpcm->output_index = 0;
+        }
+        else
+        {
+            adpcm->output_index++;
+            adpcm->output = new_sample;
+        }
+
+        adpcm_update(&adpcm->state, new_sample);       
     }
 
-    /* 4-bit newSample can be stored at this point */
-    if (adpcm->output_index)
-    {
-        adpcm->callback((adpcm->output << 4) | new_sample, adpcm->param);
-        adpcm->output_index = 0;
-    }
-    else
-    {
-        adpcm->output_index++;
-        adpcm->output = new_sample;
-    }
-
-    adpcm_update(&adpcm->state, new_sample);
 }
 
 void adpcm_decode(adpcm_dec_t *adpcm, uint8_t data)

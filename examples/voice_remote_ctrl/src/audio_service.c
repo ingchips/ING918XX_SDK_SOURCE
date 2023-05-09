@@ -16,6 +16,7 @@ extern void audio_input_start(void);
 extern void audio_input_stop(void);
 
 audio_enc_t audio_t;
+audio_encoder_t aud_enc_t;
 
 static adpcm_priv_t adpcm_priv=
 {
@@ -190,7 +191,7 @@ static void audio_task(void *pdata)
         }
 
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
-        encodelen = sbc_encode(&sbc, inp, codesize, outp, framelen);
+        encodelen = aud_enc_t.encoder(&sbc, inp, codesize, outp, framelen);
         if(encodelen == codesize) 
         {
             for (int i=0; i<framelen; i++) {
@@ -236,13 +237,13 @@ void audio_rx_sample(pcm_sample_t sample)
     }
 }
 
-static void enc_state_init(audio_enc_t *audio);
+static void enc_state_init(audio_enc_t *audio, audio_encoder_t *enc_t);
 
 void audio_init(void)
 {
     LOG_PRINTF(LOG_LEVEL_INFO,"Initializing audio encoder...");
     //sbc struct init.
-    enc_state_init(&audio_t);
+    enc_state_init(&audio_t, &aud_enc_t);
 
     xSampleQueue = xQueueCreateStatic(QUEUE_LENGTH,
                                  ITEM_SIZE,
@@ -257,9 +258,10 @@ void audio_init(void)
     
     audio_input_setup();
     LOG_PRINTF(LOG_LEVEL_INFO,"Initialization completed.");
+    // audio_start();
 }
 
-static void enc_state_init(audio_enc_t *audio)
+static void enc_state_init(audio_enc_t *audio, audio_encoder_t *enc_t)
 {
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Encoder-->[ADPCM]");
@@ -268,6 +270,7 @@ static void enc_state_init(audio_enc_t *audio)
     audio->voice_buf_block_size = adpcm_priv.voice_buf_block_size;
     audio->sample_buf_num = adpcm_priv.sample_buf_num;
     audio->sample_buf_size = adpcm_priv.sample_buf_size;
+    enc_t->encoder = adpcm_encode;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
 
 #elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
@@ -282,5 +285,7 @@ static void enc_state_init(audio_enc_t *audio)
     audio->sample_buf_num = sbc_priv.sample_buf_num;
     audio->sample_buf_size = sbc_priv.sample_buf_size;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
+
+    enc_t->encoder = sbc_encode;
 #endif
 }

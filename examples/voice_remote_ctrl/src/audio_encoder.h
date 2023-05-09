@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #define AUDIO_CODEC_ALG_ADPCM     0
 #define AUDIO_CODEC_ALG_SBC       1
 #define AUDIO_CODEC_ALG_LC3       2 
@@ -63,10 +65,15 @@ typedef struct
         SBC_ENCODER,
         LC3_ENCODER,
     }type;
-    
+
+    //编码器输入输出缓冲区的尺寸--均为二维数组
+    int voice_buf_block_num;
+    int voice_buf_block_size;
+    int sample_buf_num;
+    int sample_buf_size;    
+
     void (*encoder)(void *enc, void *input, int input_size, void *output, int output_size);
     void (*decoder)(void *dec, void *input, int input_size, void *output, int output_size);
-
 }audio_encoder_t;
 
 #ifdef __cplusplus
