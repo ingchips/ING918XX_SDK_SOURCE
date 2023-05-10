@@ -53,8 +53,9 @@ static void adpcm_update(adpcm_state_t* state, const uint8_t sample)
         state->index = 88;
 }
 
-void adpcm_encode(adpcm_enc_t *adpcm, void *input, int input_size, void *output, int output_size)
+void adpcm_encode(void *enc, void *input, int input_size, void *output, int output_size)
 {
+    adpcm_enc_t *adpcm = (adpcm_enc_t *)enc;  
     pcm_sample_t *sample = (pcm_sample_t *)input;
 
     for(int i = 0; i < input_size; i++)

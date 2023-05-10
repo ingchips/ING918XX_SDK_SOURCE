@@ -17,7 +17,7 @@ extern void audio_input_stop(void);
 
 audio_enc_t audio_t;
 audio_encoder_t aud_enc_t;
-
+void *enc;
 static adpcm_priv_t adpcm_priv=
 {
     .voice_buf_block_num = 4100 / 150,
@@ -184,23 +184,10 @@ static void audio_task(void *pdata)
             else
                 sample = fir_push_run(&fir, sample);
 #endif
-
-#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
-            adpcm_encode(&enc, sample);
-#endif
         }
 
-#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
-        encodelen = aud_enc_t.encoder(&sbc, inp, codesize, outp, framelen);
-        if(encodelen == codesize) 
-        {
-            for (int i=0; i<framelen; i++) {
-                enc_output_cb(*(outp + i), 0); 
-		        printf("%c ",*(outp+i));	
-            } 
-            printf("\n");
-        }
-#endif
+    //统一接口
+    aud_enc_t.encoder(enc, inp, codesize, outp, framelen);
     }
 }
 
@@ -266,6 +253,7 @@ static void enc_state_init(audio_enc_t *audio, audio_encoder_t *enc_t)
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Encoder-->[ADPCM]");
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Configure encode's parameter...");
+    enc = &adpcm;
     audio->voice_buf_block_num = adpcm_priv.voice_buf_block_num;
     audio->voice_buf_block_size = adpcm_priv.voice_buf_block_size;
     audio->sample_buf_num = adpcm_priv.sample_buf_num;
@@ -276,6 +264,7 @@ static void enc_state_init(audio_enc_t *audio, audio_encoder_t *enc_t)
 #elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Encoder-->[SBC]");
     sbc_enc_init(&sbc, enc_output_cb, 0L);
+    enc = &sbc;
     sbc_priv.voice_buf_block_size = sbc_get_frame_length(&sbc);
     sbc_priv.voice_buf_block_num = 4100 / sbc_priv.voice_buf_block_size;
     sbc_priv.sample_buf_size = sbc_get_codesize(&sbc);

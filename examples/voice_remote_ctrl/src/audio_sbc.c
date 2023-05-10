@@ -829,7 +829,7 @@ static void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
 static uint64_t pack_timer_tick_ms = 0;
 static uint64_t now = 0;
 
-int sbc_encode(sbc_t *sbc, 
+void sbc_encode(sbc_t *sbc, 
 			   void *input, 
 			   int input_len,
 			   void *output, 
@@ -840,8 +840,8 @@ int sbc_encode(sbc_t *sbc,
 	int  framelen;
 	int16_t *ptr;
 
-	if (!sbc || !input)
-		return -EIO;
+	// if (!sbc || !input)
+	// 	return -EIO;
 
 	priv = sbc->priv;
 
@@ -874,12 +874,12 @@ int sbc_encode(sbc_t *sbc,
 	}
 
 	/* input must be large enough to encode a complete frame */
-	if (input_len < priv->frame.codesize)
-		return 0;
+	// if (input_len < priv->frame.codesize)
+	// 	return 0;
 
 	/* output must be large enough to receive the encoded frame */
-	if (!output || output_len < priv->frame.length)
-		return -ENOSPC;
+	// if (!output || output_len < priv->frame.length)
+	// 	return -ENOSPC;
 
 	ptr = (int16_t *)input;
 
@@ -900,7 +900,13 @@ int sbc_encode(sbc_t *sbc,
 	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
 	framelen = sbc_pack_frame(output,&priv->frame, output_len); 
 
-	return samples * priv->frame.channels * 2;
+	//using the output interface
+	for(int i=0; i < framelen; i++)
+	{
+		sbc->callback(*((uint8_t *)(output+i)), 0);
+	}
+
+	//return samples * priv->frame.channels * 2;
 }
 
 void sbc_finish(sbc_t *sbc)

@@ -14,7 +14,7 @@ extern "C" {
 
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
 #include "audio_adpcm.h"
-static adpcm_enc_t enc;
+static adpcm_enc_t adpcm;
 #elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
 #include "audio_sbc.h"
 static sbc_t sbc;
@@ -67,6 +67,8 @@ typedef struct
     }type;
 
     //编码器输入输出缓冲区的尺寸--均为二维数组
+    //需要利用这4个参数动态申请两个二维数组，实在不行就两个一维数组
+    //
     int voice_buf_block_num;
     int voice_buf_block_size;
     int sample_buf_num;
