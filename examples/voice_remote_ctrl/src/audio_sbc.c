@@ -829,7 +829,7 @@ static void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
 static uint64_t pack_timer_tick_ms = 0;
 static uint64_t now = 0;
 
-void sbc_encode(sbc_t *sbc, 
+void sbc_encode(void *enc, 
 			   void *input, 
 			   int input_len,
 			   void *output, 
@@ -840,6 +840,7 @@ void sbc_encode(sbc_t *sbc,
 	int  framelen;
 	int16_t *ptr;
 
+	sbc_t *sbc = (sbc_t *)enc;
 	// if (!sbc || !input)
 	// 	return -EIO;
 

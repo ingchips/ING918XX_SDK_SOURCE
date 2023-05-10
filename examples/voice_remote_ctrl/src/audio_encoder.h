@@ -10,7 +10,7 @@ extern "C" {
 #define AUDIO_CODEC_ALG_ADPCM     0
 #define AUDIO_CODEC_ALG_SBC       1
 #define AUDIO_CODEC_ALG_LC3       2 
-#define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_SBC
+#define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_ADPCM
 
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
 #include "audio_adpcm.h"
@@ -22,60 +22,26 @@ static sbc_t sbc;
 #error Please look forward to.
 #endif
 
+//输入缓冲区参数
 typedef struct
 {
-    int voice_buf_block_num;
-    int voice_buf_block_size;
-
-    uint8_t **data_buffer;
-    int  **sample;
-    
-    int sample_buf_num;
-    int sample_buf_size;
-}audio_enc_t;
-
-extern audio_enc_t audio_t;
-
-struct adpcm_enc_priv
-{
-    int voice_buf_block_num;
-    int voice_buf_block_size;
-
-    int sample_buf_num;
-    int sample_buf_size;
-};
-
-typedef struct adpcm_enc_priv adpcm_priv_t;
-
-struct sbc_enc_priv
-{
-    int voice_buf_block_num;
-    int voice_buf_block_size;
-
-    int sample_buf_num;
-    int sample_buf_size;
-};
-typedef struct sbc_enc_priv sbc_priv_t;
+    int num;
+    int size;
+}sample_buf_t;
 
 typedef struct
 {
     //编码器类型
-    enum{
+    enum
+    {
         ADPCM_ENCODER,
         SBC_ENCODER,
         LC3_ENCODER,
     }type;
 
-    //编码器输入输出缓冲区的尺寸--均为二维数组
-    //需要利用这4个参数动态申请两个二维数组，实在不行就两个一维数组
-    //
-    int voice_buf_block_num;
-    int voice_buf_block_size;
-    int sample_buf_num;
-    int sample_buf_size;    
+    sample_buf_t sample_buf;
 
     void (*encoder)(void *enc, void *input, int input_size, void *output, int output_size);
-    void (*decoder)(void *dec, void *input, int input_size, void *output, int output_size);
 }audio_encoder_t;
 
 #ifdef __cplusplus

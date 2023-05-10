@@ -62,7 +62,7 @@ int sbc_enc_init(sbc_t *sbc, sbc_encode_output_cb_f callback, uint8_t flags);
 int sbc_reinit(sbc_t *sbc, uint8_t flags);
 
 /* Encodes ONE input block into ONE output block */
-void sbc_encode(sbc_t *sbc, 
+void sbc_encode(void *enc, 
 			   void *input, 
 			   int input_len,
 			   void *output, 
