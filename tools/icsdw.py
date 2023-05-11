@@ -9,6 +9,7 @@ import usb.core
 import usb.util
 import usb.backend.libusb1
 import datetime
+import libusb_package
 
 DEF_BAUD = 115200
 RAM_BASE_ADDR = 0x20000000
@@ -171,13 +172,13 @@ class device(object):
         self.dev_type = 0 if port.lower().startswith('com' or 'tty') else 1
         self.dev = None
         if self.dev_type == 1:
-            self.backend = usb.backend.libusb1.get_backend(find_library=lambda x: os.path.split(os.path.realpath(__file__))[0] + "\\libusb-1.0.dll")
+            self.backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
         self.open(port, timeout, config)
 
     @staticmethod
     def query_all_active_usb_ports(timeout = 10):
         start_time = datetime.datetime.now()
-        backend = usb.backend.libusb1.get_backend(find_library=lambda x: os.path.split(os.path.realpath(__file__))[0] + "\\libusb-1.0.dll")
+        backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
         from icsdw916 import intf_usb
         intf = intf_usb()
         devs = []
