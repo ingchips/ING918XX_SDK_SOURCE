@@ -25,7 +25,7 @@ Note: Python 3 and _pyserial_ is required to use this script.
 ### usage for USB Flash download
 
 - 	use icsdw.device.query_all_active_usb_ports(timeout) to query all usb port, it will wait and hold&return all ports until timeout(seconds).
-	-	call functin: example: python -c "import icsdw;x=icsdw.device.query_all_active_usb_ports(10);".
+	-	call functin: example: python -c "import icsdw;print(icsdw.device.query_all_active_usb_ports(10))".
 	-	enter boot.
 	-	record all returned ports, if USB is re-connected after last query, the port is not valid anymore.
 - 	use port as input to download:
