@@ -10,7 +10,7 @@ extern "C" {
 #include "audio_sbc_math.h"
 
 #define SBC_ALIGN_BITS 4
-#define SBC_ALIGN_MASK ((1 << (SBC_ALIGN_BITS)) - 1)
+#define SBC_ALIGN_MASK ((1 << (SBC_ALIGN_BITS)))
 
 /* A2DP specification: Appendix B, page 69 */
 static const int sbc_offset4[4][4] = {

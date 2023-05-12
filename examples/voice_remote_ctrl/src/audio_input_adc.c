@@ -6,7 +6,7 @@
 
 #include "app_cfg.h"
 
-#include "audio_adpcm.h"
+#include "audio_encoder.h"
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 

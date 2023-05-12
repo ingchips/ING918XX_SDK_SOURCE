@@ -1,4 +1,4 @@
-#include "audio_adpcm.h"
+#include "audio_encoder.h"
 
 extern void audio_rx_sample(pcm_sample_t sample);
 

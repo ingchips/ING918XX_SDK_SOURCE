@@ -1,11 +1,11 @@
 #ifndef _SBC_H_
 #define _SBC_H_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdint.h>
 
 typedef int16_t pcm_sample_t;
 
@@ -58,7 +58,7 @@ typedef struct{
 	sbc_encode_output_cb_f callback;
 }sbc_t;
 
-int sbc_enc_init(sbc_t *sbc, sbc_encode_output_cb_f callback, uint8_t flags);
+int sbc_enc_init(void *enc, sbc_encode_output_cb_f callback, uint8_t flags);
 int sbc_reinit(sbc_t *sbc, uint8_t flags);
 
 /* Encodes ONE input block into ONE output block */

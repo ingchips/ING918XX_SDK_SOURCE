@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <limits.h>
 
-#include "audio_adpcm.h"
 #include "ingsoc.h"
 
 #include "FreeRTOS.h"
@@ -711,23 +710,26 @@ static void sbc_set_defaults(sbc_t *sbc, uint8_t flags)
 	sbc->blocks = SBC_BLK_16;
     sbc->allocation = SBC_AM_SNR;
 	sbc->bitpool = 9;
-// #if __BYTE_ORDER == __LITTLE_ENDIAN
+#if __BYTE_ORDER == __LITTLE_ENDIAN
 	sbc->endian = SBC_LE;
-// #elif __BYTE_ORDER == __BIG_ENDIAN
-	// sbc->endian = SBC_BE;
-// #else
-// #error "Unknown byte order"
-// #endif
+#elif __BYTE_ORDER == __BIG_ENDIAN
+	sbc->endian = SBC_BE;
+#else
+#error "Unknown byte order"
+#endif
 }
 
-int sbc_enc_init(sbc_t *sbc,  sbc_encode_output_cb_f callback, uint8_t flags)
+int sbc_enc_init(void *enc,  sbc_encode_output_cb_f callback, uint8_t flags)
 {
+	sbc_t *sbc =(sbc_t *)enc;
+
 	if (!sbc)
 		return -EIO;
 
 	memset(sbc, 0, sizeof(sbc_t));
-
 	sbc->priv_alloc_base = malloc(sizeof(struct sbc_priv) + SBC_ALIGN_MASK);
+	
+	
 	if (!sbc->priv_alloc_base)
 		return -ENOMEM;
 
@@ -735,9 +737,7 @@ int sbc_enc_init(sbc_t *sbc,  sbc_encode_output_cb_f callback, uint8_t flags)
 			SBC_ALIGN_MASK) & ~((uintptr_t) SBC_ALIGN_MASK));
 
 	memset(sbc->priv, 0, sizeof(struct sbc_priv));
-
 	sbc_set_defaults(sbc, flags);
-
 	sbc->callback = callback;
 
 	return 0;

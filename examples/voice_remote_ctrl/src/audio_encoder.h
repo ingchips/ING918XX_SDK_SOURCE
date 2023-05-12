@@ -10,7 +10,7 @@ extern "C" {
 #define AUDIO_CODEC_ALG_ADPCM     0
 #define AUDIO_CODEC_ALG_SBC       1
 #define AUDIO_CODEC_ALG_LC3       2 
-#define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_ADPCM
+#define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_SBC
 
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
 #include "audio_adpcm.h"

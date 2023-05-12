@@ -16,7 +16,7 @@ extern void audio_input_start(void);
 extern void audio_input_stop(void);
 
 audio_encoder_t aud_enc_t;
-void *enc;//编码器结构体指针
+void *enc = NULL;
 
 uint8_t data_buffer[VOICE_BUF_BLOCK_NUM][VOICE_BUF_BLOCK_SIZE] = {0};
 uint16_t block_index;
@@ -152,7 +152,7 @@ static void audio_task(void *pdata)
         
         if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
             continue;
-
+        // printf("size = %d\n",aud_enc_t.sample_buf.size);
         buf = sample_buf[index];
         
         for (i = 0; i < aud_enc_t.sample_buf.size; i++)
@@ -168,6 +168,7 @@ static void audio_task(void *pdata)
             else
                 sample = fir_push_run(&fir, sample);
 #endif
+        // printf("[%d] ",*(buf + i));
         }
 
     aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
@@ -188,6 +189,7 @@ uint8_t *audio_get_block_buff(uint16_t index)
 
 void audio_rx_sample(pcm_sample_t sample)
 {
+
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
 
     // digital gain
@@ -195,8 +197,9 @@ void audio_rx_sample(pcm_sample_t sample)
         sample <<= mic_dig_gain;
     else if (mic_dig_gain < 0)  
         sample >>= -mic_dig_gain;
-
+    // printf("%d ",mic_dig_gain);
     sample_buf[sample_buf_index][sample_index] = sample;
+
     sample_index++;
     if (sample_index >= aud_enc_t.sample_buf.size)
     {
@@ -220,15 +223,17 @@ void audio_init(void)
                                  ITEM_SIZE,
                                  ucQueueStorageArea,
                                  &xStaticSampleQueue); 
+
     xTaskCreate(audio_task,
                "b",
                1024,
                NULL,
                (configMAX_PRIORITIES - 14),
                NULL);
-    
+
     audio_input_setup();
     LOG_PRINTF(LOG_LEVEL_INFO,"Initialization completed.");
+    audio_start();
 }
 
 static void enc_state_init(audio_encoder_t *enc_t)
@@ -248,12 +253,11 @@ static void enc_state_init(audio_encoder_t *enc_t)
     enc_t->type = SBC_ENCODER;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Encoder-->[SBC]");
     enc = &sbc;
-    sbc_enc_init(&enc, enc_output_cb, 0L);
+    sbc_enc_init(enc, enc_output_cb, 0L);
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Configure encode's parameter...");
-    enc_t->sample_buf.num = 2;
-    enc_t->sample_buf.size = sbc_get_codesize(&sbc);
+    // enc_t->sample_buf.num = 2;
+    // enc_t->sample_buf.size = sbc_get_codesize(&sbc);
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
-
-    enc_t->encoder = sbc_encode;
+    // enc_t->encoder = sbc_encode;
 #endif
 }
