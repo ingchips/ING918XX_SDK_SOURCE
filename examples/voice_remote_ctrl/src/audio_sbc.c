@@ -534,7 +534,7 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 	crc_pos = 16;
 
 	//scale_factor计算结果相对于官方编码多了7
-	printf("[scale_factor]=(");
+	printf("\n[scale_factor]=(");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
 			frame->scale_factor[ch][sb] = 0;
@@ -632,6 +632,8 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 		crc_header[crc_pos >> 3] <<= 8 - (crc_pos % 8);
 
 	data[3] = sbc_crc8(crc_header, crc_pos);
+	sbc_calculate_bits(frame, bits);
+
 	printf("[----bits----]=(");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
@@ -639,8 +641,6 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 		}
 		printf(")\r\n");
 	}
-
-	sbc_calculate_bits(frame, bits);
 
 	printf("[---levels---]=(");
 	for (ch = 0; ch < frame->channels; ch++)
@@ -728,7 +728,6 @@ int sbc_enc_init(void *enc,  sbc_encode_output_cb_f callback, uint8_t flags)
 
 	memset(sbc, 0, sizeof(sbc_t));
 	sbc->priv_alloc_base = malloc(sizeof(struct sbc_priv) + SBC_ALIGN_MASK);
-	
 	
 	if (!sbc->priv_alloc_base)
 		return -ENOMEM;
@@ -825,9 +824,6 @@ static void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
 		}
 	}
 }
-
-static uint64_t pack_timer_tick_ms = 0;
-static uint64_t now = 0;
 
 void sbc_encode(void *enc, 
 			   void *input, 
