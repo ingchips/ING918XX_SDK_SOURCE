@@ -756,6 +756,8 @@ static inline void sbc_analyze_four(sbc_encoder_state *state,
 	x[42] = x[2] = pcm[1];
 	x[43] = x[3] = pcm[0];
 
+	printf("\nInput-4:[%d][%d][%d][%d]  ",pcm[0],pcm[1],pcm[2],pcm[3]);
+
 	__sbc_analyze_four(x, frame->sb_sample_f[blk][ch]);
 
 	state->position[ch] -= 4;
@@ -985,6 +987,11 @@ static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 {
 	sbc_fixed_t t[8], s[5];
 
+	/* -Windowing by 4 coefficients-
+		for i = 0 to 39 do
+			Z[i] = C[i] * X[i]
+		( C[i]:filter coeffs tables 12-23 in A2DP )
+	*/
 	t[0] = SCALE4_STAGE1(MULA(_sbc_proto_4[0], in[8] - in[32],
 						 MUL( _sbc_proto_4[1], in[16] - in[24])));
 
@@ -1025,6 +1032,13 @@ static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 						 MULA(_sbc_proto_4[3], in[31],
 						 MUL( _sbc_proto_4[2], in[39]))))));
 
+	printf("P-Calc:[%d][%d][%d][%d][%d][%d][%d][%d] ",t[0],t[1],t[2],t[3],t[4],t[5],t[6],t[7]);
+
+	/* -Partial Calculation-
+		for i = 0 to 7 do
+			for k = 0 to 4 do
+				Y[i] = sum(Z[i+k*8])
+	*/
 	s[0] = MUL( _anamatrix4[0], t[0] + t[4]);
 	s[1] = MUL( _anamatrix4[2], t[2]);
 	s[2] = MULA(_anamatrix4[1], t[1] + t[3], MUL(_anamatrix4[3], t[5]));
@@ -1035,6 +1049,7 @@ static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 	out[1] = SCALE4_STAGE2(-s[0] + s[1] + s[3]);
 	out[2] = SCALE4_STAGE2(-s[0] + s[1] - s[3]);
 	out[3] = SCALE4_STAGE2( s[0] + s[1] - s[2] + s[4]);
+	printf("Output-4:[%d][%d][%d][%d]",out[0],out[1],out[2],out[3]);
 }
 
 static void __sbc_analyze_eight(const int32_t *in, int32_t *out)
