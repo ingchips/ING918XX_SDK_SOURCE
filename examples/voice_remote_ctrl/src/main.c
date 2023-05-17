@@ -170,10 +170,6 @@ int app_main()
 
     audio_init();
 
-#if defined(KB_TEST)
-    LOG_PRINTF(LOG_LEVEL_INFO,"Press [KEY1] to turn  on or off.");
-#endif
-
 #if (BOARD == BOARD_REM)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER2, kb_scan_isr, NULL);
     TMR_Enable(APB_TMR2);

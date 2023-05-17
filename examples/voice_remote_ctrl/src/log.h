@@ -17,8 +17,6 @@ extern "C" {
 #define LOG_LEVEL_WARNING   2
 #define LOG_LEVEL_ERROR     3
 
-
-// 定义日志输出宏
 #define LOG_PRINTF(level, ...) do { \
     PRINTF("[%s] ", level == LOG_LEVEL_DEBUG ? "DEBUG" : \
                         level == LOG_LEVEL_INFO ? "INFO" : \
