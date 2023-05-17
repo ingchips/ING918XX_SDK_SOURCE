@@ -34,7 +34,6 @@ uint32_t audio_sample_isr(void *user_data)
     else
         pcm_index = 0;
 
-    // printf("%d ",sample);
     audio_rx_sample(sample);
 
     return 0;

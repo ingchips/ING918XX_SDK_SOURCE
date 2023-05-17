@@ -10,7 +10,7 @@ extern "C" {
 #define AUDIO_CODEC_ALG_ADPCM     0
 #define AUDIO_CODEC_ALG_SBC       1
 #define AUDIO_CODEC_ALG_LC3       2 
-#define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_SBC
+#define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_ADPCM
 
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
 #include "audio_adpcm.h"
@@ -22,7 +22,6 @@ static sbc_t sbc;
 #error Please look forward to.
 #endif
 
-//输入缓冲区参数
 typedef struct
 {
     int num;
@@ -31,7 +30,6 @@ typedef struct
 
 typedef struct
 {
-    //编码器类型
     enum
     {
         ADPCM_ENCODER,

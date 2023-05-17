@@ -38,10 +38,9 @@ void enc_output_cb(uint8_t output, void *param)
 {
     data_buffer[block_index][byte_index] = output;
     byte_index++;
-    printf("%x ",output);
+
     if (byte_index >= VOICE_BUF_BLOCK_SIZE)
     {
-        printf("\n");
         block_index++;
         audio_trigger_send();
         if (block_index >= VOICE_BUF_BLOCK_NUM)
@@ -154,7 +153,7 @@ static void audio_task(void *pdata)
         
         if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
             continue;
-        // printf("size = %d\n",aud_enc_t.sample_buf.size);
+
         buf = sample_buf[index];
         
         for (i = 0; i < aud_enc_t.sample_buf.size; i++)
@@ -170,7 +169,6 @@ static void audio_task(void *pdata)
             else
                 sample = fir_push_run(&fir, sample);
 #endif
-        // printf("[%d] ",*(buf + i));
         }
 
     aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
@@ -199,7 +197,7 @@ void audio_rx_sample(pcm_sample_t sample)
         sample <<= mic_dig_gain;
     else if (mic_dig_gain < 0)  
         sample >>= -mic_dig_gain;
-    // printf("%d ",mic_dig_gain);
+
     sample_buf[sample_buf_index][sample_index] = sample;
 
     sample_index++;
@@ -235,7 +233,6 @@ void audio_init(void)
 
     audio_input_setup();
     LOG_PRINTF(LOG_LEVEL_INFO,"Initialization completed.");
-    // audio_start();
 }
 
 static void enc_state_init(audio_encoder_t *enc_t)
