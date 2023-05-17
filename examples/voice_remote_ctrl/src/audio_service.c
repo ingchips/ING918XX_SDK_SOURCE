@@ -146,7 +146,7 @@ static void audio_task(void *pdata)
     int oversample_cnt = 0;
     static pcm_sample_t *buffer = NULL;
     static int buffer_index = 0;
-    
+
     buffer = malloc(input_size * sizeof(pcm_sample_t));
 #endif
     pcm_sample_t *buf;
@@ -178,7 +178,7 @@ static void audio_task(void *pdata)
             
             if(buffer_index >= input_size)
             {
-                aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
+                aud_enc_t.encoder(enc, buffer, input_size, outp, output_size);
                 buffer_index = 0;
             }
         }
