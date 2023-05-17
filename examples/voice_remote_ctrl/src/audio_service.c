@@ -144,6 +144,8 @@ static void audio_task(void *pdata)
 
 #if (OVER_SAMPLING_MASK != 0)
     int oversample_cnt = 0;
+    static pcm_sample_t *buffer = malloc(input_size * sizeof(pcm_sample_t));
+    static int buffer_index = 0;
 #endif
     pcm_sample_t *buf;
     for (;;)
@@ -167,12 +169,20 @@ static void audio_task(void *pdata)
                 continue;
             }
             else
+            {
                 sample = fir_push_run(&fir, sample);
-
-            buf[i] = sample;
+                buffer[buffer_index++] = sample;
+            }
+            
+            if(buffer_index >= input_size)
+            {
+                aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
+                buffer_index = 0;
+            }
         }
-#endif
+#else
         aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
+#endif
     }
 }
 
