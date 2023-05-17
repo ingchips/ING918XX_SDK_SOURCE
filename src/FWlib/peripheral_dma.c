@@ -37,7 +37,7 @@ int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
     return 0;
 }
 
-static int DMG_GetSPIDMAWidth(SSP_TypeDef *SSP)
+static DMA_TransferWidth DMG_GetSPIDMAWidth(SSP_TypeDef *SSP)
 {
     switch ((SSP->TransFmt >> 8) & 0x1f)
     {

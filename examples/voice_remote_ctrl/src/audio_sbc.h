@@ -58,12 +58,12 @@ typedef struct{
 	sbc_encode_output_cb_f callback;
 }sbc_t;
 
-int sbc_enc_init(void *enc, sbc_encode_output_cb_f callback, uint8_t flags);
+int sbc_enc_init(sbc_t *sbc, sbc_encode_output_cb_f callback, uint8_t flags);
 int sbc_reinit(sbc_t *sbc, uint8_t flags);
 
 /* Encodes ONE input block into ONE output block */
-void sbc_encode(void *enc, 
-			   void *input, 
+void sbc_encode(sbc_t *sbc, 
+			   int16_t *input, 
 			   int input_len,
 			   void *output, 
 			   int output_len);

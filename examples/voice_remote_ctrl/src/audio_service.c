@@ -50,7 +50,7 @@ void enc_output_cb(uint8_t output, void *param)
 }
 
 #define QUEUE_LENGTH    30
-#define ITEM_SIZE       sizeof(int16_t) 
+#define ITEM_SIZE       sizeof(int16_t)
 static StaticQueue_t xStaticSampleQueue;
 static uint8_t ucQueueStorageArea[ITEM_SIZE * QUEUE_LENGTH];
 QueueHandle_t xSampleQueue;
@@ -72,7 +72,7 @@ typedef struct
 #define TO_INT8(v)       ((int8_t)(v * 127 * FILTER_GAIN))
 
 #if (OVER_SAMPLING == 2)
-fir_t fir = { .h = {TO_INT8(-0.0133217), 
+fir_t fir = { .h = {TO_INT8(-0.0133217),
                     0,
                     TO_INT8(0.26318),
                     TO_INT8(0.5),
@@ -100,7 +100,7 @@ pcm_sample_t fir_push_run(fir_t *fir, pcm_sample_t x)
 {
     int i;
     int32_t r = fir->h[0] * x;
-    
+
     for (i = FIR_LEN - 1; i >= 1; i--)
     {
         r += fir->h[i] * fir->x[i - 1];
@@ -114,7 +114,7 @@ pcm_sample_t fir_push_run(fir_t *fir, pcm_sample_t x)
 
 void audio_start(void)
 {
-    LOG_PRINTF(LOG_LEVEL_DEBUG,"Start audio input."); 
+    LOG_PRINTF(LOG_LEVEL_DEBUG,"Start audio input.");
     sample_buf_index = 0;
     sample_index = 0;
     block_index = 0;
@@ -140,7 +140,7 @@ static void audio_task(void *pdata)
     input_size = aud_enc_t.sample_buf.size;
     output_size = aud_enc_t.sample_buf.size;
 #endif
-    outp = malloc(output_size * sizeof(uint8_t*));
+    outp = malloc(output_size * sizeof(uint8_t));
 
 #if (OVER_SAMPLING_MASK != 0)
     int oversample_cnt = 0;
@@ -150,12 +150,12 @@ static void audio_task(void *pdata)
     {
         int16_t index;
         int i;
-        
+
         if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
             continue;
 
         buf = sample_buf[index];
-        
+
         for (i = 0; i < aud_enc_t.sample_buf.size; i++)
         {
             pcm_sample_t sample = buf[i];
@@ -171,10 +171,8 @@ static void audio_task(void *pdata)
 #endif
         }
 
-    aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
+        aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
     }
-
-    free(outp);
 }
 
 uint16_t audio_get_curr_block(void)
@@ -195,7 +193,7 @@ void audio_rx_sample(pcm_sample_t sample)
     // digital gain
     if (mic_dig_gain > 0)
         sample <<= mic_dig_gain;
-    else if (mic_dig_gain < 0)  
+    else if (mic_dig_gain < 0)
         sample >>= -mic_dig_gain;
 
     sample_buf[sample_buf_index][sample_index] = sample;
@@ -222,7 +220,7 @@ void audio_init(void)
     xSampleQueue = xQueueCreateStatic(QUEUE_LENGTH,
                                  ITEM_SIZE,
                                  ucQueueStorageArea,
-                                 &xStaticSampleQueue); 
+                                 &xStaticSampleQueue);
 
     xTaskCreate(audio_task,
                "b",
@@ -245,7 +243,7 @@ static void enc_state_init(audio_encoder_t *enc_t)
     enc_t->type = ADPCM_ENCODER;
     enc_t->sample_buf.num = 2;
     enc_t->sample_buf.size = 20;
-    enc_t->encoder = adpcm_encode;
+    enc_t->encoder = (fun_encoder)adpcm_encode;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
 
 #elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
@@ -257,6 +255,6 @@ static void enc_state_init(audio_encoder_t *enc_t)
     enc_t->sample_buf.num = 2;
     enc_t->sample_buf.size = sbc_get_codesize(&sbc);
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
-    enc_t->encoder = sbc_encode;
+    enc_t->encoder = (fun_encoder)sbc_encode;
 #endif
 }

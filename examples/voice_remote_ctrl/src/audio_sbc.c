@@ -23,13 +23,13 @@ static void __sbc_analyze_four(const int32_t *in, int32_t *out);
 static void __sbc_analyze_eight(const int32_t *in, int32_t *out);
 
 static void sbc_analyze_four(sbc_encoder_state *state,
-							 sbc_frame *frame, 
-							 int ch, 
+							 sbc_frame *frame,
+							 int ch,
 							 int blk);
 
 static void sbc_analyze_eight(sbc_encoder_state *state,
-							  sbc_frame *frame, 
-							  int ch, 
+							  sbc_frame *frame,
+							  int ch,
 							  int blk);
 
 
@@ -98,8 +98,8 @@ static uint8_t sbc_crc8(const uint8_t *data, int len)
  * Takes a pointer to the frame in question, a pointer to the bits array and
  * the sampling frequency (as 2 bit integer)
  */
-static void sbc_calculate_bits_internal(const sbc_frame *frame, 
-										int (*bits)[8], 
+static void sbc_calculate_bits_internal(const sbc_frame *frame,
+										int (*bits)[8],
 										int subbands)
 {
 	uint8_t sf = frame->frequency;
@@ -120,7 +120,7 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 					if (bitneed[ch][sb] > max_bitneed)
 						max_bitneed = bitneed[ch][sb];
 				}
-			} 
+			}
 			else
 			{
 				for(sb = 0; sb < subbands; sb++)
@@ -199,7 +199,7 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 					bitcount++;
 				}
 			}
-		} 
+		}
 	}
 	else if (frame->mode == STEREO || frame->mode == JOINT_STEREO)
 	{
@@ -302,7 +302,7 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 				sb++;
 				if (sb >= subbands)
 					break;
-			} 
+			}
 			else
 				ch = 1;
 		}
@@ -322,7 +322,7 @@ static void sbc_calculate_bits_internal(const sbc_frame *frame,
 				sb++;
 				if (sb >= subbands)
 					break;
-			} 
+			}
 			else
 				ch = 1;
 		}
@@ -337,7 +337,7 @@ static void sbc_calculate_bits(const sbc_frame *frame, int (*bits)[8])
 		sbc_calculate_bits_internal(frame, bits, 8);
 }
 
-static  int16_t sbc_clip16(int32_t s)
+int16_t sbc_clip16(int32_t s)
 {
 	if (s > 0x7FFF)    //32767
 		return 0x7FFF;
@@ -421,7 +421,7 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 
 	data[1] |= (frame->allocation & 0x01) << 1;
 
-	switch (frame->subbands) 
+	switch (frame->subbands)
 	{
 		case 4:
 			/* Nothing to do */
@@ -431,7 +431,6 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 			break;
 		default:
 			return -4;
-			break;
 	}
 
 	data[2] = frame->bitpool;
@@ -453,13 +452,13 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 
 	for (ch = 0; ch < frame->channels; ch++)
 	{
-		for (sb = 0; sb < frame->subbands; sb++) 
+		for (sb = 0; sb < frame->subbands; sb++)
 		{
 			frame->scale_factor[ch][sb] = 0;
 			scalefactor[ch][sb] = 2;
-			for (blk = 0; blk < frame->blocks; blk++) 
+			for (blk = 0; blk < frame->blocks; blk++)
 			{
-				while (scalefactor[ch][sb] < fabs(frame->sb_sample_f[blk][ch][sb])) 
+				while (scalefactor[ch][sb] < fabs(frame->sb_sample_f[blk][ch][sb]))
 				{
 					frame->scale_factor[ch][sb]++;
 					scalefactor[ch][sb] *= 2;
@@ -591,7 +590,7 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 	}
 
 	/* align the last byte */
-	if (produced % 8) 
+	if (produced % 8)
 	{
 		data[produced >> 3] <<= 8 - (produced % 8);
 	}
@@ -615,8 +614,6 @@ struct sbc_priv {
 
 static void sbc_set_defaults(sbc_t *sbc, uint8_t flags)
 {
-	struct sbc_priv *priv = sbc->priv;
-
 	sbc->flags = flags;
 	sbc->frequency = SBC_FREQ_16000;
 	sbc->mode = SBC_MODE_MONO;
@@ -634,16 +631,14 @@ static void sbc_set_defaults(sbc_t *sbc, uint8_t flags)
 #endif
 }
 
-int sbc_enc_init(void *enc,  sbc_encode_output_cb_f callback, uint8_t flags)
+int sbc_enc_init(sbc_t *sbc,  sbc_encode_output_cb_f callback, uint8_t flags)
 {
-	sbc_t *sbc =(sbc_t *)enc;
-
 	if (!sbc)
 		return -EIO;
 
 	memset(sbc, 0, sizeof(sbc_t));
 	sbc->priv_alloc_base = malloc(sizeof(struct sbc_priv) + SBC_ALIGN_MASK);
-	
+
 	if (!sbc->priv_alloc_base)
 		return -ENOMEM;
 
@@ -658,8 +653,8 @@ int sbc_enc_init(void *enc,  sbc_encode_output_cb_f callback, uint8_t flags)
 }
 
 static inline void sbc_analyze_four(sbc_encoder_state *state,
-									sbc_frame *frame, 
-									int ch, 
+									sbc_frame *frame,
+									int ch,
 									int blk)
 {
 	int32_t *x = &state->X[ch][state->position[ch]];
@@ -679,7 +674,7 @@ static inline void sbc_analyze_four(sbc_encoder_state *state,
 }
 
 void sbc_analyze_eight(sbc_encoder_state *state,
-					   sbc_frame *frame, 
+					   sbc_frame *frame,
 		   			   int ch,
 		   			   int blk)
 {
@@ -719,10 +714,10 @@ static int sbc_clz(uint32_t x)
 #endif
 }
 
-static void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
+void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
 								  uint32_t scale_factor[2][8],
-								  int blocks, 
-								  int channels, 
+								  int blocks,
+								  int channels,
 								  int subbands)
 {
 	int ch, sb, blk;
@@ -743,26 +738,26 @@ static void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
 	}
 }
 
-void sbc_encode(void *enc, 
-			   void *input, 
+void sbc_encode(sbc_t *sbc,
+			   int16_t *input,
 			   int input_len,
-			   void *output, 
+			   void *output,
 			   int output_len)
 {
 	struct sbc_priv *priv;
-	int samples, ch;
-	int  framelen;
+	int ch;
+	int framelen;
+    int i;
 	int16_t *ptr;
 
-	sbc_t *sbc = (sbc_t *)enc;
 	priv = sbc->priv;
 
 	if (!priv->init)
 	{
 		priv->frame.frequency = sbc->frequency;
-		priv->frame.mode = sbc->mode;
+		priv->frame.mode = (sbc_mdoe)sbc->mode;
 		priv->frame.channels = sbc->mode == SBC_MODE_MONO ? 1 : 2;
-		priv->frame.allocation = sbc->allocation;
+		priv->frame.allocation = (sbc_allocation)sbc->allocation;
 		priv->frame.subband_mode = sbc->subbands;
 		priv->frame.subbands = sbc->subbands ? 8 : 4;
 		priv->frame.block_mode = sbc->blocks;
@@ -773,17 +768,17 @@ void sbc_encode(void *enc,
 		priv->frame.length = sbc_get_frame_length(sbc);
 		sbc_encoder_init(&priv->enc_state, &priv->frame);
 		priv->init = true;
-	} 
+	}
 	else if (priv->frame.bitpool != sbc->bitpool)
 	{
-		//ref section 12.9 of A2DP 
+		//ref section 12.9 of A2DP
 		priv->frame.length = sbc_get_frame_length(sbc);
 		priv->frame.bitpool = sbc->bitpool;
 	}
 
-	ptr = (int16_t *)input;
+	ptr = input;
 
-	for (int i = 0; i < priv->frame.subbands * priv->frame.blocks; i++)
+	for (i = 0; i < priv->frame.subbands * priv->frame.blocks; i++)
 	{
 		for (ch = 0; ch < sbc->channels; ch++)
 		{
@@ -799,13 +794,12 @@ void sbc_encode(void *enc,
 		}
 	}
 
-	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
-	framelen = sbc_pack_frame(output,&priv->frame, output_len); 
+	framelen = sbc_pack_frame(output,&priv->frame, output_len);
 
 	//using the output interface
-	for(int i=0; i < framelen; i++)
+	for (i=0; i < framelen; i++)
 	{
-		sbc->callback(*((uint8_t *)(output+i)), 0);
+		sbc->callback(*((uint8_t *)(output) + i), 0);
 	}
 }
 
@@ -851,7 +845,7 @@ int sbc_get_codesize(sbc_t *sbc)
 {
 	uint16_t subbands, channels, blocks;
 	struct sbc_priv *priv;
-	
+
 	priv = sbc->priv;
 
 	if (!priv->init)
@@ -859,7 +853,7 @@ int sbc_get_codesize(sbc_t *sbc)
 		subbands = sbc->subbands ? 8 : 4;
         blocks = 4 + (sbc->blocks * 4);
 		channels = sbc->mode == SBC_MODE_MONO ? 1 : 2;
-	} 
+	}
 	else
 	{
 		subbands = priv->frame.subbands;
@@ -1035,16 +1029,16 @@ static void __sbc_analyze_eight(const int32_t *in, int32_t *out)
 		                 MULA(-_sbc_proto_8[17], in[61],
 		                 MUL( -_sbc_proto_8[16], in[77])))))))))));
 
-		s[0] = MUL(_anamatrix8[7],t[4]); 
-		s[1] = MUL(_anamatrix8[6],t[0]);	
+		s[0] = MUL(_anamatrix8[7],t[4]);
+		s[1] = MUL(_anamatrix8[6],t[0]);
         s[2] = MUL(_anamatrix8[0],t[2]);  // 0 2
-		s[3] = MUL(_anamatrix8[1],t[6]);  // 1 6	
+		s[3] = MUL(_anamatrix8[1],t[6]);  // 1 6
 		s[8] = MUL(_anamatrix8[1],t[2]); //  1 2
 		s[9] = MUL(_anamatrix8[0],t[6]); // 0 6
 
 		s[4] = MULA( _anamatrix8[2], t[3], MULA( _anamatrix8[3], t[1],
 		            					   MULA( _anamatrix8[4], t[5],
-		            					   MUL(  _anamatrix8[5], t[7]))));										   
+		            					   MUL(  _anamatrix8[5], t[7]))));
 		s[5] = MULA(-_anamatrix8[2], t[5], MULA( _anamatrix8[3], t[3],
 		            					   MULA(-_anamatrix8[4], t[7],
 		            					   MUL( -_anamatrix8[5], t[1]))));
@@ -1054,13 +1048,13 @@ static void __sbc_analyze_eight(const int32_t *in, int32_t *out)
 		s[7] = MULA(-_anamatrix8[2], t[7], MULA( _anamatrix8[3], t[5],
 		            					   MULA(-_anamatrix8[4], t[1],
 		            					   MUL(  _anamatrix8[5], t[3]))));
-        
-		out[0] = SCALE8_STAGE2( (s[0] + s[1]) + (s[2] + s[3]) + s[4]);     
+
+		out[0] = SCALE8_STAGE2( (s[0] + s[1]) + (s[2] + s[3]) + s[4]);
 		out[1] = SCALE8_STAGE2( (s[0] - s[1]) + (s[8] - s[9]) + s[5]);
         out[2] = SCALE8_STAGE2( (s[0] - s[1]) - s[8] + (s[9] + s[6]));
         out[3] = SCALE8_STAGE2( (s[0] + s[1]) - (s[2] + s[3]) + s[7]);
         out[4] = SCALE8_STAGE2( (s[0] + s[1]) - (s[2] + s[3]) - s[7]);
         out[5] = SCALE8_STAGE2( (s[0] - s[1]) - s[8] + (s[9] - s[6]));
-        out[6] = SCALE8_STAGE2( (s[0] - s[1]) + (s[8] - s[9]) - s[5]);	
+        out[6] = SCALE8_STAGE2( (s[0] - s[1]) + (s[8] - s[9]) - s[5]);
 		out[7] = SCALE8_STAGE2( (s[0] + s[1]) + (s[2] + s[3]) - s[4] );
 }

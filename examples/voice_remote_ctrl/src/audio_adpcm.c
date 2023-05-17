@@ -11,9 +11,8 @@ const int16_t stepsizeTable[89] = { 7, 8, 9, 10, 11, 12, 13, 14, /* quantizer lo
     3327, 3660, 4026, 4428, 4871, 5358, 5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635,
     13899, 15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767 };
 
-void adpcm_enc_init(void* enc, adpcm_encode_output_cb_f callback, void *param)
+void adpcm_enc_init(adpcm_enc_t* adpcm, adpcm_encode_output_cb_f callback, void *param)
 {
-    adpcm_enc_t *adpcm = (adpcm_enc_t *)enc;  
     memset(adpcm, 0, sizeof(*adpcm));
     adpcm->callback = callback;
     adpcm->param = param;
@@ -54,12 +53,12 @@ static void adpcm_update(adpcm_state_t* state, const uint8_t sample)
         state->index = 88;
 }
 
-void adpcm_encode(void *enc, void *input, int input_size, void *output, int output_size)
+void adpcm_encode(adpcm_enc_t *adpcm, pcm_sample_t *input, int input_size, void *output, int output_size)
 {
-    adpcm_enc_t *adpcm = (adpcm_enc_t *)enc;  
-    pcm_sample_t *sample = (pcm_sample_t *)input;
+    pcm_sample_t *sample = input;
+    int i;
 
-    for(int i = 0; i < input_size; i++)
+    for (i = 0; i < input_size; i++)
     {
         int32_t diff = (int32_t)sample[i] - adpcm->state.predicated;
         uint8_t new_sample = 0;
