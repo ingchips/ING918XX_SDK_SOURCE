@@ -156,10 +156,10 @@ static void audio_task(void *pdata)
 
         buf = sample_buf[index];
 
+#if (OVER_SAMPLING_MASK != 0)
         for (i = 0; i < aud_enc_t.sample_buf.size; i++)
         {
             pcm_sample_t sample = buf[i];
-#if (OVER_SAMPLING_MASK != 0)
             oversample_cnt = (oversample_cnt + 1) & OVER_SAMPLING_MASK;
             if (oversample_cnt != 0)
             {
@@ -168,9 +168,10 @@ static void audio_task(void *pdata)
             }
             else
                 sample = fir_push_run(&fir, sample);
-#endif
-        }
 
+            buf[i] = sample;
+        }
+#endif
         aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
     }
 }
