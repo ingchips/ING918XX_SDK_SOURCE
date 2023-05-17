@@ -144,8 +144,10 @@ static void audio_task(void *pdata)
 
 #if (OVER_SAMPLING_MASK != 0)
     int oversample_cnt = 0;
-    static pcm_sample_t *buffer = malloc(input_size * sizeof(pcm_sample_t));
+    static pcm_sample_t *buffer = NULL;
     static int buffer_index = 0;
+    
+    buffer = malloc(input_size * sizeof(pcm_sample_t));
 #endif
     pcm_sample_t *buf;
     for (;;)
