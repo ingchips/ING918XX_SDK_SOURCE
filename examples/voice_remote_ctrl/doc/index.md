@@ -17,8 +17,7 @@ Below table shows how to connect the microphone to the Dev-Board for each input 
 |2                  | I2S                           | Not available     | BCLK(21),IN(22),LRCLK(35) | INMP441: <img src="./img/i2s_mic.png" width="50%">|
 |3                  | PDM                           | Not available     | MCLK(28),IN(29)           | MP34DT01: <img src="./img/pdm_mic.png" width="50%">|
 
-Note: for type `0`, audio is playback from a data file (ITU standard testing data), and no microphone
-is used.
+Note: for type `0`, audio is playback from a data file (ITU standard testing data), and no microphone is used.
 
 ## Test
 
@@ -29,9 +28,10 @@ Choose an audio decoding algorithm, and press the "Capture" button to start capt
 Audio that has been processed by different audio codec algorithms may have different effects.
 Note: algorithm selection on APP side should be consistent with algorithm selection on MIC side.
 
-<img src="./img/speech_to_text.jpg" width="30%">
+<img src="./img/speech_to_text.png" width="30%">
 
 ## Design Details
 
 * Software based key matrix scan is implemented in [`kb_scan.c`](../src/kb_scan.c);
-* Audio is encoded in ADPCM or SBC and transmitted to _ING demo_ through _INGCHIPS Voice Output_ Service.
+* Audio is encoded in ADPCM or SBC and transmitted to _ING demo_ through _INGCHIPS Voice Output_ Service;
+* Encoder selected macro defined switch in [`audio_encoder.h`](../src/audio_encoder.h).
