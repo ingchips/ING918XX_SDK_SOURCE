@@ -48,9 +48,7 @@ void ll_config(ll_config_item_t item, uint32_t value);
  * @param[in]  max_dBm          maximum Tx power in dBm
  ****************************************************************************************
  */
-// void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_tx_power_range(int16_t min_dBm, int16_t max_dBm);
 
 typedef enum coded_scheme_e
 {
@@ -116,9 +114,7 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
  *                                    power level.
  ****************************************************************************************
  */
-// void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_adjust_conn_peer_tx_power(uint16_t conn_handle, int8_t delta);
 
 /**
  ****************************************************************************************
@@ -288,17 +284,15 @@ int ll_scanner_enable_iq_sampling(uint8_t cte_type,
  * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
-// int ll_scanner_enable_iq_sampling_on_legacy(
-//                           uint16_t sampling_offset,
-//                           uint8_t cte_type,
-//                           uint8_t cte_time,
-//                           uint8_t slot_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *switching_pattern,
-//                           uint8_t slot_sampling_offset,
-//                           uint8_t slot_sample_count);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_scanner_enable_iq_sampling_on_legacy(
+                          uint16_t sampling_offset,
+                          uint8_t cte_type,
+                          uint8_t cte_time,
+                          uint8_t slot_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *switching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
 
 struct ll_raw_packet;
 
@@ -729,9 +723,7 @@ void ll_set_conn_interval_unit(uint16_t unit);
  *                          For example, standard value for channel 37 is 0x53.
  ****************************************************************************************
  */
-// void ll_override_whitening_init_value(uint8_t override, uint8_t value);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_override_whitening_init_value(uint8_t override, uint8_t value);
 
 /**
  ****************************************************************************************
@@ -741,9 +733,7 @@ void ll_set_conn_interval_unit(uint16_t unit);
  * @param[in]  type         nonstandard ADV TYPE
  ****************************************************************************************
  */
-// void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
 
 /**
  ****************************************************************************************
@@ -752,9 +742,7 @@ void ll_set_conn_interval_unit(uint16_t unit);
  * @param[in]  bit          CTE bit: 0/1 (default: 1)
  ****************************************************************************************
  */
-// void ll_set_cte_bit(uint8_t bit);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_cte_bit(uint8_t bit);
 
 /**
  ****************************************************************************************
