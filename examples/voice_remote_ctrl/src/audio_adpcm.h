@@ -1,5 +1,5 @@
-#ifndef _AUDIO_H
-#define _AUDIO_H
+#ifndef _AUDIO_ADPCM_H
+#define _AUDIO_ADPCM_H
 
 #include <stdint.h>
 
@@ -38,10 +38,10 @@ typedef struct adpcm_dec_s
     adpcm_state_t state;
 } adpcm_dec_t;
 
-void adpcm_enc_init(adpcm_enc_t* adpcm, adpcm_encode_output_cb_f callback, void *param);
+void adpcm_enc_init(void* enc, adpcm_encode_output_cb_f callback, void *param);
 void adpcm_dec_init(adpcm_dec_t* adpcm, adpcm_decode_output_cb_f callback, void* param);
 
-void adpcm_encode(adpcm_enc_t *adpcm, pcm_sample_t sample);
+void adpcm_encode(void *adpcm, void *input, int input_size, void *output, int output_size);
 void adpcm_decode(adpcm_dec_t *adpcm, uint8_t data);
 
 void adpcm_set_dec_state(adpcm_dec_t *adpcm, const adpcm_state_t *state);

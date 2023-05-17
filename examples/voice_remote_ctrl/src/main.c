@@ -9,6 +9,7 @@
 #include "kb_scan.h"
 
 #include "app_cfg.h"
+#include "log.h"
 
 #define PRINT_PORT    APB_UART0
 
