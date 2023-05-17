@@ -48,11 +48,11 @@ class intf_base(object):
 
     def unlock(self, dev):
         exec_cmd = getattr(self, 'exec_cmd')
-        return exec_cmd(dev, self.CMD_UNLOCK)[:5] == ACK[:5]
+        return exec_cmd(dev, self.CMD_UNLOCK)[:5] == self.ACK[:5]
 
     def lock(self, dev):
         exec_cmd = getattr(self, 'exec_cmd')
-        return exec_cmd(dev, self.CMD_LOCK)[:5] == ACK[:5]
+        return exec_cmd(dev, self.CMD_LOCK)[:5] == self.ACK[:5]
 
     def prepare(self, x, y, z):
         pass
