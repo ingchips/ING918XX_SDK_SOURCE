@@ -1,8 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "audio_service.h"
-#include "audio_sbc.h" 
-#include "audio_adpcm.h"
+#include "audio_encoder.h"
 #include "ingsoc.h"
 
 #include "FreeRTOS.h"
@@ -16,21 +15,8 @@ extern void audio_input_setup(void);
 extern void audio_input_start(void);
 extern void audio_input_stop(void);
 
-static adpcm_enc_t enc;
-static sbc_t sbc;
-
-audio_enc_t audio_t;
-
-static adpcm_priv_t adpcm_priv=
-{
-    .voice_buf_block_num = 4100 / 150,
-    .voice_buf_block_size = 150,
-
-    .sample_buf_num = 2,
-    .sample_buf_size = 20,
-};
-
-static sbc_priv_t sbc_priv= {0};
+audio_encoder_t aud_enc_t;
+void *enc = NULL;
 
 uint8_t data_buffer[VOICE_BUF_BLOCK_NUM][VOICE_BUF_BLOCK_SIZE] = {0};
 uint16_t block_index;
@@ -52,8 +38,10 @@ void enc_output_cb(uint8_t output, void *param)
 {
     data_buffer[block_index][byte_index] = output;
     byte_index++;
+    printf("%x ",output);
     if (byte_index >= VOICE_BUF_BLOCK_SIZE)
     {
+        printf("\n");
         block_index++;
         audio_trigger_send();
         if (block_index >= VOICE_BUF_BLOCK_NUM)
@@ -130,9 +118,6 @@ void audio_start(void)
     LOG_PRINTF(LOG_LEVEL_DEBUG,"Start audio input."); 
     sample_buf_index = 0;
     sample_index = 0;
-#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
-    adpcm_enc_init(&enc, enc_output_cb, 0);
-#endif
     block_index = 0;
     byte_index = 0;
     audio_input_start();
@@ -145,8 +130,19 @@ void audio_stop(void)
     audio_input_stop();
 }
 
-static void audio_adpcm_task(void *pdata)
+static void audio_task(void *pdata)
 {
+    int input_size, output_size;
+    uint8_t *outp;
+#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
+    input_size = sbc_get_codesize(&sbc); //codesize
+    output_size = sbc_get_frame_length(&sbc);  //framelen
+#elif  (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
+    input_size = aud_enc_t.sample_buf.size;
+    output_size = aud_enc_t.sample_buf.size;
+#endif
+    outp = malloc(output_size * sizeof(uint8_t*));
+
 #if (OVER_SAMPLING_MASK != 0)
     int oversample_cnt = 0;
 #endif
@@ -158,10 +154,10 @@ static void audio_adpcm_task(void *pdata)
         
         if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
             continue;
-
+        // printf("size = %d\n",aud_enc_t.sample_buf.size);
         buf = sample_buf[index];
         
-        for (i = 0; i < audio_t.sample_buf_size; i++)
+        for (i = 0; i < aud_enc_t.sample_buf.size; i++)
         {
             pcm_sample_t sample = buf[i];
 #if (OVER_SAMPLING_MASK != 0)
@@ -174,63 +170,13 @@ static void audio_adpcm_task(void *pdata)
             else
                 sample = fir_push_run(&fir, sample);
 #endif
-            adpcm_encode(&enc, sample);
+        // printf("[%d] ",*(buf + i));
         }
+
+    aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
     }
-}
 
-static void audio_sbc_task(void *pdata)
-{
-    int size, codesize, framelen, encodelen;
-    uint8_t encoded;
-
-    codesize = sbc_get_codesize(&sbc);
-    framelen = sbc_get_frame_length(&sbc); 
-
-    sbc_sample_t *inp;
-    uint8_t *outp;
-    outp = malloc(framelen * sizeof(uint8_t*));
-
-#if (OVER_SAMPLING_MASK != 0)
-    int oversample_cnt = 0;
-#endif
-
-    for(;;)
-    {
-        int16_t index;
-        int i;
-
-        if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
-            continue;
-        if (xQueueIsQueueFullFromISR(xSampleQueue) != pdFALSE)
-            LOG_PRINTF_TAB(LOG_LEVEL_ERROR,"xSampleQueue is Full.");
-        
-        inp = (sbc_sample_t *)(sample_buf[index]);   
-        
-        for (i = 0; i < audio_t.sample_buf_size; i++)
-        {
-            sbc_sample_t sample = inp[i];
-#if (OVER_SAMPLING_MASK != 0)
-            oversample_cnt = (oversample_cnt + 1) & OVER_SAMPLING_MASK;
-            if (oversample_cnt != 0)
-            {
-                fir_push(&fir, sample);
-                continue;
-            }
-            else
-                sample = fir_push_run(&fir, sample);
-#endif
-        }
-        encodelen = sbc_encode(&sbc, inp, codesize, outp, framelen);
-        if(encodelen == codesize) 
-        {
-            for (int i=0; i<framelen; i++) {
-                enc_output_cb(*(outp + i), 0); 
-		        printf("%c ",*(outp+i));	
-            } 
-            printf("\n");
-        }
-    }
+    free(outp);
 }
 
 uint16_t audio_get_curr_block(void)
@@ -245,6 +191,7 @@ uint8_t *audio_get_block_buff(uint16_t index)
 
 void audio_rx_sample(pcm_sample_t sample)
 {
+
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
 
     // digital gain
@@ -252,83 +199,67 @@ void audio_rx_sample(pcm_sample_t sample)
         sample <<= mic_dig_gain;
     else if (mic_dig_gain < 0)  
         sample >>= -mic_dig_gain;
-
+    // printf("%d ",mic_dig_gain);
     sample_buf[sample_buf_index][sample_index] = sample;
+
     sample_index++;
-    if (sample_index >= audio_t.sample_buf_size)
+    if (sample_index >= aud_enc_t.sample_buf.size)
     {
         xQueueSendFromISR(xSampleQueue, &sample_buf_index, &xHigherPriorityTaskWoke);
         sample_buf_index++;
-        if (sample_buf_index >= audio_t.sample_buf_num)
+        if (sample_buf_index >= aud_enc_t.sample_buf.num)
             sample_buf_index = 0;
         sample_index = 0;
     }
 }
 
-static void enc_state_init(audio_enc_t *audio);
-static void audio_task_register();
+static void enc_state_init(audio_encoder_t *enc_t);
 
 void audio_init(void)
 {
     LOG_PRINTF(LOG_LEVEL_INFO,"Initializing audio encoder...");
     //sbc struct init.
-    enc_state_init(&audio_t);
-
-    //register task function.
-    audio_task_register();
+    enc_state_init(&aud_enc_t);
 
     xSampleQueue = xQueueCreateStatic(QUEUE_LENGTH,
                                  ITEM_SIZE,
                                  ucQueueStorageArea,
                                  &xStaticSampleQueue); 
-    xTaskCreate(audio_enc_task,
+
+    xTaskCreate(audio_task,
                "b",
                1024,
                NULL,
                (configMAX_PRIORITIES - 14),
                NULL);
-    
+
     audio_input_setup();
     LOG_PRINTF(LOG_LEVEL_INFO,"Initialization completed.");
     // audio_start();
 }
 
-static void enc_state_init(audio_enc_t *audio)
+static void enc_state_init(audio_encoder_t *enc_t)
 {
-    audio->audio_dev_start = audio_start;
-    audio->audio_dev_stop = audio_stop;
-
 #if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Encoder-->[ADPCM]");
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Configure encode's parameter...");
-    audio->voice_buf_block_num = adpcm_priv.voice_buf_block_num;
-    audio->voice_buf_block_size = adpcm_priv.voice_buf_block_size;
-    audio->sample_buf_num = adpcm_priv.sample_buf_num;
-    audio->sample_buf_size = adpcm_priv.sample_buf_size;
+    enc = &adpcm;
+    adpcm_enc_init(enc, enc_output_cb, 0);
+    enc_t->type = ADPCM_ENCODER;
+    enc_t->sample_buf.num = 2;
+    enc_t->sample_buf.size = 20;
+    enc_t->encoder = adpcm_encode;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
 
 #elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
+    enc_t->type = SBC_ENCODER;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Encoder-->[SBC]");
-    sbc_init(&sbc, 0L);
-    sbc_priv.voice_buf_block_size = sbc_get_frame_length(&sbc);
-    sbc_priv.voice_buf_block_num = 4100 / sbc_priv.voice_buf_block_size;
-    sbc_priv.sample_buf_size = sbc_get_codesize(&sbc);
+    enc = &sbc;
+    sbc_enc_init(enc, enc_output_cb, 0L);
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Configure encode's parameter...");
-    audio->voice_buf_block_num = sbc_priv.voice_buf_block_num;
-    audio->voice_buf_block_size = sbc_priv.voice_buf_block_size;
-    audio->sample_buf_num = sbc_priv.sample_buf_num;
-    audio->sample_buf_size = sbc_priv.sample_buf_size;
+    enc_t->sample_buf.num = 2;
+    enc_t->sample_buf.size = sbc_get_codesize(&sbc);
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
+    enc_t->encoder = sbc_encode;
 #endif
-}
-
-static void audio_task_register()
-{
-    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Register to encode task functions..."); 
-#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
-    audio_enc_task = audio_adpcm_task;
-#elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
-    audio_enc_task = audio_sbc_task;
-#endif  
-    LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Completed."); 
 }

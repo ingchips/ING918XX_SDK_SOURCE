@@ -1,13 +1,16 @@
 #ifndef _SBC_H_
 #define _SBC_H_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
+typedef int16_t pcm_sample_t;
 
-typedef int16_t sbc_sample_t;
+typedef void (*sbc_encode_output_cb_f)(uint8_t output, void *param);
+typedef void (*sbc_decode_output_cb_f)(pcm_sample_t output, void* param);
 
 /* sampling frequency */
 #define SBC_FREQ_16000		0x00
@@ -52,13 +55,14 @@ typedef struct{
 
 	void *priv;
 	void *priv_alloc_base;
+	sbc_encode_output_cb_f callback;
 }sbc_t;
 
-int sbc_init(sbc_t *sbc, uint8_t flags);
+int sbc_enc_init(void *enc, sbc_encode_output_cb_f callback, uint8_t flags);
 int sbc_reinit(sbc_t *sbc, uint8_t flags);
 
 /* Encodes ONE input block into ONE output block */
-int sbc_encode(sbc_t *sbc, 
+void sbc_encode(void *enc, 
 			   void *input, 
 			   int input_len,
 			   void *output, 

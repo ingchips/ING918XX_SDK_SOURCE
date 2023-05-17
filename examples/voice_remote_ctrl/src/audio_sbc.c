@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <limits.h>
 
-#include "audio_adpcm.h"
 #include "ingsoc.h"
 
 #include "FreeRTOS.h"
@@ -535,7 +534,7 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 	crc_pos = 16;
 
 	//scale_factor计算结果相对于官方编码多了7
-	printf("[scale_factor]=(");
+	printf("\n[scale_factor]=(");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
 			frame->scale_factor[ch][sb] = 0;
@@ -633,6 +632,8 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 		crc_header[crc_pos >> 3] <<= 8 - (crc_pos % 8);
 
 	data[3] = sbc_crc8(crc_header, crc_pos);
+	sbc_calculate_bits(frame, bits);
+
 	printf("[----bits----]=(");
 	for (ch = 0; ch < frame->channels; ch++) {
 		for (sb = 0; sb < frame->subbands; sb++) {
@@ -640,8 +641,6 @@ static int sbc_pack_frame(uint8_t *data, sbc_frame *frame, int len)
 		}
 		printf(")\r\n");
 	}
-
-	sbc_calculate_bits(frame, bits);
 
 	printf("[---levels---]=(");
 	for (ch = 0; ch < frame->channels; ch++)
@@ -711,23 +710,25 @@ static void sbc_set_defaults(sbc_t *sbc, uint8_t flags)
 	sbc->blocks = SBC_BLK_16;
     sbc->allocation = SBC_AM_SNR;
 	sbc->bitpool = 9;
-// #if __BYTE_ORDER == __LITTLE_ENDIAN
+#if __BYTE_ORDER == __LITTLE_ENDIAN
 	sbc->endian = SBC_LE;
-// #elif __BYTE_ORDER == __BIG_ENDIAN
-	// sbc->endian = SBC_BE;
-// #else
-// #error "Unknown byte order"
-// #endif
+#elif __BYTE_ORDER == __BIG_ENDIAN
+	sbc->endian = SBC_BE;
+#else
+#error "Unknown byte order"
+#endif
 }
 
-int sbc_init(sbc_t *sbc, uint8_t flags)
+int sbc_enc_init(void *enc,  sbc_encode_output_cb_f callback, uint8_t flags)
 {
+	sbc_t *sbc =(sbc_t *)enc;
+
 	if (!sbc)
 		return -EIO;
 
 	memset(sbc, 0, sizeof(sbc_t));
-
 	sbc->priv_alloc_base = malloc(sizeof(struct sbc_priv) + SBC_ALIGN_MASK);
+	
 	if (!sbc->priv_alloc_base)
 		return -ENOMEM;
 
@@ -735,8 +736,8 @@ int sbc_init(sbc_t *sbc, uint8_t flags)
 			SBC_ALIGN_MASK) & ~((uintptr_t) SBC_ALIGN_MASK));
 
 	memset(sbc->priv, 0, sizeof(struct sbc_priv));
-
 	sbc_set_defaults(sbc, flags);
+	sbc->callback = callback;
 
 	return 0;
 }
@@ -754,6 +755,8 @@ static inline void sbc_analyze_four(sbc_encoder_state *state,
 	x[41] = x[1] = pcm[2];
 	x[42] = x[2] = pcm[1];
 	x[43] = x[3] = pcm[0];
+
+	printf("\nInput-4:[%d][%d][%d][%d]  ",pcm[0],pcm[1],pcm[2],pcm[3]);
 
 	__sbc_analyze_four(x, frame->sb_sample_f[blk][ch]);
 
@@ -824,10 +827,7 @@ static void sbc_calc_scalefactors(int32_t sb_sample_f[16][2][8],
 	}
 }
 
-static uint64_t pack_timer_tick_ms = 0;
-static uint64_t now = 0;
-
-int sbc_encode(sbc_t *sbc, 
+void sbc_encode(void *enc, 
 			   void *input, 
 			   int input_len,
 			   void *output, 
@@ -838,8 +838,9 @@ int sbc_encode(sbc_t *sbc,
 	int  framelen;
 	int16_t *ptr;
 
-	if (!sbc || !input)
-		return -EIO;
+	sbc_t *sbc = (sbc_t *)enc;
+	// if (!sbc || !input)
+	// 	return -EIO;
 
 	priv = sbc->priv;
 
@@ -872,12 +873,12 @@ int sbc_encode(sbc_t *sbc,
 	}
 
 	/* input must be large enough to encode a complete frame */
-	if (input_len < priv->frame.codesize)
-		return 0;
+	// if (input_len < priv->frame.codesize)
+	// 	return 0;
 
 	/* output must be large enough to receive the encoded frame */
-	if (!output || output_len < priv->frame.length)
-		return -ENOSPC;
+	// if (!output || output_len < priv->frame.length)
+	// 	return -ENOSPC;
 
 	ptr = (int16_t *)input;
 
@@ -898,7 +899,13 @@ int sbc_encode(sbc_t *sbc,
 	samples = sbc_analyze_audio(&priv->enc_state, &priv->frame);
 	framelen = sbc_pack_frame(output,&priv->frame, output_len); 
 
-	return samples * priv->frame.channels * 2;
+	//using the output interface
+	for(int i=0; i < framelen; i++)
+	{
+		sbc->callback(*((uint8_t *)(output+i)), 0);
+	}
+
+	//return samples * priv->frame.channels * 2;
 }
 
 void sbc_finish(sbc_t *sbc)
@@ -980,6 +987,11 @@ static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 {
 	sbc_fixed_t t[8], s[5];
 
+	/* -Windowing by 4 coefficients-
+		for i = 0 to 39 do
+			Z[i] = C[i] * X[i]
+		( C[i]:filter coeffs tables 12-23 in A2DP )
+	*/
 	t[0] = SCALE4_STAGE1(MULA(_sbc_proto_4[0], in[8] - in[32],
 						 MUL( _sbc_proto_4[1], in[16] - in[24])));
 
@@ -1020,6 +1032,13 @@ static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 						 MULA(_sbc_proto_4[3], in[31],
 						 MUL( _sbc_proto_4[2], in[39]))))));
 
+	printf("P-Calc:[%d][%d][%d][%d][%d][%d][%d][%d] ",t[0],t[1],t[2],t[3],t[4],t[5],t[6],t[7]);
+
+	/* -Partial Calculation-
+		for i = 0 to 7 do
+			for k = 0 to 4 do
+				Y[i] = sum(Z[i+k*8])
+	*/
 	s[0] = MUL( _anamatrix4[0], t[0] + t[4]);
 	s[1] = MUL( _anamatrix4[2], t[2]);
 	s[2] = MULA(_anamatrix4[1], t[1] + t[3], MUL(_anamatrix4[3], t[5]));
@@ -1030,6 +1049,7 @@ static void __sbc_analyze_four(const int32_t *in, int32_t *out)
 	out[1] = SCALE4_STAGE2(-s[0] + s[1] + s[3]);
 	out[2] = SCALE4_STAGE2(-s[0] + s[1] - s[3]);
 	out[3] = SCALE4_STAGE2( s[0] + s[1] - s[2] + s[4]);
+	printf("Output-4:[%d][%d][%d][%d]",out[0],out[1],out[2],out[3]);
 }
 
 static void __sbc_analyze_eight(const int32_t *in, int32_t *out)
