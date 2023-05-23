@@ -140,7 +140,7 @@ typedef struct
 {
     float vref_P;
     float vref_N;
-    float (*cb)(uint16_t);
+    float (*cb)(const uint16_t);
 } SADC_adcCal_t;
 
 typedef struct
@@ -152,10 +152,12 @@ typedef struct
 {
     uint32_t Vp;
     uint16_t V12Data;
-    uint16_t (*f)(SADC_ftChPara_t *, uint32_t);
+    uint16_t (*f)(const SADC_ftChPara_t *, const uint32_t);
     SADC_ftChPara_t chParaSin[8];
     SADC_ftChPara_t chParaDiff[4];
-} __attribute__((packed)) SADC_ftCali_t;
+    SADC_ftChPara_t chParaSinNoPga[12];
+    SADC_ftChPara_t chParaDiffNoPga[4];
+} SADC_ftCali_t;
 
 /**
  * @brief Enable ADC control signal
@@ -272,9 +274,9 @@ void ADC_PgaGainSet(SADC_adcPgaGain gain);
 /**
  * @brief Get pga gain
  *
- * @return                   pga gain, see 'SADC_adcPgaGain'
+ * @return                   pga gain,2^n(n=0-7)
  */
-SADC_adcPgaGain ADC_PgaGainGet(void);
+uint32_t ADC_PgaGainGet(void);
 
 /**
  * @brief Enable pga
@@ -317,7 +319,7 @@ uint32_t ADC_PopFifoData(void);
  * @param[in] data           data read by ADC_PopFifoData
  * @return                   channel id, see 'SADC_channelId'
  */
-SADC_channelId ADC_GetDataChannel(uint32_t data);
+SADC_channelId ADC_GetDataChannel(const uint32_t data);
 
 /**
  * @brief To get ADC data of the data read by ADC_PopFifoData
@@ -325,7 +327,7 @@ SADC_channelId ADC_GetDataChannel(uint32_t data);
  * @param[in] data           data read by ADC_PopFifoData
  * @return                   ADC data
  */
-uint16_t ADC_GetData(uint32_t data);
+uint16_t ADC_GetData(const uint32_t data);
 
 /**
  * @brief Read ADC data in specified channel
@@ -375,7 +377,7 @@ void ADC_ftInit(void);
  * @param[in] data           ADC data
  * @return                   voltage
  */
-float ADC_GetVol(uint16_t data);
+float ADC_GetVol(const uint16_t data);
 
 /**
  * @brief Reset ADC configuration
