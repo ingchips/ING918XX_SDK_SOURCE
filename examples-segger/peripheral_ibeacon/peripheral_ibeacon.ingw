@@ -1,18 +1,18 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133820,
+   "size": 134140,
    "base": 16384
   },
   "ram": {
-   "size": 29820,
+   "size": 29860,
    "base": 536870912
   },
   "app": {
    "base": 155648
   },
   "version": [
-   1,9,19]
+   1,9,20]
  },
  "tc_dir": "",
  "ide_ver": "",
@@ -50,8 +50,8 @@
   "proxy": true
  },
  "cmsis": "C:\/projects\/ingchips\/ingWizard\/CMSIS",
- "app_ram_size": 35712,
- "app_ram_addr": 536900736,
+ "app_ram_size": 35672,
+ "app_ram_addr": 536900776,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",

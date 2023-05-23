@@ -265,7 +265,7 @@ def do_run(mod: ModuleType, d:device, config, go, timeout, counter, user_data):
             print("flash locked")
             return 3
 
-    if config.getboolean('options', 'ResetReservedFlash'):
+    if config.getboolean('options', 'ResetReservedFlash', fallback=False):
         intf.erase_sector(d.dev, 0x2000000)
 
     if config.getint('uart', 'Baud') != icsdw.DEF_BAUD:

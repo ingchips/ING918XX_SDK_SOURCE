@@ -717,6 +717,15 @@ void ll_free(void *buffer);
 
 /**
  ****************************************************************************************
+ * @brief Get unallocated size of LL internal heap
+ *
+ * @return                          unallocated size in bytes
+ ****************************************************************************************
+ */
+int ll_get_heap_free_size(void);
+
+/**
+ ****************************************************************************************
  * @brief Set the max possbible number of connections
  *
  * @param[in]  max_number       max number of connections
