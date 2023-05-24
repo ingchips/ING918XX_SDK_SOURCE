@@ -266,6 +266,7 @@ typedef enum
 #define bsSPI_TRANSCTRL_DUALQUAD          22
 /* SPI_TransCtrl_TransMode_e */
 #define bsSPI_TRANSCTRL_TRANSMODE         24
+#define bsSPI_TRANSCTRL_ADDRFMT           28
 #define bsSPI_TRANSCTRL_ADDREN            29
 #define bsSPI_TRANSCTRL_CMDEN             30
 #define bsSPI_TRANSCTRL_SLVDATAONLY       31
@@ -275,6 +276,7 @@ typedef enum
 #define bwSPI_TRANSCTRL_WRTRANCNT         9
 #define bwSPI_TRANSCTRL_DUALQUAD          2
 #define bwSPI_TRANSCTRL_TRANSMODE         4
+#define bwSPI_TRANSCTRL_ADDRFMT           1
 #define bwSPI_TRANSCTRL_ADDREN            1
 #define bwSPI_TRANSCTRL_CMDEN             1
 
@@ -329,6 +331,13 @@ typedef enum
   SPI_SLVDATAONLY_ENABLE = 1
 }SPI_TransCtrl_SlvDataOnly_e;
 
+/* SPI_ADDRFMT_SINGLE_MODE: regular mode, addr is transfered only on MOSI with SPI_TransFmt_AddrLen_e cycle
+   SPI_ADDRFMT_QUAD_MODE: addr is transfered as quad mode */
+typedef enum
+{
+  SPI_ADDRFMT_SINGLE_MODE = 0,
+  SPI_ADDRFMT_QUAD_MODE = 1
+}SPI_TransCtrl_AddrFmt_e;
 
 /* ----------------------------------------------------------
  * Description:
@@ -682,6 +691,22 @@ uint16_t apSSP_GetSlaveRxDataCnt(SSP_TypeDef *SPI_BASE);
 uint8_t apSSP_GetTxFifoDepthWords(SSP_TypeDef *SPI_BASE);
 uint8_t apSSP_GetRxFifoDepthWords(SSP_TypeDef *SPI_BASE);
 
+/**
+ * @brief Set dummy cnt, only applies to mode 5,6,8,9 of SPI_TransCtrl_TransMode_e
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] cnt                   the final dummy cycle = (cnt+1)/(data len / io width)
+ *                                  data len: pParam.eDataSize, io width: 1(regular),4(quad)
+ */
+void apSSP_SetTransferControlDummyCnt(SSP_TypeDef *SPI_BASE, uint8_t cnt);
+
+/**
+ * @brief Set addr format, can only be one of SPI_TransCtrl_AddrFmt_e, only applies to master
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] fmt                   default is SPI_ADDRFMT_SINGLE_MODE
+ */
+void apSSP_SetTransferControlAddrFmt(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_AddrFmt_e fmt);
 #endif
 
 #ifdef __cplusplus
