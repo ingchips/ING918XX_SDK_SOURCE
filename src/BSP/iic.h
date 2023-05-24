@@ -40,7 +40,7 @@ void i2c_init(const i2c_port_t port);
  * @param[in] length            data length
  * @return                      0 if success else non-0 (e.g. time out)
  */
-int i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, int16_t length);
+int i2c_write(const i2c_port_t port, uint16_t addr, const uint8_t *byte_data, int16_t length);
 
 /**
  * @brief Read data from an I2C slave
@@ -53,7 +53,7 @@ int i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, int
  * @param[in] length            data length to be read
  * @return                      0 if success else non-0 (e.g. time out)
  */
-int i2c_read(const i2c_port_t port, uint8_t addr, const uint8_t *write_data, int16_t write_len, 
+int i2c_read(const i2c_port_t port, uint16_t addr, const uint8_t *write_data, int16_t write_len, 
               uint8_t *byte_data, int16_t length);
 
 #ifdef __cplusplus
