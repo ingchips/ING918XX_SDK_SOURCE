@@ -523,4 +523,12 @@ uint16_t apSSP_GetSlaveRxDataCnt(SSP_TypeDef *SPI_BASE)
     return ( ((SPI_BASE->SlvDataCnt >> bsSPI_SLAVE_DATA_COUNT_READ_CNT) & BW2M(bwSPI_SLAVE_DATA_COUNT_READ_CNT)) );
 }
 
+/*====================================================================*/
+
+void apSSP_SetMemAccessCmd(SSP_TypeDef *SPI_BASE, apSSP_sDeviceMemRdCmd cmd)
+{
+    SPI_BASE->MemCtrl &= (~(BW2M(bwSPI_MEMORY_ACCESS_CONTROL_RD_CMD) << bsSPI_MEMORY_ACCESS_CONTROL_RD_CMD));
+    SPI_BASE->MemCtrl |= (cmd << bsSPI_MEMORY_ACCESS_CONTROL_RD_CMD);
+}
+
 #endif

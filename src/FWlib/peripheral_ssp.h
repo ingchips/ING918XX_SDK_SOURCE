@@ -498,6 +498,29 @@ typedef uint8_t  SPI_InterfaceTimingSclkDiv;// spi interface clock / (2 * (eSclk
 #define bwSPI_SLAVE_DATA_COUNT_READ_CNT           10
 #define bwSPI_SLAVE_DATA_COUNT_WRITE_CNT          10
 
+/* ----------------------------------------------------------
+ * Description:
+ * SPI memory access control register
+ */
+
+#define bsSPI_MEMORY_ACCESS_CONTROL_RD_CMD           0
+#define bwSPI_MEMORY_ACCESS_CONTROL_RD_CMD           4
+
+typedef enum
+{
+  SPI_MEMRD_CMD_03 = 0 ,//read command 0x03 + 3bytes address(regular mode) + data (regular mode)
+  SPI_MEMRD_CMD_0B = 1 ,//read command 0x0B + 3bytes address(regular mode) + 1byte dummy + data (regular mode)
+  SPI_MEMRD_CMD_3B = 2 ,//read command 0x3B + 3bytes address(regular mode) + 1byte dummy + data (dual mode)
+  SPI_MEMRD_CMD_6B = 3 ,//read command 0x6B + 3bytes address(regular mode) + 1byte dummy + data (quad mode)
+  SPI_MEMRD_CMD_BB = 4 ,//read command 0xBB + 3bytes + 1byte 0 address(dual mode) + data (dual mode)
+  SPI_MEMRD_CMD_EB = 5 ,//read command 0xEB + 3bytes + 1byte 0 address(quad mode) + 2bytes dummy + data (quad mode)
+  SPI_MEMRD_CMD_13 = 8 ,//read command 0x13 + 4bytes address(regular mode) + data (regular mode)
+  SPI_MEMRD_CMD_0C = 9 ,//read command 0x0C + 4bytes address(regular mode) + 1byte dummy + data (regular mode)
+  SPI_MEMRD_CMD_3C = 10,//read command 0x3C + 4bytes address(regular mode) + 1byte dummy + data (dual mode)
+  SPI_MEMRD_CMD_6C = 11,//read command 0x6C + 4bytes address(regular mode) + 1byte dummy + data (quad mode)
+  SPI_MEMRD_CMD_BC = 12,//read command 0xBC + 4bytes + 1byte 0 address(dual mode) + data (dual mode)
+  SPI_MEMRD_CMD_EC = 13,//read command 0xEC + 4bytes + 1byte 0 address(quad mode) + 2bytes dummy + data (quad mode)
+}apSSP_sDeviceMemRdCmd;
 
 /*
  * Description:
@@ -707,6 +730,14 @@ void apSSP_SetTransferControlDummyCnt(SSP_TypeDef *SPI_BASE, uint8_t cnt);
  * @param[in] fmt                   default is SPI_ADDRFMT_SINGLE_MODE
  */
 void apSSP_SetTransferControlAddrFmt(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_AddrFmt_e fmt);
+
+/**
+ * @brief Set memory directly read cmd
+ *
+ * @param[in] SPI_BASE              base address, only apply to SPI0
+ * @param[in] cmd                   refer to apSSP_sDeviceMemRdCmd for different cmd format
+ */
+void apSSP_SetMemAccessCmd(SSP_TypeDef *SPI_BASE, apSSP_sDeviceMemRdCmd cmd);
 #endif
 
 #ifdef __cplusplus
