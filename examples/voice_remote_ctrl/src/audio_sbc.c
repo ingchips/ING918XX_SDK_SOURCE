@@ -794,6 +794,7 @@ void sbc_encode(sbc_t *sbc,
 		}
 	}
 
+	sbc_analyze_audio(&priv->enc_state, &priv->frame);
 	framelen = sbc_pack_frame(output,&priv->frame, output_len);
 
 	//using the output interface

@@ -19,6 +19,17 @@ Below table shows how to connect the microphone to the Dev-Board for each input 
 
 Note: for type `0`, audio is playback from a data file (ITU standard testing data), and no microphone is used.
 
+## Audio Codec
+
+Supported codecs:
+
+| Name | Identifier  | Note |
+| :-----------: | :-------------------      | :------------------- |
+| 4-bit ADPCM   | `AUDIO_CODEC_ALG_ADPCM`   | **default** |
+| SBC           | `AUDIO_CODEC_ALG_SBC`     | _experimental_  |
+
+Audio codec can be configured by defining `AUDIO_CODEC_ALG` to the corresponding codec identifier.
+
 ## Test
 
 Download this example to a Dev-Board, use _ING BLE_ to connect to it. Keep the "Capture" button pressed
