@@ -113,6 +113,8 @@ int app_main()
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
     
+    platform_config(PLATFORM_CFG_32K_CLK_ACC, 200);
+    
     setup_peripherals();
 
     // setup putc handle
