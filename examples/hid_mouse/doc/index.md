@@ -6,14 +6,17 @@ This example implements an HID mouse with Just Works paring.
 
 * ING918xx Dev-Board
 
-    Connect jumpers for GPIO 4 (Key 4) & 6 (LED 3):
-
     <img src="img/overview.png" width="50%" alt></img>
 
-### ING916xx Dev-Board
+    Connect jumpers for GPIO 4 (Key 4) & 6 (LED 3).
+
+* ING916xx Dev-Board
 
     Connect jumpers for GPIO 9 (Key 4) & 6 (LED 3).
-    Connect a scroll wheel's A/B signals to GPIO 21 & 32.
+
+    On ING916xx, two work modes are supported, `SIMULATION` and mouse wheel mode.
+    To test mouse wheel mode, remove compiling option `SIMULATION` and
+    connect a scroll wheel's A/B signals to GPIO 21 & 32.
 
 ## Test
 
@@ -28,14 +31,14 @@ systems:
 
 * Thinkbook 13s (Win10 Home 20H2, Win11 Home).
 
-### ING918xx Dev-Board
+### Simulation Mode
 
 After the mouse is added, the pointer will start to move in a cycle. Size of the cycle depends on
 the resolution of the hardware and the underlying operating system.
 
 ![](./img/test_iphone.gif)
 
-### ING916xx Dev-Board
+### Mouse Wheel Mode
 
 Scroll the wheel and check if it works like the middle "wheel" of a mouse.
 

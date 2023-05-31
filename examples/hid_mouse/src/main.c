@@ -182,6 +182,7 @@ static void QDEC_PclkCfg(void)
         SYSCTRL_SetPClkDiv(div);
     else;               // ERROR
 }
+
 static void QDEC_Setup(void)
 {
     uint8_t div = SYSCTRL_GetPClkDiv();
@@ -232,7 +233,7 @@ int app_main()
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0xfff);
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (!defined SIMULATION) && (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     QDEC_Setup();
 #endif
 
