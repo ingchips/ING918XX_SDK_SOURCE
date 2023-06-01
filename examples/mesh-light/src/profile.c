@@ -223,6 +223,8 @@ void mesh_platform_init(void){
     const bd_addr_t addr_gatt_adv    = {0xd5, 0x33, 0xa3, 0x17, 0x2f, 0xFC};
     const bd_addr_t addr_beacon_adv  = {0xd0, 0x2a, 0x4e, 0x19, 0x28, 0xFC};
 
+    mesh_set_addr_static((uint8_t *)addr_gatt_adv);
+    mesh_set_addr_static((uint8_t *)addr_beacon_adv);
     mesh_platform_config(MESH_CFG_NAME, (uint8_t *)mesh_name, strlen(mesh_name));
     mesh_platform_config(MESH_CFG_GATT_ADV_ADDR, (uint8_t *)addr_gatt_adv, sizeof(bd_addr_t));
     mesh_platform_config(MESH_CFG_BEACON_ADV_ADDR, (uint8_t *)addr_beacon_adv, sizeof(bd_addr_t));

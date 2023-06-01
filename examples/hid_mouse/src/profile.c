@@ -187,6 +187,7 @@ static uint16_t StepCal(uint16_t preData, uint16_t data, int8_t *dir)
     return step;
 }
 #endif
+
 void mouse_report_movement(void)
 {
     if (suspended)
@@ -195,7 +196,7 @@ void mouse_report_movement(void)
         return;
     if (notify_enable)
     {
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#if (defined SIMULATION) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
         static int index = 0;
         report.x = delta_xy[index][0];
         report.y = delta_xy[index][1];
@@ -325,7 +326,7 @@ static void setup_directed_adv(void)
     }
     else
     {
-        dir_peer_type = dev->addr_type;
+        dir_peer_type = (bd_addr_type_t)dev->addr_type;
         memcpy(dir_peer_addr, dev->addr, sizeof(dir_peer_addr));
     }
 

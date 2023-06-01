@@ -139,7 +139,7 @@ static void send_audio_data()
 }
 
 static void setup_adv(void);
-const bd_addr_t rand_addr = {0xC3, 0x8E,0x05,0x3E,0x7E,0xA3};
+const bd_addr_t rand_addr = {0xC3, 0x8E,0x05,0x3E,0x7E,0xA8};
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {

@@ -10,6 +10,7 @@
 #define bsDMA_SRC_MODE           17
 #define bsDMA_DST_WIDTH          18
 #define bsDMA_SRC_WIDTH          21
+#define bsDMA_SRC_BURSIZE        24
 
 typedef enum
 {
@@ -18,6 +19,128 @@ typedef enum
     DMA_WIDTH_32_BITS = 2,
     DMA_WIDTH_64_BITS = 3,
 } DMA_TransferWidth;
+
+static int DMA_GetCtrlConfigSrc(SYSCTRL_DMA src, DMA_TransferWidth src_width, DMA_TransferWidth *dst_width,
+                                 uint8_t *src_burst_size, int size, uint32_t addr)
+{
+    int status = 0;
+    // init to default
+    if ((!dst_width) || (!src_burst_size)) return 1;
+    *dst_width = src_width;
+    *src_burst_size = 0;
+
+    // total transfer size(bytes) must be an integer times of src_width
+    if (size % (1 << src_width)) return 2;
+
+    switch (src_width)
+    {
+    case DMA_WIDTH_32_BITS:
+        *dst_width = (!(addr & 0x3)) ? DMA_WIDTH_32_BITS :
+                     ((!(addr & 0x1)) ? DMA_WIDTH_16_BITS : DMA_WIDTH_BYTE);
+        *src_burst_size = 0;
+        break;
+    case DMA_WIDTH_16_BITS:
+        *dst_width = (!(addr & 0x1)) ? DMA_WIDTH_16_BITS : DMA_WIDTH_BYTE;
+        *src_burst_size = 0;
+        break;
+    case DMA_WIDTH_BYTE:
+        *dst_width = DMA_WIDTH_BYTE;
+        *src_burst_size = 0;
+        break;
+    default:
+        status = 3;
+    }
+
+   return status;
+}
+
+static int DMA_GetCtrlConfigDst(SYSCTRL_DMA dst, DMA_TransferWidth *src_width, DMA_TransferWidth dst_width,
+                                 uint8_t *src_burst_size, int size, uint32_t addr)
+{
+    int status = 0;
+    // init to default
+    if ((!src_width) || (!src_burst_size)) return 1;
+    *src_width = dst_width;
+    *src_burst_size = 0;
+
+    // total transfer size(bytes) must be an integer times of dst_width
+    if (size % (1 << dst_width)) return 2;
+
+    switch (dst_width)
+    {
+    case DMA_WIDTH_32_BITS:
+        *src_width = (!(addr & 0x3)) ? DMA_WIDTH_32_BITS :
+                     ((!(addr & 0x1)) ? DMA_WIDTH_16_BITS : DMA_WIDTH_BYTE);
+        *src_burst_size = DMA_WIDTH_32_BITS - *src_width;
+        break;
+    case DMA_WIDTH_16_BITS:
+        // if total transfer size(bytes) if multiple of 4, use 32bit src width to improve efficiency
+        // src_burst_size = 0 means 1 transfer of 32bit(src width) for each burst, then write 2 times with 16bit dest width
+        if((!(size & 0x3)) && (!(addr & 0x3)))
+        {
+            *src_width = DMA_WIDTH_32_BITS;
+            *src_burst_size = 0;
+        }
+        else
+        {
+            *src_width = (!(addr & 0x1)) ? DMA_WIDTH_16_BITS : DMA_WIDTH_BYTE;
+            *src_burst_size = DMA_WIDTH_16_BITS - *src_width;
+        }
+        break;
+    case DMA_WIDTH_BYTE:
+        // if total transfer size(bytes) if multiple of 4, use 32bit src width to improve efficiency
+        // src_burst_size = 0 means 1 transfer of 32bit(src width) for each burst, then write 4 times with 8bit dest width
+        if((!(size & 0x3)) && (!(addr & 0x3)))
+        {
+            *src_width = DMA_WIDTH_32_BITS;
+            *src_burst_size = 0;
+        }
+        // if total transfer size(bytes) if multiple of 2, use 16bit src width to improve efficiency
+        // src_burst_size = 0 means 2 transfer of 16bit(src width) for each burst, then write 4 times with 8bit dest width
+        else if((!(size & 0x1)) && (!(addr & 0x1)))
+        {
+            *src_width = DMA_WIDTH_16_BITS;
+            *src_burst_size = 1;
+        }
+        break;
+    default:
+        status = 3;
+    }
+
+   return status;
+}
+
+static int DMA_GetCtrlConfigSrcDst(DMA_TransferWidth src_width, DMA_TransferWidth dst_width,
+                                  uint8_t *src_burst_size, int size)
+{
+    int status = 0;
+    // init to default
+    if (!src_burst_size) return 1;
+    *src_burst_size = 0;
+
+    // total transfer size(bytes) must be an integer times of src_width
+    if (size % (1 << src_width)) return 1;
+
+    // if src is 8bit, dest is 16bit, the total transfer size(bytes) must be multiple of 2
+    if((src_width == DMA_WIDTH_BYTE) && (dst_width == DMA_WIDTH_16_BITS))
+    {
+        if(size & 0x1) { status = 2; }
+        else{ *src_burst_size = 1; }
+    }
+    // if src is 8bit, dest is 32bit, the total transfer size(bytes) must be multiple of 4
+    else if((src_width == DMA_WIDTH_BYTE) && (dst_width == DMA_WIDTH_32_BITS))
+    {
+        if(size & 0x3) { status = 3; }
+        else{ *src_burst_size = 2; }
+    }
+    // if src is 16bit, dest is 32bit, the total transfer size(bytes) must be multiple of 4
+    else if ((src_width == DMA_WIDTH_16_BITS) && (dst_width == DMA_WIDTH_32_BITS))
+    {
+        if(size & 0x3) { status = 4; }
+        else{ *src_burst_size = 1; }
+    }
+    return status;
+}
 
 int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
                                  void *dst, void *src, int size,
@@ -37,7 +160,7 @@ int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
     return 0;
 }
 
-static int DMG_GetSPIDMAWidth(SSP_TypeDef *SSP)
+static DMA_TransferWidth DMG_GetSPIDMAWidth(SSP_TypeDef *SSP)
 {
     switch ((SSP->TransFmt >> 8) & 0x1f)
     {
@@ -143,12 +266,17 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
                                         DMA_AddressControl dst_addr_ctrl,
                                         uint32_t options)
 {
+    int status = 0;
     int req = SYSCTRL_GetDmaId(src);
     int width = DMA_GetPeripheralWidth(src);
+    DMA_TransferWidth dest_width;
+    uint8_t src_burst_size;
     uint32_t peri_addr = (uint32_t)DMA_GetPeripheralDataAddr(src);
-    uint32_t v = ((uint32_t)dst & 3) | (size & 3);
 
     if ((req < 0) | (width < 0) | (peri_addr == 0)) return -1;
+
+    status = DMA_GetCtrlConfigSrc(src, width, &dest_width, &src_burst_size, size, (uint32_t)dst);
+    if(status) return status;
 
     pDesc->Ctrl = options
                  | ((uint32_t)1 << bsDMA_SRC_MODE)
@@ -156,7 +284,8 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
                  | ((uint32_t)DMA_ADDRESS_FIXED << bsDMA_SRC_ADDR_CTRL)
                  | ((uint32_t)width << bsDMA_SRC_WIDTH)
                  | ((uint32_t)dst_addr_ctrl << bsDMA_DST_ADDR_CTRL)
-                 | ((v ? DMA_WIDTH_BYTE : DMA_WIDTH_32_BITS) << bsDMA_DST_WIDTH);
+                 | ((uint32_t)dest_width << bsDMA_DST_WIDTH)
+                 | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
     pDesc->TranSize = size / (1 << width);
     pDesc->DstAddr = (uint32_t)dst;
     pDesc->SrcAddr = (uint32_t)peri_addr;
@@ -169,22 +298,27 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
                                         DMA_AddressControl src_addr_ctrl,
                                         uint32_t options)
 {
+    int status = 0;
     int req = SYSCTRL_GetDmaId(dst);
     int width = DMA_GetPeripheralWidth(dst);
+    DMA_TransferWidth src_width;
+    uint8_t src_burst_size;
     uint32_t peri_addr = (uint32_t)DMA_GetPeripheralDataAddr(dst);
-    uint32_t v = ((uint32_t)src & 3) | (size & 3);
 
     if ((req < 0) | (width < 0) | (peri_addr == 0)) return -1;
-    if((DMA_WIDTH_32_BITS == width) && (size & 3)) return -2;
+
+    status = DMA_GetCtrlConfigDst(dst, &src_width, width, &src_burst_size, size, (uint32_t)src);
+    if(status) return status;
 
     pDesc->Ctrl = options
                  | ((uint32_t)src_addr_ctrl << bsDMA_SRC_ADDR_CTRL)
-                 | ((v ? DMA_WIDTH_BYTE : DMA_WIDTH_32_BITS) << bsDMA_SRC_WIDTH)
+                 | ((uint32_t)src_width << bsDMA_SRC_WIDTH)
                  | ((uint32_t)1 << bsDMA_DST_MODE)
                  | ((uint32_t)req << bsDMA_DST_REQ_SEL)
                  | ((uint32_t)DMA_ADDRESS_FIXED << bsDMA_DST_ADDR_CTRL)
-                 | ((uint32_t)width << bsDMA_DST_WIDTH);
-    pDesc->TranSize = v ? size : size / sizeof(uint32_t);
+                 | ((uint32_t)width << bsDMA_DST_WIDTH)
+                 | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
+    pDesc->TranSize = size / (1 << src_width);
     pDesc->DstAddr = (uint32_t)peri_addr;
     pDesc->SrcAddr = (uint32_t)src;
 
@@ -193,8 +327,9 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
 
 int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
                                                SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
-                                               uint32_t options)
+                                               uint32_t options, uint8_t *srcWidth, uint8_t *srcSize)
 {
+    int status = 0;
     int dst_req = SYSCTRL_GetDmaId(dst);
     int dst_width = DMA_GetPeripheralWidth(dst);
     uint32_t dst_addr = (uint32_t)DMA_GetPeripheralDataAddr(dst);
@@ -203,10 +338,12 @@ int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
     int src_width = DMA_GetPeripheralWidth(src);
     uint32_t src_addr = (uint32_t)DMA_GetPeripheralDataAddr(src);
 
+    uint8_t src_burst_size;
     if ((dst_req < 0) | (dst_width < 0) | (dst_addr == 0)) return -1;
     if ((src_req < 0) | (src_width < 0) | (src_addr == 0)) return -2;
 
-    if((DMA_WIDTH_32_BITS == dst_width) && (size & 3)) return -3;
+    status = DMA_GetCtrlConfigSrcDst(src_width, dst_width, &src_burst_size, size);
+    if(status) return status;
 
     pDesc->Ctrl = options
                  | ((uint32_t)1 << bsDMA_DST_MODE)
@@ -216,11 +353,14 @@ int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
                  | ((uint32_t)1 << bsDMA_SRC_MODE)
                  | ((uint32_t)src_req << bsDMA_SRC_REQ_SEL)
                  | ((uint32_t)DMA_ADDRESS_FIXED << bsDMA_SRC_ADDR_CTRL)
-                 | ((uint32_t)src_width << bsDMA_SRC_WIDTH);
-    pDesc->TranSize = src_width == DMA_WIDTH_BYTE ? size : size / (1 << src_width);
+                 | ((uint32_t)src_width << bsDMA_SRC_WIDTH)
+                 | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
+    pDesc->TranSize = size / (1 << src_width);
     pDesc->DstAddr = (uint32_t)dst_addr;
     pDesc->SrcAddr = (uint32_t)src_addr;
 
+    *srcWidth = src_width;
+    *srcSize = src_burst_size;
     return 0;
 }
 
@@ -274,7 +414,7 @@ int DMA_MemCopy(int channel_id, void *dst, void *src, int size)
     while ((state = DMA_GetChannelIntState(channel_id)) == 0) ;
     DMA_ClearChannelIntState(channel_id, state);
 
-    return state & (DMA_IRQ_ERROR | DMA_IRQ_ABORT) ? 1 : 0;
+    return (state & (DMA_IRQ_ERROR | DMA_IRQ_ABORT)) ? 1 : 0;
 }
 
 #endif

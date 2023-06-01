@@ -18,7 +18,7 @@
 #if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
 #endif
-#elif (BOARD_ID == BOARD_DB682AC1A)
+#elif ((BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_DB72C8K1A))
 #if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_916)
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
 #endif
@@ -29,6 +29,8 @@
 #define PIN_RGB_LED   GIO_GPIO_0
 #elif (BOARD_ID == BOARD_DB682AC1A)
 #define PIN_RGB_LED   GIO_GPIO_6
+#elif (BOARD_ID == BOARD_DB72C8K1A)
+#define PIN_RGB_LED   GIO_GPIO_5
 #endif
 #endif
 
@@ -101,11 +103,11 @@ static void ws2881_write(uint32_t value)
 
         if (bit)
         {
-            PWM_SetupSingle(PWM_LED_CHANNEL, 600);
+            PWM_SetupSingle(PWM_LED_CHANNEL, 600); // T1H = ~600NS
         }
         else
         {
-            PWM_SetupSingle(PWM_LED_CHANNEL, 300);
+            PWM_SetupSingle(PWM_LED_CHANNEL, 300); // T0H = ~800NS
         }
     }
     delay(100 * 8);
@@ -114,6 +116,63 @@ static void ws2881_write(uint32_t value)
 void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
     uint32_t cmd = (0x3a << 24) | (b << 16) | (r << 8) | g;
+
+    ws2881_write(cmd);
+}
+
+#elif (BOARD_ID == BOARD_DB72C8K1A)
+
+static void PWM_SinglePulseInit(const uint8_t channel_index, uint8_t is_out_a)
+{
+    PWM_Enable(channel_index, 0);
+    PWM_SetPeraThreshold(channel_index, 0);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
+#endif
+    PWM_SetHighThreshold(channel_index, 0, 0);
+    PWM_SetMode(channel_index, PWM_WORK_MODE_SINGLE_WITHOUT_DIED_ZONE);
+    if (is_out_a)
+        PWM_SetMask(channel_index, 0, 1);
+    else
+        PWM_SetMask(channel_index, 1, 0);
+    if (!is_out_a)
+        PWM_SetInvertOutput(channel_index, 0, 1);
+}
+
+static void PWM_SinglePulseSend(const uint8_t channel_index, const uint32_t pulse_width)
+{
+    uint32_t pera = PWM_CLOCK_FREQ / (1000000000 / pulse_width);
+    PWM_Enable(channel_index, 0);
+    PWM_SetPeraThreshold(channel_index, pera);
+    PWM_Enable(channel_index, 1);
+}
+
+#define PWM_LED_CHANNEL     0
+#define PWM_IO_SOURCE       IO_SOURCE_PWM0_B
+
+static void ws2881_write(uint32_t value)
+{
+    int8_t i;
+
+    for( i = 0; i < 24; i++ )
+    {
+        uint32_t bit = value & ( 0x00800000 >> i);
+
+        if (bit) // T_DUTY: ~3.7US ( T_DUTY  = T0H+T0L = T1H+T1L )
+        {
+            PWM_SinglePulseSend(PWM_LED_CHANNEL, 800); // T1H = ~800NS
+        }
+        else
+        {
+            PWM_SinglePulseSend(PWM_LED_CHANNEL, 300); // T0H = ~300NS
+        }
+    }
+    delay(100 * 8); // RES(>280US) = ~230US
+}
+
+void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
+{
+    uint32_t cmd = (b << 16) | (r << 8) | g;
 
     ws2881_write(cmd);
 }
@@ -138,6 +197,12 @@ void setup_rgb_led()
                              | (1 << SYSCTRL_ClkGate_APB_PWM));
     SYSCTRL_SelectPWMClk(SYSCTRL_CLK_SLOW_DIV_1);
     PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_PWM0_A);
+#elif(BOARD_ID == BOARD_DB72C8K1A)
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                             | (1 << SYSCTRL_ClkGate_APB_PWM));
+    SYSCTRL_SelectPWMClk(SYSCTRL_CLK_SLOW_DIV_1);
+    PINCTRL_SetPadMux(PIN_RGB_LED, PWM_IO_SOURCE);
+    PWM_SinglePulseInit(PWM_LED_CHANNEL, (PWM_IO_SOURCE==IO_SOURCE_PWM0_A) );
 #else
     #error unknown or unsupported board type
 #endif

@@ -707,11 +707,15 @@ void ble_sync_gap(void)
 
 void change_conn_param(int interval, int latency, int timeout)
 {
-    interval = conn_param_requst.interval;
-    uint16_t ce_len = (interval << 1) - 2;
+    if (interval > 0) conn_param_requst.interval = interval;    
+    if (timeout > 0) conn_param_requst.timeout = timeout;
+    conn_param_requst.latency = latency;
+    
+    uint16_t ce_len = (conn_param_requst.interval << 1) - 2;
     mt_gap_update_connection_parameters(
             mas_conn_handle != INVALID_HANDLE ? mas_conn_handle : sla_conn_handle,
-            interval, interval,
+            conn_param_requst.interval, 
+            conn_param_requst.interval,
             conn_param_requst.latency,
             conn_param_requst.timeout,
             ce_len, ce_len);

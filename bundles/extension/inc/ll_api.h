@@ -20,6 +20,24 @@
 extern "C" {
 #endif
 
+typedef enum ll_config_item_e
+{
+    // Pre-wake up to schedule connection events properly
+    // when slave latency is used.
+    // Range: 1~255. Default: 4 (Unit: 0.625ms)
+    LL_CFG_SLAVE_LATENCY_PRE_WAKE_UP,
+} ll_config_item_t;
+
+/**
+ ****************************************************************************************
+ * @brief Config LL specific parameters
+ *
+ * @param[in]  item             parameter to be configured (see `ll_config_item_t`)
+ * @param[in]  value            value of the parameter
+ ****************************************************************************************
+ */
+void ll_config(ll_config_item_t item, uint32_t value);
+
 /**
  ****************************************************************************************
  * @brief set Tx power range
@@ -398,6 +416,8 @@ int ll_raw_packet_send(struct ll_raw_packet *packet,
  * @param[out]  size                data size
  * @param[out]  rssi                RSSI in dBm
  * @return                          0 if successful else error code
+ *                                  Note: `air_time`, `header` and `rssi` are also available
+ *                                        even if error code is not in {1, 2}.
  ****************************************************************************************
  */
 int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
@@ -477,11 +497,9 @@ int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
-//                           uint8_t cte_type,
-//                           uint8_t cte_len);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
+                          uint8_t cte_type,
+                          uint8_t cte_len);
 
 /**
  ****************************************************************************************
@@ -650,6 +668,15 @@ void *ll_malloc(uint16_t size);
  ****************************************************************************************
  */
 void ll_free(void *buffer);
+
+/**
+ ****************************************************************************************
+ * @brief Get unallocated size of LL internal heap
+ *
+ * @return                          unallocated size in bytes
+ ****************************************************************************************
+ */
+int ll_get_heap_free_size(void);
 
 /**
  ****************************************************************************************

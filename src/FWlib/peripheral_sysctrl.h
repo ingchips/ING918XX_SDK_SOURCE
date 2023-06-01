@@ -980,7 +980,7 @@ typedef enum
 } SYSCTRL_MemBlock;
 
 // this blocks (16 + 8) KiB are reversed in _mini_bundles
-#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_SHARE_BLOCK_0)
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1 | SYSCTRL_SHARE_BLOCK_0)
 
 typedef enum
 {
@@ -1108,6 +1108,25 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
  * @return                      1 if any wake up source is found else 0
  */
 uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
+
+/**
+ * @brief Extra initialization of system
+ *
+ * This function shall be called once after power up.
+ *
+ * For ING916:
+ *      Use factory calibration data from Flash to initialize PMU registers/settings:
+ *          - VREF 0.800V
+ *          - VCore 1.200V
+ *          - VAON 1.200V
+ *
+ *      Depend on `flash_get_factory_calib_data` of `eflash.c`.
+ *
+ * For ING918: This function does nothing.
+ *
+ * @return                      0 if initialized else failed
+ */
+int SYSCTRL_Init(void);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

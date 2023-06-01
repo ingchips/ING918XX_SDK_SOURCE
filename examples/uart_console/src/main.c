@@ -92,14 +92,10 @@ uint32_t uart_isr(void *user_data)
 
         APB_UART0->IntClear = status;
 
-        // rx int
-        if (status & (1 << bsUART_RECEIVE_INTENAB))
+        while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
         {
-            while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
-            {
-                char c = APB_UART0->DataRead;
-                console_rx_data(&c, 1);
-            }
+            char c = APB_UART0->DataRead;
+            console_rx_data(&c, 1);
         }
     }
     return 0;

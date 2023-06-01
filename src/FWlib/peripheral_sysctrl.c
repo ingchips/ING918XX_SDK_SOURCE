@@ -95,7 +95,14 @@ uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
     return source->source != 0;
 }
 
+int SYSCTRL_Init(void)
+{
+    return 0;
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+#include "eflash.h"
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
@@ -1091,6 +1098,44 @@ void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_c
         *(volatile uint32_t *)(DC_BASE + 0x58) =  (1UL<<31) | 0x4;
         set_reg_bit((volatile uint32_t *)(DC_BASE), 1, 1);
     }
+}
+
+#define DEF_WEAK_FUNC(prototype)    __attribute__((weak)) prototype { while (1); }
+
+// `eflash.c` is required for this functionality.
+DEF_WEAK_FUNC(const factory_calib_data_t * flash_get_factory_calib_data(void))
+
+int SYSCTRL_Init(void)
+{
+    int i;
+    const factory_calib_data_t *p = flash_get_factory_calib_data();
+    if (!p) return 1;
+
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), p->band_gap, 7, 4);
+
+    for (i = 0; i < sizeof(p->vaon) / sizeof(p->vaon[0]); i++)
+    {
+        if (p->vaon[i] >= 1190)
+        {
+            set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x0), i, 4, 28);
+            break;
+        }
+    }
+
+    if (i >= sizeof(p->vaon) / sizeof(p->vaon[0])) return 2;
+
+    for (i = 1; i < sizeof(p->vcore) / sizeof(p->vcore[0]); i++)
+    {
+        if (p->vcore[i] > 1180)
+        {
+            SYSCTRL_SetLDOOutput((SYSCTRL_LDOOutputCore)(i - 1));
+            break;
+        }
+    }
+
+    if (i >= sizeof(p->vcore) / sizeof(p->vcore[0])) return 3;
+
+    return 0;
 }
 
 #endif

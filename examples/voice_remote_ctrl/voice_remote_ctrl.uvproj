@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536892360</StartAddress>
-                <Size>11320</Size>
+                <StartAddress>536892400</StartAddress>
+                <Size>11280</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -346,7 +346,7 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=0</Define>
+              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=0,AUDIO_CODEC_ALG=1</Define>
               <Undefine/>
               <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -418,6 +418,16 @@
               <FileName>pingpong.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\pingpong.c</FilePath>
+            </File>
+            <File>
+              <FileName>audio_adpcm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\audio_adpcm.c</FilePath>
+            </File>
+            <File>
+              <FileName>audio_sbc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\audio_sbc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -509,11 +519,6 @@
         <Group>
           <GroupName>Tools</GroupName>
           <Files>
-            <File>
-              <FileName>audio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\audio.c</FilePath>
-            </File>
             <File>
               <FileName>att_db_util.c</FileName>
               <FileType>1</FileType>

@@ -347,6 +347,12 @@ void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val, uint32_t shif
     SPI_BASE->TransCtrl |= (val << shift);
 }
 
+void apSSP_SetTransferControlAddrFmt(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_AddrFmt_e fmt)
+{
+    SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_ADDRFMT));
+    SPI_BASE->TransCtrl |= fmt << bsSPI_TRANSCTRL_ADDRFMT;
+}
+
 /*====================================================================*/
 void apSSP_SetTransferControlWrTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val)
 {
@@ -358,6 +364,12 @@ void apSSP_SetTransferControlRdTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val)
 {
     SPI_BASE->TransCtrl &= (~(BW2M(bwSPI_TRANSCTRL_RDTRANCNT) << bsSPI_TRANSCTRL_RDTRANCNT));
     SPI_BASE->TransCtrl |= ((val-1) << bsSPI_TRANSCTRL_RDTRANCNT);
+}
+
+void apSSP_SetTransferControlDummyCnt(SSP_TypeDef *SPI_BASE, uint8_t cnt)
+{
+    SPI_BASE->TransCtrl &= (~(BW2M(bwSPI_TRANSCTRL_DUMMYCNT) << bsSPI_TRANSCTRL_DUMMYCNT));
+    SPI_BASE->TransCtrl |= (((cnt+1) & BW2M(bwSPI_TRANSCTRL_DUMMYCNT)) << bsSPI_TRANSCTRL_DUMMYCNT);
 }
 
 /*====================================================================*/
@@ -509,6 +521,14 @@ uint16_t apSSP_GetSlaveTxDataCnt(SSP_TypeDef *SPI_BASE)
 uint16_t apSSP_GetSlaveRxDataCnt(SSP_TypeDef *SPI_BASE)
 {
     return ( ((SPI_BASE->SlvDataCnt >> bsSPI_SLAVE_DATA_COUNT_READ_CNT) & BW2M(bwSPI_SLAVE_DATA_COUNT_READ_CNT)) );
+}
+
+/*====================================================================*/
+
+void apSSP_SetMemAccessCmd(SSP_TypeDef *SPI_BASE, apSSP_sDeviceMemRdCmd cmd)
+{
+    SPI_BASE->MemCtrl &= (~(BW2M(bwSPI_MEMORY_ACCESS_CONTROL_RD_CMD) << bsSPI_MEMORY_ACCESS_CONTROL_RD_CMD));
+    SPI_BASE->MemCtrl |= (cmd << bsSPI_MEMORY_ACCESS_CONTROL_RD_CMD);
 }
 
 #endif

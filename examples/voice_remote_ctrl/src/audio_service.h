@@ -24,6 +24,8 @@
 void audio_init(void);
 uint32_t audio_sample_isr(void *user_data);
 
+typedef int16_t sample_t;
+
 void audio_start(void);
 void audio_stop(void);
 

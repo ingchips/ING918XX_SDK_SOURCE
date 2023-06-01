@@ -1,18 +1,18 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 133516,
+   "size": 133856,
    "base": 16384
   },
   "ram": {
-   "size": 4460,
+   "size": 4508,
    "base": 536870912
   },
   "app": {
    "base": 155648
   },
   "version": [
-   1,9,16]
+   1,9,21]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",
@@ -43,8 +43,8 @@
  "role": "light",
  "keil": true,
  "cmsis": "",
- "app_ram_size": 61072,
- "app_ram_addr": 536875376,
+ "app_ram_size": 61024,
+ "app_ram_addr": 536875424,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",
