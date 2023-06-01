@@ -233,6 +233,7 @@ void mesh_platform_config(bt_mesh_config_t type, void *data, uint32_t data_len){
 #ifdef MESH_GATT_ADV_ADDR_USE_FLASH
             bd_addr_t addr;
             mesh_gatt_addr_generate_and_get(addr);
+            mesh_set_addr_static((uint8_t *)addr);
             mesh_gatt_adv_addr_set(addr);
 #else
             mesh_gatt_adv_addr_set((uint8_t *) data);
@@ -243,6 +244,7 @@ void mesh_platform_config(bt_mesh_config_t type, void *data, uint32_t data_len){
 #ifdef MESH_BEACON_ADV_ADDR_USE_FLASH
             bd_addr_t addr;
             mesh_beacon_addr_generate_and_get(addr);
+            mesh_set_addr_static((uint8_t *)addr);
             mesh_beacon_adv_addr_set(addr);
 #else
             mesh_beacon_adv_addr_set((uint8_t *) data);
@@ -456,4 +458,11 @@ void mesh_elems_and_models_ll_init(const bt_mesh_comp_t *a_comp){
             }
         }
     }
+}
+
+/* Change address to static, ref: https://ingchips.github.io/application-notes/pg_ble_stack_cn/ch-overview.html#ch-overview-ble-addr */
+void mesh_set_addr_static(uint8_t * addr)
+{
+    if(addr != NULL)
+        addr[0] |= 0xC0;
 }

@@ -19,7 +19,7 @@ void mesh_elems_and_models_ll_init(const bt_mesh_comp_t *a_comp);
 void mesh_prov_ll_init(const bt_mesh_prov_t *prov);
 void mesh_platform_config(bt_mesh_config_t type, void *data, uint32_t data_len);
 void mesh_platform_adv_params_init(void);
-
+void mesh_set_addr_static(uint8_t * addr);
 
 #endif
 
