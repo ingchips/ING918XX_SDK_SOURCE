@@ -11,6 +11,10 @@
 #include "app_debug.h"
 #include "mesh_debug.h"
 
+#ifdef ENABLE_LED_TEST
+#include "LED_TEST.h"
+#endif
+
 
 /*--------------------------------------------------------------------
  *----------------------------> MODEL <-------------------------------
@@ -33,8 +37,8 @@ static bt_mesh_cfg_srv_t cfg_srv = {
     .default_ttl = 7,
 
     /* 3 transmissions with 20ms interval */
-    .net_transmit = BT_MESH_TRANSMIT(3, 100),
-    .relay_retransmit = BT_MESH_TRANSMIT(3, 100),
+    .net_transmit = BT_MESH_TRANSMIT(5, 50),
+    .relay_retransmit = BT_MESH_TRANSMIT(3, 50),
 
 };
 
@@ -51,6 +55,13 @@ static void light_update(struct light_state *a_light)
     }
     app_log_info("gen set rgb val: %d\n",val);
     set_rgb_led_color(val, val, val);
+
+#ifdef ENABLE_LED_TEST
+    if(val)
+        LED_ON(PIN_LED_9);
+    else
+        LED_OFF(PIN_LED_9);
+#endif
 }
 
 #define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->light_state

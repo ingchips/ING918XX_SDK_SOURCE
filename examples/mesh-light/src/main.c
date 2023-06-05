@@ -12,6 +12,10 @@
 #include "BUTTON_TEST.h"
 #endif
 
+#ifdef ENABLE_LED_TEST
+#include "LED_TEST.h"
+#endif
+
 //-----------------------------------------------------
 // uart config
 #define PRINT_UART          APB_UART0
@@ -103,6 +107,9 @@ void setup_peripherals(void)
 
 #ifdef ENABLE_BUTTON_TEST
     button_test_init();
+#endif
+#ifdef ENABLE_LED_TEST
+    LED_Test_Init();
 #endif
 }
 
