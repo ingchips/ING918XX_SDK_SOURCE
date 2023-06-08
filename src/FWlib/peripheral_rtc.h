@@ -221,6 +221,15 @@ void RTC_SecCntTrim(uint8_t trim, rtc_trim_direction_t dir);
 
 /**
  ****************************************************************************************
+ * @brief Digital trimming value for the rest of half-seconds.
+ * 
+ * @param[in] trim  Digital trimming value(0 ~ 16383).
+ **************************************************************************************** 
+ */
+void RTC_HSecCntTrim(uint16_t trim);
+
+/**
+ ****************************************************************************************
  * @brief Set all settings of TRIM register.
  * 
  * @param[in] day_trim      Digital trimming value(1 ~ 31) for the second on the day boundary. 
