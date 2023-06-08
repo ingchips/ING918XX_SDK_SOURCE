@@ -179,8 +179,7 @@ void RTC_SecCntTrim(uint8_t trim, rtc_trim_direction_t dir)
 
 void RTC_HSecCntTrim(uint16_t trim)
 {
-    APB_RTC->SEC_CFG &= 0;
-    APB_RTC->SEC_CFG |= trim & 0x3fff;
+    APB_RTC->SEC_CFG &= trim & 0x3fff;
 }
 
 void RTC_SetAllTrimValue(uint8_t day_trim, uint8_t hour_trim, uint8_t min_trim,uint8_t sec_trim)
