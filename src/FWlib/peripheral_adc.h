@@ -115,16 +115,13 @@ typedef enum {
 } SADC_adcIputMode;
 
 typedef enum {
-    PGA_GAIN_1       = 0x0,
-    PGA_GAIN_2       = 0x1,
-    PGA_GAIN_4       = 0x2,
-    PGA_GAIN_8       = 0x3,
-    PGA_GAIN_16      = 0x4,
-    PGA_GAIN_32      = 0x5,
-    PGA_GAIN_64      = 0x6,
-    PGA_GAIN_128     = 0x7,
-    PGA_NO_USE       = PGA_GAIN_1,
-} SADC_adcPgaGain;
+    PGA_PARA_0 = 0,
+    PGA_PARA_1,
+    PGA_PARA_2,
+    PGA_PARA_3,
+    PGA_PARA_4,
+    PGA_PARA_5,
+} SADC_pgaPara;
 
 typedef enum {
     SADC_CFG_0      = 0x0,
@@ -265,18 +262,52 @@ void ADC_SetInputMode(SADC_adcIputMode mode);
 SADC_adcIputMode ADC_GetInputMode(void);
 
 /**
- * @brief Set pga gain
+ * @brief Set pga-para
  *
- * @param[in] gain           pga gain, see 'SADC_adcPgaGain'
+ * @param[in] para           pga-para, see 'SADC_pgaPara'
+ * @note The conversion relation between pga-para and input voltage is:
+ * 1.For differential input:
+ * Vmin、Vmax stand for the minimum and maximum values of the gap between input
+ * voltage VINP and VINN.
+ * |pga-para| Vmin   | Vmax  |
+ * | [000]  | -Vp    | Vp    |
+ * | [001]  | -Vp/2  | Vp/2  |
+ * | [010]  | -Vp/4  | Vp/4  |
+ * | [011]  | -Vp/8  | Vp/8  |
+ * | [100]  | -Vp/16 | Vp/16 |
+ * | [101]  | -Vp/32 | Vp/32 |
+ * 2.For single-ended input:
+ * Vmin、Vmax stand for the minimum and maximum values of input voltage.
+ * |pga-para| Vmin    | Vmax    |
+ * | [000]  | 0       | Vp      |
+ * | [001]  | 0       | Vp      |
+ * | [010]  | Vp/4    | 3Vp/4   |
+ * | [011]  | 3Vp/8   | 5Vp/8   |
+ * | [100]  | 7Vp/16  | 9Vp/16  |
+ * | [101]  | 15Vp/32 | 17Vp/32 |
+ * other pga-para values are invalid
+ * 
+ * Please get a good pga-para as parameter and call 'ADC_PgaParaSet' to set it.
+ * So how to get a good pga-para? Please see below.
+ * Steps to get a good pga-para:
+ * 1.Please measure the wave range of input vlotage when it's in single-ended mode,
+ * or the gap of VINP and VINN when it's in differential mode;
+ * 2.Compare your range with the range between Vmin and Vmax in every row of those
+ * table in the above, and let yours included in the second one;
+ * 3.Do step-2 repeatedly with every row and find the biggest pga-para, is the best one.
+ * 
+ * When PGA is disabled:
+ * 1.pga-para=0 in differential mode, pga-para=1 in single-ended mode;
+ * 2.Call ADC_PgaParaSet is useless, but it into effect when enable PGA next time.
  */
-void ADC_PgaGainSet(SADC_adcPgaGain gain);
+void ADC_PgaParaSet(SADC_pgaPara para);
 
 /**
- * @brief Get pga gain
+ * @brief Get pga-para
  *
- * @return                   pga gain,2^n(n=0-7)
+ * @return                   pga-para, see 'SADC_pgaPara'
  */
-uint32_t ADC_PgaGainGet(void);
+SADC_pgaPara ADC_PgaParaGet(void);
 
 /**
  * @brief Enable pga
@@ -400,7 +431,7 @@ void ADC_Calibration(SADC_adcIputMode mode);
  * @brief ADC conversion standard configuration interface
  *
  * @param[in] ctrlMode       ADC control mode, see 'SADC_adcCtrlMode'
- * @param[in] pgaGain        pga gain, see 'SADC_adcPgaGain'
+ * @param[in] pgaPara        pga-para, see 'SADC_pgaPara'
  * @param[in] pgaEnable      enable/diable pga
  * @param[in] ch             ADC channel id, see 'SADC_channelId'
  * @param[in] enNum          ADC interrupt trigger number(0-15)
@@ -409,7 +440,7 @@ void ADC_Calibration(SADC_adcIputMode mode);
  * @param[in] loopDelay      ADC loop delay(0-0xffffffff)
  */
 void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, 
-                 SADC_adcPgaGain pgaGain,
+                 SADC_pgaPara pgaPara,
                  uint8_t pgaEnable,
                  SADC_channelId ch, 
                  uint8_t enNum, 
