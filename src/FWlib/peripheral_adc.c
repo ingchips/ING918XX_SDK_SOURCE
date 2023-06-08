@@ -326,12 +326,16 @@ SADC_adcIputMode ADC_GetInputMode(void)
     return (SADC_adcIputMode)ADC_RegRd(SADC_CFG_0, 8, 1);
 }
 
-void ADC_PgaGainSet(SADC_adcPgaGain gain)
+void ADC_PgaParaSet(SADC_pgaPara para)
 {
-    if (gain > PGA_GAIN_128) return;
-    ADC_RegWrBits(SADC_CFG_0, gain, 2, 3);
+    if (para > PGA_PARA_5) return;
+    ADC_RegWrBits(SADC_CFG_0, para, 2, 3);
 }
-uint32_t ADC_PgaGainGet(void)
+SADC_pgaPara ADC_PgaParaGet(void)
+{
+    return (SADC_pgaPara)ADC_RegRd(SADC_CFG_0, 2, 3);
+}
+static uint32_t ADC_PgaGainGet(void)
 {
     if (ADC_GetPgaStatus())
         return (uint32_t)(1 << ADC_RegRd(SADC_CFG_0, 2, 3));
@@ -435,7 +439,7 @@ void ADC_VrefCalibration(void)
     if (!ftCali) return;
     ADC_DisableAllChannels();
     ADC_ClrFifo();
-    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_2, 1, ADC_CH_9, 15, 0,
+    ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_1, 1, ADC_CH_9, 15, 0,
         SINGLE_END_MODE, SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC) / 63000);
     ADC_Start(1);
     while (!ADC_GetIntStatus());
@@ -463,7 +467,7 @@ void ADC_VrefCalibration(void)
         data += array[i];
     }
     data /= (cnt - 1);
-    ADC_VrefRegister(ftCali->V12Data * ftCali->Vp / data * 0.00001f , 0.f);
+    ADC_VrefRegister(ftCali->V12Data * ftCali->Vp / data * 0.00001f, 0.f);
     ADC_EnableChannel(ADC_CH_9, 0);
     ADC_IntEnable(0);
 }
@@ -693,7 +697,7 @@ void ADC_Calibration(SADC_adcIputMode mode)
 }
 
 void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
-                 SADC_adcPgaGain pgaGain,
+                 SADC_pgaPara pgaPara,
                  uint8_t pgaEnable,
                  SADC_channelId ch,
                  uint8_t enNum,
@@ -703,7 +707,7 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
 {
     ADC_SetAdcMode(CONVERSION_MODE);
     ADC_SetAdcCtrlMode(ctrlMode);
-    ADC_PgaGainSet(pgaGain);
+    ADC_PgaParaSet(pgaPara);
     ADC_PgaEnable(pgaEnable);
     ADC_SetInputMode(inputMode);
     ADC_EnableChannel(ch, 1);
