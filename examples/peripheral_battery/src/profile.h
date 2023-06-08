@@ -3,13 +3,20 @@
 
 #include <stdint.h>
 
-#define AVE_NUM 5
+#define AVE_NUM 10
+#define INCLUDE_EXTREMUM 0
 
 /**
  * @brief To get the ADC data in average
  * @note It returns average value in continue mode, equals to 'ADC_GetData' in single mode.
  * To avoid get fluctuant single data, is a good way to configure ADC in continue mode with 'AVE_NUM' 
  * data per trigger, call this function 'AVE_NUM' times with raw-data to get a data more accurate.
+ * 
+ * When INCLUDE_EXTREMUM is 0:
+ * 1.If AVE_NUM <= 2, it returns the average value of all data;
+ * 2.If AVE_NUM > 2, it returns the average value of all data but the minimum and the maximum one.
+ * 
+ * If INCLUDE_EXTREMUM isn't 0, it won't subtract the extremum.
  * 
  * @param[in] data           data read by ADC_PopFifoData
  * @return                   ADC data

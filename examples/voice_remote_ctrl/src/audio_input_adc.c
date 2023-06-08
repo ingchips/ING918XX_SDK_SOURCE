@@ -85,7 +85,7 @@ void audio_input_setup(void)
     ADC_Reset();
     ADC_Calibration(DIFFERENTAIL_MODE);
     ADC_ftInit();
-    ADC_ConvCfg(CONTINUES_MODE, PGA_GAIN_16, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 
+    ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 
                 LOOP_DELAY(ADC_CLK_MHZ, SAMPLING_RATE, ADC_CHANNEL_NUM));
 
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_DMA));
