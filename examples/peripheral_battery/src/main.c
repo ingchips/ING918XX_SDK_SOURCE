@@ -90,6 +90,21 @@ uint16_t ADC_GetAveData(uint32_t data)
     uint32_t sum = 0;
     for (i = 0; i < adcAve[ch]->s; ++i)
         sum += adcAve[ch]->data[i];
+    if (adcAve[ch]->s <= 2)
+        return sum / i;
+#if (INCLUDE_EXTREMUM == 0)
+    uint16_t min = 0x3fff;
+    uint16_t max = 0;
+    for (i = 0; i < adcAve[ch]->s; ++i) {
+        if (adcAve[ch]->data[i] < min)
+            min = adcAve[ch]->data[i];
+        if (adcAve[ch]->data[i] > max)
+            max = adcAve[ch]->data[i];
+    }
+    sum -= min;
+    sum -= max;
+    i -= 2;
+#endif
     return sum / i;
 }
 static void ADC_AveInitSet(SADC_channelId ch)
