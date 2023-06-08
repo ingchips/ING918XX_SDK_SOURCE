@@ -432,6 +432,8 @@ typedef enum
                                             // Default for ING918: Disabled(0) for backward compatibility
                                             // Default for ING916: Enabled(1)
     PLATFORM_CFG_PS_DBG_3,
+    PLATFORM_CFG_PS_DBG_4,                  // Debugging parameters for ING916. Default (0)
+                                            // Bit [0]: `platform_shutdown` uses DEEPER SLEEP (1) or SLEEP (0)
 } platform_cfg_item_t;
 
 typedef enum

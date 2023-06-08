@@ -6,7 +6,7 @@
 #include "btstack_event.h"
 #include "btstack_defines.h"
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -17,7 +17,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     }
 }
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -41,7 +41,7 @@ void show_rx(struct ll_raw_packet *packet)
     int acked;
     int rx_status = ll_ackable_packet_get_status(packet, &acked, &air_time, data, &len, &rssi);
 
-#if (FOR_INITIATOR)    
+#if (FOR_INITIATOR)
     platform_printf("ACK: %d\n", acked);
     if (rx_status == 0)
     {
@@ -53,7 +53,7 @@ void show_rx(struct ll_raw_packet *packet)
         platform_printf("\n");
     }
     else;
-#else    
+#else
     if (rx_status == 0)
     {
         platform_printf("ACK: %d\n", acked);
@@ -72,10 +72,10 @@ void show_rx(struct ll_raw_packet *packet)
 void packet_action(void)
 {
     static int counter = 0;
-    
+
     show_rx(raw_packet);
-    
-#if (FOR_INITIATOR)    
+
+#if (FOR_INITIATOR)
     sprintf(data, "PING PACKET #%d", counter++);
 #else
     sprintf(data, "PONG PACKET #%d", counter++);
@@ -83,7 +83,9 @@ void packet_action(void)
 
     ll_ackable_packet_set_tx_data(raw_packet, data, strlen(data));
 
-    ll_ackable_packet_run(raw_packet, platform_get_us_time() + 500000, 1000 * 1000);
+    ll_ackable_packet_run(raw_packet,
+        platform_get_us_time() + (FOR_INITIATOR ? 500000 : 300000),
+        1000 * 1000);
 }
 
 void on_raw_packet_done(struct ll_raw_packet *packet, void *user_data)
