@@ -234,7 +234,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>152</TopLine>
+      <TopLine>156</TopLine>
       <CurrentLine>161</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\audio_service.c</PathWithFileName>
@@ -312,10 +312,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>33</ColumnNumber>
+      <ColumnNumber>10</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>791</TopLine>
-      <CurrentLine>815</CurrentLine>
+      <TopLine>823</TopLine>
+      <CurrentLine>824</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\audio_sbc.c</PathWithFileName>
       <FilenameWithoutPath>audio_sbc.c</FilenameWithoutPath>

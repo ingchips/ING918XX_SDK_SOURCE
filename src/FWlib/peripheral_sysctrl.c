@@ -1100,11 +1100,6 @@ void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_c
     }
 }
 
-#define DEF_WEAK_FUNC(prototype)    __attribute__((weak)) prototype { while (1); }
-
-// `eflash.c` is required for this functionality.
-DEF_WEAK_FUNC(const factory_calib_data_t * flash_get_factory_calib_data(void))
-
 int SYSCTRL_Init(void)
 {
     int i;
