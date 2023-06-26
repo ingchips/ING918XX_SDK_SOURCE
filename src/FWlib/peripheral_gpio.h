@@ -272,7 +272,7 @@ void GIO_EnableRetentionGroupA(uint8_t enable);
 /**
  * @brief Enable or disable retention of GPIO Group B
  *
- * Group B = {1-4, 7-17, 24, 25, 29-35}.
+ * Group B = {1-4, 7-17, 24, 25, 29-41}.
  *
  * Once enabled, GPIO configuration (and their value when used as OUTPUT) are
  * all latched and kept even in power saving modes.
