@@ -129,6 +129,13 @@ typedef struct
     uint32_t source;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
 
+/**
+ * \brief Enable the PA, the Txen is set to GPIO2 and RXEN is set to GPIO6.
+ * This function should be called after the stack initialized. for example, at 
+ * the BTSTACK_EVENT_STATE of user_packet_handler.
+ */
+void SYSCTRL_PAEnable(void);
+    
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
@@ -980,7 +987,7 @@ typedef enum
 } SYSCTRL_MemBlock;
 
 // this blocks (16 + 8) KiB are reversed in _mini_bundles
-#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1 | SYSCTRL_SHARE_BLOCK_0)
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1 | SYSCTRL_SHARE_BLOCK_0 | SYSCTRL_SHARE_BLOCK_2)
 
 typedef enum
 {
@@ -1127,6 +1134,14 @@ uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
  * @return                      0 if initialized else failed
  */
 int SYSCTRL_Init(void);
+
+/**
+ * @brief enable the PA.
+ *
+ * @param[in] txen_pin           the IO index of txen, valid range:{4,5,6,7,8,9,10,34,35}
+ * @param[in] rxen_pin           the IO index of rxen, valid range:{11,12,13,14,15,16,17,34,35}
+ */
+void SYSCTRL_PAEnable(const uint8_t txen_pin, const uint8_t rxen_pin);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
