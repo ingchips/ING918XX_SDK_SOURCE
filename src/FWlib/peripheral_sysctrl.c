@@ -1147,10 +1147,4 @@ int SYSCTRL_Init(void)
     return 0;
 }
 
-void SYSCTRL_PAEnable(const uint8_t txen_pin, const uint8_t rxen_pin)
-{
-    PINCTRL_SetPadMux(rxen_pin, IO_SOURCE_PA_RXEN);
-    PINCTRL_SetPadMux(txen_pin, IO_SOURCE_PA_TXEN);
-}
-
 #endif
