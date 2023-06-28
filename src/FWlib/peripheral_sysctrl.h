@@ -130,13 +130,13 @@ typedef struct
 } SYSCTRL_WakeupSource_t;
 
 /**
- * \brief Enable the PA, the Txen is set to GPIO2 and RXEN is set to GPIO6.
- * This function should be called after the stack initialized. for example, at 
- * the BTSTACK_EVENT_STATE of user_packet_handler.
- * When PLATFORM_CB_EVT_LLE_INIT occured, the function should also be called.
+ * \brief Enable the PA, the TXEN is set to GPIO2 and RXEN is set to GPIO6.
+ * This function is only allowed to be called after the stack initialized. For example, at
+ * the BTSTACK_EVENT_STATE of `user_packet_handler`.
+ * When PLATFORM_CB_EVT_LLE_INIT occurred, the function should also be called.
  */
 void SYSCTRL_PAEnable(void);
-    
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
