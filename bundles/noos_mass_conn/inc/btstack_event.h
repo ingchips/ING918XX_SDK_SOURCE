@@ -879,6 +879,24 @@ typedef struct
     uint8_t *out_msg;
 } event_vendor_ccm_complete_t;
 
+typedef struct le_meta_event_read_local_p256_pub_key_complete
+{
+    // Status of received command
+    uint8_t             status;
+    // Local P-256 public key X coordinate
+    uint8_t             key_x_coordinate[32];
+    // Local P-256 public key Y coordinate
+    uint8_t             key_y_coordinate[32];
+} le_meta_event_read_local_p256_pub_key_complete_t;
+
+typedef struct le_meta_event_generate_dhkey_complete
+{
+    // Status of received command
+    uint8_t             status;
+    // Diffie Hellman Key
+    uint8_t             dh_key[32];
+} le_meta_event_generate_dhkey_complete_t;
+
 typedef struct le_meta_event_create_conn_complete
 {
     //Status of received command
@@ -1249,6 +1267,15 @@ typedef struct le_meta_subrate_change
                                     // Time = N �� 10 ms
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
+
+typedef struct le_meta_event_vendor_channel_map_update
+{
+    // connection handle
+    uint16_t conn_handle;
+    // current channel map (the lower 37 bits are used)
+    // channel `n` is identified by bit `(channel_map & 0x7)` of `channel_map[n / 8]`
+    uint8_t  channel_map[5];
+} le_meta_event_vendor_channel_map_update_t;
 
 typedef enum btstack_l2cap_msg_def
 {

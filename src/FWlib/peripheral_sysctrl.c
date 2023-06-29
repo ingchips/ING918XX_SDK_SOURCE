@@ -100,6 +100,15 @@ int SYSCTRL_Init(void)
     return 0;
 }
 
+void SYSCTRL_PAEnable(void)
+{
+    io_write(0x40090000, (io_read(0x40090000) & (~(0x3FF<<16)) | (70 << 16)));
+    io_write(0x4007005c, 0x82);
+    io_write(0x40070044, ((io_read(0x40070044)) | (0xf<<8) | (0xf<<24)));
+    io_write(0x40090064, 0x400);
+    io_write(0x40090000, (io_read(0x40090000) & (~(0x3FF<<16)) | (70 << 16))); // adjust_rf_txen_rxen_duty
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #include "eflash.h"
@@ -1099,11 +1108,6 @@ void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_c
         set_reg_bit((volatile uint32_t *)(DC_BASE), 1, 1);
     }
 }
-
-#define DEF_WEAK_FUNC(prototype)    __attribute__((weak)) prototype { while (1); }
-
-// `eflash.c` is required for this functionality.
-DEF_WEAK_FUNC(const factory_calib_data_t * flash_get_factory_calib_data(void))
 
 int SYSCTRL_Init(void)
 {

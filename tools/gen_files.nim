@@ -117,8 +117,13 @@ proc hex_xxxx(p, target: string, address: uint32, more: proc (f: File) {.closure
 proc hex_918(p, target: string, more: proc (f: File) {.closure.}) =
     hex_xxxx(p, target, 0x4000u32, more)
 
+proc hex_916(p, target: string, more: proc (f: File) {.closure.}) =
+    hex_xxxx(p, target, 0x02002000u32, more)
+
 proc hex_916(p: string) =
-    hex_xxxx(p, "platform.hex", 0x02002000u32, (f: File) => (discard))
+    hex_916(p, "platform.hex", (f: File) => (discard))
+
+    hex_916(p, "platform_lock.hex", (f: File) => dump_hex(f, @[0xFFu8, 0xEF, 0xFF, 0xFF], 0x02000000u32))
 
 proc hex_918(p: string) =
     hex_918(p, "platform.hex", (f: File) => (discard))

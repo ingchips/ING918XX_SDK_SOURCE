@@ -5,7 +5,7 @@
 *
 *
 *  INGCHIPS confidential and proprietary.
-*  COPYRIGHT (c) 2018 by INGCHIPS
+*  COPYRIGHT (c) 2018-2023 by INGCHIPS
 *
 *  All rights are reserved. Reproduction in whole or in part is
 *  prohibited without the written consent of the copyright owner.
@@ -35,7 +35,7 @@ typedef uint8_t bd_addr_t[BD_ADDR_LEN];
 
 /**
  * Address types
- * @note: BTstack uses a custom addr type to refer to classic ACL and SCO devices
+ * @note: btstack uses a custom addr type to refer to classic ACL and SCO devices
  */
  typedef enum {
     BD_ADDR_TYPE_LE_PUBLIC = 0,
@@ -56,8 +56,8 @@ typedef uint8_t link_key_t[LINK_KEY_LEN];
  */
 typedef enum {
   COMBINATION_KEY = 0,  // standard pairing
-  LOCAL_UNIT_KEY,     // ?
-  REMOTE_UNIT_KEY,    // ?
+  LOCAL_UNIT_KEY,
+  REMOTE_UNIT_KEY,
 } link_key_type_t;
 
 /**
@@ -65,12 +65,11 @@ typedef enum {
  */
 
 /**
- * packet types - used in BTstack and over the H4 UART interface
+ * packet types
  */
 #define HCI_COMMAND_DATA_PACKET 0x01
 #define HCI_ACL_DATA_PACKET     0x02
-#define HCI_EVENT_PACKET        0x04   //changed to align with spec
-#define HCI_COMPLETED_SDU_PACKET 0x0B  // for LE credit channel : completed SDU event
+#define HCI_EVENT_PACKET        0x04
 #define L2CAP_EVENT_PACKET      0x0A
 
 // packet header sizes
@@ -304,9 +303,8 @@ typedef enum {
  * @param key_flag
  */
 #define HCI_EVENT_MASTER_LINK_KEY_COMPLETE                 0x0A
-#define HCI_EVENT_READ_REMOTE_SUPPORTED_FEATURES_COMPLETE  0x0B
+
 #define HCI_EVENT_READ_REMOTE_VERSION_INFORMATION_COMPLETE 0x0C
-#define HCI_EVENT_QOS_SETUP_COMPLETE                       0x0D
 
 /**
  * @format 12R
@@ -482,6 +480,8 @@ typedef enum {
 #define HCI_SUBEVENT_LE_LONG_TERM_KEY_REQUEST              0x05
 #define HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_COMPLETE 0x06
 #define HCI_SUBEVENT_LE_DATA_LENGTH_CHANGE_EVENT           0x07
+#define HCI_SUBEVENT_LE_P256_PUB_KEY_COMPLETE              0x08
+#define HCI_SUBEVENT_LE_GENERATE_DHKEY_COMPLETE            0x09
 #define HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE       0x0A
 #define HCI_SUBEVENT_LE_DIRECT_ADVERTISING_REPORT          0x0B
 #define HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE                0X0C
@@ -497,8 +497,20 @@ typedef enum {
 #define HCI_SUBEVENT_LE_CONNECTION_IQ_REPORT               0x16
 #define HCI_SUBEVENT_LE_CTE_REQ_FAILED                     0x17
 #define HCI_SUBEVENT_LE_PRD_ADV_SYNC_TRANSFER_RCVD         0x18
+#define HCI_SUBEVENT_LE_CIS_ESTABLISHED                    0x19
+#define HCI_SUBEVENT_LE_CIS_REQUEST                        0x1a
+#define HCI_SUBEVENT_LE_CREATE_BIG_COMPLETE                0x1b
+#define HCI_SUBEVENT_LE_TERMINATE_BIG_COMPLETE             0x1c
+#define HCI_SUBEVENT_LE_BIG_SYNC_ESTABLISHED               0x1d
+#define HCI_SUBEVENT_LE_BIG_SYNC_LOST                      0x1e
+#define HCI_SUBEVENT_LE_REQUEST_PEER_SCA                   0x1F
+#define HCI_SUBEVENT_LE_PATH_LOSS_THRESHOLD                0x20
+#define HCI_SUBEVENT_LE_TRANSMIT_POWER_REPORTING           0x21
+#define HCI_SUBEVENT_LE_BIGINFO_ADV_REPORT                 0x22
+#define HCI_SUBEVENT_LE_SUBRATE_CHANGE                     0x23
 
 // Vendor specific subevents
+#define HCI_SUBEVENT_LE_VENDOR_CHANNEL_MAP_UPDATE             0xFE
 #define HCI_SUBEVENT_LE_VENDOR_PRO_CONNECTIONLESS_IQ_REPORT   0xFF
 
 // last used HCI_EVENT in 2.1 is 0x3d
@@ -539,14 +551,6 @@ typedef enum {
 
 // Extended Response Timeout eXpired
 #define L2CAP_ERTX_TIMEOUT_MS 120000
-
-// Fixed PSM numbers
-#define PSM_SDP           0x01
-#define PSM_RFCOMM        0x03
-#define PSM_BNEP          0x0F
-#define PSM_HID_CONTROL   0x11
-#define PSM_HID_INTERRUPT 0x13
-
 
 /**
  * ATT
@@ -623,7 +627,7 @@ typedef enum {
 #define ATT_PROPERTY_AUTHENTICATED_SIGNED_WRITE 0x40
 #define ATT_PROPERTY_EXTENDED_PROPERTIES 0x80
 
-// MARK: Attribute Property Flag, BTstack extension
+// MARK: Attribute Property Flag, btstack extension
 // value is asked from client
 #define ATT_PROPERTY_DYNAMIC             0x100
 // 128 bit UUID used

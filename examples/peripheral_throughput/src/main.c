@@ -42,7 +42,14 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-#define KB_KEY_1        GIO_GPIO_1
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define KB_KEY_1        GIO_GPIO_1
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define KB_KEY_1        GIO_GPIO_6
+#else
+    #error unknown or unsupported chip family
+#endif
+
 extern uint8_t loopback_mode;
 
 void setup_peripherals(void)

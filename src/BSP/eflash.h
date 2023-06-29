@@ -113,7 +113,8 @@ typedef struct
 
 typedef struct
 {
-    uint32_t band_gap;
+    uint8_t  band_gap;
+    uint8_t  reserved4[3];
     uint16_t vaon[16];
     uint16_t vcore[16];
     uint16_t v12_adc[19];

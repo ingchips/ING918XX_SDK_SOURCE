@@ -285,7 +285,7 @@ type ##  Accept all advertising packets except directed advertising packets not
 ##
 ##  @param filter               @link #scan_filter_policy_t @endlink
 ##
-##  @param config_num           configure number 3 at most. It indicates that host would configure how many kinds of PHY
+##  @param config_num           configure number 2 at most. It indicates that host would configure how many kinds of PHY
 ##
 ##  @param configs              struture pointer to the configuration of each PHY host specify
 ##

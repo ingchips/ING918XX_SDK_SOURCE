@@ -129,6 +129,14 @@ typedef struct
     uint32_t source;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
 
+/**
+ * \brief Enable the PA, the TXEN is set to GPIO2 and RXEN is set to GPIO6.
+ * This function is only allowed to be called after the stack initialized. For example, at
+ * the BTSTACK_EVENT_STATE of `user_packet_handler`.
+ * When PLATFORM_CB_EVT_LLE_INIT occurred, the function should also be called.
+ */
+void SYSCTRL_PAEnable(void);
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
@@ -975,8 +983,8 @@ typedef enum
                                     // This block is always ON, and can't be turned off.
     SYSCTRL_MEM_BLOCK_1 = 0x08,     // block 1 is 16KiB following block 0
     SYSCTRL_SHARE_BLOCK_0 = 0x01,   // share memory block 0 is  8KiB starting from 0x40120000
-    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 0 (0x40122000)
-    SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 1
+    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 2 (0x40126000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 0 (0x40122000)
 } SYSCTRL_MemBlock;
 
 // this blocks (16 + 8) KiB are reversed in _mini_bundles

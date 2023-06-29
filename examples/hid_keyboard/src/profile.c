@@ -177,7 +177,13 @@ struct
     ['*'] = { .code = KEY_8, .modifier = KEY_MOD_LSHIFT },
     ['('] = { .code = KEY_9, .modifier = KEY_MOD_LSHIFT },
     [')'] = { .code = KEY_0, .modifier = KEY_MOD_LSHIFT },
-    
+    ['0'] = { .code = KEY_0, },
+
+    ['_'] = { .code = KEY_MINUS, .modifier = KEY_MOD_LSHIFT },
+    ['+'] = { .code = KEY_EQUAL, .modifier = KEY_MOD_LSHIFT },
+    ['-'] = { .code = KEY_MINUS, },
+    ['='] = { .code = KEY_EQUAL, },
+
     ['{'] = { .code = KEY_LEFTBRACE, .modifier = KEY_MOD_LSHIFT },
     ['}'] = { .code = KEY_RIGHTBRACE, .modifier = KEY_MOD_LSHIFT },
     [':'] = { .code = KEY_SEMICOLON, .modifier = KEY_MOD_LSHIFT },
@@ -194,12 +200,12 @@ struct
     [','] = { .code = KEY_COMMA },
     ['.'] = { .code = KEY_DOT },
     ['/'] = { .code = KEY_SLASH },
-    
+
     ['\r'] = { .code = KEY_ENTER },
     ['\n'] = { .code = KEY_ENTER },
-    
+
     ['\t'] = { .code = KEY_TAB },
-    
+
     [0x1b] = { .code = KEY_ESC },
     [' ']  = { .code = KEY_SPACE },
 
@@ -254,10 +260,6 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             if (('a' <= c) && (c <= 'z'))
             {
                 report.codes[0] = c - 'a' + KEY_A;
-            }
-            else if ('0' == c)
-            {
-                report.codes[0] = KEY_0;
             }
             else if (('1' <= c) && (c <= '9'))
             {
@@ -536,7 +538,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
                     break;
             }
         }
-        
+
         break;
     default:
         break;
