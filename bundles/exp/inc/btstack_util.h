@@ -74,7 +74,7 @@ void reverse_48 (const uint8_t *src, uint8_t * dest);
 void reverse_56 (const uint8_t *src, uint8_t * dest);
 void reverse_64 (const uint8_t *src, uint8_t * dest);
 void reverse_128(const uint8_t *src, uint8_t * dest);
-
+void reverse_256(const uint8_t * src, uint8_t * dst);
 void reverse_bd_addr(const uint8_t *src, uint8_t * dest);
 
 // will be moved to daemon/btstack_device_name_db.h

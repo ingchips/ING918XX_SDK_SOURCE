@@ -754,6 +754,26 @@ static __INLINE uint8_t sm_event_authorization_result_get_authorization_result(c
 }
 
 /**
+ * @brief Get field handle from event SM_EVENT_NUMERIC_COMPARISON_REQUEST
+ * @param event packet
+ * @return handle
+ * @note: btstack_type H
+ */
+static __INLINE hci_con_handle_t sm_event_numeric_comparison_get_handle(const uint8_t * event){
+    return little_endian_read_16(event, 2);
+}
+
+/**
+ * @brief Get field compare value from event SM_EVENT_NUMERIC_COMPARISON_REQUEST
+ * @param event packet
+ * @return passkey
+ * @note: btstack_type 4
+ */
+static __INLINE uint32_t sm_event_numeric_comparison_get_compare_value(const uint8_t * event){
+    return little_endian_read_32(event, 11);
+}
+
+/**
  * @brief Get field handle from event GAP_EVENT_SECURITY_LEVEL
  * @param event packet
  * @return handle
@@ -1267,15 +1287,6 @@ typedef struct le_meta_subrate_change
                                     // Time = N �� 10 ms
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
-
-typedef struct le_meta_event_vendor_channel_map_update
-{
-    // connection handle
-    uint16_t conn_handle;
-    // current channel map (the lower 37 bits are used)
-    // channel `n` is identified by bit `(channel_map & 0x7)` of `channel_map[n / 8]`
-    uint8_t  channel_map[5];
-} le_meta_event_vendor_channel_map_update_t;
 
 typedef enum btstack_l2cap_msg_def
 {
