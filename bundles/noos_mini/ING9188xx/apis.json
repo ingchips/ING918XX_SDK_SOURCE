@@ -242,13 +242,13 @@
     "sm_private_random_address_generation_set_update_period": "0x000204d5", 
     "sm_register_oob_data_callback": "0x00020611", 
     "sm_request_pairing": "0x0002061d", 
-    "sm_send_security_request": "0x000210e3", 
-    "sm_set_accepted_stk_generation_methods": "0x00021109", 
-    "sm_set_authentication_requirements": "0x00021115", 
-    "sm_set_encryption_key_size_range": "0x00021121", 
-    "sscanf_bd_addr": "0x0002147d", 
-    "sysSetPublicDeviceAddr": "0x00021831", 
-    "uuid128_to_str": "0x00021fa9", 
-    "uuid_add_bluetooth_prefix": "0x00022001", 
-    "uuid_has_bluetooth_prefix": "0x00022021"
+    "sm_send_security_request": "0x000210ef", 
+    "sm_set_accepted_stk_generation_methods": "0x00021115", 
+    "sm_set_authentication_requirements": "0x00021121", 
+    "sm_set_encryption_key_size_range": "0x0002112d", 
+    "sscanf_bd_addr": "0x00021489", 
+    "sysSetPublicDeviceAddr": "0x0002183d", 
+    "uuid128_to_str": "0x00021fb5", 
+    "uuid_add_bluetooth_prefix": "0x0002200d", 
+    "uuid_has_bluetooth_prefix": "0x0002202d"
 }
