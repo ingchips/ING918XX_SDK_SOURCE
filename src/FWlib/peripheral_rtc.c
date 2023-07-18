@@ -1,4 +1,5 @@
 #include "ingsoc.h"
+#include "peripheral_rtc.h"
 
 static uint32_t RTC_ReadStable(volatile uint32_t * reg)
 {

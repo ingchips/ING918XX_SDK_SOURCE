@@ -2,18 +2,18 @@
  "watchdog": false,
  "bundle_meta": {
   "rom": {
-   "size": 123768,
-   "base": 16384
+   "size": 143564,
+   "base": 33562624
   },
   "ram": {
-   "size": 4396,
+   "size": 15604,
    "base": 536870912
   },
   "app": {
-   "base": 147456
+   "base": 33710080
   },
   "version": [
-   1,9,25]
+   2,2,32]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -34,7 +34,7 @@
  "template": "C:\\projects\\ingWizard\\templates\\typical\\peripheral",
  "coding_adv": false,
  "key_incode": true,
- "series": "ING9187xx",
+ "series": "ING9168xx",
  "proj_name": "peripheral_console_realtime",
  "sdk_release_path": "..\/..",
  "printf_port": "uart0",
@@ -52,10 +52,10 @@
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
- "bundle": "noos_typical",
- "app_rom_size": "393216",
- "app_rom_addr": "147456",
- "family": "ing918",
+ "bundle": "noos_mini",
+ "app_rom_size": "368640",
+ "app_rom_addr": "33710080",
+ "family": "ing916",
  "vcode": true,
  "heap_override": false,
  "trace_mask_nim": "",
@@ -70,8 +70,8 @@
  },
  "keil": true,
  "cmsis": "",
- "app_ram_size": 61136,
- "app_ram_addr": 536875312,
+ "app_ram_size": 17160,
+ "app_ram_addr": 536886520,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",

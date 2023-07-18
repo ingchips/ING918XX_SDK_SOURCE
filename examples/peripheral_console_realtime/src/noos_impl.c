@@ -6,6 +6,12 @@
 #include "port_gen_os_driver.h"
 #include "platform_api.h"
 
+#include "profile.h"
+
+#ifndef ADDITIONAL_ATTRIBUTE
+#define ADDITIONAL_ATTRIBUTE
+#endif
+
 typedef void (*f_task_entry)(void *);
 typedef void (*f_timer_cb)(void *);
 typedef void (*f_plt_timer)(void);
@@ -15,13 +21,13 @@ static void *host_param = NULL;
 static int handle_cnt = 0;
 static int int_lock_cnt = 0;
 
-static void enter_critical(void)
+ADDITIONAL_ATTRIBUTE static void enter_critical(void)
 {
     __disable_irq();
     int_lock_cnt++;
 }
 
-static void leave_critical(void)
+ADDITIONAL_ATTRIBUTE static void leave_critical(void)
 {
     int_lock_cnt--;
     if (int_lock_cnt <= 0)
@@ -160,7 +166,7 @@ static int queue_send_msg(gen_handle_t queue, void *msg)
 #define portNVIC_SYSTICK_CLK_BIT	        ( 0UL << 2UL )
 #define portNVIC_SYSTICK_ENABLE_BIT			( 1UL << 0UL )
 
-static void idle_process(void)
+ADDITIONAL_ATTRIBUTE static void idle_process(void)
 {
 #ifdef POWER_SAVING
     uint32_t ticks = platform_pre_suppress_ticks_and_sleep_processing(0xffffff);
@@ -174,7 +180,7 @@ static void idle_process(void)
 }
 
 // return 0 if msg received; otherwise failed (timeout)
-static int queue_recv_msg(gen_handle_t queue, void *msg)
+ADDITIONAL_ATTRIBUTE static int queue_recv_msg(gen_handle_t queue, void *msg)
 {
     platform_controller_run();
 
@@ -193,7 +199,7 @@ static int queue_recv_msg(gen_handle_t queue, void *msg)
 
 static gen_handle_t dummy_event_create() { return (gen_handle_t)(++handle_cnt); }
 static int dummy_event_wait(gen_handle_t event) { return 0; }
-static void dummy_event_set(gen_handle_t event) { }
+ADDITIONAL_ATTRIBUTE static void dummy_event_set(gen_handle_t event) { }
 
 void noos_start(void)
 {
@@ -204,15 +210,15 @@ void noos_start(void)
     host_entry(host_param);
 }
 
-__attribute ((weak)) void tick_isr(void)
+ADDITIONAL_ATTRIBUTE __attribute ((weak)) void tick_isr(void)
 {
 }
 
-__attribute ((weak)) void svc_isr(void)
+ADDITIONAL_ATTRIBUTE __attribute ((weak)) void svc_isr(void)
 {
 }
 
-__attribute ((weak)) void pendsv_isr(void)
+ADDITIONAL_ATTRIBUTE __attribute ((weak)) void pendsv_isr(void)
 {
 }
 

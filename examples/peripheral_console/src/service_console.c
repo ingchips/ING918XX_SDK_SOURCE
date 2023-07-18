@@ -9,7 +9,7 @@
 
 typedef void (*f_cmd_handler)(const char *param);
 
-int adv_tx_power = 100;
+int adv_tx_power = 0;
 
 typedef struct
 {
