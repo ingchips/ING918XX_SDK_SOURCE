@@ -754,6 +754,26 @@ static __INLINE uint8_t sm_event_authorization_result_get_authorization_result(c
 }
 
 /**
+ * @brief Get field handle from event SM_EVENT_NUMERIC_COMPARISON_REQUEST
+ * @param event packet
+ * @return handle
+ * @note: btstack_type H
+ */
+static __INLINE hci_con_handle_t sm_event_numeric_comparison_get_handle(const uint8_t * event){
+    return little_endian_read_16(event, 2);
+}
+
+/**
+ * @brief Get field compare value from event SM_EVENT_NUMERIC_COMPARISON_REQUEST
+ * @param event packet
+ * @return passkey
+ * @note: btstack_type 4
+ */
+static __INLINE uint32_t sm_event_numeric_comparison_get_compare_value(const uint8_t * event){
+    return little_endian_read_32(event, 11);
+}
+
+/**
  * @brief Get field handle from event GAP_EVENT_SECURITY_LEVEL
  * @param event packet
  * @return handle

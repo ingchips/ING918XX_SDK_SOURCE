@@ -168,12 +168,11 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #include "rom_tools.h"
 
-typedef void (*rom_FlashWaitBusyDown)(void);
-typedef void (*rom_FlashDisableContinuousMode)(void);
-typedef void (*rom_FlashEnableContinuousMode)(void);
-#define ROM_FlashWaitBusyDown           ((rom_FlashWaitBusyDown)          (0x00000b6d))
-#define ROM_FlashDisableContinuousMode  ((rom_FlashDisableContinuousMode) (0x000007c9))
-#define ROM_FlashEnableContinuousMode   ((rom_FlashEnableContinuousMode)  (0x0000080d))
+typedef void (*rom_void_void)(void);
+#define ROM_FlashWaitBusyDown           ((rom_void_void)(0x00000b6d))
+#define ROM_FlashDisableContinuousMode  ((rom_void_void)(0x000007c9))
+#define ROM_FlashEnableContinuousMode   ((rom_void_void)(0x0000080d))
+#define ROM_DCacheFlush                 ((rom_void_void)(0x00000651))
 
 int erase_flash_sector(const uint32_t addr)
 {
@@ -186,15 +185,26 @@ int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
     return ROM_program_flash(dest_addr, buffer, size);
 }
 
+#define FLASH_POST_OPS()                    \
+    ROM_DCacheFlush();                      \
+    ROM_FlashEnableContinuousMode();        \
+    if (!prim) __enable_irq()
+
 int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
+    uint32_t prim = __get_PRIMASK();
     uint32_t next_page = (dest_addr & (~((uint32_t)EFLASH_PAGE_SIZE - 1))) + EFLASH_PAGE_SIZE;
     while (size > 0)
     {
         uint32_t block = next_page - dest_addr;
         if (block >= size) block = size;
         int r = ROM_write_flash(dest_addr, buffer, block);
-        if (r) return r;
+        if (r)
+        {
+            // workaround of `ROM_write_flash()`
+            FLASH_POST_OPS();
+            return r;
+        }
         dest_addr += block;
         buffer += block;
         size -= block;

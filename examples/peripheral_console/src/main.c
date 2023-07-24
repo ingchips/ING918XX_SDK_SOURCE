@@ -11,7 +11,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "main_shared.inc"
+#include "main_shared.c"
 
 // To calibration Tx power preciously, we can use a "fake" power mapping table,
 // then measure Tx power using testers.

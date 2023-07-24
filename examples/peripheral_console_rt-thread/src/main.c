@@ -16,7 +16,7 @@
 
 extern const gen_os_driver_t *os_impl_get_driver(void);
 
-#include "../../peripheral_console/src/main_shared.inc"
+#include "../../peripheral_console/src/main_shared.c"
 
 int app_main()
 {
