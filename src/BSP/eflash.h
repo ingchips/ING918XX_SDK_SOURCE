@@ -138,9 +138,10 @@ typedef struct
  *
  * This function succeeds if
  *   - factory data is ready in flash, or
- *   - factory data can be found in secret pages and copied.
+ *   - factory data can be found in security pages and copied.
  *
- * This function can be called at the beginning of app.
+ * This function can be called at the beginning of app (providing that
+ * stack lies in EXECUTABLE memory region).
  *
  * @return                      0 if succeeded else non-0
  */

@@ -726,6 +726,54 @@ void ll_set_conn_interval_unit(uint16_t unit);
 
 /**
  ****************************************************************************************
+ * @brief Set ACL report latency within an event of a connection
+ *
+ * `latency` determines how many Data PDU are received within a single connection event
+ * before reporting to Host, for example,
+ *
+ *  - `latency` = 0: _maximum latency_, report to Host after a connection event ends;
+ *  - `latency` = 1: _minimum latency_, Whenever a PDU is received, report to Host as soon as possible.
+ *
+ * Default: ~4. Vary between different bundles.
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[in]  latency          latency
+ ****************************************************************************************
+ */
+// void ll_set_conn_acl_report_latency(uint16_t conn_handle, int latency);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Signature of callback for ACL data previewer
+ *
+ * @param[in] conn_handle           connection handle
+ * @param[in] acl_flags             0x01: Continuation fragment of an L2CAP message,
+ *                                        or an Empty PDU.
+ *                                  0x02: Start of an L2CAP message,
+ *                                        or a complete L2CAP message with no fragmentation.
+ * @param[in] data                  payload data
+ * @param[in] len                   length of payload data
+*/
+typedef void (*f_ll_hci_acl_data_preview)(uint16_t conn_handle,
+    const uint8_t acl_flags, const void *data, int len);
+
+/**
+ * @brief Register a function to _preview_ BLE ACL data before posting to Host.
+ *
+ * ACL data is posted to Host as usual.
+ *
+ * This function is be called in the context of controller task. This may be used
+ * to achieve **least** ACL processing latency.
+ *
+ * @param[in] cb                    the callback function
+*/
+// void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
  * @brief Override standard whitening init value
  *
  * @param[in]  override     enable override: 1; disable override: 0 (default: disable)
