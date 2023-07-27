@@ -788,9 +788,7 @@ void ll_set_adv_access_address(uint32_t acc_addr);
  * @param[in]  latency          latency
  ****************************************************************************************
  */
-// void ll_set_conn_acl_report_latency(uint16_t conn_handle, int latency);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_conn_acl_report_latency(uint16_t conn_handle, int latency);
 
 /**
  * @brief Signature of callback for ACL data previewer
@@ -816,9 +814,7 @@ typedef void (*f_ll_hci_acl_data_preview)(uint16_t conn_handle,
  *
  * @param[in] cb                    the callback function
 */
-// void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
 
 /**
  ****************************************************************************************
