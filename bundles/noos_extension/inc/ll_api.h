@@ -147,12 +147,10 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
  * @return                      0 if successful else non-0
  ****************************************************************************************
  */
-// int ll_get_conn_info(const uint16_t conn_handle,
-//                     uint32_t *access_addr,
-//                     uint32_t *crc_init,
-//                     uint8_t *hop_inc);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_get_conn_info(const uint16_t conn_handle,
+                    uint32_t *access_addr,
+                    uint32_t *crc_init,
+                    uint8_t *hop_inc);
 
 /**
  ****************************************************************************************
@@ -174,15 +172,13 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
  * @return                      0 if successful else non-0
  ****************************************************************************************
  */
-// int ll_get_conn_events_info(const uint16_t conn_handle,
-//                             int number,
-//                             uint64_t from_time,
-//                             uint32_t *interval,
-//                             uint32_t *time_offset,
-//                             uint16_t *event_count,
-//                             uint8_t *channel_ids);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_get_conn_events_info(const uint16_t conn_handle,
+                            int number,
+                            uint64_t from_time,
+                            uint32_t *interval,
+                            uint32_t *time_offset,
+                            uint16_t *event_count,
+                            uint8_t *channel_ids);
 
 /**
  ****************************************************************************************
@@ -611,6 +607,83 @@ int ll_ackable_packet_get_status(struct ll_raw_packet *packet,
 int ll_ackable_packet_run(struct ll_raw_packet *packet,
                         uint64_t when,
                         uint32_t window);
+
+/**
+ ****************************************************************************************
+ * @brief Create a channel monitor packet object
+ *
+ * A channel monitor receives all PDUs using the given channel configuration (\ref `ll_raw_packet_set_param`).
+ *
+ * Possible Usages:
+ *
+ * 1. Scan fro Adv on a single channel;
+ *
+ * 1. Receive Connection packages from both roles.
+ *
+ *    Ideally, if this monitor is started just before the beginning of a connection
+ *    event, the 0th PDU will be the one from Master, the 1st from Slave, and so on.
+ *
+ * @param[in]   pdu_num             number of PDUs that can be received in a single run
+ * @param[in]   on_done             callback function when packet Rx/Tx is done
+ * @param[in]   user_data           extra user defined data passed to on_done callback
+ * @return                          the new packet object (NULL if out of memory)
+ ****************************************************************************************
+ */
+struct ll_raw_packet *ll_channel_monitor_alloc(int pdu_num, f_ll_raw_packet_done on_done, void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief Scheduling the channel monitor
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   when                start time of receiving (in us)
+ * @param[in]   window              Window length to run ack-able packet
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+int ll_channel_monitor_run(struct ll_raw_packet *packet,
+                        uint64_t when,
+                        uint32_t window);
+
+/**
+ ****************************************************************************************
+ * @brief PDU visitor for channel monitor
+ *
+ * This visitor is called on each received PDU.
+ *
+ * For ING918, `data` and `size` shall be ignored.
+ *
+ * @param[in]   index               index of this PDU
+ *                                  Range: [0 .. pdu_num - 1]
+ * @param[in]   status              0 if successfully received else error code.
+ *                                  When status is not 0, all of bellow params (except `user_data`)
+ *                                  shall be ignored.
+ * @param[in]   reserved            (Reversed)
+ * @param[in]   data                Data of the PDU
+ * @param[in]   size                size of data
+ * @param[in]   rssi                RSSI in dBm
+ * @param[in]   user_data           extra user defined data
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+typedef void (* f_ll_channel_monitor_pdu_visitor)(int index, int status, uint8_t resevered,
+              const void *data, int size, int rssi, void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief Check each of the received PDU
+ *
+ * Call this after link monitor is done (for example, in the `on_done` callback).
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   visitor             the visitor callback
+ * @param[in]   user_data           extra user defined data passed to `visitor` callback
+ * @return                          number of successfully received PDUs
+ ****************************************************************************************
+ */
+int ll_channel_monitor_check_each_pdu(struct ll_raw_packet *packet,
+                                f_ll_channel_monitor_pdu_visitor visitor,
+                                void *user_data);
 
 /**
  ****************************************************************************************

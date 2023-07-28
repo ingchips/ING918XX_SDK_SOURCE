@@ -655,12 +655,13 @@ int ll_channel_monitor_run(struct ll_raw_packet *packet,
  *
  * This visitor is called on each received PDU.
  *
- * Note: For ING918, `data` and `size` shall be ignored.
+ * For ING918, `data` and `size` shall be ignored.
  *
  * @param[in]   index               index of this PDU
  *                                  Range: [0 .. pdu_num - 1]
  * @param[in]   status              0 if successfully received else error code.
- *                                  When status is not 0, all of bellow params shall be ignored.
+ *                                  When status is not 0, all of bellow params (except `user_data`)
+ *                                  shall be ignored.
  * @param[in]   reserved            (Reversed)
  * @param[in]   data                Data of the PDU
  * @param[in]   size                size of data
