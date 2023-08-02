@@ -975,7 +975,7 @@ typedef enum
                                     // This block is always ON, and can't be turned off.
     SYSCTRL_MEM_BLOCK_1 = 0x08,     // block 1 is 16KiB following block 0
     SYSCTRL_SHARE_BLOCK_0 = 0x01,   // share memory block 0 is  8KiB starting from 0x40120000
-    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 2 (0x40126000)
+    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 2 (0x40124000)
     SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 0 (0x40122000)
 } SYSCTRL_MemBlock;
 
