@@ -707,7 +707,7 @@ void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
         SYSCTRL_ClkMode flash_clk,
         uint8_t enable_watchdog)
 {
-    *AON1_BOOT = ((0x1 << 0 ) |
+    *AON1_BOOT =(0x1 << 0 ) |
                 (enable_pll << 1 ) |
                 (0x1 << 2 ) |
                 (0x0 << 3 ) |
@@ -720,8 +720,7 @@ void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
                 (0x2 << 24) |
                 (0x1 << 27) |
                 (enable_watchdog << 28) |
-                (7UL << 29)
-                );
+                (*AON1_BOOT & (7UL << 29));
 }
 
 void SYSCTRL_DisableConfigClocksAfterWakeup(void)
@@ -1107,6 +1106,12 @@ void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_c
         *(volatile uint32_t *)(DC_BASE + 0x58) =  (1UL<<31) | 0x4;
         set_reg_bit((volatile uint32_t *)(DC_BASE), 1, 1);
     }
+}
+
+__attribute__((weak)) const factory_calib_data_t *flash_get_factory_calib_data(void)
+{
+    // add `eflash.c` to the project!
+    while (1);
 }
 
 int SYSCTRL_Init(void)
