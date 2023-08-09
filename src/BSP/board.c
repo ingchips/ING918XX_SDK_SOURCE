@@ -499,7 +499,7 @@ uint16_t get_acc_addr()
 //-------------------------------------------------buzzer driver sort-------------------------------------------------
 #ifdef BOARD_USE_BUZZER
 
-#define BUZZ_PIN        GIO_GPIO_8
+#define BUZZ_PIN        GIO_GPIO_13
 
 void setup_buzzer()
 {
