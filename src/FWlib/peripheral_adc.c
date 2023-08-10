@@ -420,8 +420,8 @@ float ADC_GetVol(const uint16_t data)
 {
     if (!ADC_adcCal.cb || !ADC_adcCal.vref_P)
         return 0.f;
-    if (data > ADC_MK_MASK(14))
-        return 0.f;
+    if (data >= ADC_MK_MASK(14))
+        return ADC_adcCal.vref_P;
     return ADC_adcCal.cb(data);
 }
 
@@ -531,8 +531,7 @@ void ADC_ftInit(void)
     ftCalPara.p_adcCali = (const uint16_t *)flash_get_adc_calib_data();
     if (ret || !p_factoryCali || !ftCalPara.p_adcCali)
         ftCalPara.readFlg = 1;
-    ftCali = malloc(sizeof(SADC_ftCali_t));
-    memset(ftCali, 0, sizeof(SADC_ftCali_t));
+    ftCali = calloc(0, sizeof(SADC_ftCali_t));
 
     if (ftCalPara.readFlg)
         ftCalPara.flg = read_flash_security(0x1170);
