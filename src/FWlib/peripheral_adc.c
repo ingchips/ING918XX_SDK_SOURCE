@@ -531,7 +531,7 @@ void ADC_ftInit(void)
     ftCalPara.p_adcCali = (const uint16_t *)flash_get_adc_calib_data();
     if (ret || !p_factoryCali || !ftCalPara.p_adcCali)
         ftCalPara.readFlg = 1;
-    ftCali = calloc(0, sizeof(SADC_ftCali_t));
+    ftCali = calloc(1, sizeof(SADC_ftCali_t));
 
     if (ftCalPara.readFlg)
         ftCalPara.flg = read_flash_security(0x1170);
