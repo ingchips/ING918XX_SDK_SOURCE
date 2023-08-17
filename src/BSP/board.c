@@ -499,7 +499,11 @@ uint16_t get_acc_addr()
 //-------------------------------------------------buzzer driver sort-------------------------------------------------
 #ifdef BOARD_USE_BUZZER
 
+#if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) || (BOARD_ID == BOARD_ING91881B_02_02_06))
+#define BUZZ_PIN        GIO_GPIO_8
+#elif (BOARD_ID ==  BOARD_DB682AC1A)
 #define BUZZ_PIN        GIO_GPIO_13
+#endif
 
 void setup_buzzer()
 {
