@@ -281,7 +281,6 @@ void apSSP_Initialize (SSP_TypeDef *SPI_BASE)
 
 void apSSP_DeviceParametersSet(SSP_TypeDef *SPI_BASE, apSSP_sDeviceControlBlock *pParam)
 {
-    #define TRANSCNT_CHECK(c)   (c) &= (((1) << (0x9)) - (1)); (c) += ((c) ? (0) : (1));
 
     apSSP_Initialize(SPI_BASE);
 
@@ -294,8 +293,6 @@ void apSSP_DeviceParametersSet(SSP_TypeDef *SPI_BASE, apSSP_sDeviceControlBlock 
                           pParam->eMasterSlaveMode  << bsSPI_TRANSFMT_SLVMODE |
                           pParam->eAddrLen          << bsSPI_TRANSFMT_ADDRLEN);
 
-    TRANSCNT_CHECK(pParam->eWriteTransCnt)
-    TRANSCNT_CHECK(pParam->eReadTransCnt)
     SPI_BASE->TransCtrl = (pParam->eReadWriteMode         << bsSPI_TRANSCTRL_TRANSMODE |
                           pParam->eQuadMode               << bsSPI_TRANSCTRL_DUALQUAD |
                           ((pParam->eWriteTransCnt)-1)    << bsSPI_TRANSCTRL_WRTRANCNT |
