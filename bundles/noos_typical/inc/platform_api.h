@@ -644,6 +644,8 @@ void platform_init_controller(void);
  */
 void platform_controller_run(void);
 
+typedef void (* f_platform_timer_callback)(void);
+
 /**
  ****************************************************************************************
  * @brief Setup a single-shot platform timer
@@ -661,6 +663,21 @@ void platform_controller_run(void);
  *          platform_set_timer(f, 200);
  *          ```
  *
+ * To configure a timer at an absolute time, see `platform_set_abs_timer` and
+ * `platform_get_timer_counter`.
+ *
+ * `platform_set_timer(f, 100)` is equivalent to:
+ *
+ * ```c
+ * platform_set_abs_timer(f, platform_get_timer_counter() + 100);
+ * ```
+ *
+ * `platform_set_timer(f, 0)` is equivalent to:
+ *
+ * ```c
+ * platform_delete_timer(f);
+ * ```
+ *
  * @param[in]  callback         the callback function when the timer expired, and is
  *                              called in a RTOS task (if existing) not an ISR
  * @param[in]  delay            time delay before the timer expires (unit: 625us)
@@ -668,7 +685,38 @@ void platform_controller_run(void);
  *                              When `delay` == 0, the timer is cleared
  ****************************************************************************************
  */
-void platform_set_timer(void (* callback)(void), uint32_t delay);
+void platform_set_timer(f_platform_timer_callback callback, uint32_t delay);
+
+/**
+ ****************************************************************************************
+ * @brief Read the counter of platform timer
+ *
+ * @return                      current counter (full 32 bits)
+ ****************************************************************************************
+ */
+uint32_t platform_get_timer_counter(void);
+
+/**
+ ****************************************************************************************
+ * @brief Setup a single-shot platform timer triggered at an absolute time
+ *
+ * @param[in]  callback         the callback function when the timer expired, and is
+ *                              called in a RTOS task (if existing) not an ISR
+ * @param[in]  abs_time         time delay before the timer expires (unit: 625us)
+ *                              Range: 0~0x7fffffff
+ *                              When `delay` == 0, the timer is cleared
+ ****************************************************************************************
+ */
+void platform_set_abs_timer(f_platform_timer_callback callback, uint32_t abs_time);
+
+/**
+ ****************************************************************************************
+ * @brief Delete a previously configured platform timer
+ *
+ * @param[in]  callback         the callback function identifying the timer
+ ****************************************************************************************
+ */
+void platform_delete_timer(f_platform_timer_callback callback);
 
 /**
  ****************************************************************************************

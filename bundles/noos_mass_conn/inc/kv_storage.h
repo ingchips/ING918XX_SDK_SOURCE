@@ -28,9 +28,13 @@ extern "C" {
  *
  * A key is just an integer and its associated value is an array of bytes.
  *
- * When modified, a timer is (re-)started. When this timer timed out, whole db is committed to nvm.
+ * The backend can be fully customized (see `kv_init_backend`).
+ *
+ * A default backend is also provided whose persistent storage is customized by `kv_init`.
+ * Some features of this default backend:
+ *      1. When modified, a timer is (re-)started. When this timer timed out, whole db is committed to nvm;
+ *      1. Key searching is O(n).
  */
-
 
 /**
  * @brief key-collision between different modules should be strictly avoided.
@@ -47,12 +51,6 @@ extern "C" {
     #define DB_CAPACITY_SIZE 1024
 #endif
 
-/**
- * @brief The whole data.
- */
-struct kv_db;
-typedef struct kv_db kv_db_t;
-
 typedef uint8_t kvkey_t;
 
 #define KV_VALUE_MAX_LEN            (253)
@@ -64,6 +62,78 @@ typedef uint8_t kvkey_t;
 #define KV_ERR_OUT_OF_MEM               1
 #define KV_ERR_KEY_NOT_EXISTS           2
 #define KV_ERR_ABORT                    3
+
+/**
+ * @brief backend API signature: remove all k-v parirs
+ */
+typedef void (*f_kv_remove_all)(void);
+
+/**
+ * @brief backend API signature: remove a k-v pair
+ */
+typedef void (*f_kv_remove)(const kvkey_t key);
+
+/**
+ * @brief backend API signature: put a k-v pair into the db
+ * @param[in]   key             the key
+ * @param[in]   data            data for the key
+ * @param[in]   len             data length for the key
+ *
+ * Note: if key does not exist, k-v pair is created; if already exists, value is updated.
+ */
+typedef int (*f_kv_put)(const kvkey_t key, const uint8_t *data, int16_t len);
+
+/**
+ * @brief backend API signature: get the value associated with a key
+ * @param[in]   key             the key
+ * @param[out]  len             data length for the key (can be set to NULL)
+ * @return                      value for the key
+ *
+ * Note: if key does not exist, NULL is returned & len is set to 0.
+ */
+typedef uint8_t *(*f_kv_get)(const kvkey_t key, int16_t *len);
+
+/**
+ * @brief backend API signature: notify that value of a key has been modified.
+ *
+ * @param[in]   key             the key
+ */
+typedef void (*f_kv_value_modified_of_key)(const kvkey_t key);
+
+/**
+ * @brief visitor function for each k-v pair
+ * @param[in]  key              current key
+ * @param[in]  data             data for current key
+ * @param[in]  len              data length for current key
+ * @param[in]  user_data        user data
+ * @return                      KV_OK to continue visit other k-v pair, else to abor visiting
+ */
+typedef int (*f_kv_visitor)(const kvkey_t key, const uint8_t *data, const int16_t len, void *user_data);
+
+/**
+ * @brief backend API signature: traverse each k-v pair
+ * @param[in]   visitor         visitor function
+ * @param[in]   user_data       user data passing to visitor
+ *
+ * Note: data should not be modified in visitor
+ */
+typedef void (*f_kv_visit)(f_kv_visitor visitor, void *user_data);
+
+typedef struct kv_backend
+{
+    f_kv_remove_all kv_remove_all;
+    f_kv_remove     kv_remove;
+    f_kv_put        kv_put;
+    f_kv_get        kv_get;
+    f_kv_visit      kv_visit;
+    f_kv_value_modified_of_key kv_value_modified_of_key;
+} kv_backend_t;
+
+/**
+ * @brief intialize k-v storage with a full customizable backend
+ * @param[in]  backend          backend implementing a simple kv-storage
+ */
+void kv_init_backend(const kv_backend_t *backend);
 
 /**
  * @brief callback function to save whole db into non-volatile memory (such as flash)
@@ -84,17 +154,7 @@ typedef int (*f_kv_write_to_nvm)(const void *db, const int size);
 typedef int (*f_kv_read_from_nvm)(void *db, const int max_size);
 
 /**
- * @brief visitor function for each k-v pair
- * @param[in]  key              current key
- * @param[in]  data             data for current key
- * @param[in]  len              data length for current key
- * @param[in]  user_data        user data
- * @return                      KV_OK to continue visit other k-v pair, else to abor visiting
- */
-typedef int (*f_kv_visitor)(const kvkey_t key, const uint8_t *data, const int16_t len, void *user_data);
-
-/**
- * @brief intialize k-v storage
+ * @brief intialize k-v storage with the default backend
  * @param[in]  f_write          callback function for save whole db into non-volatile memory
  * @param[in]  f_read           callback function restore whole db from non-volatile memory
  */
@@ -132,14 +192,25 @@ int kv_put(const kvkey_t key, const uint8_t *data, int16_t len);
 uint8_t *kv_get(const kvkey_t key, int16_t *len);
 
 /**
+ * @brief notify that value of a key has been modified.
+ *
+ * @param[in]   key             the key
+ */
+void kv_value_modified_of_key(const kvkey_t key);
+
+/**
  * @brief notify that value of a key (got from `kv_get`) has been modified.
  *
- * Note: whole db will be commited to nvm later.
+ * Note: Whole db will be commited to nvm later.
+ *       This only available in the default backend.
  */
 void kv_value_modified(void);
 
 /**
  * @brief commited whole db to nvm immediately
+ *
+ * Note: This only available in the default backend.
+ *
  * @param[in]   flag_always     if signaled, always write to nvm no matter if modified or not.
  *                              Otherwise, do not write to nvm if not modified.
  */
@@ -153,27 +224,6 @@ void kv_commit(int flag_always_write);
  * Note: data should not be modified in visitor
  */
 void kv_visit(f_kv_visitor visitor, void *user_data);
-
-/**
- * @brief append more data to the end of an existing value
- * @param[in]   key             the key
- * @param[in]   more_data       data to be appended for the key
- * @param[in]   len             data length to be appended for the key
- * @return                      KV_OK if successful else error code
- */
-// int kv_value_append(const kvkey_t key, const uint8_t *more_data, const int16_t len);
-// WARNING: ^^^ this API is not available in this release
-
-
-/**
- * @brief truncate an existing value
- * @param[in]   key             the key
- * @param[in]   new_len         new length of data for the key
- * @return                      KV_OK if successful else error code
- */
-// int kv_value_trunc(const kvkey_t key, const int16_t new_len);
-// WARNING: ^^^ this API is not available in this release
-
 
 /*
 * @}

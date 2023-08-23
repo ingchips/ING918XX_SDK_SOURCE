@@ -2,6 +2,11 @@
 
 This example implements an HID keyboard with passkey paring.
 
+[`kv_impl.c`](../src/kv_impl.c) demonstrates a customized k-v backend. Comparing to the default one,
+
+1. Flash written operation occurs on the granularity of a k-v pair.
+1. Dual flash blocks are used for secure operation.
+
 ## Hardware Setup
 
 On ING918xx Dev-Board, Key 1/2/3 are used to input 1/2/3.

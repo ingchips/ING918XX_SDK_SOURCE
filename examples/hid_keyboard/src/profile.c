@@ -301,12 +301,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
 
-        gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
+        if (BD_ADDR_TYPE_LE_RANDOM ==  sm_persistent.identity_addr_type)
+            gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
         gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
-                                BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
+                                sm_persistent.identity_addr_type,    // Own_Address_Type
                                 BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
                                 NULL,                      // Peer_Address      (ignore)
                                 ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy

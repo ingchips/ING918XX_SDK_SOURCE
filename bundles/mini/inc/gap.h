@@ -1219,6 +1219,27 @@ void gap_set_connection_parameter_range(le_connection_parameter_range_t * range)
 
 typedef void (*gap_hci_cmd_complete_cb_t)(const uint8_t *return_params, void *user_data);
 
+// `return_params` points to `status` for gap_hci_cmd_status_cb_t
+typedef gap_hci_cmd_complete_cb_t gap_hci_cmd_status_cb_t;
+
+/**
+ * @brief Setup a callback for the next HCI related GAP API which will be called
+ *        upon the corresponding COMMAND COMPLETE or STATUS event.
+ *
+ * Note: `gap_hci_cmd_status_cb_t` is an alias of `gap_hci_cmd_complete_cb_t`.
+ *
+ * No matter the next HCI related GAP API call succeeds or not, this callback is consumed.
+ *
+ * If a callback created by previous `gap_set_callback_for_next_hci` has not been consumed,
+ * it is replaced by a new one.
+ *
+ * @param cb                    callback function on the corresponding command complete event
+ * @param user_data             user data for the callback function
+ * @return                      0: callback is stored;
+ *                              BTSTACK_MEMORY_ALLOC_FAILED: out of memory
+ */
+uint8_t gap_set_callback_for_next_hci(gap_hci_cmd_complete_cb_t cb, void *user_data);
+
 /**
  * @brief Encrypt the Plaintext_Data in the command using the Key given in the command and
  *          returns the Encrypted_Data to the Host. The AES-128 bit block cypher is
