@@ -63,7 +63,7 @@ static pedometer_info_t result =
 
 #define ABS(a) (0 - (a)) > 0 ? (-(a)) : (a)
 
-#define DYNAMIC_PRECISION                 0
+#define DYNAMIC_PRECISION                 100
 
 #define FILTER_CNT            3
 #define PEAK_UPDATE_PERIOD    ACC_SAMPLING_RATE
