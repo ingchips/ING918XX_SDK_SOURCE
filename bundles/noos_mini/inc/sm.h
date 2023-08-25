@@ -244,6 +244,19 @@ int sm_le_device_key(hci_con_handle_t con_handle);
 
 
 /**
+ *
+ * @brief Register a callback for get external LTK (for empty EDIV & Random)
+ *
+ * WARNING: This is subject to change.
+ *
+ * @param get_external_ltk_callback, where
+ *              @param[in]  con_handle          connection handle
+ *              @param[out] ltk                 LTK
+ *              @return                         0 when LTK is stored into `ltk` else non-zero
+ */
+void sm_register_external_ltk_callback(int (*get_external_ltk_callback)(hci_con_handle_t con_handle, uint8_t *ltk));
+
+/**
  * @brief SM state event
  */
 enum sm_state_t
