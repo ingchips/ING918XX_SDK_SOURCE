@@ -102,14 +102,14 @@ struct stk8ba58_accel_data
 
 struct stk8ba58_t
 {
-	uint8_t power_mode;
-	uint8_t chip_id;
-	uint8_t ctrl_mode_reg;
-	uint8_t low_mode_reg;
-	uint8_t dev_addr;
+    uint8_t power_mode;
+    uint8_t chip_id;
+    uint8_t ctrl_mode_reg;
+    uint8_t low_mode_reg;
+    uint8_t dev_addr;
     STK8BA58_WR_FUNC_PTR;
-	STK8BA58_RD_FUNC_PTR;
-	STK8BA58_BRD_FUNC_PTR;
+    STK8BA58_RD_FUNC_PTR;
+    STK8BA58_BRD_FUNC_PTR;
 };
 
 /**

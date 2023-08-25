@@ -39,24 +39,24 @@ STK8BA58_RETURN_FUNCTION_TYPE stk8ba58_read_reg(uint8_t addr, uint8_t *data, uin
 
 STK8BA58_RETURN_FUNCTION_TYPE stk8ba58_init(struct stk8ba58_t *stk8ba58)
 {
-    STK8BA58_RETURN_FUNCTION_TYPE com_rslt = ERROR; 
+	STK8BA58_RETURN_FUNCTION_TYPE com_rslt = ERROR; 
 	uint8_t data = 0;
 	uint8_t config_data = 0;
-    /* assign stk8ba58 ptr */
-    p_stk8ba58 = stk8ba58;
+	/* assign stk8ba58 ptr */
+	p_stk8ba58 = stk8ba58;
 	if(p_stk8ba58 == STK8BA58_NULL)
-    {
+	{
 		/* Check the struct p_stk8ba58 is empty */
 		com_rslt = E_STK8BA58_NULL_PTR;
 	} 
-    else
-    {
+	else
+	{
  		/* read Chip Id */ 
-        com_rslt = p_stk8ba58->STK8BA58_BUS_READ_FUNC(p_stk8ba58->dev_addr,STK8BA58_CHIP_ID_ADDR,&data, 1);
-        p_stk8ba58->chip_id = data;
-    }
+    	com_rslt = p_stk8ba58->STK8BA58_BUS_READ_FUNC(p_stk8ba58->dev_addr,STK8BA58_CHIP_ID_ADDR,&data, 1);
+    	p_stk8ba58->chip_id = data;
+	}
 
-    return com_rslt;
+	return com_rslt;
 }
 
 STK8BA58_RETURN_FUNCTION_TYPE stk8ba58_read_accel_xyz(struct stk8ba58_accel_data *accel)
