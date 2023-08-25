@@ -20,8 +20,15 @@
 
 #include "board.h"
 
+#ifndef SIMULATION
 #include <stdlib.h>
+#endif
 
+typedef struct{
+  int16_t x;
+  int16_t y;
+  int16_t z;
+}accel_data_t;
 
 typedef struct {
   int16_t x;
@@ -36,7 +43,6 @@ typedef struct {
 	axis_info_t oldmin;
 }peak_value_t;
 
-//Linear shift register for filtering high frequency noise
 typedef struct slid_reg{
 	axis_info_t new_sample;
 	axis_info_t old_sample;
@@ -59,11 +65,11 @@ static pedometer_info_t result =
 #define MOST_ACTIVE_X                     1
 #define MOST_ACTIVE_Y                     2
 #define MOST_ACTIVE_Z                     3
-#define ACTIVE_PRECISION    10
+#define ACTIVE_PRECISION                  500
 
 #define ABS(a) (0 - (a)) > 0 ? (-(a)) : (a)
 
-#define DYNAMIC_PRECISION                 100
+#define DYNAMIC_PRECISION                 200
 
 #define FILTER_CNT            3
 #define PEAK_UPDATE_PERIOD    ACC_SAMPLING_RATE
@@ -71,37 +77,26 @@ static pedometer_info_t result =
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-#ifndef SIMULATION
-
-static uint8_t filter(axis_info_t *sample, struct bma2x2_accel_data *sample_xyz)
+void filter(axis_info_t *sample, accel_data_t *sample_xyz)
 {
-    uint8_t i;
     static uint8_t counter = 0;
-    static struct bma2x2_accel_data buffer[FILTER_CNT] = {0};
-    int16_t x_sum = 0, y_sum = 0, z_sum = 0;
+    static accel_data_t buffer[FILTER_CNT] = {0};
+    uint8_t i;
 
-    buffer[counter].x = sample_xyz->x;
-    buffer[counter].y = sample_xyz->y;
-    buffer[counter].z = sample_xyz->z;
+    buffer[counter].x = sample_xyz->x >> 2;
+    buffer[counter].y = sample_xyz->y >> 2;
+    buffer[counter].z = sample_xyz->z >> 2;
     counter++;
-
     if (counter == FILTER_CNT)
-    {
         counter = 0;
 
-        for (i = 0; i < FILTER_CNT; i++)
-        {
-            x_sum += buffer[i].x;
-            y_sum += buffer[i].y;
-            z_sum += buffer[i].z;
-        }
-
-        sample->x = x_sum / FILTER_CNT;
-        sample->y = y_sum / FILTER_CNT;
-        sample->z = z_sum / FILTER_CNT;
+    sample->x = 0; sample->y = 0; sample->z = 0;
+    for (i = 0; i < FILTER_CNT; i++)
+    {
+        sample->x += buffer[i].x;
+        sample->y += buffer[i].y;
+        sample->z += buffer[i].z;
     }
-
-    return counter;
 }
 
 static void axis_value_init(axis_info_t *info, int16_t value)
@@ -113,8 +108,8 @@ static void axis_value_init(axis_info_t *info, int16_t value)
 
 static void peak_value_init(peak_value_t *peak)
 {
-    axis_value_init(&peak->newmin, 0x0);
-    axis_value_init(&peak->newmax, 0x0);
+    axis_value_init(&peak->newmin, 0x7fff);
+    axis_value_init(&peak->newmax, 0x8000);
 }
 
 static void update_peak(peak_value_t *peak, axis_info_t *cur_sample)
@@ -182,7 +177,7 @@ static char is_most_active(peak_value_t *peak)
     return res;
 }
 
-static void detect_step(peak_value_t *peak, slid_reg_t *slid)
+void detect_step(peak_value_t *peak, slid_reg_t *slid)
 {
     int16_t threshold;
     int16_t old_sample;
@@ -221,24 +216,68 @@ static void detect_step(peak_value_t *peak, slid_reg_t *slid)
     }
 }
 
-static struct bma2x2_accel_data sample_xyz = {0};
+static accel_data_t sample_xyz = {0};
 static axis_info_t cur_sample = {0};
 
 static peak_value_t     peak = {0};
 static slid_reg_t       slid_sample = {0};
 
-#endif
-
-
 void pedometer_init(void)
 {
-#ifndef SIMULATION    
     peak_value_init(&peak);
     peak.oldmin = peak.newmin;
     peak.oldmax = peak.newmax;
 
+#ifndef SIMULATION
     setup_accelerometer();
 #endif
+}
+
+#ifdef SIMULATION
+void simulate_read_accel_xyz(accel_data_t *sample_xyz)
+{
+    static uint16_t sim_cnt = 0;
+    sim_cnt++;
+    sample_xyz->x = 0;
+    sample_xyz->y = 0;
+    sample_xyz->z = 0;
+    if (sim_cnt < ACC_SAMPLING_RATE - 10)
+        return;
+    if (sim_cnt >= ACC_SAMPLING_RATE)
+    {
+        sim_cnt = 0;
+        return;
+    }
+
+    if (sim_cnt < ACC_SAMPLING_RATE - 5)
+        sample_xyz->x = (sim_cnt + 5 - (ACC_SAMPLING_RATE - 5)) * 200;
+    else
+        sample_xyz->x = (ACC_SAMPLING_RATE - sim_cnt) * 200;
+}
+#endif
+
+void accelarator_sample_sim(void)
+{
+    result.total_sample_cnt++;
+    result.temp_sample_cnt++;
+
+    if ((result.temp_sample_cnt % ACC_SAMPLING_RATE) == 0)
+    {
+        int8_t i = rand() & 0x3;
+        result.total_steps += i;
+        result.temp_steps += i;
+    }
+
+    // update speed estimations
+    if (result.temp_sample_cnt >= ACC_SAMPLING_RATE * 1)
+    {
+        result.cadence = result.temp_steps * 60;
+        result.speed = ((uint32_t)(result.stride_length * result.temp_steps) << 8) / (100);
+        result.total_distance = result.stride_length * result.total_steps / 10;
+
+        result.temp_steps = 0;
+        result.temp_sample_cnt = 0;
+    }
 }
 
 //Round data of type float to round
@@ -256,13 +295,11 @@ void accelarator_sample(void)
     sample_xyz.y = INT16_T(y);
     sample_xyz.z = INT16_T(z);
 
-    if(filter(&cur_sample, &sample_xyz) == 0)
-    {
-        update_peak(&peak, &cur_sample);
-        if (update_slid(&slid_sample, &cur_sample))
-            detect_step(&peak,&slid_sample);
-    }
+    filter(&cur_sample, &sample_xyz);
 
+    update_peak(&peak, &cur_sample);
+    if (update_slid(&slid_sample, &cur_sample))
+        detect_step(&peak,&slid_sample);
 #else
     if ((result.temp_sample_cnt % ACC_SAMPLING_RATE) == 0)
     {
