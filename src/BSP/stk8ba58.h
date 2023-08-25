@@ -32,15 +32,15 @@ burst_read(device_addr, register_addr, register_data, rd_len)
 /**
  * @brief Constants definition
  */
-#define         STK8BA58_INIT_VALUE                       (0)
-#define         STK8BA58_GEN_READ_WRITE_LENGTH            (1)
-#define		    STK8BA58_INTERFACE_IDLE_TIME_DELAY	      (1)
-#define         STK8BA58_LSB_MSB_READ_LENGTH		      (2)
-#define         STK8BA58_SHIFT_TWO_BITS                   (2)
-#define         STK8BA58_SHIFT_FOUR_BITS                  (4)
-#define         STK8BA58_SHIFT_FIVE_BITS                  (5)
-#define         STK8BA58_SHIFT_SIX_BITS                   (6)
-#define         STK8BA58_SHIFT_EIGHT_BITS                 (8)
+#define         STK8BA58_INIT_VALUE                     (0)
+#define         STK8BA58_GEN_READ_WRITE_LENGTH          (1)
+#define         STK8BA58_INTERFACE_IDLE_TIME_DELAY      (1)
+#define         STK8BA58_LSB_MSB_READ_LENGTH            (2)
+#define         STK8BA58_SHIFT_TWO_BITS                 (2)
+#define         STK8BA58_SHIFT_FOUR_BITS                (4)
+#define         STK8BA58_SHIFT_FIVE_BITS                (5)
+#define         STK8BA58_SHIFT_SIX_BITS                 (6)
+#define         STK8BA58_SHIFT_EIGHT_BITS               (8)
 
 
 /**
