@@ -1091,7 +1091,7 @@ void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_c
     uint8_t v = (i_cache << 1) | d_cache;
     if (SYSCTRL_MEM_BLOCK_AS_CACHE != i_cache)
         set_reg_bit((volatile uint32_t *)(IC_BASE), 0, 1);
-    if (SYSCTRL_MEM_BLOCK_AS_CACHE == d_cache)
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE != d_cache)
         set_reg_bit((volatile uint32_t *)(DC_BASE), 0, 1);
 
     set_reg_bits(&APB_SYSCTRL->SysCtrl, v, 2, 0);
@@ -1148,3 +1148,12 @@ int SYSCTRL_Init(void)
 }
 
 #endif
+
+void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles)
+{
+    uint32_t sys = SYSCTRL_GetHClk();
+    uint32_t cnt = (uint64_t)sys * cycles / freq;
+    cnt = (cnt + 2) / 3;    // 3 instructions for the loop at minimum
+    if (cnt < 1) return;
+    while (--cnt) __NOP();
+}
