@@ -26,6 +26,11 @@ typedef enum ll_config_item_e
     // when slave latency is used.
     // Range: 1~255. Default: 4 (Unit: 0.625ms)
     LL_CFG_SLAVE_LATENCY_PRE_WAKE_UP,
+
+    // configure feature set mask
+    // `value` should be a pointer casted from `const uint8_t *`
+    // The mask should be always available.
+    LL_CFG_FEATURE_SET_MASK,
 } ll_config_item_t;
 
 /**
