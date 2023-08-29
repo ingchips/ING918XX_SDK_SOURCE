@@ -9,6 +9,7 @@
 #include "btstack_defines.h"
 #include "le_device_db.h"
 #include "sig_uuid.h"
+#include "l2cap.h"
 #include "profile.h"
 
 #include "att_db_util.h"
@@ -420,12 +421,19 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 reverse_bd_addr(complete->peer_addr, peer_addr);
                 att_set_db(handle_send, att_db_util_get_address());
                 show_app_state(APP_CONN);
+                platform_printf("CONN interval %.2f ms\n", complete->interval * 1.25);
             }
             break;
         case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:
             is_advertising = 0;
             if (decode_hci_le_meta_event(packet, le_meta_adv_set_terminated_t)->status)
                 show_app_state(APP_IDLE);
+            break;
+        case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:
+            {
+                const le_meta_event_conn_update_complete_t *cmpl = decode_hci_le_meta_event(packet, le_meta_event_conn_update_complete_t);
+                platform_printf("CONN updated: interval %.2f ms\n", cmpl->interval * 1.25);
+            }
             break;
         default:
             break;
@@ -533,7 +541,9 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
                 }
                 else
                     kv_remove(KV_KEY_PEER_USE_RPA);
-                kv_commit(1);
+                kv_commit(1);     // continue to SM_FINAL_REESTABLISHED
+            case SM_FINAL_REESTABLISHED:
+                l2cap_request_connection_parameter_update(state_changed->conn_handle, 6, 10, 0, 300);
                 break;
             default:
                 break;
@@ -654,6 +664,12 @@ uint8_t *init_service()
 static btstack_packet_callback_registration_t hci_event_callback_registration = {.callback = &user_packet_handler};
 static btstack_packet_callback_registration_t sm_event_callback_registration  = {.callback = &sm_packet_handler};
 
+const uint8_t feature_mask[8] =
+{
+    0x01,       // LE Encryption
+    0x01,       // LE 2M PHY
+};
+
 uint32_t setup_profile(void *data, void *user_data)
 {
     platform_printf("setup profile\n");
@@ -675,5 +691,8 @@ uint32_t setup_profile(void *data, void *user_data)
     else
         memcpy(sm_persistent.ir, kv_get(KV_KEY_IR, NULL), sizeof(sm_persistent.ir));
     hex_print("IR", sm_persistent.ir, sizeof(sm_persistent.ir));
+
+    // This is an example to imitate BLE SoC that has limited Controller features
+    // ll_config(LL_CFG_FEATURE_SET_MASK, (uintptr_t)feature_mask);
     return 0;
 }
