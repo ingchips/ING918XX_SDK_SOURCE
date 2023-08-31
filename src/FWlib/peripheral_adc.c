@@ -404,7 +404,7 @@ uint16_t ADC_GetData(const uint32_t data)
                 chPara = &(ftCali->chParaSinNoPga[ch]);
         }
     }
-    if (chPara)
+    if (chPara->Coseq && chPara->k)
         return ftCali->f(chPara, data & ADC_MK_MASK(14));
     return (data & ADC_MK_MASK(14));
 }
