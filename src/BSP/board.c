@@ -418,21 +418,26 @@ uint16_t get_thermo_addr()
 
 //-------------------------------------------------accelerator driver sort-------------------------------------------------
 #ifdef BOARD_USE_ACCEL
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
 #include "bma2x2.c"
 #include "bma2x2_support.c"
+static struct bma2x2_accel_data sample_xyz = {0};
+extern s32 bma2x2_power_on(void);
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+#include "stk8ba58.c"
+#include "stk8ba58_support.c"
+static struct stk8ba58_accel_data sample_xyz = {0};
+extern int32_t stk8ba58_power_on(void);
+#endif
 
 typedef enum {
-    RANGE_2G = 0x03, //±2g
-    RANGE_4G = 0x05, //±4g
-    RANGE_8G = 0x08, //±8g
-    RANGE_16G = 0x0C, //±16g
+    RANGE_2G = 0x03, //2g
+    RANGE_4G = 0x05, //4g
+    RANGE_8G = 0x08, //8g
+    RANGE_16G = 0x0C, //16g
 } ACCEL_RANGE;
 
 #define ACC_SAMPLING_RATE    (50)
-
-static struct bma2x2_accel_data sample_xyz = {0};
-
-extern s32 bma2x2_power_on(void);
 
 static float mg_factor = 0.0;
 
@@ -454,23 +459,27 @@ void setup_accelerometer(void)
     uint8_t sensor_range = 0;
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
     printf("bma2x2_power_on...");
+    printf("%s\n",bma2x2_power_on()==0?"success!!":"faild!!");
+    bma2x2_get_range(&sensor_range);
 #elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
     printf("stk8ba58_power_on...");
+    printf("%s\n",stk8ba58_power_on()==0?"success!!":"faild!!");
+    stk8ba58_get_range(&sensor_range);
 #endif
-    if (bma2x2_power_on()==0)
-        printf("success!!\n");
-    else
-        printf("faild!!\n");
-    bma2x2_get_range(&sensor_range);
     mg_factor = get_accel_mg_factor(sensor_range);
 }
 
 void get_acc_xyz(float *x, float *y, float *z)
 {
+#if (BOARD_ID == BOARD_ING91881B_02_02_05)
     bma2x2_read_accel_xyz(&sample_xyz);
-    *x = sample_xyz.x * mg_factor * 0.001;
-    *y = sample_xyz.y * mg_factor * 0.001;
-    *z = sample_xyz.z * mg_factor * 0.001;
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+    stk8ba58_read_accel_xyz(&sample_xyz);
+#endif
+
+    *x = sample_xyz.x * mg_factor;
+    *y = sample_xyz.y * mg_factor;
+    *z = sample_xyz.z * mg_factor;
 }
 
 uint16_t get_acc_addr()
