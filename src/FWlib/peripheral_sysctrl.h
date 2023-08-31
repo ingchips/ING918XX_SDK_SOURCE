@@ -701,6 +701,17 @@ uint32_t SYSCTRL_AutoTuneSlowRC(void);
  */
 void SYSCTRL_TuneSlowRC(uint32_t value);
 
+/**
+ * \brief Configure clock output functionality
+ *
+ * There is a dedicated divider dividing PLL output. The output of this divider
+ * can be routed to some PINs for debugging (see `PINCTRL_SelClockOutput`).
+ *
+ * \param enable        Enable(1) or Disable(0) this divider
+ * \param denom         denominator (10 bits) (ignored when `enabled` is 0)
+ */
+void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom);
+
 typedef enum
 {
     SYSCTRL_DMA_UART0_RX = 0,

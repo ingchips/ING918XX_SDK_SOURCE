@@ -99,9 +99,9 @@ static void kv_do_backup(uint32_t from, uint32_t to)
 
         for (i = 0; i < BLOCK_SIZE / sizeof(buf); i++)
         {
-            memcpy(buf, from, sizeof(buf));
+            memcpy(buf, (void *)from, sizeof(buf));
             write_flash(to, (uint8_t *)buf, sizeof(buf));
-            from += size(buf);
+            from += sizeof(buf);
             to += sizeof(buf);
         }
 #endif

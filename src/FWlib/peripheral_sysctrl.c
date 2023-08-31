@@ -629,6 +629,18 @@ void SYSCTRL_TuneSlowRC(uint32_t value)
     set_reg_bits(SLOW_RC_CFG0, value, 12, 0);
 }
 
+void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom)
+{
+    if (enable)
+    {
+        io_write(APB_SYSCTRL_BASE + 0x1e0, (denom & 0x3ff) | (3 << 10));
+    }
+    else
+    {
+        io_write(APB_SYSCTRL_BASE + 0x1e0, 1);
+    }
+}
+
 static int get_safe_divider(int reg_offset, int offset)
 {
     int r = (*(APB_SYSCTRL->CguCfg + reg_offset) >> offset) & 0xf;
@@ -652,7 +664,7 @@ uint32_t SYSCTRL_GetPLLClk()
     if (io_read(AON2_CTRL_BASE + 0x1A8) & (1ul << 20))
     {
         uint32_t div = ((APB_SYSCTRL->PllCtrl >> 1) & 0x3f) * ((APB_SYSCTRL->PllCtrl >> 15) & 0x3f);
-        return SYSCTRL_GetSlowClk() / div * ((APB_SYSCTRL->PllCtrl >> 7) & 0xff);
+        return (uint32_t)((uint64_t)SYSCTRL_GetSlowClk() * ((APB_SYSCTRL->PllCtrl >> 7) & 0xff) / div);
     }
     else
         return 0;
@@ -672,7 +684,7 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
 {
     uint32_t ref = SYSCTRL_GetSlowClk() / 1000000 / div_pre;
     if (ref < 2) return 1;
-    uint32_t freq = ref * loop;
+    uint32_t freq = (uint64_t)SYSCTRL_GetSlowClk() * loop / 1000000 / div_pre;
     uint32_t vco = 0;
 
     if ((460 <= freq) && (freq <= 600))
