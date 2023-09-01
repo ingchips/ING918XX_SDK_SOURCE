@@ -123,15 +123,6 @@ void get_acc_xyz(float *x, float *y, float *z);
 
 /**
  ****************************************************************************************
- * @brief Gets the I2C address of the accelerometer
- *
- * @return uint16_t address
- ****************************************************************************************
- */
-uint16_t get_acc_addr(void);
-
-/**
- ****************************************************************************************
  * @brief Configure the initialization of the buzzer
  *
  * Note:To use the accelerometer, you need to add the macro 'BOARD_USE_BUZZER' definition

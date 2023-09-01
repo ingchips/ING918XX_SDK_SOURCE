@@ -394,7 +394,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
 
 void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode)
 {
-    set_reg_bits(&APB_SYSCTRL->CguCfg8, (1 << 6) | mode, 12, 0);
+    set_reg_bits(&APB_SYSCTRL->CguCfg8, (1 << 6) | (mode & 0x3f), 12, 0);
     set_reg_bit(&APB_SYSCTRL->CguCfg8, 1, 12);
 }
 
@@ -843,13 +843,13 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
 void SYSCTRL_SetAdcClkDiv(uint8_t denom)
 {
     APB_SYSCTRL->CguCfg8 &= ~0x1fff;
-    APB_SYSCTRL->CguCfg8 |= 0x1000 | 0x40 | (denom & 0x2f);
+    APB_SYSCTRL->CguCfg8 |= 0x1000 | 0x40 | (denom & 0x3f);
 }
 
 uint32_t SYSCTRL_GetAdcClkDiv(void)
 {
-    uint16_t denom = APB_SYSCTRL->CguCfg8 & 0x2f;
-    uint16_t num = (APB_SYSCTRL->CguCfg8 >> 6) & 0x2f;
+    uint16_t denom = APB_SYSCTRL->CguCfg8 & 0x3f;
+    uint16_t num = (APB_SYSCTRL->CguCfg8 >> 6) & 0x3f;
     return SYSCTRL_GetSlowClk() * num / denom;
 }
 

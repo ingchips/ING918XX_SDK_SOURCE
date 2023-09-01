@@ -53,21 +53,16 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals_i2c_pin(void)
 {
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
                                 | (1 << SYSCTRL_ClkGate_APB_GPIO0)
                                 | (1 << SYSCTRL_ClkGate_APB_GPIO1)
                                 | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_O);
-    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDO);
-    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_I2C0)
-                                | (1 << SYSCTRL_ITEM_APB_SysCtrl)
-                                | (1 << SYSCTRL_ITEM_APB_PinCtrl)
-                                | (1 << SYSCTRL_ITEM_APB_GPIO1)
-                                | (1 << SYSCTRL_ITEM_APB_GPIO0));
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    PINCTRL_SetPadMux(I2C_SCL, IO_SOURCE_I2C0_SCL_O);
+    PINCTRL_SetPadMux(GIO_GPIO_11, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SelI2cSclIn(I2C_PORT_0, I2C_SCL);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     PINCTRL_SelI2cIn(I2C_PORT_0, I2C_SCL, I2C_SDA);
 #else
     #error unknown or unsupported chip family
@@ -77,18 +72,9 @@ void setup_peripherals_i2c_pin(void)
 void setup_peripherals_i2c(void)
 {
     setup_peripherals_i2c_pin();
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    //init I2C module
-    I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,get_acc_addr());
-    I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
-    I2C_Enable(APB_I2C0,1);
-    I2C_IntEnable(APB_I2C0,(1<<I2C_INT_CMPL)|(1<<I2C_INT_ADDR_HIT));
-#endif
     printf("init");
     i2c_init(I2C_PORT_0);
 }
-
-
 
 void setup_peripherals(void)
 {

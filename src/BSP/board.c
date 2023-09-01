@@ -419,15 +419,26 @@ uint16_t get_thermo_addr()
 //-------------------------------------------------accelerator driver sort-------------------------------------------------
 #ifdef BOARD_USE_ACCEL
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
-#include "bma2x2.c"
-#include "bma2x2_support.c"
-static struct bma2x2_accel_data sample_xyz = {0};
-extern s32 bma2x2_power_on(void);
+    #include "bma2x2.c"
+    #include "bma2x2_support.c"
+    typedef struct bma2x2_accel_data accel_data_t;
+    #define accel_power_on      bma2x2_power_on
+    #define accel_get_range     bma2x2_get_range
+    #define accel_read_xyz      bma2x2_read_accel_xyz
+
+    #define ACCEL_NAME          "bma2x2"
+    #define VAL_BIT_WIDTH       14
+
 #elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
-#include "stk8ba58.c"
-#include "stk8ba58_support.c"
-static struct stk8ba58_accel_data sample_xyz = {0};
-extern int32_t stk8ba58_power_on(void);
+    #include "stk8ba58.c"
+    #include "stk8ba58_support.c"
+    typedef struct stk8ba58_accel_data accel_data_t;
+    #define accel_power_on      stk8ba58_power_on
+    #define accel_get_range     stk8ba58_get_range
+    #define accel_read_xyz      stk8ba58_read_accel_xyz
+
+    #define ACCEL_NAME          "stk8ba58"
+    #define VAL_BIT_WIDTH       12
 #endif
 
 typedef enum {
@@ -437,55 +448,52 @@ typedef enum {
     RANGE_16G = 0x0C, //16g
 } ACCEL_RANGE;
 
-#define ACC_SAMPLING_RATE    (50)
+static float  m_g_range = 2.0;
 
-static float mg_factor = 0.0;
+/*! Earth's gravity in m/s^2 */
+#define GRAVITY_EARTH  (9.80665f)
 
-// mg/LSB
-float get_accel_mg_factor(uint8_t sensor_range)
+static float lsb_to_ms2(int16_t val, float g_range, uint8_t bit_width)
 {
-#if (BOARD_ID == BOARD_ING91881B_02_02_05)
-    return sensor_range == RANGE_2G ? 0.224 :
-                sensor_range == RANGE_4G ? 0.488 :
-                    sensor_range == RANGE_8G ? 0.977 : 1.953;
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
-    return sensor_range == RANGE_2G ? 0.98 :
-                sensor_range == RANGE_4G ? 1.95 :  3.91;
-#endif
+    float half_scale = ((float)(1 << bit_width) / 2.0f);
+
+    return (GRAVITY_EARTH * val * g_range) / half_scale;
 }
+
+#define TO_MS2(v) lsb_to_ms2(v, m_g_range, VAL_BIT_WIDTH)
 
 void setup_accelerometer(void)
 {
     uint8_t sensor_range = 0;
-#if (BOARD_ID == BOARD_ING91881B_02_02_05)
-    printf("bma2x2_power_on...");
-    printf("%s\n",bma2x2_power_on()==0?"success!!":"faild!!");
-    bma2x2_get_range(&sensor_range);
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
-    printf("stk8ba58_power_on...");
-    printf("%s\n",stk8ba58_power_on()==0?"success!!":"faild!!");
-    stk8ba58_get_range(&sensor_range);
-#endif
-    mg_factor = get_accel_mg_factor(sensor_range);
+    printf("power_on " ACCEL_NAME " ...");
+    printf("%s\n", accel_power_on() == 0 ? "success!!" : "failed!!");
+    accel_get_range(&sensor_range);
+    switch (sensor_range)
+    {
+    case RANGE_4G:
+        m_g_range = 4.0;
+        break;
+    case RANGE_8G:
+        m_g_range = 8.0;
+        break;
+    case RANGE_16G:
+        m_g_range = 16.0;
+        break;
+    default:
+        break;
+    }
 }
 
 void get_acc_xyz(float *x, float *y, float *z)
 {
-#if (BOARD_ID == BOARD_ING91881B_02_02_05)
-    bma2x2_read_accel_xyz(&sample_xyz);
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
-    stk8ba58_read_accel_xyz(&sample_xyz);
-#endif
+    accel_data_t sample_xyz;
+    accel_read_xyz(&sample_xyz);
 
-    *x = sample_xyz.x * mg_factor;
-    *y = sample_xyz.y * mg_factor;
-    *z = sample_xyz.z * mg_factor;
+    *x = TO_MS2(sample_xyz.x);
+    *y = TO_MS2(sample_xyz.y);
+    *z = TO_MS2(sample_xyz.z);
 }
 
-uint16_t get_acc_addr()
-{
-    return 0x18;
-}
 #else
 
 void setup_accelerometer(void)
@@ -499,10 +507,6 @@ void get_acc_xyz(float *x, float *y, float *z)
     *z = rand() & 0xf;
 }
 
-uint16_t get_acc_addr()
-{
-    return 0;
-}
 #endif
 
 //-------------------------------------------------buzzer driver sort-------------------------------------------------
