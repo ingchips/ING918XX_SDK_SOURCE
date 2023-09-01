@@ -136,13 +136,6 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 static SADC_ftCali_t *ftCali;
 static SADC_adcCal_t ADC_adcCal;
 
-#define DEF_WEAK_FUNC(prototype)    __attribute__((weak)) prototype { platform_raise_assertion("missing eflash.c", __LINE__); return 0; }
-
-DEF_WEAK_FUNC(int flash_prepare_factory_data(void))
-DEF_WEAK_FUNC(const factory_calib_data_t *flash_get_factory_calib_data(void))
-DEF_WEAK_FUNC(const void *flash_get_adc_calib_data(void))
-DEF_WEAK_FUNC(uint32_t read_flash_security(uint32_t addr))
-
 static void ADC_RegClr(SADC_adcReg reg, uint8_t s, uint32_t b)
 {
     ADC_REG_CLR(reg, b, s);
@@ -404,7 +397,7 @@ uint16_t ADC_GetData(const uint32_t data)
                 chPara = &(ftCali->chParaSinNoPga[ch]);
         }
     }
-    if (chPara)
+    if (chPara && chPara->Coseq && chPara->k)
         return ftCali->f(chPara, data & ADC_MK_MASK(14));
     return (data & ADC_MK_MASK(14));
 }
@@ -420,8 +413,8 @@ float ADC_GetVol(const uint16_t data)
 {
     if (!ADC_adcCal.cb || !ADC_adcCal.vref_P)
         return 0.f;
-    if (data > ADC_MK_MASK(14))
-        return 0.f;
+    if (data >= ADC_MK_MASK(14))
+        return ADC_adcCal.vref_P;
     return ADC_adcCal.cb(data);
 }
 
@@ -531,8 +524,7 @@ void ADC_ftInit(void)
     ftCalPara.p_adcCali = (const uint16_t *)flash_get_adc_calib_data();
     if (ret || !p_factoryCali || !ftCalPara.p_adcCali)
         ftCalPara.readFlg = 1;
-    ftCali = malloc(sizeof(SADC_ftCali_t));
-    memset(ftCali, 0, sizeof(SADC_ftCali_t));
+    ftCali = calloc(1, sizeof(SADC_ftCali_t));
 
     if (ftCalPara.readFlg)
         ftCalPara.flg = read_flash_security(0x1170);

@@ -295,12 +295,12 @@ void apSSP_DeviceParametersSet(SSP_TypeDef *SPI_BASE, apSSP_sDeviceControlBlock 
 
     SPI_BASE->TransCtrl = (pParam->eReadWriteMode         << bsSPI_TRANSCTRL_TRANSMODE |
                           pParam->eQuadMode               << bsSPI_TRANSCTRL_DUALQUAD |
-                          ((pParam->eWriteTransCnt)-1)    << bsSPI_TRANSCTRL_WRTRANCNT |
-                          ((pParam->eReadTransCnt)-1)     << bsSPI_TRANSCTRL_RDTRANCNT |
+                          ((pParam->eWriteTransCnt - 1) & 0x1ff) << bsSPI_TRANSCTRL_WRTRANCNT |
+                          ((pParam->eReadTransCnt - 1) & 0x1ff)  << bsSPI_TRANSCTRL_RDTRANCNT |
                           pParam->eAddrEn                 << bsSPI_TRANSCTRL_ADDREN |
                           pParam->eCmdEn                  << bsSPI_TRANSCTRL_CMDEN |
                           pParam->SlaveDataOnly           << bsSPI_TRANSCTRL_SLVDATAONLY);
-  
+
     apSSP_SetTxThres(SPI_BASE, pParam->TxThres);
     apSSP_SetRxThres(SPI_BASE, pParam->RxThres);
     apSSP_SetTimingSclkDiv(SPI_BASE, pParam->eSclkDiv);

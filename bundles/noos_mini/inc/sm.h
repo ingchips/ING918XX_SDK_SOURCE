@@ -244,16 +244,31 @@ int sm_le_device_key(hci_con_handle_t con_handle);
 
 
 /**
+ *
+ * @brief Register a callback for get external LTK (for empty EDIV & Random)
+ *
+ * WARNING: This is subject to change.
+ *
+ * @param get_external_ltk_callback, where
+ *              @param[in]  con_handle          connection handle
+ *              @param[out] ltk                 LTK
+ *              @return                         0 when LTK is stored into `ltk` else non-zero
+ */
+void sm_register_external_ltk_callback(int (*get_external_ltk_callback)(hci_con_handle_t con_handle, uint8_t *ltk));
+
+/**
  * @brief SM state event
  */
 enum sm_state_t
 {
     SM_STARTED,
-    SM_FINAL_PAIRED,
-    SM_FINAL_REESTABLISHED,
-    SM_FINAL_FAIL_PROTOCOL,
-    SM_FINAL_FAIL_TIMEOUT,
-    SM_FINAL_FAIL_DISCONNECT,
+    SM_FINAL_PAIRED,                // successfully paired with a new device
+    SM_FINAL_REESTABLISHED,         // connection reestablished with a paired device
+    SM_FINAL_FAIL_PROTOCOL,         // protocol error occurred
+    SM_FINAL_FAIL_TIMEOUT,          // timeout occurred
+    SM_FINAL_FAIL_DISCONNECT,       // unexpected disconnection occurred
+    SM_FINAL_FAIL_OUT_OF_STORAGE,   // device database runs out of storage
+                                    // i.e. too many devices have been paired.
 };
 
 #ifdef __cplusplus

@@ -1288,6 +1288,15 @@ typedef struct le_meta_subrate_change
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
 
+typedef struct le_meta_event_vendor_channel_map_update
+{
+    // connection handle
+    uint16_t conn_handle;
+    // current channel map (the lower 37 bits are used)
+    // channel `n` is identified by bit `(channel_map & 0x7)` of `channel_map[n / 8]`
+    uint8_t  channel_map[5];
+} le_meta_event_vendor_channel_map_update_t;
+
 typedef enum btstack_l2cap_msg_def
 {
     BTSTACK_L2CAP_MSG_CAN_SEND_NOW = 0,

@@ -526,7 +526,7 @@ int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
  *
  * @param dp_io_pin_index      fixed, should be GPIO_16.
  * @param dm_io_pin_index      fixed, should be GPIO_17.
- * @return                  0 if successful else non-0
+ * @return                     0 if successful else non-0
  */
 int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index);
 
@@ -535,6 +535,24 @@ int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index)
  *
  */
 void PINCTRL_EnableAnalog(const uint8_t io_index);
+
+/**
+ * @brief Select clock output pin
+ *
+ * Clock output (see `SYSCTRL_EnableClockOutput`) is routed to IO pin `io_index`.
+ *
+ * Check source code (the `settings` array) to see which pins are supported.
+ *
+ * CAUTION: This is part of internal SoC debugging function, which will conflict
+ * with other debugging functions.
+ *
+ * @param io_index              IO pin for clock output
+ *                              When set to IO_NOT_A_PIN, output is disabled.
+ * @return                      0 if successful else non-0
+ *                              This function fails when the specified `io_index`
+ *                              is not supported.
+ */
+int PINCTRL_SelClockOutput(const uint8_t io_index);
 
 #endif
 

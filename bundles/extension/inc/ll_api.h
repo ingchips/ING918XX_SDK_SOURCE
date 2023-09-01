@@ -26,6 +26,11 @@ typedef enum ll_config_item_e
     // when slave latency is used.
     // Range: 1~255. Default: 4 (Unit: 0.625ms)
     LL_CFG_SLAVE_LATENCY_PRE_WAKE_UP,
+
+    // configure feature set mask
+    // `value` should be a pointer casted from `const uint8_t *`
+    // The mask should be always available.
+    LL_CFG_FEATURE_SET_MASK,
 } ll_config_item_t;
 
 /**
@@ -147,12 +152,10 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
  * @return                      0 if successful else non-0
  ****************************************************************************************
  */
-// int ll_get_conn_info(const uint16_t conn_handle,
-//                     uint32_t *access_addr,
-//                     uint32_t *crc_init,
-//                     uint8_t *hop_inc);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_get_conn_info(const uint16_t conn_handle,
+                    uint32_t *access_addr,
+                    uint32_t *crc_init,
+                    uint8_t *hop_inc);
 
 /**
  ****************************************************************************************
@@ -174,15 +177,13 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
  * @return                      0 if successful else non-0
  ****************************************************************************************
  */
-// int ll_get_conn_events_info(const uint16_t conn_handle,
-//                             int number,
-//                             uint64_t from_time,
-//                             uint32_t *interval,
-//                             uint32_t *time_offset,
-//                             uint16_t *event_count,
-//                             uint8_t *channel_ids);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_get_conn_events_info(const uint16_t conn_handle,
+                            int number,
+                            uint64_t from_time,
+                            uint32_t *interval,
+                            uint32_t *time_offset,
+                            uint16_t *event_count,
+                            uint8_t *channel_ids);
 
 /**
  ****************************************************************************************
@@ -614,6 +615,83 @@ int ll_ackable_packet_run(struct ll_raw_packet *packet,
 
 /**
  ****************************************************************************************
+ * @brief Create a channel monitor packet object
+ *
+ * A channel monitor receives all PDUs using the given channel configuration (\ref `ll_raw_packet_set_param`).
+ *
+ * Possible Usages:
+ *
+ * 1. Scan fro Adv on a single channel;
+ *
+ * 1. Receive Connection packages from both roles.
+ *
+ *    Ideally, if this monitor is started just before the beginning of a connection
+ *    event, the 0th PDU will be the one from Master, the 1st from Slave, and so on.
+ *
+ * @param[in]   pdu_num             number of PDUs that can be received in a single run
+ * @param[in]   on_done             callback function when packet Rx/Tx is done
+ * @param[in]   user_data           extra user defined data passed to on_done callback
+ * @return                          the new packet object (NULL if out of memory)
+ ****************************************************************************************
+ */
+struct ll_raw_packet *ll_channel_monitor_alloc(int pdu_num, f_ll_raw_packet_done on_done, void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief Scheduling the channel monitor
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   when                start time of receiving (in us)
+ * @param[in]   window              Window length to run ack-able packet
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+int ll_channel_monitor_run(struct ll_raw_packet *packet,
+                        uint64_t when,
+                        uint32_t window);
+
+/**
+ ****************************************************************************************
+ * @brief PDU visitor for channel monitor
+ *
+ * This visitor is called on each received PDU.
+ *
+ * For ING918, `data` and `size` shall be ignored.
+ *
+ * @param[in]   index               index of this PDU
+ *                                  Range: [0 .. pdu_num - 1]
+ * @param[in]   status              0 if successfully received else error code.
+ *                                  When status is not 0, all of bellow params (except `user_data`)
+ *                                  shall be ignored.
+ * @param[in]   reserved            (Reversed)
+ * @param[in]   data                Data of the PDU
+ * @param[in]   size                size of data
+ * @param[in]   rssi                RSSI in dBm
+ * @param[in]   user_data           extra user defined data
+ * @return                          0 if successful else error code
+ ****************************************************************************************
+ */
+typedef void (* f_ll_channel_monitor_pdu_visitor)(int index, int status, uint8_t resevered,
+              const void *data, int size, int rssi, void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief Check each of the received PDU
+ *
+ * Call this after link monitor is done (for example, in the `on_done` callback).
+ *
+ * @param[in]   packet              the packet object
+ * @param[in]   visitor             the visitor callback
+ * @param[in]   user_data           extra user defined data passed to `visitor` callback
+ * @return                          number of successfully received PDUs
+ ****************************************************************************************
+ */
+int ll_channel_monitor_check_each_pdu(struct ll_raw_packet *packet,
+                                f_ll_channel_monitor_pdu_visitor visitor,
+                                void *user_data);
+
+/**
+ ****************************************************************************************
  * @brief Lock RF frequency
  *
  * Once locked, all RF activities will occur on the specified channel, no matter
@@ -723,6 +801,50 @@ void ll_set_adv_access_address(uint32_t acc_addr);
  ****************************************************************************************
  */
 void ll_set_conn_interval_unit(uint16_t unit);
+
+/**
+ ****************************************************************************************
+ * @brief Set ACL report latency within an event of a connection
+ *
+ * `latency` determines how many Data PDU are received within a single connection event
+ * before reporting to Host, for example,
+ *
+ *  - `latency` = 0: _maximum latency_, report to Host after a connection event ends;
+ *  - `latency` = 1: _minimum latency_, Whenever a PDU is received, report to Host as soon as possible.
+ *
+ * Default: ~4. Vary between different bundles.
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @param[in]  latency          latency
+ ****************************************************************************************
+ */
+void ll_set_conn_acl_report_latency(uint16_t conn_handle, int latency);
+
+/**
+ * @brief Signature of callback for ACL data previewer
+ *
+ * @param[in] conn_handle           connection handle
+ * @param[in] acl_flags             0x01: Continuation fragment of an L2CAP message,
+ *                                        or an Empty PDU.
+ *                                  0x02: Start of an L2CAP message,
+ *                                        or a complete L2CAP message with no fragmentation.
+ * @param[in] data                  payload data
+ * @param[in] len                   length of payload data
+*/
+typedef void (*f_ll_hci_acl_data_preview)(uint16_t conn_handle,
+    const uint8_t acl_flags, const void *data, int len);
+
+/**
+ * @brief Register a function to _preview_ BLE ACL data before posting to Host.
+ *
+ * ACL data is posted to Host as usual.
+ *
+ * This function is be called in the context of controller task. This may be used
+ * to achieve **least** ACL processing latency.
+ *
+ * @param[in] cb                    the callback function
+*/
+void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
 
 /**
  ****************************************************************************************

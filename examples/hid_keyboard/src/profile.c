@@ -8,6 +8,12 @@
 #include "btstack_util.h"
 #include "btstack_event.h"
 #include "btstack_defines.h"
+#include "kv_storage.h"
+#include "gatt_client.h"
+#include "sig_uuid.h"
+#include "btstack_sync.h"
+#include "btstack_util.h"
+#include "gatt_client_util.h"
 
 #include "att_db_util.h"
 
@@ -15,6 +21,33 @@
 #include "USBKeyboard.h"
 
 #include "profile.h"
+
+enum
+{
+    KV_USER_PEER_OS = KV_USER_KEY_START,
+};
+
+#define USER_MSG_ID_OS_FOUND              100
+
+enum os_type
+{
+    OS_TYPE_UNKNOWN,
+    OS_TYPE_iOS,
+    OS_TYPE_macOS,
+    OS_TYPE_Windows,
+    OS_TYPE_Android,
+    OS_TYPE_NUM,
+} os_type_t;
+
+#define OS_TYPE_DEFAULT     OS_TYPE_Android
+
+const static char os_names[OS_TYPE_NUM][10] = {
+    [OS_TYPE_UNKNOWN]   = "Unknown",
+    [OS_TYPE_iOS]       = "iOS",
+    [OS_TYPE_macOS]     = "macOS",
+    [OS_TYPE_Windows]   = "Windows",
+    [OS_TYPE_Android]   = "Android",
+};
 
 const sm_persistent_t sm_persistent =
 {
@@ -41,11 +74,13 @@ uint16_t att_handle_hid_ctrl_point;
 uint16_t att_handle_report;
 uint16_t att_handle_boot_kb_input_report;
 uint16_t att_handle_boot_kb_output_report;
+
 enum
 {
     HID_PROTO_BOOT,
     HID_PROTO_REPORT
 };
+
 uint8_t protocol_mode = HID_PROTO_REPORT;
 
 enum
@@ -123,6 +158,120 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     }
 
     return 0;
+}
+
+static int read_charact_value(struct btstack_synced_runner * runner,
+    struct gatt_client_discoverer * discoverer,
+    hci_con_handle_t con_handle, uint16_t value_handle,
+    uint8_t *buffer, int length)
+{
+    char_node_t *ch = gatt_client_util_find_char_uuid16(discoverer, value_handle);
+    if (ch)
+    {
+        uint16_t len = length;
+        int r = gatt_client_sync_read_value_of_characteristic(runner, con_handle, ch->chara.value_handle,
+                    buffer, &len);
+        return r == 0 ? len : -1;
+    }
+    else
+        return -1;
+}
+
+static char *read_str_charact(struct btstack_synced_runner * runner,
+    struct gatt_client_discoverer * discoverer,
+    hci_con_handle_t con_handle, uint16_t value_handle,
+    char *buffer, int buffer_size)
+{
+    char_node_t *ch = gatt_client_util_find_char_uuid16(discoverer, value_handle);
+    if (ch)
+    {
+        uint16_t length = buffer_size - 1;
+        int r = gatt_client_sync_read_value_of_characteristic(runner, con_handle, ch->chara.value_handle,
+                    (uint8_t *)buffer, &length);
+        if (0 == r)
+        {
+            buffer[length] = 0;
+            return buffer;
+        }
+    }
+    return 0;
+}
+
+#define READ_STR_CHARACT(uuid)  read_str_charact(runner, discoverer, con_handle, uuid, (char *)buffer, sizeof(buffer))
+#define READ_CHARACT_VAL(uuid)  read_charact_value(runner, discoverer, con_handle, uuid, buffer, sizeof(buffer))
+
+static void detect_peer_os_type(struct btstack_synced_runner * runner, void *user_data)
+{
+    int err_code = 0;
+    char_node_t *ch;
+    uint8_t buffer[200];
+    int len;
+    char *str;
+
+    printf("detecting peer os type...\n");
+    hci_con_handle_t con_handle = (hci_con_handle_t)(uintptr_t)user_data;
+
+    struct gatt_client_discoverer * discoverer = gatt_client_sync_discover_all(runner,
+                con_handle, &err_code);
+
+    if (err_code != 0)
+        goto quit;
+
+    str = READ_STR_CHARACT(SIG_UUID_CHARACT_MODEL_NUMBER_STRING);
+    if (str)
+    {
+        platform_printf("Model: %s\n", str);
+        if ((strstr(str, "iPhone") == str) || (strstr(str, "iPad") == str))
+        {
+            btstack_push_user_msg(USER_MSG_ID_OS_FOUND, NULL, OS_TYPE_iOS);
+            goto quit;
+        }
+    }
+
+    str = READ_STR_CHARACT(SIG_UUID_CHARACT_MANUFACTURER_NAME_STRING);
+    if (str)
+    {
+        platform_printf("Manufacturer: %s\n", str);
+        if (strstr(str, "Apple") == str)
+        {
+            btstack_push_user_msg(USER_MSG_ID_OS_FOUND, NULL, OS_TYPE_macOS);
+            goto quit;
+        }
+    }
+
+    len = READ_CHARACT_VAL(SIG_UUID_CHARACT_PNP_ID);
+    if (len == 7)
+    {
+        platform_printf("Vendor ID Source: 0x%02X\n", buffer[0]);
+        if (buffer[0] == 0x01)
+        {
+            uint16_t vid = little_endian_read_16(buffer, 1);
+            switch (vid)
+            {
+            case 0x0006: // Microsoft
+                btstack_push_user_msg(USER_MSG_ID_OS_FOUND, NULL, OS_TYPE_Windows);
+                goto quit;
+                break;
+            case 0x00E0: // Google
+                btstack_push_user_msg(USER_MSG_ID_OS_FOUND, NULL, OS_TYPE_Android);
+                goto quit;
+                break;
+            }
+        }
+    }
+
+    btstack_push_user_msg(USER_MSG_ID_OS_FOUND, NULL, OS_TYPE_DEFAULT);
+
+quit:
+    printf("complete\n");
+    gatt_client_util_free(discoverer);
+    return;
+}
+
+static void start_detect_peer_os_type(struct btstack_synced_runner * runner, hci_con_handle_t conn_handle)
+{
+    gatt_client_is_ready(conn_handle);
+    btstack_sync_run(runner, detect_peer_os_type, (void *)(uintptr_t)conn_handle);
 }
 
 kb_report_t report =
@@ -217,6 +366,10 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
     switch (msg_id)
     {
+    case USER_MSG_ID_OS_FOUND:
+        platform_printf("Peer OS may be %s.\n", os_names[size]);
+        kv_put(KV_USER_PEER_OS, (uint8_t *)&size, 2);
+        break;
     case USER_MSG_ID_INPUT_HW_KEYS:
         {
             int i = 0;
@@ -288,6 +441,8 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 
 uint8_t *init_service(void);
 
+static struct btstack_synced_runner *synced_runner = NULL;
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
@@ -301,12 +456,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
 
-        gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
+        synced_runner = btstack_create_sync_runner(0);
+
+        if (BD_ADDR_TYPE_LE_RANDOM ==  sm_persistent.identity_addr_type)
+            gap_set_adv_set_random_addr(0, sm_persistent.identity_addr);
         gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
-                                BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
+                                sm_persistent.identity_addr_type,    // Own_Address_Type
                                 BD_ADDR_TYPE_LE_PUBLIC,    // Peer_Address_Type (ignore)
                                 NULL,                      // Peer_Address      (ignore)
                                 ADV_FILTER_ALLOW_ALL,      // Advertising_Filter_Policy
@@ -334,7 +492,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
         break;
 
-     case HCI_EVENT_DISCONNECTION_COMPLETE:
+    case HCI_EVENT_DISCONNECTION_COMPLETE:
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         handle_send = INVALID_HANDLE;
         att_handle_notify = 0;
@@ -508,7 +666,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
         break;
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
-        att_handle_notify =  att_handle_report;
+        att_handle_notify = att_handle_report;
         break;
     case SM_EVENT_PASSKEY_INPUT_NUMBER:
         input_number.flag = 1;
@@ -524,9 +682,12 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
                     break;
                 case SM_FINAL_PAIRED:
                     platform_printf("SM: PAIRED\n");
+                    start_detect_peer_os_type(synced_runner, state_changed->conn_handle);
                     break;
                 case SM_FINAL_REESTABLISHED:
                     platform_printf("SM: REESTABLISHED");
+                    if (kv_get(KV_USER_PEER_OS, NULL) == NULL)
+                        start_detect_peer_os_type(synced_runner,state_changed->conn_handle);
                     if (0 == att_handle_notify)
                     {
                         platform_printf(" BUT LOCAL INFO DELETED");

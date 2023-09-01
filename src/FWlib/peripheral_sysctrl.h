@@ -701,6 +701,17 @@ uint32_t SYSCTRL_AutoTuneSlowRC(void);
  */
 void SYSCTRL_TuneSlowRC(uint32_t value);
 
+/**
+ * \brief Configure clock output functionality
+ *
+ * There is a dedicated divider dividing PLL output. The output of this divider
+ * can be routed to some PINs for debugging (see `PINCTRL_SelClockOutput`).
+ *
+ * \param enable        Enable(1) or Disable(0) this divider
+ * \param denom         denominator (10 bits) (ignored when `enabled` is 0)
+ */
+void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom);
+
 typedef enum
 {
     SYSCTRL_DMA_UART0_RX = 0,
@@ -943,7 +954,11 @@ void SYSCTRL_ClearPDRInt(void);
  * @brief Config USB PHY functionality
  *
  * @param[in] enable            Enable(1)/Disable(0) usb phy module
- * @param[in] pull_sel          DP pull up(0x1)/DM pull up(0x2)/DP&DM pull down(0x3)
+ * @param[in] pull_sel          Pull selection (ignored when `enable` is 0)
+ *                              0x1: DP pull up (Slave mode, full speed)
+ *                              0x2: DM pull up (Slave mode, low speed)
+ *                              0x3: DP & DM pull down (Host mode)
+ *                              0x0: no pull from USB PHY
  */
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
@@ -983,7 +998,7 @@ typedef enum
                                     // This block is always ON, and can't be turned off.
     SYSCTRL_MEM_BLOCK_1 = 0x08,     // block 1 is 16KiB following block 0
     SYSCTRL_SHARE_BLOCK_0 = 0x01,   // share memory block 0 is  8KiB starting from 0x40120000
-    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 2 (0x40126000)
+    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 2 (0x40124000)
     SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 0 (0x40122000)
 } SYSCTRL_MemBlock;
 
@@ -1135,6 +1150,15 @@ uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
  * @return                      0 if initialized else failed
  */
 int SYSCTRL_Init(void);
+
+/**
+ * @brief Delay a number of clock cycles roughly using loop
+ *
+ *
+ * @param[in]   freq            clock frequency
+ * @param[in]   cycles          number of cycles
+ */
+void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

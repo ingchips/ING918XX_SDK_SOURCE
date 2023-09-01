@@ -659,4 +659,58 @@ void PINCTRL_EnableAnalog(const uint8_t io_index)
     pDef->IOIE &= mask;
 }
 
+int PINCTRL_SelClockOutput(const uint8_t io_index)
+{
+    const static struct
+    {
+        uint8_t io_index;
+        uint8_t sel_clk;
+        uint8_t sel_data;
+        uint8_t swap;
+    } settings[] = {
+        {.io_index = 36, .sel_clk = 0xd,},
+        {.io_index = 37, .sel_clk = 0xd,},
+        {.io_index = 0, .sel_clk = 0xd, .swap = 0x0},
+        {.io_index = 9, .sel_clk = 0xd, .swap = 0x6},
+        {.io_index = 18, .sel_clk = 0xd, .swap = 0xC},
+        {.io_index = 27, .sel_clk = 0xd, .swap = 0x12},
+        {.io_index = 20, .sel_data = 0xe, .swap = 0x0},
+        {.io_index = 2, .sel_data = 0xe, .swap = 0x8},
+        {.io_index = 11, .sel_data = 0xe, .swap = 0xc},
+        {.io_index = 29, .sel_data = 0xe, .swap = 0x10},
+        {.io_index = 16, .sel_data = 0xf, .swap = 0x0},
+        {.io_index = 7, .sel_data = 0xf, .swap = 0x6},
+        {.io_index = 25, .sel_data = 0xf, .swap = 0x8},
+        {.io_index = 34, .sel_data = 0xf, .swap = 0x3},
+        {.io_index = 17, .sel_data = 0x11, .swap = 0x0},
+        {.io_index = 8, .sel_data = 0x11, .swap = 0x6},
+        {.io_index = 26, .sel_data = 0x11, .swap = 0x8},
+        {.io_index = 35, .sel_data = 0x11, .swap = 0x3},
+    };
+    int i;
+
+    if (IO_NOT_A_PIN == io_index)
+    {
+        io_write(APB_SYSCTRL_BASE + 0x190, 0);
+        return 0;
+    }
+
+    for (i = 0; i < sizeof(settings) / sizeof(settings[0]); i++)
+    {
+        if (settings[i].io_index == io_index)
+        {
+            PINCTRL_SetPadMux(io_index, IO_SOURCE_DEBUG_BUS);
+            io_write(APB_SYSCTRL_BASE + 0x190,
+                  (1 << 0)
+                | ((uint32_t)settings[i].sel_clk << 1)
+                | (1 << 6)
+                | ((uint32_t)settings[i].sel_data << 7)
+                | ((uint32_t)settings[i].swap << 12));
+
+            return 0;
+        }
+    }
+    return 1;
+}
+
 #endif
