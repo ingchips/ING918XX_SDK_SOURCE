@@ -363,11 +363,4 @@ void flash_enable_write_protection(flash_region_t region, uint8_t reverse_select
     ROM_FlashSetStatusReg(status);
 }
 
-void flash_disable_write_protection(void)
-{
-    uint16_t status = ROM_FlashGetStatusReg();
-    status &= ~((1ul << 14) | (0x1ful << 2));
-    ROM_FlashSetStatusReg(status);
-}
-
 #endif

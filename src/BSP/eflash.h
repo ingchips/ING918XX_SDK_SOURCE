@@ -132,6 +132,13 @@ typedef enum
  * flash_enable_write_protection(FLASH_REGION_UPPER_1_8, 1);
  * ```
  *
+ * Call this before doing write operations on flash if related region is write
+ * protected. Select NONE region will disable the protection completely:
+ *
+ * ```c
+ * flash_enable_write_protection(FLASH_REGION_NONE, 0);
+ * ```
+ *
  * Note: Write protection is a global configuration for the flash. It is impossible
  * to enable the protection for two separated region, such as `FLASH_REGION_UPPER_1_8`,
  * `FLASH_REGION_LOWER_1_128` by invoking this API twice.
@@ -140,14 +147,6 @@ typedef enum
  * @param[in] reverse_selection     select `region` (0) or reverse the selection of `region` (1)
  */
 void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection);
-
-/**
- * @brief Disable write protection
- *
- * Note: Call this before doing write operations on flash if related region is write
- * protected.
- */
-void flash_disable_write_protection(void);
 
 #pragma pack (push, 1)
 typedef struct
