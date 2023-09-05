@@ -354,13 +354,14 @@ typedef void (*rom_FlashSetStatusReg)(uint16_t data);
 typedef uint16_t (*rom_FlashGetStatusReg)(void);
 #define ROM_FlashGetStatusReg  ((rom_FlashGetStatusReg) (0x0000084d))
 
-
 void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
 {
+    ROM_FlashDisableContinuousMode();
     uint16_t status = ROM_FlashGetStatusReg();
     status &= ~((1ul << 14) | (0x1ful << 2));
     status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
     ROM_FlashSetStatusReg(status);
+    ROM_FlashEnableContinuousMode();
 }
 
 #endif
