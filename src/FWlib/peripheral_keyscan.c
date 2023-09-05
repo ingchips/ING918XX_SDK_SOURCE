@@ -239,6 +239,7 @@ int KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set)
         row = row | (0x1 << keyscan_set->row[i].out_row);
         r = PINCTRL_SetPadMux(keyscan_set->row[i].gpio, keyscan_set->row[i].out_row + IO_SOURCE_KEYSCN_ROW_0);
         if (r) return r;
+        PINCTRL_Pull(keyscan_set->row[i].gpio, PINCTRL_PULL_DOWN);
     }
 
     col = 0;
