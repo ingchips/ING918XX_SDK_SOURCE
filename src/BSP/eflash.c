@@ -115,6 +115,12 @@ int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size
 
 int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
+    uint32_t i;
+    for (i = 0; i < size; i++)
+    {
+        if ((*(const uint8_t *)(dest_addr + i) & buffer[i]) != buffer[i])
+            return 1;
+    }
     return program_flash0(dest_addr, buffer, size, 0);
 }
 
@@ -174,6 +180,9 @@ typedef void (*rom_void_void)(void);
 #define ROM_FlashEnableContinuousMode   ((rom_void_void)(0x0000080d))
 #define ROM_DCacheFlush                 ((rom_void_void)(0x00000651))
 
+typedef void (*rom_prog_page)(uint32_t addr, const uint8_t *data, uint32_t len);
+#define ROM_ProgPage                    ((rom_prog_page)(0x00003cd7))
+
 int erase_flash_sector(const uint32_t addr)
 {
     uint32_t val = (uint32_t)-1;
@@ -185,6 +194,11 @@ int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
     return ROM_program_flash(dest_addr, buffer, size);
 }
 
+#define FLASH_PRE_OPS()                     \
+    uint32_t prim = __get_PRIMASK();        \
+    __disable_irq();                        \
+    ROM_FlashDisableContinuousMode();
+
 #define FLASH_POST_OPS()                    \
     ROM_DCacheFlush();                      \
     ROM_FlashEnableContinuousMode();        \
@@ -192,24 +206,30 @@ int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 
 int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-    uint32_t prim = __get_PRIMASK();
     uint32_t next_page = (dest_addr & (~((uint32_t)EFLASH_PAGE_SIZE - 1))) + EFLASH_PAGE_SIZE;
-    while (size > 0)
+    uint32_t i;
+    for (i = 0; i < size; i++)
     {
-        uint32_t block = next_page - dest_addr;
-        if (block >= size) block = size;
-        int r = ROM_write_flash(dest_addr, buffer, block);
-        if (r)
-        {
-            // workaround of `ROM_write_flash()`
-            FLASH_POST_OPS();
-            return r;
-        }
-        dest_addr += block;
-        buffer += block;
-        size -= block;
-        next_page += EFLASH_PAGE_SIZE;
+        if ((*(const uint8_t *)(dest_addr + i) & buffer[i]) != buffer[i])
+            return 1;
     }
+
+    FLASH_PRE_OPS();
+    {
+        while (size > 0)
+        {
+            uint32_t block = next_page - dest_addr;
+            if (block >= size) block = size;
+
+            ROM_ProgPage(dest_addr, buffer, size);
+
+            dest_addr += block;
+            buffer += block;
+            size -= block;
+            next_page += EFLASH_PAGE_SIZE;
+        }
+    }
+    FLASH_POST_OPS();
     return 0;
 }
 
@@ -261,9 +281,11 @@ uint32_t read_flash_security(uint32_t addr)
     uint32_t ret;
     uint32_t prog[sizeof(prog_security_page_read) / 4];
     memcpy(prog, prog_security_page_read, sizeof(prog));
-    ROM_FlashDisableContinuousMode();
-    ret = security_page_read(addr, (uint32_t)prog);
-    ROM_FlashEnableContinuousMode();
+    FLASH_PRE_OPS();
+    {
+        ret = security_page_read(addr, (uint32_t)prog);
+    }
+    FLASH_POST_OPS();
     return ret;
 }
 
@@ -356,12 +378,15 @@ typedef uint16_t (*rom_FlashGetStatusReg)(void);
 
 void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
 {
-    ROM_FlashDisableContinuousMode();
-    uint16_t status = ROM_FlashGetStatusReg();
-    status &= ~((1ul << 14) | (0x1ful << 2));
-    status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
-    ROM_FlashSetStatusReg(status);
-    ROM_FlashEnableContinuousMode();
+    FLASH_PRE_OPS();
+    {
+        uint16_t status = ROM_FlashGetStatusReg();
+        status &= ~((1ul << 14) | (0x1ful << 2));
+        status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
+        ROM_FlashSetStatusReg(status);
+
+    }
+    FLASH_POST_OPS();
 }
 
 #endif

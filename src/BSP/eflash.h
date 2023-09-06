@@ -27,11 +27,17 @@ int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size
  * Note: `dest_addr` must points to a block of flash that has been erased, otherwise,
  *        data can't be written into it.
  *
- * Note: For ING916, `buffer` must be in RAM.
+ * For ING916:
+ *      * `buffer` must be in RAM. In order to copy data within flash, it must be copied to RAM
+ *          firstly, then write this piece of RAM to flash.
  *
- * @param[in] dest_addr         32-bit aligned target address (unified address) in flash
+ * For ING918:
+ *      * `dest_addr` must be 32-bit aligned
+ *      * `size` must be multiple of 4 bytes.
+ *
+ * @param[in] dest_addr         target address (unified address) in flash
  * @param[in] buffer            buffer to be written
- * @param[in] size              byte number to be written (must be multiple of 4 bytes)
+ * @param[in] size              byte number to be written
  * @return                      0 if successful else non-0
  */
 int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
