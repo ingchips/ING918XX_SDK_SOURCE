@@ -147,6 +147,7 @@ typedef struct
 }BSP_USB_VAR_s;
 
 extern void bsp_usb_init(void);
+extern void bsp_usb_disable(void);
 extern void bsp_usb_device_remote_wakeup(void);
 
 #ifdef FEATURE_DISCONN_DETECT

@@ -221,7 +221,7 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
             uint32_t block = next_page - dest_addr;
             if (block >= size) block = size;
 
-            ROM_ProgPage(dest_addr, buffer, size);
+            ROM_ProgPage(dest_addr, buffer, block);
 
             dest_addr += block;
             buffer += block;

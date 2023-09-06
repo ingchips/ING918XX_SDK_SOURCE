@@ -35,6 +35,8 @@ typedef uint16_t (* f_void_t)(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
+#include "eflash.h"
+
 #define crc     ((f_crc_t)(0x00001d21))
 
 typedef void (* f_erase_sector)(uint32_t addr);
