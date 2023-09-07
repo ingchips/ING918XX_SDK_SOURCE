@@ -169,7 +169,7 @@ def do_test(ser, config):
 
 class device(object):
     def __init__(self, port, timeout, config):
-        self.dev_type = 0 if port.lower().startswith('com' or 'tty') else 1
+        self.dev_type = 1 if port.lower().startswith('usb') else 0
         self.dev = None
         if self.dev_type == 1:
             self.backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
@@ -198,7 +198,7 @@ class device(object):
             self.dev = open_serial(config, port)
             self.dev.timeout = timeout
         else: #usb
-            if port.startswith('USB') is False: #pick the first usb device
+            if port.lower() == 'usb': #pick the first usb device
                 self.dev = usb.core.find(idVendor=0xffff, idProduct=0xfa2f, backend=self.backend)
             else:
                 nouse,vid,pid,addr,bus,p = port.split('#')
@@ -223,10 +223,13 @@ def run_proj(proj: str, go = False, port = '', timeout = 5, counter = -1, user_d
     if config.getboolean('options', 'usescript'):
         mod = load_mod(config.get('options', 'script'))
 
-    d = device(port, timeout, dict(config.items('uart')))
+    port_cfg = dict(config.items('uart'))
+    if port == '':
+        port = port_cfg['port']
+    d = device(port, timeout, port_cfg)
 
     if d.dev is None:
-        return 1
+        raise Exception('port not available')
 
     try:
         family = config.get('main', 'family', fallback='ing918')
@@ -309,6 +312,10 @@ def parse_args():
 if __name__ == '__main__':
 
     FLAGS, unparsed = parse_args()
+
+    if FLAGS.proj == 'list-usb':
+        device.query_all_active_usb_ports()
+        sys.exit(0)
 
     try:
         r = run_proj(FLAGS.proj, FLAGS.go, FLAGS.port, FLAGS.timeout, FLAGS.counter, FLAGS.user_data)

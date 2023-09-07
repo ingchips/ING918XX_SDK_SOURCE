@@ -36,9 +36,10 @@ class intf_base(object):
         self.CMD_HOLD = b'#$holdd'
         self.CMD_JRAM = b'#$j2ram'
 
+    def exec_cmd(self, dev, cmd: bytes): ...
+
     def is_locked(self, dev):
-        exec_cmd = getattr(self, 'exec_cmd')
-        rsp = exec_cmd(dev, self.CMD_QLOCKSTATE)
+        rsp = self.exec_cmd(dev, self.CMD_QLOCKSTATE)
         if rsp[:5] == self.STATUS_LOCKED[:5]:
             return True
         elif rsp[:5] == self.STATUS_UNLOCKED[:5]:
@@ -47,18 +48,24 @@ class intf_base(object):
             raise Exception("bad response: " + str(rsp))
 
     def unlock(self, dev):
-        exec_cmd = getattr(self, 'exec_cmd')
-        return exec_cmd(dev, self.CMD_UNLOCK)[:5] == self.ACK[:5]
+        return self.exec_cmd(dev, self.CMD_UNLOCK)[:5] == self.ACK[:5]
 
     def lock(self, dev):
-        exec_cmd = getattr(self, 'exec_cmd')
-        return exec_cmd(dev, self.CMD_LOCK)[:5] == self.ACK[:5]
+        return self.exec_cmd(dev, self.CMD_LOCK)[:5] == self.ACK[:5]
 
     def prepare(self, x, y, z):
         pass
 
     def modify_baud(self, x, y):
         pass
+
+    def set_flash(self, dev, code): ...
+
+    def set_flash_qspi(self, dev):
+        return self.set_flash(dev, 0x0200)
+
+    def set_flash_write_protection(self, dev):
+        return self.set_flash(dev, 0x027c)
 
 class intf_uart(intf_base):
     def __init__(self):
@@ -68,6 +75,9 @@ class intf_uart(intf_base):
         ser.write(cmd)
         rsp = ser.read(self.RSP_LEN)
         return rsp
+
+    def set_flash(self, ser: serial.Serial, code):
+        return self.exec_cmd(ser, self.CMD_FLASH_SET + code.to_bytes(2, 'little')) == self.ACK
 
     def launch_app(self, ser: serial.Serial):
         ser.write(self.CMD_LAUNCH)
@@ -194,6 +204,10 @@ class intf_usb(intf_base):
 
         return rsp[0], response[64:]
 
+    def set_flash(self, dev, code):
+        r0, r = self.exec_cmd_4(dev, self.CMD_FLASH_SET, 64, 0, 0, 2, code.to_bytes(2, 'little'))
+        return r0 == self.ACK[:5]
+
     def launch_app(self, dev):
         buffer = create_string_buffer(64)
         struct.pack_into('<7s', buffer, 0, self.CMD_LAUNCH)
@@ -265,6 +279,8 @@ def do_run(mod: ModuleType, d:device, config, go, timeout, counter, user_data):
             print("flash locked")
             return 3
 
+    intf.set_flash_qspi(d.dev)
+
     if config.getboolean('options', 'ResetReservedFlash', fallback=False):
         intf.erase_sector(d.dev, 0x2000000)
 
@@ -297,6 +313,9 @@ def do_run(mod: ModuleType, d:device, config, go, timeout, counter, user_data):
             return do_test(d.dev, config)
         else:
             pass
+
+    if config.getboolean('options', 'writeprotection.enabled', fallback=False):
+        intf.set_flash_write_protection(d.dev)
 
     if config.getboolean('options', 'protection.enabled'):
         if not intf.lock(d.dev):
