@@ -115,13 +115,10 @@ int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size
 
 int write_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-    uint32_t i;
-    for (i = 0; i < size; i++)
-    {
-        if ((*(const uint8_t *)(dest_addr + i) & buffer[i]) != buffer[i])
-            return 1;
-    }
-    return program_flash0(dest_addr, buffer, size, 0);
+    int r = program_flash0(dest_addr, buffer, size, 0);
+    if (r != 0) return r;
+    r = memcmp((const void *)dest_addr, buffer, size) == 0 ? 0 : 2;
+    return r;
 }
 
 int program_fota_metadata(const uint32_t entry, const int block_num, const fota_update_block_t *blocks)
@@ -174,6 +171,18 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
 #include "rom_tools.h"
 
+typedef void (* f_erase_sector)(uint32_t addr);
+typedef void (* f_void)(void);
+typedef void (* f_prog_page)(uint32_t addr, const uint8_t data[256], uint32_t len);
+
+typedef int (* f_program_flash)(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
+typedef int (* f_write_flash)(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size);
+typedef int (* f_flash_do_update)(const int block_num, const fota_update_block_t *blocks, uint8_t *ram_buffer);
+
+#define ROM_program_flash               ((f_program_flash)0x00003b9b)
+#define ROM_write_flash                 ((f_write_flash)0x00003cff)
+#define ROM_flash_do_update             ((f_flash_do_update)0x00001d73)
+
 typedef void (*rom_void_void)(void);
 #define ROM_FlashWaitBusyDown           ((rom_void_void)(0x00000b6d))
 #define ROM_FlashDisableContinuousMode  ((rom_void_void)(0x000007c9))
@@ -204,7 +213,7 @@ int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
     ROM_FlashEnableContinuousMode();        \
     if (!prim) __enable_irq()
 
-int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
+int write_flash0(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
     uint32_t next_page = (dest_addr & (~((uint32_t)EFLASH_PAGE_SIZE - 1))) + EFLASH_PAGE_SIZE;
     uint32_t i;
@@ -221,7 +230,7 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
             uint32_t block = next_page - dest_addr;
             if (block >= size) block = size;
 
-            ROM_ProgPage(dest_addr, buffer, size);
+            ROM_ProgPage(dest_addr, buffer, block);
 
             dest_addr += block;
             buffer += block;
@@ -231,6 +240,14 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
     }
     FLASH_POST_OPS();
     return 0;
+}
+
+int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
+{
+    int r = write_flash0(dest_addr, buffer, size);
+    if (r != 0) return r;
+    r = memcmp((const void *)dest_addr, buffer, size) == 0 ? 0 : 2;
+    return r;
 }
 
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
@@ -381,10 +398,11 @@ void flash_enable_write_protection(flash_region_t region, uint8_t reverse_select
     FLASH_PRE_OPS();
     {
         uint16_t status = ROM_FlashGetStatusReg();
+        uint16_t old_status = status;
         status &= ~((1ul << 14) | (0x1ful << 2));
         status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
-        ROM_FlashSetStatusReg(status);
-
+        if (old_status != status)
+           ROM_FlashSetStatusReg(status);
     }
     FLASH_POST_OPS();
 }

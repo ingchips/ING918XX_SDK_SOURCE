@@ -54,7 +54,7 @@ class intf_base(object):
         return self.exec_cmd(dev, self.CMD_LOCK)[:5] == self.ACK[:5]
 
     def prepare(self, x, y, z):
-        pass
+        return True
 
     def modify_baud(self, x, y):
         pass
@@ -140,9 +140,11 @@ class intf_uart(intf_base):
         if not go:
             if not self.wait_handshaking(ser, timeout):
                 print("handshaking timeout")
-                return 1
+                return False
         else:
             ser.reset_input_buffer()
+
+        return True
 
     def modify_baud(self, ser: serial.Serial, config):
         print('baud -> {}'.format(config.getint('uart', 'Baud')))
@@ -197,7 +199,7 @@ class intf_usb(intf_base):
         assert dev.write(self._config['out_ep'], buffer.raw, self._config['timeout']) == self._config['mps']
         if data != 0:
             if len(data) < size:
-                data += b'0'*(size - len(data))
+                data += b'\x00'*(size - len(data))
             dev.write(self._config['out_ep'], data, self._config['timeout'])
         response = dev.read(self._config['in_ep'], res_size, self._config['timeout'])
         rsp = struct.unpack_from('<5s',response,0)
@@ -205,7 +207,9 @@ class intf_usb(intf_base):
         return rsp[0], response[64:]
 
     def set_flash(self, dev, code):
-        r0, r = self.exec_cmd_4(dev, self.CMD_FLASH_SET, 64, 0, 0, 2, code.to_bytes(2, 'little'))
+        # This prelude command is to tell USB boot-loader total size of the next command
+        self.exec_cmd_4(dev, b'#$hello', 64, 64 + 2, 0, 0, 0)
+        r0, r = self.exec_cmd_4(dev, self.CMD_FLASH_SET, 64, 64, 0, 2, code.to_bytes(4, 'little'))
         return r0 == self.ACK[:5]
 
     def launch_app(self, dev):
@@ -223,7 +227,8 @@ class intf_usb(intf_base):
         return self.exec_cmd_2(dev, self.ERASE_SECTOR, addr, 0) == self.ACK[:5]
 
     def send_sector(self, dev, addr: int, data: bytes, size, next_size):
-        if self.exec_cmd_4(dev, self.SEND_PAGE if addr < icsdw.RAM_BASE_ADDR else self.SEND_RAM_DATA, 64, next_size, addr, size, data)[0] != self.ACK[:5]:
+        if self.exec_cmd_4(dev, self.SEND_PAGE if addr < icsdw.RAM_BASE_ADDR else self.SEND_RAM_DATA,
+                           64, next_size, addr, size, data)[0] != self.ACK[:5]:
             return False
 
         return True
@@ -238,11 +243,12 @@ class intf_usb(intf_base):
             return False
 
         if (addr < icsdw.RAM_BASE_ADDR):
-            [self.erase_sector(dev, addr+i*self.SECTOR_SIZE) for i in range(math.ceil(len(data)/self.SECTOR_SIZE))]
+            [self.erase_sector(dev, addr + i * self.SECTOR_SIZE) for i in range(math.ceil(len(data)/self.SECTOR_SIZE))]
 
         next_size = min(len(data), self.SECTOR_SIZE)
 
-        if self.exec_cmd_4(dev, self.SEND_PAGE if addr < icsdw.RAM_BASE_ADDR else self.SEND_RAM_DATA, 64, self.roundup_y(next_size,256)+64, 0, 0, 0)[0] != self.ACK[:5]:
+        if self.exec_cmd_4(dev, self.SEND_PAGE if addr < icsdw.RAM_BASE_ADDR else self.SEND_RAM_DATA,
+                           64, self.roundup_y(next_size,256) + 64, 0, 0, 0)[0] != self.ACK[:5]:
             return False
 
         while len(data) > offset:
@@ -270,7 +276,8 @@ def do_run(mod: ModuleType, d:device, config, go, timeout, counter, user_data):
 
     intf = intf_uart() if d.dev_type == 0 else intf_usb()
 
-    intf.prepare(d.dev, go, timeout)
+    if not intf.prepare(d.dev, go, timeout):
+        return 1
 
     if intf.is_locked(d.dev):
         if config.getboolean('options', 'protection.unlock'):
@@ -279,7 +286,8 @@ def do_run(mod: ModuleType, d:device, config, go, timeout, counter, user_data):
             print("flash locked")
             return 3
 
-    intf.set_flash_qspi(d.dev)
+    if not intf.set_flash_qspi(d.dev):
+        return 20
 
     if config.getboolean('options', 'ResetReservedFlash', fallback=False):
         intf.erase_sector(d.dev, 0x2000000)
@@ -317,7 +325,7 @@ def do_run(mod: ModuleType, d:device, config, go, timeout, counter, user_data):
     if config.getboolean('options', 'writeprotection.enabled', fallback=False):
         intf.set_flash_write_protection(d.dev)
 
-    if config.getboolean('options', 'protection.enabled'):
+    if config.getboolean('options', 'protection.enabled', fallback=False):
         if not intf.lock(d.dev):
             return 6
 
