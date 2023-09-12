@@ -185,7 +185,7 @@ void send_command_complete(uint8_t Num_HCI_Command_Packets,
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
-    uint8_t status = 0x12;
+    uint8_t status = ERROR_CODE_COMMAND_DISALLOWED;
     switch (msg_id)
     {
     case USER_MSG_HCI:

@@ -540,7 +540,7 @@ const static uint8_t KB_REPORT_MAP[] = {
         REPORT_SIZE(1),     0x03,
         OUTPUT(1),          0x01,         //   Padding
 
-        REPORT_COUNT(1),    0x06,         //   Max. 6 key codes
+        REPORT_COUNT(1),    INPUT_REPORT_KEYS_MAX,  //   Max. number of key codes
         REPORT_SIZE(1),     0x08,
         LOGICAL_MINIMUM(1), 0x00,
         LOGICAL_MAXIMUM(1), 0x65,

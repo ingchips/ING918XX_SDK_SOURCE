@@ -86,7 +86,7 @@ typedef enum
     // example: uint32_t cb_putc(char *c, void *dummy)
     PLATFORM_CB_EVT_PUTC,
 
-    // when bluetooth protocol stack ask app to initialize
+    // When bluetooth protocol stack ask app to initialize
     PLATFORM_CB_EVT_PROFILE_INIT,
 
     // peripherals need to be re-initialized after deep-sleep, user can handle this event
@@ -135,11 +135,35 @@ typedef enum
     PLATFORM_CB_EVT_IDLE_PROC,
 #endif
 
+    // Take over HCI and isolate the built-in Host completely
+    // when defined:
+    //      * HCI events and ACL data are passed to this callback;
+    //      * `PLATFORM_CB_EVT_PROFILE_INIT` is ignored.
+    // Note: param (void *data) is casted from (const platform_hci_recv_t *).
+    PLATFORM_CB_EVT_HCI_RECV,
+
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;
 
 typedef uint32_t (*f_platform_evt_cb)(void *data, void *user_data);
 typedef uint32_t (*f_platform_irq_cb)(void *user_data);
+
+typedef struct platform_hci_recv
+{
+    uint32_t hci_type;      // `HCI_ACL_DATA_PACKET` or `HCI_EVENT_PACKET`
+    uint16_t conn_handle;   // connection handle for `HCI_ACL_DATA_PACKET`
+    const uint8_t *buff;    // data of ACL or event
+    uint16_t len_of_hci;    // length of `buff`
+                            // for HCI_ACL_DATA_PACKET:
+                            //      * `buff` points to a full HCI ACL Data packet,
+                            //      * `len_of_hci` = length of the whole HCI ACL Data packet
+                            //      where full HCI ALC Data packet = Handle | pbbc | Data Total Length | Data.
+                            // for HCI_EVENT_PACKET:
+                            //      * `buff` points to a full HCI Event packet,
+                            //      * `len_of_hci` = length of the whole HCI Event packet
+                            //      where full HCI Event packet = Event Code | Param Total Length | Event Parameters.
+    const void *handle;     // handle for freeing data or event. See `platform_hci_interf_t`.
+} platform_hci_recv_t;
 
 typedef struct platform_evt_cb_info
 {
@@ -760,6 +784,59 @@ const void *platform_get_gen_os_driver(void);
 // platform_task_id_t platform_get_current_task(void);
 // WARNING: ^^^ this API is not available in this release
 
+
+typedef struct platform_hci_link_layer_interf
+{
+    /**
+     * @brief try to send HCI command to Controller
+     *
+     * @param[in]   opcode      op code
+     * @param[in]   param       parameters
+     * @param[in]   param_len   length of paramters
+     * @return                  0 if OK else command is not sent
+     */
+    int (*send_hci_command)(uint16_t opcode, const uint8_t *param, uint16_t param_len);
+
+    /**
+     * @brief try to send ACL data to Controller
+     *
+     * @param[in]   conn_handle     connection handle
+     * @param[in]   bc_pb_flag      BC/PB flag
+     * @param[in]   total_len       total length of data
+     * @param[in]   ...             [const uint8_t *data, int size]..
+     *                              where sum(size) shall be `total_len`
+     * @return                      0 if OK else data is not sent
+     */
+    int (*send_acl_data)(uint16_t conn_handle, uint8_t bc_pb_flag, uint16_t total_len, ...);
+
+    /**
+     * @brief call this API after an HCI event is processed in `PLATFORM_CB_EVT_HCI_RECV`
+     *        callback.
+     *
+     * @param[in]   handle          `handle` in `platform_hci_recv_t`
+     */
+    void (*hci_event_processed)(const void *param);
+
+    /**
+     * @brief call this API after an ACL data is processed in `PLATFORM_CB_EVT_HCI_RECV`
+     *        callback.
+     *
+     * @param[in]   conn_handle     `conn_handle` in `platform_hci_recv_t`
+     * @param[in]   handle          `handle` in `platform_hci_recv_t`
+     */
+    void (*acl_data_processed)(const uint16_t conn_handle, const void *handle);
+} platform_hci_link_layer_interf_t;
+
+/**
+ ****************************************************************************************
+ * @brief Get link layer driver API
+ *
+ * This driver is only available when `PLATFORM_CB_EVT_HCI_RECV` is defined.
+ *
+ * @return                       driver pointer casted from `const link_layer_driver_t *`
+ ****************************************************************************************
+ */
+const platform_hci_link_layer_interf_t *platform_get_link_layer_interf(void);
 
 #ifdef __cplusplus
 }

@@ -1093,6 +1093,7 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
     uint32_t masked = block_map & 0x1f;
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), masked, 5, 16);
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), masked, 5, 16);
+    set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), masked, 5, 8);
 }
 
 void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache)

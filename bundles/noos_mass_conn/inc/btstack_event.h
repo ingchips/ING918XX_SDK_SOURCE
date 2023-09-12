@@ -90,6 +90,23 @@ typedef void (*f_btstack_user_runnable)(void *, uint16_t);
  */
 uint32_t btstack_push_user_runnable(f_btstack_user_runnable fun, void *data, const uint16_t user_value);
 
+/**
+ * @brief Reset the whole Host Controller stack as soon as possible
+ *
+ * HCI_Command_Complete event related to the HCI_Reset command marks the end of
+ * this procedure. Apps shall not call any additional GAP APIs before it.
+ *
+ * Reset procedure:
+ * 1. Host closes all connections gracefully;
+ * 2. Send HCI_Reset command to Controller.
+ *
+ * Note: Controller heap is also reset, so all memory blocks allocated by
+ *       `ll_malloc` are _lost_.
+ *
+ * @return              0: Message is sent to controller; otherwise failed to send
+ */
+uint8_t btstack_reset(void);
+
 /***
  * @brief Get subevent code for le event
  * @param event packet
@@ -1287,15 +1304,6 @@ typedef struct le_meta_subrate_change
                                     // Time = N �� 10 ms
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
-
-typedef struct le_meta_event_vendor_channel_map_update
-{
-    // connection handle
-    uint16_t conn_handle;
-    // current channel map (the lower 37 bits are used)
-    // channel `n` is identified by bit `(channel_map & 0x7)` of `channel_map[n / 8]`
-    uint8_t  channel_map[5];
-} le_meta_event_vendor_channel_map_update_t;
 
 typedef enum btstack_l2cap_msg_def
 {
