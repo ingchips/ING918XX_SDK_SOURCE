@@ -301,6 +301,12 @@ void GIO_EnableRetentionGroupB(uint8_t enable);
  */
 void GIO_EnableHighZGroupB(uint8_t enable);
 
+#define GIO_WAKEUP_MODE_LOW_LEVEL       0   // wake up by low level
+#define GIO_WAKEUP_MODE_HIGH_LEVEL      1   // wake up by high level
+#define GIO_WAKEUP_MODE_RISING_EDGE     2   // wake up by rising edge
+#define GIO_WAKEUP_MODE_FALLING_EDGE    3   // wake up by falling edge
+#define GIO_WAKEUP_MODE_ANY_EDGE        4   // wake up by rising or falling edge
+
 /**
  * @brief Enable a GPIO as wakeup source from DEEP SLEEP mode
  *
@@ -313,17 +319,20 @@ void GIO_EnableHighZGroupB(uint8_t enable);
  * 1. Generally, if high level is select, then pull should be DOWN; if low level is select, then
  *    pull should be UP.
  *
+ * 1. When rising and/or falling edge are/is used as wake up mode, the pulse must be
+ *    kept for at least 100us.
+ *
  * 1. `pull` is ignored for GPIO in Group A, for which `pull` shall be configured
  *    by `PINCTRL_Pull(...)`.
  *
  * @param[in] io_index          the GPIO ({0-17, 21-25, 29-37})
  * @param[in] enable            Enable(1)/Disable(0)
- * @param[in] level             wake up by high level(1)/low level(0)
+ * @param[in] mode              see `GIO_WAKEUP_MODE_...`
  * @param[in] pull              Pull of the GPIO
  * @return                      0 if successful else non-0
  */
 int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
-        uint8_t level, pinctrl_pull_mode_t pull);
+        uint8_t mode, pinctrl_pull_mode_t pull);
 
 /**
  * @brief Enable a group of GPIOs as wakeup source from DEEPER SLEEP mode

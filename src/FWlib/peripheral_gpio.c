@@ -259,22 +259,35 @@ void GIO_EnableHighZGroupB(uint8_t enable)
     }
 }
 
+static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
+{
+    uint32_t mask = ((1 << bit_width) - 1) << bit_offset;
+    *reg = (*reg & ~mask) | (v << bit_offset);
+}
+
 int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
-        uint8_t level, pinctrl_pull_mode_t pull)
+        uint8_t mode, pinctrl_pull_mode_t pull)
 {
     if ((io_index <= 17)
      || (21 <= io_index) && (io_index <= 25)
      || (29 <= io_index) && (io_index <= 37))
     {
+        uint32_t v = mode >= 1 ? mode - 1 : 0;
+
+        if (io_index <= 15)
+            set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x130), v, 2, io_index * 2);
+        else
+            set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x134), v, 2, (io_index - 16) * 2);
+
         if (io_index <= 31)
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x128), io_index, enable);
         else
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x12c), io_index - 32, enable);
 
         if (io_index <= 31)
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x120), io_index, level ? 0 : 1);
+            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x120), io_index, mode ? 0 : 1);
         else
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x124), io_index - 32, level ? 0 : 1);
+            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x124), io_index - 32, mode ? 0 : 1);
     }
     else
         return -1;
