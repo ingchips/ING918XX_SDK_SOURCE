@@ -130,7 +130,7 @@ void RTC_ClearIntState(uint32_t state)
 void RTC_EnableDeepSleepWakeupSource(uint8_t enable)
 {
     uint32_t t = io_read(AON2_CTRL_BASE + 0x12c);
-    if (enable) 
+    if (enable)
     {
         t |= 1 << 6;
         APB_RTC->Ctrl |= 1 << 1;
@@ -148,32 +148,34 @@ void RTC_EnableDeepSleepWakeupSource(uint8_t enable)
 #define bsRTC_HOUR_TRIM     16
 #define bsRTC_DAY_TRIM      24
 
+#define bsRTC_TRIM_DIR      7
+
 #define _RTC_TRIM_MASK   (0x9ful)
 
 void RTC_DayCntTrim(uint8_t trim, rtc_trim_direction_t dir)
 {
-    uint8_t v = trim | (dir << 7);
+    uint8_t v = trim | (dir << bsRTC_TRIM_DIR);
     APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_DAY_TRIM;
     APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_DAY_TRIM;
 }
 
 void RTC_HourCntTrim(uint8_t trim, rtc_trim_direction_t dir)
 {
-    uint8_t v = trim | (dir << 7);
+    uint8_t v = trim | (dir << bsRTC_TRIM_DIR);
     APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_HOUR_TRIM;
     APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_HOUR_TRIM;
 }
 
 void RTC_MinCntTrim(uint8_t trim, rtc_trim_direction_t dir)
 {
-    uint8_t v = trim | (dir << 7);
+    uint8_t v = trim | (dir << bsRTC_TRIM_DIR);
     APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_MIN_TRIM;
     APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_MIN_TRIM;
 }
 
 void RTC_SecCntTrim(uint8_t trim, rtc_trim_direction_t dir)
 {
-    uint8_t v = trim | (dir << 7);
+    uint8_t v = trim | (dir << bsRTC_TRIM_DIR);
     APB_RTC->Trim &= ~_RTC_TRIM_MASK << bsRTC_SEC_TRIM;
     APB_RTC->Trim |= (v & _RTC_TRIM_MASK) << bsRTC_SEC_TRIM;
 }
@@ -189,8 +191,7 @@ void RTC_SetAllTrimValue(uint8_t day_trim, uint8_t hour_trim, uint8_t min_trim,u
                 | ((uint32_t)(hour_trim & _RTC_TRIM_MASK) << bsRTC_HOUR_TRIM)
                 | ((uint32_t)(min_trim & _RTC_TRIM_MASK) << bsRTC_MIN_TRIM)
                 | ((uint32_t)(sec_trim & _RTC_TRIM_MASK) << bsRTC_SEC_TRIM);
-    APB_RTC->Trim &= 0;
-    APB_RTC->Trim |= v;
+    APB_RTC->Trim = v;
 }
 
 uint8_t RTC_GetAllTrimValue(uint8_t *hour_trim, uint8_t *min_trim,uint8_t *sec_trim)
@@ -248,8 +249,8 @@ uint64_t RTC_CurrentFull(void)
 
 void RTC_EnableFreeRun(uint8_t enable)
 {
-    #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE 
-    #define AON1_REG3   (volatile uint32_t *)(AON1_CTRL_BASE + 0XC) 
+    #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE
+    #define AON1_REG3   (volatile uint32_t *)(AON1_CTRL_BASE + 0XC)
 
     if (enable)
     {
@@ -262,4 +263,86 @@ void RTC_EnableFreeRun(uint8_t enable)
         *AON1_REG3 &= ~(1u << 4);
     }
 }
+
+static int multiply_and_remainder(int value, int mult, uint32_t divider, int *quotient)
+{
+    int sign = value > 0 ? 1 : -1;
+    int64_t t = value;
+    t *= mult;
+    *quotient = (int)(t / divider);
+    int remainder = t - *quotient * divider;
+
+    if ((remainder >= (int)(divider / 2))
+        || (remainder <= - (int)(divider / 2)))
+    {
+        *quotient += sign;
+        remainder -= sign * divider;
+    }
+
+    return remainder;
+}
+
+static uint8_t convert_to_rtc_trim(int trim)
+{
+    uint8_t r;
+    if (trim >= 0)
+    {
+        r = trim <= 0x1f ? (uint8_t)trim : 0x1f;
+        r |= RTC_TRIM_SLOW_DOWN << bsRTC_TRIM_DIR;
+    }
+    else
+    {
+        trim *= -1;
+        r = trim <= 0x1f ? (uint8_t)trim : 0x1f;
+        r |= RTC_TRIM_SPEED_UP << bsRTC_TRIM_DIR;
+    }
+    return r;
+}
+
+int RTC_Trim(uint32_t cali_value)
+{
+    int freq_hz;
+    int remainder;
+
+    remainder = multiply_and_remainder(65536, 1000000, cali_value, &freq_hz);
+
+    int day_trim;
+    int hour_trim;
+    int min_trim;
+    int sec_trim;
+
+    #define IDEAL_FREQ  32768
+
+    // try to improve: SEC_CFG is half second
+    if ((freq_hz <= IDEAL_FREQ) && (freq_hz & 1))
+    {
+        freq_hz--;
+        remainder += cali_value;
+    }
+
+    if (freq_hz <= IDEAL_FREQ)
+    {
+        uint16_t v = (freq_hz / 2) - 1;
+        APB_RTC->SEC_CFG = v;
+        sec_trim = 0;
+    }
+    else if (freq_hz <= IDEAL_FREQ + 0x1f)
+    {
+        sec_trim = (freq_hz - IDEAL_FREQ) | (RTC_TRIM_SLOW_DOWN << bsRTC_TRIM_DIR);
+    }
+    else
+        return 1;
+
+    remainder = multiply_and_remainder(remainder, 60, cali_value, &min_trim);
+    remainder = multiply_and_remainder(remainder, 60, cali_value, &hour_trim);
+    remainder = multiply_and_remainder(remainder, 24, cali_value, &day_trim);
+
+    RTC_SetAllTrimValue(convert_to_rtc_trim(day_trim),
+                        convert_to_rtc_trim(hour_trim),
+                        convert_to_rtc_trim(min_trim),
+                        convert_to_rtc_trim(sec_trim));
+
+    return 0;
+}
+
 #endif

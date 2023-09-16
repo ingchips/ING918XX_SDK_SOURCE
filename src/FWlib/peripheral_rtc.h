@@ -181,74 +181,91 @@ void RTC_EnableDeepSleepWakeupSource(uint8_t enable);
 
 /**
  ****************************************************************************************
- * @brief Digital trimming value for the second on the day boundary. 
- * 
+ * @brief Digital trimming value for the second on the day boundary.
+ *
  * @param[in] trim  Digital trimming value(1 ~ 31).
  * @param[in] dir   Set trimming direction in `rtc_trim_direction_t`.
- **************************************************************************************** 
+ ****************************************************************************************
  */
 void RTC_DayCntTrim(uint8_t trim, rtc_trim_direction_t dir);
 
 /**
  ****************************************************************************************
- * @brief Digital trimming value for the second on the hour boundary. 
- * 
+ * @brief Digital trimming value for the second on the hour boundary.
+ *
  * @param[in] trim  Digital trimming value(1 ~ 31).
  * @param[in] dir   Set trimming direction in `rtc_trim_direction_t`.
- **************************************************************************************** 
+ ****************************************************************************************
  */
 void RTC_HourCntTrim(uint8_t trim, rtc_trim_direction_t dir);
 
 /**
  ****************************************************************************************
  * @brief Digital trimming value for the second on the minute boundary.
- * 
+ *
  * @param[in] trim  Digital trimming value(1 ~ 31).
  * @param[in] dir   Set trimming direction in `rtc_trim_direction_t`.
- **************************************************************************************** 
+ ****************************************************************************************
  */
 void RTC_MinCntTrim(uint8_t trim, rtc_trim_direction_t dir);
 
 /**
  ****************************************************************************************
  * @brief Digital trimming value for the rest of seconds.
- * 
+ *
  * @param[in] trim  Digital trimming value(1 ~ 31).
  * @param[in] dir   Set trimming direction in `rtc_trim_direction_t`.
- **************************************************************************************** 
+ ****************************************************************************************
  */
 void RTC_SecCntTrim(uint8_t trim, rtc_trim_direction_t dir);
 
 /**
  ****************************************************************************************
  * @brief Digital trimming value for the rest of half-seconds.
- * 
+ *
  * @param[in] trim  Digital trimming value(0 ~ 16383).
- **************************************************************************************** 
+ ****************************************************************************************
  */
 void RTC_HSecCntTrim(uint16_t trim);
 
 /**
  ****************************************************************************************
  * @brief Set all settings of TRIM register.
- * 
- * @param[in] day_trim      Digital trimming value(1 ~ 31) for the second on the day boundary. 
- * @param[in] hour_trim     Digital trimming value(1 ~ 31) for the second on the hour boundary. 
- * @param[in] min_trim      Digital trimming value(1 ~ 31) for the second on the minute boundary. 
+ *
+ * @param[in] day_trim      Digital trimming value(1 ~ 31) for the second on the day boundary.
+ * @param[in] hour_trim     Digital trimming value(1 ~ 31) for the second on the hour boundary.
+ * @param[in] min_trim      Digital trimming value(1 ~ 31) for the second on the minute boundary.
  * @param[in] sec_trim      Digital trimming value(1 ~ 31) for the rest of seconds.
- * 
- * @note Each trimming value uses only the lower 5 bits , and the highest bit indicates the 
+ *
+ * @note Each trimming value uses only the lower 5 bits , and the highest bit indicates the
  *       direction in `rtc_trim_direction_t`.
  *       i.e. `uint8_t day_trim = (RTC_TRIM_SPEED_UP << 7) | 0x15`, reduce the count by 21.
- ****************************************************************************************     
+ ****************************************************************************************
  */
 void RTC_SetAllTrimValue(uint8_t day_trim, uint8_t hour_trim, uint8_t min_trim,uint8_t sec_trim);
 
 /**
  ****************************************************************************************
+ * @brief Set all settings of TRIM register according to calibration value of 32k clock
+ *
+ * Note: frequency of 32k clock shall be <= (32768 + 31.5)Hz.
+ *
+ * About theoretical precision:
+ *     1. 32k clock calibration: 0.5ppm;
+ *     1. RTC trim: ~0.5/32768 (worst case) = 15ppm.
+ *
+ * @param[in] cali_value    Calibration value of 32k clock
+ *                          which can be got from `platform_read_info(PLATFORM_INFO_32K_CALI_VALUE)`.
+ * @return                  0 if frequency of 32k clock is in valid range else non-0
+ ****************************************************************************************
+ */
+int RTC_Trim(uint32_t cali_value);
+
+/**
+ ****************************************************************************************
  * @brief Get all settings of TRIM register.
- * 
- * @param[out] hour_trim    Digital trimming value(1 ~ 31) for the second on the hour boundary. 
+ *
+ * @param[out] hour_trim    Digital trimming value(1 ~ 31) for the second on the hour boundary.
  * @param[out] min_trim     Digital trimming value(1 ~ 31) for the second on the minute boundary.
  * @param[out] sec_trim     Digital trimming value(1 ~ 31) for the rest of seconds.
  * @return Digital trimming value(1 ~ 31) for the second on the day boundary.
@@ -259,7 +276,7 @@ uint8_t RTC_GetAllTrimValue(uint8_t *hour_trim, uint8_t *min_trim,uint8_t *sec_t
 /**
  ****************************************************************************************
  * @brief Clear all settings of TRIM register.
- * 
+ *
  ****************************************************************************************
  */
 void RTC_ClearAllTrimValue(void);
@@ -285,10 +302,10 @@ uint64_t RTC_CurrentFull(void);
 /**
  ****************************************************************************************
  * @brief Enable/Disable
- * 
+ *
  * Enabled by default. Disabled to save power.
- * 
- * @param[in] enable            Enable(1)/Disable(0)           
+ *
+ * @param[in] enable            Enable(1)/Disable(0)
  ****************************************************************************************
  */
 void RTC_EnableFreeRun(uint8_t enable);

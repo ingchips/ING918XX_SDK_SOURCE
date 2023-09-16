@@ -276,8 +276,10 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
 
         if (io_index <= 15)
             set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x130), v, 2, io_index * 2);
-        else
+        else if (io_index <= 31)
             set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x134), v, 2, (io_index - 16) * 2);
+        else
+            set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x138), v, 2, (io_index - 32) * 2);
 
         if (io_index <= 31)
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x128), io_index, enable);
