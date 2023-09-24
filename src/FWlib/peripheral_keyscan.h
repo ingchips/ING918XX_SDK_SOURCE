@@ -91,8 +91,10 @@ typedef struct {
 
     uint8_t fifo_num_trig_int;
     uint8_t dma_num_trig_int;
+    uint8_t loop_num_trig_int;
     uint8_t dma_en;
     uint8_t int_trig_en;
+    uint8_t int_loop_en;
     uint16_t release_time;
     uint16_t scan_interval;
     uint8_t debounce_counter;
@@ -107,11 +109,46 @@ typedef struct {
 int KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set);
 
 /**
+ * @brief Clear fifo.
+ *
+ * @return                      none
+ */
+void KEYSCAN_SetFifoClrReg(void);
+
+/**
+ * @brief Clear loop interrupt status.
+ *
+ * @return                      none
+ */
+void KEYSCAN_LoopIntClr(void);
+
+/**
+ * @brief Keyscan loop interrupt enable/disable.
+ *
+ * @return                      none
+ */
+void KEYSCAN_LoopIntEn(uint8_t enable);
+
+/**
+ * @brief Check keyscan FIFO full or not
+ *
+ * @return                      0: FIFO no data; 1: FIFO is full
+ */
+uint8_t KEYSCAN_GetIntStateFifoFullRaw(void);
+
+/**
  * @brief Check keyscan FIFO empty or not
  *
  * @return                      0: FIFO have data; 1: empty
  */
 uint8_t KEYSCAN_GetIntStateFifoEmptyRaw(void);
+
+/**
+ * @brief Check keyscan loop interrupt is triggered or not
+ *
+ * @return                      0: Not triggerred; 1: Triggerred.
+ */
+uint8_t KEYSCAN_GetIntStateLoopTrig(void);
 
 /**
  * @brief GET keyscan FIFO data
