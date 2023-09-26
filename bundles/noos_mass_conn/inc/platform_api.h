@@ -509,6 +509,9 @@ uint32_t platform_read_info(const platform_info_item_t item);
  ****************************************************************************************
  * @brief Do 32k clock calibration and get the calibration value.
  *
+ * 32K clock auto-calibration timer is also reset, which means that next auto-calibration
+ * is supposed to be carried out after `PLATFORM_CFG_32K_CALI_PERIOD` seconds.
+ *
  * @return                  Calibration value.
  ****************************************************************************************
  */
