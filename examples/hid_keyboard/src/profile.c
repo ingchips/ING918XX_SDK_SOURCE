@@ -203,7 +203,6 @@ static char *read_str_charact(struct btstack_synced_runner * runner,
 static void detect_peer_os_type(struct btstack_synced_runner * runner, void *user_data)
 {
     int err_code = 0;
-    char_node_t *ch;
     uint8_t buffer[200];
     int len;
     char *str;
@@ -251,11 +250,9 @@ static void detect_peer_os_type(struct btstack_synced_runner * runner, void *use
             case 0x0006: // Microsoft
                 btstack_push_user_msg(USER_MSG_ID_OS_FOUND, NULL, OS_TYPE_Windows);
                 goto quit;
-                break;
             case 0x00E0: // Google
                 btstack_push_user_msg(USER_MSG_ID_OS_FOUND, NULL, OS_TYPE_Android);
                 goto quit;
-                break;
             }
         }
     }
