@@ -41,6 +41,16 @@ void KEYSCAN_SetScannerEn(uint8_t enable)
     return;
 }
 
+uint8_t KEYSCAN_GetScannerEn(void)
+{
+    uint8_t offset = 0;
+    uint8_t bits_width = 1;
+    uint8_t ret;
+
+    ret = KEYSCAN_reg_read_bits(&APB_KEYSCAN->key_scanner_ctrl0, offset, bits_width);
+    return ret;
+}
+
 void KEYSCAN_SetDebounceEn(uint32_t debounce_en_bits)
 {
     uint8_t offset = 1;
@@ -125,19 +135,59 @@ void KEYSCAN_SetIntTrigEn(uint8_t enable)
     return;
 }
 
-void KEYSCAN_SetFifoClrReg(uint8_t set)
+void KEYSCAN_SetFifoClrReg(void)
 {
     uint8_t offset = 4;
     uint8_t bits_width = 1;
-    uint32_t data = (set == 0) ? 0: 1;
+    uint32_t data = 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_int_en, offset, bits_width, data);
     return;
 }
 
+void KEYSCAN_LoopIntClr(void)
+{
+    uint8_t offset = 5;
+    uint8_t bits_width = 1;
+    uint32_t data = 1;
+
+    KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_int_en, offset, bits_width, data);
+    return;
+}
+
+void KEYSCAN_LoopIntEn(uint8_t enable)
+{
+    uint8_t offset = 6;
+    uint8_t bits_width = 1;
+    uint32_t data = (enable == 0) ? 0: 1;
+
+    KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_int_en, offset, bits_width, data);
+    return;
+}
+
+uint8_t KEYSCAN_GetIntStateFifoFullRaw(void)
+{
+    uint8_t offset = 5;
+    uint8_t bits_width = 1;
+    uint8_t ret;
+
+    ret = KEYSCAN_reg_read_bits(&APB_KEYSCAN->key_int, offset, bits_width);
+    return ret;
+}
+
 uint8_t KEYSCAN_GetIntStateFifoEmptyRaw(void)
 {
     uint8_t offset = 6;
+    uint8_t bits_width = 1;
+    uint8_t ret;
+
+    ret = KEYSCAN_reg_read_bits(&APB_KEYSCAN->key_int, offset, bits_width);
+    return ret;
+}
+
+uint8_t KEYSCAN_GetIntStateLoopTrig(void)
+{
+    uint8_t offset = 8;
     uint8_t bits_width = 1;
     uint8_t ret;
 
@@ -178,6 +228,15 @@ void KEYSCAN_SetDmaNumTrigInt(uint32_t trig_num)
 {
     uint8_t offset = 5;
     uint8_t bits_width = 5;
+
+    KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_trig, offset, bits_width, trig_num);
+    return;
+}
+
+void KEYSCAN_SetLoopNumTrigInt(uint32_t trig_num)
+{
+    uint8_t offset = 10;
+    uint8_t bits_width = 3;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_trig, offset, bits_width, trig_num);
     return;
@@ -255,8 +314,10 @@ int KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set)
 
     KEYSCAN_SetFifoNumTrigInt(keyscan_set->fifo_num_trig_int);
     KEYSCAN_SetDmaNumTrigInt(keyscan_set->dma_num_trig_int);
+    KEYSCAN_SetLoopNumTrigInt(keyscan_set->loop_num_trig_int);
     KEYSCAN_SetDmaEn(keyscan_set->dma_en);
     KEYSCAN_SetIntTrigEn(keyscan_set->int_trig_en);
+    KEYSCAN_LoopIntEn(keyscan_set->int_loop_en);
     KEYSCAN_SetReleaseTime(keyscan_set->release_time);
     KEYSCAN_SetScanInterval(keyscan_set->scan_interval);
     KEYSCAN_SetDebounceCounter(keyscan_set->debounce_counter);
