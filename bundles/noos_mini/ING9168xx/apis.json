@@ -201,11 +201,11 @@
     "platform_get_version": "0x0201c169",
     "platform_hrng": "0x0201c171",
     "platform_init_controller": "0x20000159",
-    "platform_os_idle_resumed_hook": "0x200003c1",
+    "platform_os_idle_resumed_hook": "0x200003e3",
     "platform_patch_rf_init_data": "0x0201c179",
-    "platform_post_sleep_processing": "0x200003bb",
-    "platform_pre_sleep_processing": "0x200003b5",
-    "platform_pre_suppress_ticks_and_sleep_processing": "0x200003b1",
+    "platform_post_sleep_processing": "0x200003dd",
+    "platform_pre_sleep_processing": "0x200003d7",
+    "platform_pre_suppress_ticks_and_sleep_processing": "0x200003d3",
     "platform_printf": "0x0201c185",
     "platform_raise_assertion": "0x0201c199",
     "platform_rand": "0x0201c1ad",
@@ -259,8 +259,8 @@
     "sm_set_authentication_requirements": "0x0201ee05",
     "sm_set_encryption_key_size_range": "0x0201ee11",
     "sscanf_bd_addr": "0x0201f171",
-    "sysSetPublicDeviceAddr": "0x0201f24d",
-    "uuid128_to_str": "0x0201f9f5",
-    "uuid_add_bluetooth_prefix": "0x0201fa4d",
-    "uuid_has_bluetooth_prefix": "0x0201fa6d"
+    "sysSetPublicDeviceAddr": "0x0201f225",
+    "uuid128_to_str": "0x0201f9cd",
+    "uuid_add_bluetooth_prefix": "0x0201fa25",
+    "uuid_has_bluetooth_prefix": "0x0201fa45"
 }
