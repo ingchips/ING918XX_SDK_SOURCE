@@ -21,7 +21,7 @@ uint32_t cb_assertion(assertion_info_t *info, void *_)
     platform_printf("[ASSERTION] @ %s:%d\n",
                     info->file_name,
                     info->line_no);
-    trace_full_dump(puts, 32);
+    trace_full_dump(puts, 0);
     for (;;);
 }
 

@@ -427,6 +427,15 @@ void trace_full_dump(f_trace_puts f_puts, int size)
 {
     static char str[46];
     static uint8_t buf[HEX_REC_SIZE + 4];
+    if (0 == size)
+    {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+        size = 64;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+        size = 32;
+#endif
+    }
+
     sprintf(str,    " PC: %08x", (uint32_t)trace_full_dump); f_puts(str);
     sprintf(str,    "MSP: %08x", __get_MSP()); f_puts(str);
     sprintf(str,    "PSP: %08x", __get_PSP()); f_puts(str);
