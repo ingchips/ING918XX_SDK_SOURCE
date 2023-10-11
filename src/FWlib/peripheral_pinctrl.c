@@ -606,7 +606,7 @@ int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 void PINCTRL_DisableAllInputs(void)
 {
     int i;
-    for (i = 0; i <= sizeof(APB_PINCTRL->IN_CTRL) / sizeof(APB_PINCTRL->IN_CTRL[0]); i++)
+    for (i = 0; i < sizeof(APB_PINCTRL->IN_CTRL) / sizeof(APB_PINCTRL->IN_CTRL[0]); i++)
         APB_PINCTRL->IN_CTRL[i] = (uint32_t)-1;
 }
 

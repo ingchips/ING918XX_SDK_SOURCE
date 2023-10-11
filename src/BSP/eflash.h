@@ -100,6 +100,8 @@ int erase_flash_sector(const uint32_t addr);
  * @param[in] block_num         number of blocks
  * @param[in] blocks            an array of `fota_update_block_t`
  * @param[in] ram_buffer        buffer large enough for holding `EFLASH_ERASABLE_SIZE` bytes of data
+ *                              CAUTION: DO NOT use memory from `SYSCTRL_SHARE_BLOCK_XXX` for this,
+ *                                       while `SYSCTRL_MEM_BLOCK_XXX` and D-CACHE (as memory) are OK.
  * @return                      non-0 if error occurs else platform is reset
  */
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *ram_buffer);

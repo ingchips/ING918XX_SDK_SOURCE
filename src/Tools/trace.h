@@ -216,7 +216,8 @@ typedef int (* f_trace_puts)(const char *str);
  * @brief dump full memory & registers for later analysis
  *
  * @param[in] f_puts        callback function for print strings (ending with '\n\0', w/o '\n' or '\r')
- * @param[in] size          memory block size (64 or 32)
+ * @param[in] size          memory block size (64 or 32 or 0)
+ *                          when set to 0, actual size is derived from chip family.
  ****************************************************************************************
  */
 void trace_full_dump(f_trace_puts f_puts, int size);

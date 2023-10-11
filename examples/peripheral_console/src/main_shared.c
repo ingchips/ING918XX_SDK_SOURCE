@@ -151,10 +151,11 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 #ifdef USE_POWER_LIB
     power_ctrl_before_deep_sleep();
 #endif
+    return PLATFORM_ALLOW_DEEP_SLEEP;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     GIO_EnableRetentionGroupA(1);
+    return PLATFORM_ALLOW_DEEP_SLEEP | PLATFORM_ALLOW_BLE_ONLY_SLEEP;
 #endif
-    return PLATFORM_ALLOW_DEEP_SLEEP;
 }
 
 uint32_t idle_proc(void *dummy, void *user_data)

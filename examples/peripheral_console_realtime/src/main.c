@@ -102,10 +102,15 @@ ADDITIONAL_ATTRIBUTE uint32_t query_deep_sleep_allowed(void *dummy, void *user_d
     (void)(user_data);
     if (IS_DEBUGGER_ATTACHED())
         return 0;
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #ifdef USE_POWER_LIB
     power_ctrl_before_deep_sleep();
 #endif
     return PLATFORM_ALLOW_DEEP_SLEEP;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    return PLATFORM_ALLOW_DEEP_SLEEP | PLATFORM_ALLOW_BLE_ONLY_SLEEP;
+#endif
 }
 
 uintptr_t app_main()
@@ -115,13 +120,13 @@ uintptr_t app_main()
 
 #ifdef USE_POWER_LIB
     power_ctrl_init();
-#endif    
+#endif
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define HCLK_DIV SYSCTRL_CLK_PLL_DIV_5
 
     platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4100 - 400);
-    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 105);
+    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 155);
 
     SYSCTRL_EnableConfigClocksAfterWakeup(1,
         PLL_HW_DEF_LOOP,
@@ -132,7 +137,7 @@ uintptr_t app_main()
     SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
     SYSCTRL_SelectHClk(HCLK_DIV);
     SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
-    
+
     SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
 #endif
 
