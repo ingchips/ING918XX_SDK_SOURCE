@@ -181,8 +181,13 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                        profile_data);
             platform_calibrate_32k();
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #ifdef OPT_RAM_CODE
+            platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4100 - 400);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 155);
+    #else
             platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 5200);
             platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 280);
+    #endif
 #endif
             break;
         default:
