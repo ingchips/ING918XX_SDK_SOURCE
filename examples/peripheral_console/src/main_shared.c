@@ -154,7 +154,7 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return PLATFORM_ALLOW_DEEP_SLEEP;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     GIO_EnableRetentionGroupA(1);
-    return PLATFORM_ALLOW_DEEP_SLEEP | PLATFORM_ALLOW_BLE_ONLY_SLEEP;
+    return PLATFORM_ALLOW_DEEP_SLEEP;
 #endif
 }
 
