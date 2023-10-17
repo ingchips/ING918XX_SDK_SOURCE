@@ -32,7 +32,7 @@ static void adpcm_update(adpcm_state_t* state, const uint8_t sample)
     int32_t predicated = state->predicated;
 
     /* compute new sample estimate predictedSample */
-    diff = ((sample & 0x7) * step_size) >> 2; // calculate difference = (newSample + 1/2) * stepsize/4 
+    diff = ((sample & 0x7) * step_size) >> 2; // calculate difference = (newSample + 1/2) * stepsize/4
     diff += step_size >> 3;
     if (sample & 0x8)
         diff = -diff;
@@ -53,9 +53,9 @@ static void adpcm_update(adpcm_state_t* state, const uint8_t sample)
         state->index = 88;
 }
 
-void adpcm_encode(adpcm_enc_t *adpcm, pcm_sample_t *input, int input_size, void *output, int output_size)
+void adpcm_encode(adpcm_enc_t *adpcm, const pcm_sample_t *input, int input_size)
 {
-    pcm_sample_t *sample = input;
+    const pcm_sample_t *sample = input;
     int i;
 
     for (i = 0; i < input_size; i++)
@@ -95,7 +95,7 @@ void adpcm_encode(adpcm_enc_t *adpcm, pcm_sample_t *input, int input_size, void 
             adpcm->output = new_sample;
         }
 
-        adpcm_update(&adpcm->state, new_sample);       
+        adpcm_update(&adpcm->state, new_sample);
     }
 
 }

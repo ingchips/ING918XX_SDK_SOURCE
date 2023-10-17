@@ -8,13 +8,19 @@
 
 #include "audio_encoder.h"
 
-const pcm_sample_t pcm[] =
-#include "../data/itu_female_16k.m"
-;
-
 #if (SAMPLING_RATE != 16000)
 #error "only 16kHz is supported"
 #endif
+
+#define NUM_OF_SAMPLES  57190
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define SAMPLES_LOCATION        0x00084000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define SAMPLES_LOCATION        0x02041000
+#endif
+
+static const pcm_sample_t *pcm = (const pcm_sample_t *)SAMPLES_LOCATION;
 
 static uint16_t pcm_index = 0;
 
@@ -27,7 +33,7 @@ uint32_t audio_sample_isr(void *user_data)
     TMR_IntClr(APB_TMR1, 0, 0x1);
 #endif
 
-    if (pcm_index < sizeof(pcm) / sizeof(pcm[0]))
+    if (pcm_index < NUM_OF_SAMPLES)
     {
         sample = pcm[pcm_index++];
     }
