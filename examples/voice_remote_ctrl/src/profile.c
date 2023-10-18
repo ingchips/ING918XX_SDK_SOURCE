@@ -128,15 +128,13 @@ static void send_audio_data()
         return;
 
     uint16_t curr = audio_get_curr_block();
-    if (next_block != curr)
+    while (next_block != curr)
     {
         if (att_server_notify(handle_send, HANDLE_VOICE_OUTPUT, audio_get_block_buff(next_block), VOICE_BUF_BLOCK_SIZE) != 0)
-        {
-            att_server_request_can_send_now_event(handle_send);
-            return;
-        }
+            break;
+
         next_block++;
-        if (next_block >= VOICE_BUF_BLOCK_NUM) next_block = 0;            
+        if (next_block >= VOICE_BUF_BLOCK_NUM) next_block = 0;
     }
 }
 
@@ -215,8 +213,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         setup_adv();
         break;
 
-    case ATT_EVENT_CAN_SEND_NOW:
+    case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
         send_audio_data();
+        break;
+
+    case ATT_EVENT_CAN_SEND_NOW:
         break;
 
     case BTSTACK_EVENT_USER_MSG:
@@ -229,10 +230,10 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     }
 }
 
-void test_encoder(void);
-
 uint32_t setup_profile(void *data, void *user_data)
 {
+    audio_init();
+
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

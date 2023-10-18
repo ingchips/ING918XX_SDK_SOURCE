@@ -38,7 +38,10 @@ uint32_t audio_sample_isr(void *user_data)
         sample = pcm[pcm_index++];
     }
     else
-        pcm_index = 0;
+    {
+        sample = pcm[0];
+        pcm_index = 1;
+    }
 
     audio_rx_sample(sample);
 

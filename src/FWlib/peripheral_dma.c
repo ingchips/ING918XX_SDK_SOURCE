@@ -268,12 +268,12 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
 {
     int status = 0;
     int req = SYSCTRL_GetDmaId(src);
-    int width = DMA_GetPeripheralWidth(src);
+    DMA_TransferWidth width = DMA_GetPeripheralWidth(src);
     DMA_TransferWidth dest_width;
     uint8_t src_burst_size;
     uint32_t peri_addr = (uint32_t)DMA_GetPeripheralDataAddr(src);
 
-    if ((req < 0) | (width < 0) | (peri_addr == 0)) return -1;
+    if ((req < 0) | (peri_addr == 0)) return -1;
 
     status = DMA_GetCtrlConfigSrc(src, width, &dest_width, &src_burst_size, size, (uint32_t)dst);
     if(status) return status;
@@ -300,12 +300,12 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
 {
     int status = 0;
     int req = SYSCTRL_GetDmaId(dst);
-    int width = DMA_GetPeripheralWidth(dst);
+    DMA_TransferWidth width = DMA_GetPeripheralWidth(dst);
     DMA_TransferWidth src_width;
     uint8_t src_burst_size;
     uint32_t peri_addr = (uint32_t)DMA_GetPeripheralDataAddr(dst);
 
-    if ((req < 0) | (width < 0) | (peri_addr == 0)) return -1;
+    if ((req < 0) | (peri_addr == 0)) return -1;
 
     status = DMA_GetCtrlConfigDst(dst, &src_width, width, &src_burst_size, size, (uint32_t)src);
     if(status) return status;
@@ -331,16 +331,16 @@ int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
 {
     int status = 0;
     int dst_req = SYSCTRL_GetDmaId(dst);
-    int dst_width = DMA_GetPeripheralWidth(dst);
+    DMA_TransferWidth dst_width = DMA_GetPeripheralWidth(dst);
     uint32_t dst_addr = (uint32_t)DMA_GetPeripheralDataAddr(dst);
 
     int src_req = SYSCTRL_GetDmaId(src);
-    int src_width = DMA_GetPeripheralWidth(src);
+    DMA_TransferWidth src_width = DMA_GetPeripheralWidth(src);
     uint32_t src_addr = (uint32_t)DMA_GetPeripheralDataAddr(src);
 
     uint8_t src_burst_size;
-    if ((dst_req < 0) | (dst_width < 0) | (dst_addr == 0)) return -1;
-    if ((src_req < 0) | (src_width < 0) | (src_addr == 0)) return -2;
+    if ((dst_req < 0) | (dst_addr == 0)) return -1;
+    if ((src_req < 0) | (src_addr == 0)) return -2;
 
     status = DMA_GetCtrlConfigSrcDst(src_width, dst_width, &src_burst_size, size);
     if(status) return status;

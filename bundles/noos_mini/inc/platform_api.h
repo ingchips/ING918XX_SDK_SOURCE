@@ -753,7 +753,7 @@ void platform_delete_timer(f_platform_timer_callback callback);
  * the generic OS interface.
  *
  * @param[in]   id              task identifier
- * @param[in]   start           start address of the new stack
+ * @param[in]   start           start (lowest) address of the new stack
  * @param[in]   size            size of the new stack in bytes
  ****************************************************************************************
  */
@@ -840,6 +840,21 @@ typedef struct platform_hci_link_layer_interf
  ****************************************************************************************
  */
 const platform_hci_link_layer_interf_t *platform_get_link_layer_interf(void);
+
+typedef void (*f_platform_function)(void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief Call a function on a separate dedicated stack
+ *
+ * @param[in]   f               the function to be called
+ * @param[in]   user_data       user data passed to `f`
+ * @param[in]   start           start (lowest) address of the dedicated stack
+ * @param[in]   size            size of the dedicated stack in bytes
+ ****************************************************************************************
+ */
+void platform_call_on_stack(f_platform_function f, void *user_data,
+                            void *stack_start, uint32_t stack_size);
 
 #ifdef __cplusplus
 }

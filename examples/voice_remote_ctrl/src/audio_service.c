@@ -16,21 +16,22 @@
 static adpcm_enc_t adpcm;
 #elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
 #include "audio_sbc.h"
-static sbc_enc_ctx_t sbc =
+
+static const struct sbc_frame frame_param =
 {
-    .frame = {
-    #if (EFFECTIVE_SAMPLING_RATE == 16000)
-        .freq = SBC_FREQ_16K,
-    #elif
-        #error unsupported EFFECTIVE_SAMPLING_RATE
-    #endif
-        .mode = SBC_MODE_MONO,
-        .nsubbands = 4,
-        .nblocks = 8,
-        .bam = SBC_BAM_LOUDNESS,
-        .bitpool = 35
-    }
+#if (EFFECTIVE_SAMPLING_RATE == 16000)
+    .freq = SBC_FREQ_16K,
+#elif
+    #error unsupported EFFECTIVE_SAMPLING_RATE
+#endif
+    .mode = SBC_MODE_MONO,
+    .nsubbands = 4,
+    .nblocks = 8,
+    .bam = SBC_BAM_LOUDNESS,
+    .bitpool = 16
 };
+
+static sbc_enc_ctx_t sbc;
 #else
 #error unknown AUDIO_CODEC_ALG
 #endif
@@ -48,8 +49,8 @@ uint16_t byte_index;
 uint16_t seq_cnt;
 int8_t mic_dig_gain = 0;
 
-#define SAMPLE_BUF_LEN  128
-#define SAMPLE_BUF_CNT  5
+#define SAMPLE_BUF_LEN  32
+#define SAMPLE_BUF_CNT  15
 
 pcm_sample_t sample_buf[SAMPLE_BUF_CNT][SAMPLE_BUF_LEN];
 
@@ -69,11 +70,12 @@ void enc_output_cb(uint8_t output, void *param)
 
     if (byte_index >= VOICE_BUF_BLOCK_SIZE)
     {
+        byte_index = 0;
         block_index++;
-        audio_trigger_send();
         if (block_index >= VOICE_BUF_BLOCK_NUM)
             block_index = 0;
-        byte_index = 0;
+
+        audio_trigger_send();
     }
 }
 
@@ -140,21 +142,25 @@ pcm_sample_t fir_push_run(fir_t *fir, pcm_sample_t x)
     return r >> 7;
 }
 
+static void enc_state_reset(void);
+
 void audio_start(void)
 {
     LOG_PRINTF(LOG_LEVEL_DEBUG,"Start audio input.");
+    xQueueReset(xSampleQueue);
     sample_buf_index = 0;
     sample_index = 0;
     block_index = 0;
     byte_index = 0;
+    enc_state_reset();
     audio_input_start();
 }
 
 void audio_stop(void)
 {
     LOG_PRINTF(LOG_LEVEL_DEBUG,"Stop audio input.");
-    xQueueReset(xSampleQueue);
     audio_input_stop();
+    xQueueReset(xSampleQueue);
 }
 
 static void audio_task(void *pdata)
@@ -170,7 +176,7 @@ static void audio_task(void *pdata)
     pcm_sample_t *buf;
     for (;;)
     {
-        int16_t index;        
+        int16_t index;
 
         if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
             continue;
@@ -239,6 +245,11 @@ void audio_rx_sample(pcm_sample_t sample)
     }
 }
 
+#define STACK_DEPTH     (2000/4)
+
+static StackType_t uxStackBuffer[STACK_DEPTH];
+static StaticTask_t xTaskBuffer;
+
 static void enc_state_init(audio_encoder_t *enc_t);
 
 void audio_init(void)
@@ -252,15 +263,27 @@ void audio_init(void)
                                  ucQueueStorageArea,
                                  &xStaticSampleQueue);
 
-    xTaskCreate(audio_task,
+    xTaskCreateStatic(audio_task,
                "b",
-               1024,
+               STACK_DEPTH,
                NULL,
-               (configMAX_PRIORITIES - 14),
-               NULL);
+               2,
+               uxStackBuffer,
+               &xTaskBuffer);
 
     audio_input_setup();
     LOG_PRINTF(LOG_LEVEL_INFO,"Initialization completed.");
+}
+
+static void enc_state_reset(void)
+{
+#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
+
+#elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
+    memset(&sbc, 0, sizeof(sbc));
+    sbc.frame = frame_param;
+    sbc_enc_init(&sbc, enc_output_cb, 0);
+#endif
 }
 
 static void enc_state_init(audio_encoder_t *enc_t)
@@ -271,7 +294,7 @@ static void enc_state_init(audio_encoder_t *enc_t)
     enc = &adpcm;
     adpcm_enc_init(enc, enc_output_cb, 0);
     enc_t->type = ADPCM_ENCODER;
-    enc_t->sample_buf.num = 2;
+    enc_t->sample_buf.num = SAMPLE_BUF_CNT;
     enc_t->sample_buf.size = SAMPLE_BUF_LEN;
     enc_t->encoder = (fun_encoder)adpcm_encode;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
@@ -280,9 +303,9 @@ static void enc_state_init(audio_encoder_t *enc_t)
     enc_t->type = SBC_ENCODER;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Encoder-->[SBC]");
     enc = &sbc;
-    sbc_enc_init(enc, enc_output_cb, 0);
+    enc_state_reset();
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Configure encode's parameter...");
-    enc_t->sample_buf.num = 2;
+    enc_t->sample_buf.num = SAMPLE_BUF_CNT;
     enc_t->sample_buf.size = sbc_get_n_of_samples(&sbc);
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
     enc_t->encoder = (fun_encoder)sbc_enc;
