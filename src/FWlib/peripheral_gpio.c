@@ -303,20 +303,16 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
         else
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x64), io_index - 32, enable);
 
-        if (enable == 0) return 0;
-
-        if (pull != PINCTRL_PULL_DISABLE)
+        uint8_t en = pull != PINCTRL_PULL_DISABLE ? 1 : 0;
+        if (io_index <= 31)
         {
-            if (io_index <= 31)
-            {
-                GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x68), io_index, 1);
-                GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x70), io_index, pull == PINCTRL_PULL_UP ? 1 : 0);
-            }
-            else
-            {
-                GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x6c), io_index - 32, 1);
-                GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x74), io_index - 32, pull == PINCTRL_PULL_UP ? 1 : 0);
-            }
+            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x68), io_index, en);
+            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x70), io_index, pull == PINCTRL_PULL_UP ? 1 : 0);
+        }
+        else
+        {
+            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x6c), io_index - 32, en);
+            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x74), io_index - 32, pull == PINCTRL_PULL_UP ? 1 : 0);
         }
     }
     return 0;

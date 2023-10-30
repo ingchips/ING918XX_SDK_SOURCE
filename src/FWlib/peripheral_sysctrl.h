@@ -1006,13 +1006,13 @@ typedef enum
     // remapped from `SYSCTRL_MEM_REMAPPABLE_BLOCK_1`
     SYSCTRL_SYS_MEM_BLOCK_3 = 0x04,
 
-    // SHARE RAM block #0, 8KiB starting from 0x40120000    (0x40120000~0x0x40121fff)
+    // SHARE RAM block #0, 8KiB starting from 0x40120000    (0x40120000~0x40121fff)
     // This shall not be turned off.
     SYSCTRL_SHARE_MEM_BLOCK_0 = 0x01,
-    // SHARE RAM block #1, 8KiB following block #0          (0x40122000~0x0x40123fff)
+    // SHARE RAM block #1, 8KiB following block #0          (0x40122000~0x40123fff)
     // remapped from `SYSCTRL_MEM_REMAPPABLE_BLOCK_1`
     SYSCTRL_SHARE_MEM_BLOCK_1 = 0x04,
-    // SHARE RAM block #2,16KiB following block #1          (0x40124000~0x0x40127fff)
+    // SHARE RAM block #2,16KiB following block #1          (0x40124000~0x40127fff)
     // remapped from `SYSCTRL_MEM_REMAPPABLE_BLOCK_0`
     SYSCTRL_SHARE_MEM_BLOCK_2 = 0x02,
 
@@ -1055,8 +1055,7 @@ typedef enum
  * CAUTION:
  *     1. When used as system memory, more RAM are available, but performance might be degraded;
  *     2. When used as system memory, contents are *NOT* retained in sleep modes;
- *     3. These settings are not kept in sleep modes and will restore to defaults during waking up,
- *        so this function needs to be called each time the system wakes up.
+ *     3. These settings are not kept in sleep modes and will restore to defaults during waking up.
  *
  * @param[in] i_cache           usage of I-Cache (default: AS_CACHE)
  * @param[in] d_cache           usage of D-Cache (default: AS_CACHE)

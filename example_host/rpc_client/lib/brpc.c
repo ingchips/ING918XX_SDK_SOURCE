@@ -825,8 +825,17 @@ uint32_t sys_aligned_read(uint32_t addr)
 
 void sys_aligned_write_mem(uint32_t addr, void *p, int len)
 {
-    uint8_t _param[len];
-    memcpy(_param, p, len);
+    #pragma pack (push, 1)
+    struct _param
+    {
+        uint32_t addr;
+        uint32_t data[len];
+    } _param =
+    {
+        .addr = addr,
+    }
+    #pragma pack (pop)
+    memcpy(_param.data, p, len);
     call_void_fun(ID_sys_aligned_write_mem, &_param, sizeof(_param));
 }
 
@@ -908,7 +917,7 @@ const uint8_t *sm_private_random_address_generation_get(void)
         bd_addr_t addr;
     };
     #pragma pack (pop)
-    struct node * _node = call_fun(ID_gatt_client_get_mtu, NULL, 0);
+    struct node * _node = call_fun(ID_sm_private_random_address_generation_get, NULL, 0);
     memcpy(random_address, extract_ret_param(_node, NULL), BD_ADDR_LEN);
     GEN_OS()->free(_node);
     return random_address;
