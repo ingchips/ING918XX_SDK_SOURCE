@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <alloca.h>
 #include "platform_api.h"
 #include "ll_api.h"
 #include "uart_driver.h"
@@ -11,6 +12,7 @@
 #include "btstack_defines.h"
 #include "gatt_client.h"
 #include "sm.h"
+
 
 #include "port_gen_os_driver.h"
 
@@ -983,8 +985,19 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 }
 
 uint32_t cb_assertion(assertion_info_t *info, void *_)
-{
-    send_platform_event(PLATFORM_CB_EVT_ASSERTION, info, sizeof(*info));
+{    
+    #pragma pack (push, 1)
+    struct ret
+    {
+        int line_no;
+        char fn[1];
+    } *_r;
+    #pragma pack (pop)
+    
+    int len = sizeof(struct ret) + strlen(info->file_name);
+    _r = (struct ret *)alloca(sizeof(struct ret) + len);
+    strcpy(_r->fn, info->file_name);
+    send_platform_event(PLATFORM_CB_EVT_ASSERTION, _r, len);
     driver_flush_tx();
     platform_printf("[ASSERTION] @ %s:%d\n",
                     info->file_name,

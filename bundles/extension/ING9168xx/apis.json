@@ -178,6 +178,7 @@
     "ll_channel_monitor_check_each_pdu": "0x0200c457",
     "ll_channel_monitor_run": "0x0200c4b9",
     "ll_config": "0x0200c589",
+    "ll_create_conn": "0x0200c5a5",
     "ll_free": "0x0200c7df",
     "ll_get_conn_events_info": "0x0200c7e9",
     "ll_get_conn_info": "0x0200c8d1",

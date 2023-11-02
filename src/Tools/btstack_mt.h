@@ -380,7 +380,7 @@ uint8_t mt_gap_rx_test_v3(
     uint8_t expected_cte_type,
     uint8_t slot_durations,
     uint8_t switching_pattern_length,
-    uint8_t * antenna_ids);
+    const uint8_t * antenna_ids);
 
 uint8_t mt_gap_tx_test_v2(
     uint8_t tx_channel,
@@ -396,7 +396,7 @@ uint8_t mt_gap_tx_test_v4(
     uint8_t cte_length,
     uint8_t cte_type,
     uint8_t switching_pattern_length,
-    uint8_t * antenna_ids,
+    const uint8_t * antenna_ids,
     int8_t tx_power_level);
 
 uint8_t mt_gap_test_end(

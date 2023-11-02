@@ -1273,7 +1273,7 @@ uint8_t gap_rx_test_v2(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index
 uint8_t gap_rx_test_v3(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index,
                             uint8_t expected_cte_length, uint8_t expected_cte_type,
                             uint8_t slot_durations,
-                            uint8_t switching_pattern_length, uint8_t *antenna_ids);
+                            uint8_t switching_pattern_length, const uint8_t *antenna_ids);
 
 /**
  * @brief  Start a test where the DUT generates test reference packets at a fixed interval.
@@ -1310,7 +1310,7 @@ uint8_t gap_tx_test_v2(uint8_t tx_channel, uint8_t test_data_length,
 uint8_t gap_tx_test_v4(uint8_t tx_channel, uint8_t test_data_length,
                         uint8_t packet_payload, uint8_t phy,
                         uint8_t cte_length, uint8_t cte_type,
-                        uint8_t switching_pattern_length, uint8_t *antenna_ids,
+                        uint8_t switching_pattern_length, const uint8_t *antenna_ids,
                         int8_t tx_power_level);
 
 /**
