@@ -72,7 +72,7 @@ static int kv_flash_repair(uint32_t start, uint32_t end)
         uint32_t next = next_item(item);
         if (next >= end)
             break;
-        start = end;
+        start = next;
         item = (struct kv_item *)start;
     }
 
