@@ -8,6 +8,7 @@ This example demonstrates how to:
 * Trace Demo: SWD/UART/Flash/Air.
 * Power Control
 * Subrating
+* Dump through UART
 
 Note: Use a serial tool to communicate. CR/LF is used
       to mark the end of a command.

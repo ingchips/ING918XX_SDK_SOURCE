@@ -100,6 +100,57 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
 
 /**
  ****************************************************************************************
+ * @brief Create a connection directly (without advertising & initiating)
+ *
+ * @param[in]  role             connection role. master (0), slave (1)
+ * @param[in]  addr_types       address types for advertiser and initiator
+ *                              bit [0] for slave, bit [1] for master
+ *                              0: public address; 1: random address
+ * @param[in]  adv_addr         address of advertiser
+ * @param[in]  init_addr        address of initiator
+ * @param[in]  rx_phy           Rx PHY (1: 1M, 2: 2M, 3: Coded)
+ * @param[in]  tx_phy           Tx PHY (1: 1M, 2: 2M, 3: Coded)
+ * @param[in]  access_addr      access address
+ * @param[in]  crc_init         CRC init
+ * @param[in]  interval         connection interval (unit: us)
+ * @param[in]  sup_timeout      supervision timeout (unit: 10ms)
+ * @param[in]  channel_map      channel map
+ * @param[in]  ch_sel_algo      channel selection algorithm (1 or 2)
+ * @param[in]  hop_inc          hop increment for CSA#1 ([5..16])
+ * @param[in]  min_ce_len       information parameter about the minimum length of connection
+ *                              event needed for this LE connection.
+ * @param[in]  max_ce_len       information parameter about the maximum length of connection
+ *                              event needed for this LE connection.
+ * @param[in]  start_time       start time of the 1st connectin event
+ * @param[in]  slave_latency    slave latency
+ * @param[in]  sleep_clk_acc    sleep clock accuracy
+ * @param[in]  sync_window      slave's sync window for 1st connection event
+ * @return                      0 if successful else error code
+ ****************************************************************************************
+ */
+int ll_create_conn(
+                   uint8_t role,
+                   uint8_t addr_types,
+                   const uint8_t *adv_addr,
+                   const uint8_t *init_addr,
+                   uint8_t rx_phy,
+                   uint8_t tx_phy,
+                   uint32_t access_addr,
+                   uint32_t crc_init,
+                   uint32_t interval,
+                   uint16_t sup_timeout,
+                   const uint8_t *channel_map,
+                   uint8_t  ch_sel_algo,
+                   uint8_t  hop_inc,
+                   uint16_t min_ce_len,
+                   uint16_t max_ce_len,
+                   uint64_t start_time,
+                   uint16_t slave_latency,
+                   uint8_t  sleep_clk_acc,
+                   uint32_t sync_window);
+
+/**
+ ****************************************************************************************
  * @brief Set tx power of a connection
  *
  * @param[in]  conn_handle      handle of an existing connection
@@ -221,12 +272,10 @@ void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
-//                              uint8_t cte_len,
-//                              uint8_t switching_pattern_len,
-//                              const uint8_t *switching_pattern);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
+                             uint8_t cte_len,
+                             uint8_t switching_pattern_len,
+                             const uint8_t *switching_pattern);
 
 /**
  ****************************************************************************************
@@ -289,17 +338,15 @@ int ll_scanner_enable_iq_sampling(uint8_t cte_type,
  * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
-// int ll_scanner_enable_iq_sampling_on_legacy(
-//                           uint16_t sampling_offset,
-//                           uint8_t cte_type,
-//                           uint8_t cte_time,
-//                           uint8_t slot_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *switching_pattern,
-//                           uint8_t slot_sampling_offset,
-//                           uint8_t slot_sample_count);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_scanner_enable_iq_sampling_on_legacy(
+                          uint16_t sampling_offset,
+                          uint8_t cte_type,
+                          uint8_t cte_time,
+                          uint8_t slot_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *switching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
 
 struct ll_raw_packet;
 
@@ -860,9 +907,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  *                          For example, standard value for channel 37 is 0x53.
  ****************************************************************************************
  */
-// void ll_override_whitening_init_value(uint8_t override, uint8_t value);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_override_whitening_init_value(uint8_t override, uint8_t value);
 
 /**
  ****************************************************************************************
@@ -872,9 +917,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  * @param[in]  type         nonstandard ADV TYPE
  ****************************************************************************************
  */
-// void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
 
 /**
  ****************************************************************************************
@@ -883,9 +926,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  * @param[in]  bit          CTE bit: 0/1 (default: 1)
  ****************************************************************************************
  */
-// void ll_set_cte_bit(uint8_t bit);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_cte_bit(uint8_t bit);
 
 /**
  ****************************************************************************************

@@ -346,9 +346,9 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=0,AUDIO_CODEC_ALG=1</Define>
+              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=0,AUDIO_CODEC_ALG=0</Define>
               <Undefine/>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
+              <IncludePath>.\libsbc\include;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

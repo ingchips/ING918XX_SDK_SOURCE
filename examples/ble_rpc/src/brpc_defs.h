@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#define BRPC_VERSION        0x1
+#define BRPC_VERSION        0x2
 
 #define STATUS_OK           0
 #define STATUS_ERR          1

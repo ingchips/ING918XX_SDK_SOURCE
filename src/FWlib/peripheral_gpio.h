@@ -291,7 +291,7 @@ void GIO_EnableRetentionGroupB(uint8_t enable);
  * are kept in HighZ mode even in power saving modes.
  *
  * Note: For USB IOs, there are extra internal pull-down resisters,
- * so the corresponding GPIOs will be affected by them and can be put into
+ * so the corresponding GPIOs will be affected by them and can't be put into
  * High-Z mode actually.
  *
  * After enabled, all other GPIO configuration will not take
@@ -324,6 +324,9 @@ void GIO_EnableHighZGroupB(uint8_t enable);
  *
  * 1. `pull` is ignored for GPIO in Group A, for which `pull` shall be configured
  *    by `PINCTRL_Pull(...)`.
+ *
+ * 1. `pull` for Group B is a dedicated pull circuit which takes effects simultaneously with
+ *    `PINCTRL_Pull`.
  *
  * @param[in] io_index          the GPIO ({0-17, 21-25, 29-37})
  * @param[in] enable            Enable(1)/Disable(0)

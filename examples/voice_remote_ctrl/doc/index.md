@@ -18,6 +18,8 @@ Below table shows how to connect the microphone to the Dev-Board for each input 
 |3                  | PDM                           | Not available     | MCLK(28),IN(29)           | MP34DT01: <img src="./img/pdm_mic.png" width="50%">|
 
 Note: for type `0`, audio is playback from a data file (ITU standard testing data), and no microphone is used.
+The [data file](../data/itu_female_16k.bin) containing raw PCM samples needs to be downloaded to
+[`SAMPLES_LOCATION`](../src/audio_input_sim.c).
 
 ## Audio Codec
 
@@ -25,10 +27,12 @@ Supported codecs:
 
 | Name | Identifier  | Note |
 | :-----------: | :-------------------      | :------------------- |
-| 4-bit ADPCM   | `AUDIO_CODEC_ALG_ADPCM`   | **default** |
-| SBC           | `AUDIO_CODEC_ALG_SBC`     | _experimental_  |
+| 4-bit ADPCM   | `AUDIO_CODEC_ALG_ADPCM`   |  |
+| SBC           | `AUDIO_CODEC_ALG_SBC`     |  |
 
 Audio codec can be configured by defining `AUDIO_CODEC_ALG` to the corresponding codec identifier.
+
+SBC codec implementation used in this project is [libsbc](https://github.com/google/libsbc).
 
 ## Test
 

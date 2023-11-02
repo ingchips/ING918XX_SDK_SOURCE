@@ -11,6 +11,31 @@
 #include "platform_api.h"
 #include "log.h"
 
+#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
+#include "audio_adpcm.h"
+static adpcm_enc_t adpcm;
+#elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
+#include "audio_sbc.h"
+
+static const struct sbc_frame frame_param =
+{
+#if (EFFECTIVE_SAMPLING_RATE == 16000)
+    .freq = SBC_FREQ_16K,
+#elif
+    #error unsupported EFFECTIVE_SAMPLING_RATE
+#endif
+    .mode = SBC_MODE_MONO,
+    .nsubbands = 4,
+    .nblocks = 8,
+    .bam = SBC_BAM_LOUDNESS,
+    .bitpool = 16
+};
+
+static sbc_enc_ctx_t sbc;
+#else
+#error unknown AUDIO_CODEC_ALG
+#endif
+
 extern void audio_input_setup(void);
 extern void audio_input_start(void);
 extern void audio_input_stop(void);
@@ -24,10 +49,14 @@ uint16_t byte_index;
 uint16_t seq_cnt;
 int8_t mic_dig_gain = 0;
 
-#define SAMPLE_BUF_LEN  128
-#define SAMPLE_BUF_CNT  2
+#define SAMPLE_BUF_LEN  32
+#define SAMPLE_BUF_CNT  15
 
 pcm_sample_t sample_buf[SAMPLE_BUF_CNT][SAMPLE_BUF_LEN];
+
+#if (OVER_SAMPLING_MASK != 0)
+pcm_sample_t down_sampling_buf[SAMPLE_BUF_LEN];
+#endif
 
 int sample_buf_index = 0;
 int sample_index = 0;
@@ -41,11 +70,12 @@ void enc_output_cb(uint8_t output, void *param)
 
     if (byte_index >= VOICE_BUF_BLOCK_SIZE)
     {
+        byte_index = 0;
         block_index++;
-        audio_trigger_send();
         if (block_index >= VOICE_BUF_BLOCK_NUM)
             block_index = 0;
-        byte_index = 0;
+
+        audio_trigger_send();
     }
 }
 
@@ -112,48 +142,41 @@ pcm_sample_t fir_push_run(fir_t *fir, pcm_sample_t x)
     return r >> 7;
 }
 
+static void enc_state_reset(void);
+
 void audio_start(void)
 {
     LOG_PRINTF(LOG_LEVEL_DEBUG,"Start audio input.");
+    xQueueReset(xSampleQueue);
     sample_buf_index = 0;
     sample_index = 0;
     block_index = 0;
     byte_index = 0;
+    enc_state_reset();
     audio_input_start();
 }
 
 void audio_stop(void)
 {
     LOG_PRINTF(LOG_LEVEL_DEBUG,"Stop audio input.");
-    xQueueReset(xSampleQueue);
     audio_input_stop();
+    xQueueReset(xSampleQueue);
 }
 
 static void audio_task(void *pdata)
 {
-    int input_size, output_size;
-    uint8_t *outp;
-#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
-    input_size = sbc_get_codesize(&sbc); //codesize
-    output_size = sbc_get_frame_length(&sbc);  //framelen
-#elif  (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
+    int input_size;
     input_size = aud_enc_t.sample_buf.size;
-    output_size = aud_enc_t.sample_buf.size;
-#endif
-    outp = malloc(output_size * sizeof(uint8_t));
 
 #if (OVER_SAMPLING_MASK != 0)
     int oversample_cnt = 0;
-    pcm_sample_t *buffer = NULL;
-    int buffer_index = 0;
-
-    buffer = malloc(input_size * sizeof(pcm_sample_t));
+    int down_sample_index = 0;
+    pcm_sample_t *down_sampling = down_sampling_buf;
 #endif
     pcm_sample_t *buf;
     for (;;)
     {
         int16_t index;
-        int i;
 
         if (xQueueReceive(xSampleQueue, &index, portMAX_DELAY ) != pdPASS)
             continue;
@@ -161,6 +184,7 @@ static void audio_task(void *pdata)
         buf = sample_buf[index];
 
 #if (OVER_SAMPLING_MASK != 0)
+        int i;
         for (i = 0; i < aud_enc_t.sample_buf.size; i++)
         {
             pcm_sample_t sample = buf[i];
@@ -173,17 +197,17 @@ static void audio_task(void *pdata)
             else
             {
                 sample = fir_push_run(&fir, sample);
-                buffer[buffer_index++] = sample;
+                down_sampling[down_sample_index++] = sample;
             }
 
-            if (buffer_index >= input_size)
+            if (down_sample_index >= input_size)
             {
-                aud_enc_t.encoder(enc, buffer, input_size, outp, output_size);
-                buffer_index = 0;
+                aud_enc_t.encoder(enc, down_sampling, input_size);
+                down_sample_index = 0;
             }
         }
 #else
-        aud_enc_t.encoder(enc, buf, input_size, outp, output_size);
+        aud_enc_t.encoder(enc, buf, input_size);
 #endif
     }
 }
@@ -200,7 +224,6 @@ uint8_t *audio_get_block_buff(uint16_t index)
 
 void audio_rx_sample(pcm_sample_t sample)
 {
-
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
 
     // digital gain
@@ -222,6 +245,11 @@ void audio_rx_sample(pcm_sample_t sample)
     }
 }
 
+#define STACK_DEPTH     (2000/4)
+
+static StackType_t uxStackBuffer[STACK_DEPTH];
+static StaticTask_t xTaskBuffer;
+
 static void enc_state_init(audio_encoder_t *enc_t);
 
 void audio_init(void)
@@ -235,15 +263,27 @@ void audio_init(void)
                                  ucQueueStorageArea,
                                  &xStaticSampleQueue);
 
-    xTaskCreate(audio_task,
+    xTaskCreateStatic(audio_task,
                "b",
-               1024,
+               STACK_DEPTH,
                NULL,
-               (configMAX_PRIORITIES - 14),
-               NULL);
+               2,
+               uxStackBuffer,
+               &xTaskBuffer);
 
     audio_input_setup();
     LOG_PRINTF(LOG_LEVEL_INFO,"Initialization completed.");
+}
+
+static void enc_state_reset(void)
+{
+#if (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_ADPCM)
+
+#elif (AUDIO_CODEC_ALG == AUDIO_CODEC_ALG_SBC)
+    memset(&sbc, 0, sizeof(sbc));
+    sbc.frame = frame_param;
+    sbc_enc_init(&sbc, enc_output_cb, 0);
+#endif
 }
 
 static void enc_state_init(audio_encoder_t *enc_t)
@@ -254,8 +294,8 @@ static void enc_state_init(audio_encoder_t *enc_t)
     enc = &adpcm;
     adpcm_enc_init(enc, enc_output_cb, 0);
     enc_t->type = ADPCM_ENCODER;
-    enc_t->sample_buf.num = 2;
-    enc_t->sample_buf.size = 20;
+    enc_t->sample_buf.num = SAMPLE_BUF_CNT;
+    enc_t->sample_buf.size = SAMPLE_BUF_LEN;
     enc_t->encoder = (fun_encoder)adpcm_encode;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
 
@@ -263,11 +303,21 @@ static void enc_state_init(audio_encoder_t *enc_t)
     enc_t->type = SBC_ENCODER;
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Encoder-->[SBC]");
     enc = &sbc;
-    sbc_enc_init(enc, enc_output_cb, 0L);
+    enc_state_reset();
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Configure encode's parameter...");
-    enc_t->sample_buf.num = 2;
-    enc_t->sample_buf.size = sbc_get_codesize(&sbc);
+    enc_t->sample_buf.num = SAMPLE_BUF_CNT;
+    enc_t->sample_buf.size = sbc_get_n_of_samples(&sbc);
     LOG_PRINTF_TAB(LOG_LEVEL_INFO,"Parameter configured successfully.");
-    enc_t->encoder = (fun_encoder)sbc_encode;
+    enc_t->encoder = (fun_encoder)sbc_enc;
 #endif
+    if (SAMPLE_BUF_LEN > enc_t->sample_buf.size)
+    {
+        LOG_PRINTF_TAB(LOG_LEVEL_INFO, "SAMPLE_BUF_LEN (%d) is larger than required (%d)",
+            SAMPLE_BUF_LEN, enc_t->sample_buf.size);
+    }
+    else if (SAMPLE_BUF_LEN < enc_t->sample_buf.size)
+    {
+        LOG_PRINTF_TAB(LOG_LEVEL_ERROR, "SAMPLE_BUF_LEN (%d) is smaller than required (%d)",
+            SAMPLE_BUF_LEN, enc_t->sample_buf.size);
+    }
 }
