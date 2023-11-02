@@ -272,12 +272,10 @@ void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
-//                              uint8_t cte_len,
-//                              uint8_t switching_pattern_len,
-//                              const uint8_t *switching_pattern);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
+                             uint8_t cte_len,
+                             uint8_t switching_pattern_len,
+                             const uint8_t *switching_pattern);
 
 /**
  ****************************************************************************************
@@ -340,17 +338,15 @@ int ll_scanner_enable_iq_sampling(uint8_t cte_type,
  * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
-// int ll_scanner_enable_iq_sampling_on_legacy(
-//                           uint16_t sampling_offset,
-//                           uint8_t cte_type,
-//                           uint8_t cte_time,
-//                           uint8_t slot_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *switching_pattern,
-//                           uint8_t slot_sampling_offset,
-//                           uint8_t slot_sample_count);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_scanner_enable_iq_sampling_on_legacy(
+                          uint16_t sampling_offset,
+                          uint8_t cte_type,
+                          uint8_t cte_time,
+                          uint8_t slot_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *switching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
 
 struct ll_raw_packet;
 
@@ -911,9 +907,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  *                          For example, standard value for channel 37 is 0x53.
  ****************************************************************************************
  */
-// void ll_override_whitening_init_value(uint8_t override, uint8_t value);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_override_whitening_init_value(uint8_t override, uint8_t value);
 
 /**
  ****************************************************************************************
@@ -923,9 +917,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  * @param[in]  type         nonstandard ADV TYPE
  ****************************************************************************************
  */
-// void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
 
 /**
  ****************************************************************************************
@@ -934,9 +926,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  * @param[in]  bit          CTE bit: 0/1 (default: 1)
  ****************************************************************************************
  */
-// void ll_set_cte_bit(uint8_t bit);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_cte_bit(uint8_t bit);
 
 /**
  ****************************************************************************************
