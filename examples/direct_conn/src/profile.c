@@ -9,7 +9,7 @@
 // GATT characteristic handles
 #include "../data/gatt.const"
 
-#if (CONN_ROLE != HCI_ROLE_SLAVE)
+#if (CONN_ROLE != HCI_ROLE_MASTER)
 const static uint8_t profile_data[] = {
     #include "../data/gatt.profile"
 };
@@ -165,7 +165,7 @@ void on_access_rx(struct ll_raw_packet *packet, void *user_data)
     uint8_t header;
     int len = 0;
     int rssi;
-    
+
     if ((ll_raw_packet_get_rx_data(packet, &air_time, &header, pkt_data, &len, &rssi) != 0)
         || (len != sizeof(adv_addr))
         || memcmp(pkt_data, adv_addr, sizeof(adv_addr)))
@@ -183,7 +183,7 @@ void on_paging_rx(struct ll_raw_packet *packet, void *user_data)
     uint8_t header;
     int len = 0;
     int rssi;
-    
+
     if ((ll_raw_packet_get_rx_data(packet, &paging_time, &header, pkt_data, &len, &rssi) != 0)
         || (len != sizeof(struct paging_pkt)))
     {
@@ -256,7 +256,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                 profile_data);
 #endif
-            
+
             break;
         default:
             break;
