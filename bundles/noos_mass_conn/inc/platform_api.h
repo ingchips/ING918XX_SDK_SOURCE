@@ -462,6 +462,9 @@ typedef enum
     PLATFORM_CFG_PS_DBG_3,
     PLATFORM_CFG_PS_DBG_4,                  // Debugging parameters for ING916. Default (0)
                                             // Bit [0]: `platform_shutdown` uses DEEPER SLEEP (1) or SLEEP (0)
+    PLATFORM_CFG_FAST_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (fast deep sleep mode) in us.
+                                                 // Requirement: < PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION
+                                                 // Only available for ING916 (default: ~2000us)
 } platform_cfg_item_t;
 
 typedef enum

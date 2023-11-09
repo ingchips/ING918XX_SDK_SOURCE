@@ -1013,11 +1013,11 @@ typedef struct le_directed_adv_report
 } le_directed_adv_report_t;
 
 // LE Directed Advertising Report Event
-typedef struct le_meta_directed_adv_report
+typedef struct le_meta_event_directed_adv_report
 {
     uint8_t                  num_of_reports;
     le_directed_adv_report_t reports[1];
-} le_meta_directed_adv_report_t;
+} le_meta_event_directed_adv_report_t;
 
 typedef struct le_meta_event_enh_create_conn_complete
 {
@@ -1045,14 +1045,44 @@ typedef struct le_meta_event_enh_create_conn_complete
     uint8_t             clk_accuracy;
 } le_meta_event_enh_create_conn_complete_t;
 
+typedef struct le_meta_event_enh_create_conn_complete_v2
+{
+    //Status of received command
+    uint8_t             status;
+    //Connection handle
+    uint16_t            handle;
+    //Device role - 0=Master/ 1=Slave
+    uint8_t             role;
+    //Peer address type - 0=public/1=random
+    bd_addr_type_t      peer_addr_type;
+    //Peer address
+    bd_addr_t           peer_addr;
+    //Local_Resolvable_Private_Address
+    bd_addr_t           local_resolv_priv_addr;
+    //Peer_Resolvable_Private_Address
+    bd_addr_t           peer_resolv_priv_addr;
+    //Connection interval
+    uint16_t            interval;
+    //Connection latency
+    uint16_t            latency;
+    //Link supervision timeout
+    uint16_t            sup_timeout;
+    //Master clock accuracy
+    uint8_t             clk_accuracy;
+    //the advertising set
+    uint8_t             adv_handle;
+    //the periodic advertising train
+    uint16_t            sync_Handle;
+} le_meta_event_enh_create_conn_complete_v2_t;
+
 // LE PHY Update Complete Event
-typedef struct le_meta_phy_update_complete
+typedef struct le_meta_event_phy_update_complete
 {
     uint8_t             status;
     uint16_t            handle;
     phy_type_t          tx_phy;
     phy_type_t          rx_phy;
-} le_meta_phy_update_complete_t;
+} le_meta_event_phy_update_complete_t;
 
 // evt_type
 #define HCI_EXT_ADV_PROP_CONNECTABLE    (1 << 0)
@@ -1106,6 +1136,24 @@ typedef struct le_meta_event_periodic_adv_sync_established
     uint8_t             clk_accuracy;
 } le_meta_event_periodic_adv_sync_established_t;
 
+typedef struct le_meta_event_periodic_adv_sync_established_v2
+{
+    uint8_t             status;
+    uint16_t            handle;
+    uint8_t             sid;
+    bd_addr_type_t      addr_type;
+    bd_addr_t           address;
+    phy_type_t          phy;
+    uint16_t            interval;
+    uint8_t             clk_accuracy;
+
+    // [V2] additional fields
+    uint8_t             num_subevents;
+    uint8_t             subevent_interval;
+    uint8_t             rsp_slot_delay;
+    uint8_t             rsp_slot_spacing;
+} le_meta_event_periodic_adv_sync_established_v2_t;
+
 #define HCI_PRD_ADV_DATA_STATUS_CML        (0)
 #define HCI_PRD_ADV_DATA_STATUS_HAS_MORE   (1)
 #define HCI_PRD_ADV_DATA_STATUS_TRUNCED    (2)
@@ -1116,11 +1164,24 @@ typedef struct le_meta_event_periodic_adv_report
     uint16_t            handle;
     int8_t              tx_power;
     int8_t              rssi;
-    uint8_t             unused;
+    uint8_t             cte_type;
     uint8_t             data_status;
     uint8_t             data_length;
     uint8_t             data[0];
 } le_meta_event_periodic_adv_report_t;
+
+typedef struct le_meta_event_periodic_adv_report_v2
+{
+    uint16_t            handle;
+    int8_t              tx_power;
+    int8_t              rssi;
+    uint8_t             cte_type;
+    uint16_t            periodic_event_counter;
+    uint8_t             subevent;
+    uint8_t             data_status;
+    uint8_t             data_length;
+    uint8_t             data[0];
+} le_meta_event_periodic_adv_report_v2_t;
 
 // LE Periodic Advertising Sync Lost Event
 typedef struct le_meta_event_periodic_adv_sync_lost
@@ -1132,21 +1193,21 @@ typedef struct le_meta_event_periodic_adv_sync_lost
 // {}
 
 // LE Advertising Set Terminated Event
-typedef struct le_meta_adv_set_terminated
+typedef struct le_meta_event_adv_set_terminated
 {
     uint8_t  status;
     uint8_t  adv_handle;
     uint16_t conn_handle;
     uint8_t  num_events;  // Num_Completed_Extended_Advertising_Events
-} le_meta_adv_set_terminated_t;
+} le_meta_event_adv_set_terminated_t;
 
 //  LE Scan Request Received Event
-typedef struct le_meta_scan_req_received
+typedef struct le_meta_event_scan_req_received
 {
     uint8_t        adv_handle;
     bd_addr_type_t scanner_addr_type;
     bd_addr_t      scanner_addr;
-} le_meta_scan_req_received_t;
+} le_meta_event_scan_req_received_t;
 
 typedef enum ble_ch_sel_algo
 {
@@ -1156,11 +1217,11 @@ typedef enum ble_ch_sel_algo
 } ble_ch_sel_algo_t;
 
 // LE Channel Selection Algorithm Event
-typedef struct le_meta_ch_sel_algo
+typedef struct le_meta_event_ch_sel_algo
 {
     uint16_t conn_handle;
     ble_ch_sel_algo_t algo;
-} le_meta_ch_sel_algo_t;
+} le_meta_event_ch_sel_algo_t;
 
 typedef struct le_iq_sample
 {
@@ -1168,7 +1229,7 @@ typedef struct le_iq_sample
     int8_t q;
 } le_iq_sample_t;
 
-typedef struct le_meta_connless_iq_report
+typedef struct le_meta_event_connless_iq_report
 {
     uint16_t sync_handle;
     uint8_t  channel_index;
@@ -1180,9 +1241,9 @@ typedef struct le_meta_connless_iq_report
     uint16_t event_counter;
     uint8_t  sample_count;
     le_iq_sample_t samples[0];
-} le_meta_connless_iq_report_t;
+} le_meta_event_connless_iq_report_t;
 
-typedef struct le_meta_pro_connless_iq_report
+typedef struct le_meta_event_pro_connless_iq_report
 {
     bd_addr_type_t addr_type;
     bd_addr_t  addr;
@@ -1195,9 +1256,9 @@ typedef struct le_meta_pro_connless_iq_report
     uint8_t  packet_status;
     uint8_t  sample_count;
     le_iq_sample_t samples[0];
-} le_meta_pro_connless_iq_report_t;
+} le_meta_event_pro_connless_iq_report_t;
 
-typedef struct le_meta_conn_iq_report
+typedef struct le_meta_event_conn_iq_report
 {
     uint16_t conn_handle;
     phy_type_t rx_phy;
@@ -1210,15 +1271,15 @@ typedef struct le_meta_conn_iq_report
     uint16_t event_counter;
     uint8_t  sample_count;
     le_iq_sample_t samples[0];
-} le_meta_conn_iq_report_t;
+} le_meta_event_conn_iq_report_t;
 
-typedef struct le_meta_cte_req_failed
+typedef struct le_meta_event_cte_req_failed
 {
     uint8_t  status;
     uint16_t conn_handle;
-} le_meta_cte_req_failed_t;
+} le_meta_event_cte_req_failed_t;
 
-typedef struct le_meta_prd_adv_sync_transfer_recv
+typedef struct le_meta_event_prd_adv_sync_transfer_recv
 {
     uint8_t  status;
     uint16_t conn_handle;
@@ -1230,7 +1291,27 @@ typedef struct le_meta_prd_adv_sync_transfer_recv
     phy_type_t phy;
     uint16_t   prd_adv_interval;
     uint8_t    clk_acc;
-} le_meta_prd_adv_sync_transfer_recv_t;
+} le_meta_event_prd_adv_sync_transfer_recv_t;
+
+typedef struct le_meta_event_prd_adv_sync_transfer_recv_v2
+{
+    uint8_t  status;
+    uint16_t conn_handle;
+    uint16_t service_data;
+    uint16_t sync_handle;
+    uint8_t  adv_sid;
+    bd_addr_type_t  addr_type;
+    bd_addr_t  addr;
+    phy_type_t phy;
+    uint16_t   prd_adv_interval;
+    uint8_t    clk_acc;
+
+    // [V2] additional fields
+    uint8_t             num_subevents;
+    uint8_t             subevent_interval;
+    uint8_t             rsp_slot_delay;
+    uint8_t             rsp_slot_spacing;
+} le_meta_event_prd_adv_sync_transfer_recv_v2_t;
 
 typedef enum le_clock_accuracy
 {
@@ -1244,12 +1325,12 @@ typedef enum le_clock_accuracy
     LE_CLOCK_ACCURACY_20_PPM,
 } le_clock_accuracy_t;
 
-typedef struct le_meta_request_peer_sca_complete
+typedef struct le_meta_event_request_peer_sca_complete
 {
     uint8_t  status;
     uint16_t conn_handle;
     le_clock_accuracy_t peer_clock_accuracy;
-} le_meta_request_peer_sca_complete_t;
+} le_meta_event_request_peer_sca_complete_t;
 
 typedef enum le_path_loss_zone_event
 {
@@ -1258,12 +1339,12 @@ typedef enum le_path_loss_zone_event
     PATH_LOSS_ZONE_ENTER_HIGH = 2,
 } le_path_loss_zone_event_t;
 
-typedef struct le_meta_path_loss_threshold
+typedef struct le_meta_event_path_loss_threshold
 {
     uint16_t conn_handle;
     uint8_t  current_path_loss;     // Current path loss (always zero or positive) Units: dB
     le_path_loss_zone_event_t  zone_entered;
-} le_meta_path_loss_threshold_t;
+} le_meta_event_path_loss_threshold_t;
 
 typedef enum le_tx_power_reporting_reason
 {
@@ -1272,7 +1353,7 @@ typedef enum le_tx_power_reporting_reason
     TX_POWER_REPORTING_REASON_HCI_COMPLETE = 2,
 } le_tx_power_reporting_reason_t;
 
-typedef struct le_meta_tx_power_reporting
+typedef struct le_meta_event_tx_power_reporting
 {
     uint8_t  status;
     uint16_t conn_handle;
@@ -1285,7 +1366,7 @@ typedef struct le_meta_tx_power_reporting
                                     // negative indicates decreased power, zero indicates unchanged)
                                     // Units: dB
                                     // 0x7F: Change is not available or is out of range
-} le_meta_tx_power_reporting_t;
+} le_meta_event_tx_power_reporting_t;
 
 typedef struct le_meta_subrate_change
 {
@@ -1304,6 +1385,83 @@ typedef struct le_meta_subrate_change
                                     // Time = N �� 10 ms
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
+
+typedef struct le_mete_event_prd_adv_subevent_data_req
+{
+    uint8_t adv_handle;             // Used to identify a periodic advertising train
+                                    // Range: 0x00 to 0xEF
+    uint8_t subevent_start;         // The first subevent that data is requested for.
+                                    // Range: 0x00 to 0x7F
+    uint8_t subevent_data_count;    // The number of subevents that data is requested for.
+                                    // Range: 0x01 to 0x80
+} le_mete_event_prd_adv_subevent_data_req_t;
+
+typedef struct le_prd_adv_rsp_report
+{
+     int8_t tx_power;       // Range: -127 to +20. Unit dBm
+                            // 0x7F: Tx Power information not available
+     int8_t rssi;           // Range: -127 to +20. Unit dBm
+                            // 0x7F: RSSI not available
+    uint8_t cte_type;       // 0x00: AoA; 0x01: AoD (1us); 0x02: AoD (2us)
+                            // 0xFF: no CTE
+    uint8_t response_slot;  // The response slot the data was received in.
+                            // Range: 0x00 to 0xFF
+    uint8_t data_status;    // 0x00: Data complete;
+                            // 0x01: Data incomplete, more data to come;
+                            // 0xFF: Failed to receive an AUX_SYNC_SUBEVENT_RSP PDU
+    uint8_t data_length;    // Length of the Data field
+#ifdef __ICCARM__
+    uint8_t data[1];
+#else
+    uint8_t data[0];
+#endif
+} le_prd_adv_rsp_report_t;
+
+typedef struct le_mete_event_prd_adv_rsp_report
+{
+    uint8_t adv_handle;     // Used to identify a periodic advertising train
+                            // Range: 0x00 to 0xEF
+    uint8_t subevent;       // The subevent number.
+                            // Range: 0x00 to 0x7F
+    uint8_t tx_status;      // 0x00: AUX_SYNC_SUBEVENT_IND packet was transmitted
+                            // 0x01: AUX_SYNC_SUBEVENT_IND packet was not transmitted.
+                            // Others: reserved
+    uint8_t num_responses;  // Number of responses in event.
+                            // This is always <= 1
+    le_prd_adv_rsp_report_t reports[1];
+} le_mete_event_prd_adv_rsp_report_t;
+
+// for naming compatibility
+#define le_meta_tx_power_reporting_t        le_meta_event_tx_power_reporting_t
+#define le_meta_tx_power_reporting          le_meta_event_tx_power_reporting
+#define le_meta_path_loss_threshold_t       le_meta_event_path_loss_threshold_t
+#define le_meta_path_loss_threshold         le_meta_event_path_loss_threshold
+#define le_meta_request_peer_sca_complete_t     le_meta_event_request_peer_sca_complete_t
+#define le_meta_request_peer_sca_complete       le_meta_event_request_peer_sca_complete
+#define le_meta_prd_adv_sync_transfer_recv_v2_t le_meta_event_prd_adv_sync_transfer_recv_v2_t
+#define le_meta_prd_adv_sync_transfer_recv_v2   le_meta_event_prd_adv_sync_transfer_recv_v2
+#define le_meta_prd_adv_sync_transfer_recv_t    le_meta_event_prd_adv_sync_transfer_recv_t
+#define le_meta_prd_adv_sync_transfer_recv      le_meta_event_prd_adv_sync_transfer_recv
+#define le_meta_conn_iq_report_t            le_meta_event_conn_iq_report_t
+#define le_meta_conn_iq_report              le_meta_event_conn_iq_report
+#define le_meta_cte_req_failed_t            le_meta_event_cte_req_failed_t
+#define le_meta_cte_req_failed              le_meta_event_cte_req_failed
+#define le_meta_pro_connless_iq_report      le_meta_event_pro_connless_iq_report
+#define le_meta_pro_connless_iq_report      le_meta_event_pro_connless_iq_report
+#define le_meta_connless_iq_report_t        le_meta_event_connless_iq_report_t
+#define le_meta_connless_iq_report          le_meta_event_connless_iq_report
+#define le_meta_ch_sel_algo_t               le_meta_event_ch_sel_algo_t
+#define le_meta_ch_sel_algo                 le_meta_event_ch_sel_algo
+#define le_meta_scan_req_received_t         le_meta_event_scan_req_received_t
+#define le_meta_scan_req_received           le_meta_event_scan_req_received
+#define le_meta_phy_update_complete_t       le_meta_event_phy_update_complete_t
+#define le_meta_phy_update_complete         le_meta_event_phy_update_complete
+#define le_meta_directed_adv_report_t       le_meta_event_directed_adv_report_t
+#define le_meta_directed_adv_report         le_meta_event_directed_adv_report
+#define le_mete_prd_adv_subevent_data_req_t le_mete_event_prd_adv_subevent_data_req_t
+#define le_mete_prd_adv_subevent_data_req   le_mete_event_prd_adv_subevent_data_req
+#define le_meta_adv_set_terminated_t        le_meta_event_adv_set_terminated_t
+#define le_meta_adv_set_terminated          le_meta_event_adv_set_terminated
 
 typedef enum btstack_l2cap_msg_def
 {

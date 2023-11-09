@@ -183,7 +183,7 @@ typedef enum
 
 typedef uint8_t adv_event_properties_t;
 
-#define PERIODIC_ADV_BIT_INC_TX      BIT(6)
+#define PERIODIC_ADV_BIT_INC_TX      BIT(ADV_INC_TX_POWER)
 typedef uint8_t periodic_adv_properties_t;
 
 /**
@@ -1408,11 +1408,11 @@ uint8_t gap_test_end(void);
 
 typedef struct
 {
-    uint8_t subevent;       // The subevent index of the data contained in this command. Range: 0x00 to 0x7F
-    uint8_t rsp_slot_start; // The first response slots to be used in this subevent
-    uint8_t rsp_slot_count; // The number of response slots to be used.
-    uint8_t data_len;       // The number of octets in the `data`. [0..251]
-    uint8_t data[0];        // Advertising data
+    uint8_t         subevent;       // The subevent index of the data contained in this command. Range: 0x00 to 0x7F
+    uint8_t         rsp_slot_start; // The first response slots to be used in this subevent
+    uint8_t         rsp_slot_count; // The number of response slots to be used.
+    uint8_t         data_len;       // The number of octets in the `data`. [0..251]
+    const uint8_t * data;           // Advertising data
 } gap_prd_adv_subevent_data_t;
 
 #pragma pack (pop)
@@ -1448,7 +1448,7 @@ uint8_t gap_set_periodic_adv_subevent_data(uint8_t adv_handle,
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
 uint8_t gap_set_periodic_adv_rsp_data(uint16_t sync_handle,
-                                      uint8_t request_event,
+                                      uint16_t request_event,
                                       uint8_t request_subevent,
                                       uint8_t rsp_subevent,
                                       uint8_t rsp_slot,
@@ -1460,7 +1460,7 @@ uint8_t gap_set_periodic_adv_rsp_data(uint16_t sync_handle,
  *
  * @param[in] sync_handle               Identify the PAwR train. Range: 0x0000 to 0x0EFF
  * @param[in] periodic_adv_properties   Properties (bit combination of \ref `adv_event_property_t`).
- *                                      Only 0 or (1 << ADV_INC_TX_POWER) is allowed.
+ *                                      Only 0 or PERIODIC_ADV_BIT_INC_TX is allowed.
  * @param[in] num_subevents             Number of subevents.  Range: 0x01 to 0x80
  * @param[in] subevents                 Each subevent to synchronize with. Range 0x00 to 0x7F
  * @return                              0: Message is sent out; Other: Message is not sent out
