@@ -1446,7 +1446,7 @@ typedef struct le_mete_event_prd_adv_rsp_report
 #define le_meta_conn_iq_report              le_meta_event_conn_iq_report
 #define le_meta_cte_req_failed_t            le_meta_event_cte_req_failed_t
 #define le_meta_cte_req_failed              le_meta_event_cte_req_failed
-#define le_meta_pro_connless_iq_report      le_meta_event_pro_connless_iq_report
+#define le_meta_pro_connless_iq_report_t    le_meta_event_pro_connless_iq_report_t
 #define le_meta_pro_connless_iq_report      le_meta_event_pro_connless_iq_report
 #define le_meta_connless_iq_report_t        le_meta_event_connless_iq_report_t
 #define le_meta_connless_iq_report          le_meta_event_connless_iq_report

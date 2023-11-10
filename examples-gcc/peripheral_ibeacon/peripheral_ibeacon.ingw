@@ -1,7 +1,7 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 135764,
+   "size": 135744,
    "base": 16384
   },
   "ram": {
@@ -12,7 +12,7 @@
    "base": 155648
   },
   "version": [
-   1,9,39]
+   1,9,40]
  },
  "tc_dir": "C:\\Programs\\gcc-arm-none-eabi-10.3-2021.10\\bin",
  "ide_ver": "",
