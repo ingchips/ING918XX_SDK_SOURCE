@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "blink.h"
+#include "peripheral_qdec.h"
 
 #include "../../peripheral_console/src/key_detector.h"
 
@@ -105,7 +106,7 @@ void setup_peripherals(void)
     GIO_SetDirection(KEY_PIN, GIO_DIR_INPUT);
     GIO_ConfigIntSource(KEY_PIN, GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE, GIO_INT_EDGE);
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
-        
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     // setup timer 1: 10Hz
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 10);
@@ -124,10 +125,10 @@ void setup_peripherals(void)
     TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / 10);
     TMR_Enable(APB_TMR1, 0, 0xf);
     TMR_IntEnable(APB_TMR1, 0, 0xf);
-    
+
     PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_UP);
 
-    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM0_A);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -150,7 +151,7 @@ uint32_t timer_isr(void *user_data)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define DB_FLASH_ADDRESS  0x42000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#define DB_FLASH_ADDRESS  0x20e0000
+#define DB_FLASH_ADDRESS  0x2042000
 #else
 #error unknown or unsupported chip family
 #endif
@@ -168,6 +169,43 @@ int read_from_flash(void *db, const int max_size)
     return KV_OK;
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+// make sure that PClk is <= slow_clk
+static void QDEC_PclkCfg(void)
+{
+    uint32_t hclk = SYSCTRL_GetHClk();
+    uint32_t slowClk = SYSCTRL_GetSlowClk();
+    uint8_t div = hclk / slowClk;
+    if (hclk % slowClk)
+        div++;
+    if (div <= 15)      // This div has 4 bits at most
+        SYSCTRL_SetPClkDiv(div);
+    else;               // ERROR
+}
+
+static void QDEC_Setup(void)
+{
+    uint8_t div = SYSCTRL_GetPClkDiv();
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_QDEC);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_PinCtrl |
+                         SYSCTRL_ITEM_APB_QDEC);
+    PINCTRL_SelQDECIn(21, 22);
+
+    SYSCTRL_SelectQDECClk(SYSCTRL_CLK_SLOW, 25);
+
+    // PClk must be <= slow_clk
+    // when configuring QDEC
+    QDEC_PclkCfg();
+
+    QDEC_EnableQdecDiv(QDEC_DIV_1024);
+    QDEC_QdecCfg(63, 0);
+    QDEC_ChannelEnable(1);
+
+    // restore PClk
+    SYSCTRL_SetPClkDiv(div);
+}
+#endif
+
 extern void on_key_event(key_press_event_t evt);
 
 trace_rtt_t trace_ctx = {0};
@@ -182,12 +220,12 @@ int app_main()
     setup_peripherals();
 
     // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
-    
-    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);    
+
+    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-    
+
     kv_init(db_write_to_flash, read_from_flash);
 
     key_detect_init(on_key_event);
@@ -195,6 +233,9 @@ int app_main()
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0xfff);
+#if (!defined SIMULATION) && (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    QDEC_Setup();
+#endif
 
     return 0;
 }

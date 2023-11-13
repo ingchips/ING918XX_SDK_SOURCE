@@ -65,14 +65,11 @@ uint32_t uart_driver_isr(void *user_data)
 
         ctx.port->IntClear = status;
 
-        // rx int
-        if (status & (1 << bsUART_RECEIVE_INTENAB))
+        // check rx data (Note: maybe time out happened)
+        while (apUART_Check_RXFIFO_EMPTY(ctx.port) != 1)
         {
-            while (apUART_Check_RXFIFO_EMPTY(ctx.port) != 1)
-            {
-                uint8_t b = ctx.port->DataRead;
-                ctx.rx_byte_cb(ctx.user_data, b);
-            }
+            uint8_t b = ctx.port->DataRead;
+            ctx.rx_byte_cb(ctx.user_data, b);
         }
 
         // tx int
@@ -109,6 +106,24 @@ int uart_add_buffer(uart_driver_ctx_t *ctx, const void *buffer, int size, int st
         memcpy(ctx->buffer, (const uint8_t *)buffer + remain, size);
         return size;
     }
+}
+
+int driver_get_free_size(void)
+{
+    uint16_t next;
+    int16_t free_size;
+    uint8_t use_mutex = !IS_IN_INTERRUPT();
+    if (use_mutex)
+        GEN_OS->enter_critical();
+
+    next = ctx.write_next;
+    free_size = ctx.read_next - ctx.write_next;
+    if (free_size <= 0) free_size += UART_BUFF_SIZE;
+    if (free_size > 0) free_size--;
+
+    if (use_mutex)
+        GEN_OS->leave_critical();
+    return free_size;
 }
 
 uint32_t driver_append_tx_data(const void *data, int len)

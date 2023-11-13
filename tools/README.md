@@ -11,7 +11,37 @@ families.
     python icsdw.py /path/to/flash_download.ini
     ```
 
-Note: Python 3 and _pyserial_ is required to use this script.
+Just as the GUI downloader, this script supports COM (UART) and USB.
+
+Use 'pip install -r requirements.txt' to install all dependency packages
+
+### Extra Command Line Options
+
+Type `python icsdw.py` to see the help message for command line format.
+
+|Option                 | Explanation                            |
+|:--------------------|:-----------------------------------------|
+|--go                   |Skip handshaking.                      |
+|--user_data STRING     |Pass `STRING` to user defined `on_start_bin2`. |
+|--port PORT            |Use `PORT` to download.                |
+|--batch                |Enable batch operation.                |
+|--counter  NNN         |Set batch counter to `NNN`.            |
+|--timeout  TTT         |Set time out to `TTT` in seconds.      |
+
+Note: `--port`, `--batch`, `--counter` and `--timeout` override the corresponding
+settings in the project file (`flash_download.ini`).
+
+### Note for USB Flash Download
+
+- Use `python icsdw.py list-usb` to query all usb port. It will print the full name of
+  all available USB devices.
+
+- If `port` is set to `USB`, then the 1st found USB device is chosen. Use the full
+  name to specify it explicitly, for example:
+
+    ```shell
+    python icsdw.py /path/to/flash_download.ini --port USB#VID_FFFF#PID_FA2F#25#01#02
+    ```
 
 ## Flash Dumper
 
@@ -34,3 +64,28 @@ gen_files /path/to/sdk/bundles
 ```
 
 Note: [Nim](https://nim-lang.org/) is required to build this tool.
+
+## RTT Logger
+
+_rtt_logger.py_ is based on [pyocd](https://pyocd.io/), and supports J-Link,
+DAP-Link, etc.
+
+Usage:
+
+```shell
+python rtt_logger.py -RTTSearchRanges "0x2000XXXX 0xYYYY" log_file
+```
+
+### Command line options
+
+|Option  | Explanation                              |
+|:--------------------|:-----------------------------------------|
+|-Speed `SpeedInKHZ`  |Sets speed in kHz              |
+|-ID `id`             | Connects to the probe with unique `id`   |
+|-RTTAddress `RTTAddress` | Sets RTT address to `RTTAddress`     |
+|-RTTSearchRanges "`Ranges`" |Sets RTT search ranges to `Ranges` |
+|-RTTChannel `RTTChannel` | Sets RTT channel to `RTTChannel`     |
+
+`Ranges` is specified as `start` address and `size`, for example
+"0x2000XXXX 0xYYYY" tells this tool to search for RTT in the memory range
+from `0x2000XXXX` to `(0x2000XXXX + 0xYYYY)`.

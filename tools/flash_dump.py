@@ -51,32 +51,20 @@ def do_run_918(ser, FLAGS):
 
     return 0
 
-def do_run_916(ser, FLAGS):
+def do_run_916(d, FLAGS):
     import icsdw916
 
-    def read_page(ser: serial.Serial, addr):
-        ser.write(icsdw916.READ_PAGE + addr.to_bytes(4, 'little'))
-        return ser.read(icsdw916.PAGE_SIZE)
-
-    if not FLAGS.go:
-        if not icsdw916.wait_handshaking(ser, FLAGS.timeout):
-            print("handshaking timeout")
-            return 1
-    else:
-        ser.reset_input_buffer()
+    intf = icsdw916.intf_uart() if d.dev_type == 0 else icsdw916.intf_usb()
+    intf.prepare(d.dev, FLAGS.go, FLAGS.timeout)
 
     if FLAGS.baud != icsdw.DEF_BAUD:
-        print('baud -> {}'.format(FLAGS.baud))
-        if not icsdw.set_baud(ser, FLAGS.baud):
-            return 3
-        time.sleep(0.1)
-        ser.baudrate = FLAGS.baud
+        intf.modify_baud(d.dev, config)
 
     with open(FLAGS.file_name, 'wb') as f:
         for i in range(FLAGS.page_no):
             icsdw.printProgressBar(i, FLAGS.page_no)
-            addr = FLAGS.start_addr + i * icsdw916.PAGE_SIZE
-            f.write(read_page(ser, addr))
+            addr = FLAGS.start_addr + i * intf.PAGE_SIZE
+            f.write(intf.read_page(d.dev, addr))
         icsdw.printProgressBar(FLAGS.page_no, FLAGS.page_no)
 
     return -1
@@ -89,22 +77,20 @@ def run(FLAGS):
         'stopbits': 1,
         'databits': 8
     }
-    ser = open_serial(config)
+    d = icsdw.device(FLAGS.port, FLAGS.timeout, config)
 
-    if ser == None:
+    if d.dev is None:
         return 1
-
-    ser.timeout = FLAGS.timeout
 
     try:
         if FLAGS.family == 'ing918':
-            r = do_run_918(ser, FLAGS)
+            r = do_run_918(d.dev, FLAGS)
         elif FLAGS.family == 'ing916':
-            r = do_run_916(ser, FLAGS)
+            r = do_run_916(d, FLAGS)
         else:
             raise Exception('unknown chip family: ' + FLAGS.family)
     finally:
-        ser.close()
+        d.close()
     return r
 
 def auto_int(x):
@@ -116,7 +102,7 @@ if __name__ == '__main__':
     parser.add_argument(
         'port',
         type=str,
-        help='COM port')
+        help='COM port or USB port')
 
     parser.add_argument(
         'start_addr',

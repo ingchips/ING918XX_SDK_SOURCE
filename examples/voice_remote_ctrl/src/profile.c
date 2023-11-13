@@ -14,7 +14,7 @@
 
 #include "audio_service.h"
 
-#include "profile.h" 
+#include "profile.h"
 
 // GATT characteristic handles
 #include "../data/gatt.const"
@@ -46,7 +46,7 @@ static uint16_t next_block = 0;
 
 uint8_t audio_notify_enable = 0;
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -73,7 +73,7 @@ void update_conn_interval(hci_con_handle_t conn_handle, uint16_t interval)
         interval, interval, 0, interval > 10 ? interval : 10);
 }
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -93,7 +93,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
             audio_stop();
             break;
         }
-        
+
         return 0;
 
     case HANDLE_VOICE_OUTPUT + 1:
@@ -128,28 +128,25 @@ static void send_audio_data()
         return;
 
     uint16_t curr = audio_get_curr_block();
-    if (next_block != curr)
+    while (next_block != curr)
     {
-        att_server_notify(handle_send, HANDLE_VOICE_OUTPUT, audio_get_block_buff(next_block), VOICE_BUF_BLOCK_SIZE);
+        if (att_server_notify(handle_send, HANDLE_VOICE_OUTPUT, audio_get_block_buff(next_block), VOICE_BUF_BLOCK_SIZE) != 0)
+            break;
+
         next_block++;
         if (next_block >= VOICE_BUF_BLOCK_NUM) next_block = 0;
-        if (next_block != curr)
-            att_server_request_can_send_now_event(handle_send);
     }
 }
 
 static void setup_adv(void);
-const bd_addr_t rand_addr = {0xC3, 0x8E,0x05,0x3E,0x7E,0xA3};
+const bd_addr_t rand_addr = {0xC3, 0x8E,0x05,0x3E,0x7E,0xA8};
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
     switch (msg_id)
     {
     case USER_MSG_ID_REQUEST_SEND_AUDIO:
-        if (att_server_can_send_packet_now(handle_send))
-            send_audio_data();
-        else
-            att_server_request_can_send_now_event(handle_send);
+        send_audio_data();
         break;
     default:
         ;
@@ -162,7 +159,7 @@ static void setup_adv()
 {
     gap_set_ext_adv_enable(0, 0, NULL);
     gap_set_adv_set_random_addr(0, rand_addr);
-    gap_set_ext_adv_para(0, 
+    gap_set_ext_adv_para(0,
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -192,7 +189,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        
+
         setup_adv();
         break;
 
@@ -216,8 +213,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         setup_adv();
         break;
 
-    case ATT_EVENT_CAN_SEND_NOW:
+    case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
         send_audio_data();
+        break;
+
+    case ATT_EVENT_CAN_SEND_NOW:
         break;
 
     case BTSTACK_EVENT_USER_MSG:
@@ -232,9 +232,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    audio_init();
+
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
+
     return 0;
 }

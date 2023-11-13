@@ -34,9 +34,6 @@ extern trace_air_t trace_ctx;
 #define RX_GOLDEN_RAGE_MIN (-75)
 #define RX_GOLDEN_RAGE_MAX (-50)
 
-#define OPCODE(ogf, ocf)            (ocf | ogf << 10)
-#define OPCODE_READ_RSSI            OPCODE(OGF_STATUS_PARAMETERS, 0x05)
-
 sm_persistent_t sm_persistent =
 {
     .er = {1, 2, 3},
@@ -579,7 +576,7 @@ void unsub_to_char(int handle)
 
 void set_phy(int phy)
 {
-    phy_bittypes_t phy_bit;
+    phy_bittypes_t phy_bit = 0;
     phy_option_t   phy_opt = HOST_PREFER_S8_CODING;
     switch (phy)
     {
@@ -710,11 +707,15 @@ void ble_sync_gap(void)
 
 void change_conn_param(int interval, int latency, int timeout)
 {
-    interval = conn_param_requst.interval;
-    uint16_t ce_len = (interval << 1) - 2;
+    if (interval > 0) conn_param_requst.interval = interval;    
+    if (timeout > 0) conn_param_requst.timeout = timeout;
+    conn_param_requst.latency = latency;
+    
+    uint16_t ce_len = (conn_param_requst.interval << 1) - 2;
     mt_gap_update_connection_parameters(
             mas_conn_handle != INVALID_HANDLE ? mas_conn_handle : sla_conn_handle,
-            interval, interval,
+            conn_param_requst.interval, 
+            conn_param_requst.interval,
             conn_param_requst.latency,
             conn_param_requst.timeout,
             ce_len, ce_len);

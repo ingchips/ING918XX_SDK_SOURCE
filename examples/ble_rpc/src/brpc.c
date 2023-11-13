@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <alloca.h>
 #include "platform_api.h"
 #include "ll_api.h"
 #include "uart_driver.h"
@@ -11,6 +12,7 @@
 #include "btstack_defines.h"
 #include "gatt_client.h"
 #include "sm.h"
+
 
 #include "port_gen_os_driver.h"
 
@@ -129,7 +131,7 @@ void sys_mem_append_persistent(void *addr, uint16_t size, const void *buf)
     if (map == NULL)
         platform_raise_assertion(__FILE__, __LINE__);
 
-    memcpy(persist_mem_maps[i].local_addr + persist_mem_maps[i].local_written,
+    memcpy((uint8_t *)(persist_mem_maps[i].local_addr) + persist_mem_maps[i].local_written,
         buf, size);
     persist_mem_maps[i].local_written += size;
 }
@@ -843,6 +845,42 @@ static void handle_call(struct rpc_call_frame *call, int len)
         }
         return;
 
+    case ID_sys_aligned_read_mem:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                uint32_t addr;
+                int      len;
+            } *_param = (struct _param *)call->body;
+            #pragma pack (pop)
+            uint32_t *b = (uint32_t *)GEN_OS()->malloc(_param->len);
+            uint32_t *p = (uint32_t *)(uintptr_t)_param->addr;
+            int i;
+            for (i = 0; i < _param->len / sizeof(uint32_t); i++)
+                b[i] = p[i];
+            send_ret_response(ID_sys_aligned_read_mem, _param->len, b);
+            GEN_OS()->free(b);
+        }
+        return;
+
+    case ID_sys_aligned_write_mem:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                uint32_t addr;
+                uint32_t data[0];
+            } *_param = (struct _param *)call->body;
+            #pragma pack (pop)
+            len -= sizeof(_param->addr);
+            uint32_t *p = (uint32_t *)(uintptr_t)_param->addr;
+            int i;
+            for (i = 0; i < len / sizeof(uint32_t); i++)
+                p[i] = _param->data[i];
+        }
+        return;
+
     case ID_att_set_db:
         {
             #pragma pack (push, 1)
@@ -947,8 +985,19 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 }
 
 uint32_t cb_assertion(assertion_info_t *info, void *_)
-{
-    send_platform_event(PLATFORM_CB_EVT_ASSERTION, info, sizeof(*info));
+{    
+    #pragma pack (push, 1)
+    struct ret
+    {
+        int line_no;
+        char fn[1];
+    } *_r;
+    #pragma pack (pop)
+    
+    int len = sizeof(struct ret) + strlen(info->file_name);
+    _r = (struct ret *)alloca(sizeof(struct ret) + len);
+    strcpy(_r->fn, info->file_name);
+    send_platform_event(PLATFORM_CB_EVT_ASSERTION, _r, len);
     driver_flush_tx();
     platform_printf("[ASSERTION] @ %s:%d\n",
                     info->file_name,

@@ -231,7 +231,7 @@ static void gatt_client_sync_mark_done(struct btstack_synced_runner *runner)
     GEN_OS->event_set(runner->done_evt);
 }
 
-static void gatt_client_sync_disovered(service_node_t *first, void *user_data, int err_code)
+static void gatt_client_sync_discovered(service_node_t *first, void *user_data, int err_code)
 {
     struct btstack_synced_runner *runner = (struct btstack_synced_runner *)user_data;
     *runner->discover_all.err_code = err_code;
@@ -280,7 +280,7 @@ void write_value_callback(uint8_t packet_type, uint16_t con_handle, const uint8_
 static void discover_all(struct btstack_synced_runner *runner, uint16_t _)
 {
     runner->discover_all.r = gatt_client_util_discover_all(runner->discover_all.con_handle,
-            gatt_client_sync_disovered, runner);
+            gatt_client_sync_discovered, runner);
 }
 
 static void read_value(struct btstack_synced_runner *runner, uint16_t _)

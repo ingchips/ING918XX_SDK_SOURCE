@@ -1,6 +1,8 @@
 #pragma once
 
-#define BRPC_VERSION        0x1
+#include <stdint.h>
+
+#define BRPC_VERSION        0x2
 
 #define STATUS_OK           0
 #define STATUS_ERR          1
@@ -44,7 +46,6 @@ struct rpc_event_ready_frame
 
 struct rpc_event_hci_frame
 {
-
     uint8_t packet[0];
 };
 
@@ -165,6 +166,8 @@ struct frame_split
 #define ID_sys_shutdown                 8
 #define ID_sys_hrng                     9
 #define ID_sys_set_timer                10
+#define ID_sys_aligned_read_mem         11
+#define ID_sys_aligned_write_mem        12
 
 #define ID_att_set_db                   0x30
 #define ID_gatt_client_get_mtu          0x31

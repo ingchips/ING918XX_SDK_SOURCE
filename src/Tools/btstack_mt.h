@@ -65,7 +65,7 @@ void btstack_mt_event_set(struct btstack_mt_event * event);
 // Machine-generated code. DO NOT modify.
 // Note: below declarations are one-to-one mapping of APIs GAP and ATT server.
 // -----------------------------------------------------------------------------
-void mt_gap_set_random_device_address(
+uint8_t mt_gap_set_random_device_address(
     const uint8_t * address);
 
 uint8_t mt_gap_disconnect(
@@ -380,7 +380,7 @@ uint8_t mt_gap_rx_test_v3(
     uint8_t expected_cte_type,
     uint8_t slot_durations,
     uint8_t switching_pattern_length,
-    uint8_t * antenna_ids);
+    const uint8_t * antenna_ids);
 
 uint8_t mt_gap_tx_test_v2(
     uint8_t tx_channel,
@@ -396,7 +396,7 @@ uint8_t mt_gap_tx_test_v4(
     uint8_t cte_length,
     uint8_t cte_type,
     uint8_t switching_pattern_length,
-    uint8_t * antenna_ids,
+    const uint8_t * antenna_ids,
     int8_t tx_power_level);
 
 uint8_t mt_gap_test_end(
@@ -413,11 +413,13 @@ uint8_t mt_gap_start_ccm(
     uint16_t msg_len,
     uint16_t aad_len,
     uint32_t tag,
-    uint8_t * key,
-    uint8_t * nonce,
-    uint8_t * msg,
-    uint8_t * aad,
-    uint8_t * out_msg);
+    const uint8_t *key,
+    const uint8_t *nonce,
+    const uint8_t *msg,
+    const uint8_t *aad,
+    uint8_t *out_msg,
+    gap_hci_cmd_complete_cb_t cb,
+    void *user_data);
 
 int mt_att_server_deferred_read_response(
     hci_con_handle_t con_handle,

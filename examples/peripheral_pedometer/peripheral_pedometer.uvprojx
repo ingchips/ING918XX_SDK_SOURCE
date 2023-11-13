@@ -297,8 +297,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536901904</StartAddress>
-                <Size>34544</Size>
+                <StartAddress>536900792</StartAddress>
+                <Size>35656</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -454,6 +454,11 @@
               <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_pinctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_pwm.c</FilePath>
             </File>
           </Files>
         </Group>

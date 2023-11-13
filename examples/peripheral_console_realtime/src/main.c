@@ -4,6 +4,7 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include "port_gen_os_driver.h"
+#include "profile.h"
 
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -44,7 +45,7 @@ int fputc(int ch, FILE *f)
     return ch;
 }
 
-void config_uart(uint32_t freq, uint32_t baud)
+ADDITIONAL_ATTRIBUTE void config_uart(uint32_t freq, uint32_t baud)
 {
     UART_sStateStruct config;
 
@@ -67,51 +68,81 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 #define PIN_BUZZER 8
 
-void setup_peripherals(void)
+ADDITIONAL_ATTRIBUTE void setup_peripherals(void)
 {
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
-                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-    config_uart(OSC_CLK_FREQ, 115200);
 
 #ifdef LISTEN_TO_POWER_SAVING
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+
     PINCTRL_SetPadMux(PIN_BUZZER, IO_SOURCE_GPIO);
     GIO_SetDirection(PIN_BUZZER, GIO_DIR_OUTPUT);
     GIO_WriteValue(PIN_BUZZER, 1);
 #endif
 }
 
-uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
+ADDITIONAL_ATTRIBUTE uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
 #ifdef USE_POWER_LIB
     power_ctrl_deep_sleep_wakeup();
 #endif
+
+#ifdef LISTEN_TO_POWER_SAVING
     setup_peripherals();
-    return 1;
+#endif
+    return 0;
 }
 
-uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
+ADDITIONAL_ATTRIBUTE uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
     if (IS_DEBUGGER_ATTACHED())
         return 0;
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #ifdef USE_POWER_LIB
     power_ctrl_before_deep_sleep();
 #endif
-    return 1;
+    return PLATFORM_ALLOW_DEEP_SLEEP;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    return PLATFORM_ALLOW_DEEP_SLEEP | PLATFORM_ALLOW_BLE_ONLY_SLEEP;
+#endif
 }
 
 uintptr_t app_main()
 {
+    platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
+    platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
+
 #ifdef USE_POWER_LIB
     power_ctrl_init();
 #endif
-    platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define HCLK_DIV SYSCTRL_CLK_PLL_DIV_5
+
+    platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4100 - 400);
+    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 155);
+
+    SYSCTRL_EnableConfigClocksAfterWakeup(1,
+        PLL_HW_DEF_LOOP,
+        HCLK_DIV,
+        SYSCTRL_CLK_PLL_DIV_2,
+        0);
+
+    SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
+    SYSCTRL_SelectHClk(HCLK_DIV);
+    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
+
+    SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
+#endif
 
     // setup handlers
+    platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_HEAP_OOM, (f_platform_evt_cb)cb_heap_out_of_mem, NULL);

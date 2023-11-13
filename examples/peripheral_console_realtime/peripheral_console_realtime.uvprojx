@@ -7,15 +7,15 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6160000::V6.16::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91600</Device>
           <Vendor>INGChips</Vendor>
           <PackID>INGChips.INGCHIPS_DeviceFamilyPack.0.9.0</PackID>
           <PackURL>http://www.ingchips.com</PackURL>
-          <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
+          <Cpu>CLOCK(128000000) CPUTYPE("Cortex-M4") FPU2 ELITTLE IROM(0x2000000-0x21fffff) IRAM(0x20000000-0x20007fff)</Cpu>
           <FlashUtilSpec/>
           <StartupFile/>
           <FlashDriverDll/>
@@ -30,7 +30,7 @@
           <SLE66CMisc/>
           <SLE66AMisc/>
           <SLE66LinkerMisc/>
-          <SFDFile>$$Device:ING91800$SVD\ING91800.svd</SFDFile>
+          <SFDFile>$$Device:ing91600$SVD\ing91600.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath/>
@@ -171,7 +171,7 @@
             <AdsLsxf>1</AdsLsxf>
             <RvctClst>0</RvctClst>
             <GenPPlst>0</GenPPlst>
-            <AdsCpuType>"Cortex-M3"</AdsCpuType>
+            <AdsCpuType>"Cortex-M4"</AdsCpuType>
             <RvctDeviceName/>
             <mOS>0</mOS>
             <uocRom>0</uocRom>
@@ -180,9 +180,10 @@
             <hadIRAM>1</hadIRAM>
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
-            <RvdsVP>0</RvdsVP>
+            <RvdsVP>2</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -243,12 +244,12 @@
               <IRAM>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0x8000</Size>
               </IRAM>
               <IROM>
                 <Type>1</Type>
-                <StartAddress>0x4000</StartAddress>
-                <Size>0x40000</Size>
+                <StartAddress>0x2000000</StartAddress>
+                <Size>0x200000</Size>
               </IROM>
               <XRAM>
                 <Type>0</Type>
@@ -272,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>139264</StartAddress>
-                <Size>401408</Size>
+                <StartAddress>33710080</StartAddress>
+                <Size>368640</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -297,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536876432</StartAddress>
-                <Size>60016</Size>
+                <StartAddress>536888032</StartAddress>
+                <Size>40224</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -334,9 +335,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls/>
-              <Define>USE_STDPERIPH_DRIVER,LISTEN_TO_POWER_SAVING,POWER_SAVING</Define>
+              <Define>USE_STDPERIPH_DRIVER,LISTEN_TO_POWER_SAVING,POWER_SAVING,OPT_RAM_CODE</Define>
               <Undefine/>
-              <IncludePath>../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/noos_mini/inc;../../bundles/noos_mini/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -358,7 +359,7 @@
             </VariousControls>
           </Aads>
           <LDads>
-            <umfTarg>1</umfTarg>
+            <umfTarg>0</umfTarg>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
             <noStLib>0</noStLib>
@@ -367,7 +368,7 @@
             <TextAddressRange>0x00000000</TextAddressRange>
             <DataAddressRange>0x00000000</DataAddressRange>
             <pXoBase/>
-            <ScatterFile/>
+            <ScatterFile>.\peripheral_console_realtime.sct</ScatterFile>
             <IncludeLibs/>
             <IncludeLibsPath/>
             <Misc/>
@@ -406,19 +407,26 @@
           <GroupName>StartUP</GroupName>
           <Files>
             <File>
-              <FileName>startup_ing91800.s</FileName>
+              <FileName>startup_ing91600.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\src\startup_ing91800.s</FilePath>
+              <FilePath>.\src\startup_ing91600.s</FilePath>
             </File>
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>../..\bundles\noos_typical\ING9187xx\symdefs.m</FilePath>
+              <FilePath>../..\bundles\noos_mini\ING9168xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\eflash.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>

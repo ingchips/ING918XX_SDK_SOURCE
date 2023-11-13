@@ -266,6 +266,7 @@ typedef enum
 #define bsSPI_TRANSCTRL_DUALQUAD          22
 /* SPI_TransCtrl_TransMode_e */
 #define bsSPI_TRANSCTRL_TRANSMODE         24
+#define bsSPI_TRANSCTRL_ADDRFMT           28
 #define bsSPI_TRANSCTRL_ADDREN            29
 #define bsSPI_TRANSCTRL_CMDEN             30
 #define bsSPI_TRANSCTRL_SLVDATAONLY       31
@@ -275,6 +276,7 @@ typedef enum
 #define bwSPI_TRANSCTRL_WRTRANCNT         9
 #define bwSPI_TRANSCTRL_DUALQUAD          2
 #define bwSPI_TRANSCTRL_TRANSMODE         4
+#define bwSPI_TRANSCTRL_ADDRFMT           1
 #define bwSPI_TRANSCTRL_ADDREN            1
 #define bwSPI_TRANSCTRL_CMDEN             1
 
@@ -302,6 +304,7 @@ typedef enum
   SPI_TRANSMODE_READ_WRITE = 4,
   SPI_TRANSMODE_WRITE_DUMMY_READ = 5,
   SPI_TRANSMODE_READ_DUMMY_WRITE = 6,
+  SPI_TRANSMODE_NONE_DATA = 7,/* must enable addr or command phase */
   SPI_TRANSMODE_DUMMY_WRITE = 8,
   SPI_TRANSMODE_DUMMY_READ = 9
 }SPI_TransCtrl_TransMode_e;
@@ -329,6 +332,13 @@ typedef enum
   SPI_SLVDATAONLY_ENABLE = 1
 }SPI_TransCtrl_SlvDataOnly_e;
 
+/* SPI_ADDRFMT_SINGLE_MODE: regular mode, addr is transfered only on MOSI with SPI_TransFmt_AddrLen_e cycle
+   SPI_ADDRFMT_QUAD_MODE: addr is transfered as quad mode */
+typedef enum
+{
+  SPI_ADDRFMT_SINGLE_MODE = 0,
+  SPI_ADDRFMT_QUAD_MODE = 1
+}SPI_TransCtrl_AddrFmt_e;
 
 /* ----------------------------------------------------------
  * Description:
@@ -444,7 +454,7 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
 
 /* several options of spi clock */
 
-/* default clk config 
+/* default clk config for spi0 and spi1
    for default, spi interface clock is 24M, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
    for example, "eSclkDiv == 1" means 24M/(2*(1+1)) = 6M(spi clk speed)*/
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_6M    (1)
@@ -453,15 +463,27 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M4   (4)
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M    (5)
 
-/* hclk config 
-   for hclk, use SYSCTRL_SelectHClk() and SYSCTRL_SelectSpiClk() to increase spi interface clock
-   for instance, below config would setup a spi interface clock for 96M, use SYSCTRL_GetClk() to confirm
-    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);
-    SYSCTRL_SelectSpiClk(SPI_PORT_1,SYSCTRL_CLK_HCLK);
-   again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
-   for example, "eSclkDiv == 1" means 96M/(2*(1+1)) = 24M(spi clk speed)*/
-#define SPI_INTERFACETIMINGSCLKDIV_HCLK_24M    (1)
-#define SPI_INTERFACETIMINGSCLKDIV_HCLK_12M    (3)
+/* high speed SPI1 clk config 
+   1. SPI1 use HCLK, use SYSCTRL_SelectHClk() and SYSCTRL_SelectSpiClk() to increase spi interface clock
+   for instance, below config would setup a spi interface clock for 84M(if pll clock is 336M), use SYSCTRL_GetClk() to confirm
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);//setup hclk, 336/4 = 84M
+    SYSCTRL_SelectSpiClk(SPI_PORT_1,SYSCTRL_CLK_HCLK);//switch spi clock to hclk
+   this is only an example, use API "SYSCTRL_GetClk(SYSCTRL_ITEM_APB_SPI1)" to check the real spi interface clock
+   2. again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   for example, "eSclkDiv == 1" means 84M/(2*(1+1)) = 21M(spi clk speed)
+#define SPI_INTERFACETIMINGSCLKDIV_SPI1_21M    (1)
+#define SPI_INTERFACETIMINGSCLKDIV_SPI1_14M    (2)
+*/
+
+/* high speed SPI0 clk config 
+   1. for SPI0, use SYSCTRL_GetPLLClk() to check the source clock, then use below API to config spi interface clock
+   //for say, pll clock is 336M, then below api would generate a spi interface clock of 336/4 = 84M
+   SYSCTRL_SelectSpiClk(SPI_PORT_0,SYSCTRL_CLK_PLL_DIV_1+3);
+   2. again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   for example, "eSclkDiv == 1" means 84M/(2*(1+1)) = 21M(spi clk speed)
+#define SPI_INTERFACETIMINGSCLKDIV_SPI0_21M    (1)
+#define SPI_INTERFACETIMINGSCLKDIV_SPI0_14M    (2)
+*/
 
 typedef uint8_t  SPI_InterfaceTimingSclkDiv;// spi interface clock / (2 * (eSclkDiv + 1))
 
@@ -477,6 +499,29 @@ typedef uint8_t  SPI_InterfaceTimingSclkDiv;// spi interface clock / (2 * (eSclk
 #define bwSPI_SLAVE_DATA_COUNT_READ_CNT           10
 #define bwSPI_SLAVE_DATA_COUNT_WRITE_CNT          10
 
+/* ----------------------------------------------------------
+ * Description:
+ * SPI memory access control register
+ */
+
+#define bsSPI_MEMORY_ACCESS_CONTROL_RD_CMD           0
+#define bwSPI_MEMORY_ACCESS_CONTROL_RD_CMD           4
+
+typedef enum
+{
+  SPI_MEMRD_CMD_03 = 0 ,//read command 0x03 + 3bytes address(regular mode) + data (regular mode)
+  SPI_MEMRD_CMD_0B = 1 ,//read command 0x0B + 3bytes address(regular mode) + 1byte dummy + data (regular mode)
+  SPI_MEMRD_CMD_3B = 2 ,//read command 0x3B + 3bytes address(regular mode) + 1byte dummy + data (dual mode)
+  SPI_MEMRD_CMD_6B = 3 ,//read command 0x6B + 3bytes address(regular mode) + 1byte dummy + data (quad mode)
+  SPI_MEMRD_CMD_BB = 4 ,//read command 0xBB + 3bytes + 1byte 0 address(dual mode) + data (dual mode)
+  SPI_MEMRD_CMD_EB = 5 ,//read command 0xEB + 3bytes + 1byte 0 address(quad mode) + 2bytes dummy + data (quad mode)
+  SPI_MEMRD_CMD_13 = 8 ,//read command 0x13 + 4bytes address(regular mode) + data (regular mode)
+  SPI_MEMRD_CMD_0C = 9 ,//read command 0x0C + 4bytes address(regular mode) + 1byte dummy + data (regular mode)
+  SPI_MEMRD_CMD_3C = 10,//read command 0x3C + 4bytes address(regular mode) + 1byte dummy + data (dual mode)
+  SPI_MEMRD_CMD_6C = 11,//read command 0x6C + 4bytes address(regular mode) + 1byte dummy + data (quad mode)
+  SPI_MEMRD_CMD_BC = 12,//read command 0xBC + 4bytes + 1byte 0 address(dual mode) + data (dual mode)
+  SPI_MEMRD_CMD_EC = 13,//read command 0xEC + 4bytes + 1byte 0 address(quad mode) + 2bytes dummy + data (quad mode)
+}apSSP_sDeviceMemRdCmd;
 
 /*
  * Description:
@@ -670,6 +715,30 @@ uint16_t apSSP_GetSlaveRxDataCnt(SSP_TypeDef *SPI_BASE);
 uint8_t apSSP_GetTxFifoDepthWords(SSP_TypeDef *SPI_BASE);
 uint8_t apSSP_GetRxFifoDepthWords(SSP_TypeDef *SPI_BASE);
 
+/**
+ * @brief Set dummy cnt, only applies to mode 5,6,8,9 of SPI_TransCtrl_TransMode_e
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] cnt                   the final dummy cycle = (cnt+1)/(data len / io width)
+ *                                  data len: pParam.eDataSize, io width: 1(regular),4(quad)
+ */
+void apSSP_SetTransferControlDummyCnt(SSP_TypeDef *SPI_BASE, uint8_t cnt);
+
+/**
+ * @brief Set addr format, can only be one of SPI_TransCtrl_AddrFmt_e, only applies to master
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] fmt                   default is SPI_ADDRFMT_SINGLE_MODE
+ */
+void apSSP_SetTransferControlAddrFmt(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_AddrFmt_e fmt);
+
+/**
+ * @brief Set memory directly read cmd
+ *
+ * @param[in] SPI_BASE              base address, only apply to SPI0
+ * @param[in] cmd                   refer to apSSP_sDeviceMemRdCmd for different cmd format
+ */
+void apSSP_SetMemAccessCmd(SSP_TypeDef *SPI_BASE, apSSP_sDeviceMemRdCmd cmd);
 #endif
 
 #ifdef __cplusplus

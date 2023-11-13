@@ -3,7 +3,7 @@
  * Copyright Message
  *
  *  INGCHIPS confidential and proprietary.
- *  COPYRIGHT (c) 2018 by INGCHIPS
+ *  COPYRIGHT (c) 2018-2023 by INGCHIPS
  *
  *  All rights are reserved. Reproduction in whole or in part is
  *  prohibited without the written consent of the copyright owner.
@@ -153,7 +153,9 @@ uint8_t gatt_client_discover_characteristic_descriptors(btstack_packet_handler_t
 uint8_t gatt_client_read_value_of_characteristic_using_value_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle);
 
 /**
- * @brief Reads the characteric value of all characteristics with the uuid. For each found, an le_characteristic_value_event_t with type set to GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
+ * @brief Reads the characteristic value of all characteristics with the uuid. For each found, an le_characteristic_value_event_t with type set to GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
+ *
+ * Note: To search through all attributes, the starting handle shall be set to 0x0001 and the ending handle shall be set to 0xFFFF.
  */
 uint8_t gatt_client_read_value_of_characteristics_by_uuid16(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t start_handle, uint16_t end_handle, uint16_t uuid16);
 uint8_t gatt_client_read_value_of_characteristics_by_uuid128(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t start_handle, uint16_t end_handle, uint8_t * uuid128);

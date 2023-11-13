@@ -53,6 +53,7 @@ typedef enum
     GIO_GPIO_40 ,
     GIO_GPIO_41 ,
 #endif
+    GIO_GPIO_NUMBER,
 } GIO_Index_t;
 
 typedef enum
@@ -74,12 +75,6 @@ typedef enum
     GIO_INT_EDGE,
     GIO_INT_LOGIC
 } GIO_IntTriggerType_t;
-
-typedef enum
-{
-    GIO_PULL_UP,
-    GIO_PULL_DOWN
-} GIO_PullType_t;
 
 /**
  * @brief Set I/O direction of a GPIO
@@ -106,12 +101,20 @@ GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index);
 void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit);
 
 /**
- * @brief Get current value of a GPIO
+ * @brief Get current value of a GPIO which configured as input or both.
  *
  * @param[in] io_index          the GPIO
  * @return                      value
  */
 uint8_t GIO_ReadValue(const GIO_Index_t io_index);
+
+/**
+ * @brief Get current value of a GPIO which configured as output or both.
+ *
+ * @param[in] io_index          the GPIO
+ * @return                      value
+ */
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index);
 
 /**
  * @brief Config interrupt trigger type of a GPIO
@@ -196,18 +199,6 @@ static __INLINE void GIO_ClearBits(const uint32_t index_mask){ *GPIO_DOC = index
  */
 static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = index_mask;}
 
-/**
- * @brief Send a pulse of duration 200~380ns to GPIO
- *
- * Note:The running time is 200ns less than using GIO_SetBits with GIO_ClearBits to generate a pulse.
- */
-static __INLINE void GIO_SetQuicPulse(const uint64_t index_mask){
-    uint32_t tmp_set = (*GPIO_DO)|index_mask;
-    uint32_t tmp_clear = (*GPIO_DO)&(~index_mask);
-    *GPIO_DO = tmp_set;
-    *GPIO_DO = tmp_clear;
-}
-
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 typedef enum
@@ -267,8 +258,9 @@ void GIO_ClearAllIntStatus(void);
  *
  * Group A = {0, 5, 6, 21, 22, 23, 36, 37}.
  *
- * Once enabled, GPIO configuration (and their value) are
+ * Once enabled, GPIO configuration (stored in IOMUX) are
  * all latched and kept even in power saving modes.
+ * GPIO in this group are not powered off in power saving modes.
  *
  * After enabled, all other GPIO configuration will not take
  * effect until retention is disabled.
@@ -280,9 +272,9 @@ void GIO_EnableRetentionGroupA(uint8_t enable);
 /**
  * @brief Enable or disable retention of GPIO Group B
  *
- * Group B = All GPIOs - Group A.
+ * Group B = {1-4, 7-17, 24, 25, 29-41}.
  *
- * Once enabled, GPIO configuration (and their value) are
+ * Once enabled, GPIO configuration (and their value when used as OUTPUT) are
  * all latched and kept even in power saving modes.
  *
  * After enabled, all other GPIO configuration will not take
@@ -295,8 +287,12 @@ void GIO_EnableRetentionGroupB(uint8_t enable);
 /**
  * @brief Enable or disable HighZ mode of GPIO Group B
  *
- * Once enabled, all GPIO in group B are kept in HighZ mode
- * even in power saving modes.
+ * Once enabled, all GPIO which are configured as OUTPUT in group B
+ * are kept in HighZ mode even in power saving modes.
+ *
+ * Note: For USB IOs, there are extra internal pull-down resisters,
+ * so the corresponding GPIOs will be affected by them and can't be put into
+ * High-Z mode actually.
  *
  * After enabled, all other GPIO configuration will not take
  * effect until HighZ is released (i.e. disabled).
@@ -304,6 +300,73 @@ void GIO_EnableRetentionGroupB(uint8_t enable);
  * @param[in] enable    Enable(1)/disable(0)
  */
 void GIO_EnableHighZGroupB(uint8_t enable);
+
+#define GIO_WAKEUP_MODE_LOW_LEVEL       0   // wake up by low level
+#define GIO_WAKEUP_MODE_HIGH_LEVEL      1   // wake up by high level
+#define GIO_WAKEUP_MODE_RISING_EDGE     2   // wake up by rising edge
+#define GIO_WAKEUP_MODE_FALLING_EDGE    3   // wake up by falling edge
+#define GIO_WAKEUP_MODE_ANY_EDGE        4   // wake up by rising or falling edge
+
+/**
+ * @brief Enable a GPIO as wakeup source from DEEP SLEEP mode
+ *
+ * Note:
+ *
+ * 1. When going to DEEP SLEEP mode, GPIO configurations are switching to those
+ * specified here. So, pull of a GPIO must be the same as in normal working mode,
+ * and the specified GPIO is used as INPUT in normal working mode.
+ *
+ * 1. Generally, if high level is select, then pull should be DOWN; if low level is select, then
+ *    pull should be UP.
+ *
+ * 1. When rising and/or falling edge are/is used as wake up mode, the pulse must be
+ *    kept for at least 100us.
+ *
+ * 1. `pull` is ignored for GPIO in Group A, for which `pull` shall be configured
+ *    by `PINCTRL_Pull(...)`.
+ *
+ * 1. `pull` for Group B is a dedicated pull circuit which takes effects simultaneously with
+ *    `PINCTRL_Pull`.
+ *
+ * @param[in] io_index          the GPIO ({0-17, 21-25, 29-37})
+ * @param[in] enable            Enable(1)/Disable(0)
+ * @param[in] mode              see `GIO_WAKEUP_MODE_...`
+ * @param[in] pull              Pull of the GPIO
+ * @return                      0 if successful else non-0
+ */
+int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
+        uint8_t mode, pinctrl_pull_mode_t pull);
+
+/**
+ * @brief Enable a group of GPIOs as wakeup source from DEEPER SLEEP mode
+ *
+ * Once enabled, all GPIOs in Group A that have been configured as INPUT act as wakeup
+ * sources from DEEPER SLEEP mode.
+ *
+ * `GIO_EnableRetentionGroupA(1)` MUST be called after all related GPIOs are configured.
+ *
+ * @param[in] enable            Enable(1)/disable(0)
+ * @param[in] level             wake up by high level(1)/low level(0)
+ */
+void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level);
+
+/**
+ * @brief Set some or all of GPIO to 1
+ *
+ */
+void GIO_SetBits(const uint64_t index_mask);
+
+/**
+ * @brief Clear some or all of GPIO to 0
+ *
+ */
+void GIO_ClearBits(const uint64_t index_mask);
+
+/**
+ * @brief Toggle some or all of GPIO to 0
+ *
+ */
+void GIO_ToggleBits(const uint64_t index_mask);
 
 #endif
 

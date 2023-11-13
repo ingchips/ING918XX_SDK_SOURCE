@@ -36,7 +36,7 @@ void PDM_Start(PDM_TypeDef *base, uint8_t enable);
  * @brief Enable/Disable DMA transfer
  *
  * @param[in] base              PDM peripheral base address
- * @param[in] trig_cfg          DMA trigger configure
+ * @param[in] trig_cfg          DMA trigger configure ([0..7])
  * @param[in] enable            enable(1)/disable(0)
  */
 void PDM_DmaEnable(PDM_TypeDef *base, uint8_t trig_cfg, uint8_t enable);

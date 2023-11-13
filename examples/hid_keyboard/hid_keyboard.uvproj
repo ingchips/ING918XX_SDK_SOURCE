@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536901904</StartAddress>
-                <Size>34544</Size>
+                <StartAddress>536900792</StartAddress>
+                <Size>35656</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -468,6 +468,21 @@
               <FileName>trace.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\trace.c</FilePath>
+            </File>
+            <File>
+              <FileName>btstack_sync.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\btstack_sync.c</FilePath>
+            </File>
+            <File>
+              <FileName>gatt_client_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\gatt_client_util.c</FilePath>
+            </File>
+            <File>
+              <FileName>malloc_override.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\malloc_override.c</FilePath>
             </File>
           </Files>
         </Group>

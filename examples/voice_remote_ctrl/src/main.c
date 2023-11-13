@@ -9,8 +9,27 @@
 #include "kb_scan.h"
 
 #include "app_cfg.h"
+#include "log.h"
 
 #define PRINT_PORT    APB_UART0
+
+uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
+{
+    platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
+                    "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
+                    "R12: 0x%08X\n",
+                    info->pc, info->lr, info->psr,
+                    info->r0, info->r1, info->r2, info->r3, info->r12);
+    for (;;);
+}
+
+uint32_t cb_assertion(assertion_info_t *info, void *_)
+{
+    platform_printf("[ASSERTION] @ %s:%d\n",
+                    info->file_name,
+                    info->line_no);
+    for (;;);
+}
 
 uint32_t cb_putc(char *c, void *dummy)
 {
@@ -49,10 +68,10 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
-    
+
     PINCTRL_DisableAllInputs();
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)    
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
                               | (1 << SYSCTRL_ClkGate_APB_TMR2)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
@@ -155,8 +174,12 @@ int app_main()
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
 
+    SYSCTRL_Init();
+
     setup_peripherals();
 
+    platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
+    platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
     // setup deep sleep handlers
@@ -164,8 +187,6 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     // setup putc handle
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-
-    audio_init();
 
 #if (BOARD == BOARD_REM)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER2, kb_scan_isr, NULL);

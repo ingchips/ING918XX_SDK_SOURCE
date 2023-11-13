@@ -5,6 +5,11 @@ import argparse
 import os.path
 import sys
 import time
+import usb.core
+import usb.util
+import usb.backend.libusb1
+import datetime
+import libusb_package
 
 DEF_BAUD = 115200
 RAM_BASE_ADDR = 0x20000000
@@ -162,6 +167,51 @@ def do_test(ser, config):
     else:
         return test_app_cust(ser, s)
 
+class device(object):
+    def __init__(self, port, timeout, config):
+        self.dev_type = 1 if port.lower().startswith('usb') else 0
+        self.dev = None
+        if self.dev_type == 1:
+            self.backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
+        self.open(port, timeout, config)
+
+    @staticmethod
+    def query_all_active_usb_ports(timeout = 10):
+        start_time = datetime.datetime.now()
+        backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
+        from icsdw916 import intf_usb
+        intf = intf_usb()
+        devs = []
+        while True:
+            for dev in usb.core.find(find_all=True, idVendor=0xffff, idProduct=0xfa2f, backend=backend):
+                assert intf.exec_cmd(dev, intf.CMD_HOLD) == intf.ACK[:5]
+                usb.util.dispose_resources(dev)
+                devs.append(f'USB#VID_%04X#PID_%04X#%02X#%02X#%02X'%(dev.idVendor, dev.idProduct, dev.address, dev.bus, dev.port_number))
+                print(devs[-1])
+            if len(devs) or (datetime.datetime.now() -start_time).seconds > timeout:
+                return devs
+            else:
+                time.sleep(1)
+
+    def open(self, port, timeout, config):
+        if self.dev_type == 0: #uart
+            self.dev = open_serial(config, port)
+            self.dev.timeout = timeout
+        else: #usb
+            if port.lower() == 'usb': #pick the first usb device
+                self.dev = usb.core.find(idVendor=0xffff, idProduct=0xfa2f, backend=self.backend)
+            else:
+                nouse,vid,pid,addr,bus,p = port.split('#')
+                self.dev = usb.core.find(custom_match = lambda d: d.idProduct==int(pid.split('_')[1],16) and d.idVendor==int(vid.split('_')[1],16) and d.address==int(addr,16), backend=self.backend)
+
+        return self.dev
+
+    def close(self):
+        if self.dev_type == 0: #uart
+            self.dev.close()
+        else: #usb
+            usb.util.dispose_resources(self.dev)
+
 def run_proj(proj: str, go = False, port = '', timeout = 5, counter = -1, user_data = ''):
     mod = None
     config = configparser.ConfigParser()
@@ -173,25 +223,26 @@ def run_proj(proj: str, go = False, port = '', timeout = 5, counter = -1, user_d
     if config.getboolean('options', 'usescript'):
         mod = load_mod(config.get('options', 'script'))
 
-    ser = open_serial(dict(config.items('uart')), port)
+    port_cfg = dict(config.items('uart'))
+    if port == '':
+        port = port_cfg['port']
+    d = device(port, timeout, port_cfg)
 
-    if ser == None:
-        return 1
-
-    ser.timeout = timeout
+    if d.dev is None:
+        raise Exception('port not available')
 
     try:
         family = config.get('main', 'family', fallback='ing918')
         if family == 'ing918':
             import icsdw918
-            r = icsdw918.do_run(mod, ser, config, go, timeout, counter, user_data)
+            r = icsdw918.do_run(mod, d.dev, config, go, timeout, counter, user_data)
         elif family == 'ing916':
             import icsdw916
-            r = icsdw916.do_run(mod, ser, config, go, timeout, counter, user_data)
+            r = icsdw916.do_run(mod, d, config, go, timeout, counter, user_data)
         else:
             raise Exception('unknown chip family: ' + family)
     finally:
-        ser.close()
+        d.close()
     return r
 
 def format_exception(e):
@@ -261,6 +312,10 @@ def parse_args():
 if __name__ == '__main__':
 
     FLAGS, unparsed = parse_args()
+
+    if FLAGS.proj == 'list-usb':
+        device.query_all_active_usb_ports()
+        sys.exit(0)
 
     try:
         r = run_proj(FLAGS.proj, FLAGS.go, FLAGS.port, FLAGS.timeout, FLAGS.counter, FLAGS.user_data)

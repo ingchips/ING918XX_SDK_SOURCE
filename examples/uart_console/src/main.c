@@ -21,7 +21,7 @@ uint32_t cb_assertion(assertion_info_t *info, void *_)
     platform_printf("[ASSERTION] @ %s:%d\n",
                     info->file_name,
                     info->line_no);
-    trace_full_dump(puts, 32);
+    trace_full_dump(puts, 0);
     for (;;);
 }
 
@@ -54,12 +54,12 @@ void config_uart(uint32_t freq, uint32_t baud)
     config.UART_en           = 1;
     config.cts_en            = 0;
     config.rts_en            = 0;
-    config.rxfifo_waterlevel = 1;
+    config.rxfifo_waterlevel = 4;
     config.txfifo_waterlevel = 1;
     config.ClockFrequency    = freq;
     config.BaudRate          = baud;
 
-    apUART_Initialize(PRINT_PORT, &config, 1 << bsUART_RECEIVE_INTENAB);
+    apUART_Initialize(PRINT_PORT, &config, (1 << bsUART_RECEIVE_INTENAB) | (1 << bsUART_TIMEOUT_INTENAB));
 
 #ifdef TRACE_TO_UART
     //config.BaudRate          = 921600;
@@ -92,14 +92,10 @@ uint32_t uart_isr(void *user_data)
 
         APB_UART0->IntClear = status;
 
-        // rx int
-        if (status & (1 << bsUART_RECEIVE_INTENAB))
+        while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
         {
-            while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
-            {
-                char c = APB_UART0->DataRead;
-                console_rx_data(&c, 1);
-            }
+            char c = APB_UART0->DataRead;
+            console_rx_data(&c, 1);
         }
     }
     return 0;

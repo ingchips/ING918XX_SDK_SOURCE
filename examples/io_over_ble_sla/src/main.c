@@ -15,7 +15,7 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
                     "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
                     "R12: 0x%08X\n",
-                    info->pc, info->lr, info->psr, 
+                    info->pc, info->lr, info->psr,
                     info->r0, info->r1, info->r2, info->r3, info->r12);
     for (;;);
 }
@@ -60,7 +60,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 #endif
 }
 
-#define LED_PIN         6 
+#define LED_PIN         6
 
 void show_state(const io_state_t state)
 {
@@ -88,7 +88,7 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(LED_PIN, 1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM6_B);
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM0_A);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -118,11 +118,11 @@ int app_main()
     rf_enable_powerboost();
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
-    
+
     // setup handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
+    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     //platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
     setup_peripherals();

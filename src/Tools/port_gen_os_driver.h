@@ -125,7 +125,7 @@ typedef struct gen_os_driver
 
 /**
  ****************************************************************************************
-* @brief Get the RTOS driver from an implentation
+* @brief Get the RTOS driver from an implementation
 ****************************************************************************************
 */
 const gen_os_driver_t *os_impl_get_driver(void);

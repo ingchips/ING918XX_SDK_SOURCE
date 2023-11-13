@@ -2,6 +2,7 @@
 #define __PERIPHERAL_PINCTRL_H__
 
 #include <stdint.h>
+#include "ingsoc.h"
 
 #ifdef    __cplusplus
 extern "C" {    /* allow C++ to use these headers */
@@ -159,6 +160,14 @@ void PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
  */
 void PINCTRL_EnableAllAntSelPins(void);
 
+/**
+ * @brief Set slew rate of a GPIO
+ *
+ * @param io_pin_index      The io pad to be configured.
+ * @param rate              The rate to be configured (default: SLOW)
+ */
+void PINCTRL_SetSlewRate(uint8_t io_pin_index, const pinctrl_slew_rate_t rate);
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #define IO_PIN_NUMBER                   42
@@ -197,24 +206,26 @@ typedef enum
     IO_SOURCE_I2C0_SDA_OUT              = 25,
     IO_SOURCE_I2C1_SCL_OUT              = 26,
     IO_SOURCE_I2C1_SDA_OUT              = 27,
-    IO_SOURCE_PWM0_A                    = 28,
-    IO_SOURCE_PWM0_B                    = 29,
-    IO_SOURCE_PWM1_A                    = 30,
-    IO_SOURCE_PWM1_B                    = 31,
-    IO_SOURCE_PWM2_A                    = 32,
-    IO_SOURCE_PWM2_B                    = 33,
-    IO_SOURCE_PWM3_A                    = 34,
-    IO_SOURCE_PWM3_B                    = 35,
-    IO_SOURCE_PWM4_A                    = 36,
-    IO_SOURCE_PWM4_B                    = 37,
-    IO_SOURCE_PWM5_A                    = 38,
-    IO_SOURCE_PWM5_B                    = 39,
-    IO_SOURCE_PWM6_A                    = 40,
-    IO_SOURCE_PWM6_B                    = 41,
-    IO_SOURCE_PWM7_A                    = 42,
-    IO_SOURCE_PWM7_B                    = 43,
-    IO_SOURCE_PWM8_A                    = 44,
-    IO_SOURCE_PWM8_B                    = 45,
+    // below PWM outputs are from TIMERs
+    IO_SOURCE_TIMER0_PWM0_A                    = 28,
+    IO_SOURCE_TIMER0_PWM0_B                    = 29,
+    IO_SOURCE_TIMER0_PWM1_A                    = 30,
+    IO_SOURCE_TIMER0_PWM1_B                    = 31,
+    IO_SOURCE_TIMER1_PWM0_A                    = 32,
+    IO_SOURCE_TIMER1_PWM0_B                    = 33,
+    IO_SOURCE_TIMER1_PWM1_A                    = 34,
+    IO_SOURCE_TIMER1_PWM1_B                    = 35,
+    IO_SOURCE_TIMER2_PWM0_A                    = 36,
+    IO_SOURCE_TIMER2_PWM0_B                    = 37,
+    IO_SOURCE_TIMER2_PWM1_A                    = 38,
+    IO_SOURCE_TIMER2_PWM1_B                    = 39,
+    // below PWM outputs are from PWM
+    IO_SOURCE_PWM0_A                    = 40,
+    IO_SOURCE_PWM0_B                    = 41,
+    IO_SOURCE_PWM1_A                    = 42,
+    IO_SOURCE_PWM1_B                    = 43,
+    IO_SOURCE_PWM2_A                    = 44,
+    IO_SOURCE_PWM2_B                    = 45,
     IO_SOURCE_ANT_SW0                   = 46,
     IO_SOURCE_ANT_SW1                   = 47,
     IO_SOURCE_ANT_SW2                   = 48,
@@ -254,8 +265,8 @@ typedef enum
     IO_SOURCE_QDEC_TIMER_EXT_OUT1_B     = 82,
     IO_SOURCE_QDEC_TIMER_EXT_OUT2_B     = 83,
     // below sources are for input
-    IO_SOURCE_SW_TMS                      = 84,
-    IO_SOURCE_SW_TCK                      = 85,
+    IO_SOURCE_SW_DIO                      = 84,
+    IO_SOURCE_SW_CLK                      = 85,
     IO_SOURCE_SPI0_CLK_IN                 = 86,
     IO_SOURCE_SPI0_CSN_IN                 = 87,
     IO_SOURCE_SPI0_HOLD_IN                = 88,
@@ -338,11 +349,6 @@ typedef enum
 
 typedef enum
 {
-    PINCTRL_SLEW_RATE_DUMMY,
-} pinctrl_slew_rate_t;
-
-typedef enum
-{
     PINCTRL_DRIVE_2mA,
     PINCTRL_DRIVE_4mA,
     PINCTRL_DRIVE_8mA,
@@ -356,11 +362,11 @@ typedef enum
  *
  * This function fails when IO pin do not support such configurations.
  *
- * @param[in] io_pin_tms        TMS
- * @param[in] io_pin_tck        TCK
+ * @param[in] io_pin_dio        DIO
+ * @param[in] io_pin_clk        CLK
  * @return                      0 if successful else non-0
  */
-int PINCTRL_SelSwIn(uint8_t io_pin_tms, uint8_t io_pin_tck);
+int PINCTRL_SelSwIn(uint8_t io_pin_dio, uint8_t io_pin_clk);
 
 /**
  * @brief Select SPI input IOs
@@ -417,9 +423,25 @@ int PINCTRL_SelUartIn(uart_port_t port,
                       uint8_t io_pin_cts);
 
 /**
+ * @brief ING918xx Compatible API: Select input io_pin for UART CTS
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for UART CTS
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelUartCtsIn(const uart_port_t port, const uint8_t io_pin_index);
+
+/**
  * @brief Select I2C input IOs
  *
- * Note: If an input is not used or invalid, set it to `IO_NOT_A_PIN`.
+ * Note: Both SCL and SDA are configured properly.
+ * Developer don't need to call `PINCTRL_SetPadMux(io_pin_sda, IO_SOURCE_I2C0_SDA_OUT)`
+ * or `PINCTRL_Pull(...)`.
  *
  * @param[in] io_pin_scl        SCL
  * @param[in] io_pin_sda        SDA
@@ -428,6 +450,13 @@ int PINCTRL_SelUartIn(uart_port_t port,
 int PINCTRL_SelI2cIn(i2c_port_t port,
                       uint8_t io_pin_scl,
                       uint8_t io_pin_sda);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for I2C SCL
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index);
 
 /**
  * @brief Select PDM input IOs
@@ -484,11 +513,46 @@ int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode);
  * ...
  * ANT_SEL[count - 1] -> io_pins[count - 1]
  *
+ * If ANT_SEL[n] output does not need to be configured, set io_pins[n] to `IO_NOT_A_PIN`.
+ *
  * @param count             PIN count in io_pins
  * @param io_pins           PIN array
  * @return                  0 if successful else non-0
  */
 int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
+
+/**
+ * @brief Set USB function of dp and dm
+ *
+ * @param dp_io_pin_index      fixed, should be GPIO_16.
+ * @param dm_io_pin_index      fixed, should be GPIO_17.
+ * @return                     0 if successful else non-0
+ */
+int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index);
+
+/**
+ * @brief Enable analog function of a certain IO (used for USB/ADC)
+ *
+ */
+void PINCTRL_EnableAnalog(const uint8_t io_index);
+
+/**
+ * @brief Select clock output pin
+ *
+ * Clock output (see `SYSCTRL_EnableClockOutput`) is routed to IO pin `io_index`.
+ *
+ * Check source code (the `settings` array) to see which pins are supported.
+ *
+ * CAUTION: This is part of internal SoC debugging function, which will conflict
+ * with other debugging functions.
+ *
+ * @param io_index              IO pin for clock output
+ *                              When set to IO_NOT_A_PIN, output is disabled.
+ * @return                      0 if successful else non-0
+ *                              This function fails when the specified `io_index`
+ *                              is not supported.
+ */
+int PINCTRL_SelClockOutput(const uint8_t io_index);
 
 #endif
 
@@ -498,7 +562,7 @@ int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
  * When the specified IO pad do not support such source, this function will fail
  * and a non-0 value is returned.
  *
- * Note: To select an input source for an IO pad, it is not need to call this.
+ * Note: To select an input source for an IO pad, DO NOT call this.
  * Use `PINCTRL_Sel...In(...)` instead.
  *
  * @param io_pin_index      The io pad to be configured (0 .. IO_PIN_NUMBER - 1).
@@ -514,15 +578,7 @@ void PINCTRL_DisableAllInputs(void);
  * @brief Set slew rate of a GPIO
  *
  * @param io_pin_index      The io pad to be configured.
- * @param rate              The rate to be configured (default: SLOW)
- */
-void PINCTRL_SetSlewRate(const uint8_t io_pin_index, const pinctrl_slew_rate_t rate);
-
-/**
- * @brief Set slew rate of a GPIO
- *
- * @param io_pin_index      The io pad to be configured.
- * @param strenght          The strength to be configured (default: 8mA)
+ * @param strength          The strength to be configured (default: 8mA; Exception: IO1 12mA)
  */
 void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_strength_t strength);
 

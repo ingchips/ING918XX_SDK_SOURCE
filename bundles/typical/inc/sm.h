@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 //
 // INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018 by INGCHIPS
+// COPYRIGHT (c) 2018-2023 by INGCHIPS
 //
 // All rights are reserved. Reproduction in whole or in part is
 // prohibited without the written consent of the copyright owner.
@@ -106,6 +106,15 @@ const uint8_t *sm_private_random_address_generation_get(void);
  * @param get_oob_data_callback
  */
 void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t * oob_data));
+
+/**
+ *
+ * @brief Registers secure pairing OOB Data Callback. The callback should set the peer_confirm & peer_random and return 1 if OOB data is availble
+ * @param get_oob_data_callback
+ */
+// void sm_register_sc_oob_data_callback( int (*get_sc_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t *peer_confirm, uint8_t *peer_random));
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Limit the STK generation methods. Bonding is stopped if the resulting one isn't in the list
@@ -219,16 +228,47 @@ void sm_authorization_grant(hci_con_handle_t con_handle);
 int sm_le_device_key(hci_con_handle_t con_handle);
 
 /**
+ * @brief To confirm numeric comparison when SM_EVENT_NUMERIC_COMPARISON_REQUEST is called.
+ * @param handle
+ */
+// void sm_numeric_comparison_confirm(hci_con_handle_t con_handle);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief When secure pairing is used and OOB is selected, use this function to prepare OOB data and share to peer.
+ * @param handle
+ */
+// int sm_sc_generate_oob_data(void (*callback)(uint8_t *peer_confirm, uint8_t *peer_random));
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ *
+ * @brief Register a callback for get external LTK (for empty EDIV & Random)
+ *
+ * WARNING: This is subject to change.
+ *
+ * @param get_external_ltk_callback, where
+ *              @param[in]  con_handle          connection handle
+ *              @param[out] ltk                 LTK
+ *              @return                         0 when LTK is stored into `ltk` else non-zero
+ */
+void sm_register_external_ltk_callback(int (*get_external_ltk_callback)(hci_con_handle_t con_handle, uint8_t *ltk));
+
+/**
  * @brief SM state event
  */
 enum sm_state_t
 {
     SM_STARTED,
-    SM_FINAL_PAIRED,
-    SM_FINAL_REESTABLISHED,
-    SM_FINAL_FAIL_PROTOCOL,
-    SM_FINAL_FAIL_TIMEOUT,
-    SM_FINAL_FAIL_DISCONNECT,
+    SM_FINAL_PAIRED,                // successfully paired with a new device
+    SM_FINAL_REESTABLISHED,         // connection reestablished with a paired device
+    SM_FINAL_FAIL_PROTOCOL,         // protocol error occurred
+    SM_FINAL_FAIL_TIMEOUT,          // timeout occurred
+    SM_FINAL_FAIL_DISCONNECT,       // unexpected disconnection occurred
+    SM_FINAL_FAIL_OUT_OF_STORAGE,   // device database runs out of storage
+                                    // i.e. too many devices have been paired.
 };
 
 #ifdef __cplusplus

@@ -423,15 +423,39 @@ static void hex_dump(char *str, uint8_t *buf, f_trace_puts f_puts, uint32_t base
     }
 }
 
-void trace_full_dump(f_trace_puts f_puts, int size)
+void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size)
 {
     static char str[46];
     static uint8_t buf[HEX_REC_SIZE + 4];
-    sprintf(str,    " PC: %08x", (uint32_t)trace_full_dump); f_puts(str);
+    if (0 == sys_size)
+    {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+        sys_size = 64;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+        sys_size = 32;
+#endif
+    }
+
+    if (0 == share_size)
+    {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+        share_size = 64;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+        share_size = 32;
+#endif
+    }
+
+    sprintf(str,    " PC: %08x", (uint32_t)trace_full_dump2); f_puts(str);
     sprintf(str,    "MSP: %08x", __get_MSP()); f_puts(str);
     sprintf(str,    "PSP: %08x", __get_PSP()); f_puts(str);
     sprintf(str,    "CTL: %08x", __get_CONTROL()); f_puts(str);
     str[0] = ':';
-    hex_dump(str, buf, f_puts, 0x20000000, size);
-    hex_dump(str, buf, f_puts, 0x400A0000, size);
+    hex_dump(str, buf, f_puts, 0x20000000, sys_size);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    hex_dump(str, buf, f_puts, 0x400A0000, share_size);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    hex_dump(str, buf, f_puts, 0x40120000, share_size);
+#else
+    #error unknown or unsupported chip family
+#endif
 }

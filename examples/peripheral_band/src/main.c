@@ -57,6 +57,7 @@ void config_uart(uint32_t freq, uint32_t baud)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 115200);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                               | (1 << SYSCTRL_ClkGate_APB_PWM)
@@ -95,17 +96,20 @@ void setup_peripherals(void)
 
     PINCTRL_SetPadMux(SPI_LCD_MOSI, IO_SOURCE_SPI0_DO);
     PINCTRL_SetPadMux(SPI_LCD_SCLK, IO_SOURCE_SPI0_CLK);
-    
+
     SPI_Init(AHB_SSP0);
 
     RTC_Enable(RTC_ENABLED);
     RTC_SetNextIntOffset(32768 * 10);
+#else
+    #error WIP
+#endif
 }
 
 static SemaphoreHandle_t sem_heart_rate = NULL;
 
 static void heart_rate_task(void *pdata)
-{  
+{
     heart_meas_init();
     for (;;)
     {
@@ -136,15 +140,15 @@ uint32_t rtc_timer_isr(void *user_data)
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
 {
     (void)(dummy);
-    (void)(user_data);   
+    (void)(user_data);
     setup_peripherals();
     return 0;
 }
-    
+
 uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
-    (void)(user_data);    
+    (void)(user_data);
     return 0;
 }
 
@@ -158,7 +162,7 @@ static void init_tasks()
                NULL,
                (configMAX_PRIORITIES - 1),
                NULL);
-    
+
     disp_init();
 }
 
@@ -178,24 +182,24 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 
     setup_peripherals();
-        
+
 #ifndef SIMULATION
     platform_printf("init");
     i2c_init(I2C_PORT_0);
 #endif
-    
+
     init_tasks();
 
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER2, hr_timer_isr, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_RTC, rtc_timer_isr, NULL);
-    
+
     TMR_Enable(APB_TMR1);
-    
+
     return 0;
 }
 
 void driver_delay_xms(uint32_t ms)
-{ 
+{
     vTaskDelay(pdMS_TO_TICKS(ms));
 }
 

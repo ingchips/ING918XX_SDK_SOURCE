@@ -180,6 +180,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             platform_calibrate_32k();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #ifdef OPT_RAM_CODE
+            platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4100 - 400);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 155);
+    #else
+            platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 5200);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 280);
+    #endif
+#endif
             break;
         default:
             break;
@@ -208,6 +217,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 uint32_t setup_profile(void *data, void *user_data)
 {
     platform_printf("setup profile\n");
+
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

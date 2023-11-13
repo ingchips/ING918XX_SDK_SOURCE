@@ -7,7 +7,7 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6160000::V6.16::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -183,6 +183,7 @@
             <RvdsVP>2</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -272,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>33714176</StartAddress>
-                <Size>364544</Size>
+                <StartAddress>33718272</StartAddress>
+                <Size>360448</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -297,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893616</StartAddress>
-                <Size>10064</Size>
+                <StartAddress>536892496</StartAddress>
+                <Size>11184</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -334,9 +335,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls/>
-              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=0</Define>
+              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=0,AUDIO_CODEC_ALG=1</Define>
               <Undefine/>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
+              <IncludePath>.\libsbc\include;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -405,6 +406,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\audio_input.c</FilePath>
             </File>
+            <File>
+              <FileName>pingpong.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\pingpong.c</FilePath>
+            </File>
+            <File>
+              <FileName>audio_adpcm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\audio_adpcm.c</FilePath>
+            </File>
+            <File>
+              <FileName>audio_sbc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\audio_sbc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -424,6 +440,13 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\eflash.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>
@@ -488,11 +511,6 @@
         <Group>
           <GroupName>Tools</GroupName>
           <Files>
-            <File>
-              <FileName>audio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\audio.c</FilePath>
-            </File>
             <File>
               <FileName>att_db_util.c</FileName>
               <FileType>1</FileType>

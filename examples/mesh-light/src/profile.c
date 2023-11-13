@@ -1,413 +1,313 @@
-#include <stdio.h>
-#include "modlog.h"
-#include "ble_hs_log.h"
-#include "mesh_def.h"
+#include "profile.h"
+#include "platform_api.h"
+#include "mesh_storage_app.h"
+#include "mesh.h"
+#include "mesh_port_stack.h"
+#include "mesh_port_low_level_init.h"
+#include "board.h"
+#include "mesh_version.h"
+#include "adv_bearer.h"
+#include "mesh_profile.h"
+#include "app_debug.h"
+#include "mesh_debug.h"
 
-#include "mesh_api.h"
+#ifdef ENABLE_LED_TEST
+#include "LED_TEST.h"
+#endif
 
-#include "cfg_cli.h"
-#include "model_srv.h"
-#include "model_cli.h"
 
-#define BT_DBG_ENABLED (1)
-#define BT_WARN_ENABLED (1)
-#define BT_INFO_ENABLED (1)
+/*--------------------------------------------------------------------
+ *----------------------------> MODEL <-------------------------------
+ *------------------------------------------------------------------*/
 
-#define INGCHIPS_COMP_ID                           0x06AC
+#define INGCHIPS_COMP_ID                            0x06AC
+#define MESH_PRODUCT_ID                             0x0000
+#define MESH_VERSION_ID                             0x0000
 
 /*
  * Server Configuration Declaration
  */
+static bt_mesh_cfg_srv_t cfg_srv = {
 
-static struct bt_mesh_cfg_srv cfg_srv = {
-    .relay = BT_MESH_RELAY_DISABLED,
-    .beacon = BT_MESH_BEACON_ENABLED,
-#if defined(CONFIG_BT_MESH_FRIEND)
-    .frnd = BT_MESH_FRIEND_ENABLED,
-#else
-    .frnd = BT_MESH_FRIEND_NOT_SUPPORTED,
-#endif
-#if defined(CONFIG_BT_MESH_GATT_PROXY)
+    .relay = BT_MESH_RELAY_ENABLED,
     .gatt_proxy = BT_MESH_GATT_PROXY_ENABLED,
-#else
-    .gatt_proxy = BT_MESH_GATT_PROXY_NOT_SUPPORTED,
-#endif
+    .frnd = BT_MESH_FRIEND_NOT_SUPPORTED,
+    .low_pwr = BT_MESH_LOW_POWER_NOT_SUPPORTED,
+    .beacon = BT_MESH_BEACON_DISABLED,
     .default_ttl = 7,
 
     /* 3 transmissions with 20ms interval */
-    .net_transmit = BT_MESH_TRANSMIT(2, 20),
-    .relay_retransmit = BT_MESH_TRANSMIT(2, 20),
+    .net_transmit = BT_MESH_TRANSMIT(5, 50),
+    .relay_retransmit = BT_MESH_TRANSMIT(3, 50),
+
 };
 
-/*
- * Client Configuration Declaration
- */
-
-static struct bt_mesh_cfg_cli cfg_cli = {
-};
-
-
-/*
- * Publication Declarations
- *
- * The publication messages are initialized to the
- * the size of the opcode + content
- *
- * For publication, the message must be in static or global as
- * it is re-transmitted several times. This occurs
- * after the function that called bt_mesh_model_publish() has
- * exited and the stack is no longer valid.
- *
- * Note that the additional 4 bytes for the AppMIC is not needed
- * because it is added to a stack variable at the time a
- * transmission occurs.
- *
- */
-
-static struct bt_mesh_model_pub gen_onoff_pub;
-static struct bt_mesh_model_pub gen_level_pub;
-static struct bt_mesh_model_pub light_lightness_pub;
-static struct bt_mesh_model_pub light_hsl_pub;
-
-void init_pub(void)
+static void light_update(struct light_state *a_light)
 {
-    gen_onoff_pub.msg = NET_BUF_SIMPLE(2 + 2);
-    light_lightness_pub.msg = NET_BUF_SIMPLE(2 + 3);
-    gen_level_pub.msg = NET_BUF_SIMPLE(2 + 3);
-    light_hsl_pub.msg = NET_BUF_SIMPLE(2 + 1 + 2 * 3);
+    uint8_t val;
+    if (!a_light->onoff[0]) { // Set led off.
+        val = 0;
+    } else { // Set led on, belongs to level value.
+        uint32_t lvl = a_light->level[0] + 32768; // 0~65535
+        lvl = ((lvl + 1) >> 8);     //0~256
+        if(lvl == 256) lvl = 255;   //0~255
+        val = (uint8_t)lvl;
+    }
+    app_log_info("gen set rgb val: %d\n",val);
+    set_rgb_led_color(val, val, val);
+
+#ifdef ENABLE_LED_TEST
+    if(val)
+        LED_ON(PIN_LED_9);
+    else
+        LED_OFF(PIN_LED_9);
+#endif
+}
+
+#define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->light_state
+
+int light_model_gen_onoff_get(mesh_model_t *model, uint8_t *state)
+{
+    light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
+    *state = a_light->onoff[0];
+    app_log_info("gen get state: %d\n", *state);
+    return 0;
+}
+
+int light_model_gen_onoff_set(mesh_model_t *model, uint8_t state)
+{
+    light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
+    a_light->onoff[0] = state;
+    if(state){ //bind to level
+        if(a_light->level[0] < 0){ //lightness can not less 50%.
+            a_light->level[0] = 0;
+        }
+    }
+
+    app_log_info("gen set state: %d\n", state);
+    light_update(a_light);
+    return 0;
+}
+
+int light_model_gen_level_get(mesh_model_t *model, int16_t *level)
+{
+    light_state_t *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
+    *level = a_light->level[0];
+    app_log_info("gen get level: %d\n", *level);
+    return 0;
+}
+
+int light_model_gen_level_set(mesh_model_t *model, int16_t  level)
+{
+    light_state_t *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
+    a_light->level[0] = level;
+    if(level == -32768) //bind to state.
+        a_light->onoff[0] = 0;
+    else
+        a_light->onoff[0] = 1;
+    app_log_info("gen set level -> %d\n", level);
+    light_update(a_light);
+    return 0;
 }
 
 #define LED_1 1
-
-typedef struct light_state {
-    u8_t onoff[2];
-    s16_t level[2];
-    u16_t lightness[2];
-    u16_t hue[2];
-    u16_t saturation[2];
-    u8_t led_gpio_pin;
-} light_state_t;
 
 light_state_t a_light_state =
 {
     .led_gpio_pin = LED_1
 };
 
-int light_model_gen_onoff_get(struct bt_mesh_model *model, u8_t *state);
-int light_model_gen_onoff_set(struct bt_mesh_model *model, u8_t  state);
-int light_model_gen_level_get(struct bt_mesh_model *model, s16_t *level);
-int light_model_gen_level_set(struct bt_mesh_model *model, s16_t  level);
-int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *light, u8_t *remain);
-int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t  lightness);
-int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *hue, u16_t *saturation, u16_t *lightness, uint8_t* remain);
-int light_model_light_hsl_set(struct bt_mesh_model *model, hsl_val_t *val);
-
 static struct bt_mesh_gen_onoff_srv_cb gen_onoff_srv_cb = {
     .get = light_model_gen_onoff_get,
     .set = light_model_gen_onoff_set,
-    .user_data = &a_light_state
+    .light_state = &a_light_state
 };
 
 static struct bt_mesh_gen_level_srv_cb gen_level_srv_cb = {
     .get = light_model_gen_level_get,
     .set = light_model_gen_level_set,
-    .user_data = &a_light_state
+    .light_state = &a_light_state
 };
 
-static struct bt_mesh_light_lightness_srv_cb light_lightness_srv_cb = {
-    .get = light_model_light_lightness_get,
-    .set = light_model_light_lightness_set,
-    .user_data = &a_light_state
+
+static mesh_model_t sig_models[] = {
+    // mandatory sig models: Config Server and Health Server.
+    BT_MESH_MODEL(MESH_SIG_MODEL_ID_CONFIGURATION_SERVER, &cfg_srv),
+    BT_MESH_MODEL(MESH_SIG_MODEL_ID_HEALTH_SERVER, NULL),
+
+    // other sig models.
+    BT_MESH_MODEL(MESH_SIG_MODEL_ID_CONFIGURATION_CLIENT, NULL),
+    BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_ON_OFF_SERVER, &gen_onoff_srv_cb),
+    BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_ON_OFF_CLIENT, NULL),
+    BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_LEVEL_SERVER, &gen_level_srv_cb),
+    BT_MESH_MODEL(MESH_SIG_MODEL_ID_GENERIC_LEVEL_CLIENT, NULL),
 };
 
-static struct bt_mesh_light_hsl_srv_cb light_hsl_srv_cb = {
-    .get = light_model_light_hsl_get,
-    .set = light_model_light_hsl_set,
-    .user_data = &a_light_state
-};
-
-#undef  BT_MESH_MODEL_CFG_SRV
-#undef  BT_MESH_MODEL_CFG_CLI
-#define BT_MESH_MODEL_CFG_SRV(_user_data) BT_MESH_MODEL(BT_MESH_MODEL_ID_CFG_SRV, NULL, NULL, _user_data)
-#define BT_MESH_MODEL_CFG_CLI(_user_data) BT_MESH_MODEL(BT_MESH_MODEL_ID_CFG_CLI, NULL, NULL, _user_data)
-
-static struct bt_mesh_model root_models[] = {
-    BT_MESH_MODEL_CFG_SRV(&cfg_srv),
-    BT_MESH_MODEL_CFG_CLI(&cfg_cli),
-    BT_MESH_MODEL_GEN_ONOFF_SRV(&gen_onoff_srv_cb, &gen_onoff_pub),
-    BT_MESH_MODEL_GEN_ONOFF_CLI(),
-    BT_MESH_MODEL_GEN_LEVEL_SRV(&gen_level_srv_cb, &gen_level_pub),
-    BT_MESH_MODEL_GEN_LEVEL_CLI(),
-    BT_MESH_MODEL_LIGHT_LIGHTNESS_SRV(&light_lightness_srv_cb, &light_lightness_pub),
-    BT_MESH_MODEL_LIGHT_HSL_SRV(&light_hsl_srv_cb, &light_hsl_pub),
+// example:
+// BT_MESH_MODEL_VND(INGCHIPS_COMP_ID, INGCHIPS_VND_ID_1, &vendor_srv_1);
+// BT_MESH_MODEL_VND(INGCHIPS_COMP_ID, INGCHIPS_VND_ID_2, &vendor_srv_2);
+static mesh_model_t vnd_models[] = {
+    // add vendor models here.
 };
 
 /*
- * Root and Secondary Element Declarations
+ * Primary and Secondary Element Declarations
  */
-
-static struct bt_mesh_elem elements[] = {
-    BT_MESH_ELEM(0, root_models, BT_MESH_MODEL_NONE),
+static mesh_element_t elements[] = {
+    BT_MESH_ELEM(0x0000, sig_models, vnd_models), //primary element.
 };
 
-static const struct bt_mesh_comp comp = {
-    .cid = INGCHIPS_COMP_ID,
+static const bt_mesh_comp_t comp = {
+    .info.cid = INGCHIPS_COMP_ID,
+    .info.pid = MESH_PRODUCT_ID,
+    .info.vid = MESH_VERSION_ID,
+
     .elem = elements,
     .elem_count = ARRAY_SIZE(elements),
 };
 
-void light_update(struct light_state *a_light);
-
-volatile static u16_t primary_addr;
-volatile static u16_t primary_net_idx;
 
 
-#define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->user_data
 
+/*--------------------------------------------------------------------
+ *------------------------> PROVISIONING <----------------------------
+ *------------------------------------------------------------------*/
 
-int light_model_gen_onoff_get(struct bt_mesh_model *model, u8_t *state)
+#define USE_OOB_TYPE    MESH_OOB_TYPE_NONE
+
+#if (USE_OOB_TYPE == MESH_OOB_TYPE_OUTPUT)
+static int output_number(uint32_t number)
 {
-    light_state_t *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
-    *state = a_light->onoff[0];
-    return 0;
-}
-
-int light_model_gen_onoff_set(struct bt_mesh_model *model, u8_t state)
-{
-    struct light_state *a_light = get_light_state(model, bt_mesh_gen_onoff_srv_cb);
-    a_light->onoff[1] = a_light->onoff[0];
-    a_light->onoff[0] = state;
-    a_light->lightness[1] = a_light->lightness[0];
-    a_light->lightness[0] = state ? 65535 : 0;
-    light_update(a_light);
-    return 0;
-}
-
-int light_model_gen_level_get(struct bt_mesh_model *model, s16_t *level)
-{
-    struct light_state *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
-    *level = a_light->level[0];
-    return 0;
-}
-
-int light_model_gen_level_set(struct bt_mesh_model *model, s16_t  level)
-{
-    struct light_state *a_light = get_light_state(model, bt_mesh_gen_level_srv_cb);
-    a_light->level[1] = a_light->level[0];
-    a_light->level[0] = level;
-    a_light->lightness[1] = a_light->lightness[0];
-    a_light->lightness[0] = level + 32768;
-    printf("======= lightness -> %d, %04x\n", level, a_light->lightness[0]);
-    light_update(a_light);
-    return 0;
-}
-
-int light_model_light_lightness_get(struct bt_mesh_model *model, u16_t *lightness, u16_t *light, u8_t *remain)
-{
-    struct light_state *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
-    *lightness = a_light->lightness[0];
-    return 0;
-}
-
-int light_model_light_lightness_set(struct bt_mesh_model *model, u16_t lightness)
-{
-    struct light_state *a_light = get_light_state(model, bt_mesh_light_lightness_srv_cb);
-    a_light->lightness[1] = a_light->lightness[0];
-    a_light->lightness[0] = lightness;
-
-    light_update(a_light);
-    return 0;
-}
-
-int light_model_light_hsl_get(struct bt_mesh_model *model, u16_t *hue, u16_t *saturation, u16_t *lightness, uint8_t* remain)
-{
-    struct light_state *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
-    *lightness  = a_light->lightness[0];
-    *hue        = a_light->hue[0];
-    *saturation = a_light->saturation[0];
-    return 0;
-}
-
-static uint8_t Q_MULT(uint8_t a, uint8_t b)
-{
-    uint16_t t = (uint16_t)a * b;
-    uint8_t r = t >> 8;
-    if (t & 0x80) r++;
-    return r;
-}
-#define CLIP(v) ((v) <= 0 ? 0 : ((v) >= 255 ? 255 : (v)))
-
-static uint8_t hue2rgb(int16_t v1, int16_t v2, int16_t vH)
-{
-    if (vH < 0)     vH += 255;
-    if (vH > 255)   vH -= 255;
-    if (6 * vH < 255) return v1 + Q_MULT(v2 - v1, 6 * vH);
-    if (2 * vH < 255) return v2;
-    if (3 * vH < 255 * 2) return v1 + Q_MULT(v2 - v1, 255 * 4 - 6 * vH);
-    return v1;
-}
-
-void hsl_to_rgb(u16_t H, u16_t S, u16_t L,
-                u8_t *R, u8_t *G, u8_t *B)
-{
-    int16_t var_1, var_2;
-    H >>= 8;
-    S >>= 8;
-    L >>= 8;
-    if (0 == S)
-    {
-        *R = L;
-        *G = L;
-        *B = L;
-        return;
-    }
-
-    if (L < 128) var_2 = Q_MULT(L, (255 + S));
-    else         var_2 = (L + S) - Q_MULT(S, L);
-    var_2 = CLIP(var_2);
-    var_1 = 2 * L - var_2;
-    *R = hue2rgb(var_1, var_2, ((int16_t)H) + (255 / 3));
-    *G = hue2rgb(var_1, var_2, H);
-    *B = hue2rgb(var_1, var_2, ((int16_t)H) - (255 / 3));
-}
-
-void light_update(struct light_state *a_light)
-{
-    u8_t r, g, b;
-    printf("HSL = %d,%d,%d\n", a_light->hue[0], a_light->saturation[0], a_light->lightness[0]);
-    hsl_to_rgb(a_light->hue[0], a_light->saturation[0], a_light->lightness[0], &r, &g, &b);
-#ifdef SIMULATION
-    printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n",
-               a_light->led_gpio_pin, r, g, b);
-#else
-    printf("=======\nLED %d => RGB: #%02X%02X%02X\n=======\n",
-               a_light->led_gpio_pin, r, g, b);
-    extern void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b);
-    set_rgb_led_color(r, g, b);
-#endif
-}
-
-int light_model_light_hsl_set(struct bt_mesh_model *model, hsl_val_t *val)
-{
-    struct light_state *a_light = get_light_state(model, bt_mesh_light_hsl_srv_cb);
-
-    a_light->lightness[1]     = a_light->lightness[0];
-    a_light->hue[1]           = a_light->hue[0];
-    a_light->saturation[1]    = a_light->saturation[0];
-    a_light->lightness[0] = val->lightness;
-    a_light->hue[0]       = val->hue;
-    a_light->saturation[0]= val->sa;
-
-    light_update(a_light);
-    return 0;
-}
-
-#ifdef USE_OOB
-static int output_number(bt_mesh_output_action_t action, u32_t number)
-{
-    BT_INFO("OOB Number %u", number);
-    return 0;
-}
-
-static int output_string(const char *str)
-{
-    BT_INFO("OOB String %s", str);
+    app_log_info("OOB Number %u", number);
     return 0;
 }
 #endif
 
-static void prov_complete(u16_t net_idx, u16_t addr)
+#if (USE_OOB_TYPE == MESH_OOB_TYPE_INTPUT)
+static int input_request(void)
 {
-    BT_INFO("provisioning complete for net_idx 0x%04x addr 0x%04x",
-                net_idx, addr);
-    primary_addr = addr;
-    primary_net_idx = net_idx;
+    app_log_info("Please view displaying string or number at client. And then call :\n");
+    app_log_info("1. bt_mesh_input_string(); to send string. Or,\n");
+    app_log_info("2. bt_mesh_input_number(); to send number.\n");
+    return 0;
+}
+#endif
+
+static void prov_complete(uint16_t net_idx, uint16_t addr)
+{
+    app_log_info("provisioning complete for net_idx 0x%04x addr 0x%04x\n",net_idx, addr);
 }
 
 static void prov_reset(void)
 {
-    bt_mesh_prov_enable((bt_mesh_prov_bearer_t)(BT_MESH_PROV_ADV | BT_MESH_PROV_GATT));
+    app_log_info("====>node reset.\n");
+    platform_reset();
 }
 
-#define MYNEWT_VAL_BLE_MESH_DEV_UUID ((uint8_t[16]){0xA8, 0x01, 0x61,0x00,0x04,0x20,0x30,0x75,0x9a,0x00,0x09,0xda,0x78,0x00,0x00,0x00})
+#define BLE_MESH_DEV_UUID ((uint8_t[16]){0xA8, 0x01, 0x61,0x00,0x04,0x20,0x30,0x75,0x9a,0x00,0x09,0xda,0x78,0x00,0x00,0x00})
 
-#ifdef V2
-static u8_t dev_uuid[16] = {0x22, 0};
-const unsigned char addr[6] = {2,0,0,0,0,0};
-#else
-static u8_t dev_uuid[16] = MYNEWT_VAL(BLE_MESH_DEV_UUID);
-const unsigned char addr[6] = {1,0,0,0,0,0};
-#endif
+static uint8_t dev_uuid[16] = BLE_MESH_DEV_UUID;
 
-static const struct bt_mesh_prov prov = {
+// Provisioning struct.
+static const bt_mesh_prov_t prov = {
     .uuid = dev_uuid,
-#if USE_OOB
-    .output_size = 6,
-    .output_actions = (BT_MESH_DISPLAY_NUMBER | BT_MESH_DISPLAY_STRING),
+#if (USE_OOB_TYPE == MESH_OOB_TYPE_OUTPUT)
+    .output_oob_action = BT_MESH_DISPLAY_NUMBER,
+    .output_oob_max_size = 1,
     .output_number = output_number,
-    .output_string = output_string,
-#else
-    .output_size = 0,
-    .output_actions = 0,
-    .output_number = 0,
-    .output_string = 0,
+#elif (USE_OOB_TYPE == MESH_OOB_TYPE_INTPUT)
+    .input_oob_action = BT_MESH_ENTER_STRING,
+    .input_oob_max_size = 8,
+    .input_req = input_request,
 #endif
     .complete = prov_complete,
     .reset = prov_reset,
 };
 
-#define TIANMAO
 
-#ifdef TIANMAO
-static uint8_t param[32] =
-{
-    0xf0, 0x0c, 0x00, 0x00, // product ID
-    0x36, 0x00, 0x00, 0x00, // authentation length
-    0x7d,0xdf,0xff,0xdb,0xa6,0xe1,0x55,0x1d,0x21,0x05,0xc6,0xbf,0xd4,0xa4,0xf7,0xee, // security (TEST DATA)
-};
-#else
-static uint8_t param[32] = {0};
-#endif
+/*--------------------------------------------------------------------
+ *--------------------------> PLATFORM <------------------------------
+ *------------------------------------------------------------------*/
 
-#define MESH_PLT_PB_ADV  (1)
-#define MESH_PLT_PB_GATT (2)
+void mesh_platform_init(void){
+    const char mesh_name[] = "ing-mesh";
+    const bd_addr_t addr_gatt_adv    = {0xd5, 0x33, 0xa3, 0x17, 0x2f, 0xFC};
+    const bd_addr_t addr_beacon_adv  = {0xd0, 0x2a, 0x4e, 0x19, 0x28, 0xFC};
 
-void mesh_platform_setup()
-{
-    const static bd_addr_t addr_pb_adv  = {0xd0, 0x2a, 0x4e, 0x19, 0x28, 0xFC};
-    const static bd_addr_t addr_pb_gatt = {0xd5, 0x33, 0xa3, 0x17, 0x2f, 0xFC};
-#ifdef V2
-    mesh_set_dev_name("hello-mesh-2");
-#else
-    mesh_set_dev_name("hello-mesh");
-#endif
-#ifdef TIANMAO
-    mesh_platform_config(MESH_PLT_PB_ADV, addr_pb_adv, param);
-#else
-    mesh_platform_config(MESH_PLT_PB_ADV, addr_pb_adv, NULL);
-#endif
-    mesh_platform_config(MESH_PLT_PB_GATT, addr_pb_gatt, NULL);
+    mesh_set_addr_static((uint8_t *)addr_gatt_adv);
+    mesh_set_addr_static((uint8_t *)addr_beacon_adv);
+    mesh_platform_config(MESH_CFG_NAME, (uint8_t *)mesh_name, strlen(mesh_name));
+    mesh_platform_config(MESH_CFG_GATT_ADV_ADDR, (uint8_t *)addr_gatt_adv, sizeof(bd_addr_t));
+    mesh_platform_config(MESH_CFG_BEACON_ADV_ADDR, (uint8_t *)addr_beacon_adv, sizeof(bd_addr_t));
+    mesh_platform_adv_params_init();
 }
 
-extern int mesh_env_init(void);
-extern void create_mesh_task (void);
 
-uint32_t setup_profile(void *data, void *user_data)
-{
-    mesh_env_init();
-
-    create_mesh_task();
-    return 0;
+/*--------------------------------------------------------------------
+ *-----------------------------> API <--------------------------------
+ *------------------------------------------------------------------*/
+static void mesh_get_ver_info(void){
+    char version[28];
+    int ver_len = mesh_get_lib_version_info(version, sizeof(version));
+    if(ver_len > 0){
+        platform_printf("mesh version info: %s\n", version);
+    }
 }
 
-void model_init()
-{
-    nimble_port_init();  //initialze the memory.
-    init_pub();
-    mesh_setup(&prov, &comp);
+static void mesh_flash_init(void){
+    mesh_storage_app_init();
+    mesh_storage_stack_init();
 }
 
-struct bt_mesh_elem * get_element_of_node()
-{
-    return elements;
+void mesh_elements_init(void){
+    mesh_elems_and_models_ll_init(&comp);
 }
+
+static void mesh_provising_init(void){
+    mesh_port_init();
+    mesh_prov_ll_init(&prov);
+}
+
+static void print_addr(char *str, bd_addr_t addr)
+{
+    platform_printf("%s: %02X:%02X:%02X:%02X:%02X:%02X\n", str, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+}
+
+static void mesh_basic_info_print(void){
+    
+    // name
+    uint8_t name[30];
+    uint8_t name_len = sizeof(name);
+    adv_bearer_adv_get_scan_rsp_data(name, &name_len);
+    name[name_len] = '\0';
+    platform_printf("dev name: %s\n", name);
+
+    // uuid
+    uint8_t uuid[16];
+    const uint8_t * pUuid = mesh_node_get_device_uuid();
+    memcpy(uuid, pUuid, 16);
+    platform_printf("mesh uuid: ");
+    printf_hexdump(uuid, sizeof(uuid));
+
+    // addr
+    bd_addr_t gatt_adv_addr;
+    bd_addr_t beacon_adv_addr;
+    mesh_gatt_adv_addr_get(gatt_adv_addr);
+    mesh_beacon_adv_addr_get(beacon_adv_addr);
+    print_addr((char*)"gatt adv addr", gatt_adv_addr);
+    print_addr((char*)"beacon adv addr", beacon_adv_addr);
+}
+
+
+
+void mesh_init(void){
+    app_log_info("mesh start.\n");
+    // mesh_trace_config(FLASH_FEA, ALL_LVL);
+    mesh_get_ver_info();
+    mesh_flash_init();
+    mesh_platform_init();
+    mesh_stack_init(&mesh_elements_init);
+    mesh_provising_init();
+    mesh_basic_info_print();
+}
+

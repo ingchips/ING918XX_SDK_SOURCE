@@ -10,6 +10,7 @@ This example demonstrates lots of BLE functionalities controlled through UART:
 * Different trace sink driver
 * Power Control
 * Subrating
+* Dump through UART
 
 ## Commands
 
@@ -163,6 +164,14 @@ This example has 4 trace sink drivers (i.e. how to export/save trace data):
 * **UART** is selected if `TRACE_TO_UART` is defined
 * **FLASH** is selected if `TRACE_TO_FLASH` is defined
 * **Over the Air (BLE)** is selected if `TRACE_TO_AIR` is defined
+
+## Dump
+
+Memory dump can be used by Axf Tool for runtime analysis.
+This example dumps memory through UART when an assertion is raised. Use `assert` command to
+trigger an assertion manually.
+
+For further information on memory dump, see `trace_full_dump2` in `trace.c`.
 
 ## Test
 

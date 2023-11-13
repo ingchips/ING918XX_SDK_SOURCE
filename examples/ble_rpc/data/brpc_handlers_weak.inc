@@ -11,7 +11,7 @@ __attribute((weak)) int platform_rand() {UNDEF_FUN(1010); return (int)0; }
 __attribute((weak)) uint64_t platform_get_us_time() {UNDEF_FUN(1011); return (uint64_t)0; }
 __attribute((weak)) void platform_set_rf_clk_source(const uint8_t source) {UNDEF_FUN(1012); }
 __attribute((weak)) uintptr_t platform_get_task_handle(platform_task_id_t id) {UNDEF_FUN(1013); return (uintptr_t)0; }
-__attribute((weak)) void gap_set_random_device_address(const uint8_t * address) {UNDEF_FUN(1014); }
+__attribute((weak)) uint8_t gap_set_random_device_address(const uint8_t * address) {UNDEF_FUN(1014); return (uint8_t)0; }
 __attribute((weak)) uint8_t gap_disconnect(hci_con_handle_t handle) {UNDEF_FUN(1015); return (uint8_t)0; }
 __attribute((weak)) void gap_disconnect_all() {UNDEF_FUN(1016); }
 __attribute((weak)) uint8_t gap_add_whitelist(const uint8_t * address,bd_addr_type_t addtype) {UNDEF_FUN(1017); return (uint8_t)0; }
@@ -72,14 +72,14 @@ __attribute((weak)) uint8_t gap_set_default_subrate(uint16_t subrate_min,uint16_
 __attribute((weak)) uint8_t gap_subrate_request(hci_con_handle_t con_handle,uint16_t subrate_min,uint16_t subrate_max,uint16_t max_latency,uint16_t continuation_number,uint16_t supervision_timeout) {UNDEF_FUN(1072); return (uint8_t)0; }
 __attribute((weak)) uint8_t gap_aes_encrypt(const uint8_t * key,const uint8_t * plaintext,gap_hci_cmd_complete_cb_t cb,void * user_data) {UNDEF_FUN(1073); return (uint8_t)0; }
 __attribute((weak)) uint8_t gap_rx_test_v2(uint8_t rx_channel,uint8_t phy,uint8_t modulation_index) {UNDEF_FUN(1074); return (uint8_t)0; }
-__attribute((weak)) uint8_t gap_rx_test_v3(uint8_t rx_channel,uint8_t phy,uint8_t modulation_index,uint8_t expected_cte_length,uint8_t expected_cte_type,uint8_t slot_durations,uint8_t switching_pattern_length,uint8_t * antenna_ids) {UNDEF_FUN(1075); return (uint8_t)0; }
+__attribute((weak)) uint8_t gap_rx_test_v3(uint8_t rx_channel,uint8_t phy,uint8_t modulation_index,uint8_t expected_cte_length,uint8_t expected_cte_type,uint8_t slot_durations,uint8_t switching_pattern_length,const uint8_t * antenna_ids) {UNDEF_FUN(1075); return (uint8_t)0; }
 __attribute((weak)) uint8_t gap_tx_test_v2(uint8_t tx_channel,uint8_t test_data_length,uint8_t packet_payload,uint8_t phy) {UNDEF_FUN(1076); return (uint8_t)0; }
-__attribute((weak)) uint8_t gap_tx_test_v4(uint8_t tx_channel,uint8_t test_data_length,uint8_t packet_payload,uint8_t phy,uint8_t cte_length,uint8_t cte_type,uint8_t switching_pattern_length,uint8_t * antenna_ids,int8_t tx_power_level) {UNDEF_FUN(1077); return (uint8_t)0; }
+__attribute((weak)) uint8_t gap_tx_test_v4(uint8_t tx_channel,uint8_t test_data_length,uint8_t packet_payload,uint8_t phy,uint8_t cte_length,uint8_t cte_type,uint8_t switching_pattern_length,const uint8_t * antenna_ids,int8_t tx_power_level) {UNDEF_FUN(1077); return (uint8_t)0; }
 __attribute((weak)) uint8_t gap_test_end() {UNDEF_FUN(1078); return (uint8_t)0; }
 __attribute((weak)) uint8_t gap_vendor_tx_continuous_wave(uint8_t enable,uint8_t power_level_index,uint16_t freq) {UNDEF_FUN(1079); return (uint8_t)0; }
 __attribute((weak)) int att_server_deferred_read_response(hci_con_handle_t con_handle,uint16_t attribute_handle,const uint8_t * value,uint16_t value_len) {UNDEF_FUN(1080); return (int)0; }
-__attribute((weak)) int att_server_notify(hci_con_handle_t con_handle,uint16_t attribute_handle,uint8_t * value,uint16_t value_len) {UNDEF_FUN(1081); return (int)0; }
-__attribute((weak)) int att_server_indicate(hci_con_handle_t con_handle,uint16_t attribute_handle,uint8_t * value,uint16_t value_len) {UNDEF_FUN(1082); return (int)0; }
+__attribute((weak)) int att_server_notify(hci_con_handle_t con_handle,uint16_t attribute_handle,const uint8_t * value,uint16_t value_len) {UNDEF_FUN(1081); return (int)0; }
+__attribute((weak)) int att_server_indicate(hci_con_handle_t con_handle,uint16_t attribute_handle,const uint8_t * value,uint16_t value_len) {UNDEF_FUN(1082); return (int)0; }
 __attribute((weak)) uint16_t att_server_get_mtu(hci_con_handle_t con_handle) {UNDEF_FUN(1083); return (uint16_t)0; }
 __attribute((weak)) uint8_t gatt_client_discover_primary_services(user_packet_handler_t callback,hci_con_handle_t con_handle) {UNDEF_FUN(1084); return (uint8_t)0; }
 __attribute((weak)) uint8_t gatt_client_discover_primary_services_by_uuid16(user_packet_handler_t callback,hci_con_handle_t con_handle,uint16_t uuid16) {UNDEF_FUN(1085); return (uint8_t)0; }

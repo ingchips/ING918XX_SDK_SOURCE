@@ -31,7 +31,8 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     }
 }
 
-#define USER_MSG_HCI            1
+#define USER_MSG_HCI                1
+#define USER_TRIGGER_RAW_PKT        2
 
 #pragma pack (push, 1)
 
@@ -83,6 +84,82 @@ void rx_hci_byte(void *user_data, uint8_t c)
 
 static uint16_t test_op_code = 0;
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+#define HCI_LE_Vendor_FO_Test       0xff01
+
+#pragma pack (push, 1)
+struct rf_fo_cmd
+{
+    uint8_t run;
+    uint8_t ch_id;
+    uint8_t tune;
+} rf_fo_cmd = {0};
+#pragma pack (pop)
+
+enum rf_fo_test_state
+{
+    FO_TEST_IDLE,
+    FO_TEST_RUNNING,
+    FO_TEST_STOPPING,
+} rf_fo_test_state = FO_TEST_IDLE;
+
+static struct ll_raw_packet *raw_packet = NULL;
+
+void on_raw_packet_done(struct ll_raw_packet *packet, void *user_data)
+{
+    btstack_push_user_msg(USER_TRIGGER_RAW_PKT, NULL, 0);
+}
+
+void send_next_one(void)
+{
+    if (rf_fo_test_state != FO_TEST_RUNNING)
+    {
+        rf_fo_test_state = FO_TEST_IDLE;
+        return;
+    }
+
+
+    platform_config(PLATFORM_CFG_24M_OSC_TUNE, rf_fo_cmd.tune);
+
+    ll_raw_packet_set_param(raw_packet,
+                          3,        // tx_power
+                          rf_fo_cmd.ch_id,    // phy_channel_id
+                          1,        // phy
+                          0xBED8A379,
+                          0x555555);
+    ll_raw_packet_set_tx_cte(raw_packet, 0, 20, 0, NULL);
+    ll_raw_packet_set_tx_data(raw_packet, 0, NULL, 0);
+    ll_raw_packet_send(raw_packet, platform_get_us_time() + 60000);
+}
+
+void handle_rf_fo_cmd(const struct rf_fo_cmd *cmd)
+{
+    rf_fo_cmd = *cmd;
+    switch (rf_fo_test_state)
+    {
+    case FO_TEST_IDLE:
+        if (rf_fo_cmd.run == 0)
+            return;
+        if (raw_packet == NULL)
+            raw_packet = ll_raw_packet_alloc(1, on_raw_packet_done, NULL);
+        rf_fo_test_state = FO_TEST_RUNNING;
+        send_next_one();
+        break;
+    case FO_TEST_RUNNING:
+        if (rf_fo_cmd.run == 0)
+        {
+            rf_fo_test_state = FO_TEST_STOPPING;
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+#endif
+
 void send_event(uint8_t event_code,
     const uint8_t *param,
     int param_len)
@@ -108,14 +185,14 @@ void send_command_complete(uint8_t Num_HCI_Command_Packets,
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
-    uint8_t status = 0x12;
+    uint8_t status = ERROR_CODE_COMMAND_DISALLOWED;
     switch (msg_id)
     {
     case USER_MSG_HCI:
         {
             hci_cmd_t *cmd = (hci_cmd_t *)data;
             test_op_code = cmd->header.op_code;
-            switch (cmd->header.op_code)              
+            switch (cmd->header.op_code)
             {
             case HCI_Reset:
                 platform_reset();
@@ -151,7 +228,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                         uint8_t Packet_Payload;
                     } param_t;
                     param_t *param = (param_t *)cmd->data;
-                    gap_tx_test_v2(param->TX_Channel, param->Test_Data_Length, 
+                    gap_tx_test_v2(param->TX_Channel, param->Test_Data_Length,
                                    param->Packet_Payload, 1);
                 }
                 break;
@@ -165,7 +242,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                         uint8_t PHY;
                     } param_t;
                     param_t *param = (param_t *)cmd->data;
-                    gap_tx_test_v2(param->TX_Channel, param->Test_Data_Length, 
+                    gap_tx_test_v2(param->TX_Channel, param->Test_Data_Length,
                                    param->Packet_Payload, param->PHY);
                 }
                 break;
@@ -185,14 +262,14 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                     if (cmd->header.param_len == sizeof(param_t))
                     {
                         param_t *param = (param_t *)cmd->data;
-                        gap_tx_test_v4(param->TX_Channel, param->Test_Data_Length, 
+                        gap_tx_test_v4(param->TX_Channel, param->Test_Data_Length,
                                        param->Packet_Payload, param->PHY,
                                        param->CTE_Length, param->CTE_Type,
                                        0, NULL, param->TX_Power_Level);
                     }
                     else
                     {
-                         send_command_complete(0x0b,
+                         send_command_complete(DEF_NUM_OF_HCI,
                               cmd->header.op_code,
                               &status,
                               1);
@@ -220,13 +297,35 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                     }
                     else
                     {
-                         send_command_complete(0x0b,
+                         send_command_complete(DEF_NUM_OF_HCI,
                               cmd->header.op_code,
                               &status,
                               1);
                     }
                 }
                 break;
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+            case HCI_LE_Vendor_FO_Test:
+                {
+                    if (cmd->header.param_len == sizeof(struct rf_fo_cmd))
+                    {
+                        status = 0;
+                        handle_rf_fo_cmd((struct rf_fo_cmd *)cmd->data);
+                        send_command_complete(DEF_NUM_OF_HCI,
+                              cmd->header.op_code,
+                              &status,
+                              1);
+                    }
+                    else
+                    {
+                        send_command_complete(DEF_NUM_OF_HCI,
+                              cmd->header.op_code,
+                              &status,
+                              1);
+                    }
+                }
+                break;
+#endif
             default:
                 send_command_complete(DEF_NUM_OF_HCI,
                               cmd->header.op_code,
@@ -237,6 +336,11 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             ll_free(cmd);
         }
         break;
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    case USER_TRIGGER_RAW_PKT:
+        send_next_one();
+        break;
+#endif
     default:
         ;
     }

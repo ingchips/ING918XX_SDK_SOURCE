@@ -183,6 +183,7 @@
             <RvdsVP>0</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -297,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536901904</StartAddress>
-                <Size>34544</Size>
+                <StartAddress>536900792</StartAddress>
+                <Size>35656</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>

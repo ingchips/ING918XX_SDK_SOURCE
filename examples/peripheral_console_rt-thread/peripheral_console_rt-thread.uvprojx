@@ -7,11 +7,11 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6160000::V6.16::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91800</Device>
           <Vendor>INGChips</Vendor>
           <PackID>INGChips.INGCHIPS_DeviceFamilyPack.0.9.0</PackID>
           <PackURL>http://www.ingchips.com</PackURL>
@@ -30,7 +30,7 @@
           <SLE66CMisc/>
           <SLE66AMisc/>
           <SLE66LinkerMisc/>
-          <SFDFile>$$Device:ING91800$SVD\ING91800.svd</SFDFile>
+          <SFDFile>$$Device:ing91800$SVD\ing91800.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath/>
@@ -183,6 +183,7 @@
             <RvdsVP>0</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -272,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>139264</StartAddress>
-                <Size>401408</Size>
+                <StartAddress>147456</StartAddress>
+                <Size>393216</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -297,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536876432</StartAddress>
-                <Size>60016</Size>
+                <StartAddress>536874288</StartAddress>
+                <Size>62160</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -334,7 +335,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls/>
-              <Define>USE_STDPERIPH_DRIVER,LISTEN_TO_POWER_SAVING,POWER_SAVING</Define>
+              <Define>USE_STDPERIPH_DRIVER,LISTEN_TO_POWER_SAVING</Define>
               <Undefine/>
               <IncludePath>./rt-thread/include;./src;../../bundles/noos_typical/inc;../../bundles/noos_typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -408,7 +409,7 @@
             <File>
               <FileName>startup_ing91800.s</FileName>
               <FileType>2</FileType>
-              <FilePath>..\peripheral_console_freertos\src\startup_ing91800.s</FilePath>
+              <FilePath>.\src\startup_ing91800.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -517,14 +518,14 @@
               <FilePath>.\rt-thread\libcpu\arm\cortex-m3\cpuport.c</FilePath>
             </File>
             <File>
-              <FileName>context_rvds.S</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\rt-thread\libcpu\arm\cortex-m3\context_rvds.S</FilePath>
-            </File>
-            <File>
               <FileName>gen_os_impl.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\rt-thread\src\gen_os_impl.c</FilePath>
+            </File>
+            <File>
+              <FileName>context_rvds.S</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\rt-thread\libcpu\arm\cortex-m3\context_rvds.S</FilePath>
             </File>
           </Files>
         </Group>

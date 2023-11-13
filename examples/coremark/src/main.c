@@ -6,6 +6,10 @@
 #include "task.h"
 #include "trace.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#include "../data/setup_soc.cgen"
+#endif
+
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
@@ -68,8 +72,11 @@ void config_uart(uint32_t freq, uint32_t baud)
 
 void setup_peripherals(void)
 {
-    SYSCTRL_ClearClkGateMulti(0);
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     config_uart(OSC_CLK_FREQ, 115200);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    cube_setup_peripherals();
+#endif
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -90,6 +97,9 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 
 int app_main()
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    cube_soc_init();
+#endif
     // setup handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);

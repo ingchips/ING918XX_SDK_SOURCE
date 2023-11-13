@@ -6,15 +6,21 @@
 
 #include "app_cfg.h"
 
-#include "audio.h"
-
-const pcm_sample_t pcm[] =
-#include "../data/itu_female_16k.m"
-;
+#include "audio_encoder.h"
 
 #if (SAMPLING_RATE != 16000)
 #error "only 16kHz is supported"
 #endif
+
+#define NUM_OF_SAMPLES  57190
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define SAMPLES_LOCATION        0x00084000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define SAMPLES_LOCATION        0x02041000
+#endif
+
+static const pcm_sample_t *pcm = (const pcm_sample_t *)SAMPLES_LOCATION;
 
 static uint16_t pcm_index = 0;
 
@@ -27,12 +33,15 @@ uint32_t audio_sample_isr(void *user_data)
     TMR_IntClr(APB_TMR1, 0, 0x1);
 #endif
 
-    if (pcm_index < sizeof(pcm) / sizeof(pcm[0]))
+    if (pcm_index < NUM_OF_SAMPLES)
     {
         sample = pcm[pcm_index++];
     }
     else
-        pcm_index = 0;
+    {
+        sample = pcm[0];
+        pcm_index = 1;
+    }
 
     audio_rx_sample(sample);
 
@@ -49,7 +58,7 @@ void audio_input_setup(void)
     TMR_Reload(APB_TMR1);
     TMR_IntEnable(APB_TMR1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    SYSCTRL_SelectTimerClk(TMR_PORT_1, SYSCTRL_CLK_24M_DIV_1 + 3);
+    SYSCTRL_SelectTimerClk(TMR_PORT_1, SYSCTRL_CLK_SLOW_DIV_4);
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_EXTERNAL, 0);
     TMR_SetReload(APB_TMR1, 0, OSC_CLK_FREQ / 4 / SAMPLING_RATE);
     TMR_IntEnable(APB_TMR1, 0, 0x1);

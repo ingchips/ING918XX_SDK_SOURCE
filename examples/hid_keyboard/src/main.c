@@ -7,8 +7,11 @@
 #include <string.h>
 #include <stdio.h>
 #include "trace.h"
+#include "sm.h"
 
 #include "board.h"
+
+#include "kv_impl.c"
 
 #define PRINT_UART    APB_UART0
 
@@ -100,28 +103,6 @@ uint32_t gpio_isr(void *user_data)
     return 0;
 }
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-#define DB_FLASH_ADDRESS  0x42000
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#define DB_FLASH_ADDRESS  0x20e0000
-#else
-#error unknown or unsupported chip family
-#endif
-
-int db_write_to_flash(const void *db, const int size)
-{
-    platform_printf("write to flash, size = %d\n", size);
-    printf_hexdump(db, size);
-    program_flash(DB_FLASH_ADDRESS, (const uint8_t *)db, size);
-    return KV_OK;
-}
-
-int read_from_flash(void *db, const int max_size)
-{
-    memcpy(db, (void *)DB_FLASH_ADDRESS, max_size);
-    return KV_OK;
-}
-
 uint32_t uart_isr(void *user_data)
 {
     uint32_t status;
@@ -149,11 +130,20 @@ uint32_t uart_isr(void *user_data)
 
 trace_rtt_t trace_ctx = {0};
 
+extern const sm_persistent_t sm_persistent;
+
 int app_main()
 {
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
+
+    if (BD_ADDR_TYPE_LE_PUBLIC == sm_persistent.identity_addr_type)
+    {
+        uint8_t addr[6];
+        reverse_bd_addr(sm_persistent.identity_addr, addr);
+        sysSetPublicDeviceAddr(addr);
+    }
 
     platform_set_irq_callback(PLATFORM_CB_IRQ_GPIO, gpio_isr, NULL);
     setup_peripherals();
@@ -166,7 +156,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
 
-    kv_init(db_write_to_flash, read_from_flash);
+    kv_impl_init();
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0x1ff);

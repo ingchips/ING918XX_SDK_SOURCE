@@ -30,12 +30,12 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
 #endif
 
 #if (TARGET_FAMILY == INGCHIPS_FAMILY_918)
-    #define ENTRY                   0x04000
-    #define TARGET_STORAGE_START    0x44000
+    #define ENTRY                   FLASH_BASE
+    #define TARGET_STORAGE_START    (ENTRY + 0x40000)
     #define APP_BIN_SIZE            0x4000
 #elif (TARGET_FAMILY == INGCHIPS_FAMILY_916)
-    #define ENTRY                   0x02000000
-    #define TARGET_STORAGE_START    0x02100000
+    #define ENTRY                   (FLASH_BASE + 0x2000)
+    #define TARGET_STORAGE_START    (ENTRY + 0x40000)
     #define APP_BIN_SIZE            0x0000          // ignored for ING916
 #else
     #error unknown or unsupported target chip family

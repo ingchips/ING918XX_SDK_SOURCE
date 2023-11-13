@@ -20,7 +20,7 @@ void i2c_init(const i2c_port_t port)
     I2C_CTRL0_CLR(I2C_BASE(port), I2C_CTRL0_SFTRST | I2C_CTRL0_CLKGATE);
 }
 
-int i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const uint8_t *byte_data, int16_t length)
+int i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint16_t addr, const uint8_t *byte_data, int16_t length)
 {
     uint32_t *p_data = (uint32_t *)(byte_data + 3);
     uint32_t data = (addr <<  1) | 0;     // control: write
@@ -68,7 +68,7 @@ int i2c_do_write(const i2c_port_t port, const uint32_t nrm, uint8_t addr, const 
     return 0;
 }
 
-int i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, int16_t length)
+int i2c_write(const i2c_port_t port, uint16_t addr, const uint8_t *byte_data, int16_t length)
 {
     return i2c_do_write(port, I2C_QUEUECMD_POST_SEND_STOP | I2C_QUEUECMD_PRE_SEND_START | I2C_QUEUECMD_MASTER_MODE | I2C_QUEUECMD_DIRECTION,
                  addr, byte_data, length);
@@ -84,7 +84,7 @@ static int write_bytes(uint8_t *data, uint32_t d32, int len)
     return len;
 }
 
-int i2c_read(const i2c_port_t port, uint8_t addr,
+int i2c_read(const i2c_port_t port, uint16_t addr,
               const uint8_t *write_data, int16_t write_len,
               uint8_t *read_data, int16_t read_length)
 {
@@ -175,7 +175,7 @@ void i2c_init(const i2c_port_t port)
     I2C_Enable(I2C_BASE(port), 0);
 }
 
-int I2C_MasterWrite(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t Addr, const uint8_t *Data, uint8_t DataCnt)
+int I2C_MasterWrite(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint16_t Addr, const uint8_t *Data, uint8_t DataCnt)
 {
     uint8_t i;
     int timeout = I2C_HW_TIME_OUT;
@@ -201,7 +201,7 @@ int I2C_MasterWrite(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t 
     return 0;
 }
 
-int I2C_MasterRead(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t Addr, uint8_t *Data, uint8_t DataCnt)
+int I2C_MasterRead(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint16_t Addr, uint8_t *Data, uint8_t DataCnt)
 {
     uint8_t i;
     int timeout = I2C_HW_TIME_OUT;
@@ -225,12 +225,12 @@ int I2C_MasterRead(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint8_t A
     return 0;
 }
 
-int i2c_write(const i2c_port_t port, uint8_t addr, const uint8_t *byte_data, int16_t length)
+int i2c_write(const i2c_port_t port, uint16_t addr, const uint8_t *byte_data, int16_t length)
 {
     return I2C_MasterWrite(I2C_BASE(port), I2C_ADDRESSING_MODE_07BIT, addr, byte_data, length);
 }
 
-int i2c_read(const i2c_port_t port, uint8_t addr,
+int i2c_read(const i2c_port_t port, uint16_t addr,
               const uint8_t *write_data, int16_t write_len,
               uint8_t *read_data, int16_t read_length)
 {

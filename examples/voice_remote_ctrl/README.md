@@ -3,6 +3,7 @@
 This example demonstrates how to:
 
 * Real-time 4-bit ADPCM encoding of audio data;
+* Real-time SBC encoding of audio data;
 * Use hardware timer & ADC (loop mode);
 * Use I2S/PDM/DMA;
 * Scan keyboard state;

@@ -5,7 +5,7 @@
 *
 *
 *  INGCHIPS confidential and proprietary.
-*  COPYRIGHT (c) 2018 by INGCHIPS
+*  COPYRIGHT (c) 2018-2023 by INGCHIPS
 *
 *  All rights are reserved. Reproduction in whole or in part is
 *  prohibited without the written consent of the copyright owner.
@@ -35,7 +35,7 @@ typedef uint8_t bd_addr_t[BD_ADDR_LEN];
 
 /**
  * Address types
- * @note: BTstack uses a custom addr type to refer to classic ACL and SCO devices
+ * @note: btstack uses a custom addr type to refer to classic ACL and SCO devices
  */
  typedef enum {
     BD_ADDR_TYPE_LE_PUBLIC = 0,
@@ -56,8 +56,8 @@ typedef uint8_t link_key_t[LINK_KEY_LEN];
  */
 typedef enum {
   COMBINATION_KEY = 0,  // standard pairing
-  LOCAL_UNIT_KEY,     // ?
-  REMOTE_UNIT_KEY,    // ?
+  LOCAL_UNIT_KEY,
+  REMOTE_UNIT_KEY,
 } link_key_type_t;
 
 /**
@@ -65,12 +65,11 @@ typedef enum {
  */
 
 /**
- * packet types - used in BTstack and over the H4 UART interface
+ * packet types
  */
 #define HCI_COMMAND_DATA_PACKET 0x01
 #define HCI_ACL_DATA_PACKET     0x02
-#define HCI_EVENT_PACKET        0x04   //changed to align with spec
-#define HCI_COMPLETED_SDU_PACKET 0x0B  // for LE credit channel : completed SDU event
+#define HCI_EVENT_PACKET        0x04
 #define L2CAP_EVENT_PACKET      0x0A
 
 // packet header sizes
@@ -153,8 +152,13 @@ typedef enum {
 #define ERROR_CODE_CONNECTION_FAILED_TO_BE_ESTABLISHED     0x3E
 #define ERROR_CODE_MAC_CONNECTION_FAILED                   0x3F
 #define ERROR_CODE_COARSE_CLOCK_ADJUSTMENT_REJECTED_BUT_WILL_TRY_TO_ADJUST_USING_CLOCK_DRAGGING 0x40
-#define ERROR_CODE_UNKNOWN_ADVERTISING_IDENTIFIER              0x42
-#define ERROR_CODE_LIMIT_REACHED                           0x43
+#define ERROR_CODE_UNKNOWN_ADVERTISING_IDENTIFIER                               0x42
+#define ERROR_CODE_LIMIT_REACHED                                                0x43
+#define ERROR_CODE_OP_CANCELLED_BY_HOST                                         0x44
+#define ERROR_CODE_PACKET_TOO_LONG                                              0x45
+#define ERROR_CODE_TOO_LATE                                                     0x46
+#define ERROR_CODE_TOO_EARLY                                                    0x47
+
 // HCI roles
 #define HCI_ROLE_MASTER 0
 #define HCI_ROLE_SLAVE  1
@@ -304,9 +308,8 @@ typedef enum {
  * @param key_flag
  */
 #define HCI_EVENT_MASTER_LINK_KEY_COMPLETE                 0x0A
-#define HCI_EVENT_READ_REMOTE_SUPPORTED_FEATURES_COMPLETE  0x0B
+
 #define HCI_EVENT_READ_REMOTE_VERSION_INFORMATION_COMPLETE 0x0C
-#define HCI_EVENT_QOS_SETUP_COMPLETE                       0x0D
 
 /**
  * @format 12R
@@ -482,6 +485,8 @@ typedef enum {
 #define HCI_SUBEVENT_LE_LONG_TERM_KEY_REQUEST              0x05
 #define HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_COMPLETE 0x06
 #define HCI_SUBEVENT_LE_DATA_LENGTH_CHANGE_EVENT           0x07
+#define HCI_SUBEVENT_LE_P256_PUB_KEY_COMPLETE              0x08
+#define HCI_SUBEVENT_LE_GENERATE_DHKEY_COMPLETE            0x09
 #define HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE       0x0A
 #define HCI_SUBEVENT_LE_DIRECT_ADVERTISING_REPORT          0x0B
 #define HCI_SUBEVENT_LE_PHY_UPDATE_COMPLETE                0X0C
@@ -497,8 +502,26 @@ typedef enum {
 #define HCI_SUBEVENT_LE_CONNECTION_IQ_REPORT               0x16
 #define HCI_SUBEVENT_LE_CTE_REQ_FAILED                     0x17
 #define HCI_SUBEVENT_LE_PRD_ADV_SYNC_TRANSFER_RCVD         0x18
+#define HCI_SUBEVENT_LE_CIS_ESTABLISHED                    0x19
+#define HCI_SUBEVENT_LE_CIS_REQUEST                        0x1a
+#define HCI_SUBEVENT_LE_CREATE_BIG_COMPLETE                0x1b
+#define HCI_SUBEVENT_LE_TERMINATE_BIG_COMPLETE             0x1c
+#define HCI_SUBEVENT_LE_BIG_SYNC_ESTABLISHED               0x1d
+#define HCI_SUBEVENT_LE_BIG_SYNC_LOST                      0x1e
+#define HCI_SUBEVENT_LE_REQUEST_PEER_SCA                   0x1F
+#define HCI_SUBEVENT_LE_PATH_LOSS_THRESHOLD                0x20
+#define HCI_SUBEVENT_LE_TRANSMIT_POWER_REPORTING           0x21
+#define HCI_SUBEVENT_LE_BIGINFO_ADV_REPORT                 0x22
+#define HCI_SUBEVENT_LE_SUBRATE_CHANGE                     0x23
+#define HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED_V2                0x24
+#define HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_REPORT_V2                          0x25
+#define HCI_SUBEVENT_LE_PRD_ADV_SYNC_TRANSFER_RCVD_V2                           0x26
+#define HCI_SUBEVENT_PRD_ADV_SUBEVT_DATA_REQ                                    0x27
+#define HCI_SUBEVENT_PRD_ADV_RSP_REPORT                                         0x28
+#define HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2                         0x29
 
 // Vendor specific subevents
+#define HCI_SUBEVENT_LE_VENDOR_CHANNEL_MAP_UPDATE             0xFE
 #define HCI_SUBEVENT_LE_VENDOR_PRO_CONNECTIONLESS_IQ_REPORT   0xFF
 
 // last used HCI_EVENT in 2.1 is 0x3d
@@ -539,14 +562,6 @@ typedef enum {
 
 // Extended Response Timeout eXpired
 #define L2CAP_ERTX_TIMEOUT_MS 120000
-
-// Fixed PSM numbers
-#define PSM_SDP           0x01
-#define PSM_RFCOMM        0x03
-#define PSM_BNEP          0x0F
-#define PSM_HID_CONTROL   0x11
-#define PSM_HID_INTERRUPT 0x13
-
 
 /**
  * ATT
@@ -623,7 +638,7 @@ typedef enum {
 #define ATT_PROPERTY_AUTHENTICATED_SIGNED_WRITE 0x40
 #define ATT_PROPERTY_EXTENDED_PROPERTIES 0x80
 
-// MARK: Attribute Property Flag, BTstack extension
+// MARK: Attribute Property Flag, btstack extension
 // value is asked from client
 #define ATT_PROPERTY_DYNAMIC             0x100
 // 128 bit UUID used
@@ -682,7 +697,10 @@ typedef enum {
     SM_CODE_IDENTITY_INFORMATION,
     SM_CODE_IDENTITY_ADDRESS_INFORMATION,
     SM_CODE_SIGNING_INFORMATION,
-    SM_CODE_SECURITY_REQUEST
+    SM_CODE_SECURITY_REQUEST,
+    SM_CODE_PAIRING_PUBLIC_KEY,
+    SM_CODE_PAIRING_DHKEY_CHECK,
+    SM_CODE_PAIRING_KEYPRESS_NOTIFICATION
 } SECURITY_MANAGER_COMMANDS;
 
 // IO Capability Values
@@ -699,6 +717,7 @@ typedef enum {
 #define SM_AUTHREQ_NO_BONDING 0x00
 #define SM_AUTHREQ_BONDING 0x01
 #define SM_AUTHREQ_MITM_PROTECTION 0x04
+#define SM_AUTHREQ_SC 0x08
 
 // Key distribution flags used by spec
 #define SM_KEYDIST_ENC_KEY 0X01
@@ -716,6 +735,7 @@ typedef enum {
 #define SM_STK_GENERATION_METHOD_JUST_WORKS 0x01
 #define SM_STK_GENERATION_METHOD_OOB        0x02
 #define SM_STK_GENERATION_METHOD_PASSKEY    0x04
+#define SM_STK_GENERATION_METHOD_NUM_COMPARISON    0x08
 
 // Pairing Failed Reasons
 #define SM_REASON_RESERVED                     0x00
@@ -728,6 +748,11 @@ typedef enum {
 #define SM_REASON_COMMAND_NOT_SUPPORTED        0x07
 #define SM_REASON_UNSPECIFIED_REASON           0x08
 #define SM_REASON_REPEATED_ATTEMPTS            0x09
+#define SM_REASON_REPEATED_ATTEMPTS            0x09
+#define SM_REASON_INVALID_PARAMETERS           0x0a
+#define SM_REASON_DHKEY_CHECK_FAILED           0x0b
+#define SM_REASON_NUMERIC_COMPARISON_FAILED    0x0c
+#define SM_REASON_KEY_REJECTED_FAILED          0x0f
 // also, invalid parameters
 // and reserved
 

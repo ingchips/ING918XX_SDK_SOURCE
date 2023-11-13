@@ -88,11 +88,18 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
  * @param[in] src               source peripheral
  * @param[in] size              size in byte
  * @param[in] options           bit combination of `DMA_DescriptorOptionBit`
+ * @param[out] *srcWidth        size(bits) per unit, refer to DMA_TransferWidth
+ * @param[out] *srcSize         size in unit per transfer, real transfer num is 1<<srcSize
  * @return                      0 if no error else non-0
+ * Application need to check the return value of *srcWidth and *srcSize and set corresponding 
+ * fifo trigger level.
+ * for example, if srcWidth is DMA_WIDTH_BYTE, and srcSize is 2(which means 1<<2 = 4)
+ * then the fifo trigger level should be set to 4bytes(srcWidth*(1<<srcSize))
+ * so that src fifo will issue a dma req every 4bytes to trigger dma transaction.
  */
 int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
-                                    uint32_t options);
+                                    uint32_t options, uint8_t *srcWidth, uint8_t *srcSize);
 /**
  * @brief Reset DMA peripheral
  *

@@ -9,6 +9,7 @@
 #include "step_calc.h"
 #include "iic.h"
 #include "bma2x2.h"
+#include "board.h"
 #include <stdio.h>
 
 #define PRINT_PORT    APB_UART0
@@ -47,24 +48,41 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-void setup_peripherals(void)
-{
-    config_uart(OSC_CLK_FREQ, 115200);
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_I2C0)
-                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
+#define I2C_SCL         GIO_GPIO_10
+#define I2C_SDA         GIO_GPIO_11
 
-#ifndef SIMULATION
-    PINCTRL_SetPadMux(10, IO_SOURCE_I2C0_SCL_OUT);
-    PINCTRL_SetPadMux(11, IO_SOURCE_I2C0_SDA_OUT);
+void setup_peripherals_i2c_pin(void)
+{
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_I2C0)
+                                | (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                                | (1 << SYSCTRL_ClkGate_APB_GPIO1)
+                                | (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    PINCTRL_SelI2cSclIn(I2C_PORT_0, 10);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)   
-    PINCTRL_SelI2cIn(I2C_PORT_0, 10, IO_NOT_A_PIN);
+    PINCTRL_SetPadMux(I2C_SCL, IO_SOURCE_I2C0_SCL_O);
+    PINCTRL_SetPadMux(GIO_GPIO_11, IO_SOURCE_I2C0_SDO);
+    PINCTRL_SelI2cSclIn(I2C_PORT_0, I2C_SCL);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_SelI2cIn(I2C_PORT_0, I2C_SCL, I2C_SDA);
 #else
     #error unknown or unsupported chip family
 #endif
+}
+
+void setup_peripherals_i2c(void)
+{
+    setup_peripherals_i2c_pin();
     printf("init");
     i2c_init(I2C_PORT_0);
+}
+
+void setup_peripherals(void)
+{
+    config_uart(OSC_CLK_FREQ, 115200);
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
+
+#ifndef SIMULATION
+    setup_peripherals_i2c();
 #endif
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
@@ -77,7 +95,9 @@ void setup_peripherals(void)
 	TMR_Enable(APB_TMR1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     // setup channel 0 of timer 1: 50Hz
+    SYSCTRL_SelectTimerClk(TMR_PORT_0,SYSCTRL_CLK_32k);
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
+    TMR_IntEnable(APB_TMR1,0,0xf);
     TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / ACC_SAMPLING_RATE);
     TMR_Enable(APB_TMR1, 0, 0xf);
 #else
@@ -116,7 +136,7 @@ uint32_t timer_isr(void *user_data)
 #else
     #error unknown or unsupported chip family
 #endif
-    
+
     xSemaphoreGiveFromISR(sem_pedometer, &xHigherPriorityTaskWoke);
     return 0;
 }
@@ -135,7 +155,7 @@ int app_main()
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
-    
+
     xTaskCreate(pedometer_task,
                "b",
                150,

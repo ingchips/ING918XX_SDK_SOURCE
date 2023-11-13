@@ -75,8 +75,16 @@ void EFUSE_WriteEfuseDataBitToOne(EFUSE_TypeDef* EFUSE_BASE, uint8_t addr);
  * @brief Unlock EFUSE before write access
  *
  * @param[in] EFUSE_BASE              base address
+ * @param[in] data                    has to be EFUSE_UNLOCK_FLAG
  */
 void EFUSE_UnLock(EFUSE_TypeDef* EFUSE_BASE, uint16_t data);
+
+/**
+ * @brief Lock EFUSE after write access
+ *
+ * @param[in] EFUSE_BASE              base address
+ */
+void EFUSE_Lock(EFUSE_TypeDef* EFUSE_BASE);
 
 uint8_t EFUSE_GetStatusState(EFUSE_TypeDef* EFUSE_BASE);
 uint8_t EFUSE_GetDataValidFlag(EFUSE_TypeDef* EFUSE_BASE);

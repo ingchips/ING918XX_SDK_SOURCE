@@ -8,7 +8,7 @@
 #if (APP_TYPE == APP_ING)
 // 4KB per sec
 #define VOICE_BUF_BLOCK_SIZE  150   // this is indicated in GATT voice information
-#define VOICE_BUF_BLOCK_NUM   (4100 / VOICE_BUF_BLOCK_SIZE)     // total buffer: 4.1KB
+#define VOICE_BUF_BLOCK_NUM   (2100 / VOICE_BUF_BLOCK_SIZE)     // total buffer: 4.1KB
 #elif (APP_TYPE == APP_ANDROID)
 #define VOICE_BUF_BLOCK_SIZE  (128 + 6)
 #define VOICE_BUF_BLOCK_NUM   (4000 / VOICE_BUF_BLOCK_SIZE)
@@ -23,6 +23,8 @@
 
 void audio_init(void);
 uint32_t audio_sample_isr(void *user_data);
+
+typedef int16_t sample_t;
 
 void audio_start(void);
 void audio_stop(void);

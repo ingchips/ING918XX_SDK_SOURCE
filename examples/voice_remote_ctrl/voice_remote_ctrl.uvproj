@@ -196,7 +196,7 @@
             <AdsLsxf>1</AdsLsxf>
             <RvctClst>0</RvctClst>
             <GenPPlst>0</GenPPlst>
-            <AdsCpuType>"Cortex-M3"</AdsCpuType>
+            <AdsCpuType>"Cortex-M4"</AdsCpuType>
             <RvctDeviceName/>
             <mOS>0</mOS>
             <uocRom>0</uocRom>
@@ -205,7 +205,7 @@
             <hadIRAM>1</hadIRAM>
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
-            <RvdsVP>0</RvdsVP>
+            <RvdsVP>2</RvdsVP>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -265,12 +265,12 @@
               <IRAM>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0x8001</Size>
               </IRAM>
               <IROM>
                 <Type>1</Type>
-                <StartAddress>0x4000</StartAddress>
-                <Size>0x40000</Size>
+                <StartAddress>0x2000000</StartAddress>
+                <Size>0x200001</Size>
               </IROM>
               <XRAM>
                 <Type>0</Type>
@@ -294,8 +294,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>33714176</StartAddress>
-                <Size>364544</Size>
+                <StartAddress>33718272</StartAddress>
+                <Size>360448</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -319,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536893616</StartAddress>
-                <Size>10064</Size>
+                <StartAddress>536892496</StartAddress>
+                <Size>11184</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -346,9 +346,9 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=2</Define>
+              <Define>USE_STDPERIPH_DRIVER,AUDIO_INPUT=0,AUDIO_CODEC_ALG=0</Define>
               <Undefine/>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
+              <IncludePath>.\libsbc\include;../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing916;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -414,6 +414,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\audio_input.c</FilePath>
             </File>
+            <File>
+              <FileName>pingpong.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\pingpong.c</FilePath>
+            </File>
+            <File>
+              <FileName>audio_adpcm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\audio_adpcm.c</FilePath>
+            </File>
+            <File>
+              <FileName>audio_sbc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\audio_sbc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -433,6 +448,13 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>eflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\BSP\eflash.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>
@@ -497,11 +519,6 @@
         <Group>
           <GroupName>Tools</GroupName>
           <Files>
-            <File>
-              <FileName>audio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\audio.c</FilePath>
-            </File>
             <File>
               <FileName>att_db_util.c</FileName>
               <FileType>1</FileType>
