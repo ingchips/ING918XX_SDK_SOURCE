@@ -444,14 +444,21 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
 
 /* several options of spi clock */
 
+#define SPI_INTERFACETIMINGSCLKDIV_1    0xff
+#define SPI_INTERFACETIMINGSCLKDIV_4    1
+#define SPI_INTERFACETIMINGSCLKDIV_6    2
+#define SPI_INTERFACETIMINGSCLKDIV_8    3
+#define SPI_INTERFACETIMINGSCLKDIV_10   4
+#define SPI_INTERFACETIMINGSCLKDIV_12   5
 /* default clk config for spi0 and spi1
    for default, spi interface clock is 24M, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
    for example, "eSclkDiv == 1" means 24M/(2*(1+1)) = 6M(spi clk speed)*/
-#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_6M    (1)
-#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_4M    (2)
-#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_3M    (3)
-#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M4   (4)
-#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M    (5)
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_24M   (SPI_INTERFACETIMINGSCLKDIV_1 )
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_6M    (SPI_INTERFACETIMINGSCLKDIV_4 )
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_4M    (SPI_INTERFACETIMINGSCLKDIV_6 )
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_3M    (SPI_INTERFACETIMINGSCLKDIV_8 )
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M4   (SPI_INTERFACETIMINGSCLKDIV_10)
+#define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M    (SPI_INTERFACETIMINGSCLKDIV_12)
 
 /* high speed SPI1 clk config 
    1. SPI1 use HCLK, use SYSCTRL_SelectHClk() and SYSCTRL_SelectSpiClk() to increase spi interface clock
@@ -489,6 +496,29 @@ typedef uint8_t  SPI_InterfaceTimingSclkDiv;// spi interface clock / (2 * (eSclk
 #define bwSPI_SLAVE_DATA_COUNT_READ_CNT           10
 #define bwSPI_SLAVE_DATA_COUNT_WRITE_CNT          10
 
+/* ----------------------------------------------------------
+ * Description:
+ * Bit shifts and widths for Memory Access Control register
+ */
+
+#define bsSPI_MEM_RD_CMD           0
+
+#define bwSPI_MEM_RD_CMD           4
+
+typedef enum {
+    SPI_MEMRD_CMD_03 = 0 ,//command 0x03 + 3bytes address(regular mode) + data(regular mode)
+    SPI_MEMRD_CMD_0B = 1 ,//command 0x0B + 3bytes address(regular mode) + 1byte dummy + data(regular mode)
+    SPI_MEMRD_CMD_3B = 2 ,//command 0x3B + 3bytes address(regular mode) + 1byte dummy + data(dual mode)
+    SPI_MEMRD_CMD_6B = 3 ,//command 0x6B + 3bytes address(regular mode) + 1byte dummy + data(Quad mode)
+    SPI_MEMRD_CMD_BB = 4 ,//command 0xBB + 3bytes + 1byte 0 address(dual mode) + data(dual mode)
+    SPI_MEMRD_CMD_EB = 5 ,//command 0xEB + 3bytes + 1byte 0 address(quad mode) + 2bytes dummy + data(Quad mode)
+    SPI_MEMRD_CMD_13 = 8 ,//command 0x13 + 4bytes address(regular mode) + data(regular mode)
+    SPI_MEMRD_CMD_0C = 9 ,//command 0x0C + 4bytes address(regular mode) + 1byte dummy + data(regular mode)
+    SPI_MEMRD_CMD_3C = 10,//command 0x3C + 4bytes address(regular mode) + 1byte dummy + data(dual mode)
+    SPI_MEMRD_CMD_6C = 11,//command 0x6C + 4bytes address(regular mode) + 1byte dummy + data(Quad mode)
+    SPI_MEMRD_CMD_BC = 12,//command 0xBC + 4bytes + 1byte 0 address(dual mode) + data(dual mode)
+    SPI_MEMRD_CMD_EC = 13,//command 0xEC + 4bytes + 1byte 0 address(quad mode) + 2bytes dummy + data(Quad mode)
+} apSSP_sDeviceMemRdCmd;
 
 /*
  * Description:
@@ -681,6 +711,22 @@ uint16_t apSSP_GetSlaveRxDataCnt(SSP_TypeDef *SPI_BASE);
  */
 uint8_t apSSP_GetTxFifoDepthWords(SSP_TypeDef *SPI_BASE);
 uint8_t apSSP_GetRxFifoDepthWords(SSP_TypeDef *SPI_BASE);
+
+/**
+ * @brief Set dummy-cnt value
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] val                   dummy-cnt value
+ */
+void apSSP_SetTransferControlDummyCnt(SSP_TypeDef *SPI_BASE, uint8_t val);
+
+/**
+ * @brief Set SPI command for serving the memory-mapped reads on the AHB/EILM bus
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] cmd                   SPI command
+ */
+void apSSP_SetMemAccessCmd(SSP_TypeDef *SPI_BASE, apSSP_sDeviceMemRdCmd cmd);
 
 #endif
 
