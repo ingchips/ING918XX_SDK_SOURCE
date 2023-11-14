@@ -369,7 +369,7 @@ void apSSP_SetTransferControlRdTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val)
 void apSSP_SetTransferControlDummyCnt(SSP_TypeDef *SPI_BASE, uint8_t cnt)
 {
     SPI_BASE->TransCtrl &= (~(BW2M(bwSPI_TRANSCTRL_DUMMYCNT) << bsSPI_TRANSCTRL_DUMMYCNT));
-    SPI_BASE->TransCtrl |= (((cnt+1) & BW2M(bwSPI_TRANSCTRL_DUMMYCNT)) << bsSPI_TRANSCTRL_DUMMYCNT);
+    SPI_BASE->TransCtrl |= (((cnt-1) & BW2M(bwSPI_TRANSCTRL_DUMMYCNT)) << bsSPI_TRANSCTRL_DUMMYCNT);
 }
 
 /*====================================================================*/
