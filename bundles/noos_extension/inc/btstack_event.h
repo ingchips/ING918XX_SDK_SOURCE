@@ -1386,6 +1386,43 @@ typedef struct le_meta_subrate_change
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
 
+typedef struct le_meta_event_vendor_channel_map_update
+{
+    // connection handle
+    uint16_t conn_handle;
+    // current channel map (the lower 37 bits are used)
+    // channel `n` is identified by bit `(channel_map & 0x7)` of `channel_map[n / 8]`
+    uint8_t  channel_map[5];
+} le_meta_event_vendor_channel_map_update_t;
+
+// @brief BLE Link Layer security context
+typedef struct le_security_ctx
+{
+    uint8_t opaque[40];
+} le_security_ctx_t;
+
+typedef struct le_meta_event_vendor_connection_aborted
+{
+    uint16_t conn_handle;           // connection handle
+    uint8_t role;                   // role (0: master, 1: slave)
+    phy_type_t rx_phy;              // Rx PHY
+    phy_type_t tx_phy;              // Tx PHY
+    uint32_t access_addr;           // Access address
+    uint32_t crc_init;              // CRC init value
+    uint32_t interval;              // interval in us
+    uint16_t sup_timeout;           // supervision timeout in 10ms
+    uint8_t  channel_map[5];        // channel map (lower 37 bits)
+    uint8_t  ch_sel_algo;           // channel selection algorithm (0: ALG #1, 1: ALG #2)
+    uint8_t  hop_inc;               // frequency hopping increment (only for ALG #1)
+    uint8_t  last_unmapped_ch;      // last unmapped channel (only for ALG #1)
+    uint16_t slave_latency;         // slave latency
+    uint8_t  sleep_clk_acc;         // sleep clock accuracy
+    uint64_t next_event_time;       // start time of next connection event
+    uint16_t next_event_counter;    // event counter for next connection event
+    uint8_t  security_enabled;      // is security enabled
+    le_security_ctx_t security;     // security context (available when enabled)
+} le_meta_event_vendor_connection_aborted_t;
+
 typedef struct le_mete_event_prd_adv_subevent_data_req
 {
     uint8_t adv_handle;             // Used to identify a periodic advertising train

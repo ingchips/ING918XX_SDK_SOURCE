@@ -521,6 +521,7 @@ typedef enum {
 #define HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2                         0x29
 
 // Vendor specific subevents
+#define HCI_SUBEVENT_LE_VENDOR_CONNECTION_ABORTED             0xFD
 #define HCI_SUBEVENT_LE_VENDOR_CHANNEL_MAP_UPDATE             0xFE
 #define HCI_SUBEVENT_LE_VENDOR_PRO_CONNECTIONLESS_IQ_REPORT   0xFF
 

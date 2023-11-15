@@ -1,7 +1,7 @@
 void cube_soc_init(void)
 {
-platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
-platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
+platform_config(PLATFORM_CFG_RT_OSC_EN, PLATFORM_CFG_DISABLE);
+platform_config(PLATFORM_CFG_RT_CLK_ACC, 500);
 
 }
 

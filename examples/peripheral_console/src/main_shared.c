@@ -222,12 +222,12 @@ void _app_main()
 #endif
 
 #ifdef USE_OSC32K
-    platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_ENABLE);
-    platform_config(PLATFORM_CFG_32K_CLK, PLATFORM_32K_OSC);
-    platform_config(PLATFORM_CFG_RC32K_EN, PLATFORM_CFG_DISABLE);
+    platform_config(PLATFORM_CFG_RT_OSC_EN, PLATFORM_CFG_ENABLE);
+    platform_config(PLATFORM_CFG_RT_CLK, PLATFORM_RT_OSC);
+    platform_config(PLATFORM_CFG_RT_RC_EN, PLATFORM_CFG_DISABLE);
 #else
-    platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
-    platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
+    platform_config(PLATFORM_CFG_RT_OSC_EN, PLATFORM_CFG_DISABLE);
+    platform_config(PLATFORM_CFG_RT_CLK_ACC, 500);
 #endif
 
     // setup handlers

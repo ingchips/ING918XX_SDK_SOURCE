@@ -4,9 +4,9 @@ __attribute((weak)) void platform_write_persistent_reg(const uint8_t value) {UND
 __attribute((weak)) uint8_t platform_read_persistent_reg() {UNDEF_FUN(1004); return (uint8_t)0; }
 __attribute((weak)) void platform_config(const platform_cfg_item_t item,const uint32_t flag) {UNDEF_FUN(1005); }
 __attribute((weak)) uint32_t platform_read_info(const platform_info_item_t item) {UNDEF_FUN(1006); return (uint32_t)0; }
-__attribute((weak)) uint32_t platform_calibrate_32k() {UNDEF_FUN(1007); return (uint32_t)0; }
-__attribute((weak)) void platform_32k_rc_tune(uint16_t value) {UNDEF_FUN(1008); }
-__attribute((weak)) uint16_t platform_32k_rc_auto_tune() {UNDEF_FUN(1009); return (uint16_t)0; }
+__attribute((weak)) uint32_t platform_calibrate_rt_clk() {UNDEF_FUN(1007); return (uint32_t)0; }
+__attribute((weak)) void platform_rt_rc_tune(uint16_t value) {UNDEF_FUN(1008); }
+__attribute((weak)) uint16_t platform_rt_rc_auto_tune() {UNDEF_FUN(1009); return (uint16_t)0; }
 __attribute((weak)) int platform_rand() {UNDEF_FUN(1010); return (int)0; }
 __attribute((weak)) uint64_t platform_get_us_time() {UNDEF_FUN(1011); return (uint64_t)0; }
 __attribute((weak)) void platform_set_rf_clk_source(const uint8_t source) {UNDEF_FUN(1012); }

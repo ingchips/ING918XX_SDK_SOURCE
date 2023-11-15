@@ -1,18 +1,18 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 136368,
+   "size": 141236,
    "base": 16384
   },
   "ram": {
-   "size": 3476,
+   "size": 3764,
    "base": 536870912
   },
   "app": {
-   "base": 155648
+   "base": 163840
   },
   "version": [
-   1,9,40]
+   1,9,41]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",
@@ -37,14 +37,14 @@
  "deep_sleep": true,
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\mesh-light",
  "bundle": "noos_exp",
- "app_rom_size": "385024",
- "app_rom_addr": "155648",
+ "app_rom_size": "376832",
+ "app_rom_addr": "163840",
  "family": "ing918",
  "role": "light",
  "keil": true,
  "cmsis": "",
- "app_ram_size": 62056,
- "app_ram_addr": 536874392,
+ "app_ram_size": 61768,
+ "app_ram_addr": 536874680,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",
