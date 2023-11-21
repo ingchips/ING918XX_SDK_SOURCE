@@ -32,17 +32,17 @@ case 1007 :{
 #pragma pack (push, 1)
 struct _param {} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-uint32_t _ret = platform_calibrate_32k();send_ret_response(1007,sizeof(_ret),&_ret);}break;
+uint32_t _ret = platform_calibrate_rt_clk();send_ret_response(1007,sizeof(_ret),&_ret);}break;
 case 1008 :{
 #pragma pack (push, 1)
 struct _param {uint16_t value;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-platform_32k_rc_tune(_param->value);}break;
+platform_rt_rc_tune(_param->value);}break;
 case 1009 :{
 #pragma pack (push, 1)
 struct _param {} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-uint16_t _ret = platform_32k_rc_auto_tune();send_ret_response(1009,sizeof(_ret),&_ret);}break;
+uint16_t _ret = platform_rt_rc_auto_tune();send_ret_response(1009,sizeof(_ret),&_ret);}break;
 case 1010 :{
 #pragma pack (push, 1)
 struct _param {} *_param = (struct _param *)call->body;

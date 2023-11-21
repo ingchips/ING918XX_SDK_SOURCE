@@ -407,4 +407,16 @@ void flash_enable_write_protection(flash_region_t region, uint8_t reverse_select
     FLASH_POST_OPS();
 }
 
+typedef void (* rom_FlashRUID)(uint32_t *UID);
+#define ROM_FlashRUID  ((rom_FlashRUID) (0x00000a41))
+
+void flash_read_uid(uint32_t uid[4])
+{
+    FLASH_PRE_OPS();
+    {
+        ROM_FlashRUID(uid);
+    }
+    FLASH_POST_OPS();
+}
+
 #endif

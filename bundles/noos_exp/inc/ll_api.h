@@ -100,6 +100,66 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
 
 /**
  ****************************************************************************************
+ * @brief Create/Resume a connection directly (without advertising & initiating)
+ *
+ * @param[in]  role             connection role. master (0), slave (1)
+ * @param[in]  addr_types       address types for advertiser and initiator
+ *                              bit [0] for slave (advertiser)
+ *                              bit [1] for master (initiator)
+ *                              0: public address; 1: random address
+ * @param[in]  adv_addr         address of advertiser (little-endian)
+ * @param[in]  init_addr        address of initiator (little-endian)
+ * @param[in]  rx_phy           Rx PHY (1: 1M, 2: 2M, 3: Coded)
+ * @param[in]  tx_phy           Tx PHY (1: 1M, 2: 2M, 3: Coded)
+ * @param[in]  access_addr      access address
+ * @param[in]  crc_init         CRC init
+ * @param[in]  interval         connection interval (unit: us)
+ * @param[in]  sup_timeout      supervision timeout (unit: 10ms)
+ * @param[in]  channel_map      channel map
+ * @param[in]  ch_sel_algo      channel selection algorithm (0: ALG #1, 1: ALG #2)
+ * @param[in]  hop_inc          hop increment for CSA#1 ([5..16]) (only for ALG #1)
+ * @param[in]  last_unmapped_ch last unmapped channel index  (only for ALG #1)
+ * @param[in]  min_ce_len       information parameter about the minimum length of connection
+ *                              event needed for this LE connection.
+ * @param[in]  max_ce_len       information parameter about the maximum length of connection
+ *                              event needed for this LE connection.
+ * @param[in]  start_time       start time of the 1st connection event
+ * @param[in]  event_counter    event counter for the 1st connection event
+ * @param[in]  slave_latency    slave latency
+ * @param[in]  sleep_clk_acc    sleep clock accuracy (only for SLAVE role)
+ * @param[in]  sync_window      slave's sync window for 1st connection event
+ * @param[in]  security         link layer security context
+ *                              NULL: security not used
+ *                              otherwise: security is used, which is `le_security_ctx_t *` in
+ *                                         `le_meta_event_vendor_connection_aborted_t`.
+ * @return                      0 if successful else error code
+ ****************************************************************************************
+ */
+int ll_create_conn(uint8_t role,
+                   uint8_t addr_types,
+                   const uint8_t *adv_addr,
+                   const uint8_t *init_addr,
+                   uint8_t rx_phy,
+                   uint8_t tx_phy,
+                   uint32_t access_addr,
+                   uint32_t crc_init,
+                   uint32_t interval,
+                   uint16_t sup_timeout,
+                   const uint8_t *channel_map,
+                   uint8_t  ch_sel_algo,
+                   uint8_t  hop_inc,
+                   uint8_t  last_unmapped_ch,
+                   uint16_t min_ce_len,
+                   uint16_t max_ce_len,
+                   uint64_t start_time,
+                   uint16_t event_counter,
+                   uint16_t slave_latency,
+                   uint8_t  sleep_clk_acc,
+                   uint32_t sync_window,
+                   const void *security);
+
+/**
+ ****************************************************************************************
  * @brief Set tx power of a connection
  *
  * @param[in]  conn_handle      handle of an existing connection
@@ -187,6 +247,18 @@ int ll_get_conn_events_info(const uint16_t conn_handle,
 
 /**
  ****************************************************************************************
+ * @brief Abort an existing connection
+ *
+ * After a connection is aborted, `HCI_SUBEVENT_VENDOR_CONNECTION_ABORTED` is emitted.
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @return                      0 if aborting is ongoing else non-0
+ ****************************************************************************************
+ */
+int ll_conn_abort(uint16_t conn_handle);
+
+/**
+ ****************************************************************************************
  * @brief Set default antenna ID
  *
  *          Note: This ID restored to default value (i.e. 0) when LLE is resetted.
@@ -221,12 +293,10 @@ void ll_legacy_adv_set_interval(uint16_t for_hdc, uint16_t not_hdc);
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
-//                              uint8_t cte_len,
-//                              uint8_t switching_pattern_len,
-//                              const uint8_t *switching_pattern);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_attach_cte_to_adv_set(uint8_t adv_handle, uint8_t cte_type,
+                             uint8_t cte_len,
+                             uint8_t switching_pattern_len,
+                             const uint8_t *switching_pattern);
 
 /**
  ****************************************************************************************
@@ -289,17 +359,15 @@ int ll_scanner_enable_iq_sampling(uint8_t cte_type,
  * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
-// int ll_scanner_enable_iq_sampling_on_legacy(
-//                           uint16_t sampling_offset,
-//                           uint8_t cte_type,
-//                           uint8_t cte_time,
-//                           uint8_t slot_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *switching_pattern,
-//                           uint8_t slot_sampling_offset,
-//                           uint8_t slot_sample_count);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_scanner_enable_iq_sampling_on_legacy(
+                          uint16_t sampling_offset,
+                          uint8_t cte_type,
+                          uint8_t cte_time,
+                          uint8_t slot_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *switching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
 
 struct ll_raw_packet;
 
@@ -860,9 +928,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  *                          For example, standard value for channel 37 is 0x53.
  ****************************************************************************************
  */
-// void ll_override_whitening_init_value(uint8_t override, uint8_t value);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_override_whitening_init_value(uint8_t override, uint8_t value);
 
 /**
  ****************************************************************************************
@@ -872,9 +938,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  * @param[in]  type         nonstandard ADV TYPE
  ****************************************************************************************
  */
-// void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
 
 /**
  ****************************************************************************************
@@ -883,9 +947,7 @@ void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
  * @param[in]  bit          CTE bit: 0/1 (default: 1)
  ****************************************************************************************
  */
-// void ll_set_cte_bit(uint8_t bit);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_cte_bit(uint8_t bit);
 
 /**
  ****************************************************************************************

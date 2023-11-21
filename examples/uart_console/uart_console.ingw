@@ -1,18 +1,18 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 147100,
+   "size": 151996,
    "base": 16384
   },
   "ram": {
-   "size": 29980,
+   "size": 30268,
    "base": 536870912
   },
   "app": {
-   "base": 163840
+   "base": 172032
   },
   "version": [
-   1,9,38]
+   1,9,41]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",
@@ -39,8 +39,8 @@
  "power_saving": false,
  "gatt_handle_value": "3",
  "bundle": "exp",
- "app_rom_size": "376832",
- "app_rom_addr": "163840",
+ "app_rom_size": "368640",
+ "app_rom_addr": "172032",
  "family": "ing918",
  "vcode": false,
  "role": "peripheral",
@@ -53,8 +53,8 @@
  "keil": true,
  "cmsis": "",
  "gatt_handle_name": "HANDLE_DEVICE_NAME",
- "app_ram_size": 35552,
- "app_ram_addr": 536900896,
+ "app_ram_size": 35264,
+ "app_ram_addr": 536901184,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "\/\/ Service Generic Access: 1800\r\n0x0A, 0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x28,\r\n0x00, 0x18, \r\n\/\/ Characteristic Device Name: 2A00\r\n0x0D, 0x00, 0x02, 0x00, 0x02, 0x00, 0x03, 0x28,\r\n0x02, 0x03, 0x00, 0x00, 0x2A, \r\n0x14, 0x00, 0x02, 0x00, 0x03, 0x00, 0x00, 0x2A,\r\n0x55, 0x41, 0x52, 0x54, 0x20, 0x43, 0x6F, 0x6E, \r\n0x73, 0x6F, 0x6C, 0x65, \r\n\r\n0x00,0x00\r\n\/\/ total size = 45\r\n\r\n\/\/ HANDLE_DEVICE_NAME=3\r\n\r\n\/\/ HANDLE_DEVICE_NAME_OFFSET=31\r\n",

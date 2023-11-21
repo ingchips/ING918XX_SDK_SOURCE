@@ -88,6 +88,11 @@ void PWM_Enable(const uint8_t channel_index, const uint8_t enable)
     PWM_SetRegBit(channel_index, 0x00, 6, enable & 1, 1);
 }
 
+void PWM_SetIntTrigLevel(const uint8_t channel_index, const uint8_t trig_cfg)
+{
+    PWM_SetRegBit(channel_index, 0x00, 12, trig_cfg & 0x7, 3);
+}
+
 void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_t mask_b)
 {
     PWM_SetRegBit(channel_index, 0x00, 0, (mask_b << 1) | mask_a, 2);
@@ -100,6 +105,7 @@ void PWM_SetInvertOutput(const uint8_t channel_index, const uint8_t inv_a, const
 
 void PWM_SetMode(const uint8_t channel_index, const PWM_WorkMode_t mode)
 {
+    SYSCTRL_EnablePcapMode(channel_index, mode == PWM_WORK_MODE_PCAP ? 1 : 0);
     PWM_SetRegBit(channel_index, 0x00, 7, mode, 3);
 }
 
@@ -143,7 +149,7 @@ void PWM_DmaEnable(const uint8_t channel_index, uint8_t trig_cfg, uint8_t enable
 
 void PCAP_Enable(const uint8_t channel_index)
 {
-    PWM_SetMode(channel_index, (PWM_WorkMode_t)6);
+    PWM_SetMode(channel_index, PWM_WORK_MODE_PCAP);
     PWM_Enable(channel_index, 1);
 }
 
@@ -169,7 +175,12 @@ uint32_t PCAP_ReadCounter(void)
     return APB_PWM->CapCounter;
 }
 
-void PWM_FifoTriggerEnable(const uint8_t channel_index, uint8_t enable, uint32_t mask)
+void PCAP_ClearFifo(uint8_t channel_index)
+{
+    PWM_SetRegBit(channel_index, 0x00, 15, 1, 1);
+}
+
+void PWM_FifoIntEnable(const uint8_t channel_index, uint8_t enable, uint32_t mask)
 {
     if(enable)
     {

@@ -175,6 +175,13 @@ void PCAP_Enable(const uint8_t channel_index);
 void PCAP_CounterEnable(uint8_t enable);
 
 /**
+ * @brief Clear PCAP FIFO
+ *
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ */
+void PCAP_ClearFifo(uint8_t channel_index);
+
+/**
  * @brief Read a PCAP data
  *
  * PCAP output are generally re-directed to DMA, this function may be used for
@@ -211,14 +218,36 @@ uint32_t PCAP_ReadData(const uint8_t channel_index);
 uint32_t PCAP_ReadCounter(void);
 
 /**
- * @brief Enable/Disable PCAP fifo trigger when in isr mode, this is not needed for dma mode.
+ * @brief Enable/Disable PCAP FIFO interrupt requests
+ *
+ * Note: This is not needed for DMA mode.
  *
  * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
  * @param[in] enable            Enable (1) or disable (0)
- * @param[in] mask              use combination PWM_FIFO_MASK_t, 
- *                              'PWM_FIFO_HALFFULL_EN | PWM_FIFO_TRIGGER_EN' for example
+ * @param[in] mask              combination of interrupt masks (see `PWM_FIFO_MASK_t`)
+ *                              for example: `PWM_FIFO_HALFFULL_EN | PWM_FIFO_TRIGGER_EN`
  */
-void PWM_FifoTriggerEnable(const uint8_t channel_index, uint8_t enable, uint32_t mask);
+void PWM_FifoIntEnable(const uint8_t channel_index, uint8_t enable, uint32_t mask);
+
+// `PWM_FifoTriggerEnable` is obsoleted.
+#define PWM_FifoTriggerEnable   PWM_FifoIntEnable
+#define PCAP_FifoIntEnable      PWM_FifoIntEnable
+
+/**
+ * @brief Set trigger level for PWM/PCAP for FIFO TRIGGER interrupt
+ *
+ * See also `PWM_FIFO_TRIGGER_EN`.
+ *
+ * Note: This is not needed for DMA mode.
+ *
+ * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
+ * @param[in] trig_cfg          trigger level (0 .. 7), TRIGGER interrupt is generated when
+ *                              - for PCAP: fifo_cnt >= trig_cfg
+ *                              - for PWM: fifo_cnt < trig_cfg
+ */
+void PWM_SetIntTrigLevel(const uint8_t channel_index, const uint8_t trig_cfg);
+
+#define PCAP_SetIntTrigLevel    PWM_SetIntTrigLevel
 
 /**
  * @brief Get fifo status in fifo isr.

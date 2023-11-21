@@ -217,9 +217,7 @@ void I2C_ConfigClkFrequency(I2C_TypeDef *I2C_BASE, I2C_ClockFrequenyOptions opti
 
 void I2C_ConfigSlave(I2C_TypeDef *I2C_BASE, I2C_AddressingMode addr_mode, uint8_t addr)
 {
-    uint8_t i;
     I2C_Config(I2C_BASE, I2C_ROLE_SLAVE, addr_mode, addr);
-
     I2C_BASE->IntEn = (1 << I2C_INT_ADDR_HIT) | (1 << I2C_INT_CMPL);
 }
 

@@ -243,7 +243,19 @@ const factory_calib_data_t *flash_get_factory_calib_data(void);
  */
 const void *flash_get_adc_calib_data(void);
 
+/**
+ * @brief Read one word from security area of flash
+ *
+ * Note: this is for internal use.
+ */
 uint32_t read_flash_security(uint32_t addr);
+
+/**
+ * @brief Read UID of flash
+ *
+ * @param[out]  uid            128-bit UID
+ */
+void flash_read_uid(uint32_t uid[4]);
 
 #endif
 

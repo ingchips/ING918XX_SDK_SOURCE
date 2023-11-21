@@ -183,7 +183,7 @@ typedef enum
 
 typedef uint8_t adv_event_properties_t;
 
-#define PERIODIC_ADV_BIT_INC_TX      BIT(6)
+#define PERIODIC_ADV_BIT_INC_TX      BIT(ADV_INC_TX_POWER)
 typedef uint8_t periodic_adv_properties_t;
 
 /**
@@ -540,6 +540,53 @@ uint8_t gap_set_periodic_adv_para(const uint8_t adv_handle,
                                   const periodic_adv_properties_t properties);
 
 /**
+ * @brief LE Set Periodic Advertising Parameters command
+ *
+ * @param adv_handle            handle of advertising set
+ *
+ * @param interval_min          0xXXXX Range: 0x0006 to 0xFFFF
+ *                                     Time = N * 1.25 ms
+ *                                     Time Range: 7.5ms to 81.91875 s
+ *
+ * @param interval_max          refer to interval_min
+ *
+ * @param properties            BIT(6): Include TxPower in the advertising PDU
+ *
+ * @param num_subevents         Number of subevents. Range: 0x00 to 0x80
+ *
+ * @param subevent_interval     Interval between subevents. Range: 0x06 to 0xFF
+ *                                  Time = N × 1.25 ms
+ *                                  Time Range: 7.5 ms to 318.75 ms
+ *
+ * @param response_slot_delay   0x00: No response slots
+ *                              0xXX: Time between the advertising packet in a subevent and the first
+ *                                   response slot. Range: 0x01 to 0xFE
+ *                                   Time = N × 1.25 ms
+ *                                   Time Range: 1.25 ms to 317.5 ms
+ *
+ * @param response_slot_spacing 0x00: No response slots
+ *                              0xXX: Time between response slots. Range: 0x02 to 0xFF
+ *                                   Time = N × 0.125 ms
+ *                                   Time Range: 0.25 ms to 31.875 ms
+ *
+ * @param num_response_slots    0x00: No response slots
+ *                              0xXX: Number of subevent response slots. Range: 0x01 to 0xFF
+ *
+ * @return                     0: message sent to controller
+ */
+// uint8_t gap_set_periodic_adv_para_v2(const uint8_t adv_handle,
+//                                   const uint16_t interval_min,
+//                                   const uint16_t interval_max,
+//                                   const periodic_adv_properties_t properties,
+//                                   const uint8_t num_subevents,
+//                                   const uint8_t subevent_interval,
+//                                   const uint8_t response_slot_delay,
+//                                   const uint8_t response_slot_spacing,
+//                                   const uint8_t num_response_slots);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
  * @brief LE Clear Advertising Sets command
  *
  * @return                     0: message sent to controller
@@ -727,6 +774,48 @@ uint8_t gap_ext_create_connection(const initiating_filter_policy_t filter_policy
 	                              const uint8_t *peer_addr,
                                   const uint8_t initiating_phy_num,
                                   const initiating_phy_config_t *phy_configs);
+
+/**
+ * @brief LE Extended Create Connection command [V2]
+ *
+ * @ref `gap_ext_create_connection`
+ *
+ * When creating connection through PAwR, the `adv_handle` parameter is used to identify
+ * the periodic advertising train, and the `subevent` parameter is used to identify the
+ * subevent where a connection request shall be initiated from a periodic advertising train.
+ * Otherwise, these two parameters shall be set to 0xFF, in which case, the behavior of
+ * this function is exactly the same as [V1].
+ *
+ * @param adv_handle           Advertising_Handle identifying the periodic advertising train
+ *                             Range: 0x00 to 0xEF or 0xFF
+ *
+ * @param subevent             Subevent where the connection request is to be sent.
+ *                             Range: 0x00 to 0x7F or 0xFF
+ *
+ * @param filter_policy        @ref `gap_ext_create_connection`
+ *
+ * @param own_addr_type        @ref `gap_ext_create_connection`
+ *
+ * @param peer_addr_type       @ref `gap_ext_create_connection`
+ *
+ * @param peer_addr            @ref `gap_ext_create_connection`
+ *
+ * @param initiating_phy_num   @ref `gap_ext_create_connection`
+ *
+ * @param phy_configs          @ref `gap_ext_create_connection`
+ *
+ * @return                     0: message sent to controller
+ */
+// uint8_t gap_ext_create_connection_v2(const uint8_t adv_handle,
+//                                   const uint8_t subevent,
+//                                   const initiating_filter_policy_t filter_policy,
+//                                   const bd_addr_type_t own_addr_type,
+// 	                              const bd_addr_type_t peer_addr_type,
+// 	                              const uint8_t *peer_addr,
+//                                   const uint8_t initiating_phy_num,
+//                                   const initiating_phy_config_t *phy_configs);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief Cancel connection process initiated by gap_ext_create_connection
@@ -1287,7 +1376,7 @@ uint8_t gap_rx_test_v2(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index
 uint8_t gap_rx_test_v3(uint8_t rx_channel, uint8_t phy, uint8_t modulation_index,
                             uint8_t expected_cte_length, uint8_t expected_cte_type,
                             uint8_t slot_durations,
-                            uint8_t switching_pattern_length, uint8_t *antenna_ids);
+                            uint8_t switching_pattern_length, const uint8_t *antenna_ids);
 
 /**
  * @brief  Start a test where the DUT generates test reference packets at a fixed interval.
@@ -1324,7 +1413,7 @@ uint8_t gap_tx_test_v2(uint8_t tx_channel, uint8_t test_data_length,
 uint8_t gap_tx_test_v4(uint8_t tx_channel, uint8_t test_data_length,
                         uint8_t packet_payload, uint8_t phy,
                         uint8_t cte_length, uint8_t cte_type,
-                        uint8_t switching_pattern_length, uint8_t *antenna_ids,
+                        uint8_t switching_pattern_length, const uint8_t *antenna_ids,
                         int8_t tx_power_level);
 
 /**
@@ -1332,6 +1421,78 @@ uint8_t gap_tx_test_v4(uint8_t tx_channel, uint8_t test_data_length,
  * @return                      0: Message is sent out; Other: Message is not sent out
  */
 uint8_t gap_test_end(void);
+
+#pragma pack (push, 1)
+
+typedef struct
+{
+    uint8_t         subevent;       // The subevent index of the data contained in this command. Range: 0x00 to 0x7F
+    uint8_t         rsp_slot_start; // The first response slots to be used in this subevent
+    uint8_t         rsp_slot_count; // The number of response slots to be used.
+    uint8_t         data_len;       // The number of octets in the `data`. [0..251]
+    const uint8_t * data;           // Advertising data
+} gap_prd_adv_subevent_data_t;
+
+#pragma pack (pop)
+
+/**
+ * @brief Set the data for one or more subevents of PAwR
+ *
+ * The data for a subevent will be transmitted only once. Total length of the packed
+ * HCI command should not exceed maximum length.
+ *
+ * @param[in] adv_handle        Used to identify a periodic advertising train. Range: 0x00 to 0xEF
+ * @param[in] num_subevents     Number of subevent data in the command. (0x01..0x0f)
+ * @param[in] data              data for each subevents
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_set_periodic_adv_subevent_data(uint8_t adv_handle,
+//                                            uint8_t num_subevents,
+//                                            const gap_prd_adv_subevent_data_t *data);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Set the data for a response slot in a specific subevent of the PAwR
+ *
+ * The data for a subevent will be transmitted only once.
+ *
+ * @param[in] sync_handle       Identify the PAwR train. Range: 0x0000 to 0x0EFF
+ * @param[in] request_event     The value of `paEventCounter` for the periodic advertising
+ *                              packet that the Host is responding to.
+ * @param[in] request_subevent  The subevent for the periodic advertising packet that the Host is responding to.
+ * @param[in] rsp_subevent      Identify the subevent of the PAwR train. Range: 0x00 to 0x7F
+ * @param[in] rsp_slot          Identify the response slot of the PAwR train.  Range: 0x00 to 0xFF
+ * @param[in] rsp_data_len      The number of octets in the `rsp_data` parameter. (0..251)
+ * @param[in] rsp_data          Response data.
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_set_periodic_adv_rsp_data(uint16_t sync_handle,
+//                                       uint16_t request_event,
+//                                       uint8_t request_subevent,
+//                                       uint8_t rsp_subevent,
+//                                       uint8_t rsp_slot,
+//                                       uint8_t rsp_data_len,
+//                                       const uint8_t *rsp_data);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Instruct the Controller to synchronize with a subset of the subevents within a PAwR train
+ *
+ * @param[in] sync_handle               Identify the PAwR train. Range: 0x0000 to 0x0EFF
+ * @param[in] periodic_adv_properties   Properties (bit combination of \ref `adv_event_property_t`).
+ *                                      Only 0 or PERIODIC_ADV_BIT_INC_TX is allowed.
+ * @param[in] num_subevents             Number of subevents.  Range: 0x01 to 0x80
+ * @param[in] subevents                 Each subevent to synchronize with. Range 0x00 to 0x7F
+ * @return                              0: Message is sent out; Other: Message is not sent out
+ */
+// uint8_t gap_set_periodic_sync_subevent(uint16_t sync_handle,
+//                                        uint16_t periodic_adv_properties,
+//                                        uint8_t num_subevents,
+//                                        const uint8_t *subevents);
+// WARNING: ^^^ this API is not available in this release
+
 
 /**
  * @brief  Start/Stop transmission of continuouswave.

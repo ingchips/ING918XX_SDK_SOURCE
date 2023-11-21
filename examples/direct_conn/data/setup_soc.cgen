@@ -1,0 +1,35 @@
+void cube_soc_init(void)
+{
+platform_config(PLATFORM_CFG_RT_OSC_EN, PLATFORM_CFG_DISABLE);
+platform_config(PLATFORM_CFG_RT_CLK_ACC, 500);
+}
+
+void cube_setup_peripherals(void)
+{
+SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PinCtrl) | (1 << SYSCTRL_ClkGate_APB_UART0) | (1 << SYSCTRL_ClkGate_AHB_SPI0));
+
+// UART0
+PINCTRL_SetPadMux(2, IO_SOURCE_UART0_TX);
+PINCTRL_SetPadMux(3, IO_SOURCE_GENERAL);
+PINCTRL_SelUartRxdIn(UART_PORT_0, 3);
+{
+    UART_sStateStruct config;
+
+    config.word_length       = (UART_eWLEN)3;
+    config.parity            = UART_PARITY_NOT_CHECK;
+    config.fifo_enable       = 1;
+    config.two_stop_bits     = 0;
+    config.receive_en        = 1;
+    config.transmit_en       = 1;
+    config.UART_en           = 1;
+    config.cts_en            = 0;
+    config.rts_en            = 0;
+    config.rxfifo_waterlevel = 1;
+    config.txfifo_waterlevel = 1;
+    config.ClockFrequency    = OSC_CLK_FREQ;
+    config.BaudRate          = 115200;
+
+    apUART_Initialize(APB_UART0, &config, 0);
+}
+
+}

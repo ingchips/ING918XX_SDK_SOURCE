@@ -269,7 +269,7 @@ typedef struct{
 #define OSC_CLK_FREQ  16000000UL   // 16MHz, Apb Clock
 #endif
 
-#define RTC_CLK_FREQ  32768
+#define RTC_CLK_FREQ  50000
 
 #ifdef __cplusplus
   }

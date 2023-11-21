@@ -110,13 +110,11 @@ int uart_add_buffer(uart_driver_ctx_t *ctx, const void *buffer, int size, int st
 
 int driver_get_free_size(void)
 {
-    uint16_t next;
     int16_t free_size;
     uint8_t use_mutex = !IS_IN_INTERRUPT();
     if (use_mutex)
         GEN_OS->enter_critical();
 
-    next = ctx.write_next;
     free_size = ctx.read_next - ctx.write_next;
     if (free_size <= 0) free_size += UART_BUFF_SIZE;
     if (free_size > 0) free_size--;

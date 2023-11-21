@@ -10,6 +10,7 @@
 #include "btstack_defines.h"
 #include "gatt_client.h"
 #include "sm.h"
+#include "kv_storage.h"
 #include "profile.h"
 
 #include "port_gen_os_driver.h"
@@ -303,7 +304,14 @@ static void handle_evt(struct rpc_event_frame *evt, int len)
                 break;
             case PLATFORM_CB_EVT_ASSERTION:
                 {
-                    const assertion_info_t *info = (assertion_info_t *)callback->packet;
+                    #pragma pack (push, 1)
+                    struct ret
+                    {
+                        int line_no;
+                        char file_name[1];
+                    } *_r;
+                    #pragma pack (pop)
+                    const struct ret *info = (struct ret *)callback->packet;
                     LOG_E("[ASSERTION] @ %s:%d",
                                     info->file_name,
                                     info->line_no);
@@ -825,8 +833,15 @@ uint32_t sys_aligned_read(uint32_t addr)
 
 void sys_aligned_write_mem(uint32_t addr, void *p, int len)
 {
-    uint8_t _param[len];
-    memcpy(_param, p, len);
+    #pragma pack (push, 1)
+    struct _param
+    {
+        uint32_t addr;
+        uint32_t data[len];
+    } _param;
+    #pragma pack (pop)
+    _param.addr = addr;
+    memcpy(_param.data, p, len);
     call_void_fun(ID_sys_aligned_write_mem, &_param, sizeof(_param));
 }
 
@@ -908,7 +923,7 @@ const uint8_t *sm_private_random_address_generation_get(void)
         bd_addr_t addr;
     };
     #pragma pack (pop)
-    struct node * _node = call_fun(ID_gatt_client_get_mtu, NULL, 0);
+    struct node * _node = call_fun(ID_sm_private_random_address_generation_get, NULL, 0);
     memcpy(random_address, extract_ret_param(_node, NULL), BD_ADDR_LEN);
     GEN_OS()->free(_node);
     return random_address;

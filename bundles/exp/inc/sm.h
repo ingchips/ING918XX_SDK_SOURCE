@@ -112,9 +112,7 @@ void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t addres_
  * @brief Registers secure pairing OOB Data Callback. The callback should set the peer_confirm & peer_random and return 1 if OOB data is availble
  * @param get_oob_data_callback
  */
-// void sm_register_sc_oob_data_callback( int (*get_sc_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t *peer_confirm, uint8_t *peer_random));
-// WARNING: ^^^ this API is not available in this release
-
+void sm_register_sc_oob_data_callback( int (*get_sc_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t *peer_confirm, uint8_t *peer_random));
 
 /**
  * @brief Limit the STK generation methods. Bonding is stopped if the resulting one isn't in the list
@@ -231,17 +229,13 @@ int sm_le_device_key(hci_con_handle_t con_handle);
  * @brief To confirm numeric comparison when SM_EVENT_NUMERIC_COMPARISON_REQUEST is called.
  * @param handle
  */
-// void sm_numeric_comparison_confirm(hci_con_handle_t con_handle);
-// WARNING: ^^^ this API is not available in this release
-
+void sm_numeric_comparison_confirm(hci_con_handle_t con_handle);
 
 /**
  * @brief When secure pairing is used and OOB is selected, use this function to prepare OOB data and share to peer.
  * @param handle
  */
-// int sm_sc_generate_oob_data(void (*callback)(uint8_t *peer_confirm, uint8_t *peer_random));
-// WARNING: ^^^ this API is not available in this release
-
+int sm_sc_generate_oob_data(void (*callback)(uint8_t *peer_confirm, uint8_t *peer_random));
 
 /**
  *

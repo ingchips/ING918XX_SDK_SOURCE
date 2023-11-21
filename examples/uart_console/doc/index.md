@@ -10,6 +10,7 @@ This example demonstrates lots of BLE functionalities controlled through UART:
 * Different trace sink driver
 * Power Control
 * Subrating
+* Dump through UART
 
 ## Commands
 
@@ -155,6 +156,17 @@ Firstly, connect to a device with Connection Subrating feature.
 
     <img src="./img/subrate_att_req.png" width="80%" />
 
+### Connection Abort & Resume
+
+Firstly, start advertising and get connected with _ING BLE_ app.
+
+* `re-conn`
+
+    This command will abort current connection (SLAVE role), and resume it immediately.
+
+    Pass `HCI_SUBEVENT_LE_VENDOR_CONNECTION_ABORTED` and timing information to
+    another device, then the connection can be resumed on that device, and _handover_ is achieved.
+
 ## Trace
 
 This example has 4 trace sink drivers (i.e. how to export/save trace data):
@@ -163,6 +175,14 @@ This example has 4 trace sink drivers (i.e. how to export/save trace data):
 * **UART** is selected if `TRACE_TO_UART` is defined
 * **FLASH** is selected if `TRACE_TO_FLASH` is defined
 * **Over the Air (BLE)** is selected if `TRACE_TO_AIR` is defined
+
+## Dump
+
+Memory dump can be used by Axf Tool for runtime analysis.
+This example dumps memory through UART when an assertion is raised. Use `assert` command to
+trigger an assertion manually.
+
+For further information on memory dump, see `trace_full_dump2` in `trace.c`.
 
 ## Test
 

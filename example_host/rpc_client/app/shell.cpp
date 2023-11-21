@@ -222,7 +222,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             break;
 
         gap_set_adv_set_random_addr(0, addr);
-        gap_set_adv_set_random_addr(0, addr);
         gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
