@@ -1,7 +1,7 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 155316,
+   "size": 159196,
    "base": 33562624
   },
   "ram": {
@@ -9,10 +9,10 @@
    "base": 536870912
   },
   "app": {
-   "base": 33718272
+   "base": 33722368
   },
   "version": [
-   2,3,1]
+   2,3,2]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",
@@ -39,8 +39,8 @@
  "power_saving": false,
  "gatt_handle_value": "6",
  "bundle": "typical",
- "app_rom_size": "360448",
- "app_rom_addr": "33718272",
+ "app_rom_size": "356352",
+ "app_rom_addr": "33722368",
  "family": "ing916",
  "vcode": false,
  "role": "peripheral",

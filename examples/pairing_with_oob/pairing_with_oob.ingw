@@ -49,7 +49,7 @@
  "is_sdk_path_rel": true,
  "pb_gatt": true,
  "deep_sleep": true,
- "proj_dir": "C:\\projects\\ingchips\\SDK_Release\\examples\\pairing_with_oob",
+ "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\pairing_with_oob",
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,

@@ -2,7 +2,7 @@
  "watchdog": true,
  "bundle_meta": {
   "rom": {
-   "size": 173864,
+   "size": 177740,
    "base": 33562624
   },
   "ram": {
@@ -10,10 +10,10 @@
    "base": 536870912
   },
   "app": {
-   "base": 33738752
+   "base": 33742848
   },
   "version": [
-   2,3,1]
+   2,3,2]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -54,8 +54,8 @@
  "power_saving": false,
  "secondary": false,
  "bundle": "exp",
- "app_rom_size": "339968",
- "app_rom_addr": "33738752",
+ "app_rom_size": "335872",
+ "app_rom_addr": "33742848",
  "family": "ing916",
  "vcode": false,
  "heap_override": false,

@@ -10,7 +10,7 @@ extern "C" {
 struct platform_info
 {
     platform_ver_t version;
-    uintptr_t app_load_addr;    
+    uintptr_t app_load_addr;
 };
 
 /**
@@ -29,13 +29,21 @@ const struct platform_info *platform_inspect2(uintptr_t binary_addr, int family)
  * @brief Inspect platform binary
  *
  * Note: It is assumed the platform binary is for the same family as the building target.
- * 
+ *
  * @param[in]   binary_addr         address of the binary
  * @return                          information of the binary
  ****************************************************************************************
  */
 const struct platform_info *platform_inspect(uintptr_t binary_addr);
 
+/**
+ ****************************************************************************************
+ * @brief Get vector table address of platform binary
+ *
+ * @return                          address of vector table
+ ****************************************************************************************
+ */
+uintptr_t platform_get_vector_table_address(void);
 
 #ifdef __cplusplus
 }
