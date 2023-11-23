@@ -101,7 +101,7 @@ void RTC_ModifyTime(uint16_t day, uint8_t hour, uint8_t minute, uint8_t second)
 
 int RTC_IsModificationDone(void)
 {
-    return APB_RTC->Ctrl & (1 << 16);
+    return APB_RTC->St & (1 << 16);
 }
 
 void RTC_ConfigAlarm(uint8_t hour, uint8_t minute, uint8_t second)

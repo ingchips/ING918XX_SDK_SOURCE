@@ -9,7 +9,7 @@ const struct platform_info *platform_inspect2(uintptr_t binary_addr, int family)
             return (const struct platform_info *)(binary_addr + 0xb0);
         case INGCHIPS_FAMILY_916:
             {
-                uintptr_t vect_addr = io_read(binary_addr + EFLASH_SECTOR_SIZE);
+                uintptr_t vect_addr = io_read(binary_addr + 4096);
                 return (const struct platform_info *)(vect_addr + 0xfc);
             }
 
