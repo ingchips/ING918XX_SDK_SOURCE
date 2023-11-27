@@ -1,5 +1,6 @@
 # Pairing with OOB
 
-This example demonstrates how to:
+This example demonstrates how to do:
 
-* Paring using OOB (out of band) data.
+* LE Legacy paring using OOB (out of band) data;
+* LE Secure Connection paring using OOB data.

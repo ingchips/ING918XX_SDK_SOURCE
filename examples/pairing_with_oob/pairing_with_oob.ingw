@@ -2,18 +2,18 @@
  "watchdog": true,
  "bundle_meta": {
   "rom": {
-   "size": 135796,
+   "size": 152040,
    "base": 16384
   },
   "ram": {
-   "size": 29876,
+   "size": 30268,
    "base": 536870912
   },
   "app": {
-   "base": 155648
+   "base": 172032
   },
   "version": [
-   1,9,41]
+   1,9,42]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -31,7 +31,7 @@
  "enable_hci_log": false,
  "ota_ver_minor": "0",
  "ota_ver_major": "0",
- "template": "C:\\projects\\ingchips\\ingWizard\\templates\\typical\\peripheral",
+ "template": "C:\\projects\\ingchips\\ingWizard\\templates\\exp\\peripheral",
  "coding_adv": false,
  "key_incode": true,
  "series": "ING9187xx",
@@ -53,9 +53,9 @@
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
- "bundle": "typical",
- "app_rom_size": "385024",
- "app_rom_addr": "155648",
+ "bundle": "exp",
+ "app_rom_size": "368640",
+ "app_rom_addr": "172032",
  "family": "ing918",
  "vcode": false,
  "heap_override": false,
@@ -76,8 +76,8 @@
  "keil": true,
  "cmsis": "",
  "cube": true,
- "app_ram_size": 35656,
- "app_ram_addr": 536900792,
+ "app_ram_size": 35264,
+ "app_ram_addr": 536901184,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "gatt_handle": {

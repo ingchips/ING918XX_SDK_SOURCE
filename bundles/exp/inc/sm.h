@@ -101,18 +101,54 @@ void sm_private_random_address_generation_set_update_period(int period_ms);
 const uint8_t *sm_private_random_address_generation_get(void);
 
 /**
+ * @brief Registers OOB Data Callback.
  *
- * @brief Registers OOB Data Callback. The callback should set the oob_data and return 1 if OOB data is availble
+ * The callback should set the oob_data and return 1 if OOB data is available.
+ *
+ * Signature of `get_oob_data_callback`:
+ *      @param[in]  address_type            address type
+ *      @param[in]  addr                    address
+ *      @param[out] oob_data                OOB data (type `sm_key_t`)
+ *      @return                             1 if OOB data is available, else 0.
+ *
  * @param get_oob_data_callback
  */
-void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t * oob_data));
+void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t address_type, bd_addr_t addr, uint8_t * oob_data));
 
 /**
+ * @brief Registers secure pairing OOB Data Callback.
  *
- * @brief Registers secure pairing OOB Data Callback. The callback should set the peer_confirm & peer_random and return 1 if OOB data is availble
- * @param get_oob_data_callback
+ * The callback should set the peer_confirm & peer_random and return 1
+ * if OOB data is available.
+ *
+ * Signature of `get_sc_oob_data_callback`:
+ *      @param[in]  address_type            address type
+ *      @param[in]  addr                    address
+ *      @param[out] peer_confirm            peer confirm value (type `sm_key_t`)
+ *      @param[out] peer_random             peer random value (type `sm_key_t`)
+ *      @return                             1 if OOB data is available, else 0.
+ *
+ * @param get_sc_oob_data_callback
  */
-void sm_register_sc_oob_data_callback( int (*get_sc_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t *peer_confirm, uint8_t *peer_random));
+void sm_register_sc_oob_data_callback(int (*get_sc_oob_data_callback)(uint8_t address_type, bd_addr_t addr, uint8_t *peer_confirm, uint8_t *peer_random));
+
+/**
+ * @brief (When secure pairing is used and OOB is selected) Start generate local
+ * OOB data (_confirm_ and _random_).
+ *
+ * After generated, _confirm_ and _random_ are passed to the callback.
+ *
+ * App can then pass these information together with device address to peer
+ * through OOB communication.
+ *
+ * Signature of `callback`:
+ *      @param[out] confirm                 local confirm value (type `sm_key_t`)
+ *      @param[out] random                  local random value (type `sm_key_t`)
+ *
+ * @param callback
+ * @return             0 if started without error else non-0
+ */
+int sm_sc_generate_oob_data(void (*callback)(const uint8_t *confirm, const uint8_t *random));
 
 /**
  * @brief Limit the STK generation methods. Bonding is stopped if the resulting one isn't in the list
@@ -230,12 +266,6 @@ int sm_le_device_key(hci_con_handle_t con_handle);
  * @param handle
  */
 void sm_numeric_comparison_confirm(hci_con_handle_t con_handle);
-
-/**
- * @brief When secure pairing is used and OOB is selected, use this function to prepare OOB data and share to peer.
- * @param handle
- */
-int sm_sc_generate_oob_data(void (*callback)(uint8_t *peer_confirm, uint8_t *peer_random));
 
 /**
  *

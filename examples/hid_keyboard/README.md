@@ -7,6 +7,7 @@ This example demonstrates how to:
 * Use GPIO interrupts;
 * Report keyboard events;
 * Usage of public address (debug only);
+* LE Secure Connection pairing;
 * Customize kv backend.
 
 Note:

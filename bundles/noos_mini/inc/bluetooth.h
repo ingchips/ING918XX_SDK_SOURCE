@@ -718,7 +718,7 @@ typedef enum {
 #define SM_AUTHREQ_NO_BONDING 0x00
 #define SM_AUTHREQ_BONDING 0x01
 #define SM_AUTHREQ_MITM_PROTECTION 0x04
-#define SM_AUTHREQ_SC 0x08
+#define SM_AUTHREQ_SC 0x08                  // support of LE Secure Connections pairing
 
 // Key distribution flags used by spec
 #define SM_KEYDIST_ENC_KEY 0X01
