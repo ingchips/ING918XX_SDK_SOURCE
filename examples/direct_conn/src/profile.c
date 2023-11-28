@@ -55,8 +55,8 @@ static struct paging_pkt paging_pkt =
 {
     .acc_offset = ACC_OFFSET,
     .start_time_offset = ACC_OFFSET + ACC_OFFSET,
-    .rx_phy = 1,
-    .tx_phy = 1,
+    .rx_phy = PHY_1M,
+    .tx_phy = PHY_1M,
     .access_addr = 0x91809160,
     .crc_init = 0x912,
     .interval = 1250 * 20,
@@ -135,20 +135,23 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             paging_pkt.channel_map,
             paging_pkt.ch_sel_algo,
             paging_pkt.hop_inc,
+            0,          // last_unmapped_ch
             paging_pkt.min_ce_len,
             paging_pkt.max_ce_len,
 #if (CONN_ROLE == HCI_ROLE_MASTER)
             paging_time + paging_pkt.start_time_offset,
+            0,          // event_counter
             paging_pkt.slave_latency,
             paging_pkt.sleep_clk_acc,
-            0
+            0,
 #else
             paging_time + paging_pkt.start_time_offset - JITTER,
+            0,          // event_counter
             paging_pkt.slave_latency,
             paging_pkt.sleep_clk_acc,
-            JITTER * 2
+            JITTER * 2,
 #endif
-            );
+            NULL);
         break;
     default:
         ;
@@ -250,6 +253,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             platform_printf("connected\n");
 #if (CONN_ROLE == HCI_ROLE_MASTER)
 #else

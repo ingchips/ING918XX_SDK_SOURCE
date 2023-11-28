@@ -152,8 +152,13 @@ typedef enum {
 #define ERROR_CODE_CONNECTION_FAILED_TO_BE_ESTABLISHED     0x3E
 #define ERROR_CODE_MAC_CONNECTION_FAILED                   0x3F
 #define ERROR_CODE_COARSE_CLOCK_ADJUSTMENT_REJECTED_BUT_WILL_TRY_TO_ADJUST_USING_CLOCK_DRAGGING 0x40
-#define ERROR_CODE_UNKNOWN_ADVERTISING_IDENTIFIER              0x42
-#define ERROR_CODE_LIMIT_REACHED                           0x43
+#define ERROR_CODE_UNKNOWN_ADVERTISING_IDENTIFIER                               0x42
+#define ERROR_CODE_LIMIT_REACHED                                                0x43
+#define ERROR_CODE_OP_CANCELLED_BY_HOST                                         0x44
+#define ERROR_CODE_PACKET_TOO_LONG                                              0x45
+#define ERROR_CODE_TOO_LATE                                                     0x46
+#define ERROR_CODE_TOO_EARLY                                                    0x47
+
 // HCI roles
 #define HCI_ROLE_MASTER 0
 #define HCI_ROLE_SLAVE  1
@@ -508,8 +513,15 @@ typedef enum {
 #define HCI_SUBEVENT_LE_TRANSMIT_POWER_REPORTING           0x21
 #define HCI_SUBEVENT_LE_BIGINFO_ADV_REPORT                 0x22
 #define HCI_SUBEVENT_LE_SUBRATE_CHANGE                     0x23
+#define HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED_V2                0x24
+#define HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_REPORT_V2                          0x25
+#define HCI_SUBEVENT_LE_PRD_ADV_SYNC_TRANSFER_RCVD_V2                           0x26
+#define HCI_SUBEVENT_PRD_ADV_SUBEVT_DATA_REQ                                    0x27
+#define HCI_SUBEVENT_PRD_ADV_RSP_REPORT                                         0x28
+#define HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2                         0x29
 
 // Vendor specific subevents
+#define HCI_SUBEVENT_LE_VENDOR_CONNECTION_ABORTED             0xFD
 #define HCI_SUBEVENT_LE_VENDOR_CHANNEL_MAP_UPDATE             0xFE
 #define HCI_SUBEVENT_LE_VENDOR_PRO_CONNECTIONLESS_IQ_REPORT   0xFF
 
@@ -686,7 +698,10 @@ typedef enum {
     SM_CODE_IDENTITY_INFORMATION,
     SM_CODE_IDENTITY_ADDRESS_INFORMATION,
     SM_CODE_SIGNING_INFORMATION,
-    SM_CODE_SECURITY_REQUEST
+    SM_CODE_SECURITY_REQUEST,
+    SM_CODE_PAIRING_PUBLIC_KEY,
+    SM_CODE_PAIRING_DHKEY_CHECK,
+    SM_CODE_PAIRING_KEYPRESS_NOTIFICATION
 } SECURITY_MANAGER_COMMANDS;
 
 // IO Capability Values
@@ -703,6 +718,7 @@ typedef enum {
 #define SM_AUTHREQ_NO_BONDING 0x00
 #define SM_AUTHREQ_BONDING 0x01
 #define SM_AUTHREQ_MITM_PROTECTION 0x04
+#define SM_AUTHREQ_SC 0x08                  // support of LE Secure Connections pairing
 
 // Key distribution flags used by spec
 #define SM_KEYDIST_ENC_KEY 0X01
@@ -720,6 +736,7 @@ typedef enum {
 #define SM_STK_GENERATION_METHOD_JUST_WORKS 0x01
 #define SM_STK_GENERATION_METHOD_OOB        0x02
 #define SM_STK_GENERATION_METHOD_PASSKEY    0x04
+#define SM_STK_GENERATION_METHOD_NUM_COMPARISON    0x08
 
 // Pairing Failed Reasons
 #define SM_REASON_RESERVED                     0x00
@@ -732,6 +749,11 @@ typedef enum {
 #define SM_REASON_COMMAND_NOT_SUPPORTED        0x07
 #define SM_REASON_UNSPECIFIED_REASON           0x08
 #define SM_REASON_REPEATED_ATTEMPTS            0x09
+#define SM_REASON_REPEATED_ATTEMPTS            0x09
+#define SM_REASON_INVALID_PARAMETERS           0x0a
+#define SM_REASON_DHKEY_CHECK_FAILED           0x0b
+#define SM_REASON_NUMERIC_COMPARISON_FAILED    0x0c
+#define SM_REASON_KEY_REJECTED_FAILED          0x0f
 // also, invalid parameters
 // and reserved
 

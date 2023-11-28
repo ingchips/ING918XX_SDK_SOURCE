@@ -115,8 +115,8 @@ ADDITIONAL_ATTRIBUTE uint32_t query_deep_sleep_allowed(void *dummy, void *user_d
 
 uintptr_t app_main()
 {
-    platform_config(PLATFORM_CFG_OSC32K_EN, PLATFORM_CFG_DISABLE);
-    platform_config(PLATFORM_CFG_32K_CLK_ACC, 500);
+    platform_config(PLATFORM_CFG_RT_OSC_EN, PLATFORM_CFG_DISABLE);
+    platform_config(PLATFORM_CFG_RT_CLK_ACC, 500);
 
 #ifdef USE_POWER_LIB
     power_ctrl_init();

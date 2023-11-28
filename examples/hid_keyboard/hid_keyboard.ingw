@@ -2,18 +2,18 @@
  "watchdog": false,
  "bundle_meta": {
   "rom": {
-   "size": 135764,
+   "size": 152044,
    "base": 16384
   },
   "ram": {
-   "size": 29876,
+   "size": 30268,
    "base": 536870912
   },
   "app": {
-   "base": 155648
+   "base": 172032
   },
   "version": [
-   1,9,39]
+   1,9,43]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -27,7 +27,7 @@
  "enable_hci_log": false,
  "ota_ver_minor": "0",
  "ota_ver_major": "0",
- "template": "C:\\projects\\ingWizard\\templates\\typical\\peripheral",
+ "template": "C:\\projects\\ingWizard\\templates\\exp\\peripheral",
  "series": "ING9187xx",
  "proj_name": "hid_keyboard",
  "sdk_release_path": "..\/..",
@@ -42,9 +42,9 @@
  "deep_sleep": true,
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\hid_keyboard",
  "power_saving": false,
- "bundle": "typical",
- "app_rom_size": "385024",
- "app_rom_addr": "155648",
+ "bundle": "exp",
+ "app_rom_size": "368640",
+ "app_rom_addr": "172032",
  "family": "ing918",
  "vcode": false,
  "io_cap": "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
@@ -57,8 +57,8 @@
  },
  "keil": true,
  "cmsis": "",
- "app_ram_size": 35656,
- "app_ram_addr": 536900792,
+ "app_ram_size": 35264,
+ "app_ram_addr": 536901184,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",

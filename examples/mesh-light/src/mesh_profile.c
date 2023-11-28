@@ -13,7 +13,7 @@
 #include "profile.h"
 #include "mesh.h"
 #include "mesh_port_stack.h"
-#include "mesh_storage_app.h" 
+#include "mesh_storage_app.h"
 #include "app_debug.h"
 #include "board.h"
 #include "ble_status.h"
@@ -63,19 +63,19 @@ const uint8_t gatt_data_proxy[] =
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static void mesh_adv_set_params(uint8_t   adv_handle,
-                                uint16_t  adv_int_min, 
-                                uint16_t  adv_int_max, 
+                                uint16_t  adv_int_min,
+                                uint16_t  adv_int_max,
                                 uint8_t   adv_type,
-                                uint8_t   direct_address_typ, 
-                                bd_addr_t direct_address, 
-                                uint8_t   channel_map, 
+                                uint8_t   direct_address_typ,
+                                bd_addr_t direct_address,
+                                uint8_t   channel_map,
                                 uint8_t   filter_policy){
-    
+
     gap_set_ext_adv_para(   adv_handle,
                             adv_type,
                             adv_int_min,
                             adv_int_max,
-                            channel_map, 
+                            channel_map,
                             BD_ADDR_TYPE_LE_RANDOM,
                             (bd_addr_type_t)direct_address_typ,
                             direct_address,
@@ -100,22 +100,22 @@ static void mesh_advertisements_enable(uint8_t adv_handle, int enabled){
 }
 
 /* API START */
-void mesh_profile_adv_proxy_set_params( uint16_t  adv_int_min, 
-                                        uint16_t  adv_int_max, 
+void mesh_profile_adv_proxy_set_params( uint16_t  adv_int_min,
+                                        uint16_t  adv_int_max,
                                         uint8_t   adv_type,
-                                        uint8_t   direct_address_typ, 
-                                        bd_addr_t direct_address, 
-                                        uint8_t   channel_map, 
+                                        uint8_t   direct_address_typ,
+                                        bd_addr_t direct_address,
+                                        uint8_t   channel_map,
                                         uint8_t   filter_policy){
     mesh_adv_set_params(MESH_PROXY_ADV_HANDLE, adv_int_min, adv_int_max, adv_type, direct_address_typ, direct_address, channel_map, filter_policy);
 }
 
-void mesh_profile_adv_pb_set_params(uint16_t  adv_int_min, 
-                                    uint16_t  adv_int_max, 
+void mesh_profile_adv_pb_set_params(uint16_t  adv_int_min,
+                                    uint16_t  adv_int_max,
                                     uint8_t   adv_type,
-                                    uint8_t   direct_address_typ, 
-                                    bd_addr_t direct_address, 
-                                    uint8_t   channel_map, 
+                                    uint8_t   direct_address_typ,
+                                    bd_addr_t direct_address,
+                                    uint8_t   channel_map,
                                     uint8_t   filter_policy){
     mesh_adv_set_params(MESH_PB_ADV_HANDLE, adv_int_min, adv_int_max, adv_type, direct_address_typ, direct_address, channel_map, filter_policy);
 }
@@ -193,8 +193,8 @@ void mesh_profile_scan_param_set(uint16_t interval_ms, uint16_t window_ms){
     bd_addr_type_t          own_addr_type = BD_ADDR_TYPE_LE_RANDOM;
     scan_filter_policy_t    filter_policy = SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED;
     uint8_t                 config_num = 1;
-    scan_phy_config_t       scan_config[1] = {{ .phy = PHY_1M, .type = SCAN_PASSIVE, 
-                                                .interval = SCAN_SET_TIME_MS(interval_ms), 
+    scan_phy_config_t       scan_config[1] = {{ .phy = PHY_1M, .type = SCAN_PASSIVE,
+                                                .interval = SCAN_SET_TIME_MS(interval_ms),
                                                 .window = SCAN_SET_TIME_MS(window_ms)}};
     if (0 != gap_set_ext_scan_para(own_addr_type, filter_policy, config_num, scan_config)){
         app_log_error("=============>ERR - %s\n", __func__);
@@ -260,7 +260,7 @@ void mesh_setup_adv(void)
 {
     mesh_profile_adv_proxy_enable(0);
     mesh_profile_adv_pb_enable(0);
-    
+
     mesh_proxy_adv_setup();
     mesh_pb_adv_setup();
 }
@@ -277,7 +277,7 @@ void mesh_server_restart(void)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static void user_msg_handler(btstack_user_msg_t * usrmsg)
-{    
+{
 #ifdef ENABLE_BUTTON_TEST
     #include "BUTTON_TEST.h"
     button_msg_handler(usrmsg);
@@ -318,7 +318,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         {
             case HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT:{
                     const le_ext_adv_report_t *report = decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports;
-                    
+
                     // only non-connectable ind
                     if (report->evt_type != 0x10) break;
 
@@ -341,19 +341,20 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 }
                 break;
 
-            
-            case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:{
+
+            case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+            case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:{
                     const le_meta_event_enh_create_conn_complete_t *create_conn =
                                         decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                     my_conn_handle = create_conn->handle;
                     app_log_debug("connect.\n");
                     att_set_db(my_conn_handle, ( mesh_is_provisioned()?  gatt_data_proxy : gatt_data_pb ));
                     mesh_connected(my_conn_handle);
-                    platform_calibrate_32k();
+                    platform_calibrate_rt_clk();
                 }
                 break;
             case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:{
-                    const le_meta_event_conn_update_complete_t *conn_update = 
+                    const le_meta_event_conn_update_complete_t *conn_update =
                                         decode_hci_le_meta_event(packet, le_meta_event_conn_update_complete_t);
                     app_log_debug("\nconn update complete:%d\n", conn_update->status);
                     if(conn_update->status == ERROR_CODE_SUCCESS){
@@ -368,11 +369,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 }
                 break;
             case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:{
-                    const le_meta_event_adv_set_terminate_t *adv_term = 
+                    const le_meta_event_adv_set_terminate_t *adv_term =
                                         decode_hci_le_meta_event(packet, le_meta_event_adv_set_terminate_t);
                     if(MESH_PB_ADV_HANDLE == adv_term->adv_handle){
                     }
-                }                  
+                }
                 break;
             default:
                 break;
@@ -481,6 +482,6 @@ uint32_t setup_profile(void *data, void *user_data)
 
     // ble status init.
     ble_status_init();
-    
+
     return 0;
 }

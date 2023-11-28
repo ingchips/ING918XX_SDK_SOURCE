@@ -224,21 +224,21 @@ type
     PLATFORM_CFG_LOG_HCI,     ##  flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING, ##  flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_TRACE_MASK,  ##  flag is bitmap of platform_trace_item_t. default: 0
-    PLATFORM_CFG_RC32K_EN,    ##  Enable/Disable RC 32k clock. Default: Enable
-    PLATFORM_CFG_OSC32K_EN,   ##  Enable/Disable 32k crystal oscillator. Default: Enable
-    PLATFORM_CFG_32K_CLK, ##  32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
+    PLATFORM_CFG_RT_RC_EN,    ##  Enable/Disable RC 32k clock. Default: Enable
+    PLATFORM_CFG_RT_OSC_EN,   ##  Enable/Disable 32k crystal oscillator. Default: Enable
+    PLATFORM_CFG_RT_CLK, ##  32k clock selection. flag is platform_32k_clk_src_t. default: PLATFORM_32K_RC
                          ##  Note: When modifying this configuration, both RC32K and OSC32K should be ENABLED and *run*.
                          ##        For OSC32K, wait until status of OSC32K is OK;
                          ##        For RC32K, wait 100us after enabled.
                          ##  Note: Wait another 100us before disabling the unused clock.
-    PLATFORM_CFG_32K_CLK_ACC, ##  Configure 32k clock accurary in ppm.
-    PLATFORM_CFG_32K_CALI_PERIOD, ##  32K clock auto-calibartion period in seconds. Default: 3600 * 2
+    PLATFORM_CFG_RT_CLK_ACC, ##  Configure 32k clock accurary in ppm.
+    PLATFORM_CFG_RT_CLK_CALI_PERIOD, ##  32K clock auto-calibartion period in seconds. Default: 3600 * 2
     PLATFORM_CFG_PS_DBG_0,    ##  debugging parameter
     PLATFORM_CFG_PS_DBG_1,    ##  debugging parameter
     PLATFORM_CFG_PS_DBG_2,    ##  debugging parameter
     PLATFORM_CFG_LL_DBG_FLAGS ##  debugging parameter
   platform_32k_clk_src_t* {.size: sizeof(cint).} = enum
-    PLATFORM_32K_OSC,         ##  external 32k crystal oscillator
+    PLATFORM_RT_OSC,         ##  external 32k crystal oscillator
     PLATFORM_32K_RC           ##  internal RC 32k clock
 
 
@@ -283,17 +283,17 @@ proc platform_read_info*(item: platform_info_item_t): uint32 {.
 ## ***************************************************************************************
 ##
 
-proc platform_calibrate_32k*(): uint32 {.importc: "platform_calibrate_32k",
+proc platform_calibrate_rt_clk*(): uint32 {.importc: "platform_calibrate_rt_clk",
                                       header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
 ##  @brief Tune internal the 32k RC clock with `value`.
 ##
-##  @param[in] value          Value used to tune the clock (returned by `platform_32k_rc_auto_tune`)
+##  @param[in] value          Value used to tune the clock (returned by `platform_rt_rc_auto_tune`)
 ## ***************************************************************************************
 ##
 
-proc platform_32k_rc_tune*(value: uint16) {.importc: "platform_32k_rc_tune",
+proc platform_rt_rc_tune*(value: uint16) {.importc: "platform_rt_rc_tune",
     header: "platform_api.h".}
 ## *
 ## ***************************************************************************************
@@ -306,7 +306,7 @@ proc platform_32k_rc_tune*(value: uint16) {.importc: "platform_32k_rc_tune",
 ## ***************************************************************************************
 ##
 
-proc platform_32k_rc_auto_tune*(): uint16 {.importc: "platform_32k_rc_auto_tune",
+proc platform_rt_rc_auto_tune*(): uint16 {.importc: "platform_rt_rc_auto_tune",
     header: "platform_api.h".}
 ## *
 ## ***************************************************************************************

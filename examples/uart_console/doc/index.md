@@ -156,6 +156,17 @@ Firstly, connect to a device with Connection Subrating feature.
 
     <img src="./img/subrate_att_req.png" width="80%" />
 
+### Connection Abort & Resume
+
+Firstly, start advertising and get connected with _ING BLE_ app.
+
+* `re-conn`
+
+    This command will abort current connection (SLAVE role), and resume it immediately.
+
+    Pass `HCI_SUBEVENT_LE_VENDOR_CONNECTION_ABORTED` and timing information to
+    another device, then the connection can be resumed on that device, and _handover_ is achieved.
+
 ## Trace
 
 This example has 4 trace sink drivers (i.e. how to export/save trace data):

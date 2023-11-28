@@ -64,10 +64,10 @@ void __aeabi_assert(const char *a ,const char* b, int c)
 
 static void uart_gpio_init(void){
     SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ClkGate_APB_UART0);
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO) | 
-                                (1 << SYSCTRL_ClkGate_APB_PWM)  | 
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO) |
+                                (1 << SYSCTRL_ClkGate_APB_PWM)  |
                                 (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-    
+
     PINCTRL_SetPadMux(USER_UART0_IO_RX, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(USER_UART0_IO_RX, 0);
     PINCTRL_SetPadMux(USER_UART0_IO_TX, IO_SOURCE_UART0_TXD);
@@ -102,7 +102,7 @@ void setup_peripherals(void)
 {
     uart_gpio_init();
     config_uart(OSC_CLK_FREQ, PRINT_UART_BAUD);
-    
+
     setup_rgb_led();
 
 #ifdef ENABLE_BUTTON_TEST
@@ -119,9 +119,9 @@ int app_main()
     // If there are *three* crystals on board, *uncomment* below line.
     // Otherwise, below line should be kept commented out.
     // platform_set_rf_clk_source(0);
-    
-    platform_config(PLATFORM_CFG_32K_CLK_ACC, 200);
-    
+
+    platform_config(PLATFORM_CFG_RT_CLK_ACC, 200);
+
     setup_peripherals();
 
     // setup putc handle

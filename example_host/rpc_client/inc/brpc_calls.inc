@@ -36,19 +36,19 @@ struct _param {
 const platform_info_item_t item;} _param = {.item = item};
 #pragma pack (pop)
 struct node * _node = call_fun(1006,&_param,sizeof(_param));uint32_t _r= *(uint32_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
-uint32_t platform_calibrate_32k(void){LOG_D("platform_calibrate_32k...");;
+uint32_t platform_calibrate_rt_clk(void){LOG_D("platform_calibrate_rt_clk...");;
 #pragma pack (push, 1)
 struct _param {
 } _param = {};
 #pragma pack (pop)
 struct node * _node = call_fun(1007,&_param,sizeof(_param));uint32_t _r= *(uint32_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
-void platform_32k_rc_tune(uint16_t value){LOG_D("platform_32k_rc_tune...");;
+void platform_rt_rc_tune(uint16_t value){LOG_D("platform_rt_rc_tune...");;
 #pragma pack (push, 1)
 struct _param {
 uint16_t value;} _param = {.value = value};
 #pragma pack (pop)
 call_void_fun(1008,&_param,sizeof(_param));}
-uint16_t platform_32k_rc_auto_tune(void){LOG_D("platform_32k_rc_auto_tune...");;
+uint16_t platform_rt_rc_auto_tune(void){LOG_D("platform_rt_rc_auto_tune...");;
 #pragma pack (push, 1)
 struct _param {
 } _param = {};

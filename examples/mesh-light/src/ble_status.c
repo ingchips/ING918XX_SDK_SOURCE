@@ -57,7 +57,8 @@ static void hci_packet_handler(uint8_t packet_type, uint16_t channel, const uint
         case HCI_EVENT_LE_META:
             switch (hci_event_le_meta_get_subevent_code(packet))
             {
-                case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:{
+                case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+                case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:{
                         const le_meta_event_enh_create_conn_complete_t *create_conn =
                                             decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                         ble_status.conn_handle = create_conn->handle;

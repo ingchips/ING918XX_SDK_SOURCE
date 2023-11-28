@@ -68,7 +68,8 @@ static const char help[] =  "commands:\n"
                             "auto   0/1                          enable/disable auto power control\n"
                             "subr   factor                       subrate with factor\n"
                             "syncgap                             demo sync GAP APIs\n"
-                            "lock   freq                         lock to freq (MHz). 0 to unlock"
+                            "lock   freq                         lock to freq (MHz). 0 to unlock\n"
+                            "re-conn                             demo of abort & re-connect\n"
                             ;
 
 void cmd_help(const char *param)
@@ -402,6 +403,7 @@ void cmd_stop(const char *param)
 
 void set_phy(int phy);
 void change_conn_param(int interval, int latency, int timeout);
+void ble_re_connect(void);
 
 void cmd_phy(const char *param)
 {
@@ -443,6 +445,11 @@ void cmd_lock(const char *param)
         ll_unlock_frequency();
         platform_printf("unlocked\n");
     }
+}
+
+static void cmd_reconn(const char *param)
+{
+    ble_re_connect();
 }
 
 static cmd_t cmds[] =
@@ -582,6 +589,10 @@ static cmd_t cmds[] =
     {
         .cmd = "lock",
         .handler = cmd_lock
+    },
+    {
+        .cmd = "re-conn",
+        .handler = cmd_reconn
     }
 };
 

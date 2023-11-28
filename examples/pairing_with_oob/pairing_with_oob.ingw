@@ -1,0 +1,90 @@
+{
+ "watchdog": true,
+ "bundle_meta": {
+  "rom": {
+   "size": 152044,
+   "base": 16384
+  },
+  "ram": {
+   "size": 30268,
+   "base": 536870912
+  },
+  "app": {
+   "base": 172032
+  },
+  "version": [
+   1,9,43]
+ },
+ "tc_dir": "C:\\Keil_v5\\UV4",
+ "eflash_addr": "0x42000",
+ "ide_ver": "5",
+ "ide_exe": "C:\\Keil_v5\\UV4\\UV4.exe",
+ "use_uart_trace": false,
+ "ota": false,
+ "ide": "keil",
+ "git": false,
+ "use_segger_rtt": true,
+ "trace_port": "seggerrtt",
+ "trace_mask": "",
+ "scan_data": "0\r\n",
+ "priv_addr": "GAP_RANDOM_ADDRESS_OFF",
+ "enable_hci_log": false,
+ "ota_ver_minor": "0",
+ "ota_ver_major": "0",
+ "template": "C:\\projects\\ingchips\\ingWizard\\templates\\exp\\peripheral",
+ "coding_adv": false,
+ "key_incode": true,
+ "series": "ING9187xx",
+ "proj_name": "pairing_with_oob",
+ "sdk_release_path": "..\/..",
+ "printf_port": "uart0",
+ "security": false,
+ "legacy_adv": true,
+ "adv_data": "\/\/ 0x01 - \u00abFlags\u00bb\r\n2, 0x01,\r\n0x06, \r\n\r\n\/\/ 0x09 - \u00abComplete Local Name\u00bb\r\n16, 0x09,\r\n0x50, 0x61, 0x72, 0x69, 0x6E, 0x67, 0x20, 0x77, \r\n0x69, 0x74, 0x68, 0x20, 0x4F, 0x4F, 0x42, \r\n\r\n\/\/ Total size = 20 bytes\r\n",
+ "use_eflash": false,
+ "wizard_dir": "C:\/projects\/ingchips\/ingWizard",
+ "key_addr": "0x44000",
+ "trace_enable": true,
+ "pb_adv": true,
+ "is_sdk_path_rel": true,
+ "pb_gatt": true,
+ "deep_sleep": true,
+ "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\pairing_with_oob",
+ "heap_size": 0,
+ "power_saving": false,
+ "secondary": false,
+ "bundle": "exp",
+ "app_rom_size": "368640",
+ "app_rom_addr": "172032",
+ "family": "ing918",
+ "vcode": false,
+ "heap_override": false,
+ "trace_mask_nim": "",
+ "gatt_value_offset": {
+  "key": "HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG_OFFSET",
+  "value": "130"
+ },
+ "io_cap": "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
+ "role": "peripheral",
+ "noos": false,
+ "mesh": {
+  "lowpower": true,
+  "friend": true,
+  "relay": true,
+  "proxy": true
+ },
+ "keil": true,
+ "cmsis": "",
+ "cube": true,
+ "app_ram_size": 35264,
+ "app_ram_addr": 536901184,
+ "k5_cc_ver": "6",
+ "printf_enable": true,
+ "gatt_handle": {
+  "key": "HANDLE_GENERIC_INPUT",
+  "value": "3"
+ },
+ "ota_ver_patch": "0",
+ "profile_data": "\/\/ Service INGChips Console Service: {43f4b114-ca67-48e8-a46f-9a8ffeb7146a}\r\n0x18, 0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x28,\r\n0x6A, 0x14, 0xB7, 0xFE, 0x8F, 0x9A, 0x6F, 0xA4, \r\n0xE8, 0x48, 0x67, 0xCA, 0x14, 0xB1, 0xF4, 0x43, \r\n\/\/ Characteristic Generic Input: {bf83f3f1-399a-414d-9035-ce64ceb3ff67}\r\n0x1B, 0x00, 0x02, 0x00, 0x02, 0x00, 0x03, 0x28,\r\n0x06, 0x03, 0x00, 0x67, 0xFF, 0xB3, 0xCE, 0x64, \r\n0xCE, 0x35, 0x90, 0x4D, 0x41, 0x9A, 0x39, 0xF1, \r\n0xF3, 0x83, 0xBF, \r\n0x16, 0x00, 0x06, 0x07, 0x03, 0x00,\r\n0x67, 0xFF, 0xB3, 0xCE, 0x64, 0xCE, 0x35, 0x90, \r\n0x4D, 0x41, 0x9A, 0x39, 0xF1, 0xF3, 0x83, 0xBF, \r\n\/\/ Characteristic Generic Output: {bf83f3f2-399a-414d-9035-ce64ceb3ff67}\r\n0x1B, 0x00, 0x02, 0x00, 0x04, 0x00, 0x03, 0x28,\r\n0x10, 0x05, 0x00, 0x67, 0xFF, 0xB3, 0xCE, 0x64, \r\n0xCE, 0x35, 0x90, 0x4D, 0x41, 0x9A, 0x39, 0xF2, \r\n0xF3, 0x83, 0xBF, \r\n0x16, 0x00, 0x10, 0x02, 0x05, 0x00,\r\n0x67, 0xFF, 0xB3, 0xCE, 0x64, 0xCE, 0x35, 0x90, \r\n0x4D, 0x41, 0x9A, 0x39, 0xF2, 0xF3, 0x83, 0xBF, \r\n\/\/ Descriptor Client Characteristic Configuration: 2902\r\n0x0A, 0x00, 0x0A, 0x01, 0x06, 0x00, 0x02, 0x29,\r\n0x00, 0x00, \r\n\r\n0x00,0x00\r\n\/\/ total size = 134\r\n\r\n\/\/ HANDLE_GENERIC_INPUT=3\r\n\/\/ HANDLE_GENERIC_OUTPUT=5\r\n\/\/ HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG=6\r\n\r\n\/\/ HANDLE_GENERIC_INPUT_OFFSET=73\r\n\/\/ HANDLE_GENERIC_OUTPUT_OFFSET=122\r\n\/\/ HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG_OFFSET=130\r\n",
+ "coding_profile": false
+}

@@ -16,6 +16,7 @@
 #include "gatt_client_util.h"
 
 #include "att_db_util.h"
+#include "ecc_driver.h"
 
 #include "USBHID_Types.h"
 #include "USBKeyboard.h"
@@ -480,6 +481,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle, att_db_util_get_address());
             handle_send = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle;
             break;
@@ -632,7 +634,8 @@ uint8_t *init_service()
         (uint8_t *)&report, sizeof(report));
     att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ ,
         (uint8_t *)&kb_desc_input_report, sizeof(kb_desc_input_report));
-    att_db_util_add_characteristic_uuid16(0x2A4D, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
+    att_db_util_add_characteristic_uuid16(0x2A4D, 
+		ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_WRITE | ATT_PROPERTY_READ | ATT_PROPERTY_DYNAMIC | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
         (uint8_t *)&report, sizeof(report));
     att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ ,
         (uint8_t *)&kb_desc_output_report, sizeof(kb_desc_output_report));
@@ -669,6 +672,11 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         input_number.flag = 1;
         input_number.cnt = 0;
         break;
+    case SM_EVENT_NUMERIC_COMPARISON_REQUEST:
+        platform_printf("NUMERIC_COMPARISON: %06d\n",
+            sm_event_numeric_comparison_get_compare_value(packet));
+        sm_numeric_comparison_confirm(sm_event_numeric_comparison_get_handle(packet));
+        break;    
     case SM_EVENT_STATE_CHANGED:
         {
             const sm_event_state_changed_t *state_changed = decode_hci_event(packet, sm_event_state_changed_t);
@@ -709,14 +717,15 @@ uint32_t setup_profile(void *data, void *user_data)
 {
     platform_printf("setup profile\n");
     init_service();
+    install_ecc_driver();
     sm_add_event_handler(&sm_event_callback_registration);
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
-    sm_config(1, IO_CAPABILITY_KEYBOARD_ONLY,
+    sm_config(1, IO_CAPABILITY_KEYBOARD_DISPLAY,
               0,
               &sm_persistent);
-    sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
+    sm_set_authentication_requirements(SM_AUTHREQ_BONDING | SM_AUTHREQ_SC);
     return 0;
 }

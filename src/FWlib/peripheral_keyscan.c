@@ -260,11 +260,11 @@ void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set, KEYSCAN
 static uint8_t KEYSCAN_CheckStatePara(const KEYSCAN_SetStateStruct* keyscan_set)
 {
     if (keyscan_set == 0) {
-        return -1;
+        return 1;
     }
 
     if ((keyscan_set->row == 0) || (keyscan_set->col == 0)) {
-        return -1;
+        return 1;
     }
 
     return 0;
@@ -295,8 +295,9 @@ int KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set)
 
     row = 0;
     for (i = 0; i < keyscan_set->row_num; i++) {
+        int io_source = IO_SOURCE_KEYSCN_ROW_0 + keyscan_set->row[i].out_row;
         row = row | (0x1 << keyscan_set->row[i].out_row);
-        r = PINCTRL_SetPadMux(keyscan_set->row[i].gpio, keyscan_set->row[i].out_row + IO_SOURCE_KEYSCN_ROW_0);
+        r = PINCTRL_SetPadMux(keyscan_set->row[i].gpio, (io_source_t)io_source);
         if (r) return r;
         PINCTRL_Pull(keyscan_set->row[i].gpio, PINCTRL_PULL_DOWN);
     }

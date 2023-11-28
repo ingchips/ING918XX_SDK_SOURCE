@@ -189,10 +189,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>21</ColumnNumber>
+      <ColumnNumber>18</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>204</TopLine>
-      <CurrentLine>205</CurrentLine>
+      <TopLine>205</TopLine>
+      <CurrentLine>206</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\profile.c</PathWithFileName>
       <FilenameWithoutPath>profile.c</FilenameWithoutPath>
@@ -234,7 +234,7 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\bundles\typical\ING9187xx\symdefs.m</PathWithFileName>
+      <PathWithFileName>..\..\bundles\exp\ING9187xx\symdefs.m</PathWithFileName>
       <FilenameWithoutPath>symdefs.m</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -436,6 +436,38 @@
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\Tools\malloc_override.c</PathWithFileName>
       <FilenameWithoutPath>malloc_override.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>16</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <Focus>0</Focus>
+      <ColumnNumber>0</ColumnNumber>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\src\Tools\ecc_driver.c</PathWithFileName>
+      <FilenameWithoutPath>ecc_driver.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>17</FileNumber>
+      <FileType>4</FileType>
+      <tvExp>0</tvExp>
+      <Focus>0</Focus>
+      <ColumnNumber>0</ColumnNumber>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\src\Tools\ing918_uecc.lib</PathWithFileName>
+      <FilenameWithoutPath>ing918_uecc.lib</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

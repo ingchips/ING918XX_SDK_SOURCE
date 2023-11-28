@@ -4,6 +4,10 @@
 #include "str_util.h"
 #include "ingsoc.h"
 
+#ifndef EFFECTIVE_RTC_CLK_FREQ
+#define EFFECTIVE_RTC_CLK_FREQ      RTC_CLK_FREQ
+#endif
+
 static char nibble_to_char(int v)
 {
     return v <= 9 ? v - 0 + '0' : v - 10 + 'A';
@@ -80,10 +84,10 @@ char *base64_encode(const uint8_t *data, int data_len,
 const char *fmt_rtc_timestamp(char *str, uint32_t rtc_value)
 {
     uint32_t t = rtc_value;
-    uint32_t sec = t / RTC_CLK_FREQ;
-    uint32_t sub_sec = t - sec * RTC_CLK_FREQ;
-    uint32_t msec = 1000 * sub_sec / RTC_CLK_FREQ;
-    uint32_t usec = 1000 * (1000 * sub_sec - msec * RTC_CLK_FREQ) / RTC_CLK_FREQ;
+    uint32_t sec = t / EFFECTIVE_RTC_CLK_FREQ;
+    uint32_t sub_sec = t - sec * EFFECTIVE_RTC_CLK_FREQ;
+    uint32_t msec = 1000 * sub_sec / EFFECTIVE_RTC_CLK_FREQ;
+    uint32_t usec = 1000 * (1000 * sub_sec - msec * EFFECTIVE_RTC_CLK_FREQ) / EFFECTIVE_RTC_CLK_FREQ;
     uint32_t min = sec / 60;
     uint32_t hour = min / 60;
     sec -= min * 60;
@@ -110,10 +114,10 @@ const char *fmt_us_timestamp(char *str, uint64_t us_time)
 const char *fmt_rtc_timestamp_full(char *str, uint64_t rtc_value)
 {
     uint64_t t = rtc_value;
-    uint64_t sec = t / RTC_CLK_FREQ;
-    uint32_t sub_sec = t % RTC_CLK_FREQ;
-    uint32_t msec = 1000 * sub_sec / RTC_CLK_FREQ;
-    uint32_t usec = 1000 * (1000 * sub_sec - msec * RTC_CLK_FREQ) / RTC_CLK_FREQ;
+    uint64_t sec = t / EFFECTIVE_RTC_CLK_FREQ;
+    uint32_t sub_sec = t % EFFECTIVE_RTC_CLK_FREQ;
+    uint32_t msec = 1000 * sub_sec / EFFECTIVE_RTC_CLK_FREQ;
+    uint32_t usec = 1000 * (1000 * sub_sec - msec * EFFECTIVE_RTC_CLK_FREQ) / EFFECTIVE_RTC_CLK_FREQ;
     uint64_t min = sec / 60;
     uint64_t hour = min / 60;
     sec -= min * 60;

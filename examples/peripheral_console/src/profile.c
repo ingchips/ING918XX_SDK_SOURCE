@@ -125,7 +125,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         }
         break;
     case USER_MSG_ID_FIRST_WAKE_UP:
-        platform_32k_rc_auto_tune();
+        platform_rt_rc_auto_tune();
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         break;
     default:
@@ -179,7 +179,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
-            platform_calibrate_32k();
+            platform_calibrate_rt_clk();
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #ifdef OPT_RAM_CODE
             platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4100 - 400);

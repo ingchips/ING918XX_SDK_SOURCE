@@ -15,6 +15,7 @@
 #include "sm.h"
 #include "trace.h"
 #include "btstack_mt.h"
+#include "ll_api.h"
 
 #include "uart_console.h"
 #include "gatt_client_util.h"
@@ -77,6 +78,12 @@ uint8_t peer_feature_power_control = 0;
 uint8_t peer_feature_subrate = 0;
 uint8_t auto_power_ctrl = 0;
 
+static le_meta_event_vendor_connection_aborted_t aborted = {0};
+uint8_t aborted_received = 0;
+uint8_t peer_addr_type = 0;
+uint8_t reconnecting_after_aborted = 0;
+bd_addr_t peer_addr;
+
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
@@ -93,6 +100,7 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
 static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
+    platform_printf("ATT Write: handle = %d, size = %d\n", att_handle, buffer_size);
     switch (att_handle)
     {
 
@@ -628,6 +636,23 @@ void ble_set_auto_power_control(int enable)
     iprintf("Auto power control %s.\n", enable ? "enabled" : "disabled");
 }
 
+static void abort_connection(void *data, uint16_t value)
+{
+    if (sla_conn_handle != INVALID_HANDLE)
+        ll_conn_abort(sla_conn_handle);
+    else
+    {
+        platform_printf("ERR: a connection (SLAVE role) is needed.\n");
+        return;
+    }
+    reconnecting_after_aborted = 1;
+}
+
+void ble_re_connect(void)
+{
+    btstack_push_user_runnable(abort_connection, NULL, 0);
+}
+
 static void demo_synced_gap_apis(struct btstack_synced_runner *runner, void *user_data)
 {
     int err;
@@ -707,14 +732,14 @@ void ble_sync_gap(void)
 
 void change_conn_param(int interval, int latency, int timeout)
 {
-    if (interval > 0) conn_param_requst.interval = interval;    
+    if (interval > 0) conn_param_requst.interval = interval;
     if (timeout > 0) conn_param_requst.timeout = timeout;
     conn_param_requst.latency = latency;
-    
+
     uint16_t ce_len = (conn_param_requst.interval << 1) - 2;
     mt_gap_update_connection_parameters(
             mas_conn_handle != INVALID_HANDLE ? mas_conn_handle : sla_conn_handle,
-            conn_param_requst.interval, 
+            conn_param_requst.interval,
             conn_param_requst.interval,
             conn_param_requst.latency,
             conn_param_requst.timeout,
@@ -934,11 +959,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             {
                 const le_meta_event_enh_create_conn_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
 
                 if (complete->status != 0) break;
+
+                peer_addr_type = complete->peer_addr_type;
+                memcpy(peer_addr, complete->peer_addr, sizeof(peer_addr));
 
                 if (HCI_ROLE_SLAVE == complete->role)
                 {
@@ -953,6 +982,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     mas_conn_handle = complete->handle;
                 }
 
+                if (reconnecting_after_aborted)
+                {
+                    reconnecting_after_aborted = 0;
+                    platform_printf("CONN RESUMED.\n");
+                    break;
+                }
 
                 gap_read_remote_version(complete->handle);
             }
@@ -1045,6 +1080,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 );
             }
             break;
+        case HCI_SUBEVENT_LE_VENDOR_CONNECTION_ABORTED:
+            {
+                const le_meta_event_vendor_connection_aborted_t *abort =
+                    decode_hci_le_meta_event(packet, le_meta_event_vendor_connection_aborted_t);
+                memcpy(&aborted, abort, sizeof(aborted));
+                aborted_received = 1;
+                platform_printf("[evt]: CONNECTION_ABORTED\n");
+            }
+            break;
         default:
             break;
         }
@@ -1083,6 +1127,38 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     gatt_client_util_free(discoverer);
                     discoverer = NULL;
                 }
+            }
+
+            if (aborted_received)
+            {
+                bd_addr_t rev_local;
+                aborted_received = 0;
+                reverse_bd_addr(sm_persistent.identity_addr, rev_local);
+
+                ll_create_conn(
+                    aborted.role,
+                    sm_persistent.identity_addr_type | (peer_addr_type << 1), // bit[1] initiator, bit[0] advertiser
+                    rev_local, // const uint8_t *adv_addr,
+                    peer_addr, // const uint8_t *init_addr,
+                    aborted.rx_phy,
+                    aborted.tx_phy,
+                    aborted.access_addr,
+                    aborted.crc_init,
+                    aborted.interval,
+                    aborted.sup_timeout,
+                    aborted.channel_map,
+                    aborted.ch_sel_algo,
+                    aborted.hop_inc,
+                    aborted.last_unmapped_ch,
+                    20, // uint16_t min_ce_len,
+                    20, // uint16_t max_ce_len,
+                    aborted.next_event_time - 20,// uint64_t start_time,
+                    aborted.next_event_counter, // uint16_t event_counter,
+                    aborted.slave_latency,
+                    aborted.sleep_clk_acc,
+                    10, // uint32_t sync_window,
+                    aborted.security_enabled ? &aborted.security : NULL
+                    );
             }
         }
         break;

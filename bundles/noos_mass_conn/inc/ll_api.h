@@ -100,14 +100,15 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
 
 /**
  ****************************************************************************************
- * @brief Create a connection directly (without advertising & initiating)
+ * @brief Create/Resume a connection directly (without advertising & initiating)
  *
  * @param[in]  role             connection role. master (0), slave (1)
  * @param[in]  addr_types       address types for advertiser and initiator
- *                              bit [0] for slave, bit [1] for master
+ *                              bit [0] for slave (advertiser)
+ *                              bit [1] for master (initiator)
  *                              0: public address; 1: random address
- * @param[in]  adv_addr         address of advertiser
- * @param[in]  init_addr        address of initiator
+ * @param[in]  adv_addr         address of advertiser (little-endian)
+ * @param[in]  init_addr        address of initiator (little-endian)
  * @param[in]  rx_phy           Rx PHY (1: 1M, 2: 2M, 3: Coded)
  * @param[in]  tx_phy           Tx PHY (1: 1M, 2: 2M, 3: Coded)
  * @param[in]  access_addr      access address
@@ -115,21 +116,26 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
  * @param[in]  interval         connection interval (unit: us)
  * @param[in]  sup_timeout      supervision timeout (unit: 10ms)
  * @param[in]  channel_map      channel map
- * @param[in]  ch_sel_algo      channel selection algorithm (1 or 2)
- * @param[in]  hop_inc          hop increment for CSA#1 ([5..16])
+ * @param[in]  ch_sel_algo      channel selection algorithm (0: ALG #1, 1: ALG #2)
+ * @param[in]  hop_inc          hop increment for CSA#1 ([5..16]) (only for ALG #1)
+ * @param[in]  last_unmapped_ch last unmapped channel index  (only for ALG #1)
  * @param[in]  min_ce_len       information parameter about the minimum length of connection
  *                              event needed for this LE connection.
  * @param[in]  max_ce_len       information parameter about the maximum length of connection
  *                              event needed for this LE connection.
- * @param[in]  start_time       start time of the 1st connectin event
+ * @param[in]  start_time       start time of the 1st connection event
+ * @param[in]  event_counter    event counter for the 1st connection event
  * @param[in]  slave_latency    slave latency
- * @param[in]  sleep_clk_acc    sleep clock accuracy
+ * @param[in]  sleep_clk_acc    sleep clock accuracy (only for SLAVE role)
  * @param[in]  sync_window      slave's sync window for 1st connection event
+ * @param[in]  security         link layer security context
+ *                              NULL: security not used
+ *                              otherwise: security is used, which is `le_security_ctx_t *` in
+ *                                         `le_meta_event_vendor_connection_aborted_t`.
  * @return                      0 if successful else error code
  ****************************************************************************************
  */
-// int ll_create_conn(
-//                    uint8_t role,
+// int ll_create_conn(uint8_t role,
 //                    uint8_t addr_types,
 //                    const uint8_t *adv_addr,
 //                    const uint8_t *init_addr,
@@ -142,12 +148,15 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
 //                    const uint8_t *channel_map,
 //                    uint8_t  ch_sel_algo,
 //                    uint8_t  hop_inc,
+//                    uint8_t  last_unmapped_ch,
 //                    uint16_t min_ce_len,
 //                    uint16_t max_ce_len,
 //                    uint64_t start_time,
+//                    uint16_t event_counter,
 //                    uint16_t slave_latency,
 //                    uint8_t  sleep_clk_acc,
-//                    uint32_t sync_window);
+//                    uint32_t sync_window,
+//                    const void *security);
 // WARNING: ^^^ this API is not available in this release
 
 
@@ -239,6 +248,20 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
 //                             uint32_t *time_offset,
 //                             uint16_t *event_count,
 //                             uint8_t *channel_ids);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ ****************************************************************************************
+ * @brief Abort an existing connection
+ *
+ * After a connection is aborted, `HCI_SUBEVENT_VENDOR_CONNECTION_ABORTED` is emitted.
+ *
+ * @param[in]  conn_handle      handle of an existing connection
+ * @return                      0 if aborting is ongoing else non-0
+ ****************************************************************************************
+ */
+// int ll_conn_abort(uint16_t conn_handle);
 // WARNING: ^^^ this API is not available in this release
 
 
