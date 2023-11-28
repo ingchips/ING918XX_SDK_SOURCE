@@ -633,7 +633,8 @@ uint8_t *init_service()
         (uint8_t *)&report, sizeof(report));
     att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ ,
         (uint8_t *)&kb_desc_input_report, sizeof(kb_desc_input_report));
-    att_db_util_add_characteristic_uuid16(0x2A4D, ATT_PROPERTY_READ | ATT_PROPERTY_NOTIFY | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
+    att_db_util_add_characteristic_uuid16(0x2A4D, 
+		ATT_PROPERTY_WRITE_WITHOUT_RESPONSE | ATT_PROPERTY_WRITE | ATT_PROPERTY_READ | ATT_PROPERTY_DYNAMIC | ATT_PROPERTY_AUTHENTICATION_REQUIRED,
         (uint8_t *)&report, sizeof(report));
     att_db_util_add_descriptor_uuid16(GATT_CLIENT_CHARACTERISTICS_DESC_REPORT_REF, ATT_PROPERTY_READ ,
         (uint8_t *)&kb_desc_output_report, sizeof(kb_desc_output_report));
