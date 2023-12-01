@@ -282,7 +282,7 @@ uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, ui
     return 1;
 }
 
-int KEYSCAN_Initialize_Scan_Parameter(const KEYSCAN_SetStateStruct* keyscan_set)
+int KEYSCAN_InitializeScanParameter(const KEYSCAN_SetStateStruct* keyscan_set)
 {
     int r = 0;
     int i;
@@ -327,7 +327,7 @@ int KEYSCAN_Initialize_Scan_Parameter(const KEYSCAN_SetStateStruct* keyscan_set)
 
 int KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set)
 {
-    KEYSCAN_Initialize_Scan_Parameter(keyscan_set);
+    KEYSCAN_InitializeScanParameter(keyscan_set);
     KEYSCAN_DbClkSel(1);
     KEYSCAN_SetDebounceEn(0xfffff);
     KEYSCAN_SetScannerEn(1);
