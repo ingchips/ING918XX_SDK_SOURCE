@@ -388,7 +388,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
     if (mode >= SYSCTRL_CLK_SLOW_DIV_1)
     {
         set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 24);
-        set_reg_bit(APB_SYSCTRL->CguCfg, 1, 31);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 31);
     }
 }
 
