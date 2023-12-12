@@ -56,7 +56,9 @@ typedef enum {
  * @brief Security configurations
  *
  * These configurations can updated dynamically. Be careful: dynamically toggle
- * `enable` will cause problems when SM is still working on any connection;
+ * `enable` will cause problems when SM is still working on any connection.
+ *
+ * After IRK/DHK are derived from `persistent`, `SM_EVENT_IRK_DHK_RESULT` is emitted.
  *
  * @param[in]   enable              Enable (Bypass) SM (default: Disabled)
  *                                  When disabled, SM can be enabled per connection by `sm_config_conn`.

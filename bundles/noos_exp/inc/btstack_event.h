@@ -811,6 +811,24 @@ static __INLINE uint32_t sm_event_numeric_comparison_get_compare_value(const uin
 }
 
 /**
+ * @brief Get IRK from event SM_EVENT_IRK_DHK_RESULT
+ * @param event packet
+ * @return irk
+ */
+static __INLINE const uint8_t *sm_event_irk_dhk_result_get_irk(const uint8_t *event) {
+    return *decode_event_offset(event, uint8_t *, 2);
+}
+
+/**
+ * @brief Get DHK from event SM_EVENT_IRK_DHK_RESULT
+ * @param event packet
+ * @return dhk
+ */
+static __INLINE const uint8_t *sm_event_irk_dhk_result_get_dhk(const uint8_t *event) {
+    return *decode_event_offset(event, uint8_t *, 2 + sizeof(uintptr_t));
+}
+
+/**
  * @brief Get field handle from event GAP_EVENT_SECURITY_LEVEL
  * @param event packet
  * @return handle

@@ -12,6 +12,7 @@
 #include "btstack_defines.h"
 #include "gatt_client.h"
 #include "sm.h"
+#include "kv_storage.h"
 
 
 #include "port_gen_os_driver.h"
