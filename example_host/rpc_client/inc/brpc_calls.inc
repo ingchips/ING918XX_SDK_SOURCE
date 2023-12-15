@@ -670,18 +670,6 @@ hci_con_handle_t con_handle;uint16_t subrate_min;uint16_t subrate_max;uint16_t m
 .supervision_timeout = supervision_timeout};
 #pragma pack (pop)
 struct node * _node = call_fun(1072,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
-uint8_t gap_aes_encrypt(const uint8_t * key,
-const uint8_t * plaintext,
-gap_hci_cmd_complete_cb_t cb,
-void * user_data){LOG_D("gap_aes_encrypt...");remote_mem_map(key, 16 * sizeof(* key));remote_mem_map(plaintext, 16 * sizeof(* plaintext));
-#pragma pack (push, 1)
-struct _param {
-const uint8_t * key;const uint8_t * plaintext;gap_hci_cmd_complete_cb_t cb;void * user_data;} _param = {.key = key,
-.plaintext = plaintext,
-.cb = cb,
-.user_data = user_data};
-#pragma pack (pop)
-struct node * _node = call_fun(1073,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gap_rx_test_v2(uint8_t rx_channel,
 uint8_t phy,
 uint8_t modulation_index){LOG_D("gap_rx_test_v2...");;
@@ -691,7 +679,7 @@ uint8_t rx_channel;uint8_t phy;uint8_t modulation_index;} _param = {.rx_channel 
 .phy = phy,
 .modulation_index = modulation_index};
 #pragma pack (pop)
-struct node * _node = call_fun(1074,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1073,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gap_rx_test_v3(uint8_t rx_channel,
 uint8_t phy,
 uint8_t modulation_index,
@@ -711,7 +699,7 @@ uint8_t rx_channel;uint8_t phy;uint8_t modulation_index;uint8_t expected_cte_len
 .switching_pattern_length = switching_pattern_length,
 .antenna_ids = antenna_ids};
 #pragma pack (pop)
-struct node * _node = call_fun(1075,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1074,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gap_tx_test_v2(uint8_t tx_channel,
 uint8_t test_data_length,
 uint8_t packet_payload,
@@ -723,7 +711,7 @@ uint8_t tx_channel;uint8_t test_data_length;uint8_t packet_payload;uint8_t phy;}
 .packet_payload = packet_payload,
 .phy = phy};
 #pragma pack (pop)
-struct node * _node = call_fun(1076,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1075,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gap_tx_test_v4(uint8_t tx_channel,
 uint8_t test_data_length,
 uint8_t packet_payload,
@@ -745,13 +733,13 @@ uint8_t tx_channel;uint8_t test_data_length;uint8_t packet_payload;uint8_t phy;u
 .antenna_ids = antenna_ids,
 .tx_power_level = tx_power_level};
 #pragma pack (pop)
-struct node * _node = call_fun(1077,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1076,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gap_test_end(void){LOG_D("gap_test_end...");;
 #pragma pack (push, 1)
 struct _param {
 } _param = {};
 #pragma pack (pop)
-struct node * _node = call_fun(1078,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1077,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gap_vendor_tx_continuous_wave(uint8_t enable,
 uint8_t power_level_index,
 uint16_t freq){LOG_D("gap_vendor_tx_continuous_wave...");;
@@ -761,7 +749,7 @@ uint8_t enable;uint8_t power_level_index;uint16_t freq;} _param = {.enable = ena
 .power_level_index = power_level_index,
 .freq = freq};
 #pragma pack (pop)
-struct node * _node = call_fun(1079,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1078,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 int att_server_deferred_read_response(hci_con_handle_t con_handle,
 uint16_t attribute_handle,
 const uint8_t * value,
@@ -773,7 +761,7 @@ hci_con_handle_t con_handle;uint16_t attribute_handle;const uint8_t * value;uint
 .value = value,
 .value_len = value_len};
 #pragma pack (pop)
-struct node * _node = call_fun(1080,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1079,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 int att_server_notify(hci_con_handle_t con_handle,
 uint16_t attribute_handle,
 const uint8_t * value,
@@ -785,7 +773,7 @@ hci_con_handle_t con_handle;uint16_t attribute_handle;const uint8_t * value;uint
 .value = value,
 .value_len = value_len};
 #pragma pack (pop)
-struct node * _node = call_fun(1081,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1080,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 int att_server_indicate(hci_con_handle_t con_handle,
 uint16_t attribute_handle,
 const uint8_t * value,
@@ -797,13 +785,13 @@ hci_con_handle_t con_handle;uint16_t attribute_handle;const uint8_t * value;uint
 .value = value,
 .value_len = value_len};
 #pragma pack (pop)
-struct node * _node = call_fun(1082,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1081,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint16_t att_server_get_mtu(hci_con_handle_t con_handle){LOG_D("att_server_get_mtu...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1083,&_param,sizeof(_param));uint16_t _r= *(uint16_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1082,&_param,sizeof(_param));uint16_t _r= *(uint16_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_discover_primary_services(user_packet_handler_t callback,
 hci_con_handle_t con_handle){LOG_D("gatt_client_discover_primary_services...");;
 #pragma pack (push, 1)
@@ -811,7 +799,7 @@ struct _param {
 user_packet_handler_t callback;hci_con_handle_t con_handle;} _param = {.callback = callback,
 .con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1084,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1083,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_discover_primary_services_by_uuid16(user_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t uuid16){LOG_D("gatt_client_discover_primary_services_by_uuid16...");;
@@ -821,7 +809,7 @@ user_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t uuid16;} _pa
 .con_handle = con_handle,
 .uuid16 = uuid16};
 #pragma pack (pop)
-struct node * _node = call_fun(1085,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1084,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_discover_primary_services_by_uuid128(user_packet_handler_t callback,
 hci_con_handle_t con_handle,
 const uint8_t * uuid128){LOG_D("gatt_client_discover_primary_services_by_uuid128...");remote_mem_map(uuid128, 16 * sizeof(* uuid128));
@@ -831,7 +819,7 @@ user_packet_handler_t callback;hci_con_handle_t con_handle;const uint8_t * uuid1
 .con_handle = con_handle,
 .uuid128 = uuid128};
 #pragma pack (pop)
-struct node * _node = call_fun(1086,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1085,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_find_included_services_for_service(user_packet_handler_t callback,
 hci_con_handle_t con_handle,
 const uint16_t start_group_handle,
@@ -843,7 +831,7 @@ user_packet_handler_t callback;hci_con_handle_t con_handle;const uint16_t start_
 .start_group_handle = start_group_handle,
 .end_group_handle = end_group_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1087,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1086,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_discover_characteristics_for_service(user_packet_handler_t callback,
 hci_con_handle_t con_handle,
 const uint16_t start_group_handle,
@@ -855,7 +843,7 @@ user_packet_handler_t callback;hci_con_handle_t con_handle;const uint16_t start_
 .start_group_handle = start_group_handle,
 .end_group_handle = end_group_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1088,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1087,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_discover_characteristics_for_handle_range_by_uuid16(btstack_packet_handler_t callback,
 const hci_con_handle_t con_handle,
 const uint16_t start_handle,
@@ -869,7 +857,7 @@ btstack_packet_handler_t callback;const hci_con_handle_t con_handle;const uint16
 .end_handle = end_handle,
 .uuid16 = uuid16};
 #pragma pack (pop)
-struct node * _node = call_fun(1089,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1088,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_discover_characteristics_for_handle_range_by_uuid128(btstack_packet_handler_t callback,
 const hci_con_handle_t con_handle,
 const uint16_t start_handle,
@@ -883,7 +871,7 @@ btstack_packet_handler_t callback;const hci_con_handle_t con_handle;const uint16
 .end_handle = end_handle,
 .uuid128 = uuid128};
 #pragma pack (pop)
-struct node * _node = call_fun(1090,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1089,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_discover_characteristic_descriptors(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 gatt_client_characteristic_t * characteristic){LOG_D("gatt_client_discover_characteristic_descriptors...");remote_mem_map(characteristic, 1 * sizeof(* characteristic));
@@ -893,7 +881,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;gatt_client_charac
 .con_handle = con_handle,
 .characteristic = characteristic};
 #pragma pack (pop)
-struct node * _node = call_fun(1091,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1090,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_value_of_characteristic_using_value_handle(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t characteristic_value_handle){LOG_D("gatt_client_read_value_of_characteristic_using_value_handle...");;
@@ -903,7 +891,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t character
 .con_handle = con_handle,
 .characteristic_value_handle = characteristic_value_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1092,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1091,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_value_of_characteristics_by_uuid16(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t start_handle,
@@ -917,7 +905,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t start_han
 .end_handle = end_handle,
 .uuid16 = uuid16};
 #pragma pack (pop)
-struct node * _node = call_fun(1093,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1092,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_value_of_characteristics_by_uuid128(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t start_handle,
@@ -931,7 +919,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t start_han
 .end_handle = end_handle,
 .uuid128 = uuid128};
 #pragma pack (pop)
-struct node * _node = call_fun(1094,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1093,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_long_value_of_characteristic_using_value_handle(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t characteristic_value_handle){LOG_D("gatt_client_read_long_value_of_characteristic_using_value_handle...");;
@@ -941,7 +929,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t character
 .con_handle = con_handle,
 .characteristic_value_handle = characteristic_value_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1095,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1094,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_long_value_of_characteristic_using_value_handle_with_offset(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t characteristic_value_handle,
@@ -953,7 +941,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t character
 .characteristic_value_handle = characteristic_value_handle,
 .offset = offset};
 #pragma pack (pop)
-struct node * _node = call_fun(1096,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1095,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_multiple_characteristic_values(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 int num_value_handles,
@@ -965,7 +953,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;int num_value_hand
 .num_value_handles = num_value_handles,
 .value_handles = value_handles};
 #pragma pack (pop)
-struct node * _node = call_fun(1097,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1096,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_write_value_of_characteristic_without_response(hci_con_handle_t con_handle,
 uint16_t characteristic_value_handle,
 uint16_t length,
@@ -977,7 +965,7 @@ hci_con_handle_t con_handle;uint16_t characteristic_value_handle;uint16_t length
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1098,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1097,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_signed_write_without_response(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t handle,
@@ -991,7 +979,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t handle;ui
 .message_len = message_len,
 .message = message};
 #pragma pack (pop)
-struct node * _node = call_fun(1099,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1098,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_write_value_of_characteristic(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t characteristic_value_handle,
@@ -1005,7 +993,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t character
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1100,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1099,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_write_long_value_of_characteristic(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t characteristic_value_handle,
@@ -1019,7 +1007,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t character
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1101,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1100,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_write_long_value_of_characteristic_with_offset(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t characteristic_value_handle,
@@ -1035,7 +1023,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t character
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1102,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1101,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_reliable_write_long_value_of_characteristic(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t characteristic_value_handle,
@@ -1049,7 +1037,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t character
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1103,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1102,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t descriptor_handle){LOG_D("gatt_client_read_characteristic_descriptor_using_descriptor_handle...");;
@@ -1059,7 +1047,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t descripto
 .con_handle = con_handle,
 .descriptor_handle = descriptor_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1104,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1103,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_long_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t descriptor_handle){LOG_D("gatt_client_read_long_characteristic_descriptor_using_descriptor_handle...");;
@@ -1069,7 +1057,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t descripto
 .con_handle = con_handle,
 .descriptor_handle = descriptor_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1105,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1104,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_read_long_characteristic_descriptor_using_descriptor_handle_with_offset(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t descriptor_handle,
@@ -1081,7 +1069,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t descripto
 .descriptor_handle = descriptor_handle,
 .offset = offset};
 #pragma pack (pop)
-struct node * _node = call_fun(1106,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1105,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t descriptor_handle,
@@ -1095,7 +1083,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t descripto
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1107,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1106,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_write_long_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t descriptor_handle,
@@ -1109,7 +1097,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t descripto
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1108,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1107,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_write_long_characteristic_descriptor_using_descriptor_handle_with_offset(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t descriptor_handle,
@@ -1125,7 +1113,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t descripto
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1109,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1108,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_write_client_characteristic_configuration(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 gatt_client_characteristic_t * characteristic,
@@ -1137,7 +1125,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;gatt_client_charac
 .characteristic = characteristic,
 .configuration = configuration};
 #pragma pack (pop)
-struct node * _node = call_fun(1110,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1109,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_prepare_write(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle,
 uint16_t attribute_handle,
@@ -1153,7 +1141,7 @@ btstack_packet_handler_t callback;hci_con_handle_t con_handle;uint16_t attribute
 .length = length,
 .data = data};
 #pragma pack (pop)
-struct node * _node = call_fun(1111,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1110,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_execute_write(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle){LOG_D("gatt_client_execute_write...");;
 #pragma pack (push, 1)
@@ -1161,7 +1149,7 @@ struct _param {
 btstack_packet_handler_t callback;hci_con_handle_t con_handle;} _param = {.callback = callback,
 .con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1112,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1111,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 uint8_t gatt_client_cancel_write(btstack_packet_handler_t callback,
 hci_con_handle_t con_handle){LOG_D("gatt_client_cancel_write...");;
 #pragma pack (push, 1)
@@ -1169,13 +1157,13 @@ struct _param {
 btstack_packet_handler_t callback;hci_con_handle_t con_handle;} _param = {.callback = callback,
 .con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1113,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1112,&_param,sizeof(_param));uint8_t _r= *(uint8_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 int gatt_client_is_ready(hci_con_handle_t con_handle){LOG_D("gatt_client_is_ready...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1114,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1113,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void gatt_client_listen_for_characteristic_value_updates(gatt_client_notification_t * notification,
 btstack_packet_handler_t packet_handler,
 hci_con_handle_t con_handle,
@@ -1187,8 +1175,8 @@ gatt_client_notification_t * notification;btstack_packet_handler_t packet_handle
 .con_handle = con_handle,
 .value_handle = value_handle};
 #pragma pack (pop)
-call_void_fun(1115,&_param,sizeof(_param));}
-void sm_config(uint8_t enable,
+call_void_fun(1114,&_param,sizeof(_param));}
+int sm_config(uint8_t enable,
 io_capability_t io_capability,
 int request_security,
 const sm_persistent_t * persistent){LOG_D("sm_config...");;
@@ -1199,31 +1187,31 @@ uint8_t enable;io_capability_t io_capability;int request_security;const sm_persi
 .request_security = request_security,
 .persistent = persistent};
 #pragma pack (pop)
-call_void_fun(1116,&_param,sizeof(_param));}
+struct node * _node = call_fun(1115,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void sm_private_random_address_generation_set_mode(gap_random_address_type_t random_address_type){LOG_D("sm_private_random_address_generation_set_mode...");;
 #pragma pack (push, 1)
 struct _param {
 gap_random_address_type_t random_address_type;} _param = {.random_address_type = random_address_type};
 #pragma pack (pop)
-call_void_fun(1117,&_param,sizeof(_param));}
+call_void_fun(1116,&_param,sizeof(_param));}
 gap_random_address_type_t sm_private_random_address_generation_get_mode(void){LOG_D("sm_private_random_address_generation_get_mode...");;
 #pragma pack (push, 1)
 struct _param {
 } _param = {};
 #pragma pack (pop)
-struct node * _node = call_fun(1118,&_param,sizeof(_param));gap_random_address_type_t _r= *(gap_random_address_type_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1117,&_param,sizeof(_param));gap_random_address_type_t _r= *(gap_random_address_type_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void sm_private_random_address_generation_set_update_period(int period_ms){LOG_D("sm_private_random_address_generation_set_update_period...");;
 #pragma pack (push, 1)
 struct _param {
 int period_ms;} _param = {.period_ms = period_ms};
 #pragma pack (pop)
-call_void_fun(1119,&_param,sizeof(_param));}
+call_void_fun(1118,&_param,sizeof(_param));}
 void sm_set_accepted_stk_generation_methods(uint8_t accepted_stk_generation_methods){LOG_D("sm_set_accepted_stk_generation_methods...");;
 #pragma pack (push, 1)
 struct _param {
 uint8_t accepted_stk_generation_methods;} _param = {.accepted_stk_generation_methods = accepted_stk_generation_methods};
 #pragma pack (pop)
-call_void_fun(1120,&_param,sizeof(_param));}
+call_void_fun(1119,&_param,sizeof(_param));}
 void sm_set_encryption_key_size_range(uint8_t min_size,
 uint8_t max_size){LOG_D("sm_set_encryption_key_size_range...");;
 #pragma pack (push, 1)
@@ -1231,13 +1219,13 @@ struct _param {
 uint8_t min_size;uint8_t max_size;} _param = {.min_size = min_size,
 .max_size = max_size};
 #pragma pack (pop)
-call_void_fun(1121,&_param,sizeof(_param));}
+call_void_fun(1120,&_param,sizeof(_param));}
 void sm_set_authentication_requirements(uint8_t auth_req){LOG_D("sm_set_authentication_requirements...");;
 #pragma pack (push, 1)
 struct _param {
 uint8_t auth_req;} _param = {.auth_req = auth_req};
 #pragma pack (pop)
-call_void_fun(1122,&_param,sizeof(_param));}
+call_void_fun(1121,&_param,sizeof(_param));}
 int sm_address_resolution_lookup(uint8_t addr_type,
 bd_addr_t addr){LOG_D("sm_address_resolution_lookup...");remote_mem_map(addr, BD_ADDR_LEN * sizeof(* addr));
 #pragma pack (push, 1)
@@ -1245,7 +1233,7 @@ struct _param {
 uint8_t addr_type;const uint8_t * addr;} _param = {.addr_type = addr_type,
 .addr = addr};
 #pragma pack (pop)
-struct node * _node = call_fun(1123,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1122,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void sm_config_conn(hci_con_handle_t con_handle,
 io_capability_t io_capability,
 uint8_t auth_req){LOG_D("sm_config_conn...");;
@@ -1255,19 +1243,19 @@ hci_con_handle_t con_handle;io_capability_t io_capability;uint8_t auth_req;} _pa
 .io_capability = io_capability,
 .auth_req = auth_req};
 #pragma pack (pop)
-call_void_fun(1124,&_param,sizeof(_param));}
+call_void_fun(1123,&_param,sizeof(_param));}
 void sm_bonding_decline(hci_con_handle_t con_handle){LOG_D("sm_bonding_decline...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1125,&_param,sizeof(_param));}
+call_void_fun(1124,&_param,sizeof(_param));}
 void sm_just_works_confirm(hci_con_handle_t con_handle){LOG_D("sm_just_works_confirm...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1126,&_param,sizeof(_param));}
+call_void_fun(1125,&_param,sizeof(_param));}
 void sm_passkey_input(hci_con_handle_t con_handle,
 uint32_t passkey){LOG_D("sm_passkey_input...");;
 #pragma pack (push, 1)
@@ -1275,67 +1263,67 @@ struct _param {
 hci_con_handle_t con_handle;uint32_t passkey;} _param = {.con_handle = con_handle,
 .passkey = passkey};
 #pragma pack (pop)
-call_void_fun(1127,&_param,sizeof(_param));}
+call_void_fun(1126,&_param,sizeof(_param));}
 void sm_send_security_request(hci_con_handle_t con_handle){LOG_D("sm_send_security_request...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1128,&_param,sizeof(_param));}
+call_void_fun(1127,&_param,sizeof(_param));}
 int sm_encryption_key_size(hci_con_handle_t con_handle){LOG_D("sm_encryption_key_size...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1129,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1128,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 int sm_authenticated(hci_con_handle_t con_handle){LOG_D("sm_authenticated...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1130,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1129,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 authorization_state_t sm_authorization_state(hci_con_handle_t con_handle){LOG_D("sm_authorization_state...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1131,&_param,sizeof(_param));authorization_state_t _r= *(authorization_state_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1130,&_param,sizeof(_param));authorization_state_t _r= *(authorization_state_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void sm_request_pairing(hci_con_handle_t con_handle){LOG_D("sm_request_pairing...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1132,&_param,sizeof(_param));}
+call_void_fun(1131,&_param,sizeof(_param));}
 void sm_authorization_decline(hci_con_handle_t con_handle){LOG_D("sm_authorization_decline...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1133,&_param,sizeof(_param));}
+call_void_fun(1132,&_param,sizeof(_param));}
 void sm_authorization_grant(hci_con_handle_t con_handle){LOG_D("sm_authorization_grant...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1134,&_param,sizeof(_param));}
+call_void_fun(1133,&_param,sizeof(_param));}
 int sm_le_device_key(hci_con_handle_t con_handle){LOG_D("sm_le_device_key...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1135,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1134,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void kv_remove_all(void){LOG_D("kv_remove_all...");;
 #pragma pack (push, 1)
 struct _param {
 } _param = {};
 #pragma pack (pop)
-call_void_fun(1136,&_param,sizeof(_param));}
+call_void_fun(1135,&_param,sizeof(_param));}
 void kv_remove(const kvkey_t key){LOG_D("kv_remove...");;
 #pragma pack (push, 1)
 struct _param {
 const kvkey_t key;} _param = {.key = key};
 #pragma pack (pop)
-call_void_fun(1137,&_param,sizeof(_param));}
+call_void_fun(1136,&_param,sizeof(_param));}
 int kv_put(const kvkey_t key,
 const uint8_t * data,
 int16_t length){LOG_D("kv_put...");remote_mem_map(data, length * sizeof(* data));
@@ -1345,22 +1333,22 @@ const kvkey_t key;const uint8_t * data;int16_t length;} _param = {.key = key,
 .data = data,
 .length = length};
 #pragma pack (pop)
-struct node * _node = call_fun(1138,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1137,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void kv_value_modified(void){LOG_D("kv_value_modified...");;
 #pragma pack (push, 1)
 struct _param {
 } _param = {};
 #pragma pack (pop)
-call_void_fun(1139,&_param,sizeof(_param));}
+call_void_fun(1138,&_param,sizeof(_param));}
 void kv_commit(int flag_always_write){LOG_D("kv_commit...");;
 #pragma pack (push, 1)
 struct _param {
 int flag_always_write;} _param = {.flag_always_write = flag_always_write};
 #pragma pack (pop)
-call_void_fun(1140,&_param,sizeof(_param));}
+call_void_fun(1139,&_param,sizeof(_param));}
 void le_device_db_remove_key(int index){LOG_D("le_device_db_remove_key...");;
 #pragma pack (push, 1)
 struct _param {
 int index;} _param = {.index = index};
 #pragma pack (pop)
-call_void_fun(1141,&_param,sizeof(_param));}
+call_void_fun(1140,&_param,sizeof(_param));}

@@ -113,7 +113,7 @@ typedef enum
     PLATFORM_CB_EVT_LLE_INIT,
 
     // when allocation on heap fails (heap out of memory)
-    // NOTE: param (void *data) is cased from an integer identifying which heap is OOM:
+    // NOTE: param (void *data) is casted from an integer identifying which heap is OOM:
     //      * 0: FreeRTOS's heap;
     //      * 1: Link Layer's heap;
     //      * 2: Link Layer's task pool.

@@ -781,6 +781,26 @@ static __INLINE hci_con_handle_t sm_event_numeric_comparison_get_handle(const ui
 }
 
 /**
+ * @brief Get field addr_type from event SM_EVENT_NUMERIC_COMPARISON_REQUEST
+ * @param event packet
+ * @return addr_type
+ * @note: btstack_type 1
+ */
+static __INLINE uint8_t sm_event_numeric_comparison_get_addr_type(const uint8_t * event){
+    return *decode_event_offset(event, uint8_t, 4);
+}
+
+/**
+ * @brief Get field address from event SM_EVENT_NUMERIC_COMPARISON_REQUEST
+ * @param event packet
+ * @param Pointer to storage for address
+ * @note: btstack_type B
+ */
+static __INLINE void sm_event_numeric_comparison_get_address(const uint8_t * event, uint8_t * address){
+    reverse_bd_addr(decode_event_offset(event, uint8_t, 5), address);
+}
+
+/**
  * @brief Get field compare value from event SM_EVENT_NUMERIC_COMPARISON_REQUEST
  * @param event packet
  * @return passkey
@@ -788,6 +808,24 @@ static __INLINE hci_con_handle_t sm_event_numeric_comparison_get_handle(const ui
  */
 static __INLINE uint32_t sm_event_numeric_comparison_get_compare_value(const uint8_t * event){
     return little_endian_read_32(event, 11);
+}
+
+/**
+ * @brief Get IRK from event SM_EVENT_IRK_DHK_RESULT
+ * @param event packet
+ * @return irk
+ */
+static __INLINE const uint8_t *sm_event_irk_dhk_result_get_irk(const uint8_t *event) {
+    return *decode_event_offset(event, uint8_t *, 2);
+}
+
+/**
+ * @brief Get DHK from event SM_EVENT_IRK_DHK_RESULT
+ * @param event packet
+ * @return dhk
+ */
+static __INLINE const uint8_t *sm_event_irk_dhk_result_get_dhk(const uint8_t *event) {
+    return *decode_event_offset(event, uint8_t *, 2 + sizeof(uintptr_t));
 }
 
 /**

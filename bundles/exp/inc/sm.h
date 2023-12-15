@@ -55,14 +55,21 @@ typedef enum {
 /**
  * @brief Security configurations
  *
+ * These configurations can updated dynamically. Be careful: dynamically toggle
+ * `enable` will cause problems when SM is still working on any connection.
+ *
+ * After IRK/DHK are derived from `persistent`, `SM_EVENT_IRK_DHK_RESULT` is emitted.
+ *
  * @param[in]   enable              Enable (Bypass) SM (default: Disabled)
  *                                  When disabled, SM can be enabled per connection by `sm_config_conn`.
  * @param[in]   io_capability       Default IO Capabilities
  * @param[in]   request_security    Let peripheral request an encrypted connection right after connecting
  *                                  Not used normally. Bonding is triggered by access to protected attributes in ATT Server
  * @param[in]   persistent          persistent data for security & privacy
+ * @return                          0 if ok else non-0. Possible causes for non-0 return value:
+ *                                      * generation of internal keys(IRK/ERK) are under going.
  */
-void sm_config(uint8_t enable,
+int sm_config(uint8_t enable,
                io_capability_t io_capability,
                int   request_security,
                const sm_persistent_t *persistent);

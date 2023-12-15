@@ -106,6 +106,14 @@ typedef struct {
  * @param[in] keyscan_set       Initial parameter struct
  * @return                      0 if success else non-0
  */
+int KEYSCAN_InitializeScanParameter(const KEYSCAN_SetStateStruct* keyscan_set);
+
+/**
+ * @brief Initialize keyscan module and start scan
+ *
+ * @param[in] keyscan_set       Initial parameter struct
+ * @return                      0 if success else non-0
+ */
 int KEYSCAN_Initialize(const KEYSCAN_SetStateStruct* keyscan_set);
 
 /**

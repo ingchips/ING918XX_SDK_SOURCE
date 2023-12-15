@@ -16,9 +16,10 @@ typedef struct le_device_memory_db {
 
     // Identification
     uint8_t addr_type;
-    uint8_t  key_size;
-    uint8_t  authenticated;
-    uint8_t  authorized;
+    uint8_t key_size;
+    uint8_t authenticated;
+    uint8_t authorized:1;
+    uint8_t sm_sc:1;
 
     bd_addr_t addr;
     sm_key_t irk;
@@ -36,7 +37,6 @@ typedef struct le_device_memory_db {
     // Signed Writes by us
     sm_key_t local_csrk;
     uint32_t local_counter;
-
 } le_device_memory_db_t;
 
 #pragma pack (pop)
