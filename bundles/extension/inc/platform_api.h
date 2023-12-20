@@ -464,8 +464,13 @@ typedef enum
     PLATFORM_CFG_PS_DBG_4,                  // Debugging parameters for ING916. Default (0)
                                             // Bit [0]: `platform_shutdown` uses DEEPER SLEEP (1) or SLEEP (0)
     PLATFORM_CFG_FAST_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (fast deep sleep mode) in us.
-                                                 // Requirement: < PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION
+                                                 // Requirement: <= PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION
+                                                 // When equal to PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, fast deep sleep mode is not used
                                                  // Only available for ING916 (default: ~2000us)
+    PLATFORM_CFG_AUTO_REDUCE_CLOCK_FREQ,    // automatic reduce CPU clock frequency in these circumstances:
+                                            // * the default IDLE procedure
+                                            // * when entering sleep modes
+                                            // Only available for ING916 (default: Enabled)
 } platform_cfg_item_t;
 
 typedef enum
@@ -782,6 +787,55 @@ void platform_set_abs_timer(f_platform_timer_callback callback, uint32_t abs_tim
  ****************************************************************************************
  */
 void platform_delete_timer(f_platform_timer_callback callback);
+
+typedef void * platform_us_timer_handle_t;
+
+/**
+ ****************************************************************************************
+ * @brief Callback function of microsecond (us) resolution timer
+ *
+ * @param[in]   timer_handle    handle of this timer
+ * @param[in]   time_us         internal timer counter when invoke this callback
+ * @param[in]   param           user parameter
+ * @return                      (must be NULL)
+ ****************************************************************************************
+ */
+typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer_handle,
+    uint64_t time_us, void *param);
+
+/**
+ ****************************************************************************************
+ * @brief Setup a single-shot platform timer with microsecond (us) resolution
+ *
+ * Although `abs_time` is in microsecond (us), callback is **not guaranteed**
+ * to be invoked with such resolution.
+ *
+ * This type of timers are much like `platform_set_timer`, except that:
+ * 1. resolution is higher;
+ * 2. callback is invoked in the context of an ISR.
+ *
+ * @param[in]  abs_time         when `platform_get_us_timer() == abs_time`, callback is invoked.
+ * @param[in]  callback         the callback function
+ * @param[in]  param            user parameter
+ * @return                      a non-NULL value when succeeded. Otherwise, NULL.
+ ****************************************************************************************
+ */
+platform_us_timer_handle_t platform_create_us_timer(uint64_t abs_time,
+    f_platform_us_timer_callback callback, void *param);
+
+/**
+ ****************************************************************************************
+ * @brief Cancel a platform timer previously created by `platform_create_us_timer`
+ *
+ * When a timer not needed any more, use this API to cancel it.
+ *
+ * @param[in]  timer_handle     handle of the timer
+ * @return                      0 if succeeded else non-0
+ *                              Note: non-0 means the callback function of the timer
+ *                                    is executing.
+ ****************************************************************************************
+ */
+int platform_cancel_us_timer(platform_us_timer_handle_t timer_handle);
 
 /**
  ****************************************************************************************
