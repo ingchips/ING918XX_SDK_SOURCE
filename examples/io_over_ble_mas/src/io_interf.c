@@ -136,6 +136,7 @@ static void config_uart(uint32_t freq, uint32_t baud)
 
 void io_interf_setup_peripherals()
 {
+    SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ClkGate_APB_PinCtrl);
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART1));
     config_uart(OSC_CLK_FREQ, 921600);
 
