@@ -468,7 +468,8 @@ typedef struct
     __IO uint32_t      _NOT_USED_4[442];
     __IO uint32_t      UsbDConfig;      //0x0800
     __IO uint32_t      UsbDControl;     //0x0804
-    __IO uint32_t      _NOT_USED_5[2];
+    __IO uint32_t      UsbDStatus;      //0x0808
+    __IO uint32_t      _NOT_USED_5[1];
     __IO uint32_t      UsbDIMask;       //0x0810
     __IO uint32_t      UsbDOMask;       //0x0814
     __IO uint32_t      UsbDInt;         //0x0818

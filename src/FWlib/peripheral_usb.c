@@ -465,7 +465,10 @@ void USB_NewTransfer(uint8_t ep, int32_t size, uint16_t nbPacket)
         break;
         default:
           AHB_USB->UsbDIxConfig[epNum-1].DISizex = ((size & 0x7FFFF) << 0) | ((nbPacket & 0x3FF) << 19) | (1 << 29);
-          AHB_USB->UsbDIxConfig[epNum-1].DICtrlx |= (1U << 31) | (0x1 << 26);
+          if (((AHB_USB->UsbDIxConfig[epNum-1].DICtrlx >> 18) & 0x3) == USB_EP_TYPE_ISO)
+              AHB_USB->UsbDIxConfig[epNum-1].DICtrlx |= (1U << 31) | (0x1 << 26) | ((AHB_USB->UsbDStatus & (1 << 8))? (1U << 28) : (1U << 29));
+          else
+              AHB_USB->UsbDIxConfig[epNum-1].DICtrlx |= (1U << 31) | (0x1 << 26);
         break;
       }
 
