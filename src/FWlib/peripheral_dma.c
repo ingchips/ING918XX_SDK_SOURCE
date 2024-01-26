@@ -250,11 +250,20 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
     case SYSCTRL_DMA_I2S_TX:
         return &APB_I2S->TX;
     case SYSCTRL_DMA_PWM0:
-        return &APB_PWM->Channels[0].DmaData;
+        if (PWM_GetMode(0) == PWM_WORK_MODE_PCAP)
+            return &APB_PWM->PCAPChannels[0].Ctrl1;
+        else 
+            return &APB_PWM->Channels[0].DmaData;
     case SYSCTRL_DMA_PWM1:
-        return &APB_PWM->Channels[1].DmaData;
+        if (PWM_GetMode(1) == PWM_WORK_MODE_PCAP)
+            return &APB_PWM->PCAPChannels[1].Ctrl1;
+        else 
+            return &APB_PWM->Channels[1].DmaData;
     case SYSCTRL_DMA_PWM2:
-        return &APB_PWM->Channels[2].DmaData;
+        if (PWM_GetMode(2) == PWM_WORK_MODE_PCAP)
+            return &APB_PWM->PCAPChannels[2].Ctrl1;
+        else 
+            return &APB_PWM->Channels[2].DmaData;
 
     default:
         return 0;

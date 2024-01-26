@@ -109,6 +109,11 @@ void PWM_SetMode(const uint8_t channel_index, const PWM_WorkMode_t mode)
     PWM_SetRegBit(channel_index, 0x00, 7, mode, 3);
 }
 
+PWM_WorkMode_t PWM_GetMode(const uint8_t channel_index)
+{
+    return (APB_PWM->Channels[channel_index].Ctrl0 >> 7) & 0x7ul;
+}
+
 void PWM_HaltCtrlEnable2(const uint8_t channel_index, const uint8_t enable_a, const uint8_t enable_b)
 {
     PWM_SetRegBit(channel_index, 0x00, 2, (enable_b << 1) | enable_a, 2);
