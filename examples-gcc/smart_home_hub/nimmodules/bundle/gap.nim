@@ -270,12 +270,6 @@ type ##  Accept all advertising packets except directed advertising packets not
                                         ##  addressed to this device shall be ignored
     SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED, ##  Accept all advertising packets except directed advertising packets
                                           ##  where the initiator's identity address does not address this device
-    SCAN_ACCEPT_ALL_EXCEPT_IDENTITY_NOT_MATCH, ##  Accept all advertising packets except:
-                                              ##  1.  advertising packets where the advertiser's identity address is not in
-                                              ##      the White List; and
-                                              ##  2.  directed advertising packets where the initiator's identity address
-                                              ##      does not address this device
-    SCAN_ACCEPT_WLIST_EXCEPT_IDENTITY_NOT_MATCH
 
 
 ## *

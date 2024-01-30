@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -50,7 +50,7 @@ const char *fmt_rtc_timestamp(char *str, uint32_t rtc_value);
  * @brief Format RTC value into HH:MM:SS.milli_sec,micro_sec
  *
  * @param[in]   str         buffer to hode the string
- * @param[in]   rtc_value   RTC value  (full 48bit) 
+ * @param[in]   rtc_value   RTC value  (full 48bit)
  * @return                  str
  ****************************************************************************************
  */
@@ -67,7 +67,7 @@ const char *fmt_rtc_timestamp_full(char *str, uint64_t rtc_value);
  */
 const char *fmt_us_timestamp(char *str, uint64_t us_time);
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

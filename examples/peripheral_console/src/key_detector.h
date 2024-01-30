@@ -4,7 +4,12 @@
 #include "peripheral_gpio.h"
 
 #ifndef KEY_PIN
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define KEY_PIN     GIO_GPIO_9
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#define KEY_PIN     GIO_GPIO_4
+#endif
 #endif
 
 #ifndef VALUE_PRESSED

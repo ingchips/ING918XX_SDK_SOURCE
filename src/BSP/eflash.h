@@ -210,7 +210,7 @@ int flash_prepare_factory_data(void);
  *
  * When such information does not exists, NULL is returned.
  *
- * Call `flash_prepare_factory_data` before using this.
+ * This function uses `flash_prepare_factory_data()`.
  *
  * @return                      die information
  */
@@ -221,7 +221,7 @@ const die_info_t *flash_get_die_info(void);
  *
  * When such information does not exists, NULL is returned.
  *
- * Call `flash_prepare_factory_data` before using this.
+ * This function uses `flash_prepare_factory_data()`.
  *
  * @return                      factory data
  */
@@ -233,7 +233,7 @@ const factory_calib_data_t *flash_get_factory_calib_data(void);
  * Note: There are multiple versions of ADC calibration data,
  *       so, here, a plain pointer is returned.
  *
- * Call `flash_prepare_factory_data` before using this.
+ * This function uses `flash_prepare_factory_data()`.
  *
  * See `adc_calib_ver` in `factory_calib_data_t`.
  *

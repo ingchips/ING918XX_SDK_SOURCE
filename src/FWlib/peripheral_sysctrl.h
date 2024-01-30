@@ -1180,6 +1180,8 @@ uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
  *
  *      Depend on `flash_get_factory_calib_data` of `eflash.c`.
  *
+ *      This function uses `flash_prepare_factory_data()`.
+ *
  * For ING918: This function does nothing.
  *
  * @return                      0 if initialized else failed

@@ -40,9 +40,13 @@ typedef uint8_t bd_addr_t[BD_ADDR_LEN];
  typedef enum {
     BD_ADDR_TYPE_LE_PUBLIC = 0,
     BD_ADDR_TYPE_LE_RANDOM = 0x01,
-    BD_ADDR_TYPE_LE_RESOVLED_PUB = 0x02,
-    BD_ADDR_TYPE_LE_RESOVLED_RAN = 0x03
+    BD_ADDR_TYPE_LE_RESOLVED_PUB = 0x02,
+    BD_ADDR_TYPE_LE_RESOLVED_RAN = 0x03
 } bd_addr_type_t;
+
+// back-compatibility for typos
+#define BD_ADDR_TYPE_LE_RESOVLED_PUB        BD_ADDR_TYPE_LE_RESOLVED_PUB
+#define BD_ADDR_TYPE_LE_RESOVLED_RAN        BD_ADDR_TYPE_LE_RESOLVED_RAN
 
 /**
  * @brief link key

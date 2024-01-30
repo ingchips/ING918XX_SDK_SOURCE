@@ -8,10 +8,11 @@ This example demonstrates how to:
 * Report _fake_ mouse movements;
 * Use resolvable address;
 * Use high duty adv;
+* Use LL Privacy (ING916xx);
 * Use QDEC (ING916xx).
 
 Note:
-    * Press `KEY_4` for sevaral seconds to clear bonding
+    * Press `KEY_4` for several seconds to clear bonding
     * Test Result:
         * OK: RedMi Note5 (MIUI 11.0.2)
         * OK: iPhone XR (iOS 14.5)
