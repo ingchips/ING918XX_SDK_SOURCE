@@ -286,7 +286,7 @@ SADC_adcIputMode ADC_GetInputMode(void);
  * | [100]  | 7Vp/16  | 9Vp/16  |
  * | [101]  | 15Vp/32 | 17Vp/32 |
  * other pga-para values are invalid
- * 
+ *
  * Please get a good pga-para as parameter and call 'ADC_PgaParaSet' to set it.
  * So how to get a good pga-para? Please see below.
  * Steps to get a good pga-para:
@@ -295,7 +295,7 @@ SADC_adcIputMode ADC_GetInputMode(void);
  * 2.Compare your range with the range between Vmin and Vmax in every row of those
  * table in the above, and let yours included in the second one;
  * 3.Do step-2 repeatedly with every row and find the biggest pga-para, is the best one.
- * 
+ *
  * When PGA is disabled:
  * 1.pga-para=0 in differential mode, pga-para=1 in single-ended mode;
  * 2.Call ADC_PgaParaSet is useless, but it into effect when enable PGA next time.
@@ -364,7 +364,7 @@ uint16_t ADC_GetData(const uint32_t data);
  * @brief Read ADC data in specified channel
  * @note Using ADC_PopFifoData to get the whole data, and get that data's
  * channel id and ADC data by ADC_GetDataChannel & ADC_GetData is recommended.
- * 
+ *
  * @param[in] channel_id     channel ID
  * @return                   ADC data
  */
@@ -375,7 +375,7 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id);
  * Example:
  * 1.single-mode with CH0/CH4/CH6 are enabled, it returns 0x51.
  * 2.differential-mode with CH1 is enabled, it returns 0x2.
- * 
+ *
  * @param[in] channel_id     ADC input mode, see 'SADC_adcIputMode'
  * @return                   ADC-Channel's enabled status
  */
@@ -398,6 +398,8 @@ void ADC_VrefCalibration(void);
  * @brief Initialization of ADC FT-Calibration
  * @note Should call this function before do ADC conversion or get voltage value.
  * And this function should be used again if 'ADC_AdcClose' is called.
+ *
+ * This function uses `flash_prepare_factory_data()`.
  */
 void ADC_ftInit(void);
 
@@ -439,13 +441,13 @@ void ADC_Calibration(SADC_adcIputMode mode);
  * @param[in] inputMode      ADC input mode, see 'SADC_adcIputMode'
  * @param[in] loopDelay      ADC loop delay(0-0xffffffff)
  */
-void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, 
+void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
                  SADC_pgaPara pgaPara,
                  uint8_t pgaEnable,
-                 SADC_channelId ch, 
-                 uint8_t enNum, 
-                 uint8_t dmaEnNum, 
-                 SADC_adcIputMode inputMode, 
+                 SADC_channelId ch,
+                 uint8_t enNum,
+                 uint8_t dmaEnNum,
+                 SADC_adcIputMode inputMode,
                  uint32_t loopDelay);
 
 #endif

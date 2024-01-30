@@ -71,6 +71,10 @@ Reset_Handler   PROC
                 ; this push is consumed by main
                 PUSH    {R1, LR}
 
+                ; save msp
+                MRS     R1, MSP
+                MSR     PSP, R1
+
                 LDR     R0, =__scatterload
                 BX      R0
 
@@ -84,6 +88,10 @@ main            PROC
 
                 LDR     R0, =app_main
                 BLX     R0
+
+				; restore msp
+                MRS     R1, PSP
+                MSR     MSP, R1
 
                 POP     {R1, PC}
 

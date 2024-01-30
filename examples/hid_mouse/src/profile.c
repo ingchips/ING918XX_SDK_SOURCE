@@ -22,6 +22,14 @@
 
 #include "../../peripheral_console/src/key_detector.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #ifndef USE_LL_PRIVACY
+        #define USE_LL_PRIVACY      1
+    #endif
+#else
+    #define USE_LL_PRIVACY      0
+#endif
+
 enum
 {
     KV_KEY_IR = KV_USER_KEY_START,
@@ -81,6 +89,8 @@ int is_clear_pairing_pending = 0;
 int waiting_for_paring = 0;
 bd_addr_type_t      peer_addr_type;
 bd_addr_t           peer_addr;
+
+static const uint8_t *local_irk;
 
 uint16_t att_handle_protocol_mode;
 uint16_t att_handle_hid_ctrl_point;
@@ -176,6 +186,7 @@ const int8_t delta_xy[][2] =
  {7,8},{6,9},{4,9},{4,10},{3,10},{1,11},{1,10}};
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#ifndef SIMULATION
 static uint16_t StepCal(uint16_t preData, uint16_t data, int8_t *dir)
 {
     uint16_t step = data - preData;
@@ -187,6 +198,7 @@ static uint16_t StepCal(uint16_t preData, uint16_t data, int8_t *dir)
     }
     return step;
 }
+#endif
 #endif
 
 void mouse_report_movement(void)
@@ -268,6 +280,112 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 2000, .max_events = 0}};
 
+#if (USE_LL_PRIVACY == 1)
+
+static void populate_pairing_data_to_resolving_list(const uint8_t *local_irk)
+{
+    uint8_t enable = 0;
+    gap_clear_resolving_list();
+    gap_clear_white_lists();
+
+    le_device_memory_db_iter_t device_db_iter;
+    le_device_db_iter_init(&device_db_iter);
+    while (le_device_db_iter_next(&device_db_iter))
+    {
+        const le_device_memory_db_t *dev = le_device_db_iter_cur(&device_db_iter);
+
+        gap_add_dev_to_resolving_list(dev->addr, (bd_addr_type_t)dev->addr_type, dev->irk, local_irk);
+        gap_add_whitelist(dev->addr, (bd_addr_type_t)dev->addr_type);
+
+        enable = 1;
+    }
+
+    gap_set_addr_resolution_enable(enable);
+}
+
+static void setup_pairing_adv(void)
+{
+    bd_addr_t      dir_peer_addr = {0};
+    bd_addr_type_t dir_peer_type = BD_ADDR_TYPE_LE_PUBLIC;
+    bd_addr_type_t own_addr_type = BD_ADDR_TYPE_LE_RANDOM;
+    adv_filter_policy_t filter_policy = ADV_FILTER_ALLOW_ALL;
+
+    if (kv_get(KV_KEY_PEER_USE_RPA, NULL) != NULL)
+    {
+        le_device_memory_db_iter_t device_db_iter;
+        le_device_db_iter_init(&device_db_iter);
+        const le_device_memory_db_t *dev = le_device_db_iter_next(&device_db_iter);
+
+        populate_pairing_data_to_resolving_list(local_irk);
+        dir_peer_type = (bd_addr_type_t)dev->addr_type;
+        memcpy(dir_peer_addr, dev->addr, sizeof(dir_peer_addr));
+        own_addr_type = BD_ADDR_TYPE_LE_RESOLVED_RAN;
+        filter_policy = ADV_FILTER_ALLOW_SCAN_WLST_CON_WLST;
+    }
+    else
+    {
+        gap_clear_resolving_list();
+        gap_clear_white_lists();
+        gap_set_addr_resolution_enable(0);
+    }
+
+    gap_set_ext_adv_para(0,
+                            CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
+                            0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
+                            PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
+                            own_addr_type,             // Own_Address_Type
+                            dir_peer_type,             // Peer_Address_Type
+                            dir_peer_addr,             // Peer_Address
+                            filter_policy,             // Advertising_Filter_Policy
+                            0x00,                      // Advertising_Tx_Power
+                            PHY_1M,                    // Primary_Advertising_PHY
+                            0,                         // Secondary_Advertising_Max_Skip
+                            PHY_1M,                    // Secondary_Advertising_PHY
+                            0x00,                      // Advertising_SID
+                            0x00);                     // Scan_Request_Notification_Enable
+    gap_set_ext_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
+    gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
+}
+
+static void setup_directed_adv(void)
+{
+    bd_addr_t      dir_peer_addr;
+    bd_addr_type_t dir_peer_type;
+    bd_addr_type_t own_addr_type = BD_ADDR_TYPE_LE_RANDOM;
+
+    platform_printf("setup_directed_adv\n");
+    le_device_memory_db_iter_t device_db_iter;
+    le_device_db_iter_init(&device_db_iter);
+    const le_device_memory_db_t *dev = le_device_db_iter_next(&device_db_iter);
+
+    dir_peer_type = (bd_addr_type_t)dev->addr_type;
+    memcpy(dir_peer_addr, dev->addr, sizeof(dir_peer_addr));
+
+    if (kv_get(KV_KEY_PEER_USE_RPA, NULL) != NULL)
+    {
+        populate_pairing_data_to_resolving_list(local_irk);
+        own_addr_type = BD_ADDR_TYPE_LE_RESOLVED_RAN;
+    }
+
+    platform_printf("dir peer addr: "); printf_hexdump(dir_peer_addr, 6); platform_printf("\n");
+
+    gap_set_ext_adv_para(0,
+                            CONNECTABLE_ADV_BIT | DIRECT_ADV_BIT | LEGACY_PDU_BIT | HIGH_DUTY_CIR_DIR_ADV_BIT,
+                            0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
+                            PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
+                            own_addr_type,             // Own_Address_Type
+                            dir_peer_type,             // Peer_Address_Type
+                            dir_peer_addr,             // Peer_Address
+                            ADV_FILTER_ALLOW_SCAN_WLST_CON_WLST, // Advertising_Filter_Policy
+                            0x00,                      // Advertising_Tx_Power
+                            PHY_1M,                    // Primary_Advertising_PHY
+                            0,                         // Secondary_Advertising_Max_Skip
+                            PHY_1M,                    // Secondary_Advertising_PHY
+                            0x00,                      // Advertising_SID
+                            0x00);                     // Scan_Request_Notification_Enable
+}
+#else
+
 static void setup_pairing_adv(void)
 {
     gap_set_ext_adv_para(0,
@@ -348,6 +466,7 @@ static void setup_directed_adv(void)
                             0x00,                      // Advertising_SID
                             0x00);                     // Scan_Request_Notification_Enable
 }
+#endif
 
 uint8_t *init_service(void);
 
@@ -364,6 +483,7 @@ void clear_pairing_data(void)
     le_device_db_iter_init(&device_db_iter);
     while (le_device_db_iter_next(&device_db_iter))
         le_device_db_remove_key(device_db_iter.key);
+    kv_remove(KV_KEY_PEER_USE_RPA);
     update_ir();
     kv_commit(0);
     platform_write_persistent_reg(1);
@@ -406,6 +526,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             {
                 const le_meta_event_enh_create_conn_complete_t *complete =
                     decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
@@ -517,11 +638,15 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
         notify_enable = 1;
         att_handle_notify = att_handle_report;
+        platform_printf("RESOLVING_SUCCEEDED\n");
         break;
     case SM_EVENT_IDENTITY_RESOLVING_FAILED:
         platform_printf("RESOLVING_FAILED\n");
         if (0 == waiting_for_paring)
             gap_disconnect(sm_event_identity_resolving_failed_get_handle(packet));
+        break;
+    case SM_EVENT_IRK_DHK_RESULT:
+        local_irk = sm_event_irk_dhk_result_get_irk(packet);
         break;
     case SM_EVENT_STATE_CHANGED:
         {
@@ -538,9 +663,13 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
                 {
                     uint8_t flag = 1;
                     kv_put(KV_KEY_PEER_USE_RPA, &flag, sizeof(flag));
+                    platform_printf("Peer is using RPA.\n");
                 }
                 else
+                {
+                    platform_printf("Peer is NOT using RPA.\n");
                     kv_remove(KV_KEY_PEER_USE_RPA);
+                }
                 kv_commit(1);     // continue to SM_FINAL_REESTABLISHED
             case SM_FINAL_REESTABLISHED:
                 l2cap_request_connection_parameter_update(state_changed->conn_handle, 6, 10, 0, 300);

@@ -9,9 +9,9 @@
 ; * Copyright (C) 2012 ARM Limited. All rights reserved.
 ; *
 ; * @par
-; * ARM Limited (ARM) is supplying this software for use with Cortex-M 
-; * processor based microcontrollers.  This file can be freely distributed 
-; * within development tools that are supporting such ARM based processors. 
+; * ARM Limited (ARM) is supplying this software for use with Cortex-M
+; * processor based microcontrollers.  This file can be freely distributed
+; * within development tools that are supporting such ARM based processors.
 ; *
 ; * @par
 ; * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
@@ -35,7 +35,7 @@ __initial_sp
 
                 EXPORT  __heap_base
                 EXPORT  __heap_limit
-                
+
 Heap_Size       EQU     0
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
@@ -53,7 +53,7 @@ __heap_limit
 
 __Vectors       DCD     0                         ; Top of Stack
                 DCD     Reset_Handler             ; Reset Handler
-                
+
 __Vectors_End
 
 __Vectors_Size  EQU     __Vectors_End - __Vectors
@@ -71,9 +71,13 @@ Reset_Handler   PROC
                 ; this push is consumed by main
                 PUSH    {R1, LR}
 
+                ; save msp
+                MRS     R1, MSP
+                MSR     PSP, R1
+
                 LDR     R0, =__scatterload
                 BX      R0
-                
+
                 ENDP
 
                 ALIGN
@@ -84,11 +88,15 @@ main            PROC
 
                 LDR     R0, =app_main
                 BLX     R0
-                
+
+				; restore msp
+                MRS     R1, PSP
+                MSR     MSP, R1
+
                 POP     {R1, PC}
 
                 ENDP
-                
+
                 ALIGN
 
                 END

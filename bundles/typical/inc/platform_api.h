@@ -327,7 +327,7 @@ typedef struct
 
 /**
  ****************************************************************************************
- * @brief Get heap status
+ * @brief Get status of built-in RTOS's heap
  *
  * @param[out]  status              heap status
  ****************************************************************************************
@@ -609,7 +609,15 @@ uint64_t platform_get_us_time(void);
  */
 void platform_printf(const char *format, ...);
 
-// NOTE: for debug only
+/**
+ ****************************************************************************************
+ * @brief Set public device address
+ *
+ * NOTE: This is for debug only.
+ *
+ * @param[in]  addr             device address in little-endian.
+ ****************************************************************************************
+ */
 void sysSetPublicDeviceAddr(const unsigned char *addr);
 
 // set rf source

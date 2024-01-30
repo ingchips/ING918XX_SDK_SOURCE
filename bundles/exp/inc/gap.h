@@ -70,7 +70,7 @@ void gap_disconnect_all(void);
  * @param[in] addtype               BLE address type
  * @return                          0: Message is sent to controller
  */
-uint8_t gap_add_whitelist(const uint8_t *address,bd_addr_type_t  addtype);
+uint8_t gap_add_whitelist(const uint8_t *address, bd_addr_type_t  addtype);
 
 /**
  * @brief remove whitelist from controller
@@ -79,7 +79,7 @@ uint8_t gap_add_whitelist(const uint8_t *address,bd_addr_type_t  addtype);
  * @param addtype               BLE address type
  * @return                      0: Message is sent to controller
  */
-uint8_t gap_remove_whitelist(const uint8_t *address,bd_addr_type_t addtype);
+uint8_t gap_remove_whitelist(const uint8_t *address, bd_addr_type_t addtype);
 
 /**
  * @brief clear white lists in controller
@@ -87,6 +87,99 @@ uint8_t gap_remove_whitelist(const uint8_t *address,bd_addr_type_t addtype);
  * @return             0: message sent out  others: failed
  */
 uint8_t gap_clear_white_lists(void);
+
+/**
+ * @brief Add one device to the resolving list used to generate and resolve
+ * Resolvable Private Addresses in the Controller.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @param peer_irk              IRK of the peer device
+ * @param local_irk             IRK of the local device
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_add_dev_to_resolving_list(const uint8_t *address, bd_addr_type_t addtype,
+    const uint8_t *peer_irk, const uint8_t *local_irk);
+
+/**
+ * @brief Remove one device from the resolving list used to resolve Resolvable
+ * Private Addresses in the Controller.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_remove_dev_from_resolving_list(const uint8_t *address, bd_addr_type_t addtype);
+
+/**
+ * @brief Remove all devices from the resolving list used to resolve Resolvable
+ * Private Addresses in the Controller.
+ *
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_clear_resolving_list(void);
+
+// LE Privacy Mode
+typedef enum privacy_mode
+{
+    PRIVACY_MODE_NETWORK = 0, // Network Privacy Mode (default)
+                              // Identity address is not accepted if IRK is available
+    PRIVACY_MODE_DEVICE  = 1, // Device Privacy Mode
+                              // Identity address is accepted even if IRK is available
+} privacy_mode_t;
+
+/**
+ * @brief Specify the privacy mode to be used for a given entry on the resolving list.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @param privacy_mode          privacy mode for this peer device
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_set_privacy_mode(const uint8_t *address, bd_addr_type_t addtype,
+    privacy_mode_t privacy_mode);
+
+/**
+ * @brief Get the current peer Resolvable Private Address being used for the
+ * corresponding peer Public and Random (static) Identity Address.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_read_peer_resolving_addr(const uint8_t *address, bd_addr_type_t addtype);
+
+/**
+ * @brief Get the current local Resolvable Private Address being used for the
+ * corresponding peer Identity Address.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_read_local_resolving_addr(const uint8_t *address, bd_addr_type_t addtype);
+
+/**
+ * @brief Enable resolution of Resolvable Private Addresses in the Controller.
+ *
+ * @param enable                address resolution enable
+ *                              0: disabled (default)
+ *                              1: enabled
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_set_addr_resolution_enable(const uint8_t enable);
+
+/**
+ * @brief Set the length of time the Controller uses a Resolvable Private Address
+ * before a new resolvable private address is generated and starts being used.
+ *
+ * @param rpa_timeout           RPA_Timeout measured in seconds
+ *                                  Range: 0x0001 to 0x0E10
+ *                                  Time range: 1 s to 1 hour
+ *                                  Default: 0x0384 (900 s or 15 minutes)
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_set_resolvable_private_addr_timeout(uint16_t rpa_timeout);
 
 /**
  * @brief read rssi value of a appointed hci connection
@@ -290,13 +383,13 @@ typedef enum scan_filter_policy
     SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
     // Accept all advertising packets except directed advertising packets
     // where the initiator's identity address does not address this device
-    SCAN_ACCEPT_ALL_EXCEPT_IDENTITY_NOT_MATCH,
+    // SCAN_ACCEPT_ALL_EXCEPT_IDENTITY_NOT_MATCH,
     // Accept all advertising packets except:
     // 1.  advertising packets where the advertiser's identity address is not in
     //     the White List; and
     // 2.  directed advertising packets where the initiator's identity address
     //     does not address this device
-    SCAN_ACCEPT_WLIST_EXCEPT_IDENTITY_NOT_MATCH
+    // SCAN_ACCEPT_WLIST_EXCEPT_IDENTITY_NOT_MATCH
 } scan_filter_policy_t;
 
 /**
@@ -721,6 +814,7 @@ typedef struct {
     // Supervision timeout for the LE Link, unit is 10ms
     uint16_t supervision_timeout;
     // Informative parameter recommending the min/max length of connection event needed for this LE connection
+    // unit is 625us
     uint16_t min_ce_len;
     uint16_t max_ce_len;
 } conn_para_t;
