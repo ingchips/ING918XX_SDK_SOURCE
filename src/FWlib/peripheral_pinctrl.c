@@ -371,7 +371,7 @@ int PINCTRL_SelSwIn(uint8_t io_pin_dio, uint8_t io_pin_clk)
     return 0;
 }
 
-int PINCTRL_SelSpiIn(spi_port_t port,
+static int PINCTRL_SelSpiIn0(spi_port_t port,
                       uint8_t io_pin_clk,
                       uint8_t io_pin_csn,
                       uint8_t io_pin_hold,
@@ -403,6 +403,34 @@ int PINCTRL_SelSpiIn(spi_port_t port,
     if (PINCTRL_SelInput(io_pin_wp,  source_tab[port][3], reg_tab[port][3], 5, bit_offset_tab[port][3])) return -4;
     if (PINCTRL_SelInput(io_pin_miso,source_tab[port][4], reg_tab[port][4], 5, bit_offset_tab[port][4])) return -5;
     if (PINCTRL_SelInput(io_pin_mosi,source_tab[port][5], reg_tab[port][5], 5, bit_offset_tab[port][5])) return -6;
+    return 0;
+}
+
+int PINCTRL_SelSpiPins(spi_port_t port,
+                      uint8_t io_pin_clk,
+                      uint8_t io_pin_csn,
+                      uint8_t io_pin_hold,
+                      uint8_t io_pin_wp,
+                      uint8_t io_pin_miso,
+                      uint8_t io_pin_mosi)
+{
+    static const io_source_t source_tab[][6] =
+    {
+        {IO_SOURCE_SPI0_CLK_OUT, IO_SOURCE_SPI0_CSN_OUT, IO_SOURCE_SPI0_HOLD_OUT, IO_SOURCE_SPI0_WP_OUT, IO_SOURCE_SPI0_MISO_OUT, IO_SOURCE_SPI0_MOSI_OUT},
+        {IO_SOURCE_SPI1_CLK_OUT, IO_SOURCE_SPI1_CSN_OUT, IO_SOURCE_SPI1_HOLD_OUT, IO_SOURCE_SPI1_WP_OUT, IO_SOURCE_SPI1_MISO_OUT, IO_SOURCE_SPI1_MOSI_OUT},
+    };
+
+    int r = PINCTRL_SelSpiIn0(port, io_pin_clk, io_pin_csn, io_pin_hold, io_pin_wp,
+                             io_pin_miso, io_pin_mosi);
+
+    if (r) return r;
+
+    if (PINCTRL_SetPadMux(io_pin_clk, source_tab[port][0])) return -1;
+    if (PINCTRL_SetPadMux(io_pin_csn, source_tab[port][1])) return -2;
+    if (PINCTRL_SetPadMux(io_pin_hold,source_tab[port][2])) return -3;
+    if (PINCTRL_SetPadMux(io_pin_wp,  source_tab[port][3])) return -4;
+    if (PINCTRL_SetPadMux(io_pin_miso,source_tab[port][4])) return -5;
+    if (PINCTRL_SetPadMux(io_pin_mosi,source_tab[port][5])) return -6;
     return 0;
 }
 
