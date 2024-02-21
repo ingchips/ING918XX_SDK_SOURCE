@@ -45,6 +45,26 @@ void ll_config(ll_config_item_t item, uint32_t value);
 
 /**
  ****************************************************************************************
+ * @brief Get states of LL
+ *
+ * Note: Parameters can be set to NULL if the relevant states are not needed.
+ *
+ * @param[out]  adv_states[1]   states of all advertising sets
+ *                                  Bit[n]: advertising set n is enabled
+ * @param[out]  conn_states[1]  states of all connections
+ *                                  Bit[n]: connection n is active
+ * @param[out]  sync_states[1]  states of all synchronized periodic adv sets
+ *                                  Bit[n]: sync_handle n is active
+ * @param[out]  other_states[1] other states:
+ *                                  Bit[0]: if scanning is ON
+ *                                  Bit[1]: if initiating is ON
+ ****************************************************************************************
+ */
+void ll_get_states(uint32_t *adv_states, uint32_t *conn_states,
+                   uint32_t *sync_states, uint32_t *other_states);
+
+/**
+ ****************************************************************************************
  * @brief set Tx power range
  *
  * Note: This range applies to all following advertisings, initiations, and connections.

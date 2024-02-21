@@ -70,6 +70,7 @@ static const char help[] =  "commands:\n"
                             "syncgap                             demo sync GAP APIs\n"
                             "lock   freq                         lock to freq (MHz). 0 to unlock\n"
                             "re-conn                             demo of abort & re-connect\n"
+                            "status                              show controller status\n"
                             ;
 
 void cmd_help(const char *param)
@@ -404,6 +405,7 @@ void cmd_stop(const char *param)
 void set_phy(int phy);
 void change_conn_param(int interval, int latency, int timeout);
 void ble_re_connect(void);
+void ble_show_status(void);
 
 void cmd_phy(const char *param)
 {
@@ -450,6 +452,11 @@ void cmd_lock(const char *param)
 static void cmd_reconn(const char *param)
 {
     ble_re_connect();
+}
+
+static void cmd_status(const char *param)
+{
+    ble_show_status();
 }
 
 static cmd_t cmds[] =
@@ -593,6 +600,10 @@ static cmd_t cmds[] =
     {
         .cmd = "re-conn",
         .handler = cmd_reconn
+    },
+    {
+        .cmd = "status",
+        .handler = cmd_status
     }
 };
 
