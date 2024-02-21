@@ -653,6 +653,57 @@ void ble_re_connect(void)
     btstack_push_user_runnable(abort_connection, NULL, 0);
 }
 
+static void show_bits(const uint32_t v)
+{
+    int i;
+    for (i = 0; i < 32; i++)
+    {
+        if (v & (1u << i))
+            printf("%d, ", i);
+    }
+    printf("\n");
+}
+
+void ble_show_status(void)
+{
+    uint32_t adv_states = 0;
+    uint32_t conn_states = 0;
+    uint32_t sync_states = 0;
+    uint32_t other_states = 0;
+    ll_get_states(&adv_states, &conn_states, &sync_states, &other_states);
+    if ((adv_states | conn_states | sync_states | other_states) == 0)
+    {
+        printf("Controller is IDLE.\n");
+        return;
+    }
+
+    printf("Controller is:\n");
+    if (adv_states != 0)
+    {
+        printf("* Advertising : ");
+        show_bits(adv_states);
+    }
+    if (conn_states != 0)
+    {
+        printf("* Connected   : ");
+        show_bits(conn_states);
+    }
+    if (sync_states != 0)
+    {
+        printf("* Synchronized: ");
+        show_bits(sync_states);
+    }
+    if (other_states & 1)
+    {
+        printf("* Scanning\n");
+    }
+    if (other_states & 2)
+    {
+        printf("* Initiating\n");
+    }
+    printf("\n");
+}
+
 static void demo_synced_gap_apis(struct btstack_synced_runner *runner, void *user_data)
 {
     int err;

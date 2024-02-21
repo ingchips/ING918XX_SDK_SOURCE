@@ -1,7 +1,7 @@
 {
  "bundle_meta": {
   "rom": {
-   "size": 159352,
+   "size": 159556,
    "base": 33562624
   },
   "ram": {
@@ -12,7 +12,7 @@
    "base": 33722368
   },
   "version": [
-   2,3,10]
+   2,3,11]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",

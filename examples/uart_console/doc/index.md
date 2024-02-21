@@ -167,6 +167,12 @@ Firstly, start advertising and get connected with _ING BLE_ app.
     Pass `HCI_SUBEVENT_LE_VENDOR_CONNECTION_ABORTED` and timing information to
     another device, then the connection can be resumed on that device, and _handover_ is achieved.
 
+### Others
+
+* `status`
+
+    This command will show states of Controller.
+
 ## Trace
 
 This example has 4 trace sink drivers (i.e. how to export/save trace data):

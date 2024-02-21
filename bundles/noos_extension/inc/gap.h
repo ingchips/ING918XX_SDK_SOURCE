@@ -54,10 +54,26 @@ uint8_t gap_set_random_device_address(const uint8_t *address);
 /**
  * @brief Disconnect connection with handle
  *
+ * This is equivalent to `gap_disconnect2(handle, 0x13)`.
+ *
  * @param handle                Used to identify an advertising set. Range: 0x00 to 0xEF
  * @return                      0: Message is sent out or the connection already release
  */
 uint8_t gap_disconnect(hci_con_handle_t handle);
+
+/**
+ * @brief Disconnect connection with handle
+ *
+ * @param handle                Used to identify an advertising set. Range: 0x00 to 0xEF
+ * @param reason                Reason:
+ *                                  - Authentication Failure error code (0x05)
+ *                                  - Other End Terminated Connection error codes (0x13 to 0x15)
+ *                                  - Unsupported Remote Feature error code (0x1A)
+ *                                  - Pairing with Unit Key Not Supported error code (0x29)
+ *                                  - Unacceptable Connection Parameters error code (0x3B)
+ * @return                      0: Message is sent out or the connection already release
+ */
+uint8_t gap_disconnect2(hci_con_handle_t handle, uint8_t reason);
 
 /**
  * @brief disconnect multi-connections
