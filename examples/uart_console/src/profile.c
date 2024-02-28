@@ -16,6 +16,7 @@
 #include "trace.h"
 #include "btstack_mt.h"
 #include "ll_api.h"
+#include "bluetooth_hci.h"
 
 #include "uart_console.h"
 #include "gatt_client_util.h"
@@ -966,6 +967,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 0x00);                     // Scan_Request_Notification_Enable
         do_set_data();
         gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
+        gap_read_white_lists_size();
         break;
 
     case HCI_EVENT_LE_META:
@@ -1221,6 +1223,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 platform_printf("COMMAND_COMPLETE: 0x%02x for OPCODE %04X\n",
                     *returns, hci_event_command_complete_get_command_opcode(packet));
+                break;
+            }
+            switch (hci_event_command_complete_get_command_opcode(packet))
+            {
+            case HCI_LE_RD_WLST_SIZE_CMD_OPCODE:
+                platform_printf("Accept List Size: %d\n", returns[1]);
+                break;
+
+            default:
                 break;
             }
         }
