@@ -78,6 +78,10 @@ main            PROC
                 LDR     R0, =app_main
                 BLX     R0
 
+                ; restore msp
+                MRS     R1, PSP
+                MSR     MSP, R1
+
                 POP     {PC}
 
                 ENDP
