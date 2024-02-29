@@ -111,7 +111,7 @@ void PWM_SetMode(const uint8_t channel_index, const PWM_WorkMode_t mode)
 
 PWM_WorkMode_t PWM_GetMode(const uint8_t channel_index)
 {
-    return (APB_PWM->Channels[channel_index].Ctrl0 >> 7) & 0x7ul;
+    return (PWM_WorkMode_t)((APB_PWM->Channels[channel_index].Ctrl0 >> 7) & 0x7ul);
 }
 
 void PWM_HaltCtrlEnable2(const uint8_t channel_index, const uint8_t enable_a, const uint8_t enable_b)

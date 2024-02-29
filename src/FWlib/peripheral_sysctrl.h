@@ -1065,6 +1065,24 @@ void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_c
 #define SYSCTRL_D_CACHE_AS_MEM_BASE_ADDR 0x2000E000
 #define SYSCTRL_I_CACHE_AS_MEM_BASE_ADDR 0x20010000
 
+/**
+ * @brief Control the usage of D-Cache
+ *
+ * Ref to `SYSCTRL_CacheControl`.
+ *
+ * @param[in] d_cache           usage of D-Cache (default: AS_CACHE)
+ */
+void SYSCTRL_DCacheControl(SYSCTRL_CacheMemCtrl d_cache);
+
+/**
+ * @brief Control the usage of I-Cache
+ *
+ * Ref to `SYSCTRL_CacheControl`.
+ *
+ * @param[in] i_cache           usage of I-Cache (default: AS_CACHE)
+ */
+void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache);
+
 #endif
 
 /**
