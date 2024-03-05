@@ -170,6 +170,7 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #include "rom_tools.h"
+#include "peripheral_sysctrl.h"
 
 typedef void (* f_erase_sector)(uint32_t addr);
 typedef void (* f_void)(void);
@@ -293,17 +294,36 @@ __attribute__((naked)) static uint32_t security_page_read(uint32_t addr, uint32_
 }
 #endif
 
-uint32_t read_flash_security(uint32_t addr)
+static uint32_t read_flash_security0(uint32_t addr, void *prog)
 {
     uint32_t ret;
-    uint32_t prog[sizeof(prog_security_page_read) / 4];
-    memcpy(prog, prog_security_page_read, sizeof(prog));
+    memcpy(prog, prog_security_page_read, sizeof(prog_security_page_read));
     FLASH_PRE_OPS();
     {
         ret = security_page_read(addr, (uint32_t)prog);
     }
     FLASH_POST_OPS();
     return ret;
+}
+
+uint32_t read_flash_security(uint32_t addr)
+{
+    uint32_t prog[sizeof(prog_security_page_read) / 4];
+    if ((uintptr_t)prog < 0x40000000)
+    {
+        return read_flash_security0(addr, prog);
+    }
+    else
+    {
+        uint32_t ret;
+        void *prog2 = (void *)SYSCTRL_I_CACHE_AS_MEM_BASE_ADDR;
+        SYSCTRL_ICacheControl(SYSCTRL_MEM_BLOCK_AS_SYS_MEM);
+        {
+            ret = read_flash_security0(addr, prog2);
+        }
+        SYSCTRL_ICacheControl(SYSCTRL_MEM_BLOCK_AS_CACHE);
+        return ret;
+    }
 }
 
 #define FACTORY_DATA_LOC    (0x02000000 + 0x1000)

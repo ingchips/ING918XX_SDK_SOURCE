@@ -147,6 +147,20 @@ void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t address
  *
  * After generated, _confirm_ and _random_ are passed to the callback.
  *
+ * Each call of this function will generate a new P256 key pair that will used
+ * in **all** subsequent pairing attempts. When OOB is used, it is Developers's
+ * responsibility to refresh key pair properly. If OOB is not used, SM will
+ * re-generate a new key pair for each pairing attempt.
+ *
+ * BLUETOOTH CORE SPECIFICATION Version 5.4 | Vol 3, Part H, Section 2.3.6:
+ *
+ * > To protect a device's private key, a device should implement a method to
+ * > prevent an attacker from retrieving useful information about the device's private
+ * > key. For this purpose, a device should change its private key after every pairing
+ * > (successful or failed). Otherwise, it should change its private key whenever S +
+ * > 3F > 8, where S is the number of successful pairings and F the number of
+ * > failed attempts since the key was last changed.
+ *
  * App can then pass these information together with device address to peer
  * through OOB communication.
  *
@@ -155,7 +169,8 @@ void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t address
  *      @param[out] random                  local random value (type `sm_key_t`)
  *
  * @param callback
- * @return             0 if started without error else non-0
+ * @return               0: started without error
+ *                      -1: previous OOB data is not generated yet
  */
 // int sm_sc_generate_oob_data(void (*callback)(const uint8_t *confirm, const uint8_t *random));
 // WARNING: ^^^ this API is not available in this release

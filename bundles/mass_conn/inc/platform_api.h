@@ -374,7 +374,7 @@ void platform_switch_app(const uint32_t app_addr);
  *        in power saving mode.
  *
  * For ING918: the least FOUR significant bits of `value` are saved;
- * For ING916: the least TWO  significant bits of `value` are saved.
+ * For ING916: the least FIVE significant bits of `value` are saved.
  *
  * @param[in] value              value
  ****************************************************************************************

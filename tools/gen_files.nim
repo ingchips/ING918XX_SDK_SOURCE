@@ -1,5 +1,6 @@
 import strutils, complex, algorithm, sugar
 import os, json, tables, std/jsonutils, std/strformat
+import std/threadpool
 
 type
     SymDict = Table[string, string]
@@ -55,20 +56,22 @@ const
     HEX_DATA = 0x00u8
     HEX_EOF = 0x01u8
 
+proc fmt_hex_line(result: var string, loc: uint32, t: uint8, b: seq[byte]) =
+    result = ":"
+    var sum: uint8 = 0
+    for v in [cast[byte](len(b)), cast[byte](loc shr 8), cast[byte](loc and 0xffu8), t]:
+        result.add v.toHex(2)
+        sum += v
+    for v in b:
+        result.add v.toHex(2)
+        sum += v
+    sum = not(sum) + 1
+    result.add sum.toHex(2)
+
 proc fmt_hex_line(loc: uint32, t: uint8, b: seq[byte]): string =
     result = newStringOfCap(100)
-    result.add ":"
-    var all: seq[byte] = @[cast[byte](len(b)),
-                   cast[byte](loc shr 8),
-                   cast[byte](loc and 0xffu8),
-                   t]
-    all.add(b)
-    var sum: uint8 = 0
-    for i in 0 ..< all.len:
-        result.add fmt"{all[i]:02X}"
-        sum += all[i]
-    sum = not(sum) + 1
-    result.add fmt"{sum:02X}"
+    fmt_hex_line(result, loc, t, b)
+    return result
 
 proc fmt_hex_ext_addr(loc: uint32): string =
     var u1 = cast[uint8](loc shr 8)
@@ -92,13 +95,15 @@ proc dump_hex(f: File, b: seq[byte]; location: uint32) =
     var last_ext_addr: uint32 = 0xffffffffu32
     var loc = location
     var l = b.partition(16)
+    var s = newStringOfCap(100)
     for i in 0 ..< l.len:
         var t = l[i]
         var ext = loc shr 16
         if ext != last_ext_addr:
             f.writeLine(fmt_hex_ext_addr(ext))
             last_ext_addr = ext
-        f.writeLine(fmt_hex_line(loc and 0xffffu32, HEX_DATA, t))
+        s.fmt_hex_line(loc and 0xffffu32, HEX_DATA, t)
+        f.writeLine(s)
         loc += + 16
 
 proc loadBin(f: string): seq[byte] =
@@ -111,7 +116,8 @@ proc hex_xxxx(p, target: string, address: uint32, more: proc (f: File) {.closure
     defer: f.close()
     var bin = loadBin(joinPath(p, "platform.bin"))
     dump_hex(f, bin, address)
-    more(f)
+    {.cast(gcsafe).}:
+        more(f)
     f.writeLine(fmt_hex_line(0x00u32, HEX_EOF, @[]))
 
 proc hex_918(p, target: string, more: proc (f: File) {.closure.}) =
@@ -138,9 +144,21 @@ proc hex_918(p: string) =
     hex_918(p, "platform_entry_lock.hex",
         (f: File) => dump_hex(f, entylock, 0x087fec))
 
+proc process_bin(x: string) =
+    var p = splitPath(x)[0]
+    var series = toLower splitPath(p)[1]
+    if series.startsWith("ing918"):
+        hex_918(p)
+    elif series.startsWith("ing916"):
+        hex_916(p)
+    else:
+        debugEcho "unknown: ", series
+
 if paramCount() == 0:
     echo "usage: gen_files /path/to/sdk/bundles"
     quit(0)
+
+echo "Please wait for a while..."
 
 var sdk = paramStr(1)
 echo "searching files..."
@@ -151,16 +169,10 @@ for x in walkDirRec(sdk):
 
 echo "generating symdefs..."
 for x in all_binaries:
-    gen_symdefs x
+    spawn gen_symdefs x
+sync()
 
 echo "generating hex files..."
 for x in all_binaries:
-    var p = splitPath(x)[0]
-    var series = toLower splitPath(p)[1]
-    if series.startsWith("ing918"):
-        hex_918(p)
-    elif series.startsWith("ing916"):
-        hex_916(p)
-    else:
-        debugEcho "unknown: ", series
-
+    spawn process_bin(x)
+sync()

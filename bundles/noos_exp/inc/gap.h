@@ -105,6 +105,13 @@ uint8_t gap_remove_whitelist(const uint8_t *address, bd_addr_type_t addtype);
 uint8_t gap_clear_white_lists(void);
 
 /**
+ * @brief read white lists size in controller
+ *
+ * @return             0: message sent out  others: failed
+ */
+uint8_t gap_read_white_lists_size(void);
+
+/**
  * @brief Add one device to the resolving list used to generate and resolve
  * Resolvable Private Addresses in the Controller.
  *
@@ -427,6 +434,9 @@ uint8_t gap_set_ext_scan_para(const bd_addr_type_t own_addr_type, const scan_fil
 /**
  * @brief to set the extended scan response data for an advertising set
  *
+ * Note: Scan response data is cleared after `gap_set_ext_adv_para()` on the same
+ * advertising set handle.
+ *
  * @param adv_handle           handle of advertising set handle
  *
  * @param length               length of advertising data
@@ -591,6 +601,9 @@ typedef enum adv_data_frag_pref
 /**
  * @brief to set extended advertising data
  *
+ * Note: Advertising data is cleared after `gap_set_ext_adv_para()` on the same
+ * advertising set handle.
+ *
  * @param adv_handle           advertising set handle.
  *
  * @param length               advertising data length
@@ -605,6 +618,9 @@ uint8_t gap_set_ext_adv_data(const uint8_t adv_handle, uint16_t length, const ui
 
 /**
  * @brief LE Set Periodic Advertising Data command
+ *
+ * Note: Advertising data is cleared after `gap_set_ext_adv_para()` and
+ *       `gap_set_periodic_adv_para()` on the same advertising set handle.
  *
  * @param adv_handle           advertising set handle.
  *

@@ -198,8 +198,10 @@ typedef struct
  *   - factory data is ready in flash, or
  *   - factory data can be found in security pages and copied.
  *
- * This function can be called at the beginning of app (providing that
- * stack lies in EXECUTABLE memory region).
+ * This function can be called at the beginning of app.
+ *
+ * WARNING: If stack does not lie in EXECUTABLE memory region, I-Cache will be
+ * switched to RAM mode temporarily and then restored to Cache.
  *
  * @return                      0 if succeeded else non-0
  */
