@@ -2,7 +2,7 @@
  "watchdog": true,
  "bundle_meta": {
   "rom": {
-   "size": 136152,
+   "size": 136148,
    "base": 16384
   },
   "ram": {
@@ -13,7 +13,7 @@
    "base": 155648
   },
   "version": [
-   1,9,50]
+   1,9,51]
  },
  "tc_dir": "C:\\Programs\\gcc-arm-none-eabi-10.3-2021.10\\bin",
  "eflash_addr": "0x42000",
