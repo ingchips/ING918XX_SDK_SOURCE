@@ -1,5 +1,5 @@
-#ifndef _btstack_sync_h
-#define _btstack_sync_h
+#ifndef _btstack_helper_h
+#define _btstack_helper_h
 
 #include <stdint.h>
 #include <string.h>
