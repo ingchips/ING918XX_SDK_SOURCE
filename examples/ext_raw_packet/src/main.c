@@ -11,7 +11,7 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
                     "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
                     "R12: 0x%08X\n",
-                    info->pc, info->lr, info->psr, 
+                    info->pc, info->lr, info->psr,
                     info->r0, info->r1, info->r2, info->r3, info->r12);
     for (;;);
 }
@@ -57,32 +57,15 @@ void config_uart(uint32_t freq, uint32_t baud)
     config.ClockFrequency    = freq;
     config.BaudRate          = baud;
 
-    apUART_Initialize(PRINT_PORT, &config, 0);
+    apUART_Initialize(PRINT_PORT, &config, 1 << bsUART_RECEIVE_INTENAB);
 }
 
 void setup_peripherals(void)
 {
-    int i;
     config_uart(OSC_CLK_FREQ, 115200);
-
-    PINCTRL_EnableAllAntSelPins();
 }
 
-uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
-{
-    (void)(dummy);
-    (void)(user_data);
-    setup_peripherals();
-    return 0;
-}
-
-uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
-{
-    (void)(dummy);
-    (void)(user_data);
-    // TODO: return 0 if deep sleep is not allowed now; else deep sleep is allowed
-    return 0;
-}
+extern uint32_t uart_isr(void *user_data);
 
 int app_main()
 {
@@ -95,14 +78,12 @@ int app_main()
     // setup handlers
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);    
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
+
+    platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
 
     setup_peripherals();
 
     return 0;
 }
-
-
 

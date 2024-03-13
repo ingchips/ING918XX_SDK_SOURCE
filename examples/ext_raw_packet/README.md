@@ -2,7 +2,6 @@
 
 This example demonstrates how to:
 
-* Tx/Rx raw packets using "extension" bundle.
+* Tx/Rx raw packets using "extension" bundle;
+* Make ING916 into a tester for Freq Offset Tester.
 
-Note: Build with macro "FOR\_TX=1" & "FOR\_TX=0"
-to get a pair of Tx/Rx apps.
