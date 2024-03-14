@@ -2,7 +2,7 @@
  "watchdog": false,
  "bundle_meta": {
   "rom": {
-   "size": 152504,
+   "size": 152552,
    "base": 16384
   },
   "ram": {
@@ -13,7 +13,7 @@
    "base": 172032
   },
   "version": [
-   1,9,52]
+   1,9,53]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
