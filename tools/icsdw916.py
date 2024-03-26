@@ -27,7 +27,6 @@ class intf_base(object):
         self.SEND_RAM_DATA=b'#$u2ram'
         self.ERASE_SECTOR  = b'#$stera'
         self.CMD_LAUNCH  = b'#$j2fsh'
-        self.CMD_JUMPD   = b'#$jumpd'
         self.CMD_SET_BAUD= b'#$sbaud'
         self.CMD_FLASH_SET  = b'#$fshst'
         self.CMD_LOCK    = b'#$lockk'

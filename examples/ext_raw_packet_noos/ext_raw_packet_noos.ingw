@@ -1,8 +1,14 @@
 {
  "watchdog": false,
  "bundle_meta": {
+  "var": {
+   "link_layer_features": {
+    "value": "3ff9ff0700000000",
+    "addr": 148136
+   }
+  },
   "rom": {
-   "size": 136040,
+   "size": 136100,
    "base": 16384
   },
   "ram": {
@@ -13,7 +19,7 @@
    "base": 155648
   },
   "version": [
-   1,9,53]
+   1,9,54]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",

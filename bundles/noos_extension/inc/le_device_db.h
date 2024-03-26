@@ -24,7 +24,7 @@ typedef struct le_device_memory_db {
     bd_addr_t addr;
     sm_key_t irk;
 
-    // Stored pairing information allows to re-establish an enncrypted connection
+    // Stored pairing information allows to re-establish an encrypted connection
     // with a peripheral that doesn't have any persistent memory
     sm_key_t ltk;
     uint16_t ediv;
