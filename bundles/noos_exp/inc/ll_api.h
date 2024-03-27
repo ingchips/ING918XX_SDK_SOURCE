@@ -33,6 +33,25 @@ typedef enum ll_config_item_e
     LL_CFG_FEATURE_SET_MASK,
 } ll_config_item_t;
 
+typedef struct ll_capabilities
+{
+    const uint8_t *features;                // Link Layer features
+    uint16_t adv_set_num;                   // max number of advertising sets
+    uint16_t conn_num;                      // max number of connections
+    uint16_t whitelist_size;                // size of whitelists
+    uint16_t resolving_list_size;           // size of resolving list
+    uint16_t periodic_advertiser_list_size; // size of periodic advertiser list
+    uint16_t adv_dup_filter_size;           // size of items for filtering
+                                            // advertising duplication
+} ll_capabilities_t;
+
+/**
+ * @brief Get Link Layer capabilities.
+ *
+ * @param[out]  capabilities    see `ll_capabilities_t`.
+ */
+void ll_get_capabilities(ll_capabilities_t *capabilities);
+
 /**
  ****************************************************************************************
  * @brief Config LL specific parameters

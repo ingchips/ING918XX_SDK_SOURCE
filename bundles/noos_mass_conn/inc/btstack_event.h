@@ -107,6 +107,21 @@ uint32_t btstack_push_user_runnable(f_btstack_user_runnable fun, void *data, con
  */
 uint8_t btstack_reset(void);
 
+typedef struct btstack_capabilities
+{
+    uint16_t adv_set_num;   // max number of advertising sets
+    uint16_t conn_num;      // max number of connections
+    uint16_t max_mtu;       // max MTU
+    uint16_t device_db_num; // max number of devices in database
+} btstack_capabilities_t;
+
+/**
+ * @brief Get BT stack capabilities.
+ *
+ * @param[out]  capabilities    see `btstack_capabilities_t`.
+ */
+void btstack_get_capabilities(btstack_capabilities_t *capabilities);
+
 /***
  * @brief Get subevent code for le event
  * @param event packet

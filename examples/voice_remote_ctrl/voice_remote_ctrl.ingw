@@ -1,7 +1,13 @@
 {
  "bundle_meta": {
+  "var": {
+   "link_layer_features": {
+    "value": "bf79ff07fe000000",
+    "addr": 33714136
+   }
+  },
   "rom": {
-   "size": 159548,
+   "size": 159624,
    "base": 33562624
   },
   "ram": {
@@ -12,7 +18,7 @@
    "base": 33722368
   },
   "version": [
-   2,3,15]
+   2,3,16]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",

@@ -1,6 +1,4 @@
 
-// test spi flash £¨AT45DBXX£©
-
 #ifndef __SPI_FLASH_H__
 #define __SPI_FLASH_H__
 
@@ -10,7 +8,7 @@
 #define	DEF_FLASH_DEVICE_ERR				((s8)-1)
 #define	DEF_FLASH_NONE_ERR					((s8)0)
 
- 
+
 #define SPI_FLASH_CS    GIO_L32_GPIO_4
 #define SPI_FLASH_WP    GIO_L32_RF_CHN0_4
 #define SPI_FLASH_RST   GIO_L32_RF_CLK
@@ -18,9 +16,9 @@
 #ifdef C2NIM
 
 #else
-// set CS 0 or 1 
-#define FLASH_Enable 	  gio_clr_bit(GIO_L32_DO , SPI_FLASH_CS); 
-#define FLASH_Disable 	gio_set_bit(GIO_L32_DO , SPI_FLASH_CS); 
+// set CS 0 or 1
+#define FLASH_Enable 	  gio_clr_bit(GIO_L32_DO , SPI_FLASH_CS);
+#define FLASH_Disable 	gio_set_bit(GIO_L32_DO , SPI_FLASH_CS);
 #endif
 
 
