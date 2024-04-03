@@ -255,6 +255,26 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
     return ROM_flash_do_update(block_num, blocks, page_buffer);
 }
 
+typedef void (*rom_FlashSetStatusReg)(uint16_t data);
+#define ROM_FlashSetStatusReg  ((rom_FlashSetStatusReg) (0x00000b01))
+
+typedef uint16_t (*rom_FlashGetStatusReg)(void);
+#define ROM_FlashGetStatusReg  ((rom_FlashGetStatusReg) (0x0000084d))
+
+void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
+{
+    FLASH_PRE_OPS();
+    {
+        uint16_t status = ROM_FlashGetStatusReg();
+        uint16_t old_status = status;
+        status &= ~((1ul << 14) | (0x1ful << 2));
+        status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
+        if (old_status != status)
+           ROM_FlashSetStatusReg(status);
+    }
+    FLASH_POST_OPS();
+}
+
 //#define APB_SPI_FLASH_CTRL_BASE              ((uint32_t)0x40150000UL)
 //uint32_t security_page_read(uint32_t addr)
 //{
@@ -353,13 +373,26 @@ int flash_prepare_factory_data(void)
     if (t != MAGIC_0) return 1;
     t = read_flash_security(0x1004);
     if (t != MAGIC_1) return 2;
-    erase_flash_sector(FACTORY_DATA_LOC);
-    copy_security_data(FACTORY_DATA_LOC,
-        0x1000, sizeof(die_info_t) / 4);
-    copy_security_data(FACTORY_DATA_LOC + sizeof(die_info_t),
-        0x1100, sizeof(factory_calib_data_t) / 4);
-    copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
-        0x2000, 320 / 4);
+    
+    FLASH_PRE_OPS();
+    {
+        uint16_t status = ROM_FlashGetStatusReg();
+        uint16_t old_status = status;
+        status &= ~((1ul << 14) | (0x1ful << 2));
+        status |= (uint16_t)0 << 14 | ((uint16_t)FLASH_REGION_NONE << 2);
+        ROM_FlashSetStatusReg(status);
+    
+        erase_flash_sector(FACTORY_DATA_LOC);
+        copy_security_data(FACTORY_DATA_LOC,
+            0x1000, sizeof(die_info_t) / 4);
+        copy_security_data(FACTORY_DATA_LOC + sizeof(die_info_t),
+            0x1100, sizeof(factory_calib_data_t) / 4);
+        copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
+            0x2000, 320 / 4);
+        
+       ROM_FlashSetStatusReg(old_status);
+    }
+    FLASH_POST_OPS();
     return 0;
 }
 
@@ -385,26 +418,6 @@ const void *flash_get_adc_calib_data(void)
         return (const void *)(FACTORY_DATA_LOC + sizeof(factory_data_t));
     else
         return NULL;
-}
-
-typedef void (*rom_FlashSetStatusReg)(uint16_t data);
-#define ROM_FlashSetStatusReg  ((rom_FlashSetStatusReg) (0x00000b01))
-
-typedef uint16_t (*rom_FlashGetStatusReg)(void);
-#define ROM_FlashGetStatusReg  ((rom_FlashGetStatusReg) (0x0000084d))
-
-void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
-{
-    FLASH_PRE_OPS();
-    {
-        uint16_t status = ROM_FlashGetStatusReg();
-        uint16_t old_status = status;
-        status &= ~((1ul << 14) | (0x1ful << 2));
-        status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
-        if (old_status != status)
-           ROM_FlashSetStatusReg(status);
-    }
-    FLASH_POST_OPS();
 }
 
 typedef void (* rom_FlashRUID)(uint32_t *UID);
