@@ -193,6 +193,14 @@ typedef void (*rom_void_void)(void);
 typedef void (*rom_prog_page)(uint32_t addr, const uint8_t *data, uint32_t len);
 #define ROM_ProgPage                    ((rom_prog_page)(0x00003cd7))
 
+typedef void (*rom_FlashSetStatusReg)(uint16_t data);
+#define ROM_FlashSetStatusReg           ((rom_FlashSetStatusReg)(0x00000b01))
+
+typedef uint16_t (*rom_FlashGetStatusReg)(void);
+#define ROM_FlashGetStatusReg           ((rom_FlashGetStatusReg)(0x0000084d))
+
+static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selection);
+
 int erase_flash_sector(const uint32_t addr)
 {
     uint32_t val = (uint32_t)-1;
@@ -373,13 +381,24 @@ int flash_prepare_factory_data(void)
     if (t != MAGIC_0) return 1;
     t = read_flash_security(0x1004);
     if (t != MAGIC_1) return 2;
+    
+    uint8_t region;
+    uint8_t reverse_selection;
+    flash_read_protection_status(&region, &reverse_selection);
+    flash_enable_write_protection(FLASH_REGION_NONE, 0);
+    
     erase_flash_sector(FACTORY_DATA_LOC);
-    copy_security_data(FACTORY_DATA_LOC,
-        0x1000, sizeof(die_info_t) / 4);
+    copy_security_data(FACTORY_DATA_LOC + 8,
+        0x1008, (sizeof(die_info_t) - 8) / 4);
     copy_security_data(FACTORY_DATA_LOC + sizeof(die_info_t),
         0x1100, sizeof(factory_calib_data_t) / 4);
     copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
         0x2000, 320 / 4);
+    copy_security_data(FACTORY_DATA_LOC,
+        0x1000, 8 / 4);
+    
+    flash_enable_write_protection(region, reverse_selection);
+    
     return 0;
 }
 
@@ -407,11 +426,17 @@ const void *flash_get_adc_calib_data(void)
         return NULL;
 }
 
-typedef void (*rom_FlashSetStatusReg)(uint16_t data);
-#define ROM_FlashSetStatusReg  ((rom_FlashSetStatusReg) (0x00000b01))
+static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selection)
+{
+    FLASH_PRE_OPS();
+    {
+        uint16_t status = ROM_FlashGetStatusReg();
+        *reverse_selection = ((status >> 14) & 1ul);
+        *region = (0x1ful & (status >> 2));
+    }
+    FLASH_POST_OPS();
+}
 
-typedef uint16_t (*rom_FlashGetStatusReg)(void);
-#define ROM_FlashGetStatusReg  ((rom_FlashGetStatusReg) (0x0000084d))
 
 void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
 {
