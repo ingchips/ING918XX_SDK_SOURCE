@@ -385,6 +385,20 @@
   */
 #define SM_EVENT_STATE_CHANGED                                  0xDC
 
+ /**
+  * @format H1B1
+  * @param handle
+  * @param show calculated numeric value that needs to be compared
+  */
+#define SM_EVENT_NUMERIC_COMPARISON_REQUEST                     0xDD
+
+/**
+ * @format PP
+ * @param irk
+ * @param dhk
+ */
+#define SM_EVENT_IRK_DHK_RESULT                                    0xDE
+
 // GAP
 
 /**

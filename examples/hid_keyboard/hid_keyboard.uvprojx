@@ -273,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>155648</StartAddress>
-                <Size>385024</Size>
+                <StartAddress>172032</StartAddress>
+                <Size>368640</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -298,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536900792</StartAddress>
-                <Size>35656</Size>
+                <StartAddress>536900992</StartAddress>
+                <Size>35456</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -337,7 +337,7 @@
               <MiscControls/>
               <Define>USE_STDPERIPH_DRIVER,PuTTY,BOARD_USE_KEYS</Define>
               <Undefine/>
-              <IncludePath>../../bundles/typical/inc;../../bundles/typical/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/exp/inc;../../bundles/exp/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -404,7 +404,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>..\..\bundles\typical\ING9187xx\symdefs.m</FilePath>
+              <FilePath>..\..\bundles\exp\ING9187xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -452,6 +452,11 @@
           <GroupName>Tools</GroupName>
           <Files>
             <File>
+              <FileName>ing918_uecc.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\src\Tools\ing918_uecc.lib</FilePath>
+            </File>
+            <File>
               <FileName>att_db_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\Tools\att_db_util.c</FilePath>
@@ -475,6 +480,11 @@
               <FileName>malloc_override.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\Tools\malloc_override.c</FilePath>
+            </File>
+            <File>
+              <FileName>ecc_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\ecc_driver.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -33,6 +33,25 @@ typedef enum ll_config_item_e
     LL_CFG_FEATURE_SET_MASK,
 } ll_config_item_t;
 
+typedef struct ll_capabilities
+{
+    const uint8_t *features;                // Link Layer features
+    uint16_t adv_set_num;                   // max number of advertising sets
+    uint16_t conn_num;                      // max number of connections
+    uint16_t whitelist_size;                // size of whitelists
+    uint16_t resolving_list_size;           // size of resolving list
+    uint16_t periodic_advertiser_list_size; // size of periodic advertiser list
+    uint16_t adv_dup_filter_size;           // size of items for filtering
+                                            // advertising duplication
+} ll_capabilities_t;
+
+/**
+ * @brief Get Link Layer capabilities.
+ *
+ * @param[out]  capabilities    see `ll_capabilities_t`.
+ */
+void ll_get_capabilities(ll_capabilities_t *capabilities);
+
 /**
  ****************************************************************************************
  * @brief Config LL specific parameters
@@ -42,6 +61,26 @@ typedef enum ll_config_item_e
  ****************************************************************************************
  */
 void ll_config(ll_config_item_t item, uint32_t value);
+
+/**
+ ****************************************************************************************
+ * @brief Get states of LL
+ *
+ * Note: Parameters can be set to NULL if the relevant states are not needed.
+ *
+ * @param[out]  adv_states[1]   states of all advertising sets
+ *                                  Bit[n]: advertising set n is enabled
+ * @param[out]  conn_states[1]  states of all connections
+ *                                  Bit[n]: connection n is active
+ * @param[out]  sync_states[1]  states of all synchronized periodic adv sets
+ *                                  Bit[n]: sync_handle n is active
+ * @param[out]  other_states[1] other states:
+ *                                  Bit[0]: if scanning is ON
+ *                                  Bit[1]: if initiating is ON
+ ****************************************************************************************
+ */
+void ll_get_states(uint32_t *adv_states, uint32_t *conn_states,
+                   uint32_t *sync_states, uint32_t *other_states);
 
 /**
  ****************************************************************************************

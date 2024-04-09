@@ -52,7 +52,7 @@ contributions via Github [Pull Requests](pulls) in the `develop` branch.
 
 ## License
 
-   Copyright 2019-2023 INGCHIPS
+   Copyright 2019-2024 INGCHIPS
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

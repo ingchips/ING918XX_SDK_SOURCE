@@ -16,6 +16,7 @@
 #include "trace.h"
 #include "btstack_mt.h"
 #include "ll_api.h"
+#include "bluetooth_hci.h"
 
 #include "uart_console.h"
 #include "gatt_client_util.h"
@@ -653,6 +654,57 @@ void ble_re_connect(void)
     btstack_push_user_runnable(abort_connection, NULL, 0);
 }
 
+static void show_bits(const uint32_t v)
+{
+    int i;
+    for (i = 0; i < 32; i++)
+    {
+        if (v & (1u << i))
+            printf("%d, ", i);
+    }
+    printf("\n");
+}
+
+void ble_show_status(void)
+{
+    uint32_t adv_states = 0;
+    uint32_t conn_states = 0;
+    uint32_t sync_states = 0;
+    uint32_t other_states = 0;
+    ll_get_states(&adv_states, &conn_states, &sync_states, &other_states);
+    if ((adv_states | conn_states | sync_states | other_states) == 0)
+    {
+        printf("Controller is IDLE.\n");
+        return;
+    }
+
+    printf("Controller is:\n");
+    if (adv_states != 0)
+    {
+        printf("* Advertising : ");
+        show_bits(adv_states);
+    }
+    if (conn_states != 0)
+    {
+        printf("* Connected   : ");
+        show_bits(conn_states);
+    }
+    if (sync_states != 0)
+    {
+        printf("* Synchronized: ");
+        show_bits(sync_states);
+    }
+    if (other_states & 1)
+    {
+        printf("* Scanning\n");
+    }
+    if (other_states & 2)
+    {
+        printf("* Initiating\n");
+    }
+    printf("\n");
+}
+
 static void demo_synced_gap_apis(struct btstack_synced_runner *runner, void *user_data)
 {
     int err;
@@ -915,6 +967,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 0x00);                     // Scan_Request_Notification_Enable
         do_set_data();
         gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
+        gap_read_white_lists_size();
         break;
 
     case HCI_EVENT_LE_META:
@@ -959,6 +1012,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             {
                 const le_meta_event_enh_create_conn_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
@@ -1169,6 +1223,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 platform_printf("COMMAND_COMPLETE: 0x%02x for OPCODE %04X\n",
                     *returns, hci_event_command_complete_get_command_opcode(packet));
+                break;
+            }
+            switch (hci_event_command_complete_get_command_opcode(packet))
+            {
+            case HCI_LE_RD_WLST_SIZE_CMD_OPCODE:
+                platform_printf("Accept List Size: %d\n", returns[1]);
+                break;
+
+            default:
                 break;
             }
         }

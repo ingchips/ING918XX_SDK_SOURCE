@@ -65,6 +65,8 @@ void PWM_SetMask(const uint8_t channel_index, const uint8_t mask_a, const uint8_
 
 void PWM_SetMode(const uint8_t channel_index, const PWM_WorkMode_t mode);
 
+PWM_WorkMode_t PWM_GetMode(const uint8_t channel_index);
+
 // PMW Halt Mode
 // When the register HALT_ENABLE is set to 1, PWM will controlled by HALT_CONFIG registers.
 // The PWM_OUT_A will output the value of HALT_CONFIG[0], and the PWM_OUT_B will output the value of HALT_CONFIG[1]

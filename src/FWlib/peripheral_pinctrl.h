@@ -371,7 +371,7 @@ int PINCTRL_SelSwIn(uint8_t io_pin_dio, uint8_t io_pin_clk);
 /**
  * @brief Select SPI input IOs
  *
- * Note: If an input is not used or invalid, set it to `IO_NOT_A_PIN`.
+ * This function is obsoleted. Use `PINCTRL_SelSpiPins` instead.
  *
  * @param[in] io_pin_clk        CLK
  * @param[in] io_pin_csn        CS_n
@@ -381,7 +381,27 @@ int PINCTRL_SelSwIn(uint8_t io_pin_dio, uint8_t io_pin_clk);
  * @param[in] io_pin_mosi       MOSI
  * @return                      0 if successful else non-0
  */
-int PINCTRL_SelSpiIn(spi_port_t port,
+#define PINCTRL_SelSpiIn        PINCTRL_SelSpiPins
+
+/**
+ * @brief Configure all pins for SPI
+ *
+ * Note: If an IO is not used or invalid, set it to `IO_NOT_A_PIN`.
+ *
+ * This function configures **all** In, Out, or Bi-direction pins for SPI
+ * properly no matter if it is SPI master or slave.
+ *
+ * This is the recommended way to configure SPI IOs .
+ *
+ * @param[in] io_pin_clk        CLK
+ * @param[in] io_pin_csn        CS_n
+ * @param[in] io_pin_hold       HOLD
+ * @param[in] io_pin_wp         WP
+ * @param[in] io_pin_miso       MISO
+ * @param[in] io_pin_mosi       MOSI
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelSpiPins(spi_port_t port,
                       uint8_t io_pin_clk,
                       uint8_t io_pin_csn,
                       uint8_t io_pin_hold,

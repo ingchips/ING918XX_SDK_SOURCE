@@ -388,7 +388,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
     if (mode >= SYSCTRL_CLK_SLOW_DIV_1)
     {
         set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 24);
-        set_reg_bit(APB_SYSCTRL->CguCfg, 1, 31);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 31);
     }
 }
 
@@ -1096,29 +1096,38 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), masked, 5, 8);
 }
 
-void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache)
+static void SYSCTRL_CacheControl0(const uintptr_t base, SYSCTRL_CacheMemCtrl ctrl, uint8_t bit_offset)
 {
-    #define IC_BASE 0x40140000
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE != ctrl)
+        set_reg_bit((volatile uint32_t *)(base), 0, 1);
+
+    set_reg_bits(&APB_SYSCTRL->SysCtrl, ctrl, 1, bit_offset);
+
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE == ctrl)
+    {
+        *(volatile uint32_t *)(base + 0x58) =  (1UL<<31) | 0x4;
+        set_reg_bit((volatile uint32_t *)(base), 1, 1);
+    }
+}
+
+void SYSCTRL_DCacheControl(SYSCTRL_CacheMemCtrl d_cache)
+{
     #define DC_BASE 0x40141000
 
-    uint8_t v = (i_cache << 1) | d_cache;
-    if (SYSCTRL_MEM_BLOCK_AS_CACHE != i_cache)
-        set_reg_bit((volatile uint32_t *)(IC_BASE), 0, 1);
-    if (SYSCTRL_MEM_BLOCK_AS_CACHE != d_cache)
-        set_reg_bit((volatile uint32_t *)(DC_BASE), 0, 1);
+    SYSCTRL_CacheControl0(DC_BASE, d_cache, 0);
+}
 
-    set_reg_bits(&APB_SYSCTRL->SysCtrl, v, 2, 0);
+void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache)
+{
+    #define IC_BASE 0x40140000
 
-    if (SYSCTRL_MEM_BLOCK_AS_CACHE == i_cache)
-    {
-        *(volatile uint32_t *)(IC_BASE + 0x58) =  (1UL<<31) | 0x4;
-        set_reg_bit((volatile uint32_t *)(IC_BASE), 1, 1);
-    }
-    if (SYSCTRL_MEM_BLOCK_AS_CACHE == d_cache)
-    {
-        *(volatile uint32_t *)(DC_BASE + 0x58) =  (1UL<<31) | 0x4;
-        set_reg_bit((volatile uint32_t *)(DC_BASE), 1, 1);
-    }
+    SYSCTRL_CacheControl0(IC_BASE, i_cache, 1);
+}
+
+void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache)
+{
+    SYSCTRL_ICacheControl(i_cache);
+    SYSCTRL_DCacheControl(d_cache);
 }
 
 __attribute__((weak)) const factory_calib_data_t *flash_get_factory_calib_data(void)

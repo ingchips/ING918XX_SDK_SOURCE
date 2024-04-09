@@ -4,15 +4,21 @@
     },
     "ram": {
         "base": 536870912,
-        "size": 29876
+        "size": 29812
     },
     "rom": {
         "base": 16384,
-        "size": 135796
+        "size": 136176
+    },
+    "var": {
+        "link_layer_features": {
+            "addr": 148676,
+            "value": "3ff9010400000000"
+        }
     },
     "version": [
         1,
         9,
-        41
+        56
     ]
 }

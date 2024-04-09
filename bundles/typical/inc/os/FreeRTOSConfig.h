@@ -91,17 +91,27 @@
 #ifdef POWER_SAVING
 #define configUSE_TICKLESS_IDLE     1
 #endif
-#define configSYSTICK_CLOCK_HZ      32768
-#ifdef TARGET_FPGA
-#define configCPU_CLOCK_HZ          ( ( unsigned long ) 32000000 )
+#define configSYSTICK_CLOCK_HZ      RTC_CLK_FREQ
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#define configCPU_CLOCK_HZ          PLL_CLK_FREQ
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define configCPU_CLOCK_HZ          SYSCTRL_GetHClk()
 #else
-#define configCPU_CLOCK_HZ          ( ( unsigned long ) 48000000 )
+#error unknow chip family
 #endif
+
+#if (configSYSTICK_CLOCK_HZ == 32768)
 #define configTICK_RATE_HZ          ( ( TickType_t ) 1024 )
+#elif (configSYSTICK_CLOCK_HZ == 50000)
+#define configTICK_RATE_HZ          ( ( TickType_t ) 1000 )
+#else
+#error configSYSTICK_CLOCK_HZ
+#endif
 #define configMAX_PRIORITIES        ( 15 )
 #define configMINIMAL_STACK_SIZE    ( ( unsigned short ) 128 )
 #ifndef configTOTAL_HEAP_SIZE
-#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 23520 ) )
+#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 24896 ) )
 #endif
 #define configMAX_TASK_NAME_LEN     ( 16 )
 #define configUSE_TRACE_FACILITY    0

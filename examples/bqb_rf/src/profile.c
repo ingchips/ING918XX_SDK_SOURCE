@@ -119,7 +119,6 @@ void send_next_one(void)
         return;
     }
 
-
     platform_config(PLATFORM_CFG_24M_OSC_TUNE, rf_fo_cmd.tune);
 
     ll_raw_packet_set_param(raw_packet,

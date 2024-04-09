@@ -198,8 +198,10 @@ typedef struct
  *   - factory data is ready in flash, or
  *   - factory data can be found in security pages and copied.
  *
- * This function can be called at the beginning of app (providing that
- * stack lies in EXECUTABLE memory region).
+ * This function can be called at the beginning of app.
+ *
+ * WARNING: If stack does not lie in EXECUTABLE memory region, I-Cache will be
+ * switched to RAM mode temporarily and then restored to Cache.
  *
  * @return                      0 if succeeded else non-0
  */
@@ -210,7 +212,7 @@ int flash_prepare_factory_data(void);
  *
  * When such information does not exists, NULL is returned.
  *
- * Call `flash_prepare_factory_data` before using this.
+ * This function uses `flash_prepare_factory_data()`.
  *
  * @return                      die information
  */
@@ -221,7 +223,7 @@ const die_info_t *flash_get_die_info(void);
  *
  * When such information does not exists, NULL is returned.
  *
- * Call `flash_prepare_factory_data` before using this.
+ * This function uses `flash_prepare_factory_data()`.
  *
  * @return                      factory data
  */
@@ -233,7 +235,7 @@ const factory_calib_data_t *flash_get_factory_calib_data(void);
  * Note: There are multiple versions of ADC calibration data,
  *       so, here, a plain pointer is returned.
  *
- * Call `flash_prepare_factory_data` before using this.
+ * This function uses `flash_prepare_factory_data()`.
  *
  * See `adc_calib_ver` in `factory_calib_data_t`.
  *

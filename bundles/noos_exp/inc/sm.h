@@ -55,14 +55,21 @@ typedef enum {
 /**
  * @brief Security configurations
  *
+ * These configurations can updated dynamically. Be careful: dynamically toggle
+ * `enable` will cause problems when SM is still working on any connection.
+ *
+ * After IRK/DHK are derived from `persistent`, `SM_EVENT_IRK_DHK_RESULT` is emitted.
+ *
  * @param[in]   enable              Enable (Bypass) SM (default: Disabled)
  *                                  When disabled, SM can be enabled per connection by `sm_config_conn`.
  * @param[in]   io_capability       Default IO Capabilities
  * @param[in]   request_security    Let peripheral request an encrypted connection right after connecting
  *                                  Not used normally. Bonding is triggered by access to protected attributes in ATT Server
  * @param[in]   persistent          persistent data for security & privacy
+ * @return                          0 if ok else non-0. Possible causes for non-0 return value:
+ *                                      * generation of internal keys(IRK/ERK) are under going.
  */
-void sm_config(uint8_t enable,
+int sm_config(uint8_t enable,
                io_capability_t io_capability,
                int   request_security,
                const sm_persistent_t *persistent);
@@ -101,18 +108,69 @@ void sm_private_random_address_generation_set_update_period(int period_ms);
 const uint8_t *sm_private_random_address_generation_get(void);
 
 /**
+ * @brief Registers OOB Data Callback.
  *
- * @brief Registers OOB Data Callback. The callback should set the oob_data and return 1 if OOB data is availble
+ * The callback should set the oob_data and return 1 if OOB data is available.
+ *
+ * Signature of `get_oob_data_callback`:
+ *      @param[in]  address_type            address type
+ *      @param[in]  addr                    address
+ *      @param[out] oob_data                OOB data (type `sm_key_t`)
+ *      @return                             1 if OOB data is available, else 0.
+ *
  * @param get_oob_data_callback
  */
-void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t * oob_data));
+void sm_register_oob_data_callback( int (*get_oob_data_callback)(uint8_t address_type, bd_addr_t addr, uint8_t * oob_data));
 
 /**
+ * @brief Registers secure pairing OOB Data Callback.
  *
- * @brief Registers secure pairing OOB Data Callback. The callback should set the peer_confirm & peer_random and return 1 if OOB data is availble
- * @param get_oob_data_callback
+ * The callback should set the peer_confirm & peer_random and return 1
+ * if OOB data is available.
+ *
+ * Signature of `get_sc_oob_data_callback`:
+ *      @param[in]  address_type            address type
+ *      @param[in]  addr                    address
+ *      @param[out] peer_confirm            peer confirm value (type `sm_key_t`)
+ *      @param[out] peer_random             peer random value (type `sm_key_t`)
+ *      @return                             1 if OOB data is available, else 0.
+ *
+ * @param get_sc_oob_data_callback
  */
-void sm_register_sc_oob_data_callback( int (*get_sc_oob_data_callback)(uint8_t addres_type, bd_addr_t addr, uint8_t *peer_confirm, uint8_t *peer_random));
+void sm_register_sc_oob_data_callback(int (*get_sc_oob_data_callback)(uint8_t address_type, bd_addr_t addr, uint8_t *peer_confirm, uint8_t *peer_random));
+
+/**
+ * @brief (When secure pairing is used and OOB is selected) Start generate local
+ * OOB data (_confirm_ and _random_).
+ *
+ * After generated, _confirm_ and _random_ are passed to the callback.
+ *
+ * Each call of this function will generate a new P256 key pair that will used
+ * in **all** subsequent pairing attempts. When OOB is used, it is Developers's
+ * responsibility to refresh key pair properly. If OOB is not used, SM will
+ * re-generate a new key pair for each pairing attempt.
+ *
+ * BLUETOOTH CORE SPECIFICATION Version 5.4 | Vol 3, Part H, Section 2.3.6:
+ *
+ * > To protect a device's private key, a device should implement a method to
+ * > prevent an attacker from retrieving useful information about the device's private
+ * > key. For this purpose, a device should change its private key after every pairing
+ * > (successful or failed). Otherwise, it should change its private key whenever S +
+ * > 3F > 8, where S is the number of successful pairings and F the number of
+ * > failed attempts since the key was last changed.
+ *
+ * App can then pass these information together with device address to peer
+ * through OOB communication.
+ *
+ * Signature of `callback`:
+ *      @param[out] confirm                 local confirm value (type `sm_key_t`)
+ *      @param[out] random                  local random value (type `sm_key_t`)
+ *
+ * @param callback
+ * @return               0: started without error
+ *                      -1: previous OOB data is not generated yet
+ */
+int sm_sc_generate_oob_data(void (*callback)(const uint8_t *confirm, const uint8_t *random));
 
 /**
  * @brief Limit the STK generation methods. Bonding is stopped if the resulting one isn't in the list
@@ -230,12 +288,6 @@ int sm_le_device_key(hci_con_handle_t con_handle);
  * @param handle
  */
 void sm_numeric_comparison_confirm(hci_con_handle_t con_handle);
-
-/**
- * @brief When secure pairing is used and OOB is selected, use this function to prepare OOB data and share to peer.
- * @param handle
- */
-int sm_sc_generate_oob_data(void (*callback)(uint8_t *peer_confirm, uint8_t *peer_random));
 
 /**
  *

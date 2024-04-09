@@ -126,7 +126,7 @@ void setup_peripherals(void)
     TMR_Enable(APB_TMR1, 0, 0xf);
     TMR_IntEnable(APB_TMR1, 0, 0xf);
 
-    PINCTRL_Pull(IO_SOURCE_GPIO, PINCTRL_PULL_UP);
+    PINCTRL_Pull(KEY_PIN, PINCTRL_PULL_UP);
 
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM0_A);
 #else
@@ -170,6 +170,7 @@ int read_from_flash(void *db, const int max_size)
 }
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#ifndef SIMULATION
 // make sure that PClk is <= slow_clk
 static void QDEC_PclkCfg(void)
 {
@@ -187,8 +188,6 @@ static void QDEC_Setup(void)
 {
     uint8_t div = SYSCTRL_GetPClkDiv();
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_QDEC);
-    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_PinCtrl |
-                         SYSCTRL_ITEM_APB_QDEC);
     PINCTRL_SelQDECIn(21, 22);
 
     SYSCTRL_SelectQDECClk(SYSCTRL_CLK_SLOW, 25);
@@ -205,6 +204,7 @@ static void QDEC_Setup(void)
     SYSCTRL_SetPClkDiv(div);
 }
 #endif
+#endif
 
 extern void on_key_event(key_press_event_t evt);
 
@@ -218,8 +218,6 @@ int app_main()
 
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
     setup_peripherals();
-
-    // platform_config(PLATFORM_CFG_LOG_HCI, PLATFORM_CFG_ENABLE);
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);

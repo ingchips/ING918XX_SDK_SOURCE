@@ -54,10 +54,26 @@ uint8_t gap_set_random_device_address(const uint8_t *address);
 /**
  * @brief Disconnect connection with handle
  *
+ * This is equivalent to `gap_disconnect2(handle, 0x13)`.
+ *
  * @param handle                Used to identify an advertising set. Range: 0x00 to 0xEF
  * @return                      0: Message is sent out or the connection already release
  */
 uint8_t gap_disconnect(hci_con_handle_t handle);
+
+/**
+ * @brief Disconnect connection with handle
+ *
+ * @param handle                Used to identify an advertising set. Range: 0x00 to 0xEF
+ * @param reason                Reason:
+ *                                  - Authentication Failure error code (0x05)
+ *                                  - Other End Terminated Connection error codes (0x13 to 0x15)
+ *                                  - Unsupported Remote Feature error code (0x1A)
+ *                                  - Pairing with Unit Key Not Supported error code (0x29)
+ *                                  - Unacceptable Connection Parameters error code (0x3B)
+ * @return                      0: Message is sent out or the connection already release
+ */
+uint8_t gap_disconnect2(hci_con_handle_t handle, uint8_t reason);
 
 /**
  * @brief disconnect multi-connections
@@ -70,7 +86,7 @@ void gap_disconnect_all(void);
  * @param[in] addtype               BLE address type
  * @return                          0: Message is sent to controller
  */
-uint8_t gap_add_whitelist(const uint8_t *address,bd_addr_type_t  addtype);
+uint8_t gap_add_whitelist(const uint8_t *address, bd_addr_type_t  addtype);
 
 /**
  * @brief remove whitelist from controller
@@ -79,7 +95,7 @@ uint8_t gap_add_whitelist(const uint8_t *address,bd_addr_type_t  addtype);
  * @param addtype               BLE address type
  * @return                      0: Message is sent to controller
  */
-uint8_t gap_remove_whitelist(const uint8_t *address,bd_addr_type_t addtype);
+uint8_t gap_remove_whitelist(const uint8_t *address, bd_addr_type_t addtype);
 
 /**
  * @brief clear white lists in controller
@@ -87,6 +103,106 @@ uint8_t gap_remove_whitelist(const uint8_t *address,bd_addr_type_t addtype);
  * @return             0: message sent out  others: failed
  */
 uint8_t gap_clear_white_lists(void);
+
+/**
+ * @brief read white lists size in controller
+ *
+ * @return             0: message sent out  others: failed
+ */
+uint8_t gap_read_white_lists_size(void);
+
+/**
+ * @brief Add one device to the resolving list used to generate and resolve
+ * Resolvable Private Addresses in the Controller.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @param peer_irk              IRK of the peer device
+ * @param local_irk             IRK of the local device
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_add_dev_to_resolving_list(const uint8_t *address, bd_addr_type_t addtype,
+    const uint8_t *peer_irk, const uint8_t *local_irk);
+
+/**
+ * @brief Remove one device from the resolving list used to resolve Resolvable
+ * Private Addresses in the Controller.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_remove_dev_from_resolving_list(const uint8_t *address, bd_addr_type_t addtype);
+
+/**
+ * @brief Remove all devices from the resolving list used to resolve Resolvable
+ * Private Addresses in the Controller.
+ *
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_clear_resolving_list(void);
+
+// LE Privacy Mode
+typedef enum privacy_mode
+{
+    PRIVACY_MODE_NETWORK = 0, // Network Privacy Mode (default)
+                              // Identity address is not accepted if IRK is available
+    PRIVACY_MODE_DEVICE  = 1, // Device Privacy Mode
+                              // Identity address is accepted even if IRK is available
+} privacy_mode_t;
+
+/**
+ * @brief Specify the privacy mode to be used for a given entry on the resolving list.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @param privacy_mode          privacy mode for this peer device
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_set_privacy_mode(const uint8_t *address, bd_addr_type_t addtype,
+    privacy_mode_t privacy_mode);
+
+/**
+ * @brief Get the current peer Resolvable Private Address being used for the
+ * corresponding peer Public and Random (static) Identity Address.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_read_peer_resolving_addr(const uint8_t *address, bd_addr_type_t addtype);
+
+/**
+ * @brief Get the current local Resolvable Private Address being used for the
+ * corresponding peer Identity Address.
+ *
+ * @param address               peer identity address
+ * @param addtype               peer identity address type
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_read_local_resolving_addr(const uint8_t *address, bd_addr_type_t addtype);
+
+/**
+ * @brief Enable resolution of Resolvable Private Addresses in the Controller.
+ *
+ * @param enable                address resolution enable
+ *                              0: disabled (default)
+ *                              1: enabled
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_set_addr_resolution_enable(const uint8_t enable);
+
+/**
+ * @brief Set the length of time the Controller uses a Resolvable Private Address
+ * before a new resolvable private address is generated and starts being used.
+ *
+ * @param rpa_timeout           RPA_Timeout measured in seconds
+ *                                  Range: 0x0001 to 0x0E10
+ *                                  Time range: 1 s to 1 hour
+ *                                  Default: 0x0384 (900 s or 15 minutes)
+ * @return                      0: message sent out  others: failed
+ */
+uint8_t gap_set_resolvable_private_addr_timeout(uint16_t rpa_timeout);
 
 /**
  * @brief read rssi value of a appointed hci connection
@@ -290,13 +406,13 @@ typedef enum scan_filter_policy
     SCAN_ACCEPT_WLIST_EXCEPT_NOT_DIRECTED,
     // Accept all advertising packets except directed advertising packets
     // where the initiator's identity address does not address this device
-    SCAN_ACCEPT_ALL_EXCEPT_IDENTITY_NOT_MATCH,
+    // SCAN_ACCEPT_ALL_EXCEPT_IDENTITY_NOT_MATCH,
     // Accept all advertising packets except:
     // 1.  advertising packets where the advertiser's identity address is not in
     //     the White List; and
     // 2.  directed advertising packets where the initiator's identity address
     //     does not address this device
-    SCAN_ACCEPT_WLIST_EXCEPT_IDENTITY_NOT_MATCH
+    // SCAN_ACCEPT_WLIST_EXCEPT_IDENTITY_NOT_MATCH
 } scan_filter_policy_t;
 
 /**
@@ -317,6 +433,9 @@ uint8_t gap_set_ext_scan_para(const bd_addr_type_t own_addr_type, const scan_fil
 
 /**
  * @brief to set the extended scan response data for an advertising set
+ *
+ * Note: Scan response data is cleared after `gap_set_ext_adv_para()` on the same
+ * advertising set handle.
  *
  * @param adv_handle           handle of advertising set handle
  *
@@ -482,6 +601,9 @@ typedef enum adv_data_frag_pref
 /**
  * @brief to set extended advertising data
  *
+ * Note: Advertising data is cleared after `gap_set_ext_adv_para()` on the same
+ * advertising set handle.
+ *
  * @param adv_handle           advertising set handle.
  *
  * @param length               advertising data length
@@ -496,6 +618,9 @@ uint8_t gap_set_ext_adv_data(const uint8_t adv_handle, uint16_t length, const ui
 
 /**
  * @brief LE Set Periodic Advertising Data command
+ *
+ * Note: Advertising data is cleared after `gap_set_ext_adv_para()` and
+ *       `gap_set_periodic_adv_para()` on the same advertising set handle.
  *
  * @param adv_handle           advertising set handle.
  *
@@ -721,6 +846,7 @@ typedef struct {
     // Supervision timeout for the LE Link, unit is 10ms
     uint16_t supervision_timeout;
     // Informative parameter recommending the min/max length of connection event needed for this LE connection
+    // unit is 625us
     uint16_t min_ce_len;
     uint16_t max_ce_len;
 } conn_para_t;
