@@ -347,7 +347,11 @@ typedef struct
 } factory_data_t;
 #pragma pack (pop)
 
-uint32_t calc_checksum_32(const uint32_t* data, uint32_t length)
+#define EXTRA_DATA_LEN      320
+#define FT_CHECK_LEN        (((sizeof(factory_data_t) + EXTRA_DATA_LEN) + 3) & ~4)
+#define FT_CEHCKSUM_OFFSET  FT_CHECK_LEN
+
+static uint32_t calc_checksum_32(const uint32_t* data, uint32_t length)
 {
     uint32_t sum = 0;
     while(length--)
@@ -357,24 +361,18 @@ uint32_t calc_checksum_32(const uint32_t* data, uint32_t length)
 
 static uint32_t calc_ft_sum()
 {
-    uint32_t ft_size = (sizeof(factory_data_t) + 320);
-    ft_size = (ft_size + 3) & ~4;
-    return calc_checksum_32((uint32_t *)FACTORY_DATA_LOC, ft_size >> 2);
+    return calc_checksum_32((uint32_t *)FACTORY_DATA_LOC, FT_CHECK_LEN >> 2);
 }
 
 static uint32_t get_ft_sum()
 {
-    uint32_t ft_size = (sizeof(factory_data_t) + 320);
-    ft_size = (ft_size + 3) & ~4;
-    return *(uint32_t*)(FACTORY_DATA_LOC + ft_size);
+    return *(uint32_t*)(FACTORY_DATA_LOC + FT_CEHCKSUM_OFFSET);
 }
 
 static void write_ft_sum()
 {
-    uint32_t ft_size = (sizeof(factory_data_t) + 320);
-    ft_size = (ft_size + 3) & ~4;
     uint32_t checksum = calc_ft_sum();
-    write_flash(FACTORY_DATA_LOC + ft_size, (uint8_t *)&checksum, sizeof(uint32_t));
+    write_flash(FACTORY_DATA_LOC + FT_CEHCKSUM_OFFSET, (uint8_t *)&checksum, sizeof(uint32_t));
 }
 
 static int is_data_ready(void)
@@ -424,7 +422,7 @@ int flash_prepare_factory_data(void)
     copy_security_data(FACTORY_DATA_LOC + sizeof(die_info_t),
         0x1100, sizeof(factory_calib_data_t) / 4);
     copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
-        0x2000, 320 / 4);
+        0x2000, EXTRA_DATA_LEN / 4);
     write_ft_sum();
     
     flash_enable_write_protection(region, reverse_selection);
