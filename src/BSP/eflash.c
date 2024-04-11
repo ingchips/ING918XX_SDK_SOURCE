@@ -193,6 +193,14 @@ typedef void (*rom_void_void)(void);
 typedef void (*rom_prog_page)(uint32_t addr, const uint8_t *data, uint32_t len);
 #define ROM_ProgPage                    ((rom_prog_page)(0x00003cd7))
 
+typedef void (*rom_FlashSetStatusReg)(uint16_t data);
+#define ROM_FlashSetStatusReg           ((rom_FlashSetStatusReg)(0x00000b01))
+
+typedef uint16_t (*rom_FlashGetStatusReg)(void);
+#define ROM_FlashGetStatusReg           ((rom_FlashGetStatusReg)(0x0000084d))
+
+static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selection);
+
 int erase_flash_sector(const uint32_t addr)
 {
     uint32_t val = (uint32_t)-1;
@@ -339,13 +347,42 @@ typedef struct
 } factory_data_t;
 #pragma pack (pop)
 
+#define EXTRA_DATA_LEN      320
+#define FT_CHECK_LEN        (((sizeof(factory_data_t) + EXTRA_DATA_LEN) + 3) & ~4)
+#define FT_CEHCKSUM_OFFSET  FT_CHECK_LEN
+
+static uint32_t calc_checksum_32(const uint32_t* data, uint32_t length)
+{
+    uint32_t sum = 0;
+    while(length--)
+        sum += *data++;
+    return sum;
+}
+
+static uint32_t calc_ft_sum()
+{
+    return calc_checksum_32((uint32_t *)FACTORY_DATA_LOC, FT_CHECK_LEN >> 2);
+}
+
+static uint32_t get_ft_sum()
+{
+    return *(uint32_t*)(FACTORY_DATA_LOC + FT_CEHCKSUM_OFFSET);
+}
+
+static void write_ft_sum()
+{
+    uint32_t checksum = calc_ft_sum();
+    write_flash(FACTORY_DATA_LOC + FT_CEHCKSUM_OFFSET, (uint8_t *)&checksum, sizeof(uint32_t));
+}
+
 static int is_data_ready(void)
 {
     const die_info_t *p = (const die_info_t *)FACTORY_DATA_LOC;
-    if ((p->cid[0] == MAGIC_0) && (p->cid[1] == MAGIC_1))
-        return 1;
-    else
+    if ((p->cid[0] != MAGIC_0) || (p->cid[1] != MAGIC_1))
         return 0;
+    if (get_ft_sum() != calc_ft_sum())
+        return 0;
+    return 1;
 }
 
 static void copy_security_data(uint32_t dst, uintptr_t src, int word_len)
@@ -373,13 +410,23 @@ int flash_prepare_factory_data(void)
     if (t != MAGIC_0) return 1;
     t = read_flash_security(0x1004);
     if (t != MAGIC_1) return 2;
+    
+    uint8_t region;
+    uint8_t reverse_selection;
+    flash_read_protection_status(&region, &reverse_selection);
+    flash_enable_write_protection(FLASH_REGION_NONE, 0);
+    
     erase_flash_sector(FACTORY_DATA_LOC);
     copy_security_data(FACTORY_DATA_LOC,
         0x1000, sizeof(die_info_t) / 4);
     copy_security_data(FACTORY_DATA_LOC + sizeof(die_info_t),
         0x1100, sizeof(factory_calib_data_t) / 4);
     copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
-        0x2000, 320 / 4);
+        0x2000, EXTRA_DATA_LEN / 4);
+    write_ft_sum();
+    
+    flash_enable_write_protection(region, reverse_selection);
+    
     return 0;
 }
 
@@ -407,11 +454,16 @@ const void *flash_get_adc_calib_data(void)
         return NULL;
 }
 
-typedef void (*rom_FlashSetStatusReg)(uint16_t data);
-#define ROM_FlashSetStatusReg  ((rom_FlashSetStatusReg) (0x00000b01))
-
-typedef uint16_t (*rom_FlashGetStatusReg)(void);
-#define ROM_FlashGetStatusReg  ((rom_FlashGetStatusReg) (0x0000084d))
+static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selection)
+{
+    FLASH_PRE_OPS();
+    {
+        uint16_t status = ROM_FlashGetStatusReg();
+        *reverse_selection = ((status >> 14) & 1ul);
+        *region = (0x1ful & (status >> 2));
+    }
+    FLASH_POST_OPS();
+}
 
 void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
 {
