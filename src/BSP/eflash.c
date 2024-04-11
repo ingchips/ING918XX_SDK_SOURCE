@@ -347,13 +347,44 @@ typedef struct
 } factory_data_t;
 #pragma pack (pop)
 
+uint32_t calc_checksum_32(const uint32_t* data, uint32_t length)
+{
+    uint32_t sum = 0;
+    while(length--)
+        sum += *data++;
+    return sum;
+}
+
+static uint32_t calc_ft_sum()
+{
+    uint32_t ft_size = (sizeof(factory_data_t) + 320);
+    ft_size = (ft_size + 3) & ~4;
+    return calc_checksum_32((uint32_t *)FACTORY_DATA_LOC, ft_size >> 2);
+}
+
+static uint32_t get_ft_sum()
+{
+    uint32_t ft_size = (sizeof(factory_data_t) + 320);
+    ft_size = (ft_size + 3) & ~4;
+    return *(uint32_t*)(FACTORY_DATA_LOC + ft_size);
+}
+
+static void write_ft_sum()
+{
+    uint32_t ft_size = (sizeof(factory_data_t) + 320);
+    ft_size = (ft_size + 3) & ~4;
+    uint32_t checksum = calc_ft_sum();
+    write_flash(FACTORY_DATA_LOC + ft_size, (uint8_t *)&checksum, sizeof(uint32_t));
+}
+
 static int is_data_ready(void)
 {
     const die_info_t *p = (const die_info_t *)FACTORY_DATA_LOC;
-    if ((p->cid[0] == MAGIC_0) && (p->cid[1] == MAGIC_1))
-        return 1;
-    else
+    if ((p->cid[0] != MAGIC_0) || (p->cid[1] != MAGIC_1))
         return 0;
+    if (get_ft_sum() != calc_ft_sum())
+        return 0;
+    return 1;
 }
 
 static void copy_security_data(uint32_t dst, uintptr_t src, int word_len)
@@ -388,14 +419,13 @@ int flash_prepare_factory_data(void)
     flash_enable_write_protection(FLASH_REGION_NONE, 0);
     
     erase_flash_sector(FACTORY_DATA_LOC);
-    copy_security_data(FACTORY_DATA_LOC + 8,
-        0x1008, (sizeof(die_info_t) - 8) / 4);
+    copy_security_data(FACTORY_DATA_LOC,
+        0x1000, sizeof(die_info_t) / 4);
     copy_security_data(FACTORY_DATA_LOC + sizeof(die_info_t),
         0x1100, sizeof(factory_calib_data_t) / 4);
     copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
         0x2000, 320 / 4);
-    copy_security_data(FACTORY_DATA_LOC,
-        0x1000, 8 / 4);
+    write_ft_sum();
     
     flash_enable_write_protection(region, reverse_selection);
     
@@ -436,7 +466,6 @@ static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selec
     }
     FLASH_POST_OPS();
 }
-
 
 void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
 {
