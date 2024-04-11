@@ -124,7 +124,7 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 #include "eflash.h"
 #define ADC_LEFT_SHIFT(v, s)            ((v) << (s))
 #define ADC_RIGHT_SHIFT(v, s)           ((v) >> (s))
-#define ADC_MK_MASK(b)                  ((ADC_LEFT_SHIFT(1, b)) - (1))
+#define ADC_MK_MASK(b)                  ((ADC_LEFT_SHIFT(1ULL, b)) - (1))
 #define ADC_REG_VAL(reg)                ((*((volatile uint32_t *)((APB_SARADC_BASE) + (reg)))))
 #define REG_CLR(reg, b, s)              ((ADC_REG_VAL(reg)) & (~(ADC_LEFT_SHIFT(ADC_MK_MASK(b), s))))
 #define REG_OR(v, s)                    ((ADC_REG_VAL(reg)) | (ADC_LEFT_SHIFT(v, s)))
