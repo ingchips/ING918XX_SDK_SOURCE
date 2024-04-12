@@ -10,6 +10,7 @@
 #include "gatt_client_util.h"
 
 #include "sig_uuid.h"
+#include "bluetooth_hci.h"
 
 #include "port_gen_os_driver.h"
 
@@ -145,6 +146,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             if (gap_synced_ctx->create_conn.complete)
             {
                 const le_meta_event_enh_create_conn_complete_t * complete =
@@ -173,6 +175,20 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             gap_synced_ctx->wait_opcode = 0xffff;
             gap_synced_ctx->conn_handle = INVALID_HANDLE;
             GEN_OS->event_set(gap_synced_ctx->done_evt);
+        }
+        break;
+
+    case HCI_EVENT_COMMAND_STATUS:
+        if (hci_event_command_status_get_command_opcode(packet) == HCI_LE_EXT_CREATE_CONN_CMD_OPCODE)
+        {
+            uint8_t status = hci_event_command_status_get_status(packet);
+
+            if ((status != 0) && (gap_synced_ctx->create_conn.complete))
+            {
+                GEN_OS->timer_stop(gap_synced_ctx->create_conn.timer);
+                gap_synced_ctx->create_conn.complete->status = status;
+                GEN_OS->event_set(gap_synced_ctx->done_evt);
+            }
         }
         break;
 

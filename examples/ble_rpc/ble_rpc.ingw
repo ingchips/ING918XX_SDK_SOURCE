@@ -4,11 +4,11 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9ff0700000000",
-    "addr": 158908
+    "addr": 159584
    }
   },
   "rom": {
-   "size": 146876,
+   "size": 147548,
    "base": 16384
   },
   "ram": {
@@ -16,10 +16,10 @@
    "base": 536870912
   },
   "app": {
-   "base": 163840
+   "base": 172032
   },
   "version": [
-   1,9,54]
+   1,9,58]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -59,8 +59,8 @@
  "power_saving": false,
  "secondary": false,
  "bundle": "extension",
- "app_rom_size": "376832",
- "app_rom_addr": "163840",
+ "app_rom_size": "368640",
+ "app_rom_addr": "172032",
  "family": "ing918",
  "vcode": true,
  "heap_override": false,
