@@ -1,6 +1,6 @@
 {
     "app": {
-        "base": 147456
+        "base": 155648
     },
     "ram": {
         "base": 536870912,
@@ -8,17 +8,17 @@
     },
     "rom": {
         "base": 16384,
-        "size": 130956
+        "size": 131564
     },
     "var": {
         "link_layer_features": {
-            "addr": 143116,
+            "addr": 143728,
             "value": "3ff9ff0700000000"
         }
     },
     "version": [
         1,
         9,
-        56
+        58
     ]
 }

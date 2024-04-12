@@ -8,17 +8,17 @@
     },
     "rom": {
         "base": 16384,
-        "size": 136252
+        "size": 136900
     },
     "var": {
         "link_layer_features": {
-            "addr": 148744,
+            "addr": 149392,
             "value": "3ff9010400000000"
         }
     },
     "version": [
         1,
         9,
-        56
+        58
     ]
 }

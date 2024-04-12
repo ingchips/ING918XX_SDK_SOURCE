@@ -214,7 +214,7 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
  * @brief Try to adjust peer's tx power of a connection
  *
  * @param[in]  conn_handle      handle of an existing connection
- * @param[in]  delta            delta of tx power in dBm
+ * @param[in]  delta            delta of tx power in dB
  *                              Note: A positive value indicates a request to increase the
  *                                    transmit power level; negtive to decrease the transmit
  *                                    power level.
