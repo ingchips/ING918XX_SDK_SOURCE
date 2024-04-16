@@ -45,12 +45,6 @@ settings in the project file (`flash_download.ini`).
 
 ### Note for J-Link Download
 
-This function depends on the [`pylink-square`](https://pylink.readthedocs.io/en/latest/about.html) package. To install it:
-
-```sh
-pip install pylink-square
-```
-
 - Use `python icsdw.py list-jlink` to query all J-Link probes. It will print the full information of
   all available J-Link probes.
 
