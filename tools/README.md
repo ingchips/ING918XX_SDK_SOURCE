@@ -11,7 +11,7 @@ families.
     python icsdw.py /path/to/flash_download.ini
     ```
 
-Just as the GUI downloader, this script supports COM (UART) and USB.
+This script supports COM (UART), USB and SWD (through J-Link).
 
 Use 'pip install -r requirements.txt' to install all dependency packages
 
@@ -20,7 +20,7 @@ Use 'pip install -r requirements.txt' to install all dependency packages
 Type `python icsdw.py` to see the help message for command line format.
 
 |Option                 | Explanation                            |
-|:--------------------|:-----------------------------------------|
+|:----------------------|:-----------------------------------------|
 |--go                   |Skip handshaking.                      |
 |--user_data STRING     |Pass `STRING` to user defined `on_start_bin2`. |
 |--port PORT            |Use `PORT` to download.                |
@@ -42,6 +42,21 @@ settings in the project file (`flash_download.ini`).
     ```shell
     python icsdw.py /path/to/flash_download.ini --port USB#VID_FFFF#PID_FA2F#25#01#02
     ```
+
+### Note for J-Link Download
+
+- Use `python icsdw.py list-jlink` to query all J-Link probes. It will print the full information of
+  all available J-Link probes.
+
+- If `port` is set to `JLINK`, then the 1st found J-Link probe is chosen. Use `JLINK#serail_no`
+  to specify it explicitly when there are multiple probes, for example:
+
+    ```shell
+    python icsdw.py /path/to/flash_download.ini --port JLINK#123
+    ```
+
+    where `123` is the serial number of the selected probe.
+
 
 ## Flash Dumper
 

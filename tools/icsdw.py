@@ -71,12 +71,12 @@ def load_mod(fn: str):
     loader.exec_module(mod)
     return mod
 
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 60, fill = '█', printEnd = "\r"):
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 60, fill = '█', printEnd = "\r", auto_nl = True):
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
     print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
-    if iteration == total:
+    if (iteration == total) and auto_nl:
         print()
 
 def get_port_name(name):
@@ -212,6 +212,78 @@ class device(object):
         else: #usb
             usb.util.dispose_resources(self.dev)
 
+def list_jlink():
+    import pylink
+    jlink = pylink.JLink()
+    for x in jlink.connected_emulators():
+        print(x)
+
+def run_proj_jlink(config, mod, port, counter, user_data):
+    verify = config.getboolean('options', 'verify', fallback=False)
+    family = config.get('main', 'family', fallback='ing918')
+
+    serial_no = port[6:] if port.startswith('jlink#') else None
+
+    # some options are not supported
+    if config.getboolean('options', 'protection.enabled'):
+        print('WARNING: unsupported function: protection')
+    if config.getboolean('options', 'set-entry'):
+        if family == 'ing918':
+            print('WARNING: unsupported function: set entry for ing918')
+
+    def jlink_on_progress(action, progress_string, percentage):
+        printProgressBar(percentage, 100, action.decode(), auto_nl = False)
+
+    import pylink
+    jlink = pylink.JLink()
+    jlink.open(serial_no=serial_no)
+    jlink.set_tif(pylink.enums.JLinkInterfaces.SWD)
+    jlink.disable_dialog_boxes()
+
+    global SCRIPT_MOD
+    SCRIPT_MOD = mod
+    batch_counter = counter
+    if batch_counter < 0:
+        batch_counter = config.getint('options', 'batch.current')
+
+    if call_on_batch(SCRIPT_MOD, batch_counter):
+        return 10
+
+    if family == 'ing918':
+        jlink.connect('ING9188xx')
+    elif family == 'ing916':
+        jlink.connect('ING9168xx')
+    else:
+        raise ValueError("Invalid device type")
+
+    if not jlink.target_connected():
+        raise ConnectionError("Failed to connect to target")
+
+    for i in range(6):
+        bcfg = dict(config.items('bin-' + str(i)))
+        if bcfg['checked'] != '1':
+            continue
+
+        addr = int(bcfg['address'])
+
+        if addr >= RAM_BASE_ADDR:
+            raise Exception('unsupported function: download to RAM')
+
+        print('downloading {} @ {:#x} ...'.format(bcfg['filename'], addr))
+        data = open(bcfg['filename'], "rb").read()
+        abort, new_data = call_on_file(SCRIPT_MOD, batch_counter, i + 1, data, user_data)
+        if abort:
+            return 10
+
+        jlink.flash(new_data, addr, on_progress=jlink_on_progress)
+        print()
+
+    if config.getboolean('options', 'launch'):
+        jlink.reset()
+
+    jlink.close()
+    return 0
+
 def run_proj(proj: str, go = False, port = '', timeout = 5, counter = -1, user_data = ''):
     mod = None
     config = configparser.ConfigParser()
@@ -226,6 +298,10 @@ def run_proj(proj: str, go = False, port = '', timeout = 5, counter = -1, user_d
     port_cfg = dict(config.items('uart'))
     if port == '':
         port = port_cfg['port']
+
+    if port.lower().startswith('jlink'):
+        return run_proj_jlink(config, mod, port, counter, user_data)
+
     d = device(port, timeout, port_cfg)
 
     if d.dev is None:
@@ -315,6 +391,10 @@ if __name__ == '__main__':
 
     if FLAGS.proj == 'list-usb':
         device.query_all_active_usb_ports()
+        sys.exit(0)
+
+    if FLAGS.proj == 'list-jlink':
+        list_jlink()
         sys.exit(0)
 
     try:
