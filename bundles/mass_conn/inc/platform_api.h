@@ -128,12 +128,11 @@ typedef enum
     // NOTE: param (void *data) is casted from platform_exception_id_t
     PLATFORM_CB_EVT_EXCEPTION,
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     // platform callback for customized IDLE procedure
     // developers can setup this callback to implement customized IDLE procedure.
     // a typical IDLE procedure is: `__DSB(); __WFI(); __ISB();`
+    // Note on ING918: not available. ignored.
     PLATFORM_CB_EVT_IDLE_PROC,
-#endif
 
     // Take over HCI and isolate the built-in Host completely
     // when defined:
