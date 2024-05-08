@@ -1219,11 +1219,6 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 12);
         set_reg_bit(APB_SYSCTRL->CguCfg + 2, v, 0);
         break;
-    case SYSCTRL_ITEM_AHB_SPI0      :
-        set_reg_bit(APB_SYSCTRL->CguCfg + 2, v, 12);
-        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 13);
-        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 6);
-        break;
     case SYSCTRL_ITEM_APB_SPI1      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 14);
         set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 7);
@@ -1280,6 +1275,26 @@ void SYSCTRL_SetClkGateMulti(uint32_t items)
             SYSCTRL_SetClkGate(i);
 }
 
+int SYSCTRL_GetDmaId(SYSCTRL_DMA item)
+{
+    int offset = 0;
+    uint32_t value = APB_SYSCTRL->DmaCtrl[0];
+    int i;
+    if (item >= SYSCTRL_DMA_UART0_TX)
+    {
+        offset = 8;
+        item -= SYSCTRL_DMA_UART0_TX;
+        value = APB_SYSCTRL->DmaCtrl[1];
+    }
+    for (i = 0; i <= 28; i += 4)
+    {
+        if ((value & 0xf) == item)
+            return offset + i / 4;
+        value >>= 4;
+    }
+    return -1;
+}
+
 void SYSCTRL_ClearClkGateMulti(uint32_t items)
 {
     SYSCTRL_Item i;
@@ -1288,10 +1303,94 @@ void SYSCTRL_ClearClkGateMulti(uint32_t items)
             SYSCTRL_ClearClkGate(i);
 }
 
+static void SYSCTRL_ResetBlockCtrl(SYSCTRL_ResetItem item, uint8_t v)
+{
+    switch (item)
+    {
+    case SYSCTRL_ITEM_APB_GPIO0:
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 31);
+        break;
+    case SYSCTRL_ITEM_APB_GPIO1:
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 0);
+        break;
+    case SYSCTRL_ITEM_APB_TMR0      :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 12);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 2);
+        break;
+    case SYSCTRL_ITEM_APB_TMR1      :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 13);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 3);
+        break;
+    case SYSCTRL_ITEM_APB_WDT       :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 11);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 18);
+        break;
+    case SYSCTRL_ITEM_APB_PWM       :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 15);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 12);
+        break;
+    case SYSCTRL_ITEM_APB_QDEC      :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 19);
+        set_reg_bit(&APB_SYSCTRL->QdecCfg, v, 14);
+        break;
+    case SYSCTRL_ITEM_APB_KeyScan   :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 20);
+        break;
+    case SYSCTRL_ITEM_APB_DMA       :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 22);
+        break;
+    case SYSCTRL_ITEM_AHB_SPI0      :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 23);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 8);
+        break;
+    case SYSCTRL_ITEM_APB_SPI1      :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 24);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 9);
+        break;
+    case SYSCTRL_ITEM_APB_ADC       :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 25);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 14);
+        break;
+    case SYSCTRL_ITEM_APB_I2S       :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 26);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 10);
+        break;
+    case SYSCTRL_ITEM_APB_UART0     :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 27);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 6);
+        break;
+    case SYSCTRL_ITEM_APB_UART1     :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 28);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 7);
+        break;
+    case SYSCTRL_ITEM_APB_I2C0      :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 29);
+        break;
+    case SYSCTRL_ITEM_APB_SysCtrl   :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 10);
+        break;
+    case SYSCTRL_ITEM_APB_PinCtrl   :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 16);
+        break;
+    default:
+        break;
+    }
+}
+
+void SYSCTRL_ResetBlock(SYSCTRL_ResetItem item)
+{
+    SYSCTRL_ResetBlockCtrl(item, 0);
+}
+
+void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item)
+{
+    SYSCTRL_ResetBlockCtrl(item, 1);
+}
+
 uint32_t SYSCTRL_GetHClk()
 {
-    // TODO
-    return 48000000;
+    // TODO fpga hclk 24mhz now
+    return 24000000;
 }
 
 #endif
