@@ -1387,9 +1387,20 @@ void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item)
     SYSCTRL_ResetBlockCtrl(item, 1);
 }
 
+void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), enable & 0x1, channel_index);
+}
+
 uint32_t SYSCTRL_GetHClk()
 {
     // TODO fpga hclk 24mhz now
+    return 24000000;
+}
+
+uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
+{
+    //TODO
     return 24000000;
 }
 

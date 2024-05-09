@@ -179,6 +179,13 @@ typedef struct
     __IO uint32_t Reserved[2];
 } PCAP_ChannelDef;
 
+typedef struct
+{
+    __IO uint32_t step0; // 0x00
+    __IO uint32_t step1; // 0x04
+    __IO uint32_t Reserved[2];
+} PWM_STEP_ChannelDef;
+
 // dedicated PWM
 typedef struct
 {
@@ -186,6 +193,8 @@ typedef struct
     PCAP_ChannelDef PCAPChannels[3];    // 0x60
     __IO uint32_t CapCntEn;             // 0x90
     __IO uint32_t CapCounter;           // 0x94
+	__IO uint32_t Reserved[26];
+	PWM_STEP_ChannelDef STEPChannels[3]; //0x100
 } PWM_TypeDef;
 
 // I2S
