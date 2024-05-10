@@ -1931,45 +1931,44 @@ void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable);
 
 typedef enum
 {
+    // remapppable memory block 1, 16KiB
+    // for `mini` and `noos_mini` bundles, this block is mapped to `SYSCTRL_SYS_MEM_BLOCK_2`
+    // for other variants,                 this block is mapped to `SYSCTRL_SHARE_MEM_BLOCK_2`
+    SYSCTRL_MEM_REMAPPABLE_BLOCK_0 = 0x04,
+    // remapppable memory block 2, 8KiB
+    // for `mini` and `noos_mini` bundles, this block is mapped to `SYSCTRL_SYS_MEM_BLOCK_3`
+    // for other variants,                 this block is mapped to `SYSCTRL_SHARE_MEM_BLOCK_1`
+    SYSCTRL_MEM_REMAPPABLE_BLOCK_1 = 0x02,
+
     // SYS RAM block #0, 16KiB starting from 0x20000000 (0x20000000~0x20003fff)
     // This block is always ON, and can't be turned off.
-    SYSCTRL_SYS_MEM_BLOCK_0 = 0x10,
-    // SYS RAM block #1, 16KiB following block #0       (0x20004000~0x20007fff)
+    SYSCTRL_SYS_MEM_BLOCK_0 = 0x30,
+    // SYS RAM block #1, 8KiB following block #0        (0x20004000~0x20005fff)
     SYSCTRL_SYS_MEM_BLOCK_1 = 0x08,
-    // SYS RAM block #2, 16KiB following block #1       (0x20008000~0x2000bfff)
+    // SYS RAM block #2, 16KiB following block #1       (0x20006000~0x20009fff)
     // remapped from `SYSCTRL_MEM_REMAPPABLE_BLOCK_0`
-    SYSCTRL_SYS_MEM_BLOCK_2 = 0x02,
-    // SYS RAM block #3,  8KiB following block #2       (0x2000c000~0x2000dfff)
+    SYSCTRL_SYS_MEM_BLOCK_2 = SYSCTRL_MEM_REMAPPABLE_BLOCK_0,
+    // SYS RAM block #3,  8KiB following block #2       (0x2000a000~0x2000bfff)
     // remapped from `SYSCTRL_MEM_REMAPPABLE_BLOCK_1`
-    SYSCTRL_SYS_MEM_BLOCK_3 = 0x04,
+    SYSCTRL_SYS_MEM_BLOCK_3 = SYSCTRL_MEM_REMAPPABLE_BLOCK_1,
 
     // SHARE RAM block #0, 8KiB starting from 0x40120000    (0x40120000~0x40121fff)
     // This shall not be turned off.
     SYSCTRL_SHARE_MEM_BLOCK_0 = 0x01,
     // SHARE RAM block #1, 8KiB following block #0          (0x40122000~0x40123fff)
     // remapped from `SYSCTRL_MEM_REMAPPABLE_BLOCK_1`
-    SYSCTRL_SHARE_MEM_BLOCK_1 = 0x04,
+    SYSCTRL_SHARE_MEM_BLOCK_1 = SYSCTRL_MEM_REMAPPABLE_BLOCK_1,
     // SHARE RAM block #2,16KiB following block #1          (0x40124000~0x40127fff)
     // remapped from `SYSCTRL_MEM_REMAPPABLE_BLOCK_0`
-    SYSCTRL_SHARE_MEM_BLOCK_2 = 0x02,
-
-    // remapppable memory block 0, 16KiB
-    // for `mini` and `noos_mini` bundles, this block is mapped to `SYSCTRL_SYS_MEM_BLOCK_2`
-    // for other variants,                 this block is mapped to `SYSCTRL_SHARE_MEM_BLOCK_2`
-    SYSCTRL_MEM_REMAPPABLE_BLOCK_0 = 0x02,
-    // remapppable memory block 1, 8KiB
-    // for `mini` and `noos_mini` bundles, this block is mapped to `SYSCTRL_SYS_MEM_BLOCK_3`
-    // for other variants,                 this block is mapped to `SYSCTRL_SHARE_MEM_BLOCK_1`
-    SYSCTRL_MEM_REMAPPABLE_BLOCK_1 = 0x04,
+    SYSCTRL_SHARE_MEM_BLOCK_2 = SYSCTRL_MEM_REMAPPABLE_BLOCK_0,
 
     // below definitions are kept for compatibility
-    SYSCTRL_MEM_BLOCK_0 = 0x10,     // block 0 is 16KiB starting from 0x20000000
-                                    // This block is always ON, and can't be turned off.
-    SYSCTRL_MEM_BLOCK_1 = 0x08,     // block 1 is 16KiB following block 0
+    SYSCTRL_MEM_BLOCK_0 = SYSCTRL_SYS_MEM_BLOCK_0,
+    SYSCTRL_MEM_BLOCK_1 = SYSCTRL_SYS_MEM_BLOCK_1,
 
-    SYSCTRL_SHARE_BLOCK_0 = 0x01,   // share memory block 0 is  8KiB starting from 0x40120000
-    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 2 (0x40124000)
-    SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 0 (0x40122000)
+    SYSCTRL_SHARE_BLOCK_0 = SYSCTRL_SHARE_MEM_BLOCK_0,
+    SYSCTRL_SHARE_BLOCK_1 = SYSCTRL_SHARE_MEM_BLOCK_1,
+    SYSCTRL_SHARE_BLOCK_2 = SYSCTRL_SHARE_MEM_BLOCK_2,
 } SYSCTRL_MemBlock;
 
 // this blocks (16 + 8) KiB are reversed in _mini_bundles
@@ -1981,7 +1980,7 @@ typedef enum
     SYSCTRL_MEM_BLOCK_AS_SYS_MEM = 1,
 } SYSCTRL_CacheMemCtrl;
 
-#define SYSCTRL_I_CACHE_AS_MEM_BASE_ADDR 0x20010000
+#define SYSCTRL_I_CACHE_AS_MEM_BASE_ADDR 0x2000C000
 
 /**
  * @brief Control the usage of I-Cache
