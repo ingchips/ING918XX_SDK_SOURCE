@@ -340,9 +340,9 @@ typedef enum
   SPI_ADDRFMT_QUAD_MODE = 1
 }SPI_TransCtrl_AddrFmt_e;
 
-/* SPI_MOSI_UNI_DIR_MODE: This register sets the MOSI pin of the SPI as the normal mode
-   SPI_MOSI_BI_DIR_MODE: This register sets the MOSI pin of SPI as a bidirectional mode, 
-    and SPI can use a three-wire transmission mode */
+/* SPI_MOSI_UNI_DIR_MODE: This mode sets the MOSI pin of the SPI as the normal mode.
+   SPI_MOSI_BI_DIR_MODE: This mode sets the MOSI pin of SPI as a bidirectional mode.
+   This bi-directional signal replaces the two uni-directional data signals, MOSI and MISO. */
 typedef enum
 {
     SPI_MOSI_UNI_DIR_MODE = 0,
