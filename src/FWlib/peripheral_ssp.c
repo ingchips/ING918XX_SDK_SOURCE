@@ -291,7 +291,8 @@ void apSSP_DeviceParametersSet(SSP_TypeDef *SPI_BASE, apSSP_sDeviceControlBlock 
                           pParam->eLsbMsbOrder      << bsSPI_TRANSFMT_LSB |
                           pParam->eDataSize         << bsSPI_TRANSFMT_DATALEN |
                           pParam->eMasterSlaveMode  << bsSPI_TRANSFMT_SLVMODE |
-                          pParam->eAddrLen          << bsSPI_TRANSFMT_ADDRLEN);
+                          pParam->eAddrLen          << bsSPI_TRANSFMT_ADDRLEN |
+                          pParam->eMOSI_Dir         << bsSPI_TRANSFMT_MOSIBIDIR );
 
     SPI_BASE->TransCtrl = (pParam->eReadWriteMode         << bsSPI_TRANSCTRL_TRANSMODE |
                           pParam->eQuadMode               << bsSPI_TRANSCTRL_DUALQUAD |
