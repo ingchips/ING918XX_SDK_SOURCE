@@ -72,7 +72,7 @@ void RTC_EnableFreeRun(uint8_t enable);
  * @param[in] flag     RTC_ENABLED or RTC_DISABLED
  ****************************************************************************************
  */
-#define RTC_Enable(const uint8_t flag)  RTC_EnableFreeRun(flag)
+#define RTC_Enable(flag)  RTC_EnableFreeRun(flag)
 
 /**
  ****************************************************************************************
