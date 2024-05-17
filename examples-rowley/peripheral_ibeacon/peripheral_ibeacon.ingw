@@ -3,22 +3,22 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9010400000000",
-    "addr": 149468
+    "addr": 149436
    }
   },
   "rom": {
-   "size": 136968,
+   "size": 136936,
    "base": 16384
   },
   "ram": {
-   "size": 29812,
+   "size": 29804,
    "base": 536870912
   },
   "app": {
    "base": 155648
   },
   "version": [
-   1,9,63]
+   1,9,64]
  },
  "tc_dir": "",
  "ide_ver": "",
@@ -55,8 +55,8 @@
   "proxy": true
  },
  "cmsis": "C:\/projects\/ingchips\/ingWizard\/CMSIS",
- "app_ram_size": 35720,
- "app_ram_addr": 536900728,
+ "app_ram_size": 35728,
+ "app_ram_addr": 536900720,
  "rowley": true,
  "uart_log": true,
  "ota_ver_patch": "0",

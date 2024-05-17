@@ -91,11 +91,26 @@ typedef enum
 
     // peripherals need to be re-initialized after deep-sleep, user can handle this event
     // Note: param (void *data) is casted from (platform_wakeup_call_info_t *).
+    // CAUTION: RTOS is not resumed yet, some APIs are not usable; Some platform
+    //          APIs (such as `platform_get_us_time`) might be unusable either.
+    // See also `PLATFORM_CB_EVT_ON_IDLE_TASK_RESUMED`.
     PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP,
+
+    // When OS is fully resumed from power saving modes.
+    // The callback is invoked after `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` if
+    // its reason is `PLATFORM_WAKEUP_REASON_NORMAL`.
+    // For NoOS variants, the callback is invoked by `platform_os_idle_resumed_hook()`.
+    // This event is different with `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP`:
+    // * all OS functionalities are resumed (For NoOS variants, this depends on the
+    //   proper use of `platform_os_idle_resumed_hook()`)
+    // * all platform APIs are functional
+    // * callback is invoked in the idle task.
+    // Note: param (void *data) is always 0.
+    PLATFORM_CB_EVT_ON_IDLE_TASK_RESUMED,
 
     // return bits combination of `PLATFORM_ALLOW_xxx`
     // return 0 if deep sleep is not allowed now; else deep sleep is allowed
-    // e.g. when periphrals still have data to process (UART is tx buffer not empty)
+    // e.g. when peripherals still have data to process (UART is tx buffer not empty)
     PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED,
 
     // when hard fault occurs
