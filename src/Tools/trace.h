@@ -132,7 +132,7 @@ void trace_air_send(trace_air_t *ctx);
  ****************************************************************************************
  * @brief Control Flash trace
  *
- * Note: Use this to start/stop trace programmaticaly.
+ * Note: Use this to start/stop trace programmatically.
  *       Default: Disabled.
  *
  * @param[in] ctx                   trace context
