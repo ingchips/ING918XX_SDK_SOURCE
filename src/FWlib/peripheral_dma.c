@@ -1,5 +1,5 @@
 #include "peripheral_dma.h"
-
+#include "peripheral_pwm.h"
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #define bsDMA_DST_REQ_SEL        4
@@ -608,8 +608,8 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_I2C0:
         case SYSCTRL_DMA_UART0_TX:
         case SYSCTRL_DMA_UART1_TX:
-        case SYSCTRL_DMA_I2C1:
-            return DMA_WIDTH_BYTE;
+//        case SYSCTRL_DMA_I2C1:
+//            return DMA_WIDTH_BYTE;
 
         case SYSCTRL_DMA_SPI0_TX:
         case SYSCTRL_DMA_SPI0_RX:
@@ -618,8 +618,8 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_SPI1_RX:
             return DMG_GetSPIDMAWidth(APB_SSP1);
         case SYSCTRL_DMA_I2S_RX:
-        case SYSCTRL_DMA_PDM:
-        case SYSCTRL_DMA_ADC:
+//        case SYSCTRL_DMA_PDM:
+//        case SYSCTRL_DMA_ADC:
         case SYSCTRL_DMA_I2S_TX:
         case SYSCTRL_DMA_PWM0:
         case SYSCTRL_DMA_PWM1:
@@ -654,8 +654,8 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
             return 0;
         case SYSCTRL_DMA_I2S_RX:
             return &APB_I2S->RX;
-        case SYSCTRL_DMA_ADC:
-            return &APB_SADC->sadc_data;
+//        case SYSCTRL_DMA_ADC:
+//            return &APB_SADC->sadc_data;
 
         case SYSCTRL_DMA_UART0_TX:
             return &APB_UART0->DataRead;
@@ -671,21 +671,21 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
             return 0;
         case SYSCTRL_DMA_I2S_TX:
             return &APB_I2S->TX;
-//        case SYSCTRL_DMA_PWM0:
-//            if (PWM_GetMode(0) == PWM_WORK_MODE_PCAP)
-//                return &APB_PWM->PCAPChannels[0].Ctrl1;
-//            else
-//                return &APB_PWM->Channels[0].DmaData;
-//        case SYSCTRL_DMA_PWM1:
-//            if (PWM_GetMode(1) == PWM_WORK_MODE_PCAP)
-//                return &APB_PWM->PCAPChannels[1].Ctrl1;
-//            else
-//                return &APB_PWM->Channels[1].DmaData;
-//        case SYSCTRL_DMA_PWM2:
-//            if (PWM_GetMode(2) == PWM_WORK_MODE_PCAP)
-//                return &APB_PWM->PCAPChannels[2].Ctrl1;
-//            else
-//                return &APB_PWM->Channels[2].DmaData;
+        case SYSCTRL_DMA_PWM0:
+            if (PWM_GetMode(0) == PWM_WORK_MODE_PCAP)
+                return &APB_PWM->PCAPChannels[0].Ctrl1;
+            else
+                return &APB_PWM->Channels[0].DmaData;
+        case SYSCTRL_DMA_PWM1:
+            if (PWM_GetMode(1) == PWM_WORK_MODE_PCAP)
+                return &APB_PWM->PCAPChannels[1].Ctrl1;
+            else
+                return &APB_PWM->Channels[1].DmaData;
+        case SYSCTRL_DMA_PWM2:
+            if (PWM_GetMode(2) == PWM_WORK_MODE_PCAP)
+                return &APB_PWM->PCAPChannels[2].Ctrl1;
+            else
+                return &APB_PWM->Channels[2].DmaData;
 
         default:
             return 0;

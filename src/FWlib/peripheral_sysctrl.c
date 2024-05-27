@@ -1281,6 +1281,40 @@ void SYSCTRL_SetClkGateMulti(uint32_t items)
             SYSCTRL_SetClkGate(i);
 }
 
+int SYSCTRL_SelectUsedDmaItems(uint32_t items)
+{
+    int i = 0;
+    uint32_t value = 0;
+    int cnt = 0;
+    for (i = 0; i <= SYSCTRL_DMA_AUDIO_ENC_RX; i++)
+    {
+        if (items & (1ul << i))
+        {
+            if (cnt >= 8) return -1;
+            value <<= 4;
+            value |= i;
+            cnt++;
+        }
+    }
+    APB_SYSCTRL->DmaCtrl[0] = value;
+
+    value = 0;
+    cnt = 0;
+    for (i = SYSCTRL_DMA_UART0_TX; i < SYSCTRL_DMA_LAST; i++)
+    {
+        if (items & (1ul << i))
+        {
+            if (cnt >= 8) return -2;
+            value <<= 4;
+            value |= i - SYSCTRL_DMA_UART0_TX;
+            cnt++;
+        }
+    }
+    APB_SYSCTRL->DmaCtrl[1] = value;
+
+    return 0;
+}
+
 int SYSCTRL_GetDmaId(SYSCTRL_DMA item)
 {
     int offset = 0;

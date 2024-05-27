@@ -1652,30 +1652,31 @@ void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom);
 typedef enum
 {
     SYSCTRL_DMA_UART0_RX = 0,
-    SYSCTRL_DMA_UART1_RX = 1,
-    SYSCTRL_DMA_SPI0_TX  = 2,
-    SYSCTRL_DMA_SPI1_TX  = 3,
-    SYSCTRL_DMA_I2C0     = 4,
-    SYSCTRL_DMA_QDEC0    = 5,
-    SYSCTRL_DMA_PWM1     = 6,
-    SYSCTRL_DMA_I2S_RX   = 7,
-    SYSCTRL_DMA_PDM      = 8,
-    SYSCTRL_DMA_ADC      = 9,
+    SYSCTRL_DMA_UART1_RX,
+    SYSCTRL_DMA_SPI0_TX,
+    SYSCTRL_DMA_SPI1_TX,
+    SYSCTRL_DMA_I2C0,
+    SYSCTRL_DMA_QDEC0,
+    SYSCTRL_DMA_PWM1,
+    SYSCTRL_DMA_I2S_RX,
+	SYSCTRL_DMA_SPIFLASH,
+	SYSCTRL_DMA_SADC,
+	SYSCTRL_DMA_AUDIO_ENC_RX,
 
     SYSCTRL_DMA_UART0_TX = 0x10,
-    SYSCTRL_DMA_UART1_TX = 0x11,
-    SYSCTRL_DMA_SPI0_RX  = 0x12,
-    SYSCTRL_DMA_SPI1_RX  = 0x13,
-    SYSCTRL_DMA_I2C1     = 0x14,
-    SYSCTRL_DMA_QDEC1    = 0x15,
-    SYSCTRL_DMA_KeyScan  = 0x16,
-    SYSCTRL_DMA_I2S_TX   = 0x17,
-    SYSCTRL_DMA_PWM0     = 0x18,
-    SYSCTRL_DMA_PWM2     = 0x19,
-    SYSCTRL_DMA_QDEC2    = 0x1A,
-    SYSCTRL_DMA_LAST     = SYSCTRL_DMA_QDEC2,
+    SYSCTRL_DMA_UART1_TX,
+    SYSCTRL_DMA_SPI0_RX,
+    SYSCTRL_DMA_SPI1_RX,
+	SYSCTRL_DMA_AUDIO_ENC_TX,
+    SYSCTRL_DMA_QDEC1,
+    SYSCTRL_DMA_KeyScan,
+    SYSCTRL_DMA_I2S_TX,
+    SYSCTRL_DMA_PWM0,
+    SYSCTRL_DMA_PWM2,
+    SYSCTRL_DMA_QDEC2,
+	SYSCTRL_DMA_SDADC,
+    SYSCTRL_DMA_LAST = SYSCTRL_DMA_SDADC,
 } SYSCTRL_DMA;
-
 /**
  * \brief Select used DMA items
  * \param items         combination of bits whose positions are listed in `SYSCTRL_DMA`
@@ -2128,4 +2129,3 @@ void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles);
 #endif	/* __cplusplus */
 
 #endif
-
