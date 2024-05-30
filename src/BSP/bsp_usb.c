@@ -240,16 +240,15 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
           {
             uint32_t i;
             platform_printf("(%d)data: ",event->data.ep);for(i=0;i<10;i++){platform_printf(" 0x%x ",DataRecvBuf[i]);}platform_printf("\n");
-
-            memset(DataSendBuf, 0x33, sizeof(DataSendBuf));
-            status |= USB_SendData(ConfigDescriptor.endpoint[EP_IN-1].ep, DataRecvBuf, ConfigDescriptor.endpoint[EP_IN-1].mps, 0);
+            
+            status |= USB_RecvData(ConfigDescriptor.endpoint[EP_OUT-1].ep, DataRecvBuf, ConfigDescriptor.endpoint[EP_OUT-1].mps, 0);
           }
         }break;
         case USB_CALLBACK_TYPE_TRANSMIT_END:
         {
           if(event->data.ep == EP_IN)
           {
-            status |= USB_RecvData(ConfigDescriptor.endpoint[EP_OUT-1].ep, DataRecvBuf, ConfigDescriptor.endpoint[EP_OUT-1].mps, 0);
+            platform_printf("[USB] usb send data complete.\n");
           }
         }break;
         default:
@@ -281,6 +280,22 @@ void bsp_usb_init(void)
   config.intmask = USBINTMASK_SUSP | USBINTMASK_RESUME;
   config.handler = bsp_usb_event_handler;
   USB_InitConfig(&config);
+}
+
+uint32_t bsp_usb_send_data(const uint8_t data[], uint32_t len)
+{
+  uint32_t size = 0, status, ret = 0;
+  size = (len >= EP_X_MPS_BYTES) ? EP_X_MPS_BYTES : len;
+  
+  memcpy(DataSendBuf, data, size);
+  status = USB_SendData(ConfigDescriptor.endpoint[EP_IN-1].ep, DataSendBuf, ConfigDescriptor.endpoint[EP_IN-1].mps, 0);
+  
+  if(USB_ERROR_NONE != status)
+  {
+    platform_printf("[USB] data send error %d !\n", status);
+    ret = 1;
+  }
+  return ret;
 }
 
 void bsp_usb_disable(void)
