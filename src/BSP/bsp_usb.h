@@ -149,6 +149,7 @@ typedef struct
 extern void bsp_usb_init(void);
 extern void bsp_usb_disable(void);
 extern void bsp_usb_device_remote_wakeup(void);
+extern uint32_t bsp_usb_send_data(const uint8_t data[], uint32_t len);
 
 #ifdef FEATURE_DISCONN_DETECT
 void bsp_usb_device_disconn_timeout(void);
