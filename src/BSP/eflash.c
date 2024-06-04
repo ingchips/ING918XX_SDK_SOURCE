@@ -18,8 +18,14 @@ static uint32_t ClkFreq; //0:16M 1:24M
 
 #include "eflash.inc"
 
+
+#define FLASH_PRE_OPS()             __disable_irq();
+#define FLASH_POST_OPS()            __enable_irq();
+
 static void init(void)
 {
+    FLASH_PRE_OPS();
+
     ClkFreq = (*(uint32_t *)RTC_CHIP_STAT_ADDR >> CLK_FREQ_STAT_POS) & 0x1;
     EflashCacheBypass();
     EflashBaseTime();
@@ -32,6 +38,8 @@ static void uninit()
 {
     EflashCacheEna();
     EflashCacheFlush();
+    
+    FLASH_POST_OPS();
 }
 
 int program_flash0(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size, int erase)
