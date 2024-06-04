@@ -516,6 +516,13 @@ extern void USB_SetEp0Stall(uint8_t ep);
  */
 extern void USB_SetStallEp(uint8_t ep, uint8_t stall);
 /**
+ * @brief interface API. Check if ep is stall.
+ *
+ * @param[in] ep num with direction.
+ * @param[out] U_TRUE: stall, U_FALSE: normal
+ */
+extern uint8_t USB_IsEpStall(uint8_t ep);
+/**
  * @brief interface API. use this reg to set resume signal on bus,
  * according to spec, the duration should be value large than 1ms but less than 15ms
  *
