@@ -847,7 +847,6 @@ static int PINCTRL_SelInput(uint8_t io_pin,
     int id = pin_id_for_input_source(source_id, io_pin);
     if (id < 0) return id;
     set_reg_bits(&APB_PINCTRL->IN_CTRL[reg_index], (uint32_t)id, bit_width, bit_offset);
-    PINCTRL_SetPadMux((uint8_t)io_pin, (io_source_t)(source_id));
     return 0;
 }
 
@@ -1011,13 +1010,13 @@ void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index)
 
 int PINCTRL_SelKeyScanColIn(int index, uint8_t io_pin)
 {
-    if (index <= 15)
+    if (index <= 14)
         return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_COL_0 + index, 5, 2, 0 + index * 2);
-    else if (index <= 22)
+    else if (index <= 21)
         return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_COL_0 + index, 6, 2, 0 + (index - 15) * 2);
-    else if (index <= 28)
+    else if (index <= 27)
         return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_COL_0 + index, 6, 3, 14 + (index - 22) * 3);
-    else if (index <= 30)
+    else if (index <= 29)
         return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_COL_0 + index, 7, 3, 0 + (index - 28) * 3);
     else
     return -1;
