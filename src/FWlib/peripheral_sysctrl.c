@@ -1432,6 +1432,13 @@ void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
     set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), enable & 0x1, channel_index);
 }
 
+void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div)
+{
+    set_reg_bit(&APB_SYSCTRL->QdecCfg, mode, 15);
+    set_reg_bits(&APB_SYSCTRL->QdecCfg, div, 10, 1);
+    set_reg_bit(&APB_SYSCTRL->QdecCfg, 1, 11);
+}
+
 uint32_t SYSCTRL_GetHClk()
 {
     // TODO fpga hclk 24mhz now
