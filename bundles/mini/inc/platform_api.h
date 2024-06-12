@@ -430,9 +430,10 @@ void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_d
 
 typedef enum
 {
-    LL_FLAG_DISABLE_CTE_PREPROCESSING = 1,
-    LL_FLAG_LEGACY_ONLY_INITIATING = 4,
-    LL_FLAG_LEGACY_ONLY_SCANNING = 8,
+    LL_FLAG_DISABLE_CTE_PREPROCESSING   = 1,
+    LL_FLAG_LEGACY_ONLY_INITIATING      = 4,
+    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,
+    LL_FLAG_REDUCE_INSTANT_ERRORS       = 16,
 } ll_cfg_flag_t;
 
 typedef enum
@@ -834,7 +835,9 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  *
  * This type of timers are much like `platform_set_timer`, except that:
  * 1. resolution is higher;
- * 2. callback is invoked in the context of an ISR.
+ * 2. callback is invoked in the context of an ISR
+ *
+ * CAUTION: DO NOT call `platform_create_us_timer` again in `callback`.
  *
  * @param[in]  abs_time         when `platform_get_us_timer() == abs_time`, callback is invoked.
  * @param[in]  callback         the callback function
