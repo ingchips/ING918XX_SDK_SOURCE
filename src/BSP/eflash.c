@@ -18,9 +18,14 @@ static uint32_t ClkFreq; //0:16M 1:24M
 
 #include "eflash.inc"
 
+static uint32_t prim_irq;
 
-#define FLASH_PRE_OPS()             __disable_irq();
-#define FLASH_POST_OPS()            __enable_irq();
+#define FLASH_PRE_OPS()                     \
+    prim_irq = __get_PRIMASK();             \
+    __disable_irq();
+
+#define FLASH_POST_OPS()                    \
+    if (!prim_irq) __enable_irq()
 
 static void init(void)
 {
