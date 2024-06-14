@@ -404,6 +404,19 @@ void ADC_VrefCalibration(void);
 void ADC_ftInit(void);
 
 /**
+ * @brief Initialization of ADC FT-Calibration(use static memory allocation)
+ * @note Should call this function before do ADC conversion or get voltage value.
+ * And this function should be used again if 'ADC_AdcClose' is called.
+ *
+ * This function uses `flash_prepare_factory_data()`.
+ *
+ * Calibration parameters (ftCali_ptr) must use global or static variables to allocate memory space.
+ *
+ * @param[in] ftCali_ptr     Calibrate parameter struct address.
+ */
+void ADC_ftInitCali(SADC_ftCali_t *ftCali_ptr);
+
+/**
  * @brief Get voltage by ADC data
  * @note Should Calibrate VREFP by ADC_VrefCalibration first.
  *
