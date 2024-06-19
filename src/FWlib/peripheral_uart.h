@@ -301,7 +301,17 @@ typedef struct UART_xStateStruct
 
 } UART_sStateStruct;
 
-void apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t BaudRate);
+/**
+ * @brief Set the baudrate of the uart.
+ * 
+ * @param[in] pBase               The base address of uart.
+ * @param[in] ClockFrequency      The clock frequency of uart.
+ * @param[in] BaudRate            The baud rate to be set.
+ * @return int                    Operation status:
+ *                                 0 : Success.
+ *                                -1 : Parameter about BaudRate or ClockFrequency error.
+ */
+int apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t BaudRate);
 uint32_t apUART_BaudRateGet (UART_TypeDef* pBase, uint32_t ClockFrequency);
 uint8_t apUART_Check_Rece_ERROR(UART_TypeDef* pBase);
 uint8_t apUART_Check_RXFIFO_EMPTY(UART_TypeDef* pBase);
@@ -322,7 +332,19 @@ uint8_t apUART_Get_ITStatus(UART_TypeDef* pBase,uint8_t UART_IT);
 uint32_t apUART_Get_all_raw_int_stat(UART_TypeDef* pBase);
 
 uint8_t apUART_Check_BUSY(UART_TypeDef* pBase);
-void apUART_Initialize(UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t IntMask);
+
+/**
+ * @brief Uart initialization.
+ * 
+ * @param[in] pBase               The base address of uart.
+ * @param[in] UARTx               The uart setup structure.
+ * @param[in] IntMask             The mask interrupt enable bit selection, 
+ *                                For example, to enable the receive interrupt, you can set bit with (1 << bsUART_RECEIVE_INTENAB). 
+ * @return int                    Operation status:
+ *                                 0 : Success.
+ *                                -1 : UARTx parameter about ClockFrequency or BaudRate error.
+ */
+int apUART_Initialize(UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t IntMask);
 
 void UART_SendData(UART_TypeDef* pBase, uint8_t Data);
 uint8_t UART_ReceData(UART_TypeDef* pBase);
