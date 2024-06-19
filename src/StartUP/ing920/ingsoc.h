@@ -48,6 +48,7 @@ typedef enum
     PLATFORM_CB_IRQ_PMU_PDR,
     PLATFORM_CB_IRQ_32K_CNT,
     PLATFORM_CB_IRQ_ASDM,
+    PLATFORM_CB_IRQ_XO_READY,
 
     PLATFORM_CB_IRQ_MAX
 } platform_irq_callback_type_t;
