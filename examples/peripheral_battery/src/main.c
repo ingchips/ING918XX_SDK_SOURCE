@@ -75,6 +75,7 @@ typedef struct {
     uint16_t data[AVE_NUM];
 } __attribute__((packed)) SADC_adcAve_t;
 static SADC_adcAve_t *adcAve[12];
+static SADC_ftCali_t SADC_ftCali_data;
 
 uint16_t ADC_GetAveData(uint32_t data)
 {
@@ -160,7 +161,7 @@ void setup_peripherals(void)
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Reset();
     ADC_Calibration(SINGLE_END_MODE);
-    ADC_ftInit();
+    ADC_ftInitCali(&SADC_ftCali_data);
     ADC_VrefCalibration();
 #endif
 #else
