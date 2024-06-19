@@ -97,8 +97,13 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 
 void set_sample_offset(int n)
 {
+#if    (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     volatile uint32_t *reg = (volatile uint32_t *)0x40090200;
     *reg = (*reg & ~(0x1f << 15)) | ((n & 0x1f) << 15);
+#elif  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    volatile uint32_t *reg = (volatile uint32_t *)0x40110200;
+    *reg = (*reg & ~(0x1f << 15)) | ((n & 0x1f) << 15);
+#endif
 }
 
 uint32_t cb_lle_init(char *c, void *dummy)
