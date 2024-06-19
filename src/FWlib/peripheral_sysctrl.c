@@ -1143,6 +1143,7 @@ int SYSCTRL_Init(void)
     if (!p) return 1;
 
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), p->band_gap, 7, 4);
+    set_reg_bits(APB_SYSCTRL->CguCfg + 7, 750, 12, 20);
 
     for (i = 0; i < sizeof(p->vaon) / sizeof(p->vaon[0]); i++)
     {

@@ -74,3 +74,17 @@ wake up process will always ensure that SysTick is counting normally. SysTick ex
 Timer API in the generic RTOS driver interface is used by Host task. With the help of
 `platform_set_timer`, timers are implemented without SysTick. For simplicity, the supported number
 of timers (`SW_TIMER_NUMBER`) is hard-coded.
+
+## Limitations
+
+`noos_impl.c` is not a fully functional RTOS. Events, message queues, SysTick are not implemented.
+When these features are required, please use a **true** RTOS instead. There are some tool
+modules provided in SDK that requires a fully functional RTOS, therefore, these modules are
+can't be used with this `noos_impl.c`:
+
+* `btstack_mt`
+* `btstack_sync`
+* `ecc_driver`
+* `trace` (`trace_full_dump2` does depends on RTOS, so it is OK.)
+* `uart_driver`
+* `ble_brpc`

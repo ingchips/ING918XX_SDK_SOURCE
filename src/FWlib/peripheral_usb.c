@@ -715,6 +715,41 @@ void USB_SetStallEp(uint8_t ep, uint8_t stall)
     }
 }
 
+uint8_t USB_IsEpStall(uint8_t ep)
+{
+    uint8_t epNum = USB_EP_NUM(ep);
+    volatile uint32_t*  diepctrl;
+    volatile uint32_t*  doepctrl;
+
+    if(epNum == 0)
+    {
+        diepctrl = &AHB_USB->UsbDICtrl0;
+        doepctrl = &AHB_USB->UsbDOCtrl0;
+    }
+    else
+    {
+        diepctrl = &AHB_USB->UsbDIxConfig[epNum-1].DICtrlx;
+        doepctrl = &AHB_USB->UsbDOxConfig[epNum-1].DOCtrlx;
+    }
+
+    if(USB_IS_EP_DIRECTION_IN(ep))
+    {
+      if(*diepctrl & (0x1 << 21))
+      {
+        return U_TRUE;
+      }
+    }
+    else
+    {
+      if(*doepctrl & (0x1 << 21))
+      {
+        return U_TRUE;
+      }
+    }
+    
+    return U_FALSE;
+}
+
 void USB_PCStopPhyClcok(uint8_t stop)
 {
   if(U_TRUE == stop)
@@ -1026,30 +1061,21 @@ uint32_t USB_IrqHandler (void *user_data)
           statusEp            = AHB_USB->UsbDOInt0;
           AHB_USB->UsbDOInt0 = statusEp;
 
-          if(statusEp & (0x1 << 0))
+          if(statusEp & (0x1 << 3))
           {
-            if(statusEp & (0x1 << 15))
+            g_UsbVar.Ep0State = EP0_IDLE;
+            USB_HandleEp0();
+          }
+          else
+          {
+            if(statusEp & (0x1 << 0))
             {
-              g_UsbVar.Ep0State = EP0_IDLE;
-              USB_HandleEp0();
-            }
-            else
-            {
+              // check if need to process OUT data.
+              // check if need to process status stage for IN stage
               if((g_UsbVar.Ep0State != EP0_IDLE) )
               {
                 USB_HandleEp0();
               }
-            }
-          }
-          else
-          {
-            if((statusEp & (0x1 << 5))&&(g_UsbVar.Ep0State == EP0_OUT_DATA_PHASE))
-            {
-              USB_EP0StatusIn();
-            }
-            if((statusEp & (0x1 << 3)))
-            {
-              USB_GetSetupPacket();
             }
           }
         }

@@ -514,18 +514,19 @@ static void ADC_FtParaCal(SADC_ftChPara_t *p, const ADC_ftCalPara_t *calPara)
     p->k = (P(Cout2) - P(Cout1)) * 100000 / (P(Cin2) - P(Cin1));
     p->Coseq = 18192 - (P(Cin1) * (P(Cout2) - 8192) + P(Cin2) * (8192 - P(Cout1))) / (P(Cout2) - P(Cout1));
 }
-void ADC_ftInit(void)
+
+static void ADC_ftCalParaGet(void)
 {
-    if (ftCali) return;
     uint8_t i;
     uint8_t ret = flash_prepare_factory_data();
     const factory_calib_data_t *p_factoryCali = flash_get_factory_calib_data();
     ADC_ftCalPara_t ftCalPara = {0};
+    if(p_factoryCali == NULL)
+        return;
     ftCalPara.p_adcCali = (const uint16_t *)flash_get_adc_calib_data();
     if (ret || !p_factoryCali || !ftCalPara.p_adcCali)
         ftCalPara.readFlg = 1;
-    ftCali = calloc(1, sizeof(SADC_ftCali_t));
-
+    
     if (ftCalPara.readFlg)
         ftCalPara.flg = read_flash_security(0x1170);
     else
@@ -630,8 +631,33 @@ void ADC_ftInit(void)
         ftCali->V12Data = p_factoryCali->v12_adc[0];
     if (ftCalPara.ver == 1)
         ftCali->V12Data -= 14;
+    if(ftCali->V12Data < 5800 || ftCali->V12Data > 6100)
+    {
+        ftCali->V12Data = 5960;
+        ftCali->f = 0;
+    }
+    else
     ftCali->f = ADC_FtCal;
     ADC_VrefRegister(ftCali->Vp * 0.00001f, 0.f);
+}
+
+void ADC_ftInit(void)
+{
+    if (ftCali) return;
+    
+    ftCali = calloc(1, sizeof(SADC_ftCali_t));
+    if(ftCali == NULL) return;
+    
+    ADC_ftCalParaGet();
+}
+
+void ADC_ftInitCali(SADC_ftCali_t *ftCali_ptr)
+{
+    if (ftCali) return;
+    if (ftCali_ptr == NULL) return;
+
+    ftCali = ftCali_ptr;
+    ADC_ftCalParaGet();
 }
 
 void ADC_Reset(void)

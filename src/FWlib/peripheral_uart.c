@@ -1,7 +1,7 @@
 #include "peripheral_uart.h"
 
 //  Update ther previous function for Cortex-M3 not support hard float calculate
-void apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t BaudRate)
+int apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t BaudRate)
 {
     uint32_t BaudRateDiv;
     uint32_t BaudIntDiv;
@@ -20,8 +20,9 @@ void apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t B
 
     pBase->IntBaudDivisor   = BaudIntDiv;
 
-    if (( BaudIntDiv > 65535 ) || ( BaudIntDiv == 0 ))
-        for (;;);
+    if (( BaudIntDiv > 65535 ) || ( BaudIntDiv == 0 )){
+        return -1;
+    }
 
     /* Calculate fractional baud rate register value */
     if ( BaudIntDiv == 65535 )
@@ -44,6 +45,8 @@ void apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t B
     //    UARTFBRD, a UARTLCR_H write must always be performed at the end.
     //
     pBase->LineCon_H = pBase->LineCon_H;
+
+    return 0;
 }
 
 
@@ -215,7 +218,7 @@ void uart_reset(UART_TypeDef* pBase)
 
 
 //
-void apUART_Initialize (UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t IntMask)
+int apUART_Initialize(UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t IntMask)
 {
 	// clear Control Register, UARTCR
 	pBase->Control = 0;
@@ -232,7 +235,9 @@ void apUART_Initialize (UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t 
 	// clear Line Control Register, UARTLCR_H
 	pBase->LineCon_H = 0;
 	// set BaudDivisor
-	apUART_BaudRateSet(pBase, UARTx->ClockFrequency, UARTx->BaudRate);
+	if(0 != apUART_BaudRateSet(pBase, UARTx->ClockFrequency, UARTx->BaudRate)){
+        return -1;
+    }
     // set Line Control Register, UARTLCR_H
 	pBase->LineCon_H = ( ((UARTx->parity >> 2) & 1) << bsUART_STICK_PARITY ) |  // SPS
                      (   UARTx->word_length       << bsUART_WORD_LENGTH  ) |  // WLEN
@@ -256,6 +261,7 @@ void apUART_Initialize (UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t 
                     UARTx->cts_en      << bsUART_CTS_ENA         |
                     UARTx->rts_en      << bsUART_RTS_ENA;
 
+    return 0;
 }
 
 void UART_SendData(UART_TypeDef* pBase, uint8_t Data)

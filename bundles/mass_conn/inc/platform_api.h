@@ -50,7 +50,7 @@ typedef struct assertion_info_s
 typedef enum
 {
     PLATFORM_DEEP_SLEEP = 0,
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
     PLATFORM_DEEPER_SLEEP = 1,
     PLATFORM_BLE_ONLY_SLEEP = 2,
 #endif
@@ -58,7 +58,7 @@ typedef enum
 
 #define PLATFORM_ALLOW_DEEP_SLEEP            (1 << PLATFORM_DEEP_SLEEP)
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
 #define PLATFORM_ALLOW_DEEPER_SLEEP          (1 << PLATFORM_DEEPER_SLEEP)
 #define PLATFORM_ALLOW_BLE_ONLY_SLEEP        (1 << PLATFORM_BLE_ONLY_SLEEP)
 #endif
@@ -91,11 +91,26 @@ typedef enum
 
     // peripherals need to be re-initialized after deep-sleep, user can handle this event
     // Note: param (void *data) is casted from (platform_wakeup_call_info_t *).
+    // CAUTION: RTOS is not resumed yet, some APIs are not usable; Some platform
+    //          APIs (such as `platform_get_us_time`) might be unusable either.
+    // See also `PLATFORM_CB_EVT_ON_IDLE_TASK_RESUMED`.
     PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP,
+
+    // When OS is fully resumed from power saving modes.
+    // The callback is invoked after `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` if
+    // its reason is `PLATFORM_WAKEUP_REASON_NORMAL`.
+    // For NoOS variants, the callback is invoked by `platform_os_idle_resumed_hook()`.
+    // This event is different with `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP`:
+    // * all OS functionalities are resumed (For NoOS variants, this depends on the
+    //   proper use of `platform_os_idle_resumed_hook()`)
+    // * all platform APIs are functional
+    // * callback is invoked in the idle task.
+    // Note: param (void *data) is always 0.
+    PLATFORM_CB_EVT_ON_IDLE_TASK_RESUMED,
 
     // return bits combination of `PLATFORM_ALLOW_xxx`
     // return 0 if deep sleep is not allowed now; else deep sleep is allowed
-    // e.g. when periphrals still have data to process (UART is tx buffer not empty)
+    // e.g. when peripherals still have data to process (UART is tx buffer not empty)
     PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED,
 
     // when hard fault occurs
@@ -415,9 +430,10 @@ void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_d
 
 typedef enum
 {
-    LL_FLAG_DISABLE_CTE_PREPROCESSING = 1,
-    LL_FLAG_LEGACY_ONLY_INITIATING = 4,
-    LL_FLAG_LEGACY_ONLY_SCANNING = 8,
+    LL_FLAG_DISABLE_CTE_PREPROCESSING   = 1,
+    LL_FLAG_LEGACY_ONLY_INITIATING      = 4,
+    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,
+    LL_FLAG_REDUCE_INSTANT_ERRORS       = 16,
 } ll_cfg_flag_t;
 
 typedef enum
@@ -819,7 +835,9 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  *
  * This type of timers are much like `platform_set_timer`, except that:
  * 1. resolution is higher;
- * 2. callback is invoked in the context of an ISR.
+ * 2. callback is invoked in the context of an ISR
+ *
+ * CAUTION: DO NOT call `platform_create_us_timer` again in `callback`.
  *
  * @param[in]  abs_time         when `platform_get_us_timer() == abs_time`, callback is invoked.
  * @param[in]  callback         the callback function
