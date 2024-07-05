@@ -25,6 +25,8 @@ typedef enum
     PLATFORM_CB_IRQ_GPIO1,
     PLATFORM_CB_IRQ_TIMER0,
     PLATFORM_CB_IRQ_TIMER1,
+    PLATFORM_CB_IRQ_TIMER2,
+    PLATFORM_CB_IRQ_TIMER3,
     PLATFORM_CB_IRQ_WDT,
     PLATFORM_CB_IRQ_AHPSPI,
     PLATFORM_CB_IRQ_SPI0 = PLATFORM_CB_IRQ_AHPSPI,
@@ -150,6 +152,14 @@ typedef struct
     __IO uint32_t ChEn;                 // 0x1c
     TMR_CH_TypeDef Channels[CHANNEL_NUMBER_PER_TMR];   // 0x20
 } TMR_TypeDef;
+
+// function-reduced timer
+typedef struct
+{
+  __IO uint32_t CNT;
+  __IO uint32_t CMP;
+  __IO uint32_t CTL;
+} RTMR_TypeDef;
 
 // watchdog timer
 typedef struct
@@ -543,6 +553,8 @@ typedef struct
 #define APB_PTE_BUS        (APB_BASE + 0x18000)
 #define APB_PTE_BASE       (APB_BASE + 0x19000)
 #define APB_ASDM_BASE      (APB_BASE + 0x1a000)
+#define APB_TMR2_BASE      (APB_BASE + 0x1c000)
+#define APB_TMR3_BASE      (APB_BASE + 0x1c010)
 
 #define AON_APB_BASE       ((uint32_t)0x40100000UL)
 #define AON2_CTRL_BASE     (AON_APB_BASE + 0x0000)
@@ -557,6 +569,8 @@ typedef struct
 #define APB_WDT            ((WDT_TypeDef *)APB_WDT_BASE)
 #define APB_TMR0           ((TMR_TypeDef *)APB_TMR0_BASE)
 #define APB_TMR1           ((TMR_TypeDef *)APB_TMR1_BASE)
+#define APB_TMR2           ((RTMR_TypeDef *)APB_TMR2_BASE)
+#define APB_TMR3           ((RTMR_TypeDef *)APB_TMR3_BASE)
 #define APB_PWM            ((PWM_TypeDef *)APB_PWM_BASE)
 #define APB_I2S            ((I2S_TypeDef *)APB_I2S_BASE)
 #define APB_SADC           ((SADC_TypeDef *)APB_SARADC_BASE)

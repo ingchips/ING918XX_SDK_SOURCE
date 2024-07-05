@@ -1,5 +1,6 @@
 #include "ingsoc.h"
 #include "peripheral_pinctrl.h"
+#include "peripheral_gpio.h"
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
@@ -1115,8 +1116,8 @@ int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index)
 {
     if ((dp_io_pin_index != 16) || (dm_io_pin_index != 17))
     return -1;
-    PINCTRL_EnableAnalog((GIO_Index_t)dp_io_pin_index);
-    PINCTRL_EnableAnalog((GIO_Index_t)dm_io_pin_index);
+    PINCTRL_EnableAnalog(dp_io_pin_index);
+    PINCTRL_EnableAnalog(dm_io_pin_index);
     return 0;
 }
 

@@ -1500,10 +1500,49 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
 
 void SYSCTRL_EnablePLL(uint8_t enable)
 {
+    uint8_t enabled = io_read(AON1_CTRL_BASE + 0x28) & 1;
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x28), enable, 0);
+    if ((0 == enabled) && enable)
+        while ((APB_SYSCTRL->PllCtrl & (1u << 30)) == 0) ;
+}
+
+uint32_t SYSCTRL_GetPLLClk()
+{
+    uint32_t pll_ctrl = io_read(AON2_CTRL_BASE + 28);
+    if (pll_ctrl & (1ul << 20))
+    {
+        uint32_t div = ((pll_ctrl >> 1) & 0x3f) * ((pll_ctrl >> 15) & 0x3f);
+        return (uint32_t)((uint64_t)SYSCTRL_GetSlowClk() * ((pll_ctrl >> 7) & 0xff) / div);
+    }
+    else
+        return 0;
+}
+
+void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode)
+{
+    #define AON1_PMU3       ((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c))
+
+    if (enable)
+    {
+        // TODO:
+    }
+    else
+    {
+        set_reg_bit(AON1_PMU3, 0, 19);
+    }
 }
 
 #define AON1_REG5       ((volatile uint32_t *)(AON1_CTRL_BASE + 0x18))
+
+static void enabled_div_hclk_update_act(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), enable, 13);
+}
+
+static void enabled_div_flash_update_act(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), enable, 14);
+}
 
 void SYSCTRL_SelectHClk(SYSCTRL_ClkMode mode)
 {
@@ -1511,7 +1550,13 @@ void SYSCTRL_SelectHClk(SYSCTRL_ClkMode mode)
     {
         set_reg_bits(AON1_REG5, mode, 4, 20);
         set_reg_bit(AON1_REG5, 1, 28);
+        enabled_div_hclk_update_act(1);
     }
+    else
+    {
+        enabled_div_hclk_update_act(0);
+    }
+
     set_reg_bit(AON1_REG5, mode == 0 ? 0 : 1, 30);
 }
 
@@ -1521,6 +1566,11 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode)
     {
         set_reg_bits(AON1_REG5, mode, 4, 24);
         set_reg_bit(AON1_REG5, 1, 29);
+        enabled_div_flash_update_act(1);
+    }
+    else
+    {
+        enabled_div_flash_update_act(0);
     }
     set_reg_bit(AON1_REG5, mode == 0 ? 0 : 1, 31);
 }
