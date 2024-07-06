@@ -94,7 +94,21 @@ extern void rx_hci_byte(void *user_data, uint8_t c);
 
 int app_main()
 {
-    rf_enable_powerboost();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    switch (platform_read_persistent_reg())
+    {
+    case POWER_MODE_BOOSTED:
+        rf_enable_powerboost();
+        break;
+    case POWER_MODE_NORMAL:
+        SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BUCK_DCDC_OUTPUT_1V500);
+        SYSCTRL_SetLDOOutputRF(SYSCTRL_LDO_RF_OUTPUT_1V300);
+        break;
+    default:
+        platform_write_persistent_reg(POWER_MODE_NORMAL);
+        break;
+    }
+#endif
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
