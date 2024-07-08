@@ -1603,6 +1603,12 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), masked, 6, 12);
 }
 
+int SYSCTRL_Init(void)
+{
+    // TODO:
+    return 0;
+}
+
 #endif
 
 void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles)
