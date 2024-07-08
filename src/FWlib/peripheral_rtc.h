@@ -31,6 +31,35 @@ extern "C" {	/* allow C++ to use these headers */
  * 1. This is based on platform timer API, so "jitter" is larger.
  */
 
+/**
+ ****************************************************************************************
+ * @brief Get current RTC value (lower 32bit)
+ *
+ * @return              Current value
+ ****************************************************************************************
+ */
+uint32_t RTC_Current(void);
+
+/**
+ ****************************************************************************************
+ * @brief Get current full RTC value (full 43bit)
+ *
+ * @return              Current value
+ ****************************************************************************************
+ */
+uint64_t RTC_CurrentFull(void);
+
+/**
+ ****************************************************************************************
+ * @brief Enable/Disable
+ *
+ * Enabled by default. Disabled to save power.
+ *
+ * @param[in] enable            Enable(1)/Disable(0)
+ ****************************************************************************************
+ */
+void RTC_EnableFreeRun(uint8_t enable);
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 #define RTC_ENABLED             1
@@ -43,25 +72,7 @@ extern "C" {	/* allow C++ to use these headers */
  * @param[in] flag     RTC_ENABLED or RTC_DISABLED
  ****************************************************************************************
  */
-void RTC_Enable(const uint8_t flag);
-
-/**
- ****************************************************************************************
- * @brief Get current RTC value (lower 32bit)
- *
- * @return              Current value
- ****************************************************************************************
- */
-uint32_t RTC_Current(void);
-
-/**
- ****************************************************************************************
- * @brief Get current full RTC value (full 48bit)
- *
- * @return              Current value
- ****************************************************************************************
- */
-uint64_t RTC_CurrentFull(void);
+#define RTC_Enable(flag)  RTC_EnableFreeRun(flag)
 
 /**
  ****************************************************************************************
@@ -78,13 +89,6 @@ void RTC_SetNextIntOffset(const uint32_t offset);
  ****************************************************************************************
  */
 void RTC_ClearInt(void);
-
-/**
- ****************************************************************************************
- * @brief RTC_EnableFreeRun
- ****************************************************************************************
- */
-#define RTC_EnableFreeRun(enable)   do { RTC_Enable(enable); } while(0)
 
 #ifdef SOFTWARE_RTC_DHMS
 
@@ -422,34 +426,7 @@ void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data);
 
 #endif
 
-/**
- ****************************************************************************************
- * @brief Get current RTC value (lower 32bit)
- *
- * @return              Current value
- ****************************************************************************************
- */
-uint32_t RTC_Current(void);
-
-/**
- ****************************************************************************************
- * @brief Get current full RTC value (full 43bit)
- *
- * @return              Current value
- ****************************************************************************************
- */
-uint64_t RTC_CurrentFull(void);
-
-/**
- ****************************************************************************************
- * @brief Enable/Disable
- *
- * Enabled by default. Disabled to save power.
- *
- * @param[in] enable            Enable(1)/Disable(0)
- ****************************************************************************************
- */
-void RTC_EnableFreeRun(uint8_t enable);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 
 #endif
 

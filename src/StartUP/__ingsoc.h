@@ -9,6 +9,7 @@ extern "C" {
 
 #define INGCHIPS_FAMILY_918             0
 #define INGCHIPS_FAMILY_916             1
+#define INGCHIPS_FAMILY_920             2
 
 // register access
 #define io_write_b(a,d)  (*(volatile uint8_t*)(a)=(d))

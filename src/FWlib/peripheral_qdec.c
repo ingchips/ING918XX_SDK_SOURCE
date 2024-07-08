@@ -1,6 +1,6 @@
 #include "peripheral_qdec.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 #define QDEC_LEFT_SHIFT(v, s)        ((v) << (s))
 #define QDEC_RIGHT_SHIFT(v, s)       ((v) >> (s))
 #define QDEC_MK_MASK(b)              ((QDEC_LEFT_SHIFT(1, b)) - (1))
@@ -49,14 +49,14 @@ void QDEC_QdecCfg(uint8_t fliter, uint8_t miss)
     QDEC_RegWrBits(QDEC_CH_WRITE_A, 0xf , 0, 16);
     QDEC_RegWrBits(QDEC_CH_WRITE_B, 0x12, 0, 16);
     QDEC_RegWrBits(QDEC_CH_WRITE_C, 0x22, 0, 16);
-    
+
     QDEC_RegWrBit(QDEC_BMR, 1, 9);
     QDEC_RegWrBit(QDEC_BMR, 1, 8);
     QDEC_RegWrBit(QDEC_BMR, 1, 18);
     QDEC_RegWrBits(QDEC_BMR, fliter, 20, 6);
     QDEC_RegWrBit(QDEC_BMR, 1, 19);
     QDEC_RegWrBits(QDEC_BMR, miss, 26, 4);
-    
+
     QDEC_RegWrBits(QDEC_CH_INT_EN, 0x20, 0, 10);
 }
 

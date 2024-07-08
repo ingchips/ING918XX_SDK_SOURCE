@@ -455,6 +455,8 @@ void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size)
     hex_dump(str, buf, f_puts, 0x400A0000, share_size);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     hex_dump(str, buf, f_puts, 0x40120000, share_size);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+    #warning WIP
 #else
     #error unknown or unsupported chip family
 #endif

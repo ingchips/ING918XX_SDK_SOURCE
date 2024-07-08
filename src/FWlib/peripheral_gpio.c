@@ -342,4 +342,169 @@ void GIO_ToggleBits(const uint64_t index_mask)
     APB_GPIO1->DataOut ^= index_mask >> 21;
 }
 
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#define START_OF_GPIO1          GIO_GPIO_21
+#define MASK_GPIO0_BITS         ((1 << 21) - 1)
+
+#define DEF_GIO_AND_PIN(io_index)       GIO_TypeDef *pDef = io_index >= START_OF_GPIO1 ? APB_GPIO1 : APB_GPIO0; int index = io_index >= START_OF_GPIO1 ? io_index - START_OF_GPIO1 : io_index;
+
+void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
+{
+    DEF_GIO_AND_PIN(io_index);
+    if (dir != GIO_DIR_NONE)
+    {
+        GIO_MaskedWrite(&pDef->ChDir, index, dir == GIO_DIR_INPUT ? 0 : 1);
+        GIO_MaskedWrite(&pDef->IOIE, index, dir == GIO_DIR_INPUT ? 1 : 0);
+    }
+    else
+    {
+        GIO_MaskedWrite(&pDef->ChDir, index, 0);
+        GIO_MaskedWrite(&pDef->IOIE, index, 0);
+    }
+}
+
+static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t type)
+{
+    switch (type)
+    {
+    case GIO_INT_EDGE:
+        switch (enable)
+        {
+        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+            return 5;
+        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+            return 6;
+        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+            return 7;
+        }
+        break;
+
+    case GIO_INT_LOGIC:
+        switch (enable)
+        {
+        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+            return 3;
+        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+            return 2;
+        }
+        break;
+    }
+
+    return 0;
+}
+
+
+void GIO_ConfigIntSource(const GIO_Index_t io_index, const uint8_t enable, const GIO_IntTriggerType_t type)
+{
+    DEF_GIO_AND_PIN(io_index);
+    uint8_t mode = map_int_mode(enable, type);
+    if (0 == mode)
+    {
+        GIO_MaskedWrite(&pDef->IntEn, index, 0);
+        return;
+    }
+    int reg_index = index / 8;
+    int offset = (index & 0x7) * 4;
+    pDef->IntMod[reg_index] &= ~(0x7 << offset);
+    pDef->IntMod[reg_index] |= mode << offset;
+    GIO_MaskedWrite(&pDef->IntEn, index, 1);
+}
+
+uint8_t GIO_GetIntStatus(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    return (pDef->IntStatus >> index) & 1;
+}
+
+void GIO_ClearIntStatus(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    pDef->IntStatus |= 1 << index;
+}
+
+void GIO_DebounceCtrl(uint8_t group_mask, uint8_t clk_pre_scale, GIO_DbClk_t clk)
+{
+    uint32_t value = ((uint32_t)clk) << 31 | clk_pre_scale;
+    if (group_mask & 1) APB_GPIO0->DeBounceCtrl = value;
+    if (group_mask & 2) APB_GPIO1->DeBounceCtrl = value;
+}
+
+void GIO_DebounceEn(const GIO_Index_t io_index, uint8_t enable)
+{
+    DEF_GIO_AND_PIN(io_index);
+    GIO_MaskedWrite(&pDef->DeBounceEn, index, enable);
+}
+
+
+void GIO_WriteAll(const uint64_t value)
+{
+    APB_GPIO0->DataOut = value & MASK_GPIO0_BITS;
+    APB_GPIO1->DataOut = (value >> GIO_GPIO_21) & MASK_GPIO0_BITS;
+}
+
+uint64_t GIO_ReadAll(void)
+{
+    return (((uint64_t)APB_GPIO1->DataIn) << GIO_GPIO_21) | APB_GPIO0->DataIn;
+}
+
+uint64_t GIO_GetAllIntStatus(void)
+{
+    return (((uint64_t)APB_GPIO1->IntStatus) << GIO_GPIO_21) | APB_GPIO0->IntStatus;
+}
+
+void GIO_ClearAllIntStatus(void)
+{
+    APB_GPIO0->IntStatus = (uint32_t)-1;
+    APB_GPIO1->IntStatus = (uint32_t)-1;
+}
+
+GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    GIO_Direction_t r = pDef->ChDir & (1 << index) ? GIO_DIR_OUTPUT : GIO_DIR_INPUT;
+    if ((GIO_DIR_INPUT == r) && ((pDef->IOIE & (1 << index)) == 0))
+        r = GIO_DIR_NONE;
+    return r;
+}
+
+void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit)
+{
+    DEF_GIO_AND_PIN(io_index);
+    if (bit)
+        pDef->DoutSet |= 1 << index;
+    else
+        pDef->DoutClear |= 1 << index;
+}
+
+uint8_t GIO_ReadValue(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    return (pDef->DataIn >> index) & 1;
+}
+
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    return (pDef->DataOut >> index) & 1;
+}
+
+
+void GIO_SetBits(const uint64_t index_mask)
+{
+    APB_GPIO0->DoutSet |= index_mask & 0x1fffff;
+    APB_GPIO1->DoutSet |= index_mask >> 21;
+}
+
+void GIO_ClearBits(const uint64_t index_mask)
+{
+    APB_GPIO0->DoutClear |= index_mask & 0x1fffff;
+    APB_GPIO1->DoutClear |= index_mask >> 21;
+}
+
+void GIO_ToggleBits(const uint64_t index_mask)
+{
+    APB_GPIO0->DataOut ^= index_mask & 0x1fffff;
+    APB_GPIO1->DataOut ^= index_mask >> 21;
+}
+
 #endif

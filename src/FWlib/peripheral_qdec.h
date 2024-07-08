@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_920 )
 typedef enum {
     QDEC_CH_CTRL        = 0x00,
     QDEC_CH_MODE        = 0x04,

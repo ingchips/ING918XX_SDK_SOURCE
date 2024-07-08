@@ -41,7 +41,7 @@ typedef enum
     GIO_GPIO_29 ,
     GIO_GPIO_30 ,
     GIO_GPIO_31 ,
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
     GIO_GPIO_32 ,
     GIO_GPIO_33 ,
     GIO_GPIO_34 ,
@@ -367,6 +367,12 @@ void GIO_ClearBits(const uint64_t index_mask);
  *
  */
 void GIO_ToggleBits(const uint64_t index_mask);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+typedef enum
+{
+    GIO_DB_CLK_32K,
+    GIO_DB_CLK_PCLK,
+} GIO_DbClk_t;
 
 #endif
 
