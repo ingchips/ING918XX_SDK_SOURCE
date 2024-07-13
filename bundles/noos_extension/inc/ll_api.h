@@ -806,6 +806,18 @@ int ll_channel_monitor_check_each_pdu(struct ll_raw_packet *packet,
                                 void *user_data);
 
 /**
+ ****************************************************************************************
+ * @brief Get air time of the first received PDU
+ *
+ * @param[in]   packet              the packet object
+ * @param[out]  air_time            air time
+ * @return                          0 if successful else error code
+ *                                  error conditions: 1) still running; 2) no PDU is received.
+ ****************************************************************************************
+ */
+int ll_channel_monitor_get_1st_pdu_time(struct ll_raw_packet *packet, uint64_t *air_time);
+
+/**
  * @brief Enumeration for Burst Transmission Order
  *
  * This enumeration defines the possible burst transmission orders for the whole data packets.
