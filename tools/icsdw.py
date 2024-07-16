@@ -335,12 +335,61 @@ def format_exception(e):
 
     return exception_str
 
+def download_through_jlink(file_url, addr, family, loop, serial_no: str):
+    import pylink, urllib
+
+    def get_file_content(url: str) -> bytes:
+        if url.startswith('http://') or url.startswith('https://'):
+            with urllib.request.urlopen(url) as f:
+                return f.read()
+        else:
+            with open(url, 'rb') as f:
+                return f.read()
+
+    def download(data, addr, family, serial_no):
+
+        def jlink_on_progress(action, progress_string, percentage):
+            printProgressBar(percentage, 100, action.decode(), auto_nl = False)
+
+        jlink = pylink.JLink()
+        jlink.open(serial_no=serial_no)
+        jlink.set_tif(pylink.enums.JLinkInterfaces.SWD)
+        jlink.disable_dialog_boxes()
+
+        if family == 'ing918':
+            jlink.connect('ING9188xx')
+        elif family == 'ing916':
+            jlink.connect('ING9168xx')
+        else:
+            raise ValueError("Invalid device type")
+
+        jlink.reset()
+
+        if not jlink.target_connected():
+            raise ConnectionError("Failed to connect to target")
+
+        jlink.flash(data, addr, on_progress=jlink_on_progress)
+        print()
+
+        jlink.reset()
+        jlink.close()
+
+    if serial_no == '':
+        serial_no = None
+    cnt = 0
+    while True:
+        cnt = cnt + 1
+        download(get_file_content(file_url), addr, family, serial_no)
+        if not loop: break
+        print(f'(#{cnt}) press Enter to download again', end='')
+        input()
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'proj',
         type=str,
-        help='Location of project file (.ini).')
+        help='Location of project file (.ini), or a .bin file.')
 
     parser.add_argument(
         '--go',
@@ -383,6 +432,26 @@ def parse_args():
         default='',
         help='User data.')
 
+    parser.add_argument(
+        '--addr',
+        type=lambda x: int(x, 0),
+        default=0x2027000,
+        help='Download address for .bin file or URL')
+
+    parser.add_argument(
+        '--family',
+        type=str,
+        default='ing916',
+        help='Chip family.')
+
+    parser.add_argument(
+        '--loop',
+        type=bool,
+        default=False,
+        nargs='?',
+        const=True,
+        help='Downloading (.bin file or URL file) again and again.')
+
     return parser.parse_known_args()
 
 if __name__ == '__main__':
@@ -398,8 +467,13 @@ if __name__ == '__main__':
         sys.exit(0)
 
     try:
-        r = run_proj(FLAGS.proj, FLAGS.go, FLAGS.port, FLAGS.timeout, FLAGS.counter, FLAGS.user_data)
-        sys.exit(r)
+        if FLAGS.proj.endswith('.ini'):
+            r = run_proj(FLAGS.proj, FLAGS.go, FLAGS.port, FLAGS.timeout, FLAGS.counter, FLAGS.user_data)
+            sys.exit(r)
+        elif FLAGS.proj.endswith('.bin'):
+            download_through_jlink(FLAGS.proj, FLAGS.addr, FLAGS.family, FLAGS.loop, FLAGS.port)
+        else:
+            raise Exception(f"supported project file: {FLAGS.proj}")
     except Exception as e:
         print("Exception: ", e)
         print("")

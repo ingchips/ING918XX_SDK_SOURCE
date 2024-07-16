@@ -31,6 +31,18 @@ Type `python icsdw.py` to see the help message for command line format.
 Note: `--port`, `--batch`, `--counter` and `--timeout` override the corresponding
 settings in the project file (`flash_download.ini`).
 
+When a `.bin` file is given, _icsdw.py_ will download the file to a specified location
+through J-Link. The `.bin` file can either be a file on local system, or on the Web
+(`http` or `https` URL).
+
+|Option                 | Explanation                              |
+|:----------------------|:-----------------------------------------|
+|--port PORT            |Use `PORT` to download.                   |
+|--addr AAA             |Downloading to this address.                 |
+|--family FFF           |Specify chip family (such as ing918, ing916).|
+|--loop                 |Enable loop mode.                            |
+
+
 ### Note for USB Flash Download
 
 - Use `python icsdw.py list-usb` to query all usb port. It will print the full name of
