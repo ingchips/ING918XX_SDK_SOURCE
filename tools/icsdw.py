@@ -5,6 +5,7 @@ import argparse
 import os.path
 import sys
 import time
+import urllib3.request
 import usb.core
 import usb.util
 import usb.backend.libusb1
@@ -337,6 +338,7 @@ def format_exception(e):
 
 def download_through_jlink(file_url, addr, family, loop, serial_no: str):
     import pylink, urllib
+    import urllib.request
 
     def get_file_content(url: str) -> bytes:
         if url.startswith('http://') or url.startswith('https://'):
