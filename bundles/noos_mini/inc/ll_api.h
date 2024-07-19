@@ -858,6 +858,20 @@ typedef void (* f_ll_channel_monitor_pdu_visitor)(int index, int status, uint8_t
 
 
 /**
+ ****************************************************************************************
+ * @brief Get air time of the first received PDU
+ *
+ * @param[in]   packet              the packet object
+ * @param[out]  air_time            air time
+ * @return                          0 if successful else error code
+ *                                  error conditions: 1) still running; 2) no PDU is received.
+ ****************************************************************************************
+ */
+// int ll_channel_monitor_get_1st_pdu_time(struct ll_raw_packet *packet, uint64_t *air_time);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
  * @brief Enumeration for Burst Transmission Order
  *
  * This enumeration defines the possible burst transmission orders for the whole data packets.
