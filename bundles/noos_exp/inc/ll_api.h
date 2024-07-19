@@ -31,6 +31,8 @@ typedef enum ll_config_item_e
     // `value` should be a pointer casted from `const uint8_t *`
     // The mask should be always available.
     LL_CFG_FEATURE_SET_MASK,
+
+    LL_CFG_INTERNAL_ITEM_0,
 } ll_config_item_t;
 
 typedef struct ll_capabilities
