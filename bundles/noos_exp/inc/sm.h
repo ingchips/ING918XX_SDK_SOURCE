@@ -212,6 +212,16 @@ void sm_config_conn(hci_con_handle_t con_handle,
                     uint8_t auth_req);
 
 /**
+ * @brief Set key distribution flags
+ *
+ * Note: Do not add `SM_KEYDIST_ENC_KEY` into flags, which will be added automatically.
+ *
+ * @param[in] flags     combination of `SM_KEYDIST_...`.
+ *                      default: `SM_KEYDIST_ID_KEY` | `SM_KEYDIST_SIGN`.
+ */
+void sm_set_key_distribution_flags(uint8_t flags);
+
+/**
  * @brief Decline bonding triggered by event before
  * @param addr_type and address
  */
