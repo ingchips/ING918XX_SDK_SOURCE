@@ -39,5 +39,6 @@ Here are the steps to develop a customized companion and use it in a new project
 
 If the companion gets updated, steps 5 & 6 shall be repeated.
 
-Note: Platform version is defined in the companion. It must be defined properly,
-otherwise it can bring issues to firmware update, version management, debugging, etc.
+Note: Platform version is defined in the companion. It must be defined properly (i.e.
+the numbers must be unique among versions), otherwise it can bring issues to firmware update,
+version management, debugging, etc.
