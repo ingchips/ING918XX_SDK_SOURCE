@@ -1267,6 +1267,18 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         set_reg_bit(&APB_SYSCTRL->USBCfg, v, 5);
         set_reg_bit(&APB_SYSCTRL->USBCfg, v, 7);
         break;
+    case SYSCTRL_ITEM_APB_ASDM       :
+        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 28);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 21);
+        break;
+    case SYSCTRL_ITEM_APB_RTIMER2    :
+        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 4);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 2);
+        break;
+    case SYSCTRL_ITEM_APB_RTIMER3    :
+        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 4);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 2);
+        break;
     default:
         break;
     }
@@ -1420,6 +1432,18 @@ static void SYSCTRL_ResetBlockCtrl(SYSCTRL_ResetItem item, uint8_t v)
         break;
     case SYSCTRL_ITEM_APB_PinCtrl   :
         set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 16);
+        break;
+    case SYSCTRL_ITEM_APB_ASDM  :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 21);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 27);
+        break;
+    case SYSCTRL_ITEM_APB_RTIMER2   :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 14);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 4);
+        break;
+    case SYSCTRL_ITEM_APB_RTIMER3   :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 14);
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 4);
         break;
     default:
         break;
@@ -1603,11 +1627,20 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
     uint32_t masked = block_map & 0x3f;
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), masked, 6, 12);
 }
-
 int SYSCTRL_Init(void)
+
 {
     // TODO:
     return 0;
+
+
+}
+
+
+void SYSCTRL_UpdateAsdmClk(uint32_t div)
+{
+    set_reg_bits((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x21c), div, 5, 5);
+    set_reg_bit((uint32_t*)(APB_SYSCTRL_BASE + 0x21c), 1, 10);
 }
 
 #endif

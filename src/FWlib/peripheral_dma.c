@@ -608,8 +608,6 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_I2C0:
         case SYSCTRL_DMA_UART0_TX:
         case SYSCTRL_DMA_UART1_TX:
-//        case SYSCTRL_DMA_I2C1:
-//            return DMA_WIDTH_BYTE;
 
         case SYSCTRL_DMA_SPI0_TX:
         case SYSCTRL_DMA_SPI0_RX:
@@ -618,8 +616,6 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_SPI1_RX:
             return DMG_GetSPIDMAWidth(APB_SSP1);
         case SYSCTRL_DMA_I2S_RX:
-//        case SYSCTRL_DMA_PDM:
-//        case SYSCTRL_DMA_ADC:
         case SYSCTRL_DMA_I2S_TX:
         case SYSCTRL_DMA_PWM0:
         case SYSCTRL_DMA_PWM1:
@@ -628,6 +624,8 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_QDEC0:
         case SYSCTRL_DMA_QDEC1:
         case SYSCTRL_DMA_QDEC2:
+            return DMA_WIDTH_32_BITS;
+        case SYSCTRL_DMA_SDADC_RX:
             return DMA_WIDTH_32_BITS;
         default:
             return DMA_WIDTH_32_BITS;
@@ -654,8 +652,6 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
             return 0;
         case SYSCTRL_DMA_I2S_RX:
             return &APB_I2S->RX;
-//        case SYSCTRL_DMA_ADC:
-//            return &APB_SADC->sadc_data;
 
         case SYSCTRL_DMA_UART0_TX:
             return &APB_UART0->DataRead;
@@ -668,7 +664,7 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
         case SYSCTRL_DMA_QDEC2:
             return 0;
         case SYSCTRL_DMA_KeyScan:
-            return 0;
+            return &APB_KEYSCAN->key_data;
         case SYSCTRL_DMA_I2S_TX:
             return &APB_I2S->TX;
         case SYSCTRL_DMA_PWM0:
@@ -686,6 +682,8 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
                 return &APB_PWM->PCAPChannels[2].Ctrl1;
             else
                 return &APB_PWM->Channels[2].DmaData;
+        case SYSCTRL_DMA_SDADC_RX:
+            return &APB_ASDM->asdm_dout;
 
         default:
             return 0;
@@ -698,6 +696,7 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
                               uint32_t options)
 {
     int status = 0;
+
     int req = SYSCTRL_GetDmaId(src);
     DMA_TransferWidth width = DMA_GetPeripheralWidth(src);
     DMA_TransferWidth dest_width;

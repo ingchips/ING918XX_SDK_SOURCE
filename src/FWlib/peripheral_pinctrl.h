@@ -856,6 +856,9 @@ int PINCTRL_SelUartIn(uart_port_t port,
                       uint8_t io_pin_rxd,
                       uint8_t io_pin_cts);
 
+
+int PINCTRL_SelAsdm(uint8_t io_pin_sck, uint8_t io_pin_data);
+
 /**
  * @brief ING918xx Compatible API: Select input io_pin for UART CTS
  *

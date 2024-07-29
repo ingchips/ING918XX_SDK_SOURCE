@@ -617,6 +617,112 @@ void TMR_WatchDogClearInt(void);
  ****************************************************************************************
  */
 void TMR_WatchDogDisable(void);
+
+
+/**
+ ****************************************************************************************
+ * @brief Get counter of a timer
+ *
+ * @param[in] pTMR          timer address
+ * @return                  counter
+ ****************************************************************************************
+ */
+uint32_t RTMR_GetCNT(RTMR_TypeDef *pTMR);
+
+/**
+ ****************************************************************************************
+ * @brief Reload a timer: set its counter to zero
+ *
+ * @param[in] pTMR          timer address
+ ****************************************************************************************
+ */
+void RTMR_Reload(RTMR_TypeDef *pTMR);
+
+//-----------
+// TMR_CMP
+//
+void RTMR_SetCMP(RTMR_TypeDef *pTMR, uint32_t value);
+
+/**
+ ****************************************************************************************
+ * @brief Set comparison value of a timer
+ *
+ * @param[in] pTMR          timer address
+ * @param[in] value         comparison value
+ ****************************************************************************************
+ */
+uint32_t RTMR_GetCMP(RTMR_TypeDef *pTMR);
+
+/**
+ ****************************************************************************************
+ * @brief Enable a timer
+ *
+ * @param[in] pTMR          timer address
+ ****************************************************************************************
+ */
+void RTMR_Enable(RTMR_TypeDef *pTMR);
+
+/**
+ ****************************************************************************************
+ * @brief Disable a timer
+ *
+ * @param[in] pTMR          timer address
+ ****************************************************************************************
+ */
+void RTMR_Disable(RTMR_TypeDef *pTMR);
+
+// timer work mode
+#define TMR_CTL_OP_MODE_WRAPPING            0            // 0 - continuous wrapping mode
+#define TMR_CTL_OP_MODE_ONESHOT             1            // 1 - one-stop mode
+#define TMR_CTL_OP_MODE_FREERUN             2            // 2 - continuous free-run mode
+
+/**
+ ****************************************************************************************
+ * @brief Set work mode of a timer
+ * 
+ *
+ * @param[in] pTMR          timer address
+ * @param[in] mode          work mode
+ ****************************************************************************************
+ */
+void RTMR_SetOpMode(RTMR_TypeDef *pTMR, uint8_t mode);
+
+/**
+ ****************************************************************************************
+ * @brief Enable interrupt of a timer
+ *
+ * @param[in] pTMR          timer address
+ ****************************************************************************************
+ */
+void RTMR_IntEnable(RTMR_TypeDef *pTMR);
+
+/**
+ ****************************************************************************************
+ * @brief Disable interrupt of a timer
+ *
+ * @param[in] pTMR          timer address
+ ****************************************************************************************
+ */
+void RTMR_IntDisable(RTMR_TypeDef *pTMR);
+
+/**
+ ****************************************************************************************
+ * @brief Clear interrupt request of a timer
+ *
+ * @param[in] pTMR          timer address
+ ****************************************************************************************
+ */
+void RTMR_IntClr(RTMR_TypeDef *pTMR);
+
+/**
+ ****************************************************************************************
+ * @brief Get interrupt status of a timer
+ *
+ * @param[in] pTMR          timer address
+ ****************************************************************************************
+ */
+uint8_t RTMR_IntHappened(RTMR_TypeDef *pTMR);
+
 #endif
 
 #ifdef __cplusplus

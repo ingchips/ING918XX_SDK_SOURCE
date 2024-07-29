@@ -7,8 +7,8 @@ extern "C" {
 
 #include <stdint.h>
 
-#define AUDIO_CODEC_ALG_ADPCM     0
-#define AUDIO_CODEC_ALG_SBC       1
+#define AUDIO_CODEC_ALG_ADPCM     1
+#define AUDIO_CODEC_ALG_SBC       0
 
 #ifndef AUDIO_CODEC_ALG
 #define AUDIO_CODEC_ALG   AUDIO_CODEC_ALG_ADPCM

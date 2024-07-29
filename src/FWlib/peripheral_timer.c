@@ -298,4 +298,82 @@ void TMR_WatchDogClearInt(void)
     APB_WDT->St = 1;
 }
 
+// TMR_CTL
+#define bsRTMR_CTL_TMR_EN                    0            // timer enable
+#define bwRTMR_CTL_TMR_EN                    1
+#define bsRTMR_CTL_RELOAD                    1            // when set, timer counter clear zero.
+#define bwRTMR_CTL_RELOAD                    1
+#define bsRTMR_CTL_OP_MODE                   2
+#define bwRTMR_CTL_OP_MODE                   1
+
+#define bsRTMR_CTL_INT_EN                    4            // int enable
+#define bwRTMR_CTL_INT_EN                    1
+#define bsRTMR_CTL_INT_STATUS                6            // read as int status, write as int clear
+#define bwRTMR_CTL_INT_STATUS                1
+
+#define bsRTMR_CTL_HALTENA                   15           // hardware do not support for all three timer 0, 1, 2.
+#define bwRTMR_CTL_HALTENA                   1
+
+uint32_t RTMR_GetCNT(RTMR_TypeDef *pRTMR)
+{
+	return pRTMR->CNT;
+}
+
+void RTMR_Reload(RTMR_TypeDef *pRTMR)
+{
+    pRTMR->CTL |= 1 << bsRTMR_CTL_RELOAD;
+}
+
+//-----------
+// TMR_CMP
+//
+void RTMR_SetCMP(RTMR_TypeDef *pRTMR, uint32_t value)
+{
+	pRTMR->CMP = value;
+}
+
+uint32_t RTMR_GetCMP(RTMR_TypeDef *pRTMR)
+{
+	return pRTMR->CMP;
+}
+
+//
+void RTMR_Enable(RTMR_TypeDef *pRTMR)
+{
+	pRTMR->CTL |= 1 << bsRTMR_CTL_TMR_EN;
+}
+
+void RTMR_Disable(RTMR_TypeDef *pRTMR)
+{
+	pRTMR->CTL &= ~(1 << bsRTMR_CTL_TMR_EN);
+}
+
+//
+void RTMR_SetOpMode(RTMR_TypeDef *pRTMR, uint8_t mode)
+{
+   #define mask (2 << bsRTMR_CTL_OP_MODE)
+   pRTMR->CTL = (pRTMR->CTL & ~mask) | (mode << bsRTMR_CTL_OP_MODE);
+}
+
+//
+void RTMR_IntEnable(RTMR_TypeDef *pRTMR)
+{
+	pRTMR->CTL |= (1 << bsRTMR_CTL_INT_EN);
+}
+
+void RTMR_IntDisable(RTMR_TypeDef *pRTMR)
+{
+	pRTMR->CTL &= ~(1 << bsRTMR_CTL_INT_EN);
+}
+
+void RTMR_IntClr(RTMR_TypeDef *pTMR)
+{
+	pTMR->CTL |= 1 << bsRTMR_CTL_INT_STATUS;
+}
+
+uint8_t RTMR_IntHappened(RTMR_TypeDef *pTMR)
+{
+	return ( (pTMR->CTL >> bsRTMR_CTL_INT_STATUS) & BW2M(bsRTMR_CTL_INT_STATUS) );
+}
+
 #endif
