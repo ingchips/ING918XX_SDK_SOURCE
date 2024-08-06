@@ -12,6 +12,42 @@ static void ASDM_SetRegBit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset
     *reg = (*reg & ~mask) | (v << bit_offset);
 }
 
+void ASDM_PDM_Config(ASDM_TypeDef *base, ASDM_PdmControlTypeDef* pParam)
+{
+    ASDM_SetEdgeSample(APB_ASDM,1);
+    ASDM_SetHighPassEn(APB_ASDM,1);
+    ASDM_HighPassErrorEn(APB_ASDM,0);
+    ASDM_InvertInput(APB_ASDM,1);
+    ASDM_SelMic(APB_ASDM,1);
+    ASDM_SelDownSample(APB_ASDM,pParam->Dmic_sample);
+    
+    ASDM_UpdateSr(APB_ASDM, pParam->Sample_rate);
+    ASDM_MuteEn(APB_ASDM,0);
+    ASDM_FadeInOutEn(APB_ASDM,0);
+    ASDM_SetVolStep(APB_ASDM, 3);
+
+    ASDM_SetVol(APB_ASDM, 0x3fff);
+
+    ASDM_SetHighPassFilter(APB_ASDM, 0xFF);
+
+    ASDM_AGCEn(APB_ASDM,1);
+    ASDM_SetAGCMaxLevel(APB_ASDM, 1<<4);
+
+    ASDM_SetAGCFrameTime(APB_ASDM, 8);
+
+    ASDM_SetAGCNoiseThresh(APB_ASDM, 0xf);
+    ASDM_SetAGCNoiseMode(APB_ASDM, 0);
+    ASDM_AGCNoiseGateEn(APB_ASDM, 1);
+    ASDM_SetAGCGateMode(APB_ASDM, 0);
+    ASDM_NoiseHold(APB_ASDM, 0x7);
+
+    
+    ASDM_FifoEn(APB_ASDM, 1);
+    ASDM_SetFifoInt(APB_ASDM, pParam->INT_mask);
+    ASDM_SetFifoTrig(APB_ASDM, pParam->Fifo_trig_num);
+}
+
+
 void PDM_Enable(ASDM_TypeDef *base, uint8_t enable)
 {
     ASDM_SetRegBit(&base->asdm_ctrl, enable, 0);
@@ -48,7 +84,7 @@ void ASDM_SelDownSample(ASDM_TypeDef *base, uint8_t enable)
     ASDM_SetRegBit(&base->asdm_ctrl, enable, 7);
 }
 
-void ASDM_UpdateSr(ASDM_TypeDef *base, uint32_t div)
+void ASDM_UpdateSr(ASDM_TypeDef *base, ASDM_SampleRatek div)
 {
     ASDM_SetRegBits(&base->asdm_sr, div, 9, 0);
     ASDM_SetRegBit(&base->asdm_sr, 1, 9);
@@ -139,24 +175,24 @@ void ASDM_SetAGCGateMode(ASDM_TypeDef *base, uint8_t mode)
     ASDM_SetRegBit(&base->asdm_agc_ctrl2, mode, 7);
 }
 
-void ASDM_NoiseHold(ASDM_TypeDef *base, uint8_t enable)
+void ASDM_NoiseHold(ASDM_TypeDef *base, uint32_t hold)
 {
-    ASDM_SetRegBits(&base->asdm_agc_ctrl2, enable, 5, 8);
+    ASDM_SetRegBits(&base->asdm_agc_ctrl2, hold, 5, 8);
 }
 
-void ASDM_SetAGCMute(ASDM_TypeDef *base, uint8_t enable)
+uint8_t ASDM_SetAGCMute(ASDM_TypeDef *base)
 {
-    ASDM_SetRegBit(&base->asdm_agc_st, enable, 0);
+    return base->asdm_agc_st&0x1;
 }
 
-void ASDM_SetFifoFullState(ASDM_TypeDef *base, uint8_t enable)
+uint8_t ASDM_GetFifoFullState(ASDM_TypeDef *base)
 {
-    ASDM_SetRegBit(&base->fifo_addr, enable, 0);
+    return base->fifo_addr & 0x1;
 }
 
-void ASDM_SetFifoEmptyState(ASDM_TypeDef *base, uint8_t enable)
+uint8_t ASDM_GetFifoEmptyState(ASDM_TypeDef *base)
 {
-    ASDM_SetRegBit(&base->fifo_addr, enable, 1);
+    return (base->fifo_addr & 0x2)>>1;
 }
 
 void ASDM_clrFifo(ASDM_TypeDef *base)
@@ -171,7 +207,7 @@ void ASDM_FifoEn(ASDM_TypeDef *base, uint8_t enable)
 
 uint8_t ASDM_GetFifoCount(ASDM_TypeDef *base)
 {
-    return (base->fifo_addr >> 8) & 0x7;
+    return (base->fifo_addr >> 8) & 0x07ul;
 }
 
 void ASDM_SetFifoDepth(ASDM_TypeDef *base, uint8_t depth)

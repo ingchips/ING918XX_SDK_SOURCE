@@ -90,6 +90,11 @@ static void PTE_SetRegBit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset)
     *reg = (*reg & ~mask) | (v << bit_offset);
 }
 
+uint32_t PTE_ChxGetEnableState(void)
+{
+    return APB_PTE->reg_ch_en;
+}
+
 void PTE_ChxEnable(uint32_t items)
 {
     APB_PTE->reg_ch_en_set = items;
@@ -110,18 +115,18 @@ uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channal SetTas
                 return 0;
             if(PTETaskEvt > PTE_EVENT_QDEC_TMR_STOP)
             {
-                reg_num = (PTETaskEvt - PTE_EVENT_QDEC_TMR_STOP) + (PTE_TASK_QDEC_TMR_START - PTE_EVENT_QDEC_TMR_STOP + 1ul) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_QDEC_TMR_STOP) + (PTE_TASK_QDEC_TMR_START - PTE_TASK_QDEC_TMR_STOP + 1ul) * TaskEvtSer;
                 APB_PTE_BUS->PTE_QDEC.reg_sub_task[reg_num] = ((uint32_t)SetTaskChannal | (1ul<<31));
             }
             else
             {
-                APB_PTE_BUS->PTE_QDEC.reg_pub_event[TaskEvtSer] = ((uint32_t)SetTaskChannal | (1ul<<31));
+                APB_PTE_BUS->PTE_QDEC.reg_pub_event[PTETaskEvt] = ((uint32_t)SetTaskChannal | (1ul<<31));
             }    
         break;
         case PTE_DMA_MODULE:
             if(PTETaskEvt > PTE_EVENT_DMA_TRANS_CMPL)
                 return 0;
-            APB_PTE_BUS->PTE_DMA.reg_pub_event[TaskEvtSer] = ((uint32_t)SetTaskChannal | (1ul<<31));
+            APB_PTE_BUS->PTE_DMA.reg_pub_event[PTETaskEvt] = ((uint32_t)SetTaskChannal | (1ul<<31));
         break;
         case PTE_GPIOTE_MODULE:
             if(PTETaskEvt > PTE_TASK_GPIO_CLR )
@@ -133,7 +138,7 @@ uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channal SetTas
             }
             else
             {
-                APB_PTE_BUS->PTE_GPIOTE.reg_pub_event[TaskEvtSer] = ((uint32_t)SetTaskChannal | (1ul<<31));
+                APB_PTE_BUS->PTE_GPIOTE.reg_pub_event[PTETaskEvt] = ((uint32_t)SetTaskChannal | (1ul<<31));
             }
         break;
         case PTE_TIMER0_MODULE:
@@ -141,12 +146,12 @@ uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channal SetTas
             return 0;
             if(PTETaskEvt > PTE_EVENT_TIMER_CHX_TMRX)
             {
-                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) + (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE + 1) + TaskEvtSer;
                 APB_PTE_BUS->PTE_TIMER0.reg_sub_task[reg_num] = ((uint32_t)SetTaskChannal | (1ul<<31));
             }
             else
             {
-                APB_PTE_BUS->PTE_TIMER0.reg_pub_event[TaskEvtSer] = ((uint32_t)SetTaskChannal | (1ul<<31));
+                APB_PTE_BUS->PTE_TIMER0.reg_pub_event[PTETaskEvt] = ((uint32_t)SetTaskChannal | (1ul<<31));
             }
         break;
         case PTE_QSPI_MODULE:
@@ -248,12 +253,12 @@ uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channal SetTas
                 return 0;
             if(PTETaskEvt > PTE_EVENT_TIMER_CHX_TMRX)
             {
-                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) + (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE + 1) + TaskEvtSer;
                 APB_PTE_BUS->PTE_TIMER1.reg_sub_task[reg_num] = ((uint32_t)SetTaskChannal | (1ul<<31));
             }
             else
             {
-                APB_PTE_BUS->PTE_TIMER1.reg_pub_event[TaskEvtSer] = ((uint32_t)SetTaskChannal | (1ul<<31));
+                APB_PTE_BUS->PTE_TIMER1.reg_pub_event[PTETaskEvt] = ((uint32_t)SetTaskChannal | (1ul<<31));
             }
         break;
         case PTE_I2S_MODULE:
@@ -285,7 +290,7 @@ uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channal SetTas
     return 1;
 }
 
-uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, uint32_t PTEModuleTask, uint8_t enable, uint32_t TaskEvtSer)
+uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, uint8_t enable, uint32_t TaskEvtSer)
 {
     uint32_t  reg_num = 0;
     switch (SetPTEModule)
@@ -295,18 +300,18 @@ uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, ui
                 return 0;
             if(PTETaskEvt > PTE_EVENT_QDEC_TMR_STOP)
             {
-                reg_num = (PTETaskEvt - PTE_EVENT_QDEC_TMR_STOP) + (PTE_TASK_QDEC_TMR_START - PTE_EVENT_QDEC_TMR_STOP + 1ul) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_QDEC_TMR_STOP) + (PTE_TASK_QDEC_TMR_START - PTE_TASK_QDEC_TMR_STOP + 1ul) * TaskEvtSer;
                 PTE_SetRegBit(&APB_PTE_BUS->PTE_QDEC.reg_sub_task[reg_num], enable, 31);
             }
             else
             {
-                PTE_SetRegBit(&APB_PTE_BUS->PTE_QDEC.reg_pub_event[TaskEvtSer], enable, 31);
+                PTE_SetRegBit(&APB_PTE_BUS->PTE_QDEC.reg_pub_event[PTETaskEvt], enable, 31);
             }    
         break;
         case PTE_DMA_MODULE:
             if(PTETaskEvt > PTE_EVENT_DMA_TRANS_CMPL)
                 return 0;
-            PTE_SetRegBit(&APB_PTE_BUS->PTE_DMA.reg_pub_event[TaskEvtSer], enable, 31);
+            PTE_SetRegBit(&APB_PTE_BUS->PTE_DMA.reg_pub_event[PTETaskEvt], enable, 31);
         break;
         case PTE_GPIOTE_MODULE:
             if(PTETaskEvt > PTE_TASK_GPIO_CLR )
@@ -318,7 +323,7 @@ uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, ui
             }
             else
             {
-                PTE_SetRegBit(&APB_PTE_BUS->PTE_GPIOTE.reg_pub_event[TaskEvtSer], enable, 31);
+                PTE_SetRegBit(&APB_PTE_BUS->PTE_GPIOTE.reg_pub_event[PTETaskEvt], enable, 31);
             }
         break;
         case PTE_TIMER0_MODULE:
@@ -326,12 +331,12 @@ uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, ui
             return 0;
             if(PTETaskEvt > PTE_EVENT_TIMER_CHX_TMRX)
             {
-                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) + (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE + 1) + TaskEvtSer;
                 PTE_SetRegBit(&APB_PTE_BUS->PTE_TIMER0.reg_sub_task[reg_num], enable, 31);
             }
             else
             {
-                PTE_SetRegBit(&APB_PTE_BUS->PTE_TIMER0.reg_pub_event[TaskEvtSer], enable, 31);
+                PTE_SetRegBit(&APB_PTE_BUS->PTE_TIMER0.reg_pub_event[PTETaskEvt], enable, 31);
             }
         break;
         case PTE_QSPI_MODULE:
@@ -433,12 +438,12 @@ uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, ui
                 return 0;
             if(PTETaskEvt > PTE_EVENT_TIMER_CHX_TMRX)
             {
-                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) + (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE + 1) + TaskEvtSer;
                 PTE_SetRegBit(&APB_PTE_BUS->PTE_TIMER1.reg_sub_task[reg_num], enable, 31);
             }
             else
             {
-                PTE_SetRegBit(&APB_PTE_BUS->PTE_TIMER1.reg_pub_event[TaskEvtSer], enable, 31);
+                PTE_SetRegBit(&APB_PTE_BUS->PTE_TIMER1.reg_pub_event[PTETaskEvt], enable, 31);
             }
         break;
         case PTE_I2S_MODULE:
@@ -470,7 +475,7 @@ uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, ui
     return 1;
 }
 
-uint32_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_Channal SetTaskChannal, PTE_ModuleTaskEvt PTETaskEvt, uint32_t TaskEvtSer)
+uint8_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, uint32_t TaskEvtSer)
 {
         uint32_t  reg_num = 0;
     switch (SetPTEModule)
@@ -478,7 +483,7 @@ uint32_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_Channal SetTaskChannal, PT
         case PTE_QDEC_MODULE:
             if(PTETaskEvt < PTE_TASK_QDEC_TMR_STOP)
                 return 0;
-                reg_num = (PTETaskEvt - PTE_EVENT_QDEC_TMR_STOP) + (PTE_TASK_QDEC_TMR_START - PTE_EVENT_QDEC_TMR_STOP + 1ul) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_QDEC_TMR_STOP) + (PTE_TASK_QDEC_TMR_START - PTE_TASK_QDEC_TMR_STOP + 1ul) * TaskEvtSer;
                 APB_PTE_BUS->PTE_QDEC.reg_task[reg_num] = 1ul;
         break;
         case PTE_GPIOTE_MODULE:
@@ -490,7 +495,7 @@ uint32_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_Channal SetTaskChannal, PT
         case PTE_TIMER0_MODULE:
             if(PTETaskEvt < PTE_TASK_TIMER_CHX_TMRX_ENABLE )
             return 0;
-                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) + (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE + 1) + TaskEvtSer;
                 APB_PTE_BUS->PTE_TIMER0.reg_task[reg_num] = 1ul;
             
         break;
@@ -541,7 +546,7 @@ uint32_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_Channal SetTaskChannal, PT
         case PTE_TIMER1_MODULE:
             if(PTETaskEvt < PTE_TASK_TIMER_CHX_TMRX_DISABLE )
                 return 0;
-                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) + (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * TaskEvtSer;
+                reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE + 1) + TaskEvtSer;
                 APB_PTE_BUS->PTE_TIMER1.reg_task[reg_num] = 1ul;
         break;
         case PTE_I2S_MODULE:
@@ -567,7 +572,7 @@ uint32_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_Channal SetTaskChannal, PT
 }
 
 void PTE_SetTaskChxGroupEN(PTEC_ChannelGroup SetChannelGroup)
-{
+{   
     APB_PTE->reg_task_chg_en[SetChannelGroup] = 1ul;
 }
 
