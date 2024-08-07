@@ -94,6 +94,7 @@ extern void rx_hci_byte(void *user_data, uint8_t c);
 
 int app_main()
 {
+#ifndef BQTF_TEST
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     switch (platform_read_persistent_reg())
     {
@@ -108,6 +109,7 @@ int app_main()
         platform_write_persistent_reg(POWER_MODE_NORMAL);
         break;
     }
+#endif
 #endif
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);

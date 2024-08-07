@@ -13,7 +13,7 @@
 #include "gatt_client.h"
 #include "sm.h"
 #include "kv_storage.h"
-
+#include "le_device_db.h"
 
 #include "port_gen_os_driver.h"
 
@@ -81,7 +81,7 @@ void sys_mem_map_add(void *addr, uint16_t size, const void *buf)
             map = &mem_maps[i];
             break;
         }
-    }
+    } 
     if ((map == NULL) || (size > sizeof(map->buf)))
         platform_raise_assertion(__FILE__, __LINE__);
     map->addr = addr;
@@ -619,6 +619,14 @@ static btstack_packet_handler_t sys_fun_map(btstack_packet_handler_t remote, uin
     int i;
     for (i = 0; i < MAX_STACK_PACKET_HANDLE; i++)
     {
+        if ((packet_handlers[i].handler == remote) && (packet_handlers[i].conn_handle == conn_handle))
+        {
+            return packet_handlers[i].local;
+        }
+    }
+
+    for (i = 0; i < MAX_STACK_PACKET_HANDLE; i++)
+    {
         if (packet_handlers[i].handler == NULL)
         {
             packet_handlers[i].handler = remote;
@@ -943,6 +951,140 @@ static void handle_call(struct rpc_call_frame *call, int len)
         }
         return;
 
+    case ID_kv_get:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                uint8_t key;
+            } *_param = (struct _param *)call->body;
+            #pragma pack (pop)
+            int16_t len = 0;
+            void * data = kv_get(_param->key, &len);
+            void * _ret = malloc(len);
+            memcpy(_ret, data, len);
+            send_ret_response(ID_kv_get, len, _ret);
+            free(_ret);
+        }
+        return;
+
+    case ID_le_device_db_add:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                const int addr_type;
+                const bd_addr_t addr;
+                const sm_key_t irk;
+            } *_param = (struct _param *)call->body;
+            struct _ret
+            {
+                int index;
+                le_device_memory_db_t db;
+            } _ret = { 0 };
+            #pragma pack (pop)
+            le_device_memory_db_t *db = le_device_db_add(_param->addr_type, _param->addr, _param->irk, &_ret.index);
+            if (db)
+                memcpy(&_ret.db, db, sizeof(*db));
+            send_ret_response(ID_le_device_db_add, sizeof(_ret), &_ret);
+        }
+        return;
+
+    case ID_le_device_db_find:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                const int addr_type;
+                const bd_addr_t addr;
+            } *_param = (struct _param *)call->body;
+            struct _ret
+            {
+                int index;
+                le_device_memory_db_t db;
+            } _ret = {0};
+            #pragma pack (pop)
+            le_device_memory_db_t *db = le_device_db_find(_param->addr_type, _param->addr, &_ret.index);
+            if (db)
+                memcpy(&_ret.db, db, sizeof(*db));
+            send_ret_response(ID_le_device_db_find, sizeof(_ret), &_ret);
+        }
+        return;
+
+    case ID_le_device_db_from_key:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                const int key;
+            } *_param = (struct _param *)call->body;
+            struct _ret
+            {
+                le_device_memory_db_t db;
+            } _ret = {0};
+            #pragma pack (pop)
+            le_device_memory_db_t *db = le_device_db_from_key(_param->key);
+            if (db)
+                memcpy(&_ret.db, db, sizeof(*db));
+            send_ret_response(ID_le_device_db_from_key, sizeof(_ret), &_ret);
+        }
+        return;
+
+    case ID_le_device_db_iter_init:
+        {
+            #pragma pack (push, 1)
+            struct _ret
+            {
+                le_device_memory_db_iter_t iter;
+            } _ret = {0};
+            #pragma pack (pop)
+            le_device_db_iter_init(&_ret.iter);
+            send_ret_response(ID_le_device_db_iter_init, sizeof(_ret), &_ret);
+        }
+        return;
+
+    case ID_le_device_db_iter_cur:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                le_device_memory_db_iter_t iter;
+            } *_param = (struct _param *)call->body;
+            struct _ret
+            {
+                le_device_memory_db_iter_t iter;
+                le_device_memory_db_t db;
+            } _ret = {0};
+            #pragma pack (pop)
+            le_device_memory_db_t *db = le_device_db_iter_cur(&_param->iter);
+            _ret.iter = _param->iter;
+            if (db)
+                memcpy(&_ret.db, db, sizeof(*db));
+            send_ret_response(ID_le_device_db_iter_cur, sizeof(_ret), &_ret);
+        }
+        return;
+
+    case ID_le_device_db_iter_next:
+        {
+            #pragma pack (push, 1)
+            struct _param
+            {
+                le_device_memory_db_iter_t iter;
+            } *_param = (struct _param *)call->body;
+            struct _ret
+            {
+                le_device_memory_db_iter_t iter;
+                le_device_memory_db_t db;
+            } _ret = {0};
+            #pragma pack (pop)
+            le_device_memory_db_t *db = le_device_db_iter_next(&_param->iter);
+            _ret.iter = _param->iter;
+            if (db)
+                memcpy(&_ret.db, db, sizeof(*db));
+            send_ret_response(ID_le_device_db_iter_next, sizeof(_ret), &_ret);
+        }
+        return;
+
     #include "../data/brpc_handlers.inc"
 
     default:
@@ -986,7 +1128,7 @@ uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 }
 
 uint32_t cb_assertion(assertion_info_t *info, void *_)
-{    
+{
     #pragma pack (push, 1)
     struct ret
     {
@@ -994,7 +1136,7 @@ uint32_t cb_assertion(assertion_info_t *info, void *_)
         char fn[1];
     } *_r;
     #pragma pack (pop)
-    
+
     int len = sizeof(struct ret) + strlen(info->file_name);
     _r = (struct ret *)alloca(sizeof(struct ret) + len);
     strcpy(_r->fn, info->file_name);

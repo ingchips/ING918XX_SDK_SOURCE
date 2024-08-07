@@ -1244,18 +1244,24 @@ hci_con_handle_t con_handle;io_capability_t io_capability;uint8_t auth_req;} _pa
 .auth_req = auth_req};
 #pragma pack (pop)
 call_void_fun(1123,&_param,sizeof(_param));}
+void sm_set_key_distribution_flags(uint8_t flags){LOG_D("sm_set_key_distribution_flags...");;
+#pragma pack (push, 1)
+struct _param {
+uint8_t flags;} _param = {.flags = flags};
+#pragma pack (pop)
+call_void_fun(1124,&_param,sizeof(_param));}
 void sm_bonding_decline(hci_con_handle_t con_handle){LOG_D("sm_bonding_decline...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1124,&_param,sizeof(_param));}
+call_void_fun(1125,&_param,sizeof(_param));}
 void sm_just_works_confirm(hci_con_handle_t con_handle){LOG_D("sm_just_works_confirm...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1125,&_param,sizeof(_param));}
+call_void_fun(1126,&_param,sizeof(_param));}
 void sm_passkey_input(hci_con_handle_t con_handle,
 uint32_t passkey){LOG_D("sm_passkey_input...");;
 #pragma pack (push, 1)
@@ -1263,67 +1269,67 @@ struct _param {
 hci_con_handle_t con_handle;uint32_t passkey;} _param = {.con_handle = con_handle,
 .passkey = passkey};
 #pragma pack (pop)
-call_void_fun(1126,&_param,sizeof(_param));}
+call_void_fun(1127,&_param,sizeof(_param));}
 void sm_send_security_request(hci_con_handle_t con_handle){LOG_D("sm_send_security_request...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1127,&_param,sizeof(_param));}
+call_void_fun(1128,&_param,sizeof(_param));}
 int sm_encryption_key_size(hci_con_handle_t con_handle){LOG_D("sm_encryption_key_size...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1128,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1129,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 int sm_authenticated(hci_con_handle_t con_handle){LOG_D("sm_authenticated...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1129,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1130,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 authorization_state_t sm_authorization_state(hci_con_handle_t con_handle){LOG_D("sm_authorization_state...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1130,&_param,sizeof(_param));authorization_state_t _r= *(authorization_state_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1131,&_param,sizeof(_param));authorization_state_t _r= *(authorization_state_t *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void sm_request_pairing(hci_con_handle_t con_handle){LOG_D("sm_request_pairing...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1131,&_param,sizeof(_param));}
+call_void_fun(1132,&_param,sizeof(_param));}
 void sm_authorization_decline(hci_con_handle_t con_handle){LOG_D("sm_authorization_decline...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1132,&_param,sizeof(_param));}
+call_void_fun(1133,&_param,sizeof(_param));}
 void sm_authorization_grant(hci_con_handle_t con_handle){LOG_D("sm_authorization_grant...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-call_void_fun(1133,&_param,sizeof(_param));}
+call_void_fun(1134,&_param,sizeof(_param));}
 int sm_le_device_key(hci_con_handle_t con_handle){LOG_D("sm_le_device_key...");;
 #pragma pack (push, 1)
 struct _param {
 hci_con_handle_t con_handle;} _param = {.con_handle = con_handle};
 #pragma pack (pop)
-struct node * _node = call_fun(1134,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1135,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void kv_remove_all(void){LOG_D("kv_remove_all...");;
 #pragma pack (push, 1)
 struct _param {
 } _param = {};
 #pragma pack (pop)
-call_void_fun(1135,&_param,sizeof(_param));}
+call_void_fun(1136,&_param,sizeof(_param));}
 void kv_remove(const kvkey_t key){LOG_D("kv_remove...");;
 #pragma pack (push, 1)
 struct _param {
 const kvkey_t key;} _param = {.key = key};
 #pragma pack (pop)
-call_void_fun(1136,&_param,sizeof(_param));}
+call_void_fun(1137,&_param,sizeof(_param));}
 int kv_put(const kvkey_t key,
 const uint8_t * data,
 int16_t length){LOG_D("kv_put...");remote_mem_map(data, length * sizeof(* data));
@@ -1333,22 +1339,22 @@ const kvkey_t key;const uint8_t * data;int16_t length;} _param = {.key = key,
 .data = data,
 .length = length};
 #pragma pack (pop)
-struct node * _node = call_fun(1137,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
+struct node * _node = call_fun(1138,&_param,sizeof(_param));int _r= *(int *)extract_ret_param(_node, NULL);GEN_OS()->free(_node);return _r;}
 void kv_value_modified(void){LOG_D("kv_value_modified...");;
 #pragma pack (push, 1)
 struct _param {
 } _param = {};
 #pragma pack (pop)
-call_void_fun(1138,&_param,sizeof(_param));}
+call_void_fun(1139,&_param,sizeof(_param));}
 void kv_commit(int flag_always_write){LOG_D("kv_commit...");;
 #pragma pack (push, 1)
 struct _param {
 int flag_always_write;} _param = {.flag_always_write = flag_always_write};
 #pragma pack (pop)
-call_void_fun(1139,&_param,sizeof(_param));}
+call_void_fun(1140,&_param,sizeof(_param));}
 void le_device_db_remove_key(int index){LOG_D("le_device_db_remove_key...");;
 #pragma pack (push, 1)
 struct _param {
 int index;} _param = {.index = index};
 #pragma pack (pop)
-call_void_fun(1140,&_param,sizeof(_param));}
+call_void_fun(1141,&_param,sizeof(_param));}
