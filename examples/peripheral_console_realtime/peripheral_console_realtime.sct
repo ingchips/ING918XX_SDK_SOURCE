@@ -9,7 +9,7 @@ LR_IROM1 0x02027000 0x00059000  {    ; load region size_region
    .ANY (+RO)
    .ANY (+XO)
   }
-RW_IRAM1 0x20004350 0x00009CB0 {  ; RW data
+RW_IRAM1 0x200043B8 0x00009C48 {  ; RW data
    *(.ram_code)
    *(Veneer$$Code)
    .ANY (+RW +ZI)
