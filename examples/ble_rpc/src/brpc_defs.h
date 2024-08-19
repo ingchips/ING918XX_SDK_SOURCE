@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#define BRPC_VERSION        0x2
+#define BRPC_VERSION        0x3
 
 #define STATUS_OK           0
 #define STATUS_ERR          1
@@ -173,6 +173,14 @@ struct frame_split
 #define ID_gatt_client_get_mtu          0x31
 #define ID_gap_aes_encrypt              0x32
 #define ID_sm_private_random_address_generation_get              0x33
+#define ID_kv_get                       0x34
+#define ID_le_device_db_add             0x35
+#define ID_le_device_db_find            0x36
+#define ID_le_device_db_from_key        0x37
+#define ID_le_device_db_iter_init       0x38
+#define ID_le_device_db_iter_cur        0x39
+#define ID_le_device_db_iter_next       0x3A
+
 
 #ifdef __cplusplus
 }

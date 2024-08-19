@@ -121,20 +121,21 @@ __attribute((weak)) void sm_set_encryption_key_size_range(uint8_t min_size,uint8
 __attribute((weak)) void sm_set_authentication_requirements(uint8_t auth_req) {UNDEF_FUN(1121); }
 __attribute((weak)) int sm_address_resolution_lookup(uint8_t addr_type,bd_addr_t addr) {UNDEF_FUN(1122); return (int)0;}
 __attribute((weak)) void sm_config_conn(hci_con_handle_t con_handle,io_capability_t io_capability,uint8_t auth_req) {UNDEF_FUN(1123); }
-__attribute((weak)) void sm_bonding_decline(hci_con_handle_t con_handle) {UNDEF_FUN(1124); }
-__attribute((weak)) void sm_just_works_confirm(hci_con_handle_t con_handle) {UNDEF_FUN(1125); }
-__attribute((weak)) void sm_passkey_input(hci_con_handle_t con_handle,uint32_t passkey) {UNDEF_FUN(1126); }
-__attribute((weak)) void sm_send_security_request(hci_con_handle_t con_handle) {UNDEF_FUN(1127); }
-__attribute((weak)) int sm_encryption_key_size(hci_con_handle_t con_handle) {UNDEF_FUN(1128); return (int)0;}
-__attribute((weak)) int sm_authenticated(hci_con_handle_t con_handle) {UNDEF_FUN(1129); return (int)0;}
-__attribute((weak)) authorization_state_t sm_authorization_state(hci_con_handle_t con_handle) {UNDEF_FUN(1130); return (authorization_state_t)0;}
-__attribute((weak)) void sm_request_pairing(hci_con_handle_t con_handle) {UNDEF_FUN(1131); }
-__attribute((weak)) void sm_authorization_decline(hci_con_handle_t con_handle) {UNDEF_FUN(1132); }
-__attribute((weak)) void sm_authorization_grant(hci_con_handle_t con_handle) {UNDEF_FUN(1133); }
-__attribute((weak)) int sm_le_device_key(hci_con_handle_t con_handle) {UNDEF_FUN(1134); return (int)0;}
-__attribute((weak)) void kv_remove_all(void) {UNDEF_FUN(1135); }
-__attribute((weak)) void kv_remove(const kvkey_t key) {UNDEF_FUN(1136); }
-__attribute((weak)) int kv_put(const kvkey_t key,const uint8_t * data,int16_t length) {UNDEF_FUN(1137); return (int)0;}
-__attribute((weak)) void kv_value_modified(void) {UNDEF_FUN(1138); }
-__attribute((weak)) void kv_commit(int flag_always_write) {UNDEF_FUN(1139); }
-__attribute((weak)) void le_device_db_remove_key(int index) {UNDEF_FUN(1140); }
+__attribute((weak)) void sm_set_key_distribution_flags(uint8_t flags) {UNDEF_FUN(1124); }
+__attribute((weak)) void sm_bonding_decline(hci_con_handle_t con_handle) {UNDEF_FUN(1125); }
+__attribute((weak)) void sm_just_works_confirm(hci_con_handle_t con_handle) {UNDEF_FUN(1126); }
+__attribute((weak)) void sm_passkey_input(hci_con_handle_t con_handle,uint32_t passkey) {UNDEF_FUN(1127); }
+__attribute((weak)) void sm_send_security_request(hci_con_handle_t con_handle) {UNDEF_FUN(1128); }
+__attribute((weak)) int sm_encryption_key_size(hci_con_handle_t con_handle) {UNDEF_FUN(1129); return (int)0;}
+__attribute((weak)) int sm_authenticated(hci_con_handle_t con_handle) {UNDEF_FUN(1130); return (int)0;}
+__attribute((weak)) authorization_state_t sm_authorization_state(hci_con_handle_t con_handle) {UNDEF_FUN(1131); return (authorization_state_t)0;}
+__attribute((weak)) void sm_request_pairing(hci_con_handle_t con_handle) {UNDEF_FUN(1132); }
+__attribute((weak)) void sm_authorization_decline(hci_con_handle_t con_handle) {UNDEF_FUN(1133); }
+__attribute((weak)) void sm_authorization_grant(hci_con_handle_t con_handle) {UNDEF_FUN(1134); }
+__attribute((weak)) int sm_le_device_key(hci_con_handle_t con_handle) {UNDEF_FUN(1135); return (int)0;}
+__attribute((weak)) void kv_remove_all(void) {UNDEF_FUN(1136); }
+__attribute((weak)) void kv_remove(const kvkey_t key) {UNDEF_FUN(1137); }
+__attribute((weak)) int kv_put(const kvkey_t key,const uint8_t * data,int16_t length) {UNDEF_FUN(1138); return (int)0;}
+__attribute((weak)) void kv_value_modified(void) {UNDEF_FUN(1139); }
+__attribute((weak)) void kv_commit(int flag_always_write) {UNDEF_FUN(1140); }
+__attribute((weak)) void le_device_db_remove_key(int index) {UNDEF_FUN(1141); }
