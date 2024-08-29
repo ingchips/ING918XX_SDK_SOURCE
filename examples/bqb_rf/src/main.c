@@ -93,24 +93,21 @@ trace_rtt_t trace_ctx = {0};
 extern void rx_hci_byte(void *user_data, uint8_t c);
 
 int app_main()
-{
-#ifndef BQTF_TEST
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+{ 
     switch (platform_read_persistent_reg())
     {
     case POWER_MODE_BOOSTED:
         rf_enable_powerboost();
         break;
     case POWER_MODE_NORMAL:
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
         SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BUCK_DCDC_OUTPUT_1V500);
         SYSCTRL_SetLDOOutputRF(SYSCTRL_LDO_RF_OUTPUT_1V300);
+#endif
         break;
     default:
-        platform_write_persistent_reg(POWER_MODE_NORMAL);
         break;
     }
-#endif
-#endif
 
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
 
