@@ -93,7 +93,12 @@ trace_rtt_t trace_ctx = {0};
 extern void rx_hci_byte(void *user_data, uint8_t c);
 
 int app_main()
-{ 
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    // assume that Vbat is 3.3V
+    SYSCTRL_SetLDOOutput(SYSCTRL_LDO_OUPUT_2V50);
+#endif
+
     switch (platform_read_persistent_reg())
     {
     case POWER_MODE_BOOSTED:
