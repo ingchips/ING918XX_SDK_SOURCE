@@ -615,85 +615,90 @@ struct _param {hci_con_handle_t con_handle;io_capability_t io_capability;uint8_t
 sm_config_conn(_param->con_handle,_param->io_capability,_param->auth_req);}break;
 case 1124: {
 #pragma pack (push, 1)
-struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
+struct _param {uint8_t flags;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-sm_bonding_decline(_param->con_handle);}break;
+sm_set_key_distribution_flags(_param->flags);}break;
 case 1125: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-sm_just_works_confirm(_param->con_handle);}break;
+sm_bonding_decline(_param->con_handle);}break;
 case 1126: {
+#pragma pack (push, 1)
+struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
+#pragma pack (pop)
+sm_just_works_confirm(_param->con_handle);}break;
+case 1127: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;uint32_t passkey;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
 sm_passkey_input(_param->con_handle,_param->passkey);}break;
-case 1127: {
-#pragma pack (push, 1)
-struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
-#pragma pack (pop)
-sm_send_security_request(_param->con_handle);}break;
 case 1128: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-int _ret = sm_encryption_key_size(_param->con_handle);send_ret_response(1128,sizeof(_ret),&_ret);}break;
+sm_send_security_request(_param->con_handle);}break;
 case 1129: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-int _ret = sm_authenticated(_param->con_handle);send_ret_response(1129,sizeof(_ret),&_ret);}break;
+int _ret = sm_encryption_key_size(_param->con_handle);send_ret_response(1129,sizeof(_ret),&_ret);}break;
 case 1130: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-authorization_state_t _ret = sm_authorization_state(_param->con_handle);send_ret_response(1130,sizeof(_ret),&_ret);}break;
+int _ret = sm_authenticated(_param->con_handle);send_ret_response(1130,sizeof(_ret),&_ret);}break;
 case 1131: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-sm_request_pairing(_param->con_handle);}break;
+authorization_state_t _ret = sm_authorization_state(_param->con_handle);send_ret_response(1131,sizeof(_ret),&_ret);}break;
 case 1132: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-sm_authorization_decline(_param->con_handle);}break;
+sm_request_pairing(_param->con_handle);}break;
 case 1133: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-sm_authorization_grant(_param->con_handle);}break;
+sm_authorization_decline(_param->con_handle);}break;
 case 1134: {
 #pragma pack (push, 1)
 struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-int _ret = sm_le_device_key(_param->con_handle);send_ret_response(1134,sizeof(_ret),&_ret);}break;
+sm_authorization_grant(_param->con_handle);}break;
 case 1135: {
+#pragma pack (push, 1)
+struct _param {hci_con_handle_t con_handle;} *_param = (struct _param *)call->body;
+#pragma pack (pop)
+int _ret = sm_le_device_key(_param->con_handle);send_ret_response(1135,sizeof(_ret),&_ret);}break;
+case 1136: {
 #pragma pack (push, 1)
 struct _param {} *_param = (struct _param *)call->body;
 #pragma pack (pop)
 kv_remove_all();}break;
-case 1136: {
+case 1137: {
 #pragma pack (push, 1)
 struct _param {const kvkey_t key;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
 kv_remove(_param->key);}break;
-case 1137: {
+case 1138: {
 #pragma pack (push, 1)
 struct _param {const kvkey_t key;const uint8_t * data;int16_t length;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
-int _ret = kv_put(_param->key,(const uint8_t *)sys_mem_map(_param->data),_param->length);send_ret_response(1137,sizeof(_ret),&_ret);}break;
-case 1138: {
+int _ret = kv_put(_param->key,(const uint8_t *)sys_mem_map(_param->data),_param->length);send_ret_response(1138,sizeof(_ret),&_ret);}break;
+case 1139: {
 #pragma pack (push, 1)
 struct _param {} *_param = (struct _param *)call->body;
 #pragma pack (pop)
 kv_value_modified();}break;
-case 1139: {
+case 1140: {
 #pragma pack (push, 1)
 struct _param {int flag_always_write;} *_param = (struct _param *)call->body;
 #pragma pack (pop)
 kv_commit(_param->flag_always_write);}break;
-case 1140: {
+case 1141: {
 #pragma pack (push, 1)
 struct _param {int index;} *_param = (struct _param *)call->body;
 #pragma pack (pop)

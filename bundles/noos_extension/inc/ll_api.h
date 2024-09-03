@@ -31,6 +31,8 @@ typedef enum ll_config_item_e
     // `value` should be a pointer casted from `const uint8_t *`
     // The mask should be always available.
     LL_CFG_FEATURE_SET_MASK,
+
+    LL_CFG_INTERNAL_ITEM_0,
 } ll_config_item_t;
 
 typedef struct ll_capabilities
@@ -804,6 +806,18 @@ typedef void (* f_ll_channel_monitor_pdu_visitor)(int index, int status, uint8_t
 int ll_channel_monitor_check_each_pdu(struct ll_raw_packet *packet,
                                 f_ll_channel_monitor_pdu_visitor visitor,
                                 void *user_data);
+
+/**
+ ****************************************************************************************
+ * @brief Get air time of the first received PDU
+ *
+ * @param[in]   packet              the packet object
+ * @param[out]  air_time            air time
+ * @return                          0 if successful else error code
+ *                                  error conditions: 1) still running; 2) no PDU is received.
+ ****************************************************************************************
+ */
+int ll_channel_monitor_get_1st_pdu_time(struct ll_raw_packet *packet, uint64_t *air_time);
 
 /**
  * @brief Enumeration for Burst Transmission Order

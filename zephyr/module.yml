@@ -1,3 +1,0 @@
-name: hal_ingchips
-build:
-  cmake: .
