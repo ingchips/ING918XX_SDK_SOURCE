@@ -2,7 +2,7 @@
 #include "ingsoc.h"
 #include "peripheral_usb.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 
 // =============================================================================
 // PRIVATE VARIABLES

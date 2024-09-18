@@ -1,6 +1,6 @@
 #include "peripheral_i2s.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 
 void I2S_Config(I2S_TypeDef *base, i2s_role_t role, i2s_mode_t mode,
                 uint8_t mono,
@@ -87,9 +87,11 @@ int I2S_GetRxFIFOCount(I2S_TypeDef *base)
     return (base->FifoStatus >> 8) & 0x1f;
 }
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 void I2S_DataFromPDM(uint8_t enable)
 {
     APB_SYSCTRL->PdmI2sCtrl = enable;
 }
+#endif
 
 #endif

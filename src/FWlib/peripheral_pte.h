@@ -174,7 +174,7 @@ typedef enum
     PTE_CHANNEL_13,
     PTE_CHANNEL_14,
     PTE_CHANNEL_15,
-}PTE_Channal;
+}PTE_Channel;
 
 /**
  * @brief PTE Module Evevt and task
@@ -255,7 +255,7 @@ typedef enum
 /**
  * @brief PTE channel enabled
  *
- * @param items             combination of bits whose positions are listed in `PTE_Channal`
+ * @param items             combination of bits whose positions are listed in `PTE_Channel`
  * @return                  None
  * @example Enable channel0 and channel1 PTE_ChxEnable((1<<PTE_CHANNEL_0) | (1<<PTE_CHANNEL_1))
  */
@@ -263,7 +263,7 @@ void PTE_ChxEnable(uint32_t items);
 /**
  * @brief PTE channel disable
  *
- * @param items             combination of bits whose positions are listed in `PTE_Channal`
+ * @param items             combination of bits whose positions are listed in `PTE_Channel`
  * @return                  None
  * @example Disable channel0 and channel1 PTE_ChxEnable((1<<PTE_CHANNEL_0) | (1<<PTE_CHANNEL_1))
  */
@@ -272,21 +272,21 @@ void PTE_ChxDisable(uint32_t items);
  * @brief Get PTE channel enable state
  *
  * @param None
- * @return  combination of bits whose positions are listed in `PTE_Channal`
+ * @return  combination of bits whose positions are listed in `PTE_Channel`
  */
 uint32_t PTE_ChxGetEnableState(void);
 /**
  * @brief Configure task or event parameters of the PTE peripheral module
  *
  * @param SetPTEModule      Set PTE peripheral module. Must be one of `PTE_Module`
- * @param SetTaskChannal    Set PTE task channel. Must be one of `PTE_Channal`
+ * @param SetTaskChannel    Set PTE task channel. Must be one of `PTE_Channel`
  * @param PTETaskEvt       Set PTE task event. Must be one of `PTE_ModuleTaskEvt`
  * @param TaskEvtSer       Set PTE task event serial number.(The module serial number can be viewed in the PTE_ModuleTaskEvt comment)
  * @return                 0 : failed, 1 : success
- * @example Set Qdec module task config,channal 0,task is QDEC_TMR_STOP,serial number is 1
+ * @example Set Qdec module task config,channel 0,task is QDEC_TMR_STOP,serial number is 1
  *          PTE_SetModuleTaskEventConfig(PTE_MODULE_QDEC, PTE_CHANNEL_0, PTE_TASK_QDEC_TMR_STOP, 1)
  */
-uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channal SetTaskChannal, PTE_ModuleTaskEvt PTETaskEvt, uint32_t TaskEvtSer);
+uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channel SetTaskChannel, PTE_ModuleTaskEvt PTETaskEvt, uint32_t TaskEvtSer);
 /**
  * @brief Ctrl task or event of the PTE peripheral module
  *
@@ -352,7 +352,7 @@ void PTE_SetTaskChxGroupDisConfig(PTEC_ChannelGroup SetChannelGroup,uint32_t Set
  * @brief Configure PTE channel group map
  *
  * @param PTEC_ChannelGroup      PTE group. Must be one of `PTEC_ChannelGroup`
- * @param SetSubChannel          combination of bits whose positions are listed in `PTE_Channal`
+ * @param SetSubChannel          combination of bits whose positions are listed in `PTE_Channel`
  * @return                 None
  * 
  * @note A group only can map up to 4 channels

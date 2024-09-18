@@ -34,6 +34,49 @@ typedef enum {
     QDEC_DIV_65536      = 0x7,
 } QDEC_indexCfg;
 
+typedef enum {
+    QDEC_TIMER = 0,
+    QDEC_PWM,
+    QDEC_PCM,
+    QDEC_QDEC,
+} QDEC_ModuCfg;
+
+typedef enum {
+    QDEC_CH0 = 0,
+    QDEC_CH1,
+    QDEC_CH2,
+} QDEC_CHX;
+
+typedef enum {
+    QDEC_EX_NO_TRIG = 0,
+    QDEC_EX_RISING_EDGE,
+    QDEC_EX_FALLING_EDGE,
+    QDEC_EX_BOTH_EDGE,
+}QDEC_ExTrigger;
+
+typedef enum {
+    QDEC_INT_BUF_FULL_STATE = 1<<0,
+    QDEC_INT_PDC_END_STATE = 1<<1,
+    QDEF_INT_ETRGS_CMB_STATE = 1<<2,
+    QDEC_INT_LDRBS_CMB_STATE = 1<<3,
+    QDEC_INT_LDRAS_CMB_STATE = 1<<4,
+    QDEC_INT_CPCS_CMB_STATE = 1<<5,
+    QDEC_INT_CPBS_CMB_STATE = 1<<6,
+    QDEC_INT_CPAS_CMB_STATE = 1<<7,
+    QDEC_INT_LOVFS_CMB_STATE = 1<<8,
+    QDEC_INT_COVFS_CMB_STATE = 1<<9,
+}QDEC_IntState;
+
+typedef enum {
+    QDEC_TMR_RELOAD = 0,
+    QDEC_TMR_STOP,
+}QDEC_TMR_UP_MODE;
+
+typedef enum {
+    QDEC_TMR_RELOAD_UP_FULL = 0,
+    QDEC_TMR_RELOAD_UP_VALE,
+}QDEC_TMR_RELOAD_MODE;
+
 /**
  * @brief Set QDEC index divider and enable QDEC index register
  *
@@ -88,6 +131,23 @@ void QDEC_Reset(void);
  *
  */
 void QDEC_IntClear(void);
+
+
+void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModuCfg ModeCfg);
+void QDEC_SetChxCpcTrg(QDEC_CHX Channel, uint8_t val);
+void QDEC_SetChxCpcStopEn(QDEC_CHX Channel, uint8_t val);
+void QDEC_ExternalEventEdgeSet(QDEC_CHX Channel, QDEC_ExTrigger edge);
+void QDEC_SetEtrg(QDEC_CHX Channel, uint8_t val);
+void QDEC_SetEtrgEn(QDEC_CHX Channel, uint8_t enable);
+void QDEC_SetCHxTmrCntA(QDEC_CHX Channel, uint16_t val);
+void QDEC_SetCHxTmrCntB(QDEC_CHX Channel, uint16_t val);
+void QDEC_SetCHxTmrCntC(QDEC_CHX Channel, uint16_t val);
+void QDEC_TmrCfg(QDEC_CHX Channel, QDEC_TMR_UP_MODE TmrUpMode,QDEC_TMR_RELOAD_MODE TmrReloadMode);
+void QDEC_SetChxIntEn(QDEC_CHX Channel, uint8_t enable, uint16_t items);
+uint32_t QDEC_GetChxIntEn(QDEC_CHX Channel);
+uint32_t QDEC_GetChxIntStateClr(QDEC_CHX Channel);
+void QDEC_EnableChannel(QDEC_CHX Channel, uint8_t enable);
+
 #endif
 
 #ifdef __cplusplus
