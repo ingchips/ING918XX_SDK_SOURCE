@@ -490,6 +490,7 @@ typedef enum
                                             // * the default IDLE procedure
                                             // * when entering sleep modes
                                             // Only available for ING916 (default: Enabled)
+    PLATFORM_CFG_PS_DBG_5,                  // Reserved debugging parameter
 } platform_cfg_item_t;
 
 typedef enum
