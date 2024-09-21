@@ -432,7 +432,7 @@ void ADC_VrefCalibration(void)
     if (!ftCali) return;
     ADC_DisableAllChannels();
     ADC_ClrFifo();
-    ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_1, 1, ADC_CH_9, 15, 0,
+    ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_1, 0, ADC_CH_9, 15, 0,
         SINGLE_END_MODE, SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC) / 63000);
     ADC_Start(1);
     while (!ADC_GetIntStatus());
@@ -675,8 +675,16 @@ void ADC_AdcClose(void)
     ADC_Start(0);
     ADC_Reset();
     free(ftCali);
-    ftCali = 0;
+    ftCali = NULL;
 }
+
+void ADC_AdcCloseCali(void)
+{
+    ADC_Start(0);
+    ADC_Reset();
+    ftCali = NULL;
+}
+
 
 void ADC_Start(uint8_t start)
 {

@@ -77,6 +77,8 @@ static uint32_t DMA_cb_isr(void *user_data)
     }
     return 0;
 }
+
+SADC_ftCali_t AdcCaliData;
 void audio_input_setup(void)
 {
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
@@ -84,7 +86,7 @@ void audio_input_setup(void)
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Reset();
     ADC_Calibration(DIFFERENTAIL_MODE);
-    ADC_ftInit();
+	ADC_ftInitCali(&AdcCaliData);
     ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 
                 LOOP_DELAY(ADC_CLK_MHZ, SAMPLING_RATE, ADC_CHANNEL_NUM));
 

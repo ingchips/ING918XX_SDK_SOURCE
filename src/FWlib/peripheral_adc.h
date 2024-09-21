@@ -432,8 +432,15 @@ void ADC_Reset(void);
 
 /**
  * @brief Close ADC
+ * @note The api must ensure that the calibration parameters are initialized by ADC_ftInit before use.
  */
 void ADC_AdcClose(void);
+
+/**
+ * @brief Close ADC
+ * @note If the initialization API uses ADC_ftInitCali, exit the ADC should use this API.
+ */
+void ADC_AdcCloseCali(void);
 
 /**
  * @brief ADC calibration standard configuration interface

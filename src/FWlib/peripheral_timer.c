@@ -134,6 +134,13 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value)
     pTMR->Channels[ch_id].Reload = value;
 }
 
+void TMR_RsetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask, uint32_t value)
+{
+    pTMR->ChEn &= ~(0xf << (ch_id * 4));
+    pTMR->Channels[ch_id].Reload = value;
+    pTMR->ChEn |= (mask & 0xf) << (ch_id * 4);
+}
+
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
 {
     pTMR->ChEn &= ~(0xf << (ch_id * 4));

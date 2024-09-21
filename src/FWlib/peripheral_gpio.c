@@ -172,7 +172,7 @@ uint8_t GIO_GetIntStatus(const GIO_Index_t io_index)
 void GIO_ClearIntStatus(const GIO_Index_t io_index)
 {
     DEF_GIO_AND_PIN(io_index);
-    pDef->IntStatus |= 1 << index;
+    pDef->IntStatus = 1 << index;
 }
 
 void GIO_DebounceCtrl(uint8_t group_mask, uint8_t clk_pre_scale, GIO_DbClk_t clk)
