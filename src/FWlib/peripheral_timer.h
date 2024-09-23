@@ -287,7 +287,7 @@ void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value);
  *      * bits [24..31] for high period
  ****************************************************************************************
  */
-void TMR_RsetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask, uint32_t value);
+void TMR_ResetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask, uint32_t value);
 
 /**
  ****************************************************************************************

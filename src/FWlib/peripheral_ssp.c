@@ -309,7 +309,6 @@ void apSSP_DeviceParametersSet(SSP_TypeDef *SPI_BASE, apSSP_sDeviceControlBlock 
 
 }
 
-
 void apSSP_SetTransMode(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_TransMode_e mode)
 {
     SPI_BASE->TransCtrl &= (~(BW2M(4) << bsSPI_TRANSCTRL_TRANSMODE));
@@ -323,6 +322,7 @@ void apSSP_SetAddrEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
     else
         SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_ADDREN));
 }
+
 void apSSP_SetCmdEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
 {
     if (enable)

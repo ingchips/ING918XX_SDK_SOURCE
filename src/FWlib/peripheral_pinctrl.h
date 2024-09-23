@@ -514,8 +514,6 @@ int PINCTRL_SelPCAPIn(int index, uint8_t io_pin);
 int PINCTRL_SelQDECIn(uint8_t phase_a,
                       uint8_t phase_b);
 
-int PINCTRL_SelQDECPcapIn(int index, uint8_t io_pin);
-
 /**
  * @brief Set pull mode of a IO source
  *

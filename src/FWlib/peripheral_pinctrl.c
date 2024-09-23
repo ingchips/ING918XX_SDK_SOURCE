@@ -580,17 +580,6 @@ int PINCTRL_SelQDECIn(uint8_t phase_a,
     return 0;
 }
 
-int PINCTRL_SelQDECPcapIn(int index, uint8_t io_pin)
-{
-    if(index == IO_SOURCE_QDEC_PHASEA)
-        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_PHASEA, 9, 5, 5)) return -1;
-    if(index == IO_SOURCE_QDEC_TIMER_EXT_IN1_A)
-        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_TIMER_EXT_IN1_A, 9, 3, 22)) return -1;
-    if(index == IO_SOURCE_QDEC_TIMER_EXT_IN2_A)
-        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_TIMER_EXT_IN2_A, 9, 3, 25)) return -1;
-    return 0;
-}
-
 int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode)
 {
     int index = io_pin;
