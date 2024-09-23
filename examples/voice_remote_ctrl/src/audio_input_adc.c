@@ -86,7 +86,7 @@ void audio_input_setup(void)
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Reset();
     ADC_Calibration(DIFFERENTAIL_MODE);
-	ADC_ftInitCali(&AdcCaliData);
+    ADC_ftInitCali(&AdcCaliData);
     ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 
                 LOOP_DELAY(ADC_CLK_MHZ, SAMPLING_RATE, ADC_CHANNEL_NUM));
 
