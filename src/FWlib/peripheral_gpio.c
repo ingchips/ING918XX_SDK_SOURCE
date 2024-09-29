@@ -296,6 +296,7 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
 
     if ((1 <= io_index) && (io_index <= 4)
      || (7 <= io_index) && (io_index <= 17)
+     || (24 <= io_index) && (io_index <= 25)
      || (29 <= io_index) && (io_index <= 35))
     {
         if (io_index <= 31)
