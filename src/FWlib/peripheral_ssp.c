@@ -308,6 +308,29 @@ void apSSP_DeviceParametersSet(SSP_TypeDef *SPI_BASE, apSSP_sDeviceControlBlock 
     apSSP_IntEnable(SPI_BASE, pParam->eInterruptMask);
 
 }
+
+void apSSP_SetTransMode(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_TransMode_e mode)
+{
+    SPI_BASE->TransCtrl &= (~(BW2M(4) << bsSPI_TRANSCTRL_TRANSMODE));
+    SPI_BASE->TransCtrl |= (mode << bsSPI_TRANSCTRL_TRANSMODE);
+}
+
+void apSSP_SetAddrEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
+{
+    if (enable)
+        SPI_BASE->TransCtrl |= (1 << bsSPI_TRANSCTRL_ADDREN);
+    else
+        SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_ADDREN));
+}
+
+void apSSP_SetCmdEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
+{
+    if (enable)
+        SPI_BASE->TransCtrl |= (1 << bsSPI_TRANSCTRL_CMDEN);
+    else
+        SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_CMDEN));
+}
+
 /*====================================================================*/
 void apSSP_WriteFIFO(SSP_TypeDef *SPI_BASE, uint32_t Data)
 {
@@ -387,7 +410,7 @@ uint32_t apSSP_GetIntRawStatus(SSP_TypeDef *SPI_BASE)
 
 void apSSP_ClearIntStatus(SSP_TypeDef *SPI_BASE, uint32_t val)
 {
-    SPI_BASE->IntrSt |= val;
+    SPI_BASE->IntrSt = val;
 }
 
 /*====================================================================*/

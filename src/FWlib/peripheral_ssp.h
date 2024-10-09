@@ -734,6 +734,30 @@ uint8_t apSSP_GetTxFifoDepthWords(SSP_TypeDef *SPI_BASE);
 uint8_t apSSP_GetRxFifoDepthWords(SSP_TypeDef *SPI_BASE);
 
 /**
+ * @brief Set the transfer mode of the SPI master.
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] SPI_TransCtrl_TransMode_e   TransMode
+ */
+void apSSP_SetTransMode(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_TransMode_e mode);
+
+/**
+ * @brief Enable master send device address.
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] enable                enable: 1; disable: 0
+ */
+void apSSP_SetAddrEn(SSP_TypeDef *SPI_BASE, uint8_t enable);
+
+/**
+ * @brief Enable master send device commond.
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] enable                enable: 1; disable: 0
+ */
+void apSSP_SetCmdEn(SSP_TypeDef *SPI_BASE, uint8_t enable);
+
+/**
  * @brief Set dummy cnt, only applies to mode 5,6,8,9 of SPI_TransCtrl_TransMode_e
  *
  * @param[in] SPI_BASE              base address

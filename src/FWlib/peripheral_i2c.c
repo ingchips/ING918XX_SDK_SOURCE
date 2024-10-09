@@ -159,9 +159,11 @@ uint32_t I2C_GetIntState(I2C_TypeDef *I2C_BASE)
     return I2C_BASE->Status & I2C_INT_FULL_MASK;
 }
 
+#define I2C_INT_STATE_MASK  (0x7f<<3)
 void I2C_ClearIntState(I2C_TypeDef *I2C_BASE, uint32_t mask)
 {
-    I2C_BASE->Status |= mask & I2C_INT_FULL_MASK;
+    uint32_t write_mask = (mask & I2C_INT_STATE_MASK);
+    I2C_BASE->Status = write_mask;
 }
 
 int I2C_TransactionComplete(I2C_TypeDef *I2C_BASE)
