@@ -350,8 +350,8 @@ void bsp_usb_handle_hid_keyb_key_report(uint8_t key, uint8_t press)
       if(j == KEY_TABLE_LEN){return;}
     }
 
-    USB_SendData(USB_EP_DIRECTION_IN(EP_KB_IN), (void*)&(KeybReport.report), sizeof(BSP_KEYB_REPORT_s), 0);
     KeybReport.pending = U_TRUE;
+    USB_SendData(USB_EP_DIRECTION_IN(EP_KB_IN), (void*)&(KeybReport.report), sizeof(BSP_KEYB_REPORT_s), 0);
   }
 }
 
@@ -369,8 +369,8 @@ void bsp_usb_handle_hid_keyb_modifier_report(BSP_KEYB_KEYB_MODIFIER_e modifier, 
       KeybReport.report.modifier &= ~modifier;
     }
 
-    USB_SendData(USB_EP_DIRECTION_IN(EP_KB_IN), (void*)&(KeybReport.report), sizeof(BSP_KEYB_REPORT_s), 0);
     KeybReport.pending = U_TRUE;
+    USB_SendData(USB_EP_DIRECTION_IN(EP_KB_IN), (void*)&(KeybReport.report), sizeof(BSP_KEYB_REPORT_s), 0);
   }
 }
 
@@ -387,8 +387,8 @@ void bsp_usb_handle_hid_mouse_report(int8_t x, int8_t y, uint8_t btn)
     MouseReport.report.pos_y = y;
     MouseReport.report.button = btn;
 
-    USB_SendData(USB_EP_DIRECTION_IN(EP_MO_IN), (void*)&MouseReport, sizeof(BSP_MOUSE_REPORT_s), 0);
     MouseReport.pending = U_TRUE;
+    USB_SendData(USB_EP_DIRECTION_IN(EP_MO_IN), (void*)&MouseReport, sizeof(BSP_MOUSE_REPORT_s), 0);
   }
 }
 
