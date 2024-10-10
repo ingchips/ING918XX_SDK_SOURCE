@@ -85,7 +85,7 @@ def send_file(ser: serial.Serial, addr: int, data: bytes):
 
     return True
 
-def wait_handshaking3(ser: serial.Serial, timeout: int, hello: str):
+def wait_handshaking3(ser: serial.Serial, timeout: float, hello: str):
     print("wait for handshaking...", end = '\r')
     start = time.time()
     acc = bytes()
@@ -99,7 +99,7 @@ def wait_handshaking3(ser: serial.Serial, timeout: int, hello: str):
             print()
             return False
 
-def wait_handshaking(ser: serial.Serial, timeout: int):
+def wait_handshaking(ser: serial.Serial, timeout: float):
     return wait_handshaking3(ser, timeout, BOOT_HELLO)
 
 def do_run(mod: ModuleType, ser, config, go, timeout, counter, user_data):

@@ -5,7 +5,6 @@ import argparse
 import os.path
 import sys
 import time
-import urllib3.request
 import usb.core
 import usb.util
 import usb.backend.libusb1
