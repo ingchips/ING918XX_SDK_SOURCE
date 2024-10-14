@@ -194,7 +194,7 @@ void DMA_ClearChannelIntState(int channel_id, uint32_t state);
 
 
 /**
- * @brief Clear interrupt state of a channel
+ * @brief Modify source burst size in the DMA descriptor
  *
  * @param[in] pDesc             the descriptor
  * @param[in] burst_size        Source burst size of `DMA_SrcBurstSize`, The burst transfer byte number is SrcBurstSize * SrcWidth.
