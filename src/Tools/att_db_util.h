@@ -75,6 +75,28 @@ uint8_t * att_db_util_get_address(void);
  */
 uint16_t att_db_util_get_size(void);
 
+/**
+ * @brief Init ATT RC storage
+ */
+void att_rc_util_init(uint8_t *att_rc_storage, const uint16_t rc_max_size);
+
+/** 
+ * @brief Get address of constructed ATT RC
+ */
+uint8_t * att_rc_util_get_address(void);
+
+/**
+ * @brief Get size of constructed ATT RC 
+ */
+uint16_t att_rc_util_get_size(void);
+
+/**
+ * @brief Calculate database hash by ATT RC
+ * @param db_hash Calculate result of database hash, the size is 16 bytes.
+ * @returns Error code:  0:success, -1:param error, -2: ATT RC uninit error.
+ */
+int att_rc_util_calc_database_hash(uint8_t *db_hash);
+
 /* API_END */
 
 #ifdef __cplusplus
