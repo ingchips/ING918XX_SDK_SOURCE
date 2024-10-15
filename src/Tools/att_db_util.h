@@ -25,6 +25,26 @@ void att_db_util_add_service_uuid16(uint16_t uuid16);
 void att_db_util_add_service_uuid128(const uint8_t * uuid128);
 
 /**
+ * @brief Add primary service for 16-bit UUID
+ */
+void att_db_util_add_primary_service_uuid16(uint16_t uuid16);
+
+/**
+ * @brief Add secondary service for 16-bit UUID
+ */
+void att_db_util_add_secondary_service_uuid16(uint16_t uuid16);
+
+/**
+ * @brief Add include for 16-bit UUID
+ */
+void att_db_util_add_include_service_uuid16(uint16_t included_service_att_handle, uint16_t end_group_handle, uint16_t uuid16);
+
+/**
+ * @brief Set the next attribute value handle to be used by ATT DB.
+ */
+void att_db_util_set_next_handle(uint16_t handle);
+
+/**
  * @brief Add Characteristic with 16-bit UUID, properties, and data
  * @returns attribute value handle
  * @see ATT_PROPERTY_* in ble/att_db.h
