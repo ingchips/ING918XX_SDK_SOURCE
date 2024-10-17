@@ -63,6 +63,18 @@ def calc_crc_16(PData: bytes):
 
   return (uchCRCHi << 8) | uchCRCLo
 
+class TimeMeasurement:
+    def __init__(self) -> None:
+        pass
+
+    def start(self):
+        self.t0 = time.time()
+
+    def show_throughput(self, size, prefix: str = ' |'):
+        duration = time.time() - self.t0
+        if duration > 0:
+            print(f"{prefix}{size} bytes in {duration:.2f}s ({size/duration:.1f} B/s)")
+
 def load_mod(fn: str):
     import importlib.machinery, importlib.util
     loader = importlib.machinery.SourceFileLoader('script_mod', fn)
@@ -171,6 +183,9 @@ class device(object):
     def __init__(self, port, timeout, config):
         self.dev_type = 1 if port.lower().startswith('usb') else 0
         self.dev = None
+        self.port = port
+        self.timeout = timeout
+        self.config = config
         if self.dev_type == 1:
             self.backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
         self.open(port, timeout, config)
@@ -198,19 +213,32 @@ class device(object):
             self.dev = open_serial(config, port)
             self.dev.timeout = timeout
         else: #usb
-            if port.lower() == 'usb': #pick the first usb device
-                self.dev = usb.core.find(idVendor=0xffff, idProduct=0xfa2f, backend=self.backend)
-            else:
-                nouse,vid,pid,addr,bus,p = port.split('#')
-                self.dev = usb.core.find(custom_match = lambda d: d.idProduct==int(pid.split('_')[1],16) and d.idVendor==int(vid.split('_')[1],16) and d.address==int(addr,16), backend=self.backend)
+            print("wait for USB device ...", end = '\r')
+            start = time.time()
+            while time.time() - start < timeout:
+                if port.lower() == 'usb': #pick the first usb device
+                    self.dev = usb.core.find(idVendor=0xffff, idProduct=0xfa2f, backend=self.backend)
+                else:
+                    nouse,vid,pid,addr,bus,p = port.split('#')
+                    self.dev = usb.core.find(custom_match = lambda d: d.idProduct==int(pid.split('_')[1],16) and d.idVendor==int(vid.split('_')[1],16) and d.address==int(addr,16), backend=self.backend)
+                if self.dev is not None:
+                    time.sleep(0.5)
+                    break
+                time.sleep(0.2)
 
         return self.dev
 
     def close(self):
+        if self.dev is None: return
         if self.dev_type == 0: #uart
             self.dev.close()
         else: #usb
             usb.util.dispose_resources(self.dev)
+        self.dev = None
+
+    def reopen(self):
+        self.close()
+        self.open(self.port, self.timeout, self.config)
 
 def list_jlink():
     import pylink
