@@ -962,6 +962,11 @@ void SYSCTRL_ClearPDRInt(void);
  */
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
+/**
+ * @brief Enable USB PHY only.
+ */
+void SYSCTRL_USBPhyEnableOnly(void);
+
 #define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
 #define SYSCTRL_WAKEUP_SOURCE_COMPARATOR    2       // waken up by comparator
 #define SYSCTRL_WAKEUP_SOURCE_RTC_ALARM     4       // waken up by RTC alarm

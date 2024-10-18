@@ -1031,6 +1031,11 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
     }
 }
 
+void SYSCTRL_USBPhyEnableOnly(void)
+{
+    io_write(AON2_CTRL_BASE + 0x174, 1ul);
+}
+
 void SYSCTRL_ResetAllBlocks(void)
 {
     APB_SYSCTRL->RstuCfg[1] &= 0x23;
