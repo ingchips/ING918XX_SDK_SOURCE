@@ -5,20 +5,10 @@
 #include "bluetooth.h"
 #include "btstack_util.h"
 
-#include "aes_cmac.c"
-
-#define ATT_DB_PRINT_EN     0
-#define ATT_RC_PRINT_EN     0
-
 static uint8_t * att_db;
 static uint16_t  att_db_size;
 static uint16_t  att_db_max_size;
 static uint16_t  att_db_next_handle;
-
-static uint8_t * att_rc = NULL;
-static uint16_t  att_rc_size = 0;
-static uint16_t  att_rc_max_size = 0;
-static uint16_t  att_rc_util_add_service_uuid16(uint16_t att_handle, uint16_t att_type, const uint8_t * data, uint16_t data_len);
 
 static void att_db_util_set_end_tag(void){
     // end tag
@@ -45,9 +35,6 @@ static int att_db_util_assert_space(uint16_t size){
     if (att_db_size + size <= att_db_max_size) return 1;
 
     // att_db: out of memory
-#if ATT_DB_PRINT_EN
-    printf("att_db: out of memory !!!\n");
-#endif
     while (1);
 }
 
@@ -70,9 +57,6 @@ uint16_t att_db_util_add_attribute_uuid16(uint16_t uuid16, uint16_t flags, const
     memcpy(&att_db[att_db_size], data, data_len);
     att_db_size += data_len;
     att_db_util_set_end_tag();
-    if(att_rc != NULL){
-        att_rc_util_add_service_uuid16(att_db_next_handle - 1, uuid16, data, data_len);
-    }
     return att_db_next_handle - 1;
 }
 
@@ -210,105 +194,4 @@ void att_db_util_print(void)
     }
     printf("0x00, 0x00 // total size = %d\n", att_db_size + 2);
 }
-
-/////////////////////////////////////////////////////
-
-
-void att_rc_util_init(uint8_t *att_rc_storage, const uint16_t rc_max_size)
-{
-    att_rc = att_rc_storage;
-    att_rc_max_size = rc_max_size;
-    att_rc_size = 0;
-}
-
-static int att_rc_util_assert_space(uint16_t size){
-
-    if (att_rc_size + size <= att_rc_max_size) return 1;
-
-    // att_rc: out of memory
-#if ATT_RC_PRINT_EN
-    printf("att_rc: out of memory !!!\n");
-#endif
-    while (1);
-}
-
-static int att_rc_util_assert_att_type(uint16_t att_type){
-    switch(att_type){
-        case GATT_PRIMARY_SERVICE_UUID:
-        case GATT_SECONDARY_SERVICE_UUID:
-        case GATT_INCLUDE_SERVICE_UUID:
-        case GATT_CHARACTERISTICS_UUID:
-        case GATT_CHARACTERISTIC_EXTENDED_PROPERTIES:
-            return 1; // att_handle + att_type + att_data
-        case GATT_CHARACTERISTIC_USER_DESCRIPTION:
-        case GATT_CLIENT_CHARACTERISTICS_CONFIGURATION:
-        case GATT_SERVER_CHARACTERISTICS_CONFIGURATION:
-        case GATT_CHARACTERISTIC_PRESENTATION_FORMAT:
-        case GATT_CHARACTERISTIC_AGGREGATE_FORMAT:
-            return 2; // att_handle + att_type
-        default:
-            break;
-    }
-    return 0;
-}
-
-static uint16_t att_rc_util_add_service_uuid16(uint16_t att_handle, uint16_t att_type, const uint8_t * data, uint16_t data_len){
-    int size;
-    if (!att_rc_util_assert_att_type(att_type)) return 0xffff;
-    if(att_rc_util_assert_att_type(att_type) == 2){
-        data_len = 0;
-    }
-    size = 2 + 2 + data_len;
-    if (!att_rc_util_assert_space(size)) return 0xffff;
-    little_endian_store_16(att_rc, att_rc_size, att_handle);
-    att_rc_size += 2;
-    little_endian_store_16(att_rc, att_rc_size, att_type);
-    att_rc_size += 2;
-    if(data_len){
-        memcpy(&att_rc[att_rc_size], data, data_len);
-        att_rc_size += data_len;
-    }
-#if ATT_RC_PRINT_EN
-    printf("Handle %04X Data ", att_handle);
-    uint16_t i=0;
-    for(i=0; i<size; i++){
-        if(i!=0 && i%2==0){
-            printf("-");
-        }
-        printf("%02X", att_rc[att_rc_size-size+i]);
-    }
-    printf("\n");
-#endif
-    return 0;
-}
-
-uint8_t * att_rc_util_get_address(void){
-    return att_rc;
-}
-
-uint16_t att_rc_util_get_size(void){
-    return att_rc_size;
-}
-
-int att_rc_util_calc_database_hash(uint8_t *db_hash)
-{
-    // calc aes-cmac    
-    unsigned char all_Zero[16] = {
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    };
-    unsigned char database_hash_cmac[16];
-    
-    if(db_hash == NULL) return -1; // input param error.
-    if(att_rc == NULL)  return -2; // uninit.
-    
-    AES_CMAC(all_Zero, att_rc, att_rc_size, database_hash_cmac);
-    reverse_bytes(database_hash_cmac, db_hash, 16);
-#if ATT_RC_PRINT_EN
-    printf("AES_CMAC       "); print128(database_hash_cmac); printf("\n");    
-    printf("DB_HASH        "); print128(db_hash); printf("\n");
-#endif
-    return 0;
-}
-
 
