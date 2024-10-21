@@ -195,7 +195,7 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t _, const ui
         {
             const gatt_event_characteristic_query_result_t *result =
                 gatt_event_characteristic_query_result_parse(packet);
-            if (memcmp(result->characteristic.uuid128, UUID_CHAR_GEN_IN, sizeof(UUID_CHAR_GEN_OUT)) == 0)
+            if (memcmp(result->characteristic.uuid128, UUID_CHAR_GEN_IN, sizeof(UUID_CHAR_GEN_IN)) == 0)
             {
                 slave.input_char = result->characteristic;
                 LOG_INFO("input handle: %d", slave.input_char.value_handle);

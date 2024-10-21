@@ -74,7 +74,8 @@ void IR_CtrlIrSetIrBitCycle(IR_TypeDef* IR_BASE, uint8_t cycle)
 
 void IR_TxConfigTxStart(IR_TypeDef* IR_BASE)
 {
-  IR_BASE->ir_tx_config |= (1 << bsIR_IR_TX_CONFIG_TX_START);
+  uint32_t mask = (IR_BASE->ir_tx_config | (1 << bsIR_IR_TX_CONFIG_TX_START)) & (~(1 << bsIR_IR_TX_CONFIG_CARRIER_CNT_CLR));
+  IR_BASE->ir_tx_config = mask;
 }
 
 void IR_TxConfigIrTxPol(IR_TypeDef* IR_BASE)
@@ -84,7 +85,8 @@ void IR_TxConfigIrTxPol(IR_TypeDef* IR_BASE)
 
 void IR_TxConfigCarrierCntClr(IR_TypeDef* IR_BASE)
 {
-  IR_BASE->ir_tx_config |= (1 << bsIR_IR_TX_CONFIG_CARRIER_CNT_CLR);
+  uint32_t mask = (IR_BASE->ir_tx_config | (1 << bsIR_IR_TX_CONFIG_CARRIER_CNT_CLR)) & (~(1 << bsIR_IR_TX_CONFIG_TX_START));
+  IR_BASE->ir_tx_config = mask;
 }
 
 void IR_TxConfigIrIntEn(IR_TypeDef* IR_BASE)

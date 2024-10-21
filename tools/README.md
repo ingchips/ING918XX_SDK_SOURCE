@@ -11,9 +11,16 @@ families.
     python icsdw.py /path/to/flash_download.ini
     ```
 
-This script supports COM (UART), USB and SWD (through J-Link).
+This script supports COM (UART), USB and SWD (through J-Link). There are subtle
+differences in the features of these ports.
 
-Use 'pip install -r requirements.txt' to install all dependency packages
+|Port    |  Basic Functions | External Flash | Single Bin |
+|:---------:|:---------:|:---------:|:---------:|
+| UART      |  Yes      |  Yes      |  No       |
+| USB       |  Yes      |  Yes      |  No       |
+| SWD/J-Link|  Yes      |  No       |  Yes      |
+
+Use 'pip install -r requirements.txt' to install all dependency packages.
 
 ### Extra Command Line Options
 
@@ -69,6 +76,17 @@ through J-Link. The `.bin` file can either be a file on local system, or on the 
 
     where `123` is the serial number of the selected probe.
 
+### Note for Single Bin Download
+
+When the 1st parameter ends with `.bin`, single binary file downloading mode is selected.
+In this case, chip family, address must be specified from command line.
+The file path can be a local one or an URL.
+
+Example:
+
+```shell
+python icsdw.py /path/to/bin/file --family ing916 --addr 0x02002000 --port JLINK
+```
 
 ## Flash Dumper
 

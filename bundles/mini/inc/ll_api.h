@@ -541,7 +541,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *
  * @param[in]   packet              the packet object
  * @param[in]   when                start time of the packet (in us)
- * @return                          0 if successful else error code
+ * @return                          0 if successful else error code. Error occurs if
+ *                                  * the last `ll_raw_packet_send` is not completed, or
+ *                                  * LL can't schedule RF activity at specifed time (too late, or busy).
  ****************************************************************************************
  */
 // int ll_raw_packet_send(struct ll_raw_packet *packet,
@@ -604,7 +606,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @param[in]   packet              the packet object
  * @param[in]   when                start time of receiving (in us)
  * @param[in]   rx_window           Rx window length to scanning for a packet (in us)
- * @return                          0 if successful else error code
+ * @return                          0 if successful else error code. Error occurs if
+ *                                  * the last `ll_raw_packet_recv` is not completed, or
+ *                                  * LL can't schedule RF activity at specifed time (too late, or busy).
  ****************************************************************************************
  */
 // int ll_raw_packet_recv(struct ll_raw_packet *packet,
@@ -766,8 +770,10 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *
  * @param[in]   packet              the packet object
  * @param[in]   when                start time of receiving (in us)
- * @param[in]   window              Window length to run ack-able packet
- * @return                          0 if successful else error code
+ * @param[in]   window              window length to run ack-able packet
+ * @return                          0 if successful else error code. Error occurs if
+ *                                  * the last `ll_ackable_packet_run` is not completed, or
+ *                                  * LL can't schedule RF activity at specifed time (too late, or busy).
  ****************************************************************************************
  */
 // int ll_ackable_packet_run(struct ll_raw_packet *packet,
@@ -807,8 +813,10 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *
  * @param[in]   packet              the packet object
  * @param[in]   when                start time of receiving (in us)
- * @param[in]   window              Window length to run ack-able packet
- * @return                          0 if successful else error code
+ * @param[in]   window              window length to run the monitor
+ * @return                          0 if successful else error code. Error occurs if
+ *                                  * the last `ll_channel_monitor_run` is not completed, or
+ *                                  * LL can't schedule RF activity at specifed time (too late, or busy).
  ****************************************************************************************
  */
 // int ll_channel_monitor_run(struct ll_raw_packet *packet,
