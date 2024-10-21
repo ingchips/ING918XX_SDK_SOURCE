@@ -75,6 +75,21 @@ int sm_config(uint8_t enable,
                const sm_persistent_t *persistent);
 
 /**
+ * @brief Sets the persistent IRK (Identity Resolving Key).
+ *
+ * This function sets the local Identity Resolving Key (IRK). Once set, stack will
+ * use it and not derive it from (IR, d1)
+ *
+ * @param irk           The IRK to be set.
+ *                      This should be a valid `sm_key_t` type, and all 0s are not allowed.
+ *
+ * @note This function shall **only** be called during the initialization phase of the
+ *       Bluetooth stack, for example, in the handler of `PLATFORM_CB_EVT_PROFILE_INIT`.
+ *       This function shall **only** be called ahead of other SM APIs such as `sm_config`.
+ */
+void sm_set_persistent_irk(sm_key_t irk);
+
+/**
  * @brief add an sm event handler
  *
  * @param callback_handler      the handler
@@ -332,6 +347,22 @@ enum sm_state_t
     SM_FINAL_FAIL_OUT_OF_STORAGE,   // device database runs out of storage
                                     // i.e. too many devices have been paired.
 };
+typedef void (*f_sm_cmac_done_handler)(void *user, uint8_t hash[16]);
+
+/**
+ * @brief Cipher-based Message Authentication Code (CMAC) using AES-
+ *        128 as the block cipher function, also known as AES-CMAC (RFC-4493)
+ *
+ * @param k             key (NULL for all 0 key)
+ * @param message_len   message length
+ * @param message       message itself (this buffer is not copied, so it must exists until `done_handler` is called)
+ * @param done_handle   callback function when CMAC is done
+ * @param user_data     user data for the callback function
+ */
+// void sm_generic_cmac_start(sm_key_t k, uint16_t message_len, const uint8_t * message,
+//                            f_sm_cmac_done_handler done_handler, void *user_data);
+// WARNING: ^^^ this API is not available in this release
+
 
 #ifdef __cplusplus
 }

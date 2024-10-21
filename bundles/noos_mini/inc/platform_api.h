@@ -565,7 +565,7 @@ void platform_rt_rc_tune(uint16_t value);
  ****************************************************************************************
  * @brief Automatically tune the internal real time RC clock, and get the tuning value.
  *
- * This is equivalent to `platform_rt_rc_auto_tune2(65536000000 / frequency)`.
+ * This is equivalent to `platform_rt_rc_auto_tune2(frequency)`.
  *
  * @return                  Value used to tune the clock
  ****************************************************************************************
