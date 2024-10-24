@@ -694,7 +694,7 @@ void USB_SetStallEp(uint8_t ep, uint8_t stall)
         {
           *diepctrl |= (0x1 << 21);
         }
-        USB_FlushTXFifo(0x10);
+        USB_FlushTXFifo(epNum);
       }
       else
       {
