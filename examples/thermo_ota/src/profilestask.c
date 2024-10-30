@@ -287,6 +287,8 @@ uint8_t *init_service()
     return att_db_util_get_address();
 }
 
+#ifndef SIMULATION
+
 #define I2C_SCL         GIO_GPIO_10
 #define I2C_SDA         GIO_GPIO_11
 
@@ -325,6 +327,8 @@ void setup_peripherals_i2c(void)
 #endif
     i2c_init(I2C_PORT_0);
 }
+
+#endif
 
 uint32_t setup_profile(void *data, void *user_data)
 {

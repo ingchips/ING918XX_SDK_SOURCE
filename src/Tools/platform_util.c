@@ -10,6 +10,8 @@ const struct platform_info *platform_inspect2(uintptr_t binary_addr, int family)
         case INGCHIPS_FAMILY_916:
             {
                 uintptr_t vect_addr = io_read(binary_addr + 4096);
+                vect_addr -= 0x02002000;
+                vect_addr += binary_addr;
                 return (const struct platform_info *)(vect_addr + 0xfc);
             }
 
