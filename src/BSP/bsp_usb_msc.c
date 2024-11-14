@@ -1118,7 +1118,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
                   case USB_REQUEST_DEVICE_DESCRIPTOR_DEVICE:
                   {
                     size = sizeof(USB_DEVICE_DESCRIPTOR_REAL_T);
-                    size = (setup->wLength < size) ? (setup->wLength) : size;
+                    size = (setup->wLength <= size) ? (setup->wLength) : ((size > USB_EP0_MPS) ? USB_EP0_MPS : size);
 
                     status |= USB_SendData(0, (void*)&DeviceDescriptor, size, 0);
                   }
