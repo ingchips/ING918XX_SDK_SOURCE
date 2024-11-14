@@ -1010,15 +1010,22 @@ uint32_t USB_IrqHandler (void *user_data)
         {
           statusEp            = AHB_USB->UsbDIInt0;
 
-          //SETUP - IN - IN - IN - OUT
-          //SETUP - OUT - OUT - OUT - IN
+          //SETUP - IN  - IN  - IN  - OUT   (g_UsbVar.Ep0State == EP0_IN_DATA_PHASE)
+          //SETUP - OUT - OUT - OUT - IN    (g_UsbVar.Ep0State == EP0_IN_STATUS_PHASE)
+          //SETUP ------------------- IN    (g_UsbVar.Ep0State == EP0_IN_STATUS_PHASE)
           if(statusEp & (0x1 << 0))
           {
-            //check if remaining data needs to be transfered
-            //check if need to process status stage for OUT stage
-            if((g_UsbVar.Ep0State != EP0_IDLE) && ((g_UsbVar.Ep0State != EP0_IN_DATA_PHASE) || USB_ContinueTransfer(USB_EP_DIRECTION_IN(epnum))))
+            // Check if need to process IN data stage for control read.
+            // Check if need to process IN status stage for control write.
+            // Check if need to process IN status stage for control transfer without data.
+            switch(g_UsbVar.Ep0State)
             {
+              case EP0_IN_DATA_PHASE:
+              case EP0_IN_STATUS_PHASE:
                 USB_HandleEp0();
+                break;
+              default:
+                break;
             }
           }
 
@@ -1066,15 +1073,25 @@ uint32_t USB_IrqHandler (void *user_data)
             g_UsbVar.Ep0State = EP0_IDLE;
             USB_HandleEp0();
           }
+          //SETUP - IN  - IN  - IN  - OUT   (g_UsbVar.Ep0State == EP0_OUT_STATUS_PHASE)
+          //SETUP - OUT - OUT - OUT - IN    (g_UsbVar.Ep0State == EP0_OUT_DATA_PHASE)
+          //SETUP ------------------- IN    (SHOULD NOT OCCUR HERE !)
           else
           {
             if(statusEp & (0x1 << 0))
             {
-              // check if need to process OUT data.
-              // check if need to process status stage for IN stage
-              if((g_UsbVar.Ep0State != EP0_IDLE) )
+              // check if need to process OUT data stage for control write.
+              // check if need to process OUT status stage for control read.
+              switch(g_UsbVar.Ep0State)
               {
-                USB_HandleEp0();
+                case EP0_IDLE:
+                  break;
+                case EP0_OUT_DATA_PHASE:
+                case EP0_OUT_STATUS_PHASE:
+                  USB_HandleEp0();
+                  break;
+                default:
+                  break;
               }
             }
           }

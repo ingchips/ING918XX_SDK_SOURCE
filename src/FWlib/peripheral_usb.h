@@ -420,12 +420,11 @@ extern USB_ERROR_TYPE_E USB_SendData(uint8_t ep, void* buffer, uint16_t size, ui
  * @param[in] size. For OUT transfers, the Transfer Size field in the endpoint Transfer Size register must be a multiple
  *            of the maximum packet size of the endpoint(eg, EP0 is 64byte), adjusted to the DWORD boundary
  * @param[in] flag. null
- * @param[out] return U_TRUE if successful, otherwise U_FALSE.
-              for example, if the MPS of ep is 64bytes, there are two options:
-              1. you know that you need to recieve exactly 64bytes, then set size to 64 and set flag to 0.
-                 the driver will only call the event handler when it has received all 64bytes.
-              2. you do know that size of next OUT packet, then set size to 64 and set to flag to 1<<USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN.
-                 in this case, driver will call back the event handler when it receives its first packet(no matter what the size is).
+ *            for example, if the MPS of ep is 64bytes, there are two options:
+ *            1. you know that you need to recieve exactly 64bytes, then set size to 64 and set flag to 0.
+ *               the driver will only call the event handler when it has received all 64bytes.
+ *            2. you do know that size of next OUT packet, then set size to 64 and set to flag to 1<<USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN.
+ *               in this case, driver will call back the event handler when it receives its first packet(no matter what the size is).
  * @param[out] return U_TRUE if successful, otherwise U_FALSE.
  */
 extern USB_ERROR_TYPE_E USB_RecvData(uint8_t ep, void* buffer, uint16_t size, uint32_t flag);
