@@ -349,7 +349,8 @@ typedef struct
 typedef enum
 {
   USB_TRANSFERT_FLAG_NONE,
-  USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN
+  USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN,
+  USB_TRANSFERT_FLAG_SEND_ZERO_PKT,
 } USB_TRANSFERT_FLAGS_E;
 
 typedef struct
@@ -409,7 +410,21 @@ extern USB_ERROR_TYPE_E USB_InitConfig(USB_INIT_CONFIG_T *config);
  * @param[in] buffer, global buffer to hold data of the packet, it must be a DWORD-aligned address.
  * @param[in] size. it should be a value smaller than 512*mps(eg, for EP0, mps is 64byte, maximum packet number is 512, MPS is 64).
  * @param[in] flag. null
+ *            As device, if the total length of the data device want to send is exactly an integer multiple of mps, then the length of 
+ *            the last packet sent will also be mps. In this case, if the host didn't known the total length device want to send, 
+ *            then it will not complete the data phase, but at this time the device usually consider that data stage is completed, 
+ *            so it will trigger an low-level exception, then communications stop.
+ *            In order to solve this problem, the device need to send a zero-length packet after the last packet has been sent 
+ *            to inform the host that the data phase is complete. To do this, you should set [flag] to (1<<USB_TRANSFERT_FLAG_SEND_ZERO_PKT).
+ *            @note You should note that operateing the control endpoint 0 will automatically sets this flag in the low-level driver,
+ *            except for some special instructions, such as [GET DEVICE DESCRIPTOR]. 
+ *            @note You should also know that setting this [flag] will not work if [size] is not an integer multiple of mps. 
+ *            For example, if the mps of the device is 64, and the host wants to control-reading 255 bytes of data, but the device has 
+ *            only 128 bytes(mps*2). IN this case, the device has to send two 64-byte IN packets, and then send a zero-length IN packet to
+ *            inform the host to end the data stage in advance. 
+ *            So, you must set [size] to 128, and set [flag] to (1<<USB_TRANSFERT_FLAG_SEND_ZERO_PKT) to ensure a success communication.
  * @param[out] return U_TRUE if successful, otherwise U_FALSE.
+ *            
  */
 extern USB_ERROR_TYPE_E USB_SendData(uint8_t ep, void* buffer, uint16_t size, uint32_t flag);
 /**

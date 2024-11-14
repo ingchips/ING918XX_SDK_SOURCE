@@ -763,6 +763,137 @@ void USB_PCStopPhyClcok(uint8_t stop)
   nop(20);//required by HW
 }
 
+uint32_t USB_CheckTransferZeroPktCondition(uint8_t ep)
+{
+    uint8_t                epNum;
+    uint32_t               XferSize = 0;
+    USB_TRANSFERT_T*       transfer;
+    int32_t                sizeLastXfered;
+    int32_t                sizeRemain;
+    int32_t                sizeTotalXfered;
+    uint32_t               insert_zero_packet = 0;
+
+    epNum = USB_EP_NUM(ep);
+
+    /*
+      For continuous IN packet transmission, it is sometimes necessary to send a 
+      zero-length packet at the end to inform the host that all data has been sent. 
+      Then, the host switches to the OUT status phase. 
+    */
+
+    if(USB_IS_EP_DIRECTION_IN(ep))
+    {
+      transfer = &g_UsbVar.InTransfer[epNum];
+      switch(epNum)
+      {
+        case 0:
+          XferSize = (AHB_USB->UsbDISize0) & 0x7f;
+        break;
+        default:
+          XferSize = (AHB_USB->UsbDIxConfig[epNum-1].DISizex) & 0x7ffff;
+        break;
+      }
+    }
+    else
+    {
+      return 0;
+    }
+
+    if((transfer->flags)&(1<<USB_TRANSFERT_FLAG_SEND_ZERO_PKT))
+    {
+      // Zero-length packet will not be sent if data sending has been stopped.
+      if(transfer->sizeRemaining == -1)
+      {
+        return 0;
+      }
+
+      // If the previous packet is not sent completely, it indicates that a hardware problem occurs,
+      // and the sending of zero-length packet is abandoned. 
+      if(XferSize != 0)
+      {
+        return 0;
+      }
+
+      sizeLastXfered  = transfer->sizeTotalLen - XferSize;
+      sizeRemain = transfer->sizeRemaining - sizeLastXfered;
+      sizeTotalXfered = transfer->sizeTransfered - sizeLastXfered;
+
+      // If valid data exists, do not start sending zero-length packet.
+      if(sizeRemain > 0)
+      {
+        return 0;
+      }
+
+      // If the total length is not multiple of MPS, zero-length packet will not be sent.
+      if(sizeTotalXfered % g_UsbVar.ep[epNum].maxpacket)
+      {
+        return 0;
+      }
+
+      // Clear the flag to ensure that zero-length packet is sent only once.
+      transfer->flags &= ~(1<<USB_TRANSFERT_FLAG_SEND_ZERO_PKT);
+
+      // Send zero-length packet.
+      USB_NewTransfer(ep, 0, 1);
+
+      insert_zero_packet = 1;
+    }
+
+    return insert_zero_packet;
+}
+
+static void USB_CheckAutoSendZeroPktFlag(uint8_t ep, uint16_t size, uint32_t * flag)
+{
+    uint8_t   epNum;
+    uint32_t  setFlag = 1;
+    
+    USB_SETUP_T* setup = (USB_SETUP_T*)(g_UsbBufferEp0Out);
+    
+    epNum = USB_EP_NUM(ep);
+    
+    if(epNum != 0)
+    {
+      return;
+    }
+    
+    // Control transfer add flag about sending zero-length at last packet.
+    // Except cmd: [Get device descriptor]
+    switch(setup->bmRequestType.Recipient)
+    {
+      case USB_REQUEST_DESTINATION_DEVICE:
+      {
+        switch(setup->bmRequestType.Type)
+        {
+          case USB_REQUEST_TYPE_STANDARD:
+          {
+            switch(setup->bRequest)
+            {
+              case USB_REQUEST_DEVICE_GET_DESCRIPTOR:
+              {
+                switch(setup->wValue >> 8)
+                {
+                  case USB_REQUEST_DEVICE_DESCRIPTOR_DEVICE:
+                  {
+                    setFlag = 0;
+                  }
+                  break;
+                }
+              }
+              break;
+            }
+          }
+          break;
+        }
+      }
+      break;
+    }
+    
+    if(setFlag)
+    {
+      *flag |= (setup->wLength > size) ? (1 << USB_TRANSFERT_FLAG_SEND_ZERO_PKT) : 0;
+    }
+}
+
 USB_ERROR_TYPE_E USB_SendData(uint8_t ep, void* buffer, uint16_t size, uint32_t flag)
 {
     uint8_t   epNum;
@@ -783,6 +914,8 @@ USB_ERROR_TYPE_E USB_SendData(uint8_t ep, void* buffer, uint16_t size, uint32_t 
     }
 
     if(!activeEp){return USB_ERROR_INACTIVE_EP;}
+    
+    USB_CheckAutoSendZeroPktFlag(ep, size, &flag);
 
     USB_StartTransfer(USB_EP_DIRECTION_IN(ep), buffer, size, flag);
 
@@ -905,6 +1038,10 @@ void USB_HandleEp0(void)
     break;
     case EP0_IN_DATA_PHASE:
     {
+      if(USB_CheckTransferZeroPktCondition(USB_EP_DIRECTION_IN(0)))
+      {
+        break;
+      }
       if(USB_ContinueTransfer(USB_EP_DIRECTION_IN(0)))
       {
         event.id = USB_EVENT_EP_DATA_TRANSFER;
@@ -1038,6 +1175,10 @@ uint32_t USB_IrqHandler (void *user_data)
           AHB_USB->UsbDIxConfig[epnum-1].DIIntx = statusEp;
           if(statusEp & (0x1 << 0))
           {
+            if(USB_CheckTransferZeroPktCondition(USB_EP_DIRECTION_IN(epnum)))
+            {
+              continue;
+            }
             if( USB_ContinueTransfer(USB_EP_DIRECTION_IN(epnum)) )
             {
               event.id = USB_EVENT_EP_DATA_TRANSFER;
