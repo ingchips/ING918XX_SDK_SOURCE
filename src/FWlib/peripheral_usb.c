@@ -713,6 +713,7 @@ void USB_SetStallEp(uint8_t ep, uint8_t stall)
         *doepctrl &= ~(0x1 << 21);
       }
     }
+    
 }
 
 uint8_t USB_IsEpStall(uint8_t ep)
