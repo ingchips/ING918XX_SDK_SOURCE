@@ -225,6 +225,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         platform_printf("disconnected\n");
+        gatt_client_util_free(discoverer);
+        discoverer = NULL;
         break;
 
     case L2CAP_EVENT_CAN_SEND_NOW:
