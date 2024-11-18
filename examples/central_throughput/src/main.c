@@ -13,6 +13,7 @@
 #include "oled_ssd1306.c"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 #endif
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)

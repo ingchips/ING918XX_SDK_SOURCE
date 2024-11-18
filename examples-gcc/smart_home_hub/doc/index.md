@@ -1,6 +1,6 @@
 # Smart Home Hub
 
-This example is developped using [Nim](https://nim-lang.org) programming language.
+This example is developed using [Nim](https://nim-lang.org) programming language.
 It demonstrates how to:
 
 * Use Nim together with C:

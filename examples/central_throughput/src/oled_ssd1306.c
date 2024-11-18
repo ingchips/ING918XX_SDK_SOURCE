@@ -77,7 +77,7 @@ void IIC_Wait_Ack()
 void Write_IIC_Command(unsigned char IIC_Command)
 {
     IIC_Start();
-    Write_IIC_Byte(OLED_ADDR);            //Slave address,SA0=0
+    Write_IIC_Byte(OLED_ADDR);       //Slave address,SA0=0
     IIC_Wait_Ack();
     Write_IIC_Byte(0x00);            //write command
     IIC_Wait_Ack();
@@ -91,7 +91,7 @@ void Write_IIC_Command(unsigned char IIC_Command)
 void Write_IIC_Data(unsigned char IIC_Data)
 {
     IIC_Start();
-    Write_IIC_Byte(OLED_ADDR);            //D/C#=0; R/W#=0
+    Write_IIC_Byte(OLED_ADDR);       //D/C#=0; R/W#=0
     IIC_Wait_Ack();
     Write_IIC_Byte(0x40);            //write data
     IIC_Wait_Ack();
@@ -104,8 +104,8 @@ void Write_IIC_Data(unsigned char IIC_Data)
 
 extern void delay_ms(int ms);
 
-//OLED���Դ�
-//��Ÿ�ʽ����.
+//OLED的显存
+//存放格式如下.
 //[0]0 1 2 3 ... 127
 //[1]0 1 2 3 ... 127
 //[2]0 1 2 3 ... 127
@@ -127,7 +127,6 @@ void OLED_WR_Byte(unsigned dat,unsigned cmd0data1)
     }
 }
 
-
 /********************************************
 // fill_Picture
 ********************************************/
@@ -136,7 +135,7 @@ void OLED_Fill_Picture(unsigned char fill_Data)
     unsigned char m,n;
     for(m=0;m<8;m++)
     {
-        OLED_WR_Byte(0xb0+m,0);        //page0-page1
+        OLED_WR_Byte(0xb0+m,0);      //page0-page1
         OLED_WR_Byte(0x00,0);        //low column start address
         OLED_WR_Byte(0x10,0);        //high column start address
         for(n=0;n<128;n++)
@@ -146,8 +145,7 @@ void OLED_Fill_Picture(unsigned char fill_Data)
     }
 }
 
-//��������
-
+//坐标设置
 void OLED_Set_Pos(unsigned char x, unsigned char y)
 {
     OLED_WR_Byte(0xb0+y,OLED_CMD);
@@ -155,52 +153,56 @@ void OLED_Set_Pos(unsigned char x, unsigned char y)
     OLED_WR_Byte((x&0x0f),OLED_CMD);
 }
 
-//����OLED��ʾ
+//开启OLED显示
 void OLED_Display_On(void)
 {
-    OLED_WR_Byte(0X8D,OLED_CMD);  //SET DCDC����
+    OLED_WR_Byte(0X8D,OLED_CMD);  //SET DCDC命令
     OLED_WR_Byte(0X14,OLED_CMD);  //DCDC ON
     OLED_WR_Byte(0XAF,OLED_CMD);  //DISPLAY ON
 }
-//�ر�OLED��ʾ
+
+//关闭OLED显示
 void OLED_Display_Off(void)
 {
-    OLED_WR_Byte(0X8D,OLED_CMD);  //SET DCDC����
+    OLED_WR_Byte(0X8D,OLED_CMD);  //SET DCDC命令
     OLED_WR_Byte(0X10,OLED_CMD);  //DCDC OFF
     OLED_WR_Byte(0XAE,OLED_CMD);  //DISPLAY OFF
 }
-//��������,������,������Ļ�Ǻ�ɫ��!��û����һ��!!!
+
+//清屏函数,清完屏,整个屏幕是黑色的!和没点亮一样!!!
 void OLED_Clear(void)
 {
     u8 i,n;
     for(i=0;i<8;i++)
     {
-        OLED_WR_Byte (0xb0+i,OLED_CMD);    //����ҳ��ַ��0~7��
-        OLED_WR_Byte (0x00,OLED_CMD);      //������ʾλ�á��е͵�ַ
-        OLED_WR_Byte (0x10,OLED_CMD);      //������ʾλ�á��иߵ�ַ
+        OLED_WR_Byte (0xb0+i,OLED_CMD);    //设置页地址（0~7）
+        OLED_WR_Byte (0x00,OLED_CMD);      //设置显示位置—列低地址
+        OLED_WR_Byte (0x10,OLED_CMD);      //设置显示位置—列高地址
         for(n=0;n<128;n++)OLED_WR_Byte(0,OLED_DATA);
-    } //������ʾ
+    } //更新显示
 }
+
 void OLED_On(void)
 {
     u8 i,n;
     for(i=0;i<8;i++)
     {
-        OLED_WR_Byte (0xb0+i,OLED_CMD);    //����ҳ��ַ��0~7��
-        OLED_WR_Byte (0x00,OLED_CMD);      //������ʾλ�á��е͵�ַ
-        OLED_WR_Byte (0x10,OLED_CMD);      //������ʾλ�á��иߵ�ַ
+        OLED_WR_Byte (0xb0+i,OLED_CMD);    //设置页地址（0~7）
+        OLED_WR_Byte (0x00,OLED_CMD);      //设置显示位置—列低地址
+        OLED_WR_Byte (0x10,OLED_CMD);      //设置显示位置—列高地址
         for(n=0;n<128;n++)OLED_WR_Byte(1,OLED_DATA);
-    } //������ʾ
+    } //更新显示
 }
-//��ָ��λ����ʾһ���ַ�,���������ַ�
+
+//在指定位置显示一个字符,包括部分字符
 //x:0~127
 //y:0~63
-//mode:0,������ʾ;1,������ʾ
-//size:ѡ������ 16/12
+//mode:0,反白显示;1,正常显示
+//size:选择字体 16/12
 void OLED_ShowChar(u8 x,u8 y,char chr, u8 mode, u8 Char_Size)
 {
     unsigned char c=0,i=0;
-    c=chr-' ';//�õ�ƫ�ƺ��ֵ
+    c=chr-' ';//得到偏移后的值
     if(x>Max_Column-1){x=0;y=y+2;}
     if(Char_Size ==16)
     {
@@ -219,7 +221,7 @@ void OLED_ShowChar(u8 x,u8 y,char chr, u8 mode, u8 Char_Size)
     }
 }
 
-//��ʾһ���ַ��Ŵ�
+//显示一个字符号串
 void OLED_ShowString(u8 x,u8 y, const char *chr,u8 mode, u8 Char_Size)
 {
     unsigned char j=0;
@@ -236,7 +238,7 @@ void OLED_ShowString(u8 x,u8 y, const char *chr,u8 mode, u8 Char_Size)
     }
 }
 
-/***********������������ʾ��ʾBMPͼƬ128��64��ʼ������(x,y),x�ķ�Χ0��127��yΪҳ�ķ�Χ0��7*****************/
+/***********功能描述：显示显示BMP图片128×64起始点坐标(x,y),x的范围0～127，y为页的范围0～7*****************/
 void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1, const uint8_t *BMP)
 {
     unsigned int j=0;
@@ -249,7 +251,6 @@ void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned 
         {
             OLED_WR_Byte(BMP[j++], OLED_DATA);
         }
-
     }
 }
 
@@ -258,7 +259,7 @@ static const uint8_t Init_CMD_Data[]={
     0xC8, 0xD3, 0x00, 0xD5, 0x80, 0xD8, 0x05, 0xD9, 0xF1, 0xDA, 0x12,
     0xD8, 0x30, 0x8D, 0x14, 0xAF};
 
-//��ʼ��SSD1306
+//初始化SSD1306
 void OLED_Init(void)
 {
     int i;

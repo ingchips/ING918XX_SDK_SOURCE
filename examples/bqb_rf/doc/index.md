@@ -19,10 +19,11 @@ For ING916xx, this app also demonstrates how to tune frequency offset.
 
     Update `config_uart` to configure UART.
 
-1. BQTF test
+1. Power Mode
 
-    Define `BQTF_TEST` to disable power mode indicator in command complete event of `HCI_Reset`
-    and rebuild.
+    Power mode can be adjusted by RF Test Tool after connected:
+
+    ![](./img/power_mode.png)
 
 ## Testing
 
