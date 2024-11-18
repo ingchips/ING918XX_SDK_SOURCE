@@ -194,6 +194,19 @@ uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, ui
  */
 void KEYSCAN_SetScannerEn(uint8_t enable);
 
+/**
+ * @brief Set the interval between two keyscan loops.
+ * 
+ * The time of interval is calculated by interval_time(ms) = scan_itv / keyscan_clk(khz), 
+ * and keyscan_clk is keyscan's clock, which selected by 'SYSCTRL_SelectKeyScanClk'.
+ * 
+ * @note Initialize keyscan module will also change this interval, such as 
+ *      'KEYSCAN_InitializeScanParameter' or 'KEYSCAN_Initialize'.
+ *
+ * @param[in] scan_itv          the clock count for keyscan interval. range: 0 ~ 65535
+ */
+void KEYSCAN_SetScanInterval(uint32_t scan_itv);
+
 #endif
 
 #ifdef __cplusplus
