@@ -78,6 +78,7 @@ typedef void (*f_kv_remove)(const kvkey_t key);
  * @param[in]   key             the key
  * @param[in]   data            data for the key
  * @param[in]   len             data length for the key
+ * @return                      KV_OK if created or updated, otherwise error code
  *
  * Note: if key does not exist, k-v pair is created; if already exists, value is updated.
  */
@@ -106,7 +107,7 @@ typedef void (*f_kv_value_modified_of_key)(const kvkey_t key);
  * @param[in]  data             data for current key
  * @param[in]  len              data length for current key
  * @param[in]  user_data        user data
- * @return                      KV_OK to continue visit other k-v pair, else to abor visiting
+ * @return                      KV_OK to continue visit other k-v pair, else to abort visiting
  */
 typedef int (*f_kv_visitor)(const kvkey_t key, const uint8_t *data, const int16_t len, void *user_data);
 
