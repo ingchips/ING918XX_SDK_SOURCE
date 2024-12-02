@@ -6,6 +6,7 @@ pub usingnamespace @cImport({
     @cInclude("gap.h");
     @cInclude("FreeRTOS.h");
     @cInclude("task.h");
+    @cInclude("rom_tools.h");
     @cDefine("_INCLUDE_BY_ZIG", {});
     @cInclude("fota_client.h");
 });

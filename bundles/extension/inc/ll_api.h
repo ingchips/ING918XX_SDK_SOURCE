@@ -744,7 +744,7 @@ int ll_ackable_packet_run(struct ll_raw_packet *packet,
  *
  * Possible Usages:
  *
- * 1. Scan fro Adv on a single channel;
+ * 1. Scan for Adv on a single channel;
  *
  * 1. Receive Connection packages from both roles.
  *

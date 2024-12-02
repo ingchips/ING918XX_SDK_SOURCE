@@ -11,7 +11,7 @@
 #define XLevelH         0x10
 #define Max_Column      128
 #define Max_Row         64
-#define	Brightness      0xFF 
+#define	Brightness      0xFF
 #define X_WIDTH         128
 #define Y_WIDTH         64
 
@@ -27,8 +27,7 @@
 #define PIN_SDA       8
 #endif
 
-//OLED¿ØÖÆÓÃº¯Êý
-void OLED_WR_Byte(unsigned dat,unsigned cmd);  
+void OLED_WR_Byte(unsigned dat,unsigned cmd);
 void OLED_Display_On(void);
 void OLED_Display_Off(void);
 void OLED_Init(void);
@@ -41,8 +40,8 @@ void OLED_Set_Pos(unsigned char x, unsigned char y);
 void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1, const uint8_t *BMP);
 void OLED_Fill_Picture(unsigned char fill_Data);
 
-#endif  
-	 
+#endif
+
 
 
 

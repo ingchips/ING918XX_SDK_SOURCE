@@ -30,40 +30,43 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
 #endif
 
 #if (TARGET_FAMILY == INGCHIPS_FAMILY_918)
-    #define ENTRY                   FLASH_BASE
-    #define TARGET_STORAGE_START    (ENTRY + 0x40000)
-    #define APP_BIN_SIZE            0x4000
+    #define ENTRY                   0x00004000
+    #define TARGET_STORAGE_START    0x00044000
+    #define PLATFORM_BIN_SIZE       0x00022000
+    #define APP_BIN_SIZE            0x00004000
+
 #elif (TARGET_FAMILY == INGCHIPS_FAMILY_916)
-    #define ENTRY                   (FLASH_BASE + 0x2000)
-    #define TARGET_STORAGE_START    (ENTRY + 0x40000)
-    #define APP_BIN_SIZE            0x0000          // ignored for ING916
+    #define ENTRY                   0x02002000
+    #define TARGET_STORAGE_START    0x02041000
+    #define PLATFORM_BIN_SIZE       0x00028000
+    #define APP_BIN_SIZE            0x00004000
 #else
     #error unknown or unsupported target chip family
 #endif
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    #define LOCAL_STORAGE_START     0x44000
+    #define LOCAL_STORAGE_START     0x00044000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #define LOCAL_STORAGE_START     0x02100000
+    #define LOCAL_STORAGE_START     0x02041000
 #else
     #error unknown or unsupported chip family
 #endif
 
-#define PLATFORM_BIN_SIZE       0x22000
-
 const ota_item_t ota_items[] =
 {
+    // platform.bin
     {
         .local_storage_addr = LOCAL_STORAGE_START,
         .target_storage_addr = TARGET_STORAGE_START,
         .target_load_addr = ENTRY,
-        .size = PLATFORM_BIN_SIZE
+        .size = PLATFORM_BIN_SIZE,
     },
+    // app.bin
     {
         .local_storage_addr = LOCAL_STORAGE_START + PLATFORM_BIN_SIZE,
         .target_storage_addr = TARGET_STORAGE_START + PLATFORM_BIN_SIZE,
         .target_load_addr = ENTRY + PLATFORM_BIN_SIZE,
-        .size = APP_BIN_SIZE
+        .size = APP_BIN_SIZE,
     },
 };
 
@@ -116,7 +119,8 @@ static void fully_discovered(service_node_t *first, void *user_data, int err_cod
         platform_printf("=== SECURE FOTA ===\ngenerating secrets...");
         const ecc_driver_t *driver = get_ecc_driver();
         platform_printf("done\n");
-        secure_fota_client_do_update(&ota_ver,
+        secure_fota_client_do_update(TARGET_FAMILY,
+                            &ota_ver,
                             0,
                             char_ver->chara.value_handle,
                             char_ctrl->chara.value_handle,
@@ -130,7 +134,8 @@ static void fully_discovered(service_node_t *first, void *user_data, int err_cod
     else
     {
         platform_printf("=== UNSECURE FOTA ===\n");
-        fota_client_do_update(&ota_ver,
+        fota_client_do_update(TARGET_FAMILY,
+                            &ota_ver,
                             0,
                             char_ver->chara.value_handle, char_ctrl->chara.value_handle, char_data->chara.value_handle,
                             2, ota_items,
@@ -172,7 +177,7 @@ static initiating_phy_config_t phy_configs[] =
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     static const bd_addr_t rand_addr = { 0xCE, 0x06, 0x32, 0x83, 0x75, 0xBD };
-    static const bd_addr_t peer_addr = { 0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3E };
+    static const bd_addr_t peer_addr = { 0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3F };
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -196,6 +201,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             {
                 const le_meta_event_enh_create_conn_complete_t *conn_complete
                     = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
@@ -243,7 +249,7 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(user_packet_handler);
     gatt_client_register_handler(user_packet_handler);
 
-    const struct platform_info * v = platform_inspect2(TARGET_STORAGE_START, TARGET_FAMILY);
+    const struct platform_info * v = platform_inspect2(LOCAL_STORAGE_START, TARGET_FAMILY);
     ota_ver.platform.major = v->version.major;
     ota_ver.platform.minor = v->version.minor;
     ota_ver.platform.patch = v->version.patch;

@@ -1,6 +1,6 @@
 # LittlevGL (LVGL)
 
-This example is a port of [LVGL](https://lvgl.io) on ING918xx/ING9186xx chip families.
+This example is a port of [LVGL](https://lvgl.io) on ING918xx/ING916xx chip families.
 
 A collection of TFT LCD modules is supported by specifying compiling macroes (see [LCD driver](../src/port/lcd_drv.c)):
 

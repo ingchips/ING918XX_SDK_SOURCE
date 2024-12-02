@@ -400,9 +400,9 @@
               <FilePath>..\..\examples-gcc\central_fota\src\gatt_client_async_helper.c</FilePath>
             </File>
             <File>
-              <FileName>fota_client.o</FileName>
+              <FileName>ing918_fota_client.o</FileName>
               <FileType>3</FileType>
-              <FilePath>./src/fota_client.o</FilePath>
+              <FilePath>./src/ing918_fota_client.o</FilePath>
             </File>
             <File>
               <FileName>profile.c</FileName>

@@ -230,8 +230,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>./src/fota_client.o</PathWithFileName>
-      <FilenameWithoutPath>fota_client.o</FilenameWithoutPath>
+      <PathWithFileName>./src/ing918_fota_client.o</PathWithFileName>
+      <FilenameWithoutPath>ing918_fota_client.o</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
