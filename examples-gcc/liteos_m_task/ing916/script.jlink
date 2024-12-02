@@ -1,0 +1,7 @@
+device ING9168xx
+if SWD
+speed 4000
+loadfile ing916_noos_typical.hex
+r
+g
+q

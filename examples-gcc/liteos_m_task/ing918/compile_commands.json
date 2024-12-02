@@ -1,0 +1,22 @@
+[
+  {
+    "arguments": [
+      "/opt/arm-none-eabi/bin/arm-none-eabi-gcc",
+      "-x",
+      "assembler-with-cpp",
+      "-c",
+      "-mcpu=cortex-m3",
+      "-Og",
+      "-Wall",
+      "-fdata-sections",
+      "-ffunction-sections",
+      "-flto",
+      "-o",
+      "obj/los_exc.o",
+      "./liteos_m/arch/arm/cortex-m3/gcc/los_exc.S"
+    ],
+    "directory": "/mnt/c/INGCHIPS/example/peripheral_console_liteos_ing918",
+    "file": "/mnt/c/INGCHIPS/example/peripheral_console_liteos_ing918/liteos_m/arch/arm/cortex-m3/gcc/los_exc.S",
+    "output": "/mnt/c/INGCHIPS/example/peripheral_console_liteos_ing918/obj/los_exc.o"
+  }
+]
