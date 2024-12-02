@@ -4,11 +4,9 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include "port_gen_os_driver.h"
-#include "los_config.h"
-
-#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
-#error WIP: Porting to ING916
-#endif
+#include "target_config.h"
+#include "trace.h"
+#include "../data/setup_soc.cgen"
 
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -22,7 +20,7 @@ static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 
 static uint32_t cb_assertion(assertion_info_t *info, void *_)
 {
-    platform_printf("[ASSERTION] @ %s:%d\n",
+    platform_printf("[ASSERTION] @ %s:%d\r\n",
                     info->file_name,
                     info->line_no);
     for (;;);
@@ -30,9 +28,11 @@ static uint32_t cb_assertion(assertion_info_t *info, void *_)
 
 static uint32_t cb_heap_out_of_mem(uint32_t tag, void *_)
 {
-    platform_printf("[OOM] @ %d\n", tag);
+    platform_printf("[OOM] @ %d\r\n", tag);
     for (;;);
 }
+
+#define TRACE_PORT    APB_UART1
 
 #define PRINT_PORT    APB_UART0
 
@@ -52,48 +52,17 @@ int _write(int fd, char *ptr, int len)
     return len;
 }
 
-void config_uart(uint32_t freq, uint32_t baud)
+void setup_peripherals(void)
 {
-    UART_sStateStruct config;
-
-    config.word_length       = UART_WLEN_8_BITS;
-    config.parity            = UART_PARITY_NOT_CHECK;
-    config.fifo_enable       = 1;
-    config.two_stop_bits     = 0;
-    config.receive_en        = 1;
-    config.transmit_en       = 1;
-    config.UART_en           = 1;
-    config.cts_en            = 0;
-    config.rts_en            = 0;
-    config.rxfifo_waterlevel = 1;
-    config.txfifo_waterlevel = 1;
-    config.ClockFrequency    = freq;
-    config.BaudRate          = baud;
-
-    apUART_Initialize(PRINT_PORT, &config, 0);
+    cube_setup_peripherals();
 }
 
-#ifdef LISTEN_TO_POWER_SAVING
-uint32_t on_lle_reset(void *dummy, void *user_data)
+uint32_t on_lle_init(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
-    *(uint32_t *)(0x40090064) = 0x400 | (0x01 << 8);
-    *(uint32_t *)(0x4007005c) = 0x80;
-
+    cube_on_lle_init();
     return 0;
-}
-#endif
-
-void setup_peripherals(void)
-{
-    SYSCTRL_ClearClkGateMulti(0);
-    config_uart(OSC_CLK_FREQ, 115200);
-
-#ifdef LISTEN_TO_POWER_SAVING
-    PINCTRL_SetPadMux(8, IO_SOURCE_DEBUG_BUS);
-    on_lle_reset(NULL, NULL);
-#endif
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -108,34 +77,65 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
+    return PLATFORM_ALLOW_DEEP_SLEEP;//PLATFORM_ALLOW_DEEP_SLEEP;
     // TODO: return 0 if deep sleep is not allowed now; else deep sleep is allowed
-    return 0;
 }
+
+trace_rtt_t trace_rtt ;
+
+static const platform_evt_cb_table_t evt_cb_table =
+{
+    .callbacks = {
+        [PLATFORM_CB_EVT_HARD_FAULT] = {
+            .f = (f_platform_evt_cb)cb_hard_fault,
+        },
+        [PLATFORM_CB_EVT_ASSERTION] = {
+            .f = (f_platform_evt_cb)cb_assertion,
+        },
+        [PLATFORM_CB_EVT_HEAP_OOM] = {
+            .f = (f_platform_evt_cb)cb_heap_out_of_mem,
+        },
+        [PLATFORM_CB_EVT_PROFILE_INIT] = {
+            .f = setup_profile,
+        },
+        [PLATFORM_CB_EVT_LLE_INIT] = {
+            .f = on_lle_init,
+        },
+        [PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP] = {
+            .f = (f_platform_evt_cb)on_deep_sleep_wakeup,
+        },
+        [PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED] = {
+            .f = query_deep_sleep_allowed,
+        },
+        [PLATFORM_CB_EVT_PUTC] = {
+            .f = (f_platform_evt_cb)cb_putc,
+        },
+        [PLATFORM_CB_EVT_TRACE] = {
+            .f = (f_platform_evt_cb)cb_trace_rtt,
+            .user_data = &cb_trace_rtt,
+        },
+    }
+};
 
 const char welcome_msg[] = "Built with LiteOS (" HW_LITEOS_KERNEL_VERSION_STRING ")";
-
+// TODO: add RTOS source code to the project.
+extern const gen_os_driver_t *os_impl_get_driver(void);
 uintptr_t app_main()
 {
-    platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+    SYSCTRL_Init();
+    cube_soc_init();
 
-    // setup handlers
-    platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_HEAP_OOM, (f_platform_evt_cb)cb_heap_out_of_mem, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-#ifdef LISTEN_TO_POWER_SAVING
-    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, on_lle_reset, NULL);
-#endif
+    // setup event handlers
+    platform_set_evt_callback_table(&evt_cb_table);
     setup_peripherals();
+    printf("build@%s\r\n",__TIME__);
+    printf("build@%d\r\n",__LINE__);
 
+    // trace_uart_init(&trace_ctx);
+    // TODO: config trace mask
+    // platform_config(PLATFORM_CFG_TRACE_MASK, 0);
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
+    printf("start up\r\n");
 
     return (uintptr_t)os_impl_get_driver();
-}
-
-void dprintf2(const char *fmt, ...)
-{
-
 }

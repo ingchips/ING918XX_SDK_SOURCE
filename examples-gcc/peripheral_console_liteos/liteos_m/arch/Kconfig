@@ -1,0 +1,32 @@
+config ARCH_ARM
+   bool
+
+rsource "arm/Kconfig"
+
+config ARCH_CSKY
+   bool
+
+config ARCH_RISCV
+   bool
+
+config ARCH_RISCV32
+   bool
+   select ARCH_RISCV
+
+config ARCH_XTENSA
+   bool
+
+comment "Extra Configurations"
+
+config ARCH_FPU_DISABLE
+    bool "Disable Floating Pointer Unit"
+    default n
+    help
+      This option will bypass floating procedure in system.
+
+config ARCH_UNALIGNED_EXC
+    bool "Enable Unaligned Exception"
+    default y
+    depends on ARCH_ARM
+    help
+     This option will enable unaligned exception.
