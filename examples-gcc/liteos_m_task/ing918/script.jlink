@@ -1,0 +1,7 @@
+device ING9188xx
+if SWD
+speed 4000
+loadfile ing918.hex
+r
+g
+q
