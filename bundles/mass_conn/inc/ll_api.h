@@ -790,7 +790,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *
  * Possible Usages:
  *
- * 1. Scan fro Adv on a single channel;
+ * 1. Scan for Adv on a single channel;
  *
  * 1. Receive Connection packages from both roles.
  *
