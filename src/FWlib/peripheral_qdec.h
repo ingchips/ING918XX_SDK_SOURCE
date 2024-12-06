@@ -20,6 +20,7 @@ typedef enum {
     QDEC_CH_INT_EN      = 0x24,
     QDEC_BCR            = 0xc0,
     QDEC_BMR            = 0xc4,
+    QDEC_INT_EN         = 0xc8,
     QDEC_STATUS_SEL     = 0xd4,
 } QDEC_qdecReg;
 
@@ -34,6 +35,58 @@ typedef enum {
     QDEC_DIV_65536      = 0x7,
 } QDEC_indexCfg;
 
+typedef enum {
+    QDEC_TIMER = 0,
+    QDEC_PWM,
+    QDEC_PCM,
+    QDEC_QDEC,
+} QDEC_ModuCfg;
+
+typedef enum {
+    QDEC_CH0 = 0,
+    QDEC_CH1,
+    QDEC_CH2,
+} QDEC_CHX;
+
+typedef enum {
+    QDEC_EX_NO_TRIG = 0,
+    QDEC_EX_RISING_EDGE,
+    QDEC_EX_FALLING_EDGE,
+    QDEC_EX_BOTH_EDGE,
+}QDEC_ExTrigger;
+
+
+typedef enum {
+    QDEC_INT_COVFS_CMB_STATE = 1<<0,
+    QDEC_INT_LOVFS_CMB_STATE = 1<<1,
+    QDEC_INT_CPAS_CMB_STATE = 1<<2,
+    QDEC_INT_CPBS_CMB_STATE = 1<<3,
+    QDEC_INT_CPCS_CMB_STATE = 1<<4,
+    QDEC_INT_LDRAS_CMB_STATE = 1<<5,
+    QDEC_INT_LDRBS_CMB_STATE = 1<<6,
+    QDEF_INT_ETRGS_CMB_STATE = 1<<7,
+    QDEC_INT_PDC_END_STATE = 1<<8,
+    QDEC_INT_BUF_FULL_STATE = 1<<9,
+    QDEC_INT_CHANGE_DIR = 1,
+}QDEC_IntState;
+
+
+typedef enum {
+    QDEC_TMR_RELOAD = 0,
+    QDEC_TMR_STOP,
+}QDEC_TMR_UP_MODE;
+
+typedef enum {
+    QDEC_TMR_RELOAD_UP_FULL = 0,
+    QDEC_TMR_RELOAD_UP_VALE,
+}QDEC_TMR_RELOAD_MODE;
+
+typedef enum {
+    QDEC_CHX_ACPA = 0,
+    QDEC_CHX_ACPC,
+    QDEC_CHX_BCPB,
+    QDEC_CHX_BCPC,
+}QDEC_OUTX_Config;
 /**
  * @brief Set QDEC index divider and enable QDEC index register
  *
@@ -88,6 +141,146 @@ void QDEC_Reset(void);
  *
  */
 void QDEC_IntClear(void);
+
+/**
+ * @brief Enable QDEC other interrupt
+ * @param[in] mask     mask of interrupts(QDEC_INT_CHANGE_DIR enable dir changed int)
+ *
+ */
+void QDEC_EnableInt(uint8_t mask);
+
+/**
+ * @brief Enable QDEC rising and falling edge trigger
+ *
+ * @param[in] enable             enable/disable
+ */
+void QDEC_EnableDobuleEdge(uint8_t enbale);
+
+/**
+ * @brief Set qdec channel mode.
+ * @param[in] Channel         QDEC channel
+ * @param[in] ModeCfg         qdec mode,can used timer,pacp,pwm,qdec.
+ *
+ */
+void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModuCfg ModeCfg);
+
+/**
+ * @brief compare with RC triger enable
+ * @param[in] Channel         QDEC channel
+ * @param[in] enable             enable/disable
+ *
+ */
+void QDEC_SetChxCpcTrg(QDEC_CHX Channel, uint8_t enable);
+
+/**
+ * @brief caperture stop
+ * @param[in] Channel         QDEC channel
+ * @param[in] enable             enable/disable
+ *
+ */
+void QDEC_SetChxCpcStopEn(QDEC_CHX Channel, uint8_t enable);
+
+/**
+ * @brief Set trig edge
+ * @param[in] Channel         QDEC channel
+ * @param[in] enable             enable/disable
+ *
+ */
+void QDEC_ExternalEventEdgeSet(QDEC_CHX Channel, QDEC_ExTrigger edge);
+void QDEC_SetOutxEdge(QDEC_CHX Channel,QDEC_OUTX_Config OutxChannal, QDEC_ExTrigger edge);
+void QDEC_SetEtrg(QDEC_CHX Channel, uint8_t val);
+
+/**
+ * @brief Enable trig edge
+ * @param[in] Channel         QDEC channel
+ * @param[in] enable             enable/disable
+ *
+ */
+void QDEC_SetEtrgEn(QDEC_CHX Channel, uint8_t enable);
+
+/**
+ * @brief Set tmr cnt
+ * @param[in] Channel         QDEC channel
+ * @param[in] val             cnt
+ *
+ */
+void QDEC_SetCHxTmrCntA(QDEC_CHX Channel, uint16_t val);
+void QDEC_SetCHxTmrCntB(QDEC_CHX Channel, uint16_t val);
+void QDEC_SetCHxTmrCntC(QDEC_CHX Channel, uint16_t val);
+
+/**
+ * @brief config tmr
+ * @param[in] Channel         QDEC channel
+ * @param[in] TmrUpMode       up to cnt mode
+ * @param[in] TmrReloadMode   reload mode
+ *
+ */
+void QDEC_TmrCfg(QDEC_CHX Channel, QDEC_TMR_UP_MODE TmrUpMode, QDEC_TMR_RELOAD_MODE TmrReloadMode);
+
+/**
+ * @brief enable channel Int
+ * @param[in] Channel         QDEC channel
+ * @param[in] enable          enable/disable
+ * @param[in] items           int items
+ *
+ */
+void QDEC_SetChxIntEn(QDEC_CHX Channel, uint8_t enable, uint16_t items);
+
+/**
+ * @brief get Int enable state
+ * @param[in] Channel         QDEC channel
+ * @return                   Int enable items
+ *
+ */
+uint32_t QDEC_GetChxIntEn(QDEC_CHX Channel);
+
+/**
+ * @brief get Int state and clear it.
+ * @param[in] Channel         QDEC channel
+ * @return                   Int state
+ *
+ */
+uint32_t QDEC_GetChxIntStateClr(QDEC_CHX Channel);
+
+/**
+ * @brief Enable qdec channel.
+ * @param[in] Channel         QDEC channel
+ * @param[in] enable          enable/disable
+ *
+ */
+void QDEC_EnableChannel(QDEC_CHX Channel, uint8_t enable);
+
+/**
+ * @brief Get qdec mode enable state.
+ * @return                   Enable state
+ *
+ */
+uint8_t QDEC_GetQdecModeEn(void);
+
+/**
+ * @brief Get qdec channel rab cnt
+ * @param[in] Channel         QDEC channel
+ * @return                   rab cnt
+ *
+ */
+uint32_t QDEC_GetChxReadRab(QDEC_CHX Channel);
+
+/**
+ * @brief Enbale Qdec dma.
+ * @param[in] Channel         QDEC channel
+ * @param[in] enable_a        enable/disable
+ * @param[in] enable_b        enable/disable
+ */
+void QDEC_EnableDMAChAB(QDEC_CHX Channel, uint8_t enable_a,uint8_t enable_b);
+
+/**
+ * @brief Get dma enable state.
+ * @param[in] Channel         QDEC channel
+ * @return                   enable state.
+ */
+uint8_t QDEC_GetDMAChAB(QDEC_CHX Channel);
+
+
 #endif
 
 #ifdef __cplusplus
