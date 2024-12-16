@@ -426,6 +426,11 @@ typedef struct
   uint32_t unused:31;
 }BSP_USB_VAR_s;
 
+typedef enum {
+  USB_HID_PROTO_TYPE_BOOT   = 0x00,
+  USB_HID_PROTO_TYPE_REPORT = 0x01,
+} USB_HID_PROTO_TYPE_e;
+
 extern void bsp_usb_init(void);
 extern void bsp_usb_disable(void);
 extern void bsp_usb_device_remote_wakeup(void);

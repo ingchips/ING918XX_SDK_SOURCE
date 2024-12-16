@@ -133,6 +133,8 @@ def do_run(mod: ModuleType, ser, config, go, timeout, counter, user_data):
     if call_on_batch(SCRIPT_MOD, batch_counter):
         return 10
 
+    meas = icsdw.TimeMeasurement()
+
     for i in range(6):
         bcfg = dict(config.items('bin-' + str(i)))
         if bcfg['checked'] != '1':
@@ -145,8 +147,11 @@ def do_run(mod: ModuleType, ser, config, go, timeout, counter, user_data):
         abort, new_data = call_on_file(SCRIPT_MOD, batch_counter, i + 1, data, user_data)
         if abort:
             return 10
+
+        meas.start()
         if not send_file(ser, addr, new_data):
             return 4
+        meas.show_throughput(len(new_data))
 
     if config.getboolean('options', 'set-entry'):
         entry_addr = int(config.get('options', 'entry'), 0)

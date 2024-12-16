@@ -3,13 +3,13 @@
  "bundle_meta": {
   "var": {
    "link_layer_features": {
-    "value": "bf79ff07fe000000",
-    "addr": 33704132
+    "value": "3ff9010400000000",
+    "addr": 138776
    }
   },
   "rom": {
-   "size": 149616,
-   "base": 33562624
+   "size": 126272,
+   "base": 16384
   },
   "ram": {
    "size": 3164,
@@ -19,7 +19,7 @@
    "base": 33714176
   },
   "version": [
-   2,3,38]
+   1,9,81]
  },
  "tc_dir": "C:\/Program Files (x86)\/GNU Arm Embedded Toolchain\/10 2021.07\/bin",
  "eflash_addr": "0x42000",

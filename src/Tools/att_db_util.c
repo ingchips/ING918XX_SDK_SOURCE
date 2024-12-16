@@ -88,6 +88,28 @@ void att_db_util_add_service_uuid16(uint16_t uuid16){
     att_db_util_add_attribute_uuid16(GATT_PRIMARY_SERVICE_UUID, ATT_PROPERTY_READ, buffer, 2);
 }
 
+void att_db_util_add_primary_service_uuid16(uint16_t uuid16){
+    att_db_util_add_service_uuid16(uuid16);
+}
+
+void att_db_util_add_secondary_service_uuid16(uint16_t uuid16){
+    uint8_t buffer[2];
+    little_endian_store_16(buffer, 0, uuid16);
+    att_db_util_add_attribute_uuid16(GATT_SECONDARY_SERVICE_UUID, ATT_PROPERTY_READ, buffer, sizeof(buffer));
+}
+
+void att_db_util_add_include_service_uuid16(uint16_t included_service_att_handle, uint16_t end_group_handle, uint16_t uuid16){
+    uint8_t buffer[6];
+    little_endian_store_16(buffer, 0, included_service_att_handle);
+    little_endian_store_16(buffer, 2, end_group_handle);
+    little_endian_store_16(buffer, 4, uuid16);
+    att_db_util_add_attribute_uuid16(GATT_INCLUDE_SERVICE_UUID, ATT_PROPERTY_READ, buffer, sizeof(buffer));
+}
+
+void att_db_util_set_next_handle(uint16_t handle){
+    att_db_next_handle = handle;
+}
+
 void att_db_util_add_service_uuid128(const uint8_t * uuid128){
     uint8_t buffer[16];
     reverse_128(uuid128, buffer);
@@ -117,7 +139,7 @@ uint16_t att_db_util_add_characteristic_uuid16(uint16_t uuid16, uint16_t propert
 
 uint16_t att_db_util_add_characteristic_uuid128(const uint8_t * uuid128, uint16_t properties, const uint8_t * data, uint16_t data_len){
     uint8_t buffer[19];
-  uint16_t value_handle = 0;
+    uint16_t value_handle = 0;
     uint16_t flags = 0;
     buffer[0] = properties;
     little_endian_store_16(buffer, 1, att_db_next_handle + 1);

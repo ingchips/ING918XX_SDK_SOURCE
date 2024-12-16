@@ -430,10 +430,12 @@ void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_d
 
 typedef enum
 {
-    LL_FLAG_DISABLE_CTE_PREPROCESSING   = 1,
-    LL_FLAG_LEGACY_ONLY_INITIATING      = 4,
-    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,
-    LL_FLAG_REDUCE_INSTANT_ERRORS       = 16,
+    LL_FLAG_DISABLE_CTE_PREPROCESSING   = 1,    // disable internal CTE preprocessing
+    LL_FLAG_LEGACY_ONLY_INITIATING      = 4,    // only do initiating to legacy devices
+    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,    // only do scanning for legacy devices
+    LL_FLAG_REDUCE_INSTANT_ERRORS       = 16,   // reduce report instance passed errors
+    LL_FLAG_DISABLE_RSSI_FILTER         = 64,   // disable internal RSSI filter
+    LL_FLAG_RSSI_AFTER_CRC              =128,   // only read RSSI from packages with correct CRC
 } ll_cfg_flag_t;
 
 typedef enum
@@ -561,7 +563,7 @@ void platform_rt_rc_tune(uint16_t value);
  ****************************************************************************************
  * @brief Automatically tune the internal real time RC clock, and get the tuning value.
  *
- * This is equivalent to `platform_rt_rc_auto_tune2(65536000000 / frequency)`.
+ * This is equivalent to `platform_rt_rc_auto_tune2(frequency)`.
  *
  * @return                  Value used to tune the clock
  ****************************************************************************************
