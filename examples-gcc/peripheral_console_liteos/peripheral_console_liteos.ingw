@@ -12,19 +12,19 @@
    "base": 16384
   },
   "ram": {
-   "size": 3292,
+   "size": 3164,
    "base": 536870912
   },
   "app": {
-   "base": 147456
+   "base": 33714176
   },
   "version": [
    1,9,81]
  },
- "tc_dir": "C:\\Programs\\gcc-arm-none-eabi-10.3-2021.10\\bin",
+ "tc_dir": "C:\/Program Files (x86)\/GNU Arm Embedded Toolchain\/10 2021.07\/bin",
  "eflash_addr": "0x42000",
  "ide_ver": "",
- "ide_exe": "C:\\Programs\\gcc-arm-none-eabi-10.3-2021.10\\bin\\arm-none-eabi-gcc.exe",
+ "ide_exe": "C:\/Program Files (x86)\/GNU Arm Embedded Toolchain\/10 2021.07\/bin\/arm-none-eabi-gcc.exe",
  "use_uart_trace": false,
  "ota": false,
  "ide": "gcc",
@@ -41,7 +41,7 @@
  "template": "C:\\projects\\ingWizard\\templates\\typical\\peripheral",
  "coding_adv": false,
  "key_incode": true,
- "series": "ING9187xx",
+ "series": "ING9168xx",
  "proj_name": "peripheral_console_liteos",
  "sdk_release_path": "..\/..",
  "printf_port": "uart0",
@@ -55,14 +55,14 @@
  "pb_adv": true,
  "pb_gatt": true,
  "deep_sleep": true,
- "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples-gcc\\peripheral_console_liteos",
+ "proj_dir": "C:\/ming\/ING918XX_SDK_SOURCE\/examples-gcc\\peripheral_console_liteos",
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
  "bundle": "noos_typical",
- "app_rom_size": "393216",
- "app_rom_addr": "147456",
- "family": "ing918",
+ "app_rom_size": "364544",
+ "app_rom_addr": "33714176",
+ "family": "ing916",
  "vcode": true,
  "heap_override": false,
  "trace_mask_nim": "",
@@ -75,9 +75,9 @@
   "relay": true,
   "proxy": true
  },
- "cmsis": "C:\/projects\/ingchips\/ingWizard\/CMSIS",
- "app_ram_size": 62240,
- "app_ram_addr": 536874208,
+ "cmsis": "C:\/INGCHIPS\/ING_SDK_dev\/wizard\/CMSIS",
+ "app_ram_size": 29600,
+ "app_ram_addr": 536874080,
  "printf_enable": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",
