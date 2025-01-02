@@ -53,9 +53,18 @@ STATIC ArchTickTimer g_archTickTimer = {
     .tickHandler = NULL,
 };
 
+#ifndef OS_SYS_CLOCK
+	#define OS_SYS_CLOCK configCPU_CLOCK_HZ
+	/* Ensure the SysTick is clocked at the same frequency as the core. */
+	#define NVIC_SYSTICK_CLK_BIT	( 1UL << 2UL )
+#else
+	/* The way the SysTick is clocked is not modified in case it is not the same
+	as the core. */
+	#define NVIC_SYSTICK_CLK_BIT	( 0 )
+#endif
+
 STATIC UINT32 SysTickStart(HWI_PROC_FUNC handler)
 {
-    UINT32 ret;
     ArchTickTimer *tick = &g_archTickTimer;
 
     tick->freq = OS_SYS_CLOCK;
@@ -68,20 +77,18 @@ STATIC UINT32 SysTickStart(HWI_PROC_FUNC handler)
 #endif
 #endif
 
-//    ret = SysTick_Config(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
     if ((LOSCFG_BASE_CORE_TICK_RESPONSE_MAX - 1UL) > SysTick_LOAD_RELOAD_Msk)
     {
-        return (1UL);                                                   /* Reload value impossible */
+        return LOS_ERRNO_TICK_PER_SEC_TOO_SMALL;                                               /* Reload value impossible */
     }
 
+    SysTick->CTRL = 0;
     SysTick->LOAD  = (uint32_t)(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX - 1UL);                         /* set reload register */
     NVIC_SetPriority (SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL); /* set Priority for Systick Interrupt */
     SysTick->VAL   = 0UL;                                             /* Load the SysTick Counter Value */
-    SysTick->CTRL  = SysTick_CTRL_TICKINT_Msk   |
+    SysTick->CTRL  = NVIC_SYSTICK_CLK_BIT   |
+                     SysTick_CTRL_TICKINT_Msk   |
                      SysTick_CTRL_ENABLE_Msk;
-    if (ret == 1) {
-        return LOS_ERRNO_TICK_PER_SEC_TOO_SMALL;
-    }
 
     return LOS_OK;
 }

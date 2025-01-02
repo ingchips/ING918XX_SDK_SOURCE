@@ -46,17 +46,23 @@ extern "C" {
 /*=============================================================================
                                         System clock module configuration
 =============================================================================*/
-#if 0
-#define OS_SYS_CLOCK                                        112000000
-#define LOSCFG_BASE_CORE_TICK_PER_SECOND                    (1024UL)
+#define OS_SYS_CLOCK                                        RTC_CLK_FREQ
+#if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define LOSCFG_BASE_CORE_TICK_PER_SECOND                    (512UL)
+#elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#define LOSCFG_BASE_CORE_TICK_PER_SECOND                    (1000UL)
 #else
-#define OS_SYS_CLOCK                                        32768
-#define LOSCFG_BASE_CORE_TICK_PER_SECOND                    (1024UL)
+#error "unknown chip"
 #endif
-#define LOSCFG_BASE_CORE_TICK_PER_SECOND_MINI               (2000UL)
+
+#ifdef POWER_SAVING
+#define LOSCFG_KERNEL_LOWPOWER
+#endif
+
+#define LOSCFG_BASE_CORE_TICK_PER_SECOND_MINI               (1000UL)
 #define LOSCFG_BASE_CORE_TICK_HW_TIME                       0
 #define LOSCFG_BASE_CORE_TICK_WTIMER                        0
-#define LOSCFG_BASE_CORE_TICK_RESPONSE_MAX                  OS_SYS_CLOCK/LOSCFG_BASE_CORE_TICK_PER_SECOND
+#define LOSCFG_BASE_CORE_TICK_RESPONSE_MAX                  (OS_SYS_CLOCK/LOSCFG_BASE_CORE_TICK_PER_SECOND)
 
 /*=============================================================================
                                         Hardware interrupt module configuration
@@ -73,7 +79,7 @@ extern "C" {
 #define LOSCFG_BASE_CORE_TSK_IDLE_STACK_SIZE                (LOSCFG_BASE_CORE_TSK_MIN_STACK_SIZE)
 #define LOSCFG_BASE_CORE_TIMESLICE                          1
 #define LOSCFG_BASE_CORE_TIMESLICE_TIMEOUT                  1000
-#define LOSCFG_SYS_HEAP_SIZE                                0x5000
+#define LOSCFG_SYS_HEAP_SIZE                                0x4300
 /*=============================================================================
                                        Semaphore module configuration
 =============================================================================*/
@@ -107,7 +113,7 @@ extern "C" {
 /* =============================================================================
                                        printf module configuration
 ============================================================================= */
-#define LOSCFG_KERNEL_PRINTF                                0
+#define LOSCFG_KERNEL_PRINTF                                1
 
 #define LOSCFG_BASE_CORE_SCHED_SLEEP                        0
 
@@ -139,6 +145,8 @@ extern "C" {
 #define HW_LITEOS_KERNEL_VERSION_STRING         HW_LITEOS_OPEN_VERSION_STRING
 #endif
 
+#define LOSCFG_KERNEL_PM                           1
+#define LOSCFG_KERNEL_PM_IDLE                      1
 
 #ifdef __cplusplus
 #if __cplusplus

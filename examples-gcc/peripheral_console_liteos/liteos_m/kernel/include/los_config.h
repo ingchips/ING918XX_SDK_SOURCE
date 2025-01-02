@@ -77,7 +77,7 @@ extern "C" {
     #error "LOSCFG_BASE_CORE_TICK_PER_SECOND_MINI must be greater than LOSCFG_BASE_CORE_TICK_PER_SECOND"
 #endif
 
-#if (LOSCFG_BASE_CORE_TICK_PER_SECOND_MINI > 2000UL)
+#if (LOSCFG_BASE_CORE_TICK_PER_SECOND_MINI > 1000UL)
     #error "LOSCFG_BASE_CORE_TICK_PER_SECOND_MINI must be less than or equal to 1000"
 #endif
 

@@ -12,6 +12,7 @@
 #include "los_config.h"
 #include "los_tick.h"
 #include "los_sched.h"
+#include "los_pm.h"
 
 #ifndef LOS_MAX_NEST_DEPTH
 #define LOS_MAX_NEST_DEPTH  10
@@ -76,14 +77,14 @@ gen_handle_t port_task_create(
 {
     UINT32 taskId;
     TSK_INIT_PARAM_S initParam =
-            {
-                    .uwArg = (UINT32)parameter,
-                    .pcName = (char *)name,
-                    .pfnTaskEntry = (TSK_ENTRY_FUNC)entry,
-                    .uwStackSize = (stack_size + 7) & ~0x7,
-                    .usTaskPrio = priority == GEN_TASK_PRIORITY_LOW ?
-                                  OS_TASK_PRIORITY_HIGHEST + 7 : OS_TASK_PRIORITY_HIGHEST + 4,
-            };
+    {
+        .uwArg = (UINT32)parameter,
+        .pcName = (char *)name,
+        .pfnTaskEntry = (TSK_ENTRY_FUNC)entry,
+        .uwStackSize = (stack_size + 7) & ~0x7,
+        .usTaskPrio = priority == GEN_TASK_PRIORITY_LOW ?
+                        OS_TASK_PRIORITY_HIGHEST + 7 : OS_TASK_PRIORITY_HIGHEST + 4,
+    };
     LOS_TaskCreate(&taskId, &initParam);
     return (gen_handle_t)taskId;
 }
@@ -167,6 +168,7 @@ void port_leave_critical(void)
 
 extern VOID HalPendSV(VOID);
 extern VOID HalExcSvcCall(VOID);
+
 static void port_systick_handler(void)
 {
     UINT32 intSave = LOS_IntLock();
@@ -174,38 +176,37 @@ static void port_systick_handler(void)
     LOS_IntRestore(intSave);
 }
 
-VOID RunTaskSample(VOID);
 VOID OsStart(VOID)
 {
     LOS_Start();
 }
 
 static const gen_os_driver_t gen_os_driver =
-        {
-                .timer_create = port_timer_create,
-                .timer_start = port_timer_start,
-                .timer_stop = port_timer_stop,
-                .timer_delete = port_timer_delete,
+{
+    .timer_create = port_timer_create,
+    .timer_start = port_timer_start,
+    .timer_stop = port_timer_stop,
+    .timer_delete = port_timer_delete,
 
-                .task_create = port_task_create,
+    .task_create = port_task_create,
 
-                .queue_create = port_queue_create,
-                .queue_send_msg = port_queue_send_msg,
-                .queue_recv_msg = port_queue_recv_msg,
+    .queue_create = port_queue_create,
+    .queue_send_msg = port_queue_send_msg,
+    .queue_recv_msg = port_queue_recv_msg,
 
-                .event_create = port_event_create,
-                .event_set = port_event_set,
-                .event_wait = port_event_wait,
+    .event_create = port_event_create,
+    .event_set = port_event_set,
+    .event_wait = port_event_wait,
 
-                .malloc = port_malloc,
-                .free = port_free,
-                .enter_critical = port_enter_critical,
-                .leave_critical = port_leave_critical,
-                .os_start = OsStart,
-                .tick_isr = port_systick_handler,
-                .svc_isr = HalExcSvcCall,
-                .pendsv_isr = HalPendSV,
-        };
+    .malloc = port_malloc,
+    .free = port_free,
+    .enter_critical = port_enter_critical,
+    .leave_critical = port_leave_critical,
+    .os_start = OsStart,
+    .tick_isr = port_systick_handler,
+    .svc_isr = HalExcSvcCall,
+    .pendsv_isr = HalPendSV,
+};
 
 static struct
 {
@@ -218,8 +219,46 @@ void gen_os_enable_enhanced_ticks(void)
     pm_info.enhanced_ticks = 1;
 }
 
-#define LOSCFG_KERNEL_LOWPOWER
-static void os_tickless(void);
+STATIC volatile UINT32 g_SleepTime = 0;
+STATIC VOID UserLpTimeStart(UINT64 nextResponseTime);
+STATIC VOID UserLpTimeStop(VOID);
+STATIC UINT64 UserLpTimeGet(VOID);
+STATIC VOID UserKernelTimerLock(VOID);
+STATIC VOID UserKernelTimerUnlock(VOID);
+STATIC UINT32 UserDeepSleepSuspend(VOID);
+STATIC VOID UserDeepSleepResume(VOID);
+STATIC UINT32 UserDeviceSuspend(UINT32 mode);
+STATIC VOID UserDeviceResume(UINT32 mode);
+void OsSysTickTimerInit(UINT32 reloadValue);
+
+STATIC LosPmTickTimer gs_PmTickSt = {
+    .freq = OS_SYS_CLOCK,
+    .timerStart = UserLpTimeStart,
+    .timerStop = UserLpTimeStop,
+    .timerCycleGet = UserLpTimeGet,
+    .tickLock = UserKernelTimerLock,
+    .tickUnlock = UserKernelTimerUnlock,
+};
+
+STATIC LosPmSysctrl gs_PmSysctrlSt = {
+    /* Default handler functions, which are implemented by the product */
+    .early = NULL,
+    .late = NULL,
+    .normalSuspend = ArchEnterSleep,
+    .normalResume = NULL,
+    .lightSuspend = ArchEnterSleep,
+    .lightResume = NULL,
+    .deepSuspend = UserDeepSleepSuspend,
+    .deepResume = UserDeepSleepResume,
+    .shutdownSuspend = NULL,
+    .shutdownResume = NULL,
+};
+
+STATIC LosPmDevice gs_PmDeviceSt = {
+    .suspend = UserDeviceSuspend,
+    .resume = UserDeviceResume,
+};
+
 const gen_os_driver_t *os_impl_get_driver(void)
 {
     //LOS_KernelInit initializes the NVIC Settings. we don't want to do that.
@@ -232,14 +271,16 @@ const gen_os_driver_t *os_impl_get_driver(void)
     OsQueueInit();
     OsSwtmrInit();
     OsIdleTaskCreate();
-
+    OsSysTickTimerInit(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
 #ifdef LOSCFG_KERNEL_LOWPOWER
-    OsPmEnterHandlerSet(os_tickless);
+    OsPmInit();
+    LOS_PmRegister(LOS_PM_TYPE_TICK_TIMER, &gs_PmTickSt);
+    LOS_PmRegister(LOS_PM_TYPE_SYSCTRL, &gs_PmSysctrlSt);
+    LOS_PmRegister(LOS_PM_TYPE_DEVICE, &gs_PmDeviceSt);
+    LOS_PmModeSet(LOS_SYS_DEEP_SLEEP);
 #endif
     return &gen_os_driver;
 }
-
-
 
 #define _SYSTICK_PRI    (*(uint8_t  *)(0xE000ED23UL))
 
@@ -260,88 +301,83 @@ const gen_os_driver_t *os_impl_get_driver(void)
 #define RTC_CYCLES_PER_TICK                 (RTC_CLK_FREQ / LOSCFG_BASE_CORE_TICK_PER_SECOND)
 #define MAXIMUM_SUPPRESSED_TICKS            (0xffffff / RTC_CYCLES_PER_TICK)
 #define EXPECTED_IDLE_TIME_BEFORE_SLEEP     2
-#define MISSED_COUNTS_FACTOR                45
-#if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define MISSED_COUNTS_FACTOR                15
+
+#if  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define STOPPED_TIMER_COMPENSATION          (MISSED_COUNTS_FACTOR / ( SYSCTRL_GetPLLClk() / RTC_CLK_FREQ ))
+#define API_EXPECTED_TICK_FREQ              1024
 #elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define STOPPED_TIMER_COMPENSATION          (MISSED_COUNTS_FACTOR / ( PLL_CLK_FREQ / RTC_CLK_FREQ ))
+#define API_EXPECTED_TICK_FREQ              1000
 #else
 #error "unknown chip"
 #endif
 
+#define TICK_NUM_SCALE                      (API_EXPECTED_TICK_FREQ / LOSCFG_BASE_CORE_TICK_PER_SECOND)
 
-LITE_OS_SEC_TEXT UINT64 LOS_SysCycleGet(VOID);
-LITE_OS_SEC_TEXT VOID OsTickTimerBaseReset(UINT64 currTime);
-UINT32 OsTaskNextSwitchTimeGet(VOID);
-LITE_OS_SEC_TEXT UINT32 OsSwtmrGetNextTimeout(VOID);
-
-LITE_OS_SEC_TEXT VOID OsSysTimeUpdate(UINT32 sleepTicks)
+void OsSysTickTimerInit(UINT32 reloadValue)
 {
-    UINT32 intSave;
-    uint64_t  currTime;
-
-    if (sleepTicks == 0) {
+    if ((reloadValue - 1UL) > 0xffffff)
+    {
         return;
     }
-
-    intSave = LOS_IntLock();
-    currTime = LOS_SysCycleGet();
-    OsTickTimerBaseReset(currTime + sleepTicks - 1);
-
-    LOS_IntRestore(intSave);
+    portNVIC_SYSTICK_CTRL_REG = 0;
+    portNVIC_SYSTICK_LOAD_REG  = (uint32_t)(reloadValue - 1UL);
+    portNVIC_SYSTICK_CURRENT_VALUE_REG   = 0UL;
+    portNVIC_SYSTICK_CTRL_REG  =    portNVIC_SYSTICK_CLK_BIT   |
+                                    portNVIC_SYSTICK_INT_BIT   |
+                                    portNVIC_SYSTICK_ENABLE_BIT;
 }
 
-LITE_OS_SEC_TEXT UINT32 OsSleepTicksGet(VOID)
+STATIC VOID UserLpTimeStart(UINT64 nextResponseTime)
 {
-    UINT32 tskSortLinkTicks, sleepTicks;
+    UINT32 intSave;
+    g_SleepTime = nextResponseTime/(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
 
-    UINT32 intSave = LOS_IntLock();
-    tskSortLinkTicks = OsTaskNextSwitchTimeGet();
-
-#ifdef LOSCFG_BASE_CORE_SWTMR
-    UINT32 swtmrSortLinkTicks;
-    swtmrSortLinkTicks = OsSwtmrGetNextTimeout();
-    sleepTicks = (tskSortLinkTicks < swtmrSortLinkTicks) ? tskSortLinkTicks : swtmrSortLinkTicks;
-#else
-    sleepTicks = tskSortLinkTicks;
-#endif
-
-    LOS_IntRestore(intSave);
-    return sleepTicks;
+    g_SleepTime = platform_pre_suppress_ticks_and_sleep_processing(g_SleepTime * TICK_NUM_SCALE) / TICK_NUM_SCALE;
 }
-// This is a re-implementation of FreeRTOS's suppress ticks and sleep function.
-static void _suppress_ticks_and_sleep(uint32_t expected_ticks)
+
+STATIC VOID UserLpTimeStop(VOID)
 {
+}
+
+STATIC UINT64 UserLpTimeGet(VOID)
+{
+    if(g_SleepTime < MISSED_COUNTS_FACTOR)
+        return 0;
+    return g_SleepTime * LOSCFG_BASE_CORE_TICK_RESPONSE_MAX;
+}
+
+STATIC VOID UserKernelTimerLock(VOID)
+{
+}
+
+STATIC VOID UserKernelTimerUnlock(VOID)
+{
+}
+
+STATIC UINT32 UserDeepSleepSuspend(VOID)
+{
+    UINT32 intSave;
     uint32_t ulCompleteTickPeriods;
 
-    portNVIC_SYSTICK_CTRL_REG &= ~portNVIC_SYSTICK_ENABLE_BIT;
+    intSave = LOS_IntLock();
 
-    uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + (RTC_CYCLES_PER_TICK * (expected_ticks - 1UL));
+    portNVIC_SYSTICK_CTRL_REG &= ~portNVIC_SYSTICK_ENABLE_BIT;//close systick
+    // calculate the expected ticks
+    uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + (RTC_CYCLES_PER_TICK * (g_SleepTime - 1UL));
     if( ulReloadValue > STOPPED_TIMER_COMPENSATION )
     {
         ulReloadValue -= STOPPED_TIMER_COMPENSATION;
     }
-
-    uint32_t intSave = LOS_IntLock();
-
     portNVIC_SYSTICK_LOAD_REG = ulReloadValue;
     portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
     portNVIC_SYSTICK_CTRL_REG |= portNVIC_SYSTICK_ENABLE_BIT;
 
-    if (pm_info.enhanced_ticks)
-        while (0 == portNVIC_SYSTICK_CURRENT_VALUE_REG) ;
-
     platform_pre_sleep_processing();
     platform_post_sleep_processing();
 
-    LOS_IntRestore(intSave);
-    intSave = LOS_IntLock();
-
-    if (pm_info.enhanced_ticks)
-        while (portNVIC_SYSTICK_CURRENT_VALUE_REG == portNVIC_SYSTICK_CURRENT_VALUE_REG);
-
     portNVIC_SYSTICK_CTRL_REG = ( portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT );
-
     if( ( portNVIC_SYSTICK_CTRL_REG & portNVIC_SYSTICK_COUNT_FLAG_BIT ) != 0 )
     {
         uint32_t ulCalculatedLoadValue;
@@ -354,60 +390,45 @@ static void _suppress_ticks_and_sleep(uint32_t expected_ticks)
         }
 
         portNVIC_SYSTICK_LOAD_REG = ulCalculatedLoadValue;
-
-        ulCompleteTickPeriods = expected_ticks - 1UL;
+        ulCompleteTickPeriods = g_SleepTime  - 1UL;
     }
     else
     {
-        uint32_t ulCompletedSysTickDecrements = (expected_ticks * RTC_CYCLES_PER_TICK) - portNVIC_SYSTICK_CURRENT_VALUE_REG;
-
+        uint32_t ulCompletedSysTickDecrements = (g_SleepTime * RTC_CYCLES_PER_TICK) - portNVIC_SYSTICK_CURRENT_VALUE_REG;
         ulCompleteTickPeriods = ulCompletedSysTickDecrements / RTC_CYCLES_PER_TICK;
 
         portNVIC_SYSTICK_LOAD_REG = ((ulCompleteTickPeriods + 1UL) * RTC_CYCLES_PER_TICK) - ulCompletedSysTickDecrements;
-        LOS_Schedule();
     }
 
     portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
     portNVIC_SYSTICK_CTRL_REG |= portNVIC_SYSTICK_ENABLE_BIT;
-    OsSysTimeUpdate(ulCompleteTickPeriods);
-    if (pm_info.enhanced_ticks)
-        while (0 == portNVIC_SYSTICK_CURRENT_VALUE_REG) ;
-    portNVIC_SYSTICK_LOAD_REG = RTC_CYCLES_PER_TICK - 1UL;
 
+    portNVIC_SYSTICK_LOAD_REG = RTC_CYCLES_PER_TICK - 1UL;
+    g_SleepTime = ulCompleteTickPeriods;
+
+    LOS_IntRestore(intSave);
+
+    return 0;
+}
+
+STATIC VOID UserDeepSleepResume(VOID)
+{
+    UINT32 intSave;
+
+    intSave = LOS_IntLock();
+    platform_os_idle_resumed_hook();
     LOS_IntRestore(intSave);
 }
 
-static void os_tickless(void)
+STATIC UINT32 UserDeviceSuspend(UINT32 mode)
 {
-    UINT32 intSave;
-    UINT32 sleepTicks;
+    (UINT32)mode;
+    return 0;
+}
 
-    intSave = LOS_IntLock();
-    sleepTicks = OsSleepTicksGet();
-
-    if (sleepTicks > 1) {
-        if (sleepTicks >= MAXIMUM_SUPPRESSED_TICKS) {
-            sleepTicks = MAXIMUM_SUPPRESSED_TICKS;
-        }
-        sleepTicks = platform_pre_suppress_ticks_and_sleep_processing(sleepTicks);
-        if (sleepTicks < EXPECTED_IDLE_TIME_BEFORE_SLEEP)
-        {
-            LOS_IntRestore(intSave);
-            __WFI();
-            return;
-        }
-        LOS_IntRestore(intSave);
-
-        _suppress_ticks_and_sleep(sleepTicks);
-
-        platform_os_idle_resumed_hook();
-    }
-    else
-    {
-        LOS_IntRestore(intSave);
-        __WFI();
-    }
-    return;
+STATIC VOID UserDeviceResume(UINT32 mode)
+{
+    (UINT32)mode;
 }
 
 extern UINT8 *m_aucSysMem0;

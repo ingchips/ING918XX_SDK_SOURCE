@@ -1,3 +1,33 @@
+/*
+ * Copyright (c) 2013-2019 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of
+ *    conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list
+ *    of conditions and the following disclaimer in the documentation and/or other materials
+ *    provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be used
+ *    to endorse or promote products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 .syntax unified
 .arch armv7-m
 .thumb
@@ -19,6 +49,7 @@
     pop     {r12, lr}
     cmp     r0, #0
     mov     r1, r0
+    bne     SignalContextRestore
 .endm
 
     .type HalStartToRun, %function
@@ -40,11 +71,11 @@ HalStartToRun:
     add     r12, r12, #36
 
     ldmfd   r12!, {R0-R7}
-    // add     r12, r12, #72
     msr     psp, r12
     mov     lr, r5
     cpsie   i
     bx      r6
+
     .fnend
 
     .type ArchIntLock, %function
@@ -123,13 +154,16 @@ TaskContextSwitch:
     ldr     R5, =g_losTask
     ldr     R6, [R5]
     str     R0, [R6]
+
     ldr     R0, [R5, #4]
     str     R0, [R5]
     ldr     R1,   [R0]
 
+SignalContextRestore:
     ldmfd   R1!, {R4-R12}
     msr     PSP,  R1
 
     msr     PRIMASK, R12
+
     bx      LR
     .fnend

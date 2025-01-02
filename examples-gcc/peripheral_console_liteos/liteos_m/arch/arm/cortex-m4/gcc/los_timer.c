@@ -67,7 +67,6 @@ STATIC UINT32 SysTickStart(HWI_PROC_FUNC handler)
     OsSetVector(tick->irqNum, handler);
 #endif
 #endif
-
     ret = SysTick_Config(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
     if (ret == 1) {
         return LOS_ERRNO_TICK_PER_SEC_TOO_SMALL;
