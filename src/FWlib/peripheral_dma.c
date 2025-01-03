@@ -426,10 +426,14 @@ int DMA_MemCopy(int channel_id, void *dst, void *src, int size)
     return (state & (DMA_IRQ_ERROR | DMA_IRQ_ABORT)) ? 1 : 0;
 }
 
-void DNA_ConfigSrcBurstSize(DMA_Descriptor *pDesc, DMA_SrcBurstSize burst_size)
+void DMA_ConfigSrcBurstSize(DMA_Descriptor *pDesc, DMA_SrcBurstSize burst_size)
 {
     pDesc->Ctrl &= ~(uint32_t)(0xF << bsDMA_SRC_BURSIZE);
     pDesc->Ctrl |= (uint32_t)(burst_size << bsDMA_SRC_BURSIZE);
 }
 
+DMA_Descriptor *DMA_GetChannelDescriptor(int channel_id)
+{
+    return &(APB_DMA->Channels[channel_id].Descriptor);
+}
 #endif
