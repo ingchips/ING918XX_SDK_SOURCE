@@ -33,13 +33,14 @@ static uint32_t QDEC_RegRd(QDEC_qdecReg reg, uint8_t s, uint8_t b)
 static void QDEC_SetRegBits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
     uint32_t mask = ((1 << bit_width) - 1) << bit_offset;
+    v &= (1 << bit_width) - 1;
     *reg = (*reg & ~mask) | (v << bit_offset);
 }
 
 static void QDEC_SetRegBit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset)
 {
     uint32_t mask = 1 << bit_offset;
-    *reg = (*reg & ~mask) | (v << bit_offset);
+    *reg = (*reg & ~mask) | ((v & 1) << bit_offset);
 }
 
 void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)

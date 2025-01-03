@@ -70,7 +70,6 @@ typedef enum {
  * - QDEC_INT_ETRGS_CMB_STATE: External trigger state.
  * - QDEC_INT_PDC_END_STATE: Periodic data conversion end state.
  * - QDEC_INT_BUF_FULL_STATE: Buffer full state.
- * - QDEC_INT_CHANGE_DIR: Counter direction change state.
 */ 
 typedef enum {
     QDEC_INT_COVFS_CMB_STATE = 1<<0,
@@ -83,7 +82,6 @@ typedef enum {
     QDEF_INT_ETRGS_CMB_STATE = 1<<7,
     QDEC_INT_PDC_END_STATE = 1<<8,
     QDEC_INT_BUF_FULL_STATE = 1<<9,
-    QDEC_INT_CHANGE_DIR = 1,
 }QDEC_IntState;
 
 /**
@@ -168,7 +166,7 @@ void QDEC_IntClear(void);
 
 /**
  * @brief Enable QDEC other interrupt
- * @param[in] mask     mask of interrupts(QDEC_INT_CHANGE_DIR enable dir changed int)
+ * @param[in] mask     mask of interrupts(0x1 enable dir changed int)
  *
  */
 void QDEC_EnableInt(uint8_t mask);
