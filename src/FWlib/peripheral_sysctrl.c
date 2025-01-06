@@ -102,11 +102,11 @@ int SYSCTRL_Init(void)
 
 void SYSCTRL_PAEnable(void)
 {
-    io_write(0x40090000, (io_read(0x40090000) & (~(0x3FF<<16)) | (70 << 16)));
+    io_write(0x40090000, (io_read(0x40090000) & (~(0x3FF<<16))) | (70 << 16));
     io_write(0x4007005c, 0x82);
-    io_write(0x40070044, ((io_read(0x40070044)) | (0xf<<8) | (0xf<<24)));
+    io_write(0x40070044,  io_read(0x40070044) | (0xf<<8) | (0xf<<24));
     io_write(0x40090064, 0x400);
-    io_write(0x40090000, (io_read(0x40090000) & (~(0x3FF<<16)) | (70 << 16))); // adjust_rf_txen_rxen_duty
+    io_write(0x40090000, (io_read(0x40090000) & (~(0x3FF<<16))) | (70 << 16)); // adjust_rf_txen_rxen_duty
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
@@ -1090,7 +1090,7 @@ void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
 void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
 {
     uint32_t masked = block_map & 0x1f;
-    set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), masked, 5, 16);
+    set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), (~masked) & 0x1f, 5, 0);
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), masked, 5, 16);
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), masked, 5, 8);
 }

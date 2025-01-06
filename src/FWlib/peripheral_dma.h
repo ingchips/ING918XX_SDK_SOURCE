@@ -199,7 +199,15 @@ void DMA_ClearChannelIntState(int channel_id, uint32_t state);
  * @param[in] pDesc             the descriptor
  * @param[in] burst_size        Source burst size of `DMA_SrcBurstSize`, The burst transfer byte number is SrcBurstSize * SrcWidth.
  */
-void DNA_ConfigSrcBurstSize(DMA_Descriptor *pDesc, DMA_SrcBurstSize burst_size);
+void DMA_ConfigSrcBurstSize(DMA_Descriptor *pDesc, DMA_SrcBurstSize burst_size);
+
+/**
+ * @brief Get DMA descriptor of a channel
+ *
+ * @param[in] channel_id                channel id
+ * @return                              DMA descriptor
+ */
+DMA_Descriptor *DMA_GetChannelDescriptor(int channel_id);
 
 #endif
 

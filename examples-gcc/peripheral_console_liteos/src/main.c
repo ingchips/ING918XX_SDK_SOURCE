@@ -4,16 +4,13 @@
 #include "ingsoc.h"
 #include "platform_api.h"
 #include "port_gen_os_driver.h"
-#include "los_config.h"
-
-#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
-#error WIP: Porting to ING916
-#endif
+#include "target_config.h"
+#include "trace.h"
 
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
-                    "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nP3 : 0x%08X\n"
+                    "R0 : 0x%08X\nR1 : 0x%08X\nR2 : 0x%08X\nR3 : 0x%08X\n"
                     "R12: 0x%08X\n",
                     info->pc, info->lr, info->psr,
                     info->r0, info->r1, info->r2, info->r3, info->r12);
@@ -73,26 +70,26 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-#ifdef LISTEN_TO_POWER_SAVING
-uint32_t on_lle_reset(void *dummy, void *user_data)
+uint32_t on_lle_init(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
-    *(uint32_t *)(0x40090064) = 0x400 | (0x01 << 8);
-    *(uint32_t *)(0x4007005c) = 0x80;
-
     return 0;
 }
-#endif
 
 void setup_peripherals(void)
 {
-    SYSCTRL_ClearClkGateMulti(0);
     config_uart(OSC_CLK_FREQ, 115200);
 
 #ifdef LISTEN_TO_POWER_SAVING
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_GPIO0));
+    PINCTRL_SetPadMux(8, IO_SOURCE_GPIO);
+    GIO_SetDirection(8, GIO_DIR_OUTPUT);
+    GIO_WriteValue(8, 1);
+#else
     PINCTRL_SetPadMux(8, IO_SOURCE_DEBUG_BUS);
-    on_lle_reset(NULL, NULL);
+#endif
 #endif
 }
 
@@ -108,34 +105,60 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
-    // TODO: return 0 if deep sleep is not allowed now; else deep sleep is allowed
-    return 0;
+    return PLATFORM_ALLOW_DEEP_SLEEP;
 }
+
+trace_rtt_t trace_rtt;
+
+static const platform_evt_cb_table_t evt_cb_table =
+{
+    .callbacks = {
+        [PLATFORM_CB_EVT_HARD_FAULT] = {
+            .f = (f_platform_evt_cb)cb_hard_fault,
+        },
+        [PLATFORM_CB_EVT_ASSERTION] = {
+            .f = (f_platform_evt_cb)cb_assertion,
+        },
+        [PLATFORM_CB_EVT_HEAP_OOM] = {
+            .f = (f_platform_evt_cb)cb_heap_out_of_mem,
+        },
+        [PLATFORM_CB_EVT_PROFILE_INIT] = {
+            .f = setup_profile,
+        },
+        [PLATFORM_CB_EVT_LLE_INIT] = {
+            .f = on_lle_init,
+        },
+        [PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP] = {
+            .f = (f_platform_evt_cb)on_deep_sleep_wakeup,
+        },
+        [PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED] = {
+            .f = query_deep_sleep_allowed,
+        },
+        [PLATFORM_CB_EVT_PUTC] = {
+            .f = (f_platform_evt_cb)cb_putc,
+        },
+        [PLATFORM_CB_EVT_TRACE] = {
+            .f = (f_platform_evt_cb)cb_trace_rtt,
+            .user_data = &cb_trace_rtt,
+        },
+    }
+};
 
 const char welcome_msg[] = "Built with LiteOS (" HW_LITEOS_KERNEL_VERSION_STRING ")";
 
+extern const gen_os_driver_t *os_impl_get_driver(void);
 uintptr_t app_main()
 {
-    platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);
+    SYSCTRL_Init();
 
-    // setup handlers
-    platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_HEAP_OOM, (f_platform_evt_cb)cb_heap_out_of_mem, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP, on_deep_sleep_wakeup, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED, query_deep_sleep_allowed, NULL);
-    platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
-#ifdef LISTEN_TO_POWER_SAVING
-    platform_set_evt_callback(PLATFORM_CB_EVT_LLE_INIT, on_lle_reset, NULL);
-#endif
+    // setup event handlers
+    platform_set_evt_callback_table(&evt_cb_table);
     setup_peripherals();
+
+    // TODO: config trace mask
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0);
 
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
 
     return (uintptr_t)os_impl_get_driver();
-}
-
-void dprintf2(const char *fmt, ...)
-{
-
 }
