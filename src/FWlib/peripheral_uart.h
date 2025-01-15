@@ -319,6 +319,10 @@ uint8_t apUART_Check_RXFIFO_FULL(UART_TypeDef* pBase);
 uint8_t apUART_Check_TXFIFO_EMPTY(UART_TypeDef* pBase);
 uint8_t apUART_Check_TXFIFO_FULL(UART_TypeDef* pBase);
 
+uint8_t apUART_Check_EnableSta(UART_TypeDef* pBase);
+uint8_t apUART_Check_TxEnableSta(UART_TypeDef* pBase);
+uint8_t apUART_Check_RxEnableSta(UART_TypeDef* pBase);
+
 void apUART_Enable_TRANSMIT_INT(UART_TypeDef* pBase);
 void apUART_Disable_TRANSMIT_INT(UART_TypeDef* pBase);
 void apUART_Enable_RECEIVE_INT(UART_TypeDef* pBase);
