@@ -3,11 +3,11 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9010400000000",
-    "addr": 149752
+    "addr": 149724
    }
   },
   "rom": {
-   "size": 137252,
+   "size": 137224,
    "base": 16384
   },
   "ram": {
@@ -18,7 +18,7 @@
    "base": 155648
   },
   "version": [
-   1,9,83]
+   1,9,85]
  },
  "tc_dir": "",
  "ide_ver": "",
