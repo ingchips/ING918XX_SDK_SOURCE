@@ -340,6 +340,7 @@ enum sm_state_t
     SM_FINAL_FAIL_DISCONNECT,       // unexpected disconnection occurred
     SM_FINAL_FAIL_OUT_OF_STORAGE,   // device database runs out of storage
                                     // i.e. too many devices have been paired.
+    SM_FINAL_FAIL_ENCRYPTION,       // failed to start encryption
 };
 typedef void (*f_sm_cmac_done_handler)(void *user, uint8_t hash[16]);
 
