@@ -66,7 +66,7 @@ enum
 {
     SYSCTRL_BOR_0V85 = 0x06,        // BOR Vdd threshold = 0.85V
     SYSCTRL_BOR_0V90 = 0x07,        // BOR Vdd threshold = 0.90V
-    SYSCTRL_BOR_0V95 = 0x09,        // BOR Vdd threshold = 0.95V
+    SYSCTRL_BOR_0V95 = 0x08,        // BOR Vdd threshold = 0.95V
     SYSCTRL_BOR_1V00 = 0x09,        // BOR Vdd threshold = 1.00V
     SYSCTRL_BOR_1V05 = 0x0A,        // BOR Vdd threshold = 1.05V
 };

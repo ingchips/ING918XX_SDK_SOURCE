@@ -444,7 +444,7 @@ typedef enum
 
 typedef enum
 {
-    PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_LOG_HCI,       // (ING918 only) flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_TRACE_MASK,    // flag is bitmap of platform_trace_item_t. default: 0
     PLATFORM_CFG_RT_RC_EN,         // Enable/Disable internal real time RC clock. Default: Enable
@@ -544,7 +544,7 @@ uint32_t platform_read_info(const platform_info_item_t item);
 
 /**
  ****************************************************************************************
- * @brief Calibrate real-time RC clock and get the calibration value.
+ * @brief Calibrate real-time clock and get the calibration value.
  *
  * Real time clock auto-calibration timer is also reset, which means that next auto-calibration
  * is supposed to be carried out after `PLATFORM_CFG_RT_CLK_CALI_PERIOD` seconds.
@@ -790,9 +790,8 @@ uint32_t platform_get_timer_counter(void);
  *
  * @param[in]  callback         the callback function when the timer expired, and is
  *                              called in a RTOS task (if existing) not an ISR
- * @param[in]  abs_time         time delay before the timer expires (unit: 625us)
- *                              Range: 0~0x7fffffff
- *                              When `delay` == 0, the timer is cleared
+ * @param[in]  abs_time         when `platform_get_timer_counter() == abs_time`, callback is invoked.
+ *                              If `abs_time` just passes `platform_get_timer_counter()`, `callback` is invoked immediately.
  ****************************************************************************************
  */
 void platform_set_abs_timer(f_platform_timer_callback callback, uint32_t abs_time);
@@ -834,7 +833,7 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  *
  * CAUTION: DO NOT call `platform_create_us_timer` again in `callback`.
  *
- * @param[in]  abs_time         when `platform_get_us_timer() == abs_time`, callback is invoked.
+ * @param[in]  abs_time         when `platform_get_us_time() == abs_time`, callback is invoked.
  * @param[in]  callback         the callback function
  * @param[in]  param            user parameter
  * @return                      a non-NULL value when succeeded. Otherwise, NULL.
