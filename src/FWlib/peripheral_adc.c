@@ -374,6 +374,10 @@ SADC_channelId ADC_GetDataChannel(const uint32_t data)
     }
     return (SADC_channelId)(ADC_RIGHT_SHIFT(data, 14) & ADC_MK_MASK(4));
 }
+uint16_t ADC_GetRawData(const uint32_t data)
+{
+    return (data & ADC_MK_MASK(14));
+}
 uint16_t ADC_GetData(const uint32_t data)
 {
     if (!ftCali || !ftCali->f) return (data & ADC_MK_MASK(14));
@@ -428,6 +432,10 @@ static void ADC_VrefRegister(float VP, float VN)
 
 void ADC_VrefCalibration(void)
 {
+    uint8_t i, j, cnt = 0;
+    uint32_t data;
+    uint16_t array[ADC_FIFO_DEPTH] = {0};
+
     if (!SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC)) return;
     if (!ftCali) return;
     ADC_DisableAllChannels();
@@ -437,9 +445,7 @@ void ADC_VrefCalibration(void)
     ADC_Start(1);
     while (!ADC_GetIntStatus());
     ADC_Start(0);
-    uint8_t i, j;
-    uint32_t data, cnt = 0;
-    uint16_t array[14] = {0};
+
     ADC_PopFifoData();
     while (!ADC_GetFifoEmpty()) {
         array[cnt] = ADC_GetData(ADC_PopFifoData());
@@ -455,14 +461,24 @@ void ADC_VrefCalibration(void)
         }
     }
     data = 0;
-    cnt--;
-    for (i = 1; i < cnt; i++) {
-        data += array[i];
+    if(cnt > 12 && cnt < ADC_FIFO_DEPTH){
+        cnt--;
+        for (i = 1; i < cnt; i++) {
+            data += array[i];
+        }
+        
+        data /= (cnt - 1);
+        if(data) {
+            ADC_VrefRegister(ftCali->V12Data * ftCali->Vp / data * 0.00001f, 0.f);
+        }
+        ADC_EnableChannel(ADC_CH_9, 0);
+        ADC_IntEnable(0);
     }
-    data /= (cnt - 1);
-    ADC_VrefRegister(ftCali->V12Data * ftCali->Vp / data * 0.00001f, 0.f);
-    ADC_EnableChannel(ADC_CH_9, 0);
-    ADC_IntEnable(0);
+    else {
+        ADC_EnableChannel(ADC_CH_9, 0);
+        ADC_IntEnable(0);
+    }
+    
 }
 
 static uint16_t ADC_FtCal(const SADC_ftChPara_t *chPara, const uint32_t data)

@@ -261,19 +261,9 @@ STATIC LosPmDevice gs_PmDeviceSt = {
 
 const gen_os_driver_t *os_impl_get_driver(void)
 {
-    //LOS_KernelInit initializes the NVIC Settings. we don't want to do that.
-    /*LOS_KernelInit();*/
-    OsMemSystemInit();
-    OsTickTimerInit();
-    OsTaskInit();
-    OsSemInit();
-    OsMuxInit();
-    OsQueueInit();
-    OsSwtmrInit();
-    OsIdleTaskCreate();
+    LOS_KernelInit();
     OsSysTickTimerInit(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
 #ifdef LOSCFG_KERNEL_LOWPOWER
-    OsPmInit();
     LOS_PmRegister(LOS_PM_TYPE_TICK_TIMER, &gs_PmTickSt);
     LOS_PmRegister(LOS_PM_TYPE_SYSCTRL, &gs_PmSysctrlSt);
     LOS_PmRegister(LOS_PM_TYPE_DEVICE, &gs_PmDeviceSt);
@@ -289,6 +279,7 @@ const gen_os_driver_t *os_impl_get_driver(void)
 #define portNVIC_SYSTICK_LOAD_REG			( * ( ( volatile uint32_t * ) 0xe000e014 ) )
 #define portNVIC_SYSTICK_CURRENT_VALUE_REG	( * ( ( volatile uint32_t * ) 0xe000e018 ) )
 #define portNVIC_SYSPRI2_REG				( * ( ( volatile uint32_t * ) 0xe000ed20 ) )
+#define portNVIC_CCR_REG                    ( * ( ( volatile uint32_t * ) 0xE000ED14 ) )
 /* ...then bits in the registers. */
 #define portNVIC_SYSTICK_CLK_BIT	        ( 0UL << 2UL )
 #define portNVIC_SYSTICK_INT_BIT			( 1UL << 1UL )
@@ -317,6 +308,8 @@ const gen_os_driver_t *os_impl_get_driver(void)
 
 void OsSysTickTimerInit(UINT32 reloadValue)
 {
+    portNVIC_CCR_REG = 0x200;//remove div 0 and unalign falut error;
+
     if ((reloadValue - 1UL) > 0xffffff)
     {
         return;
@@ -329,40 +322,56 @@ void OsSysTickTimerInit(UINT32 reloadValue)
                                     portNVIC_SYSTICK_ENABLE_BIT;
 }
 
+#ifdef LOSCFG_KERNEL_LOWPOWER
 STATIC VOID UserLpTimeStart(UINT64 nextResponseTime)
 {
     UINT32 intSave;
-    g_SleepTime = nextResponseTime/(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
 
-    g_SleepTime = platform_pre_suppress_ticks_and_sleep_processing(g_SleepTime * TICK_NUM_SCALE) / TICK_NUM_SCALE;
+    intSave = LOS_IntLock();
+    g_SleepTime = nextResponseTime/(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
+    if(g_SleepTime < MISSED_COUNTS_FACTOR)
+    {
+        g_SleepTime = 0;
+        __WFI();
+        return;
+    }
+    
+    g_SleepTime = platform_pre_suppress_ticks_and_sleep_processing(g_SleepTime);
+    LOS_IntRestore(intSave);
 }
 
 STATIC VOID UserLpTimeStop(VOID)
 {
+
 }
 
 STATIC UINT64 UserLpTimeGet(VOID)
 {
-    if(g_SleepTime < MISSED_COUNTS_FACTOR)
-        return 0;
+    // if(g_SleepTime < MISSED_COUNTS_FACTOR)
+    //     return 0;
     return g_SleepTime * LOSCFG_BASE_CORE_TICK_RESPONSE_MAX;
 }
 
-STATIC VOID UserKernelTimerLock(VOID)
+STATIC VOID UserKernelTimerLock(VOID) 
 {
+    
 }
 
 STATIC VOID UserKernelTimerUnlock(VOID)
 {
+    
 }
 
 STATIC UINT32 UserDeepSleepSuspend(VOID)
 {
     UINT32 intSave;
     uint32_t ulCompleteTickPeriods;
-
+    
+    if(g_SleepTime == 0)
+    {
+        return 0;
+    }
     intSave = LOS_IntLock();
-
     portNVIC_SYSTICK_CTRL_REG &= ~portNVIC_SYSTICK_ENABLE_BIT;//close systick
     // calculate the expected ticks
     uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + (RTC_CYCLES_PER_TICK * (g_SleepTime - 1UL));
@@ -402,10 +411,11 @@ STATIC UINT32 UserDeepSleepSuspend(VOID)
 
     portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
     portNVIC_SYSTICK_CTRL_REG |= portNVIC_SYSTICK_ENABLE_BIT;
+    //update tick
 
     portNVIC_SYSTICK_LOAD_REG = RTC_CYCLES_PER_TICK - 1UL;
     g_SleepTime = ulCompleteTickPeriods;
-
+    
     LOS_IntRestore(intSave);
 
     return 0;
@@ -430,6 +440,7 @@ STATIC VOID UserDeviceResume(UINT32 mode)
 {
     (UINT32)mode;
 }
+#endif
 
 extern UINT8 *m_aucSysMem0;
 void platform_get_heap_status(platform_heap_status_t *status)
