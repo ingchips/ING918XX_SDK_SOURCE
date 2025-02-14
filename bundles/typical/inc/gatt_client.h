@@ -246,6 +246,22 @@ typedef struct gatt_client_notification {
 uint8_t gatt_client_get_mtu(hci_con_handle_t con_handle, uint16_t * mtu);
 
 /**
+ * @brief Exchange MTU request with customized size
+ *
+ * Generally, this API is NOT needed, and MTU negotiations is performed automatically.
+ * If developers DO need to control it, then,
+ *
+ * 1. set flag `STACK_GATT_CLIENT_DISABLE_MTU_EXCHANGE` by `btstack_config`;
+ * 1. call this ONCE on a connection.
+ *
+ * @param con_handle        connection handle
+ * @param mtu               requested MTU size (>= ATT_DEFAULT_MTU)
+ * @return                  0: successful
+ *                          Other error codes: BTSTACK_MEMORY_ALLOC_FAILED, GATT_CLIENT_IN_WRONG_STATE
+ */
+int gatt_client_exchange_mtu_request(hci_con_handle_t con_handle, uint16_t mtu);
+
+/**
  * @brief Returns if the GATT client is ready to receive a query. It is used with daemon.
  */
 int gatt_client_is_ready(hci_con_handle_t con_handle);
@@ -406,8 +422,44 @@ static __INLINE hci_con_handle_t gatt_event_mtu_get_handle(const uint8_t * event
  * @return MTU
  * @note: btstack_type 2
  */
-static __INLINE uint16_t gatt_event_mtu_get_mtu(const uint8_t * event){
+static __INLINE uint16_t gatt_event_mtu_get_mtu(const uint8_t * event) {
     return little_endian_read_16(event, 4);
+}
+
+/**
+ * @brief Get field `event_type` from event GATT_EVENT_UNHANDLED_SERVER_VALUE
+ * @param event packet
+ * @return `type` (GATT_EVENT_NOTIFICATION or GATT_EVENT_INDICATION)
+ */
+static __INLINE uint8_t gatt_event_unhandled_server_value_get_type(const uint8_t * event) {
+    return little_endian_read_16(event, 2);
+}
+
+/**
+ * @brief Get field `value_handle` from event GATT_EVENT_UNHANDLED_SERVER_VALUE
+ * @param event packet
+ * @return `value_handle`
+ */
+static __INLINE uint16_t gatt_event_unhandled_server_value_get_value_handle(const uint8_t * event) {
+    return little_endian_read_16(event, 3);
+}
+
+/**
+ * @brief Get field `size` from event GATT_EVENT_UNHANDLED_SERVER_VALUE
+ * @param event packet
+ * @return size of data
+ */
+static __INLINE uint16_t gatt_event_unhandled_server_value_get_size(const uint8_t * event) {
+    return little_endian_read_16(event, 5);
+}
+
+/**
+ * @brief Get field `data` from event GATT_EVENT_UNHANDLED_SERVER_VALUE
+ * @param event packet
+ * @return pointer of data
+ */
+static __INLINE const uint8_t * gatt_event_unhandled_server_value_get_data(const uint8_t * event) {
+    return (const uint8_t *)little_endian_read_32(event, 7);
 }
 
 /**

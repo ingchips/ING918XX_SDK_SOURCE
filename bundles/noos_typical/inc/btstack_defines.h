@@ -266,6 +266,15 @@
 #define GATT_EVENT_MTU                                           0xAB
 
 /**
+ * @format 1HH4
+ * @param type            GATT_EVENT_NOTIFICATION or GATT_EVENT_INDICATION
+ * @param value_handle
+ * @param size
+ * @param data
+ */
+#define GATT_EVENT_UNHANDLED_SERVER_VALUE                         0xAC
+
+/**
  * @format H2
  * @param handle
  * @param MTU

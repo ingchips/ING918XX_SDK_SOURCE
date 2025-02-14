@@ -357,13 +357,6 @@
           <state>$ING_SDK_ROOT$/src/StartUP/ing918</state>
           <state>$ING_SDK_ROOT$/src/Tools</state>
           <state>$ING_SDK_ROOT$/src</state>
-          <state>../../bundles/typical/inc</state>
-          <state>../../bundles/typical/inc/os</state>
-          <state>../../src/BSP</state>
-          <state>../../src/FWlib</state>
-          <state>../../src/StartUP/ing918</state>
-          <state>../../src/Tools</state>
-          <state>../../src</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
