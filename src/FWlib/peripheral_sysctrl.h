@@ -1215,6 +1215,14 @@ int SYSCTRL_Init(void);
  */
 void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles);
 
+/**
+ * @brief System reset
+ *
+ * This function resets the system with a watchdog, 
+ * and all registers are restored to their default state
+ */
+void SYSCTRL_Reset(void);
+
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
 #endif	/* __cplusplus */
