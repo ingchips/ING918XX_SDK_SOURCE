@@ -461,7 +461,7 @@ void ADC_VrefCalibration(void)
         }
     }
     data = 0;
-    if(cnt > 12 && cnt < ADC_FIFO_DEPTH){
+    if (cnt > 12 && cnt < ADC_FIFO_DEPTH) {
         cnt--;
         for (i = 1; i < cnt; i++) {
             data += array[i];
@@ -647,7 +647,7 @@ static void ADC_ftCalParaGet(void)
         ftCali->V12Data = p_factoryCali->v12_adc[0];
     if (ftCalPara.ver == 1)
         ftCali->V12Data -= 14;
-    if(ftCali->V12Data < 5800 || ftCali->V12Data > 6100)
+    if (ftCali->V12Data < 5800 || ftCali->V12Data > 6100)
     {
         ftCali->V12Data = 5960;
         ftCali->f = 0;

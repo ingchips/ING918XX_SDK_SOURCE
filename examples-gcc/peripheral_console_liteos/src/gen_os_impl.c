@@ -15,19 +15,19 @@
 #include "los_pm.h"
 
 #ifndef LOS_MAX_NEST_DEPTH
-#define LOS_MAX_NEST_DEPTH  10
+#define LOS_MAX_NEST_DEPTH 10
 #endif
 
 struct timer_user_data
 {
     void *user_data;
-    void (* timer_cb)(void *);
+    void (*timer_cb)(void *);
 };
 
 static void *port_malloc(uint32_t size)
 {
     void *ret_ptr;
-    ret_ptr =  LOS_MemAlloc(m_aucSysMem0, (size + 0x3) & ~0x3);
+    ret_ptr = LOS_MemAlloc(m_aucSysMem0, (size + 0x3) & ~0x3);
     return ret_ptr;
 }
 
@@ -38,13 +38,12 @@ static void port_free(void *mem)
 }
 
 gen_handle_t port_timer_create(
-        uint32_t timeout_in_ms,
-        void *user_data,
-        void (* timer_cb)(void *)
-)
+    uint32_t timeout_in_ms,
+    void *user_data,
+    void (*timer_cb)(void *))
 {
     UINT32 *id = (UINT32 *)port_malloc(sizeof(UINT32));
-    LOS_SwtmrCreate(LOS_MS2Tick(timeout_in_ms), LOS_SWTMR_MODE_NO_SELFDELETE, (SWTMR_PROC_FUNC)timer_cb, id, *(UINT32*)user_data);
+    LOS_SwtmrCreate(LOS_MS2Tick(timeout_in_ms), LOS_SWTMR_MODE_NO_SELFDELETE, (SWTMR_PROC_FUNC)timer_cb, id, *(UINT32 *)user_data);
     return (gen_handle_t)id;
 }
 
@@ -68,23 +67,21 @@ void port_timer_delete(gen_handle_t timer)
 }
 
 gen_handle_t port_task_create(
-        const char *name,
-        void (*entry)(void *),
-        void *parameter,
-        uint32_t stack_size,                    // stack size in bytes
-        enum gen_os_task_priority priority
-)
+    const char *name,
+    void (*entry)(void *),
+    void *parameter,
+    uint32_t stack_size, // stack size in bytes
+    enum gen_os_task_priority priority)
 {
     UINT32 taskId;
     TSK_INIT_PARAM_S initParam =
-    {
-        .uwArg = (UINT32)parameter,
-        .pcName = (char *)name,
-        .pfnTaskEntry = (TSK_ENTRY_FUNC)entry,
-        .uwStackSize = (stack_size + 7) & ~0x7,
-        .usTaskPrio = priority == GEN_TASK_PRIORITY_LOW ?
-                        OS_TASK_PRIORITY_HIGHEST + 7 : OS_TASK_PRIORITY_HIGHEST + 4,
-    };
+        {
+            .uwArg = (UINT32)parameter,
+            .pcName = (char *)name,
+            .pfnTaskEntry = (TSK_ENTRY_FUNC)entry,
+            .uwStackSize = (stack_size + 7) & ~0x7,
+            .usTaskPrio = priority == GEN_TASK_PRIORITY_LOW ? OS_TASK_PRIORITY_HIGHEST + 7 : OS_TASK_PRIORITY_HIGHEST + 4,
+        };
     LOS_TaskCreate(&taskId, &initParam);
     return (gen_handle_t)taskId;
 }
@@ -182,30 +179,30 @@ VOID OsStart(VOID)
 }
 
 static const gen_os_driver_t gen_os_driver =
-{
-    .timer_create = port_timer_create,
-    .timer_start = port_timer_start,
-    .timer_stop = port_timer_stop,
-    .timer_delete = port_timer_delete,
+    {
+        .timer_create = port_timer_create,
+        .timer_start = port_timer_start,
+        .timer_stop = port_timer_stop,
+        .timer_delete = port_timer_delete,
 
-    .task_create = port_task_create,
+        .task_create = port_task_create,
 
-    .queue_create = port_queue_create,
-    .queue_send_msg = port_queue_send_msg,
-    .queue_recv_msg = port_queue_recv_msg,
+        .queue_create = port_queue_create,
+        .queue_send_msg = port_queue_send_msg,
+        .queue_recv_msg = port_queue_recv_msg,
 
-    .event_create = port_event_create,
-    .event_set = port_event_set,
-    .event_wait = port_event_wait,
+        .event_create = port_event_create,
+        .event_set = port_event_set,
+        .event_wait = port_event_wait,
 
-    .malloc = port_malloc,
-    .free = port_free,
-    .enter_critical = port_enter_critical,
-    .leave_critical = port_leave_critical,
-    .os_start = OsStart,
-    .tick_isr = port_systick_handler,
-    .svc_isr = HalExcSvcCall,
-    .pendsv_isr = HalPendSV,
+        .malloc = port_malloc,
+        .free = port_free,
+        .enter_critical = port_enter_critical,
+        .leave_critical = port_leave_critical,
+        .os_start = OsStart,
+        .tick_isr = port_systick_handler,
+        .svc_isr = HalExcSvcCall,
+        .pendsv_isr = HalPendSV,
 };
 
 static struct
@@ -272,54 +269,54 @@ const gen_os_driver_t *os_impl_get_driver(void)
     return &gen_os_driver;
 }
 
-#define _SYSTICK_PRI    (*(uint8_t  *)(0xE000ED23UL))
+#define _SYSTICK_PRI (*(uint8_t *)(0xE000ED23UL))
 
 /* Constants required to manipulate the core.  Registers first... */
-#define portNVIC_SYSTICK_CTRL_REG			( * ( ( volatile uint32_t * ) 0xe000e010 ) )
-#define portNVIC_SYSTICK_LOAD_REG			( * ( ( volatile uint32_t * ) 0xe000e014 ) )
-#define portNVIC_SYSTICK_CURRENT_VALUE_REG	( * ( ( volatile uint32_t * ) 0xe000e018 ) )
-#define portNVIC_SYSPRI2_REG				( * ( ( volatile uint32_t * ) 0xe000ed20 ) )
-#define portNVIC_CCR_REG                    ( * ( ( volatile uint32_t * ) 0xE000ED14 ) )
+#define portNVIC_SYSTICK_CTRL_REG               (*((volatile uint32_t *)0xe000e010))
+#define portNVIC_SYSTICK_LOAD_REG               (*((volatile uint32_t *)0xe000e014))
+#define portNVIC_SYSTICK_CURRENT_VALUE_REG      (*((volatile uint32_t *)0xe000e018))
+#define portNVIC_SYSPRI2_REG                    (*((volatile uint32_t *)0xe000ed20))
+#define portNVIC_CCR_REG                        (*((volatile uint32_t *)0xE000ED14))
 /* ...then bits in the registers. */
-#define portNVIC_SYSTICK_CLK_BIT	        ( 0UL << 2UL )
-#define portNVIC_SYSTICK_INT_BIT			( 1UL << 1UL )
-#define portNVIC_SYSTICK_ENABLE_BIT			( 1UL << 0UL )
-#define portNVIC_SYSTICK_COUNT_FLAG_BIT		( 1UL << 16UL )
-#define portNVIC_PENDSVCLEAR_BIT 			( 1UL << 27UL )
-#define portNVIC_PEND_SYSTICK_CLEAR_BIT		( 1UL << 25UL )
-#define portSY_FULL_READ_WRITE              15
+#define portNVIC_SYSTICK_CLK_BIT                (0UL << 2UL)
+#define portNVIC_SYSTICK_INT_BIT                (1UL << 1UL)
+#define portNVIC_SYSTICK_ENABLE_BIT             (1UL << 0UL)
+#define portNVIC_SYSTICK_COUNT_FLAG_BIT         (1UL << 16UL)
+#define portNVIC_PENDSVCLEAR_BIT                (1UL << 27UL)
+#define portNVIC_PEND_SYSTICK_CLEAR_BIT         (1UL << 25UL)
+#define portSY_FULL_READ_WRITE                  15
 
-#define RTC_CYCLES_PER_TICK                 (RTC_CLK_FREQ / LOSCFG_BASE_CORE_TICK_PER_SECOND)
-#define MAXIMUM_SUPPRESSED_TICKS            (0xffffff / RTC_CYCLES_PER_TICK)
-#define EXPECTED_IDLE_TIME_BEFORE_SLEEP     2
-#define MISSED_COUNTS_FACTOR                15
+#define RTC_CYCLES_PER_TICK                     (RTC_CLK_FREQ / LOSCFG_BASE_CORE_TICK_PER_SECOND)
+#define MAXIMUM_SUPPRESSED_TICKS                (0xffffff / RTC_CYCLES_PER_TICK)
+#define EXPECTED_IDLE_TIME_BEFORE_SLEEP         2
+#define MISSED_COUNTS_FACTOR                    15
 
-#if  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#define STOPPED_TIMER_COMPENSATION          (MISSED_COUNTS_FACTOR / ( SYSCTRL_GetPLLClk() / RTC_CLK_FREQ ))
-#define API_EXPECTED_TICK_FREQ              1024
-#elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-#define STOPPED_TIMER_COMPENSATION          (MISSED_COUNTS_FACTOR / ( PLL_CLK_FREQ / RTC_CLK_FREQ ))
-#define API_EXPECTED_TICK_FREQ              1000
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define STOPPED_TIMER_COMPENSATION              (MISSED_COUNTS_FACTOR / (SYSCTRL_GetPLLClk() / RTC_CLK_FREQ))
+#define API_EXPECTED_TICK_FREQ                  1024
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#define STOPPED_TIMER_COMPENSATION              (MISSED_COUNTS_FACTOR / (PLL_CLK_FREQ / RTC_CLK_FREQ))
+#define API_EXPECTED_TICK_FREQ                  1000
 #else
 #error "unknown chip"
 #endif
 
-#define TICK_NUM_SCALE                      (API_EXPECTED_TICK_FREQ / LOSCFG_BASE_CORE_TICK_PER_SECOND)
+#define TICK_NUM_SCALE                          (API_EXPECTED_TICK_FREQ / LOSCFG_BASE_CORE_TICK_PER_SECOND)
 
 void OsSysTickTimerInit(UINT32 reloadValue)
 {
-    portNVIC_CCR_REG = 0x200;//remove div 0 and unalign falut error;
+    portNVIC_CCR_REG = 0x200; // remove div 0 and unalign falut error;
 
     if ((reloadValue - 1UL) > 0xffffff)
     {
         return;
     }
     portNVIC_SYSTICK_CTRL_REG = 0;
-    portNVIC_SYSTICK_LOAD_REG  = (uint32_t)(reloadValue - 1UL);
-    portNVIC_SYSTICK_CURRENT_VALUE_REG   = 0UL;
-    portNVIC_SYSTICK_CTRL_REG  =    portNVIC_SYSTICK_CLK_BIT   |
-                                    portNVIC_SYSTICK_INT_BIT   |
-                                    portNVIC_SYSTICK_ENABLE_BIT;
+    portNVIC_SYSTICK_LOAD_REG = (uint32_t)(reloadValue - 1UL);
+    portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
+    portNVIC_SYSTICK_CTRL_REG = portNVIC_SYSTICK_CLK_BIT |
+                                portNVIC_SYSTICK_INT_BIT |
+                                portNVIC_SYSTICK_ENABLE_BIT;
 }
 
 #ifdef LOSCFG_KERNEL_LOWPOWER
@@ -328,54 +325,50 @@ STATIC VOID UserLpTimeStart(UINT64 nextResponseTime)
     UINT32 intSave;
 
     intSave = LOS_IntLock();
-    g_SleepTime = nextResponseTime/(LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
-    if(g_SleepTime < MISSED_COUNTS_FACTOR)
+    g_SleepTime = nextResponseTime / (LOSCFG_BASE_CORE_TICK_RESPONSE_MAX);
+    if (g_SleepTime < MISSED_COUNTS_FACTOR)
     {
         g_SleepTime = 0;
         __WFI();
+        LOS_IntRestore(intSave);
         return;
     }
-    
+
     g_SleepTime = platform_pre_suppress_ticks_and_sleep_processing(g_SleepTime);
     LOS_IntRestore(intSave);
 }
 
 STATIC VOID UserLpTimeStop(VOID)
 {
-
 }
 
 STATIC UINT64 UserLpTimeGet(VOID)
 {
-    // if(g_SleepTime < MISSED_COUNTS_FACTOR)
-    //     return 0;
     return g_SleepTime * LOSCFG_BASE_CORE_TICK_RESPONSE_MAX;
 }
 
-STATIC VOID UserKernelTimerLock(VOID) 
+STATIC VOID UserKernelTimerLock(VOID)
 {
-    
 }
 
 STATIC VOID UserKernelTimerUnlock(VOID)
 {
-    
 }
 
 STATIC UINT32 UserDeepSleepSuspend(VOID)
 {
     UINT32 intSave;
     uint32_t ulCompleteTickPeriods;
-    
-    if(g_SleepTime == 0)
+
+    if (g_SleepTime == 0)
     {
         return 0;
     }
     intSave = LOS_IntLock();
-    portNVIC_SYSTICK_CTRL_REG &= ~portNVIC_SYSTICK_ENABLE_BIT;//close systick
+    portNVIC_SYSTICK_CTRL_REG &= ~portNVIC_SYSTICK_ENABLE_BIT; // close systick
     // calculate the expected ticks
     uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + (RTC_CYCLES_PER_TICK * (g_SleepTime - 1UL));
-    if( ulReloadValue > STOPPED_TIMER_COMPENSATION )
+    if (ulReloadValue > STOPPED_TIMER_COMPENSATION)
     {
         ulReloadValue -= STOPPED_TIMER_COMPENSATION;
     }
@@ -386,20 +379,20 @@ STATIC UINT32 UserDeepSleepSuspend(VOID)
     platform_pre_sleep_processing();
     platform_post_sleep_processing();
 
-    portNVIC_SYSTICK_CTRL_REG = ( portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT );
-    if( ( portNVIC_SYSTICK_CTRL_REG & portNVIC_SYSTICK_COUNT_FLAG_BIT ) != 0 )
+    portNVIC_SYSTICK_CTRL_REG = (portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT);
+    if ((portNVIC_SYSTICK_CTRL_REG & portNVIC_SYSTICK_COUNT_FLAG_BIT) != 0)
     {
         uint32_t ulCalculatedLoadValue;
 
         ulCalculatedLoadValue = (RTC_CYCLES_PER_TICK - 1UL) - (ulReloadValue - portNVIC_SYSTICK_CURRENT_VALUE_REG);
 
-        if ((ulCalculatedLoadValue < STOPPED_TIMER_COMPENSATION ) || ( ulCalculatedLoadValue > RTC_CYCLES_PER_TICK))
+        if ((ulCalculatedLoadValue < STOPPED_TIMER_COMPENSATION) || (ulCalculatedLoadValue > RTC_CYCLES_PER_TICK))
         {
             ulCalculatedLoadValue = (RTC_CYCLES_PER_TICK - 1UL);
         }
 
         portNVIC_SYSTICK_LOAD_REG = ulCalculatedLoadValue;
-        ulCompleteTickPeriods = g_SleepTime  - 1UL;
+        ulCompleteTickPeriods = g_SleepTime - 1UL;
     }
     else
     {
@@ -411,11 +404,11 @@ STATIC UINT32 UserDeepSleepSuspend(VOID)
 
     portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
     portNVIC_SYSTICK_CTRL_REG |= portNVIC_SYSTICK_ENABLE_BIT;
-    //update tick
+    // update tick
 
     portNVIC_SYSTICK_LOAD_REG = RTC_CYCLES_PER_TICK - 1UL;
     g_SleepTime = ulCompleteTickPeriods;
-    
+
     LOS_IntRestore(intSave);
 
     return 0;
@@ -432,19 +425,20 @@ STATIC VOID UserDeepSleepResume(VOID)
 
 STATIC UINT32 UserDeviceSuspend(UINT32 mode)
 {
-    (UINT32)mode;
+    (UINT32) mode;
     return 0;
 }
 
 STATIC VOID UserDeviceResume(UINT32 mode)
 {
-    (UINT32)mode;
+    (UINT32) mode;
 }
 #endif
 
 extern UINT8 *m_aucSysMem0;
 void platform_get_heap_status(platform_heap_status_t *status)
-{   static uint16_t bytes_minimum_ever_free = LOSCFG_SYS_HEAP_SIZE;
+{
+    static uint16_t bytes_minimum_ever_free = LOSCFG_SYS_HEAP_SIZE;
     LOS_MEM_POOL_STATUS s;
     UINT32 used_size, pool_size;
 
@@ -460,4 +454,3 @@ void platform_get_heap_status(platform_heap_status_t *status)
         status->bytes_free = 0;
     status->bytes_minimum_ever_free = bytes_minimum_ever_free;
 }
-
