@@ -432,9 +432,9 @@ static void ADC_VrefRegister(float VP, float VN)
 
 void ADC_VrefCalibration(void)
 {
-    uint8_t i, j, cnt = 0;
-    uint32_t data;
-    uint16_t array[ADC_FIFO_DEPTH] = {0};
+    uint32_t sum = 0;
+    uint32_t count = 0;
+    uint32_t max_val, min_val, data;
 
     if (!SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC)) return;
     if (!ftCali) return;
@@ -446,38 +446,31 @@ void ADC_VrefCalibration(void)
     while (!ADC_GetIntStatus());
     ADC_Start(0);
 
-    ADC_PopFifoData();
     while (!ADC_GetFifoEmpty()) {
-        array[cnt] = ADC_GetData(ADC_PopFifoData());
-        cnt++;
-    }
-    for (i = 0; i < cnt; i++) {
-        for (j = i; j < cnt; j++) {
-            if (array[j] > array[i]) {
-                data = array[i];
-                array[i] = array[j];
-                array[j] = data;
+        data = ADC_GetData(ADC_PopFifoData());
+        if (count == 0) {
+            max_val = data;
+            min_val = data;
+        } else {
+            if (data > max_val) {
+                max_val = data;
+            }
+            if (data < min_val) {
+                min_val = data;
             }
         }
-    }
-    data = 0;
-    if (cnt > 12 && cnt < ADC_FIFO_DEPTH) {
-        cnt--;
-        for (i = 1; i < cnt; i++) {
-            data += array[i];
-        }
         
-        data /= (cnt - 1);
-        if(data) {
-            ADC_VrefRegister(ftCali->V12Data * ftCali->Vp / data * 0.00001f, 0.f);
-        }
-        ADC_EnableChannel(ADC_CH_9, 0);
-        ADC_IntEnable(0);
+        sum += data;
+        count++; 
     }
-    else {
-        ADC_EnableChannel(ADC_CH_9, 0);
-        ADC_IntEnable(0);
+
+    data = (sum - max_val - min_val) / (count - 2);
+
+    if(data) {
+        ADC_VrefRegister(ftCali->V12Data * ftCali->Vp / data * 0.00001f, 0.f);
     }
+    ADC_EnableChannel(ADC_CH_9, 0);
+    ADC_IntEnable(0);
     
 }
 

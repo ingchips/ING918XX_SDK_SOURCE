@@ -305,7 +305,13 @@ const gen_os_driver_t *os_impl_get_driver(void)
 
 void OsSysTickTimerInit(UINT32 reloadValue)
 {
-    portNVIC_CCR_REG = 0x200; // remove div 0 and unalign falut error;
+    // Set CCR register value to default
+    #if (__CORTEX_M == 0x04U)
+    portNVIC_CCR_REG = 0x200; 
+    #elif (__CORTEX_M == 0x03U) 
+    portNVIC_CCR_REG = 0x0; 
+    #endif
+    
 
     if ((reloadValue - 1UL) > 0xffffff)
     {
