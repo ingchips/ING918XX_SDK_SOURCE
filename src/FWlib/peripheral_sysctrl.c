@@ -1,5 +1,6 @@
 #include "ingsoc.h"
 #include "peripheral_sysctrl.h"
+#include "peripheral_timer.h"
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
@@ -107,6 +108,13 @@ void SYSCTRL_PAEnable(void)
     io_write(0x40070044,  io_read(0x40070044) | (0xf<<8) | (0xf<<24));
     io_write(0x40090064, 0x400);
     io_write(0x40090000, (io_read(0x40090000) & (~(0x3FF<<16))) | (70 << 16)); // adjust_rf_txen_rxen_duty
+}
+
+void SYSCTRL_Reset(void)
+{
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_WDT);
+    TMR_WatchDogEnable(1);
+    while(1);
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
@@ -1167,6 +1175,13 @@ int SYSCTRL_Init(void)
     if (i >= sizeof(p->vcore) / sizeof(p->vcore[0])) return 3;
 
     return 0;
+}
+
+void SYSCTRL_Reset(void)
+{
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_WDT);
+    TMR_WatchDogEnable3(WDT_INTTIME_INTERVAL_2MS, WDT_RSTTIME_INTERVAL_4MS, 0);
+    while(1);
 }
 
 #endif
