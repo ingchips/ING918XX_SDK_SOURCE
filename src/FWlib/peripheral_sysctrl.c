@@ -1234,6 +1234,11 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 12);
         set_reg_bit(APB_SYSCTRL->CguCfg + 2, v, 0);
         break;
+    case SYSCTRL_ITEM_AHB_SPI0      :
+        set_reg_bit(APB_SYSCTRL->CguCfg + 2, v, 12);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 13);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 6);
+        break;
     case SYSCTRL_ITEM_APB_SPI1      :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 14);
         set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 7);
@@ -1484,6 +1489,26 @@ uint32_t SYSCTRL_GetSlowClk(void)
         // TODO: RC should be tune to a specific frequency
         // 24M is recommended?
         return 24000000;
+    }
+}
+
+void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
+{
+    switch (port)
+    {
+    case SPI_PORT_0:
+        set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode == 0 ? 0 : 1, 21);
+        if (mode >= SYSCTRL_CLK_PLL_DIV_1)
+        {
+            set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 20);
+            set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
+        }
+        break;
+    case SPI_PORT_1:
+        set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, 22);
+        break;
+    default:
+        break;
     }
 }
 
