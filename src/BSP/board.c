@@ -540,10 +540,9 @@ void set_buzzer_freq(uint16_t freq)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PWM_SetupSimple(BUZZ_PWM_CH, freq, 50);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PWM_SetupSimple(0, freq, 50);
+    PWM_SetupSimple(BUZZ_PWM_CH, freq, 50);
 #endif
 }
-
 
 #else
 
