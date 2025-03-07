@@ -112,7 +112,9 @@ void SYSCTRL_PAEnable(void)
 
 void SYSCTRL_Reset(void)
 {
-    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_WDT);
+    SYSCTRL_ClearClkGate(SYSCTRL_ClkGate_APB_WDT);
+    // watchdog may be locked, so unlock it by disabling it.
+    TMR_WatchDogDisable();
     TMR_WatchDogEnable(1);
     while(1);
 }

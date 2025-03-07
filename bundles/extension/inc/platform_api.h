@@ -368,7 +368,10 @@ void platform_install_isr_stack(void *top);
  ****************************************************************************************
  * @brief Reset platform.
  *
- * Note: when calling this function, the code after it will not be executed.
+ * Note:
+ * - When calling this function, the code after it will not be executed.
+ * - This function resets peripherals followed by CPU reset.
+ * - See also `SYSCTRL_Reset()`.
  ****************************************************************************************
  */
 void platform_reset(void);
