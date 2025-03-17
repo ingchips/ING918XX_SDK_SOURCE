@@ -71,7 +71,6 @@ typedef int (*att_write_callback_t)(hci_con_handle_t con_handle, uint16_t attrib
 /* API_START */
 /*
  * @brief setup ATT server
- * @param db              attribute database in att server
  * @param read_callback   see function type @link att_read_callback_t() @endlink
  * @param write_callback  see function type @link att_write_callback_t() @endlink
  */
