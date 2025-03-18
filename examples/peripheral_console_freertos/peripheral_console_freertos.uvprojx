@@ -445,6 +445,11 @@
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
             </File>
             <File>
+              <FileName>peripheral_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
+            </File>
+            <File>
               <FileName>peripheral_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_gpio.c</FilePath>

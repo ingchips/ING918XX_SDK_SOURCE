@@ -2110,6 +2110,9 @@
       <name>$PROJ_DIR$\..\..\src\FWlib\peripheral_sysctrl.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\src\FWlib\peripheral_timer.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\src\FWlib\peripheral_uart.c</name>
     </file>
   </group>
