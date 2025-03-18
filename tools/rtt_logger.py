@@ -1,23 +1,15 @@
-import sys
 import ctypes
 import logging
 import argparse
 import time
 
-import colorama
-from colorama import (Fore, Style)
 import logging
-from shutil import get_terminal_size
-from typing import (IO, Optional)
 
 import pyocd.utility.color_log
 from pyocd.core.helpers import ConnectHelper
-from pyocd.core.memory_map import MemoryMap, MemoryRegion, MemoryType
 from pyocd.core.soc_target import SoCTarget
-from pyocd.utility.cmdline import convert_session_options, int_base_0
 from pyocd.probe import aggregator
 from pyocd.utility.kbhit import KBHit
-from pyocd.utility.color_log import ColorFormatter
 
 from ctypes import Structure, c_char, c_int32, c_uint32, sizeof
 

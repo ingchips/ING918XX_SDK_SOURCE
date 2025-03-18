@@ -35,7 +35,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 {
     uint8_t flag = 0;
     uint8_t event = hci_event_packet_get_type(packet);
-    const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
 
     if (size > sizeof(hci_event_copy))
@@ -151,7 +150,7 @@ int bt_helper_adv_start(const struct bt_le_adv_param *param,
                             param->interval_min, param->interval_max,
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
                             BD_ADDR_TYPE_LE_RANDOM,    // Own_Address_Type
-                            param->peer ? param->peer->type : BD_ADDR_TYPE_LE_PUBLIC, // Peer_Address_Type (ignore)
+                            param->peer ? (bd_addr_type_t)param->peer->type : BD_ADDR_TYPE_LE_PUBLIC, // Peer_Address_Type (ignore)
                             param->peer ? param->peer->a : NULL,                      // Peer_Address      (ignore)
                             policy,                    // Advertising_Filter_Policy
                             0x00,                      // Advertising_Tx_Power

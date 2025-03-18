@@ -218,7 +218,7 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
  * @param[in]  conn_handle      handle of an existing connection
  * @param[in]  delta            delta of tx power in dB
  *                              Note: A positive value indicates a request to increase the
- *                                    transmit power level; negtive to decrease the transmit
+ *                                    transmit power level; negative to decrease the transmit
  *                                    power level.
  ****************************************************************************************
  */
@@ -459,7 +459,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *
  * @param[in]   packet              the packet object
  * @param[in]   tx_power            tx power in dBm (ignored in Rx)
- * @param[in]   phy_channel_id      physical channel ID (0: 2402MHz, 1: 2404MHz, ...)
+ * @param[in]   rf_channel_id       RF channel ID (0: 2402MHz, 1: 2404MHz, ...)
  * @param[in]   phy                 PHY
  *                                  For Tx: 1: 1M, 2: 2M, 3: S8, 4: S2.
  *                                  For Rx, 1: 1M, 2: 2M, 3: Coded.
@@ -470,7 +470,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  */
 // int ll_raw_packet_set_param(struct ll_raw_packet *packet,
 //                           int8_t tx_power,
-//                           int8_t phy_channel_id,
+//                           int8_t rf_channel_id,
 //                           uint8_t phy,
 //                           uint32_t access_addr,
 //                           uint32_t crc_init);
@@ -1033,7 +1033,7 @@ typedef struct
  *
  * @param packet                    The burst packet object.
  * @param tx_power                  Transmission power in dBm.
- * @param phy_channel_id            Physical channel ID (0: 2402MHz, 1: 2404MHz, ...)
+ * @param rf_channel_id             RF channel ID (0: 2402MHz, 1: 2404MHz, ...)
  * @param phy                       PHY (1: 1M, 2: 2M)
  * @param auto_retrans_cnt          Maximum automatic retransmission count when ack is not received.
  * @param addr                      Address.
@@ -1109,7 +1109,7 @@ typedef struct
  *
  * @param packet            Pointer to the raw packet structure.
  * @param tx_power          Transmission power in dBm.
- * @param phy_channel_id    Physical channel ID (0: 2402MHz, 1: 2404MHz, ...)
+ * @param rf_channel_id     RF channel ID (0: 2402MHz, 1: 2404MHz, ...)
  * @param phy               PHY (1: 1M, 2: 2M)
  * @param lanes             Pointer to configurations of each lane.
  * @return                  0 on success, non-zero on failure.
@@ -1345,7 +1345,7 @@ void ll_set_adv_access_address(uint32_t acc_addr);
  *        Note:
  *          * This API can only be called after Link Layer got initialized.
  *          * This API can be used to achieve a non-standard smaller connection inteval (< 1ms).
- *          * A non-standard interval may cause inconsistant within HCI commands/events.
+ *          * A non-standard interval may cause inconsistent within HCI commands/events.
  *
  * @param[in]  unit         connection interval unit in micro-seconds. (default: 1250us)
  ****************************************************************************************

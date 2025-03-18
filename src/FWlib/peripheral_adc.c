@@ -374,6 +374,10 @@ SADC_channelId ADC_GetDataChannel(const uint32_t data)
     }
     return (SADC_channelId)(ADC_RIGHT_SHIFT(data, 14) & ADC_MK_MASK(4));
 }
+uint16_t ADC_GetRawData(const uint32_t data)
+{
+    return (data & ADC_MK_MASK(14));
+}
 uint16_t ADC_GetData(const uint32_t data)
 {
     if (!ftCali || !ftCali->f) return (data & ADC_MK_MASK(14));
@@ -428,6 +432,10 @@ static void ADC_VrefRegister(float VP, float VN)
 
 void ADC_VrefCalibration(void)
 {
+    uint32_t sum = 0;
+    uint32_t count = 0;
+    uint32_t max_val, min_val, data;
+
     if (!SYSCTRL_GetClk(SYSCTRL_ITEM_APB_ADC)) return;
     if (!ftCali) return;
     ADC_DisableAllChannels();
@@ -437,32 +445,33 @@ void ADC_VrefCalibration(void)
     ADC_Start(1);
     while (!ADC_GetIntStatus());
     ADC_Start(0);
-    uint8_t i, j;
-    uint32_t data, cnt = 0;
-    uint16_t array[14] = {0};
-    ADC_PopFifoData();
+
     while (!ADC_GetFifoEmpty()) {
-        array[cnt] = ADC_GetData(ADC_PopFifoData());
-        cnt++;
-    }
-    for (i = 0; i < cnt; i++) {
-        for (j = i; j < cnt; j++) {
-            if (array[j] > array[i]) {
-                data = array[i];
-                array[i] = array[j];
-                array[j] = data;
+        data = ADC_GetData(ADC_PopFifoData());
+        if (count == 0) {
+            max_val = data;
+            min_val = data;
+        } else {
+            if (data > max_val) {
+                max_val = data;
+            }
+            if (data < min_val) {
+                min_val = data;
             }
         }
+        
+        sum += data;
+        count++; 
     }
-    data = 0;
-    cnt--;
-    for (i = 1; i < cnt; i++) {
-        data += array[i];
+
+    data = (sum - max_val - min_val) / (count - 2);
+
+    if(data) {
+        ADC_VrefRegister(ftCali->V12Data * ftCali->Vp / data * 0.00001f, 0.f);
     }
-    data /= (cnt - 1);
-    ADC_VrefRegister(ftCali->V12Data * ftCali->Vp / data * 0.00001f, 0.f);
     ADC_EnableChannel(ADC_CH_9, 0);
     ADC_IntEnable(0);
+    
 }
 
 static uint16_t ADC_FtCal(const SADC_ftChPara_t *chPara, const uint32_t data)
@@ -631,7 +640,7 @@ static void ADC_ftCalParaGet(void)
         ftCali->V12Data = p_factoryCali->v12_adc[0];
     if (ftCalPara.ver == 1)
         ftCali->V12Data -= 14;
-    if(ftCali->V12Data < 5800 || ftCali->V12Data > 6100)
+    if (ftCali->V12Data < 5800 || ftCali->V12Data > 6100)
     {
         ftCali->V12Data = 5960;
         ftCali->f = 0;

@@ -49,6 +49,7 @@ bd_addr_t scaned_advertisers[MAX_ADVERTISERS] = {0};
 int advertiser_num = 0;
 int is_targeted_scan = 0;
 uint64_t last_seen = 0;
+static uint16_t custom_mtu = 0;
 
 struct gatt_client_discoverer *discoverer = NULL;
 struct btstack_synced_runner *synced_runner = NULL;
@@ -364,13 +365,14 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             uint16_t config = GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
             char_node_t *c = find_char(size);
             desc_node_t *d = find_config_desc(c);
+            uint8_t reg_cb = (uint8_t)(uintptr_t)data;
             if (NULL == d)
             {
                 iprintf("CHAR/DESC not found: %d\n", size);
                 break;
             }
 
-            if (c->notification == NULL)
+            if (reg_cb && (c->notification == NULL))
             {
                 c->notification = (gatt_client_notification_t *)malloc(sizeof(gatt_client_notification_t));
                 gatt_client_listen_for_characteristic_value_updates(
@@ -492,6 +494,12 @@ void conn_to_slave()
                                               phy_configs);
 }
 
+void set_mtu(uint16_t mtu)
+{
+    custom_mtu = mtu;
+    btstack_config(mtu ? STACK_GATT_CLIENT_DISABLE_MTU_EXCHANGE : 0);
+}
+
 void start_scan(int targeted)
 {
     if (targeted)
@@ -573,9 +581,9 @@ void wor_value_of_char(int handle, block_value_t *value)
     btstack_push_user_msg(USER_MSG_WOR_CHAR, value, (uint16_t)handle);
 }
 
-void sub_to_char(int handle)
+void sub_to_char(int handle, uint8_t reg_cb)
 {
-    btstack_push_user_msg(USER_MSG_SUB_TO_CHAR, NULL, (uint16_t)handle);
+    btstack_push_user_msg(USER_MSG_SUB_TO_CHAR, (void *)(uintptr_t)reg_cb, (uint16_t)handle);
 }
 
 void unsub_to_char(int handle)
@@ -1033,6 +1041,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 else
                 {
                     mas_conn_handle = complete->handle;
+                    if (custom_mtu > 0)
+                        gatt_client_exchange_mtu_request(mas_conn_handle, custom_mtu);
                 }
 
                 if (reconnecting_after_aborted)
@@ -1292,6 +1302,17 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case GATT_EVENT_MTU:
         iprintf("GATT client MTU updated: %d\n", gatt_event_mtu_get_mtu(packet));
+        break;
+
+    case GATT_EVENT_UNHANDLED_SERVER_VALUE:
+        {
+            iprintf("GATT unhandled server %s: conn = %d, handle = %d\n\t",
+                gatt_event_unhandled_server_value_get_type(packet) == GATT_EVENT_NOTIFICATION ? "notification" : "indication",
+                channel,
+                gatt_event_unhandled_server_value_get_value_handle(packet));
+            printf_hexdump(gatt_event_unhandled_server_value_get_data(packet), gatt_event_unhandled_server_value_get_size(packet));
+            iprintf("\n");
+        }
         break;
 
     case ATT_EVENT_CAN_SEND_NOW:
