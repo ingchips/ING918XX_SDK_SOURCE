@@ -81,19 +81,19 @@ int port_queue_recv_msg(gen_handle_t queue, void *msg)
     struct queue_info *p = (struct queue_info *)queue;
     rt_err_t err = rt_mq_recv(p->handle, msg, p->msg_size, RT_WAITING_FOREVER);
     return err == RT_EOK ? 0 : 1;
-}    
+}
 
 gen_handle_t port_event_create()
 {
     return rt_event_create(NULL, RT_IPC_FLAG_FIFO);
-}    
+}
 
 // return 0 if msg received; otherwise failed (timeout)
 int port_event_wait(gen_handle_t event)
 {
     rt_err_t err = rt_event_recv((rt_event_t)event, 1, RT_EVENT_FLAG_AND | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, RT_NULL);
     return err == RT_EOK ? 0 : 1;
-}    
+}
 
 // event_set(event) will release the task in waiting.
 void port_event_set(gen_handle_t event)
@@ -161,7 +161,7 @@ uint32_t _SysTick_Config(rt_uint32_t ticks)
     }
 
     _SYSTICK_PRI = 0xFF;
-    portNVIC_SYSTICK_LOAD_REG = ticks - 1;    
+    portNVIC_SYSTICK_LOAD_REG = ticks - 1;
     portNVIC_SYSTICK_CURRENT_VALUE_REG  = 0;
     portNVIC_SYSTICK_CTRL_REG = portNVIC_SYSTICK_INT_BIT | portNVIC_SYSTICK_ENABLE_BIT | portNVIC_SYSTICK_CLK_BIT;
 
@@ -185,7 +185,7 @@ static void SVC_Handler(void)
 static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
 {
     uint32_t ulCompleteTickPeriods;
-    
+
     portNVIC_SYSTICK_CTRL_REG &= ~portNVIC_SYSTICK_ENABLE_BIT;
 
     uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + (RTC_CYCLES_PER_TICK * (expected_ticks - 1UL));
@@ -199,7 +199,7 @@ static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
     portNVIC_SYSTICK_LOAD_REG = ulReloadValue;
     portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
     portNVIC_SYSTICK_CTRL_REG |= portNVIC_SYSTICK_ENABLE_BIT;
-    
+
     platform_pre_sleep_processing();
     platform_post_sleep_processing();
 
@@ -249,7 +249,7 @@ void rt_system_power_manager(void)
 {
 #ifdef POWER_SAVING
     rt_tick_t timeout_tick;
-   
+
     timeout_tick = rt_timer_next_timeout_tick();
     if (timeout_tick != RT_TICK_MAX)
         timeout_tick = timeout_tick - rt_tick_get();
@@ -262,15 +262,15 @@ void rt_system_power_manager(void)
     timeout_tick = platform_pre_suppress_ticks_and_sleep_processing(timeout_tick);
     if (timeout_tick < EXPECTED_IDLE_TIME_BEFORE_SLEEP)
         return;
-    
+
     rt_enter_critical();
-    
+
     uint32_t delta_ticks = _rt_suppress_ticks_and_sleep(timeout_tick);
 
     rt_exit_critical();
-    
+
     platform_os_idle_resumed_hook();
-    
+
     if (delta_ticks)
         rt_timer_check();
 #endif
@@ -298,17 +298,17 @@ const gen_os_driver_t gen_os_driver =
     .timer_start = port_timer_start,
     .timer_stop = port_timer_stop,
     .timer_delete = port_timer_delete,
-    
+
     .task_create = port_task_create,
-    
+
     .queue_create = port_queue_create,
     .queue_send_msg = port_queue_send_msg,
     .queue_recv_msg = port_queue_recv_msg,
-    
+
     .event_create = port_event_create,
     .event_set = port_event_set,
     .event_wait = port_event_wait,
-    
+
     .malloc = port_malloc,
     .free = rt_free,
     .enter_critical = port_enter_critical,
@@ -324,7 +324,7 @@ const gen_os_driver_t *os_impl_get_driver(void)
     static uint8_t heap[RT_THREAD_HEAP_SIZE] = {0};
 
     rt_hw_interrupt_disable();
-    
+
     rt_system_heap_init(heap, heap + sizeof(heap));
 
     /* timer system initialization */
