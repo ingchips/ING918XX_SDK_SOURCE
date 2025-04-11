@@ -27,7 +27,7 @@ int app_main()
     platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4500);
 #endif
 
-    platform_config(PLATFORM_CFG_POWER_SAVING, 0);
+    platform_config(PLATFORM_CFG_POWER_SAVING, 1);
 
     return (uintptr_t)os_impl_get_driver();
 }

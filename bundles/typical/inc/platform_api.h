@@ -111,6 +111,7 @@ typedef enum
     // return bits combination of `PLATFORM_ALLOW_xxx`
     // return 0 if deep sleep is not allowed now; else deep sleep is allowed
     // e.g. when peripherals still have data to process (UART is tx buffer not empty)
+    // see also `PLATFORM_CB_EVT_BEFORE_DEEP_SLEEP`
     PLATFORM_CB_EVT_QUERY_DEEP_SLEEP_ALLOWED,
 
     // when hard fault occurs
@@ -155,6 +156,12 @@ typedef enum
     //      * `PLATFORM_CB_EVT_PROFILE_INIT` is ignored.
     // Note: param (void *data) is casted from (const platform_hci_recv_t *).
     PLATFORM_CB_EVT_HCI_RECV,
+
+    // Before entering deep sleep, platform will call this callback to notify
+    // APP. Apps can take this chance to configure peripherals.
+    // This function shall be simple and return as soon as possible.
+    // Note: param (void *data) is casted from `platform_sleep_category_b_t`.
+    PLATFORM_CB_EVT_BEFORE_DEEP_SLEEP,
 
     PLATFORM_CB_EVT_MAX
 } platform_evt_callback_type_t;

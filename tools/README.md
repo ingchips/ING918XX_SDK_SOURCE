@@ -134,3 +134,31 @@ python rtt_logger.py -RTTSearchRanges "0x2000XXXX 0xYYYY" log_file
 `Ranges` is specified as `start` address and `size`, for example
 "0x2000XXXX 0xYYYY" tells this tool to search for RTT in the memory range
 from `0x2000XXXX` to `(0x2000XXXX + 0xYYYY)`.
+
+### Add Jlink and PyOCD support
+
+Use the ingchips_packs_addon.py script to install Jlink and PyOCD support. You can use the -h parameter to get help on how to use it.
+
+```shell
+python ingchips_packs_addon.py -h
+```
+
+Example:
+Jlink versions prior to V7.62 add device support using the following command:
+
+```shell
+python ingchips_packs_addon.py -t jlink_v6 -tp "/path/to/sdk" -p "/path/to/jlink_path"
+```
+
+Versions of Jlink after V7.62 use the following command to add device support:
+
+```shell
+python ingchips_packs_addon.py -t jlink_v7 -tp "/path/to/sdk"
+```
+
+You must run `pycod pack update` before pyocd can install the pack.
+To install PyOCD pack, use the following command:
+
+```shell
+python ingchips_packs_addon.py -t pyocd -tp "/path/to/sdk"
+```
