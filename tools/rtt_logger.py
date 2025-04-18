@@ -137,30 +137,47 @@ def run(FLAGS):
                 data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
                 up = SEGGER_RTT_BUFFER_UP.from_buffer(bytearray(data))
 
+                # Initialize error counter
+                error_count = 0
+                MAX_ERRORS = 10
+
                 if up.WrOff == up.RdOff:
                     if kb.kbhit():
                         LOG.info("Abort...")
                         break
+                    time.sleep(0.001)  # Short delay to prevent busy waiting
+                    continue
+
+                # Validate buffer pointers
+                if up.WrOff >= up.SizeOfBuffer or up.RdOff >= up.SizeOfBuffer:
+                    error_count += 1
+                    LOG.error(f"Invalid buffer pointers - WrOff: {up.WrOff}, RdOff: {up.RdOff}, Size: {up.SizeOfBuffer}")
+                    if error_count >= MAX_ERRORS:
+                        raise Exception("Too many buffer pointer errors")
+                    time.sleep(0.01)
+                    continue
 
                 if up.WrOff > up.RdOff:
-                    """
-                    |oooooo|xxxxxxxxxxxx|oooooo|
-                    0    rdOff        WrOff    SizeOfBuffer
-                    """
-                    data = target.read_memory_block8(up.pBuffer + up.RdOff, up.WrOff - up.RdOff)
+                    # Normal case - read contiguous block
+                    read_size = up.WrOff - up.RdOff
+                    data = target.read_memory_block8(up.pBuffer + up.RdOff, read_size)
                     target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
 
                 elif up.WrOff < up.RdOff:
-                    """
-                    |xxxxxx|oooooooooooo|xxxxxx|
-                    0    WrOff        RdOff    SizeOfBuffer
-                    """
-                    data = target.read_memory_block8(up.pBuffer + up.RdOff, up.SizeOfBuffer - up.RdOff)
-                    data += target.read_memory_block8(up.pBuffer, up.WrOff)
+                    # Wrap-around case
+                    first_part = up.SizeOfBuffer - up.RdOff
+                    data = target.read_memory_block8(up.pBuffer + up.RdOff, first_part)
+                    
+                    second_part = up.WrOff
+                    if second_part > 0:
+                        data += target.read_memory_block8(up.pBuffer, second_part)
+                    
                     target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
 
                 log_file.write(bytes(data))
-
+                log_file.flush()  # Ensure data is written to disk
+                error_count = 0  # Reset error counter on successful read
+                
                 s = len(data)
                 block_size += s
                 total_size += s
