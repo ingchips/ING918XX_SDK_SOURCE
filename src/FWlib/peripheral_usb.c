@@ -349,7 +349,7 @@ void USB_GetSetupPacket(void)
 {
   AHB_USB->UsbDOSize0  =  (0x3 << 29) | ((8*3) << 0)| (0x1 << 19);
   AHB_USB->UsbDODma0   =  (uint32_t)g_UsbBufferEp0Out;
-  AHB_USB->UsbDOCtrl0  |= (0x1 << 26) | (1U << 31);
+  AHB_USB->UsbDOCtrl0  |= (0x1 << 15) | (1U << 31);
 }
 
 uint32_t USB_GetMaxTransferSize(void)
