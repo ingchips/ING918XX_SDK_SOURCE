@@ -307,11 +307,11 @@ void OsSysTickTimerInit(UINT32 reloadValue)
 {
     // Set CCR register value to default
     #if (__CORTEX_M == 0x04U)
-    portNVIC_CCR_REG = 0x200; 
-    #elif (__CORTEX_M == 0x03U) 
-    portNVIC_CCR_REG = 0x0; 
+    portNVIC_CCR_REG = 0x200;
+    #elif (__CORTEX_M == 0x03U)
+    portNVIC_CCR_REG = 0x0;
     #endif
-    
+
 
     if ((reloadValue - 1UL) > 0xffffff)
     {
@@ -340,7 +340,8 @@ STATIC VOID UserLpTimeStart(UINT64 nextResponseTime)
         return;
     }
 
-    g_SleepTime = platform_pre_suppress_ticks_and_sleep_processing(g_SleepTime);
+    g_SleepTime = platform_pre_suppress_cycles_and_sleep_processing(nextResponseTime)
+        / RTC_CYCLES_PER_TICK;
     LOS_IntRestore(intSave);
 }
 

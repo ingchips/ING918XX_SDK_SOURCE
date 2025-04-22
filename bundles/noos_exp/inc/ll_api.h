@@ -977,7 +977,7 @@ typedef struct
  * @param tx_power                  Transmission power in dBm.
  * @param rf_channel_id             RF channel ID (0: 2402MHz, 1: 2404MHz, ...)
  * @param phy                       PHY (1: 1M, 2: 2M)
- * @param auto_retrans_cnt          Maximum automatic retransmission count when ack is not received.
+ * @param auto_retrans_cnt          Maximum automatic retransmission count when ack is not received. ([0..15])
  * @param addr                      Address.
  * @param crc_init                  CRC init value.
  *                                      - if `crc_len_bytes == 0`: ignored
@@ -1175,6 +1175,27 @@ typedef void (* f_ll_burst_pdu_visitor)(int index, uint8_t lane_id,
  * @return                  The number of transmit PDUs on the lane.
  */
 // int ll_burst_packet_responder_get_tx_num(struct ll_raw_packet *packet, uint8_t lane_id);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Support shorter IFS (`rtx_turn_around_time_us`) for 2M PHY in burst packet.
+ *
+ * This affects responder role only (initiator always support shorter IFS).
+ *
+ * This function share be (re-)called in `LLE_INIT` event too if this feature is
+ * enabled.
+ *
+ * @note Once enabled, BLE communication will be affected.
+ */
+// void ll_burst_packet_enable_2m_phy_shorter_ifs(void);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Disable shorter IFS for 2M PHY in burst packet.
+ */
+// void ll_burst_packet_disable_2m_phy_shorter_ifs(void);
 // WARNING: ^^^ this API is not available in this release
 
 

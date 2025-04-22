@@ -169,8 +169,8 @@ static int queue_send_msg(gen_handle_t queue, void *msg)
 ADDITIONAL_ATTRIBUTE static void idle_process(void)
 {
 #ifdef POWER_SAVING
-    uint32_t ticks = platform_pre_suppress_ticks_and_sleep_processing(0xffffff);
-    if (ticks < 5) return;
+    uint32_t cycles = platform_pre_suppress_cycles_and_sleep_processing((uint32_t)-1);
+    if (cycles < 100) return;
     enter_critical();
     platform_pre_sleep_processing();
     platform_post_sleep_processing();

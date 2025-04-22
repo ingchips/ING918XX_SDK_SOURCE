@@ -160,6 +160,7 @@ typedef enum
     // Before entering deep sleep, platform will call this callback to notify
     // APP. Apps can take this chance to configure peripherals.
     // This function shall be simple and return as soon as possible.
+    // Returned value is ignored.
     // Note: param (void *data) is casted from `platform_sleep_category_b_t`.
     PLATFORM_CB_EVT_BEFORE_DEEP_SLEEP,
 
@@ -350,10 +351,25 @@ typedef struct
  ****************************************************************************************
  * @brief Get status of built-in RTOS's heap
  *
+ * Note: it does not make sense to call this if built-in RTOS is not used.
+ *
  * @param[out]  status              heap status
  ****************************************************************************************
  */
 void platform_get_heap_status(platform_heap_status_t *status);
+
+/**
+ ****************************************************************************************
+ * @brief Get memory address and size of built-in RTOS's heap
+ *
+ * Note: this function is for debugging only. Do not modify the heap when using
+ * the built-in RTOS.
+ *
+ * @param[out]  size                heap total size in bytes
+ * @return                          heap start address
+ ****************************************************************************************
+ */
+void *platform_get_rtos_heap_mem(int *size);
 
 /**
  ****************************************************************************************
@@ -670,40 +686,53 @@ void platform_patch_rf_init_data(const void *data);
  ****************************************************************************************
  * @brief Pre-suppress ticks and sleep processing
  *
+ * Never call this function when using built-in RTOS.
+ *
+ * Obsoleted: Use `platform_pre_suppress_cycles_and_sleep_processing` instead.
+ *
  * @param[in]  expected_ticks   expected ticks to sleep
- * @return                      adjusted ticks to sleep
  ****************************************************************************************
+ * @return                      adjusted ticks to sleep
  */
-// uint32_t platform_pre_suppress_ticks_and_sleep_processing(uint32_t expected_ticks);
-// WARNING: ^^^ this API is not available in this release
+uint32_t platform_pre_suppress_ticks_and_sleep_processing(uint32_t expected_ticks);
 
+/**
+ ****************************************************************************************
+ * @brief Pre-suppress cycles and sleep processing
+ *
+ * Never call this function when using built-in RTOS.
+ * @param[in]  expected_cycles  expected RT clock cycles to sleep
+ ****************************************************************************************
+ * @return                      adjusted cycles to sleep
+ */
+uint32_t platform_pre_suppress_cycles_and_sleep_processing(uint32_t expected_cycles);
 
 /**
  ****************************************************************************************
  * @brief Preprocessing for tickless sleep
+ *
+ * Never call this function when using built-in RTOS.
  ****************************************************************************************
  */
-// void platform_pre_sleep_processing(void);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_pre_sleep_processing(void);
 
 /**
  ****************************************************************************************
  * @brief Postprocessing for tickless sleep
+ *
+ * Never call this function when using built-in RTOS.
  ****************************************************************************************
  */
-// void platform_post_sleep_processing(void);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_post_sleep_processing(void);
 
 /**
  ****************************************************************************************
  * @brief Hook for idle task got resumed
+ *
+ * Never call this function when using built-in RTOS.
  ****************************************************************************************
  */
-// void platform_os_idle_resumed_hook(void);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_os_idle_resumed_hook(void);
 
 typedef enum
 {
@@ -735,9 +764,7 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  *     `platform_controller_run()` continously.
  ****************************************************************************************
  */
-// void platform_init_controller(void);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_init_controller(void);
 
 /**
  ****************************************************************************************
@@ -746,9 +773,7 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  * Controller will do its pending jobs, and return after all pending jobs are done.
  ****************************************************************************************
  */
-// void platform_controller_run(void);
-// WARNING: ^^^ this API is not available in this release
-
+void platform_controller_run(void);
 
 typedef void (* f_platform_timer_callback)(void);
 

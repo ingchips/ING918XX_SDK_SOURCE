@@ -182,13 +182,13 @@ static void SVC_Handler(void)
 #ifdef POWER_SAVING
 
 // This is a re-implementation of FreeRTOS's suppress ticks and sleep function.
-static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
+static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_cycles)
 {
     uint32_t ulCompleteTickPeriods;
 
     portNVIC_SYSTICK_CTRL_REG &= ~portNVIC_SYSTICK_ENABLE_BIT;
 
-    uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + (RTC_CYCLES_PER_TICK * (expected_ticks - 1UL));
+    uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + expected_cycles - 1UL;
     if( ulReloadValue > STOPPED_TIMER_COMPENSATION )
     {
         ulReloadValue -= STOPPED_TIMER_COMPENSATION;
@@ -222,11 +222,11 @@ static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
 
         portNVIC_SYSTICK_LOAD_REG = ulCalculatedLoadValue;
 
-        ulCompleteTickPeriods = expected_ticks - 1UL;
+        ulCompleteTickPeriods = ulReloadValue / RTC_CYCLES_PER_TICK;
     }
     else
     {
-        uint32_t ulCompletedSysTickDecrements = (expected_ticks * RTC_CYCLES_PER_TICK) - portNVIC_SYSTICK_CURRENT_VALUE_REG;
+        uint32_t ulCompletedSysTickDecrements = ulReloadValue - portNVIC_SYSTICK_CURRENT_VALUE_REG;
 
         ulCompleteTickPeriods = ulCompletedSysTickDecrements / RTC_CYCLES_PER_TICK;
 
@@ -259,13 +259,13 @@ void rt_system_power_manager(void)
     if (timeout_tick > MAXIMUM_SUPPRESSED_TICKS)
         timeout_tick = MAXIMUM_SUPPRESSED_TICKS;
 
-    timeout_tick = platform_pre_suppress_ticks_and_sleep_processing(timeout_tick);
-    if (timeout_tick < EXPECTED_IDLE_TIME_BEFORE_SLEEP)
+    uint32_t timeout_cycles = platform_pre_suppress_cycles_and_sleep_processing(timeout_tick * RTC_CYCLES_PER_TICK);
+    if (timeout_cycles < EXPECTED_IDLE_TIME_BEFORE_SLEEP * RTC_CYCLES_PER_TICK)
         return;
 
     rt_enter_critical();
 
-    uint32_t delta_ticks = _rt_suppress_ticks_and_sleep(timeout_tick);
+    uint32_t delta_ticks = _rt_suppress_ticks_and_sleep(timeout_cycles);
 
     rt_exit_critical();
 
@@ -321,11 +321,16 @@ const gen_os_driver_t gen_os_driver =
 
 const gen_os_driver_t *os_impl_get_driver(void)
 {
-    static uint8_t heap[RT_THREAD_HEAP_SIZE] = {0};
-
     rt_hw_interrupt_disable();
 
+#ifdef USE_NOOS_BUNDLES
+    static uint8_t heap[RT_THREAD_HEAP_SIZE] = {0};
     rt_system_heap_init(heap, heap + sizeof(heap));
+#else
+    int size = 0;
+    char *heap = platform_get_rtos_heap_mem(&size);
+    rt_system_heap_init(heap, heap + size);
+#endif
 
     /* timer system initialization */
     rt_system_timer_init();
@@ -336,6 +341,7 @@ const gen_os_driver_t *os_impl_get_driver(void)
     return &gen_os_driver;
 }
 
+#ifdef USE_NOOS_BUNDLES
 void platform_get_heap_status(platform_heap_status_t *status)
 {
     rt_uint32_t used, max_used;
@@ -343,3 +349,4 @@ void platform_get_heap_status(platform_heap_status_t *status)
     status->bytes_free = RT_THREAD_HEAP_SIZE - used;
     status->bytes_minimum_ever_free = RT_THREAD_HEAP_SIZE - max_used;
 }
+#endif
