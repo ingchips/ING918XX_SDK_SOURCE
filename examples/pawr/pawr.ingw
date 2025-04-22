@@ -4,22 +4,22 @@
   "var": {
    "link_layer_features": {
     "value": "ff79ff07fe000000",
-    "addr": 33734020
+    "addr": 33734556
    }
   },
   "rom": {
-   "size": 179992,
+   "size": 180528,
    "base": 33562624
   },
   "ram": {
-   "size": 21612,
+   "size": 21620,
    "base": 536870912
   },
   "app": {
-   "base": 33742848
+   "base": 33746944
   },
   "version": [
-   2,3,56]
+   2,4,0]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -60,8 +60,8 @@
  "power_saving": false,
  "secondary": false,
  "bundle": "exp",
- "app_rom_size": "335872",
- "app_rom_addr": "33742848",
+ "app_rom_size": "331776",
+ "app_rom_addr": "33746944",
  "family": "ing916",
  "vcode": false,
  "heap_override": false,
@@ -78,8 +78,8 @@
  "keil": true,
  "cmsis": "",
  "cube": true,
- "app_ram_size": 11152,
- "app_ram_addr": 536892528,
+ "app_ram_size": 11144,
+ "app_ram_addr": 536892536,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",

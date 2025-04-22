@@ -214,9 +214,12 @@ void platform_get_heap_status(platform_heap_status_t *status)
     status->bytes_minimum_ever_free = xMinimumEverFreeBytesRemaining;
 }
 
+#define SYS_CLOCK_CYCLES_PER_TICK   ( configSYSTICK_CLOCK_HZ / configTICK_RATE_HZ )
+
 TickType_t sysPreSuppressTicksAndSleepProcessing(TickType_t expectedTicks)
 {
-    return platform_pre_suppress_ticks_and_sleep_processing(expectedTicks);
+    uint32_t cycles = platform_pre_suppress_cycles_and_sleep_processing(expectedTicks * SYS_CLOCK_CYCLES_PER_TICK);
+    return cycles / SYS_CLOCK_CYCLES_PER_TICK;
 }
 
 void sysPreSleepProcessing(TickType_t idleTime)
