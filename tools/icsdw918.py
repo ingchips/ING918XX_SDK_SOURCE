@@ -87,6 +87,11 @@ def send_file(ser: serial.Serial, addr: int, data: bytes):
 
 def wait_handshaking3(ser: serial.Serial, timeout: float, hello: str):
     print("wait for handshaking...", end = '\r')
+    ser.rts = False
+    ser.dtr = True
+    time.sleep(0.1)
+    ser.dtr = False
+    ser.rts = True
     start = time.time()
     acc = bytes()
     while True:
