@@ -67,9 +67,6 @@ void port_timer_delete(gen_handle_t timer);
  ****************************************************************************************
  * @brief Create a task
  *
- * Note: 1. The timer must be in STOPPED state after creation.
- *       2. Timer should not auto reload.
- *
  * @param[in] name                  name of task
  * @param[in] entry                 entry of the task
  * @param[in] parameter             user data for the `entry`

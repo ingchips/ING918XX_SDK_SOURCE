@@ -98,7 +98,8 @@ typedef struct gen_os_driver
     /**
      ****************************************************************************************
     * @brief Start the RTOS
-    * This function should never return
+    * This function should never return.
+    * Tasks created by `task_create` shall only be scheduled after `os_start` is called.
     ****************************************************************************************
     */
     void (*os_start)(void);

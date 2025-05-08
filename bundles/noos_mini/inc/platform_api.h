@@ -767,7 +767,7 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  * For NoOS bundles, and `task_create` is NULL in generic OS driver:
  *
  *     To use raw packet APIs, controller needs to be initialized, and call
- *     `platform_controller_run()` continously.
+ *     `platform_controller_run()` continuously.
  ****************************************************************************************
  */
 void platform_init_controller(void);
