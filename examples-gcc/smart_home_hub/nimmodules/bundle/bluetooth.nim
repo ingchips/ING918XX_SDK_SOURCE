@@ -906,8 +906,7 @@ type
 ## * Universal UUID type, to be used for any-UUID static allocation
 
 type
-  ble_uuid_any_t* {.importc: "ble_uuid_any_t", header: "bluetooth.h", bycopy.} = object {.
-      union.}
+  ble_uuid_any_t* {.importc: "ble_uuid_any_t", header: "bluetooth.h", bycopy, union.} = object
     u* {.importc: "u".}: ble_uuid_t
     u16* {.importc: "u16".}: ble_uuid16_t
     u32* {.importc: "u32".}: ble_uuid32_t
