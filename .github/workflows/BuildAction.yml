@@ -1,0 +1,133 @@
+name: C/C++ CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master", "develop" ]
+  pull_request:
+    branches: [ "master", "develop" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup ARM GCC Toolchain
+        run: |
+          wget https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz -O arm-gcc.tar.xz
+          sudo tar -xJf arm-gcc.tar.xz -C /usr/local/
+          GCC_DIR=$(tar -tJf arm-gcc.tar.xz | head -n 1 | cut -d '/' -f1)
+          sudo ln -s /usr/local/${GCC_DIR}/bin/arm-none-eabi-* /usr/local/bin/
+          arm-none-eabi-gcc --version
+          
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Nim
+        run: |
+          mkdir ~/nim
+          cd ~/nim
+          pwd 
+          wget https://nim-lang.org/download/nim-1.6.6-linux_x32.tar.xz -O nim.tar.xz
+          tar -Jxvf nim.tar.xz
+          mv nim-1.6.6 nim_x32
+          wget https://nim-lang.org/download/nim-1.6.6-linux_x64.tar.xz -O nim.tar.xz
+          tar -Jxvf nim.tar.xz
+          mv nim-1.6.6 nim_x64
+          
+      - name: Build gen_files.nim
+        working-directory: ${{ github.workspace }}/tools
+        run: |
+          export PATH=~/nim/nim_x64/bin:$PATH
+          nim -d:release --threads:on c gen_files.nim
+          ${{ github.workspace }}/tools/gen_files ${{ github.workspace }}/bundles
+          
+      - name: Install Zig
+        run: |
+          ZIG_VERSION=0.8.1
+          wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          tar -Jxvf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          sudo mv zig-linux-x86_64-${ZIG_VERSION} /usr/local/zig
+          sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
+
+      - name: Download CMSIS
+        run: |
+          wget https://github.com/ARM-software/CMSIS_5/archive/refs/tags/5.9.0.zip  -O cmsis.zip
+          mkdir ${{ github.workspace }}/cmsis
+          unzip cmsis.zip -d ${{ github.workspace }}/cmsis
+          ls ${{ github.workspace }}
+          ls ${{ github.workspace }}/cmsis
+          ls ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0
+          ls ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS
+          ls ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+
+      - name: Build central_fota
+        env:
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+        run: |
+          set -e
+          set -o pipefail
+          cd examples-gcc/central_fota
+          echo "Current directory: $(pwd)"
+          echo "CMSIS_BASE: $CMSIS_BASE"
+          make 2>&1 | tee build.log  
+        working-directory: ${{ github.workspace }}
+
+      - name: Build get_started
+        env:
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+        run: |
+          set -e
+          set -o pipefail
+          cd examples-gcc/get_started
+          echo "Current directory: $(pwd)"
+          echo "CMSIS_BASE: $CMSIS_BASE"
+          make 2>&1 | tee build.log  
+        working-directory: ${{ github.workspace }}
+
+      - name: Build peripheral_console_liteos
+        env:
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+        run: |
+          set -e
+          set -o pipefail
+          cd examples-gcc/peripheral_console_liteos
+          echo "Current directory: $(pwd)"
+          echo "CMSIS_BASE: $CMSIS_BASE"
+          make 2>&1 | tee build.log  
+        working-directory: ${{ github.workspace }}
+
+      - name: Build peripheral_ibeacon
+        env:
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+        run: |
+          set -e
+          set -o pipefail
+          cd examples-gcc/peripheral_ibeacon
+          echo "Current directory: $(pwd)"
+          echo "CMSIS_BASE: $CMSIS_BASE"
+          make 2>&1 | tee build.log  
+        working-directory: ${{ github.workspace }}
+
+      - name: Build smart_home_hub
+        env:
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+        run: |
+          export NIM_PATH=~/nim/nim_x32/bin
+          export PATH=~/nim/nim_x32/bin:$PATH
+          cd examples-gcc/smart_home_hub
+          echo "Current directory: $(pwd)"
+          echo "CMSIS_BASE: $CMSIS_BASE"
+          make 2>&1 | tee build.log  
+        working-directory: ${{ github.workspace }}
+
+      - name: Upload Artifacts
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            examples-gcc/*/build.log
+            examples-gcc/*/*.elf
+            examples-gcc/*/*.bin
+            examples-gcc/*/*.hex

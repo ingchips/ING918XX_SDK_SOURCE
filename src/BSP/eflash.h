@@ -54,6 +54,38 @@ typedef struct fota_update_block
 #define EFLASH_PAGE_SIZE        8192
 #define EFLASH_ERASABLE_SIZE    EFLASH_PAGE_SIZE
 
+#pragma pack (push, 1)
+typedef struct
+{
+    uint32_t cid[2];            // company ID
+    uint32_t reserved0[2];
+    uint32_t metal_id;          // metal ID
+    uint32_t reserved1[3];
+    uint32_t lot_id[4];         // Lot ID
+    uint32_t wafer_id;          // wafer ID
+    uint32_t reserved2[3];
+    uint32_t Die_x_local;          // wafer ID
+    uint32_t reserved3[3];
+    uint32_t Die_y_local;          // wafer ID
+    uint32_t reserved4[3];
+} die_info_t;
+
+typedef struct
+{
+    uint32_t adc_trim0[256];    // ADC trim data
+    uint32_t adc_version;       // ADC version
+    uint32_t reserved0[255];
+    uint32_t adc_trim1[256];    // ADC trim data
+} adc_calib_data_t;
+
+typedef struct{
+    uint8_t TRng_data[16];     // TRNG data
+    uint32_t ft_version;       // factory data version
+    uint32_t ldo_flag;         // LDO flag
+    uint32_t ldo_vol[4];       // LDO voltage
+} factory_calib_data_t;
+#pragma pack (pop)
+
 /**
  * @brief Erase a page of flash
  *
@@ -79,6 +111,31 @@ int erase_info_page(const int index);
  * @return                      0 if successful else non-0
  */
 int program_fota_metadata(const uint32_t entry, const int block_num, const fota_update_block_t *blocks);
+
+/**
+ * @brief Get die information
+ *
+ * @return  pointer to `die_info_t`
+ * @note    Call EflashCacheBypass() before fetching data; 
+ *          re-call EflashCacheEna() after fetching data; enable cache
+ */
+const die_info_t *flash_get_die_info(void);
+
+/**
+ * @brief Get ADC calibration data
+ * @return  pointer to `adc_calib_data_t`
+ * @note    Call EflashCacheBypass() before fetching data; 
+ *          re-call EflashCacheEna() after fetching data; enable cache
+ */
+const adc_calib_data_t *flash_get_adc_calib_data(void);
+
+/**
+ * @brief Get factory calibration data
+ * @return  pointer to `factory_calib_data_t`
+ * @note    Call EflashCacheBypass() before fetching data; 
+ *          re-call EflashCacheEna() after fetching data; enable cache
+ */
+const factory_calib_data_t *flash_get_factory_calib_data(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
