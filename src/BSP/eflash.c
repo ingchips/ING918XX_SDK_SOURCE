@@ -203,6 +203,21 @@ const adc_calib_data_t *flash_get_adc_calib_data(void)
     return (const adc_calib_data_t *)(FACTORY_DATA_LOC);
 }
 
+void flash_read_uid(uint32_t uid[4])
+{
+    const die_info_t* die_info;
+    const factory_calib_data_t* factory_calib;
+    
+    EflashCacheBypass();
+    die_info = flash_get_die_info();
+    factory_calib = flash_get_factory_calib_data();
+    uid[0] = die_info->lot_id[0];
+    uid[1] = die_info->lot_id[1] | (die_info->wafer_id<<16) | (die_info->Die_x_local<<24);
+    uid[2] = die_info->Die_y_local | ((*((uint32_t*)(&factory_calib->TRng_data[0]))) << 8);
+    uid[3] = *((uint32_t*)(&factory_calib->TRng_data[3]));
+    EflashCacheEna();
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #include "rom_tools.h"

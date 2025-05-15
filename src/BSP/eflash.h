@@ -63,7 +63,11 @@ typedef struct
     uint32_t reserved1[3];
     uint32_t lot_id[4];         // Lot ID
     uint32_t wafer_id;          // wafer ID
-    uint32_t reserved2[11];
+    uint32_t reserved2[3];
+    uint32_t Die_x_local;          // Die X location
+    uint32_t reserved3[3];
+    uint32_t Die_y_local;          // Die Y location
+    uint32_t reserved4[3];
 } die_info_t;
 
 typedef struct
@@ -132,6 +136,18 @@ const adc_calib_data_t *flash_get_adc_calib_data(void);
  *          re-call EflashCacheEna() after fetching data; enable cache
  */
 const factory_calib_data_t *flash_get_factory_calib_data(void);
+
+/**
+ * @brief Read UID of flash
+ *
+ * @param[out]  uid            128-bit UID
+ * @note    
+ *          This function reads the 128-bit unique identifier (UID) stored in the flash memory.  
+ *          After using this interface, **do not** perform an unlock operation after locking the chip.  
+ *          Doing so may cause the FT (Factory Trimming) information to be mistakenly erased,  
+ *          which can lead to abnormal behavior in subsequent RNG data operations.        
+ */
+void flash_read_uid(uint32_t uid[4]);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
