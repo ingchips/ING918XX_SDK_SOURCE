@@ -180,6 +180,29 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
     return 0;
 }
 
+#define FACTORY_DATA_LOC    (0x80000 + 0x4000)
+#define VERSION             0x20230817
+
+const die_info_t *flash_get_die_info(void)
+{
+    return ((const die_info_t *)(FACTORY_DATA_LOC + 0x4000));
+}
+
+const factory_calib_data_t *flash_get_factory_calib_data(void)
+{
+    const factory_calib_data_t *p = (const factory_calib_data_t *)(FACTORY_DATA_LOC + 0x3000);
+    
+    if(p->ft_version > VERSION)
+        return p;
+    else
+        return NULL;
+}
+
+const adc_calib_data_t *flash_get_adc_calib_data(void)
+{
+    return (const adc_calib_data_t *)(FACTORY_DATA_LOC);
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #include "rom_tools.h"
