@@ -872,7 +872,23 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  *
  * This type of timers are much like `platform_set_timer`, except that:
  * 1. resolution is higher;
- * 2. callback is invoked in the context of an ISR
+ * 2. callback is invoked in the context of an ISR or the the caller.
+ *
+ * Pseudo code:
+ *
+ * ```c
+ * if (time passed) return NULL;
+ * if (out of memory) return NULL;
+ * r = allocate a handle;
+ * if (timer is too near) {
+ *     // callback is invoked immediately in the context of the caller
+ *     callback(param);
+ *     free memory;
+ *     return r;            // a non-NULL value is returned
+ * }
+ * save r into a queue;     // callback will be invoked in an ISR later
+ * return r;
+ * ```
  *
  * CAUTION: DO NOT call `platform_create_us_timer` again in `callback`.
  *

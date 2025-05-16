@@ -21,7 +21,7 @@ It demonstrates how to:
 
 To build this project, both Gnu Arm Toolchain & 32-bit Nim are needed.
 
-Set `NIM_PATH` to the path containing `nim` executable, and `make`.
+Set `NIM_PATH` to the path containing `nim` executable, and `make`. Tested with Nim 1.6.10, 2.0.0 and 2.0.2.
 
 ## Test
 

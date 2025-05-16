@@ -1294,13 +1294,22 @@ int gap_update_connection_parameters(hci_con_handle_t con_handle, uint16_t conn_
     uint16_t min_ce_len, uint16_t max_ce_len);
 
 /**
- * @brief Set accepted connection parameter range
+ * @brief Get accepted connection parameter range
  * @param range                 see structure @link #le_connection_parameter_range_t  @endlink
  */
 void gap_get_connection_parameter_range(le_connection_parameter_range_t * range);
 
 /**
- * @brief Get accepted connection parameter range
+ * @brief Set accepted connection parameter range
+ *
+ * Default: All zero which means any incoming parameter is accepted.
+ *
+ * Set to an **invalid** range will reject any incoming connection parameter request.
+ *
+ * An **invalid** range is defined by:
+ * - `le_conn_interval_min` is 0xffff.
+ * - other fields: all 0.
+ *
  * @param range                 see structure @link #le_connection_parameter_range_t  @endlink
  */
 void gap_set_connection_parameter_range(le_connection_parameter_range_t * range);
