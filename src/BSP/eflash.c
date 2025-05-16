@@ -180,6 +180,52 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
     return 0;
 }
 
+#define FACTORY_DATA_LOC    (0x80000 + 0x4000)
+#define VERSION             0x20230817
+
+const die_info_t *flash_get_die_info(void)
+{
+    return ((const die_info_t *)(FACTORY_DATA_LOC + 0x4000));
+}
+
+const factory_calib_data_t *flash_get_factory_calib_data(void)
+{
+    const factory_calib_data_t *p = (const factory_calib_data_t *)(FACTORY_DATA_LOC + 0x3000);
+    
+    if(p->ft_version > VERSION)
+        return p;
+    else
+        return NULL;
+}
+
+const adc_calib_data_t *flash_get_adc_calib_data(void)
+{
+    return (const adc_calib_data_t *)(FACTORY_DATA_LOC);
+}
+
+void flash_read_uid(uint32_t uid[4])
+{
+    const die_info_t* die_info;
+    const factory_calib_data_t* factory_calib;
+    
+    EflashCacheBypass();
+    die_info = flash_get_die_info();
+    factory_calib = flash_get_factory_calib_data();
+    uid[0] = die_info->lot_id[0];
+    uid[1] = die_info->lot_id[1] | (die_info->metal_id<<16) | (die_info->wafer_id<<24);
+    if(factory_calib)
+    {
+        uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8) | ((*((uint32_t*)(&factory_calib->TRng_data[0]))) << 16);
+        uid[3] = *((uint32_t*)(&factory_calib->TRng_data[2]));
+    }
+    else 
+    {
+        uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8);
+        uid[3] = 0;
+    }
+    EflashCacheEna();
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #include "rom_tools.h"
