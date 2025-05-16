@@ -3,9 +3,9 @@ name: C/C++ CI
 on:
   workflow_dispatch:
   push:
-    branches: [ "master", "develop" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "master", "develop" ]
+    branches: [ "develop" ]
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
           GCC_DIR=$(tar -tJf arm-gcc.tar.xz | head -n 1 | cut -d '/' -f1)
           sudo ln -s /usr/local/${GCC_DIR}/bin/arm-none-eabi-* /usr/local/bin/
           arm-none-eabi-gcc --version
-          
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -27,21 +27,21 @@ jobs:
         run: |
           mkdir ~/nim
           cd ~/nim
-          pwd 
+          pwd
           wget https://nim-lang.org/download/nim-1.6.6-linux_x32.tar.xz -O nim.tar.xz
           tar -Jxvf nim.tar.xz
           mv nim-1.6.6 nim_x32
           wget https://nim-lang.org/download/nim-1.6.6-linux_x64.tar.xz -O nim.tar.xz
           tar -Jxvf nim.tar.xz
           mv nim-1.6.6 nim_x64
-          
+
       - name: Build gen_files.nim
         working-directory: ${{ github.workspace }}/tools
         run: |
           export PATH=~/nim/nim_x64/bin:$PATH
           nim -d:release --threads:on c gen_files.nim
           ${{ github.workspace }}/tools/gen_files ${{ github.workspace }}/bundles
-          
+
       - name: Install Zig
         run: |
           ZIG_VERSION=0.8.1
@@ -70,7 +70,7 @@ jobs:
           cd examples-gcc/central_fota
           echo "Current directory: $(pwd)"
           echo "CMSIS_BASE: $CMSIS_BASE"
-          make 2>&1 | tee build.log  
+          make 2>&1 | tee build.log
         working-directory: ${{ github.workspace }}
 
       - name: Build get_started
@@ -82,7 +82,7 @@ jobs:
           cd examples-gcc/get_started
           echo "Current directory: $(pwd)"
           echo "CMSIS_BASE: $CMSIS_BASE"
-          make 2>&1 | tee build.log  
+          make 2>&1 | tee build.log
         working-directory: ${{ github.workspace }}
 
       - name: Build peripheral_console_liteos
@@ -94,7 +94,7 @@ jobs:
           cd examples-gcc/peripheral_console_liteos
           echo "Current directory: $(pwd)"
           echo "CMSIS_BASE: $CMSIS_BASE"
-          make 2>&1 | tee build.log  
+          make 2>&1 | tee build.log
         working-directory: ${{ github.workspace }}
 
       - name: Build peripheral_ibeacon
@@ -106,7 +106,7 @@ jobs:
           cd examples-gcc/peripheral_ibeacon
           echo "Current directory: $(pwd)"
           echo "CMSIS_BASE: $CMSIS_BASE"
-          make 2>&1 | tee build.log  
+          make 2>&1 | tee build.log
         working-directory: ${{ github.workspace }}
 
       - name: Build smart_home_hub
@@ -118,7 +118,7 @@ jobs:
           cd examples-gcc/smart_home_hub
           echo "Current directory: $(pwd)"
           echo "CMSIS_BASE: $CMSIS_BASE"
-          make 2>&1 | tee build.log  
+          make 2>&1 | tee build.log
         working-directory: ${{ github.workspace }}
 
       - name: Upload Artifacts

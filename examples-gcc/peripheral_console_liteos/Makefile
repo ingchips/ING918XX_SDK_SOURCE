@@ -3,7 +3,7 @@ ING_REL=../..
 LITEOS_BASE=./liteos_m
 ING_BUNDLE += ../../bundles/noos_typical/inc
 
-CHIP_FAMILY = ing918
+CHIP_FAMILY = ing916
 CHIP_FAMILY_PREFIX = ing
 
 OS_INC += -I $(LITEOS_BASE)/kernel/include
@@ -20,7 +20,7 @@ OS_INC += -I $(LITEOS_BASE)/components/power
 
 APP_INC = -I ../../examples/peripheral_console/src -I ./src
 
-SYMDEFS=-Wl,--just-symbols=../../bundles/noos_typical/ING9187xx/symdefs.g
+SYMDEFS=-Wl,--just-symbols=../../bundles/noos_typical/ING9168xx/symdefs.g
 
 APPNAME=peripheral_console_liteos
 
