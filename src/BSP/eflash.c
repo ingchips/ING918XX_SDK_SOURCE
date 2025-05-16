@@ -213,8 +213,16 @@ void flash_read_uid(uint32_t uid[4])
     factory_calib = flash_get_factory_calib_data();
     uid[0] = die_info->lot_id[0];
     uid[1] = die_info->lot_id[1] | (die_info->metal_id<<16) | (die_info->wafer_id<<24);
-    uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8) | ((*((uint32_t*)(&factory_calib->TRng_data[0]))) << 16);
-    uid[3] = *((uint32_t*)(&factory_calib->TRng_data[2]));
+    if(factory_calib)
+    {
+        uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8) | ((*((uint32_t*)(&factory_calib->TRng_data[0]))) << 16);
+        uid[3] = *((uint32_t*)(&factory_calib->TRng_data[2]));
+    }
+    else 
+    {
+        uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8);
+        uid[3] = 0;
+    }
     EflashCacheEna();
 }
 
