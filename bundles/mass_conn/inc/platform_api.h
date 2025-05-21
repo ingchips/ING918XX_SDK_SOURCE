@@ -458,7 +458,7 @@ typedef enum
 {
     LL_FLAG_DISABLE_CTE_PREPROCESSING   = 1,    // disable internal CTE preprocessing
     LL_FLAG_LEGACY_ONLY_INITIATING      = 4,    // only do initiating to legacy devices
-    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,    // only do scanning for legacy devices
+    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,    // only do scanning for legacy devices (only valid for passive scanning)
     LL_FLAG_REDUCE_INSTANT_ERRORS       = 16,   // reduce report instance passed errors
     LL_FLAG_DISABLE_RSSI_FILTER         = 64,   // disable internal RSSI filter
     LL_FLAG_RSSI_AFTER_CRC              =128,   // only read RSSI from packages with correct CRC
@@ -857,10 +857,9 @@ typedef void * platform_us_timer_handle_t;
  * @param[in]   timer_handle    handle of this timer
  * @param[in]   time_us         internal timer counter when invoke this callback
  * @param[in]   param           user parameter
- * @return                      (must be NULL)
  ****************************************************************************************
  */
-typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer_handle,
+typedef void (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer_handle,
     uint64_t time_us, void *param);
 
 /**
@@ -877,7 +876,6 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  * Pseudo code:
  *
  * ```c
- * if (time passed) return NULL;
  * if (out of memory) return NULL;
  * r = allocate a handle;
  * if (timer is too near) {
@@ -890,7 +888,22 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  * return r;
  * ```
  *
- * CAUTION: DO NOT call `platform_create_us_timer` again in `callback`.
+ * Since the callback might be called by `platform_create_us_timer`, below might not
+ * work as expected:
+ *
+ * ```c
+ * platform_us_timer_handle_t my_timer;
+ *
+ * void callback(timer_handle, uint64_t time_us, void *param)
+ * {
+ *     my_timer = NULL;  // cleared before set
+ *     ....
+ * }
+ *
+ * my_timer = platform_create_us_timer(abs_time, callback, ...);
+ * ```
+ *
+ * In these cases, it is recommended to use `platform_create_us_timer2` instead.
  *
  * @param[in]  abs_time         when `platform_get_us_time() == abs_time`, callback is invoked.
  * @param[in]  callback         the callback function
@@ -900,6 +913,39 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  */
 platform_us_timer_handle_t platform_create_us_timer(uint64_t abs_time,
     f_platform_us_timer_callback callback, void *param);
+
+/**
+ ****************************************************************************************
+ * @brief Setup a single-shot platform timer with microsecond (us) resolution
+ *
+ * @see `platform_create_us_timer`
+ *
+ * Pseudo code:
+ *
+ * ```c
+ * if (out of memory) return -1;
+ * r = allocate a handle;
+ * *timer_handle = r;
+ * if (timer is too near) {
+ *     // callback is invoked immediately in the context of the caller
+ *     callback(param);
+ *     free memory;
+ *     return 0;
+ * }
+ * save r into a queue;     // callback will be invoked in an ISR later
+ * return 0;
+ * ```
+ *
+ * @param[in]  abs_time         when `platform_get_us_time() == abs_time`, callback is invoked.
+ * @param[in]  callback         the callback function
+ * @param[in]  param            user parameter
+ * @param[out] timer_handle     timer handle
+ * @return                      0 if timer created succeeded. Otherwise, -1.
+ ****************************************************************************************
+ */
+int platform_create_us_timer2(uint64_t abs_time,
+    f_platform_us_timer_callback callback, void *param,
+    platform_us_timer_handle_t *timer_handle);
 
 /**
  ****************************************************************************************
