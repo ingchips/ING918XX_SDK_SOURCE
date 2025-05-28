@@ -460,11 +460,13 @@ uint8_t platform_read_persistent_reg(void);
  */
 void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
 
+// Link Layer flags.
+// These flags can be dynamically configured.
 typedef enum
 {
     LL_FLAG_DISABLE_CTE_PREPROCESSING   = 1,    // disable internal CTE preprocessing
     LL_FLAG_LEGACY_ONLY_INITIATING      = 4,    // only do initiating to legacy devices
-    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,    // only do scanning for legacy devices (only valid for passive scanning)
+    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,    // only do scanning for legacy devices
     LL_FLAG_REDUCE_INSTANT_ERRORS       = 16,   // reduce report instance passed errors
     LL_FLAG_DISABLE_RSSI_FILTER         = 64,   // disable internal RSSI filter
     LL_FLAG_RSSI_AFTER_CRC              =128,   // only read RSSI from packages with correct CRC
@@ -988,7 +990,18 @@ int platform_cancel_us_timer(platform_us_timer_handle_t timer_handle);
  * @brief Get generic OS driver
  *
  * For NoOS variants, driver provided by app is returned;
- * For RTOS variants, an emulated driver is returned.
+ *
+ *  When called in `app_main`, NULL is returned.
+ *
+ * For RTOS variants:
+ *  - in `app_main`: an driver emulated by the built-in RTOS is returned;
+ *  - after `app_main`:
+ *      * if a driver is provided by app, the driver is returned;
+ *      * if app does not provided a driver (i.e. `app_main` returned NULL),
+ *        the driver emulated by the built-in RTOS is returned
+ *
+ *  In other words, if developers are going to replace the built-in RTOS, DO NOT
+ *  use this in `app_main`, because it will return an driver emulated by the built-in RTOS.
  *
  * @return                       driver pointer casted from `const gen_os_driver_t *`
  ****************************************************************************************
