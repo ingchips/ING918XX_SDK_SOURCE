@@ -1,14 +1,13 @@
 #include <stdint.h>
-#include "usb_config.h"
-#include "usbh_core.h"
-#include "usb_dwc2_reg.h"
 #include "ingsoc.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "platform_api.h"
+#include "usb_config.h"
+#include "usb_dwc2_reg.h"
+#include "usbh_core.h"
 #include "usb_hc.h"
 #include "usb_dc.h"
-
 
 #define USB_PIN_DP GIO_GPIO_16
 #define USB_PIN_DM GIO_GPIO_17
@@ -16,6 +15,7 @@
 #if (CONFIG_USE_USB_DEVICE == 0)&&(CONFIG_USE_USB_HOST == 0)
 #error "not enable define CONFIG_USE_USB_DEVICE or CONFIG_USE_USB_HOST"
 #endif
+
 typedef enum
 {
   BSP_USB_PHY_DISABLE,
@@ -31,7 +31,6 @@ typedef enum
 
 uint32_t SystemCoreClock;
 
-
 uint32_t cherrusb_hander(void *user_data)
 {
     #if CONFIG_USE_USB_DEVICE
@@ -42,6 +41,7 @@ uint32_t cherrusb_hander(void *user_data)
 
     return 0;
 }
+
 #if CONFIG_USE_USB_DEVICE
 void usb_dc_low_level_init(uint8_t busid)
 #elif CONFIG_USE_USB_HOST
@@ -54,6 +54,8 @@ void usb_hc_low_level_init(uint8_t busid)
 #endif
 {
     (void)busid;
+    
+    SystemCoreClock = SYSCTRL_GetPLLClk();
     
     USB_INIT_CONFIG_T config;
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_USB)|(1 << SYSCTRL_ITEM_APB_PinCtrl)
@@ -70,6 +72,7 @@ void usb_hc_low_level_init(uint8_t busid)
     SYSCTRL_USBPhyConfig(BSP_USB_PHY_ENABLE,BSP_USB_PHY_DP_DM_PULL_DOWN);
     #endif
 }
+
 #if CONFIG_USE_USB_DEVICE
 void usb_dc_low_level_deinit(uint8_t busid)
 #elif CONFIG_USE_USB_HOST
@@ -89,7 +92,7 @@ void usb_hc_low_level_deinit(uint8_t busid)
 
 void usbd_dwc2_delay_ms(uint8_t ms)
 {
-    vTaskDelay(1000);
+    vTaskDelay(ms);
 }
 
 uint32_t usbd_get_dwc2_gccfg_conf(uint32_t reg_base)
@@ -101,4 +104,3 @@ uint32_t usbh_get_dwc2_gccfg_conf(uint32_t reg_base)
 {
     return ((1 << 16) | (1 << 21));
 }
-

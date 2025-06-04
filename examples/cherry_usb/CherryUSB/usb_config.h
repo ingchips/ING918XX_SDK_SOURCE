@@ -6,7 +6,6 @@
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
-
 /* ================ USB common Configuration ================ */
 
 #define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)
@@ -18,8 +17,8 @@
 #define CONFIG_USB_DBG_LEVEL USB_DBG_INFO
 #endif
 
-#define CONFIG_USE_USB_HOST     1
-#define CONFIG_USE_USB_DEVICE   0
+#define CONFIG_USE_USB_HOST     0
+#define CONFIG_USE_USB_DEVICE   1
 
 #if CONFIG_USE_USB_DEVICE
 /* ---------------- DWC2 Configuration ---------------- */
@@ -56,7 +55,7 @@
 #endif
 
 /* attribute data into no cache ram */
-#define USB_NOCACHE_RAM_SECTION __attribute__((section(".noncacheable")))
+#define USB_NOCACHE_RAM_SECTION //__attribute__((section(".noncacheable")))
 
 /* ================= USB Device Stack Configuration ================ */
 

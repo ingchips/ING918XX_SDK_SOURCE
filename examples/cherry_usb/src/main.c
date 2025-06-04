@@ -40,7 +40,6 @@ uint32_t cb_putc(char *c, void *dummy)
 {
     while (apUART_Check_TXFIFO_FULL(APB_UART0) == 1);
     UART_SendData(APB_UART0, (uint8_t)*c);
-//    SEGGER_RTT_Write(0, c, 1);
     return 0;
 }
 
@@ -62,7 +61,6 @@ uint32_t on_lle_init(void *dummy, void *user_data)
     cube_on_lle_init();
     return 0;
 }
-
 
 static const platform_evt_cb_table_t evt_cb_table =
 {
@@ -88,9 +86,6 @@ static const platform_evt_cb_table_t evt_cb_table =
     }
 };
 
-
-
-
 static void test_usb_task(void *pdata)
 {
     #if CONFIG_USE_USB_DEVICE
@@ -106,11 +101,10 @@ static void test_usb_task(void *pdata)
         hid_mouse_test(0);
         #endif
         vTaskDelay(1000);
-    
     }
 }
-extern uint32_t SystemCoreClock;
-// TODO: add RTOS source code to the project.
+
+
 uintptr_t app_main()
 {
     SYSCTRL_Init();
@@ -120,11 +114,7 @@ uintptr_t app_main()
     platform_set_evt_callback_table(&evt_cb_table);
 
     setup_peripherals();
-    
-    SEGGER_RTT_Init();
-    printf("init\n");
-    SystemCoreClock = SYSCTRL_GetPLLClk();
-    
+
     xTaskCreate(test_usb_task,
            "usb task",
            configMINIMAL_STACK_SIZE,
@@ -132,6 +122,6 @@ uintptr_t app_main()
            (configMAX_PRIORITIES - 1),
            NULL);
 
-    return (uintptr_t)os_impl_get_driver();
+    return 0;
 }
 

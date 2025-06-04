@@ -27,7 +27,9 @@ usb_osal_thread_t usb_osal_thread_create(const char *name, uint32_t stack_size, 
 
 void usb_osal_thread_delete(usb_osal_thread_t thread)
 {
-    vTaskDelete(thread);
+    (void)thread;
+    // this API is not available in Built-in os
+    // vTaskDelete(thread);
 }
 
 usb_osal_sem_t usb_osal_sem_create(uint32_t initial_count)
