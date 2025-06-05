@@ -301,7 +301,7 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>0x20007740</StartAddress>
+                <StartAddress>0x20007738</StartAddress>
                 <Size>0x68c8</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
@@ -374,7 +374,7 @@
             <ScatterFile>.\output\cherryusb_os_mini.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc></Misc>
+            <Misc>--legacyalign</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
