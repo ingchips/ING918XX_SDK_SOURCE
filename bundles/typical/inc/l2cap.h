@@ -226,5 +226,6 @@ uint8_t l2cap_send_echo_request(hci_con_handle_t con_handle, const uint8_t *data
 #define L2CAP_CONNECTION_REFUSED_INSUFFICIENT_ENCRYPT           0x0008
 #define L2CAP_CONNECTION_REFUSED_INVALID_SCID                   0x0009
 #define L2CAP_CONNECTION_REFUSED_SCID_ALREADY_ALLOCATED         0x000A
+#define L2CAP_CONNECTION_UNACCEPTABLE_PARAMETERS                0x000B
 
 #endif // __L2CAP_H

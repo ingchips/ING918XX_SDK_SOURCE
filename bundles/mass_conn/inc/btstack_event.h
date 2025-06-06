@@ -107,6 +107,9 @@ uint32_t btstack_push_user_runnable(f_btstack_user_runnable fun, void *data, con
  */
 uint8_t btstack_reset(void);
 
+/**
+ * capalities of BT stack
+ */
 typedef struct btstack_capabilities
 {
     uint16_t adv_set_num;   // max number of advertising sets
@@ -873,35 +876,51 @@ static __INLINE uint8_t gap_event_dedicated_bonding_completed_get_status(const u
     return *decode_event_offset(event, uint8_t, 2);
 }
 
+/**
+ * l2cap event complete SDU
+ */
 typedef struct l2cap_event_complete_sdu
 {
     uint16_t total_length;          // total length of this SDU
     const uint8_t *payload;         // payload of this SDU
 } l2cap_event_complete_sdu_t;
 
+/**
+ * l2cap event channel opened
+ */
 typedef struct l2cap_event_channel_opened
 {
-    uint8_t             status;
-    bd_addr_t           peer_addr;
-    hci_con_handle_t    conn_handle;
-    uint16_t            psm;
-    uint16_t            local_cid;
-    uint16_t            peer_cid;
-    uint16_t            local_mtu;
-    uint16_t            peer_mtu;
-    uint16_t            local_mps;
-    uint16_t            peer_mps;
-    uint16_t            flush_timeout;
-    uint16_t            local_credits;
-    uint16_t            peer_credits;
+    uint8_t             status;         // 0: success, otherwise error
+    bd_addr_t           peer_addr;      // peer address
+    hci_con_handle_t    conn_handle;    // connection handle
+    uint16_t            psm;            // Protocol/Service Multiplexer
+    uint16_t            local_cid;      // local channel ID
+    uint16_t            peer_cid;       // peer channel ID
+    uint16_t            local_mtu;      // local MTU
+    uint16_t            peer_mtu;       // peer MTU
+    uint16_t            local_mps;      // local MPS (Maximum PDU Size)
+    uint16_t            peer_mps;       // peer MPS (Maximum PDU Size)
+    uint16_t            flush_timeout;  // flush timeout in milliseconds
+    uint16_t            local_credits;  // local credits
+    uint16_t            peer_credits;   // peer credits
 } l2cap_event_channel_opened_t;
 
+/**
+ * l2cap event channel closed 
+ */
 typedef struct l2cap_event_channel_closed
 {
-    uint16_t            local_cid;
-    uint8_t             reason;
+    uint16_t            local_cid;      // local channel ID
+    uint8_t             reason;         // reason for closing the channel
 } l2cap_event_channel_closed_t;
 
+/**
+ * l2cap event fragment SDU
+ *
+ * This is used to report fragments of a SDU that is larger than the MTU.
+ * The first fragment will have offset 0, and the last fragment will have
+ * length equal to total_length - offset.
+ */
 typedef struct l2cap_event_fragment_sdu
 {
     uint16_t total_length;          // total length of this SDU
@@ -910,65 +929,92 @@ typedef struct l2cap_event_fragment_sdu
     const uint8_t *payload;         // payload of this fragment
 } l2cap_event_fragment_sdu_t;
 
+/**
+ * read rssi return parameters
+ */
 typedef struct event_command_complete_return_param_read_rssi
 {
-    uint8_t          status;
-    hci_con_handle_t conn_handle;
-    int8_t           rssi;      // in dB
+    uint8_t          status;        // 0: success, otherwise error
+    hci_con_handle_t conn_handle;   // connection handle
+    int8_t           rssi;          // in dB
 } event_command_complete_return_param_read_rssi_t;
 
+/**
+ * read phy return parameters
+ */
 typedef struct event_command_complete_return_param_read_phy
 {
-    uint8_t          status;
-    hci_con_handle_t conn_handle;
-    phy_type_t       tx_phy;
-    phy_type_t       rx_phy;
+    uint8_t          status;         // 0: success, otherwise error
+    hci_con_handle_t conn_handle;    // connection handle
+    phy_type_t       tx_phy;         // transmit PHY
+    phy_type_t       rx_phy;         // receive PHY
 } event_command_complete_return_param_read_phy_t;
 
+/**
+ * read antenna information return parameters
+ */
 typedef struct event_command_complete_return_param_read_antenna_info
 {
-    uint8_t          status;
-    uint8_t          supported_switching_rates;
-    uint8_t          num_antennae;
-    uint8_t          max_switching_pattern_len;
-    uint8_t          max_cte_length;
+    uint8_t          status;                        // 0: success, otherwise error
+    uint8_t          supported_switching_rates;     // supported switching rates
+    uint8_t          num_antennae;                  // number of antennas
+    uint8_t          max_switching_pattern_len;     // maximum length of switching pattern
+    uint8_t          max_cte_length;                // maximum CTE length in microseconds
 } event_command_complete_return_param_read_antenna_info_t;
 
+/**
+ * conn packets
+ */
 typedef struct event_conn_packets
 {
-    hci_con_handle_t conn_handle;
-    uint16_t         num_of_packets;
+    hci_con_handle_t conn_handle;           // connection handle
+    uint16_t         num_of_packets;        // number of packets
 } event_conn_packets_t;
 
+/**
+ * event for number of complete packets
+ */
 typedef struct event_num_of_complete_packets
 {
-    uint8_t        num_handles;
-    event_conn_packets_t complete_packets[0];
+    uint8_t        num_handles;                 // number of connection handles
+    event_conn_packets_t complete_packets[0];   // array of connection handles and number of packets
 } event_num_of_complete_packets_t;
 
+/**
+ * event for sm state changed
+ */
 typedef struct sm_event_state_changed {
-    uint16_t conn_handle;
-    uint8_t reason;
+    uint16_t conn_handle;   // connection handle
+    uint8_t reason;         // reason for state change
 } sm_event_state_changed_t;
 
+/**
+ * event for disconnect complete
+ */
 typedef struct event_disconn_complete
 {
-    uint8_t status;
-    uint16_t conn_handle;
-    uint8_t reason;
+    uint8_t status;             // 0: success, otherwise error
+    uint16_t conn_handle;       // connection handle
+    uint8_t reason;             // reason for disconnection
 } event_disconn_complete_t;
 
+/**
+ * event for vendor ccm complete
+ */
 typedef struct
 {
     uint8_t  status;        // for DEC, 0 means OK, 1 means ERROR
     uint8_t  type;          // 0: encrypt  1: decrypt
-    uint8_t  mic_size;
-    uint16_t msg_len;
-    uint16_t aad_len;
+    uint8_t  mic_size;      // 0: 4 bytes, 1: 8 bytes
+    uint16_t msg_len;       // length of the message to be encrypted/decrypted
+    uint16_t aad_len;       // length of the additional authenticated data
     uint32_t tag;           // same value as in command
-    uint8_t *out_msg;
+    uint8_t *out_msg;       // pointer to the output message buffer, which is the same as in command
 } event_vendor_ccm_complete_t;
 
+/**
+ * le event for read local P-256 public key complete
+ */
 typedef struct le_meta_event_read_local_p256_pub_key_complete
 {
     // Status of received command
@@ -979,6 +1025,9 @@ typedef struct le_meta_event_read_local_p256_pub_key_complete
     uint8_t             key_y_coordinate[32];
 } le_meta_event_read_local_p256_pub_key_complete_t;
 
+/**
+ * le event for generate dhkey complete
+ */
 typedef struct le_meta_event_generate_dhkey_complete
 {
     // Status of received command
@@ -987,6 +1036,9 @@ typedef struct le_meta_event_generate_dhkey_complete
     uint8_t             dh_key[32];
 } le_meta_event_generate_dhkey_complete_t;
 
+/**
+* le event for create connection complete
+*/
 typedef struct le_meta_event_create_conn_complete
 {
     //Status of received command
@@ -1009,69 +1061,89 @@ typedef struct le_meta_event_create_conn_complete
     uint8_t             clk_accuracy;
 } le_meta_event_create_conn_complete_t;
 
-//  LE Connection Update Complete Event
+/**
+ * le event for connection update complete
+ */
 typedef struct le_meta_event_conn_update_complete
 {
-    uint8_t             status;
-    uint16_t            handle;
-    uint16_t            interval;
-    uint16_t            latency;
-    uint16_t            sup_timeout;
+    uint8_t             status;         // Status of received command
+    uint16_t            handle;         // Connection handle
+    uint16_t            interval;       // Connection interval
+    uint16_t            latency;        // Connection latency
+    uint16_t            sup_timeout;    // Link supervision timeout
 } le_meta_event_conn_update_complete_t;
 
-// LE Read Remote Features Complete Event
+/**
+ * event for read remote features complete 
+ */
 typedef struct le_meta_event_read_remote_feature_complete
 {
-    uint8_t             status;
-    uint16_t            handle;
-    uint8_t             features[8];
+    uint8_t             status;         // Status of received command
+    uint16_t            handle;         // Connection handle
+    uint8_t             features[8];    // Remote features
 } le_meta_event_read_remote_feature_complete_t;
 
-// LE Long Term Key Request Event
+/**
+ * le event for long term key request
+ */
 typedef struct le_meta_event_long_term_key_request
 {
-    uint16_t            handle;
-    uint8_t             random_number[8];
-    uint8_t             encryption_div[2];
+    uint16_t            handle;                 // Connection handle
+    uint8_t             random_number[8];       // Random number
+    uint8_t             encryption_div[2];      // Encryption Diversifier
 } le_meta_event_long_term_key_request_t;
 
-// LE Remote Connection Parameter Request Event
+/**
+ *  le event for remote connection parameter request
+ */
 typedef struct le_meta_event_remote_conn_param_request
 {
-    uint16_t            handle;
-    uint16_t            interval_min;
-    uint16_t            interval_max;
-    uint16_t            latency;
-    uint16_t            timeout;
+    uint16_t            handle;             // Connection handle
+    uint16_t            interval_min;       // Minimum connection interval
+    uint16_t            interval_max;       // Maximum connection interval
+    uint16_t            latency;            // Connection latency
+    uint16_t            timeout;            // Supervision timeout
 } le_meta_event_remote_conn_param_request_t;
 
-// LE Data Length Change Event
+/**
+ * le event for data length changed
+ */
 typedef struct le_meta_event_data_length_changed
 {
-    uint16_t            handle;
-    uint16_t            max_tx_octets;
-    uint16_t            mx_tx_time;
-    uint16_t            max_rx_octets;
-    uint16_t            mx_rx_time;
+    uint16_t            handle;             // Connection handle
+    uint16_t            max_tx_octets;      // Maximum transmit octets
+    uint16_t            mx_tx_time;         // Maximum transmit time in microseconds
+    uint16_t            max_rx_octets;      // Maximum receive octets
+    uint16_t            mx_rx_time;         // Maximum receive time in microseconds
 } le_meta_event_data_length_changed_t;
 
+/**
+ * report for directed advertising
+ * This report is used for directed advertising events.
+ */
 typedef struct le_directed_adv_report
 {
-    uint16_t        evt_type;
-    bd_addr_type_t  addr_type;
-    bd_addr_t       address;
-    bd_addr_type_t  direct_addr_type;
-    bd_addr_t       direct_addr;
-    int8_t          rssi;
+    uint16_t        evt_type;           // Event type, e.g., connectable directed advertising
+    bd_addr_type_t  addr_type;          // Address type of the advertiser, 0=public/1=random
+    bd_addr_t       address;            // Address of the advertiser
+    bd_addr_type_t  direct_addr_type;   // Address type of the directed advertiser, 0=public/1=random
+    bd_addr_t       direct_addr;        // Address of the directed advertiser
+    int8_t          rssi;               // Received Signal Strength Indicator (RSSI) in dBm
 } le_directed_adv_report_t;
 
-// LE Directed Advertising Report Event
+/**
+ * le event for directed advertising report
+ */
 typedef struct le_meta_event_directed_adv_report
 {
-    uint8_t                  num_of_reports;
-    le_directed_adv_report_t reports[1];
+    uint8_t                  num_of_reports;   // Number of reports in this event, always 1 
+    le_directed_adv_report_t reports[1];       // Array of directed advertising reports, always contains one report
 } le_meta_event_directed_adv_report_t;
 
+/**
+ * le event for enhanced create connection complete
+ * This event is used to report the result of an enhanced connection creation.
+ */
 typedef struct le_meta_event_enh_create_conn_complete
 {
     //Status of received command
@@ -1098,6 +1170,10 @@ typedef struct le_meta_event_enh_create_conn_complete
     uint8_t             clk_accuracy;
 } le_meta_event_enh_create_conn_complete_t;
 
+/**
+ * le event for enhanced create connection complete v2
+ * This event is used to report the result of an enhanced connection creation with additional fields.
+ */
 typedef struct le_meta_event_enh_create_conn_complete_v2
 {
     //Status of received command
@@ -1129,12 +1205,15 @@ typedef struct le_meta_event_enh_create_conn_complete_v2
 } le_meta_event_enh_create_conn_complete_v2_t;
 
 // LE PHY Update Complete Event
+/**
+ * le event for PHY update complete
+ */
 typedef struct le_meta_event_phy_update_complete
 {
-    uint8_t             status;
-    uint16_t            handle;
-    phy_type_t          tx_phy;
-    phy_type_t          rx_phy;
+    uint8_t             status;     // Status of received command
+    uint16_t            handle;     // Connection handle
+    phy_type_t          tx_phy;     // Transmit PHY
+    phy_type_t          rx_phy;     // Receive PHY
 } le_meta_event_phy_update_complete_t;
 
 // evt_type
@@ -1148,20 +1227,23 @@ typedef struct le_meta_event_phy_update_complete
 #define HCI_EXT_ADV_DATA_TRUNCED    (2 << 5)
 #define HCI_EXT_ADV_DATA_MASK       (3 << 5)
 
+/**
+ * le event for extended advertising report
+ */
 typedef struct le_ext_adv_report
 {
-    uint16_t        evt_type;
-    bd_addr_type_t  addr_type;
-    bd_addr_t       address;
-    uint8_t         p_phy;             // primary phy
-    uint8_t         s_phy;             // secondary phy
-    uint8_t         sid;
-     int8_t         tx_power;
-     int8_t         rssi;
-    uint16_t        prd_adv_interval;
-    bd_addr_type_t  direct_addr_type;
-    bd_addr_t       direct_addr;
-    uint8_t         data_len;
+    uint16_t        evt_type;           // Event type, e.g., connectable directed advertising
+    bd_addr_type_t  addr_type;          // Address type of the advertiser, 0=public/1=random
+    bd_addr_t       address;            // Address of the advertiser
+    uint8_t         p_phy;              // primary phy
+    uint8_t         s_phy;              // secondary phy
+    uint8_t         sid;                // Advertising SID (Segment Identifier)
+     int8_t         tx_power;           // Transmit power level in dBm
+     int8_t         rssi;               // Received Signal Strength Indicator (RSSI) in dBm
+    uint16_t        prd_adv_interval;   // Periodic advertising interval in units of 1.25 ms
+    bd_addr_type_t  direct_addr_type;   // Address type of the directed advertiser, 0=public/1=random
+    bd_addr_t       direct_addr;        // Address of the directed advertiser
+    uint8_t         data_len;           // Length of the advertising data
 #ifdef __ICCARM__
     uint8_t         data[1];
 #else
@@ -1169,262 +1251,335 @@ typedef struct le_ext_adv_report
 #endif
 } le_ext_adv_report_t;
 
-//  LE Extended Advertising Report Event
+/**
+ * le event for extended advertising report
+ */
 typedef struct le_meta_event_ext_adv_report
 {
     uint8_t             num_of_reports;         // this is always 1
-    le_ext_adv_report_t reports[1];
+    le_ext_adv_report_t reports[1];      // array of extended advertising reports, always contains one report
 } le_meta_event_ext_adv_report_t;
 
-// LE Periodic Advertising Sync Established Event
+/**
+ * le event for periodic advertising sync established
+ */
 typedef struct le_meta_event_periodic_adv_sync_established
 {
-    uint8_t             status;
-    uint16_t            handle;
-    uint8_t             sid;
-    bd_addr_type_t      addr_type;
-    bd_addr_t           address;
-    phy_type_t          phy;
-    uint16_t            interval;
-    uint8_t             clk_accuracy;
+    uint8_t             status;       // Status of received command
+    uint16_t            handle;       // Connection handle
+    uint8_t             sid;          // Advertising SID (Segment Identifier)
+    bd_addr_type_t      addr_type;    // Address type of the advertiser, 0=public/1=random
+    bd_addr_t           address;      // Address of the advertiser
+    phy_type_t          phy;          // PHY type used for periodic advertising, e.g., 1M, 2M, Coded
+    uint16_t            interval;     // Periodic advertising interval in units of 1.25 ms
+    uint8_t             clk_accuracy; // Clock accuracy of the periodic advertising train in ppm (parts per million)
 } le_meta_event_periodic_adv_sync_established_t;
 
+/**
+ * le event for periodic advertising sync established v2
+ */
 typedef struct le_meta_event_periodic_adv_sync_established_v2
 {
-    uint8_t             status;
-    uint16_t            handle;
-    uint8_t             sid;
-    bd_addr_type_t      addr_type;
-    bd_addr_t           address;
-    phy_type_t          phy;
-    uint16_t            interval;
-    uint8_t             clk_accuracy;
+    uint8_t             status;      // Status of received command
+    uint16_t            handle;      // Connection handle
+    uint8_t             sid;         // Advertising SID (Segment Identifier)
+    bd_addr_type_t      addr_type;  // Address type of the advertiser, 0=public/1=random
+    bd_addr_t           address;    // Address of the advertiser
+    phy_type_t          phy;      // PHY type used for periodic advertising, e.g., 1M, 2M, Coded
+    uint16_t            interval;   // Periodic advertising interval in units of 1.25 ms
+    uint8_t             clk_accuracy;   // Clock accuracy of the periodic advertising train in ppm (parts per million)
 
     // [V2] additional fields
-    uint8_t             num_subevents;
-    uint8_t             subevent_interval;
-    uint8_t             rsp_slot_delay;
-    uint8_t             rsp_slot_spacing;
+    uint8_t             num_subevents;  // Number of subevents in the periodic advertising train
+    uint8_t             subevent_interval;  // Interval between subevents in the periodic advertising train in units of 1.25 ms
+    uint8_t             rsp_slot_delay; // Delay for response slots in the periodic advertising train in units of 1.25 ms
+    uint8_t             rsp_slot_spacing;   // Spacing between response slots in the periodic advertising train in units of 1.25 ms
 } le_meta_event_periodic_adv_sync_established_v2_t;
 
+// Data status for periodic advertising data
 #define HCI_PRD_ADV_DATA_STATUS_CML        (0)
 #define HCI_PRD_ADV_DATA_STATUS_HAS_MORE   (1)
 #define HCI_PRD_ADV_DATA_STATUS_TRUNCED    (2)
 
 // LE Periodic Advertising Report Event
+/**
+ * le event for periodic advertising report
+ */
 typedef struct le_meta_event_periodic_adv_report
 {
-    uint16_t            handle;
-    int8_t              tx_power;
-    int8_t              rssi;
-    uint8_t             cte_type;
-    uint8_t             data_status;
-    uint8_t             data_length;
-    uint8_t             data[0];
+    uint16_t            handle;         // Connection handle
+    int8_t              tx_power;       // Transmit power level in dBm
+    int8_t              rssi;           // Received Signal Strength Indicator (RSSI) in dBm
+    uint8_t             cte_type;       // CTE type, e.g., 0 for no CTE, 1 for AoA, 2 for AoD
+    uint8_t             data_status;    // Data status, e.g., HCI_PRD_ADV_DATA_STATUS_CML, HCI_PRD_ADV_DATA_STATUS_HAS_MORE, HCI_PRD_ADV_DATA_STATUS_TRUNCED
+    uint8_t             data_length;    // Length of the periodic advertising data
+    uint8_t             data[0];        // Periodic advertising data, variable length
 } le_meta_event_periodic_adv_report_t;
 
+/**
+ * le event for periodic advertising report v2
+ */
 typedef struct le_meta_event_periodic_adv_report_v2
 {
-    uint16_t            handle;
-    int8_t              tx_power;
-    int8_t              rssi;
-    uint8_t             cte_type;
-    uint16_t            periodic_event_counter;
-    uint8_t             subevent;
-    uint8_t             data_status;
-    uint8_t             data_length;
-    uint8_t             data[0];
+    uint16_t            handle;         // Connection handle
+    int8_t              tx_power;       // Transmit power level in dBm
+    int8_t              rssi;           // Received Signal Strength Indicator (RSSI) in dBm
+    uint8_t             cte_type;       // CTE type, e.g., 0 for no CTE, 1 for AoA, 2 for AoD
+    uint16_t            periodic_event_counter; // Periodic event counter, used to identify periodic advertising events
+    uint8_t             subevent;       // Subevent type, e.g., 0 for periodic advertising report, 1 for periodic advertising sync transfer
+    uint8_t             data_status;    // Data status, e.g., HCI_PRD_ADV_DATA_STATUS_CML, HCI_PRD_ADV_DATA_STATUS_HAS_MORE, HCI_PRD_ADV_DATA_STATUS_TRUNCED
+    uint8_t             data_length;    // Length of the periodic advertising data
+    uint8_t             data[0];        // Periodic advertising data, variable length
 } le_meta_event_periodic_adv_report_v2_t;
 
-// LE Periodic Advertising Sync Lost Event
+/**
+ * le event for periodic advertising sync lost
+ */
 typedef struct le_meta_event_periodic_adv_sync_lost
 {
-    uint16_t            handle;
+    uint16_t            handle;     // Connection handle
 } le_meta_event_periodic_adv_sync_lost_t;
 
 // LE Scan Timeout Event
 // {}
 
-// LE Advertising Set Terminated Event
+/**
+ * le event for advertising set terminated
+ */
 typedef struct le_meta_event_adv_set_terminated
 {
-    uint8_t  status;
-    uint8_t  adv_handle;
-    uint16_t conn_handle;
+    uint8_t  status;    // Status of received command
+    uint8_t  adv_handle;    // Advertising handle, used to identify the advertising set
+    uint16_t conn_handle;   // Connection handle, if the advertising set was connected
     uint8_t  num_events;  // Num_Completed_Extended_Advertising_Events
 } le_meta_event_adv_set_terminated_t;
 
 //  LE Scan Request Received Event
+/**
+ * le event for scan request received
+ */
 typedef struct le_meta_event_scan_req_received
 {
-    uint8_t        adv_handle;
-    bd_addr_type_t scanner_addr_type;
-    bd_addr_t      scanner_addr;
+    uint8_t        adv_handle;          // Advertising handle, used to identify the advertising set
+    bd_addr_type_t scanner_addr_type;   // Address type of the scanner, 0=public/1=random
+    bd_addr_t      scanner_addr;        // Address of the scanner
 } le_meta_event_scan_req_received_t;
 
+/**
+ * le channel selection algorithm
+ */
 typedef enum ble_ch_sel_algo
 {
-    BLE_ALGO_1,
-    BLE_ALGO_2,
-    BLE_ALGO_NUMBER
+    BLE_ALGO_1,         // Legacy channel selection algorithm
+    BLE_ALGO_2,         // Bluetooth 5.0 channel selection algorithm
+    BLE_ALGO_NUMBER     // Number of channel selection algorithms
 } ble_ch_sel_algo_t;
 
-// LE Channel Selection Algorithm Event
+/**
+ * le event for channel selection algorithm
+ */
 typedef struct le_meta_event_ch_sel_algo
 {
-    uint16_t conn_handle;
-    ble_ch_sel_algo_t algo;
+    uint16_t conn_handle;   // Connection handle
+    ble_ch_sel_algo_t algo; // Channel selection algorithm used for the connection
 } le_meta_event_ch_sel_algo_t;
 
+/**
+ * le event for connectionless IQ report
+ */
 typedef struct le_iq_sample
 {
-    int8_t i;
-    int8_t q;
+    int8_t i;   // In-phase component of the IQ sample
+    int8_t q;   // Quadrature component of the IQ sample
 } le_iq_sample_t;
 
+/**
+ * le event for connectionless IQ report
+ * This event is used to report IQ samples for connectionless CTE reception.
+ */
 typedef struct le_meta_event_connless_iq_report
 {
-    uint16_t sync_handle;
-    uint8_t  channel_index;
-    int16_t  rssi;
-    uint8_t  rssi_ant_id;
-    uint8_t  cte_type;
-    uint8_t  slot_durations;
-    uint8_t  packet_status;
-    uint16_t event_counter;
-    uint8_t  sample_count;
-    le_iq_sample_t samples[0];
+    uint16_t sync_handle;       // Sync handle for the periodic advertising train
+    uint8_t  channel_index;     // Channel index for the IQ samples
+    int16_t  rssi;              // Received Signal Strength Indicator (RSSI) in dBm
+    uint8_t  rssi_ant_id;       // Antenna ID for the RSSI measurement
+    uint8_t  cte_type;          // CTE type, e.g., 0 for no CTE, 1 for AoA, 2 for AoD
+    uint8_t  slot_durations;    // Slot durations, e.g., 0 for 1us slots, 1 for 2us slots
+    uint8_t  packet_status;     // Packet status, e.g., 0 for valid packet, 1 for invalid packet
+    uint16_t event_counter;     // Event counter for the periodic advertising train
+    uint8_t  sample_count;      // Number of IQ samples in this report
+    le_iq_sample_t samples[0];  // Array of IQ samples, variable length
 } le_meta_event_connless_iq_report_t;
 
+/**
+ * le event for connectionless IQ report
+ * This event is used to report IQ samples for connectionless CTE reception.
+ */
 typedef struct le_meta_event_pro_connless_iq_report
 {
-    bd_addr_type_t addr_type;
-    bd_addr_t  addr;
-    phy_type_t rx_phy;
-    uint8_t  channel_index;
-    int16_t  rssi;
-    uint8_t  rssi_ant_id;
-    uint8_t  cte_type;
-    uint8_t  slot_durations;
-    uint8_t  packet_status;
-    uint8_t  sample_count;
-    le_iq_sample_t samples[0];
+    bd_addr_type_t addr_type;   // Address type of the advertiser, 0=public/1=random
+    bd_addr_t  addr;            // Address of the advertiser
+    phy_type_t rx_phy;          // PHY type used for reception, e.g., 1M, 2M, Coded
+    uint8_t  channel_index;     // Channel index for the IQ samples
+    int16_t  rssi;              // Received Signal Strength Indicator (RSSI) in dBm
+    uint8_t  rssi_ant_id;       // Antenna ID for the RSSI measurement
+    uint8_t  cte_type;          // CTE type, e.g., 0 for no CTE, 1 for AoA, 2 for AoD
+    uint8_t  slot_durations;    // Slot durations, e.g., 0 for 1us slots, 1 for 2us slots
+    uint8_t  packet_status;     // Packet status, e.g., 0 for valid packet, 1 for invalid packet
+    uint8_t  sample_count;      // Number of IQ samples in this report
+    le_iq_sample_t samples[0];  // Array of IQ samples, variable length
 } le_meta_event_pro_connless_iq_report_t;
 
+/**
+ * le event for connection IQ report
+ */
 typedef struct le_meta_event_conn_iq_report
 {
-    uint16_t conn_handle;
-    phy_type_t rx_phy;
-    uint8_t  channel_index;
-    int16_t  rssi;
-    uint8_t  rssi_ant_id;
-    uint8_t  cte_type;
-    uint8_t  slot_durations;
-    uint8_t  packet_status;
-    uint16_t event_counter;
-    uint8_t  sample_count;
-    le_iq_sample_t samples[0];
+    uint16_t conn_handle;       // Connection handle
+    phy_type_t rx_phy;          // PHY type used for reception, e.g., 1M, 2M, Coded
+    uint8_t  channel_index;     // Channel index for the IQ samples
+    int16_t  rssi;              // Received Signal Strength Indicator (RSSI) in dBm
+    uint8_t  rssi_ant_id;       // Antenna ID for the RSSI measurement
+    uint8_t  cte_type;          // CTE type, e.g., 0 for no CTE, 1 for AoA, 2 for AoD
+    uint8_t  slot_durations;    // Slot durations, e.g., 0 for 1us slots, 1 for 2us slots
+    uint8_t  packet_status;     // Packet status, e.g., 0 for valid packet, 1 for invalid packet
+    uint16_t event_counter;     // Event counter for the connection
+    uint8_t  sample_count;      // Number of IQ samples in this report
+    le_iq_sample_t samples[0];  // Array of IQ samples, variable length
 } le_meta_event_conn_iq_report_t;
 
+/**
+ * le event for CTE request failed
+ */
 typedef struct le_meta_event_cte_req_failed
 {
-    uint8_t  status;
-    uint16_t conn_handle;
+    uint8_t  status;        // Status of the CTE request, 0 for success, non-zero for failure
+    uint16_t conn_handle;   // Connection handle for which the CTE request failed
 } le_meta_event_cte_req_failed_t;
 
+/**
+ * le event for periodic advertising sync transfer received
+ * This event is used to report the reception of a periodic advertising sync transfer.
+ */
 typedef struct le_meta_event_prd_adv_sync_transfer_recv
 {
-    uint8_t  status;
-    uint16_t conn_handle;
-    uint16_t service_data;
-    uint16_t sync_handle;
-    uint8_t  adv_sid;
-    bd_addr_type_t  addr_type;
-    bd_addr_t  addr;
-    phy_type_t phy;
-    uint16_t   prd_adv_interval;
-    uint8_t    clk_acc;
+    uint8_t  status;                // Status of received command, 0 for success, non-zero for failure
+    uint16_t conn_handle;           // Connection handle for which the periodic advertising sync transfer was received
+    uint16_t service_data;          // Service data associated with the periodic advertising sync transfer
+    uint16_t sync_handle;           // Sync handle for the periodic advertising sync transfer
+    uint8_t  adv_sid;               // Advertising SID (Segment Identifier) for the periodic advertising sync transfer
+    bd_addr_type_t  addr_type;      // Address type of the advertiser, 0=public/1=random
+    bd_addr_t  addr;                // Address of the advertiser that sent the periodic advertising sync transfer
+    phy_type_t phy;                 // PHY type used for periodic advertising, e.g., 1M, 2M, Coded
+    uint16_t   prd_adv_interval;    // Periodic advertising interval in units of 1.25 ms
+    uint8_t    clk_acc;             // Clock accuracy of the periodic advertising train in ppm (parts per million)
 } le_meta_event_prd_adv_sync_transfer_recv_t;
 
+/**
+ * le event for periodic advertising sync transfer received v2
+ */
 typedef struct le_meta_event_prd_adv_sync_transfer_recv_v2
 {
-    uint8_t  status;
-    uint16_t conn_handle;
-    uint16_t service_data;
-    uint16_t sync_handle;
-    uint8_t  adv_sid;
-    bd_addr_type_t  addr_type;
-    bd_addr_t  addr;
-    phy_type_t phy;
-    uint16_t   prd_adv_interval;
-    uint8_t    clk_acc;
-
+    uint8_t  status;            // Status of received command, 0 for success, non-zero for failure
+    uint16_t conn_handle;           // Connection handle for which the periodic advertising sync transfer was received
+    uint16_t service_data;      // Service data associated with the periodic advertising sync transfer
+    uint16_t sync_handle;       // Sync handle for the periodic advertising sync transfer
+    uint8_t  adv_sid;         // Advertising SID (Segment Identifier) for the periodic advertising sync transfer
+    bd_addr_type_t  addr_type;          // Address type of the advertiser, 0=public/1=random
+    bd_addr_t  addr;        // Address of the advertiser that sent the periodic advertising sync transfer
+    phy_type_t phy;            // PHY type used for periodic advertising, e.g., 1M, 2M, Coded
+    uint16_t   prd_adv_interval;    // Periodic advertising interval in units of 1.25 ms
+    uint8_t    clk_acc;            // Clock accuracy of the periodic advertising train in ppm (parts per million)
     // [V2] additional fields
-    uint8_t             num_subevents;
-    uint8_t             subevent_interval;
-    uint8_t             rsp_slot_delay;
-    uint8_t             rsp_slot_spacing;
+    uint8_t             num_subevents;  // Number of subevents in the periodic advertising train
+    uint8_t             subevent_interval;  // Interval between subevents in the periodic advertising train in units of 1.25 ms
+    uint8_t             rsp_slot_delay; // Delay for response slots in the periodic advertising train in units of 1.25 ms
+    uint8_t             rsp_slot_spacing;   // Spacing between response slots in the periodic advertising train in units of 1.25 ms
 } le_meta_event_prd_adv_sync_transfer_recv_v2_t;
 
+/**
+ * le clock accuracy
+ * This enum defines the clock accuracy levels for Bluetooth Low Energy connections.
+ */
 typedef enum le_clock_accuracy
 {
-    LE_CLOCK_ACCURACY_500_PPM = 0,
-    LE_CLOCK_ACCURACY_250_PPM,
-    LE_CLOCK_ACCURACY_150_PPM,
-    LE_CLOCK_ACCURACY_100_PPM,
-    LE_CLOCK_ACCURACY_75_PPM,
-    LE_CLOCK_ACCURACY_50_PPM,
-    LE_CLOCK_ACCURACY_30_PPM,
-    LE_CLOCK_ACCURACY_20_PPM,
+    LE_CLOCK_ACCURACY_500_PPM = 0,  // 500 ppm
+    LE_CLOCK_ACCURACY_250_PPM,      // 250 ppm
+    LE_CLOCK_ACCURACY_150_PPM,      // 150 ppm
+    LE_CLOCK_ACCURACY_100_PPM,      // 100 ppm
+    LE_CLOCK_ACCURACY_75_PPM,       // 75 ppm
+    LE_CLOCK_ACCURACY_50_PPM,       // 50 ppm
+    LE_CLOCK_ACCURACY_30_PPM,       // 30 ppm
+    LE_CLOCK_ACCURACY_20_PPM,       // 20 ppm
 } le_clock_accuracy_t;
 
+/**
+ * le event for request peer SCA complete
+ */
 typedef struct le_meta_event_request_peer_sca_complete
 {
-    uint8_t  status;
-    uint16_t conn_handle;
-    le_clock_accuracy_t peer_clock_accuracy;
+    uint8_t  status;        // Status of received command, 0 for success, non-zero for failure
+    uint16_t conn_handle;   // Connection handle for which the peer SCA was requested
+    le_clock_accuracy_t peer_clock_accuracy;    // Peer clock accuracy, indicating the accuracy of the peer's clock
 } le_meta_event_request_peer_sca_complete_t;
 
+/**
+ * le event for path loss threshold
+ */
 typedef enum le_path_loss_zone_event
 {
-    PATH_LOSS_ZONE_ENTER_LOW = 0,
-    PATH_LOSS_ZONE_ENTER_MIDDLE = 1,
-    PATH_LOSS_ZONE_ENTER_HIGH = 2,
+    PATH_LOSS_ZONE_ENTER_LOW = 0,       // Entered low path loss zone
+    PATH_LOSS_ZONE_ENTER_MIDDLE = 1,    // Entered middle path loss zone
+    PATH_LOSS_ZONE_ENTER_HIGH = 2,      // Entered high path loss zone
 } le_path_loss_zone_event_t;
 
+/**
+ * le event for path loss threshold
+ */
 typedef struct le_meta_event_path_loss_threshold
 {
-    uint16_t conn_handle;
-    uint8_t  current_path_loss;     // Current path loss (always zero or positive) Units: dB
-    le_path_loss_zone_event_t  zone_entered;
+    uint16_t conn_handle;                       // Connection handle
+    uint8_t  current_path_loss;                 // Current path loss (always zero or positive) Units: dB
+    le_path_loss_zone_event_t  zone_entered;    // Zone entered based on the current path loss
 } le_meta_event_path_loss_threshold_t;
 
+/**
+ * le event for transmit power reporting
+ * This event is used to report changes in the transmit power level.
+ */
 typedef enum le_tx_power_reporting_reason
 {
-    TX_POWER_REPORTING_REASON_LOCAL_CHANGED = 0,
-    TX_POWER_REPORTING_REASON_REMOTE_CHANGED = 1,
-    TX_POWER_REPORTING_REASON_HCI_COMPLETE = 2,
+    TX_POWER_REPORTING_REASON_LOCAL_CHANGED = 0,    // Local device changed its transmit power level
+    TX_POWER_REPORTING_REASON_REMOTE_CHANGED = 1,   // Remote device changed its transmit power level
+    TX_POWER_REPORTING_REASON_HCI_COMPLETE = 2,     // HCI command completed, reporting the transmit power level
 } le_tx_power_reporting_reason_t;
 
+/**
+ * le event for transmit power reporting
+ */
 typedef struct le_meta_event_tx_power_reporting
 {
-    uint8_t  status;
-    uint16_t conn_handle;
-    le_tx_power_reporting_reason_t reason;
-    unified_phy_type_t phy;
-    int8_t  tx_power_level;         // Tx power level in dBm
-    uint8_t tx_power_level_flag;    // Bit 0: Transmit power level is at minimum level
-                                    // Bit 1: Transmit power level is at maximum level
-    int8_t  delta;                  // Change in transmit power level (positive indicates increased power,
-                                    // negative indicates decreased power, zero indicates unchanged)
-                                    // Units: dB
-                                    // 0x7F: Change is not available or is out of range
+    uint8_t  status;                        // Status of received command, 0 for success, non-zero for failure
+    uint16_t conn_handle;                   // Connection handle for which the transmit power level is reported
+    le_tx_power_reporting_reason_t reason;  // Reason for the transmit power reporting event
+    unified_phy_type_t phy;                 // PHY type for which the transmit power level is reported  
+    int8_t  tx_power_level;                 // Tx power level in dBm
+    uint8_t tx_power_level_flag;            // Bit 0: Transmit power level is at minimum level
+                                            // Bit 1: Transmit power level is at maximum level
+    int8_t  delta;                          // Change in transmit power level (positive indicates increased power,
+                                            // negative indicates decreased power, zero indicates unchanged)
+                                            // Units: dB
+                                            // 0x7F: Change is not available or is out of range
 } le_meta_event_tx_power_reporting_t;
 
+/**
+ * le event for subrate change
+ * This event is used to report changes in the subrate factor and related parameters for a connection.
+ */
 typedef struct le_meta_subrate_change
 {
-    uint8_t  status;
-    uint16_t conn_handle;
+    uint8_t  status;                // Status of received command, 0 for success, non-zero for failure
+    uint16_t conn_handle;           // Connection handle for which the subrate change is reported
     uint16_t subrate_factor;        // New subrate factor applied to the specified underlying connection interval
                                     // Range 0x0001 to 0x01F4
     uint16_t peripheral_latency;    // New Peripheral latency for the connection in number of subrated connection events
@@ -1439,21 +1594,29 @@ typedef struct le_meta_subrate_change
                                     // Time Range: 100 ms to 32 s
 } le_meta_subrate_change_t;
 
+/**
+ * le event for vendor channel map update
+ */
 typedef struct le_meta_event_vendor_channel_map_update
 {
     // connection handle
-    uint16_t conn_handle;
+    uint16_t conn_handle;       // connection handle for which the channel map is updated
     // current channel map (the lower 37 bits are used)
     // channel `n` is identified by bit `(channel_map & 0x7)` of `channel_map[n / 8]`
-    uint8_t  channel_map[5];
+    uint8_t  channel_map[5];    // Channel map for the connection, lower 37 bits used
 } le_meta_event_vendor_channel_map_update_t;
 
-// @brief BLE Link Layer security context
+/**
+ * BLE link layer security context
+ */
 typedef struct le_security_ctx
 {
-    uint8_t opaque[40];
+    uint8_t opaque[40]; // Opaque security context data, used for storing security-related information
 } le_security_ctx_t;
 
+/**
+ * le event for vendor connection aborted
+ */
 typedef struct le_meta_event_vendor_connection_aborted
 {
     uint16_t conn_handle;           // connection handle
@@ -1476,6 +1639,9 @@ typedef struct le_meta_event_vendor_connection_aborted
     le_security_ctx_t security;     // security context (available when enabled)
 } le_meta_event_vendor_connection_aborted_t;
 
+/**
+ * le event for periodic advertising subevent data request
+ */
 typedef struct le_mete_event_prd_adv_subevent_data_req
 {
     uint8_t adv_handle;             // Used to identify a periodic advertising train
@@ -1486,6 +1652,10 @@ typedef struct le_mete_event_prd_adv_subevent_data_req
                                     // Range: 0x01 to 0x80
 } le_mete_event_prd_adv_subevent_data_req_t;
 
+/**
+ * le event for periodic advertising response report
+ * This event is used to report responses received during periodic advertising.
+ */
 typedef struct le_prd_adv_rsp_report
 {
      int8_t tx_power;       // Range: -127 to +20. Unit dBm
@@ -1507,6 +1677,9 @@ typedef struct le_prd_adv_rsp_report
 #endif
 } le_prd_adv_rsp_report_t;
 
+/**
+ * le event for periodic advertising response report
+ */
 typedef struct le_mete_event_prd_adv_rsp_report
 {
     uint8_t adv_handle;     // Used to identify a periodic advertising train
@@ -1552,10 +1725,12 @@ typedef struct le_mete_event_prd_adv_rsp_report
 #define le_mete_prd_adv_subevent_data_req   le_mete_event_prd_adv_subevent_data_req
 #define le_meta_adv_set_terminated_t        le_meta_event_adv_set_terminated_t
 #define le_meta_adv_set_terminated          le_meta_event_adv_set_terminated
-
+/**
+ * btstack l2cap message definitions
+ */
 typedef enum btstack_l2cap_msg_def
 {
-    BTSTACK_L2CAP_MSG_CAN_SEND_NOW = 0,
+    BTSTACK_L2CAP_MSG_CAN_SEND_NOW = 0, // Can send now
 } btstack_l2cap_msg_def_t;
 
 #pragma pack (pop)
