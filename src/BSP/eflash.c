@@ -31,7 +31,7 @@ static void init(void)
 {
     FLASH_PRE_OPS();
 
-    ClkFreq = (*(uint32_t *)RTC_CHIP_STAT_ADDR >> CLK_FREQ_STAT_POS) & 0x1;
+    ClkFreq = (*(uint32_t volatile*)RTC_CHIP_STAT_ADDR >> CLK_FREQ_STAT_POS) & 0x1;
     EflashCacheBypass();
     EflashBaseTime();
 #ifdef FOR_ASIC
@@ -208,6 +208,9 @@ void flash_read_uid(uint32_t uid[4])
     const die_info_t* die_info;
     const factory_calib_data_t* factory_calib;
     
+    if(NULL == uid)
+        return;
+
     EflashCacheBypass();
     die_info = flash_get_die_info();
     factory_calib = flash_get_factory_calib_data();
@@ -224,6 +227,27 @@ void flash_read_uid(uint32_t uid[4])
         uid[3] = 0;
     }
     EflashCacheEna();
+}
+
+int flash_read_mac(uint8_t mac[6])
+{
+    const die_info_t* pDie_info;
+
+    if(NULL == mac) 
+        return -1;
+
+    EflashCacheBypass();
+    pDie_info = flash_get_die_info();
+    uint8_t *pLot = (uint8_t*)&pDie_info->lot_id[0];
+    mac[0] = pDie_info->wafer_id&0x1f;
+    mac[1] = pLot[1];
+    mac[2] = pLot[3];
+    mac[3] = pLot[5];
+    mac[4] = pDie_info->Die_x_local;
+    mac[5] = pDie_info->Die_y_local;
+    EflashCacheEna();
+    
+    return 0;
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
