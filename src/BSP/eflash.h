@@ -170,6 +170,16 @@ const factory_calib_data_t *flash_get_factory_calib_data(void);
  */
 void flash_read_uid(uint32_t uid[4]);
 
+/**
+ * @brief Read MAC of flash
+ *
+ * @param[out]  mac            45-bit unique mac
+ * @return                     0 if successful else non-0
+ * @note     
+ *         The MAC consists of a 5-bit wafer ID, a 24 bit Lot number, and the x and y coordinates of the chip on the wafer            
+ */
+int flash_read_mac(uint8_t mac[6]);
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 #define EFLASH_PAGE_SIZE        256
