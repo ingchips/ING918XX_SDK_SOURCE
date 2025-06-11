@@ -171,14 +171,14 @@ const factory_calib_data_t *flash_get_factory_calib_data(void);
 void flash_read_uid(uint32_t uid[4]);
 
 /**
- * @brief Read MAC of flash
+ * @brief Read UID 45 bit of flash
  *
- * @param[out]  mac            45-bit unique mac
+ * @param[out]  uid            45-bit unique use
  * @return                     0 if successful else non-0
  * @note     
- *         The MAC consists of a 5-bit wafer ID, a 24 bit Lot number, and the x and y coordinates of the chip on the wafer            
+ *         The UID 45 bit consists of a 5-bit wafer ID, a 24 bit Lot number, and the x and y coordinates of the chip on the wafer            
  */
-int flash_read_mac(uint8_t mac[6]);
+int flash_read_uid45(uint8_t uid[6]);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 

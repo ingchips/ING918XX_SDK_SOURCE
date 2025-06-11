@@ -229,22 +229,22 @@ void flash_read_uid(uint32_t uid[4])
     EflashCacheEna();
 }
 
-int flash_read_mac(uint8_t mac[6])
+int flash_read_uid45(uint8_t uid[6])
 {
     const die_info_t* pDie_info;
 
-    if(NULL == mac) 
+    if(NULL == uid) 
         return -1;
 
     EflashCacheBypass();
     pDie_info = flash_get_die_info();
     uint8_t *pLot = (uint8_t*)&pDie_info->lot_id[0];
-    mac[0] = pDie_info->wafer_id&0x1f;
-    mac[1] = pLot[1];
-    mac[2] = pLot[3];
-    mac[3] = pLot[5];
-    mac[4] = pDie_info->Die_x_local;
-    mac[5] = pDie_info->Die_y_local;
+    uid[0] = pDie_info->wafer_id&0x1f;
+    uid[1] = pLot[1];
+    uid[2] = pLot[3];
+    uid[3] = pLot[5];
+    uid[4] = pDie_info->Die_x_local;
+    uid[5] = pDie_info->Die_y_local;
     EflashCacheEna();
     
     return 0;
