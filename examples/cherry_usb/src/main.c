@@ -121,7 +121,9 @@ uintptr_t app_main()
            NULL,
            (configMAX_PRIORITIES - 1),
            NULL);
-
+    // TODO: config trace mask
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0);
+    
     return 0;
 }
 
