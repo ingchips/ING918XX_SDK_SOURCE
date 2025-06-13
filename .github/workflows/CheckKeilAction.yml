@@ -1,0 +1,35 @@
+name: Check Keil Project
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build gen_files.nim
+        working-directory: ${{ github.workspace }}/tools
+        run: |
+          nim -d:release --threads:on c gen_files.nim
+          ${{ github.workspace }}/tools/gen_files ${{ github.workspace }}/bundles
+
+      - name: build Keil project
+        run: |
+          Set-Location examples
+          Get-ChildItem -Directory | ForEach-Object {
+              Write-Host "running  build for project  $($_.Name)..."
+              Set-Location $_.Name
+              keil -b
+              if ($LASTEXITCODE -ne 0) {
+                  Write-Host "::error::build failed for project: $($_.Name)"
+                  exit 1
+              }
+              Set-Location ..
+          }
+        shell: powershell
