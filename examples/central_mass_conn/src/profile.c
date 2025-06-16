@@ -125,8 +125,8 @@ static initiating_phy_config_t phy_configs[] =
         .phy = PHY_1M,
         .conn_param =
         {
-            .scan_int = 150,
-            .scan_win = 100,
+            .scan_int = 550,
+            .scan_win = 520,
             .interval_min = 350,
             .interval_max = 350,
             .latency = 0,

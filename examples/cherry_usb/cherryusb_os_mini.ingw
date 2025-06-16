@@ -21,10 +21,10 @@
   "version": [
    2,4,6]
  },
- "tc_dir": "C:\/Keil_v5\/uv4",
+ "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
  "ide_ver": "5",
- "ide_exe": "C:\/Keil_v5\/uv4\/uv4.exe",
+ "ide_exe": "C:\\Keil_v5\\UV4\\UV4.exe",
  "use_uart_trace": false,
  "ota": false,
  "ide": "keil",
@@ -55,7 +55,7 @@
  "is_sdk_path_rel": true,
  "pb_gatt": true,
  "deep_sleep": false,
- "proj_dir": "C:\\ming\\ING918XX_SDK_SOURCE\\examples\\cherry_usb",
+ "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\cherry_usb",
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
