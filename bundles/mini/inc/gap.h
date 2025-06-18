@@ -1204,9 +1204,12 @@ uint8_t gap_periodic_adv_set_info_transfer(const hci_con_handle_t   conn_handle,
 
 typedef enum
 {
-    PERIODIC_TRANS_MODE_NULL,                       // No action
-    PERIODIC_TRANS_MODE_SEND_EVT_DISABLE_REPORT,    // Send event to disable periodic advertising report
-    PERIODIC_TRANS_MODE_SEND_EVT_ENABLE_REPORT      // Send event to enable periodic advertising report
+    PERIODIC_TRANS_MODE_NULL,                       // No attempt is made to synchronize to the periodic advertising and
+                                                    // no HCI_LE_Periodic_Advertising_Sync_Transfer_Received event is sent to the Host.
+    PERIODIC_TRANS_MODE_SEND_EVT_DISABLE_REPORT,    // An HCI_LE_Periodic_Advertising_Sync_Transfer_Received event is sent to the Host.
+                                                    // HCI_LE_Periodic_Advertising_Report events will be disabled.
+    PERIODIC_TRANS_MODE_SEND_EVT_ENABLE_REPORT,     // An HCI_LE_Periodic_Advertising_Sync_Transfer_Received event is sent to the Host.
+                                                    // HCI_LE_Periodic_Advertising_Report events will be enabled with duplicate filtering disabled
 } periodic_adv_sync_transfer_mode_t;
 
 // synchronize exclusion flags
@@ -1678,7 +1681,7 @@ uint8_t gap_vendor_tx_continuous_wave(uint8_t enable, uint8_t power_level_index,
  * @param[in]  msg_len               message length to be encrypt or decrypt (<= 384 bytes)
  * @param[in]  aad_len               Additional authenticated data length (<= 16 bytes)
  * @param[in]  tag                   a value to identify a AES-CCM request.
- *                                   the same value will be reported in event.
+ *                                   the same value will be reported in the event.
  * @param[in]  key                   128 bits long key as required by AES-CCM
  * @param[in]  nonce                 random value of each AES-CCM require 13 bytes long
  * @param[in]  msg                   pointer to the message input

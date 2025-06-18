@@ -162,6 +162,7 @@ enum btstack_config_item {
     STACK_SM_USE_FIXED_CSRK = 8,                        // for testing only (default: SM not use fixed CSRK)
     STACK_GATT_CLIENT_DISABLE_MTU_EXCHANGE = 16,        // suppress MTU exchange in gatt client
                                                         // Only for PTS testing
+    STACK_CONNECTION_UPDATE_PARAMETER_REPLY_USER = 32,  // Enable user to update parameters reply (default: Disabled)
 };
 
 /**

@@ -64,7 +64,7 @@ typedef struct
 {
     uint16_t start_group_handle;    // Start group handle of the service
     uint16_t end_group_handle;      // End group handle of the service
-    uint8_t  uuid128[UUID128_LEN];  // UUID of the service, 16 or 128 bit
+    uint8_t  uuid128[UUID128_LEN];  // UUID of the service
 } gatt_client_service_t;
 
 /** type of gatt service query result */
@@ -72,7 +72,7 @@ typedef struct
 {
     hci_con_handle_t     handle;    // Connection handle
     gatt_client_service_t service;  // Service information
-} gatt_event_service_query_result_t;    
+} gatt_event_service_query_result_t;
 
 /** typedef gatt client characteristic */
 typedef struct {
@@ -80,7 +80,7 @@ typedef struct {
     uint16_t value_handle;          // Handle of the characteristic value
     uint16_t end_handle;            // End handle of the characteristic
     uint16_t properties;            // Properties of the characteristic, e.g., read, write, notify
-    uint8_t  uuid128[UUID128_LEN];  // UUID of the characteristic, 16 or 128 bit
+    uint8_t  uuid128[UUID128_LEN];  // UUID of the characteristic
 } gatt_client_characteristic_t;
 
 /** typedef gatt client characteristic query result */
@@ -123,7 +123,7 @@ typedef struct {
  * @brief Discovers all primary services. For each found service, an le_service_event_t with type set to GATT_EVENT_SERVICE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t, with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
  * @param callback          Callback to discover primary services.
  * @param con_handle        Connection handle to discover services on.
- * @return                 0 on success, or error code on failure.
+ * @return                  0 on success, or error code on failure.
  */
 uint8_t gatt_client_discover_primary_services(user_packet_handler_t callback, hci_con_handle_t con_handle);
 
@@ -131,8 +131,8 @@ uint8_t gatt_client_discover_primary_services(user_packet_handler_t callback, hc
  * @brief Discovers a specific primary service given its UUID. This service may exist multiple times. For each found service, an le_service_event_t with type set to GATT_EVENT_SERVICE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t, with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
  * @param callback          callback to discover primary services by UUID16
  * @param con_handle        connection handle to discover services on
- * @param uuid16           16-bit UUID of the primary service to discover
- * @return                 0 on success, or error code on failure.
+ * @param uuid16            16-bit UUID of the primary service to discover
+ * @return                  0 on success, or error code on failure.
  */
 uint8_t gatt_client_discover_primary_services_by_uuid16(user_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t uuid16);
 
@@ -199,21 +199,22 @@ uint8_t gatt_client_discover_characteristics_for_handle_range_by_uuid128(btstack
  * @param callback          Callback to discover characteristic descriptors.
  * @param con_handle        Connection handle to discover characteristic descriptors on.
  * @param characteristic    Pointer to the characteristic for which to discover descriptors.
- * @return                 0 on success, or error code on failure.
+ * @return                  0 on success, or error code on failure.
  */
 uint8_t gatt_client_discover_characteristic_descriptors(btstack_packet_handler_t callback, hci_con_handle_t con_handle, gatt_client_characteristic_t  *characteristic);
 
 /**
  * @brief Reads the characteristic value using the characteristic's value handle. If the characteristic value is found, an le_characteristic_value_event_t with type set to GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
- * @callback          Callback to read characteristic value.
- * @param con_handle   Connection handle to read characteristic value on.
- * @param characteristic_value_handle  Handle of the characteristic value to read.
- * @return            0 on success, or error code on failure.
+ * @callback                            Callback to read characteristic value.
+ * @param con_handle                    Connection handle to read characteristic value on.
+ * @param characteristic_value_handle   Handle of the characteristic value to read.
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_read_value_of_characteristic_using_value_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle);
 
 /**
  * @brief Reads the characteristic value of all characteristics with the uuid. For each found, an le_characteristic_value_event_t with type set to GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
+ *
  * Note: To search through all attributes, the starting handle shall be set to 0x0001 and the ending handle shall be set to 0xFFFF.
  * @param callback          Callback to read characteristic value by UUID16.
  * @param con_handle        Connection handle to read characteristic value on.
@@ -238,99 +239,99 @@ uint8_t gatt_client_read_value_of_characteristics_by_uuid128(btstack_packet_hand
 
 /**
  * @brief Reads the long characteristic value using the characteristic's value handle. The value will be returned in several blobs. For each blob, an le_characteristic_value_event_t with type set to GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT and updated value offset will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, mark the end of read.
- * @param callback          Callback to read long characteristic value.
- * @param con_handle        Connection handle to read long characteristic value on.
- * @param characteristic_value_handle  Handle of the characteristic value to read.
- * @return                 0 on success, or error code on failure.
+ * @param callback                      Callback to read long characteristic value.
+ * @param con_handle                    Connection handle to read long characteristic value on.
+ * @param characteristic_value_handle   Handle of the characteristic value to read.
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_read_long_value_of_characteristic_using_value_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle);
 
 /**
  * @brief Reads the long characteristic value using the characteristic's value handle with offset. The value will be returned in several blobs. For each blob, an le_characteristic_value_event_t with type set to GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT and updated value offset will be generated and passed to the registered callback. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of read.
- * @param callback          Callback to read long characteristic value with offset.
- * @param con_handle        Connection handle to read long characteristic value on.
- * @param characteristic_value_handle  Handle of the characteristic value to read.
- * @param offset            Offset from which to start reading the long characteristic value.
- * @return                 0 on success, or error code on failure.
+ * @param callback                      Callback to read long characteristic value with offset.
+ * @param con_handle                    Connection handle to read long characteristic value on.
+ * @param characteristic_value_handle   Handle of the characteristic value to read.
+ * @param offset                        Offset from which to start reading the long characteristic value.
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_read_long_value_of_characteristic_using_value_handle_with_offset(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t offset);
 
-/** 
+/**
  * @brief Read multiple characteristic values
- * @param callback to read multiple characteristic values 
- * @param con_handle connection handle to read multiple characteristic values on
- * @param num_value_handles number of characteristic value handles to read
- * @param value_handles array of characteristic value handles to read
- * @return 0 on success, or error code on failure.
+ * @param callback                      to read multiple characteristic values
+ * @param con_handle                    connection handle to read multiple characteristic values on
+ * @param num_value_handles             number of characteristic value handles to read
+ * @param value_handles                 array of characteristic value handles to read
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_read_multiple_characteristic_values(btstack_packet_handler_t callback, hci_con_handle_t con_handle, int num_value_handles, uint16_t * value_handles);
 
 /**
  * @brief Writes the characteristic value using the characteristic's value handle without an acknowledgment that the write was successfully performed.
- * @param con_handle        Connection handle to write characteristic value on.
- * @param characteristic_value_handle  Handle of the characteristic value to write.
- * @param length            Length of the data to write.
- * @param data              Pointer to the data to write.
- * @return                 0 on success, or error code on failure.
+ * @param con_handle                    Connection handle to write characteristic value on.
+ * @param characteristic_value_handle   Handle of the characteristic value to write.
+ * @param length                        Length of the data to write.
+ * @param data                          Pointer to the data to write.
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_write_value_of_characteristic_without_response(hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, const uint8_t  * data);
 
 /**
  * @brief Writes the authenticated characteristic value using the characteristic's value handle without an acknowledgment that the write was successfully performed.
  * @param callback          Callback to write authenticated characteristic value without response.
- * @param con_handle        Connection handle to write authenticated characteristic value on.    
+ * @param con_handle        Connection handle to write authenticated characteristic value on.
  * @param handle            Handle of the characteristic value to write.
  * @param message_len       Length of the data to write.
  * @param message           Pointer to the data to write.
- * @return                 0 on success, or error code on failure.
+ * @return                  0 on success, or error code on failure.
  */
 uint8_t gatt_client_signed_write_without_response(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t handle, uint16_t message_len, const uint8_t  * message);
 
 /**
  * @brief Writes the characteristic value using the characteristic's value handle. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of write. The write is successfully performed, if the event's status field is set to 0.
- * @param callback          Callback to write characteristic value.
- * @param con_handle        Connection handle to write characteristic value on.
- * @param characteristic_value_handle  Handle of the characteristic value to write.
- * @param length            Length of the data to write.
- * @param data              Pointer to the data to write.
- * @return                 0 on success, or error code on failure.
+ * @param callback                      Callback to write characteristic value.
+ * @param con_handle                    Connection handle to write characteristic value on.
+ * @param characteristic_value_handle   Handle of the characteristic value to write.
+ * @param length                        Length of the data to write.
+ * @param data                          Pointer to the data to write.
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_write_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, const uint8_t  * data);
 
 /**
  * @brief Writes the characteristic value using the characteristic's value handle. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of write. The write is successfully performed, if the event's status field is set to 0.
  * @note This function is used for writing long values that may exceed the maximum transmission unit (MTU) size.
- * @param callback          Callback to write long characteristic value.
- * @param con_handle        Connection handle to write long characteristic value on.
- * @param characteristic_value_handle  Handle of the characteristic value to write.
- * @param length            Length of the data to write.
- * @param data              Pointer to the data to write.
- * @return                 0 on success, or error code on failure.
+ * @param callback                      Callback to write long characteristic value.
+ * @param con_handle                    Connection handle to write long characteristic value on.
+ * @param characteristic_value_handle   Handle of the characteristic value to write.
+ * @param length                        Length of the data to write.
+ * @param data                          Pointer to the data to write.
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_write_long_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, const uint8_t  * data);
 
 /**
  * @brief Writes the long characteristic value using the characteristic's value handle with offset. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of write. The write is successfully performed, if the event's status field is set to 0.
  * @note This function is used for writing long values that may exceed the maximum transmission unit (MTU) size.
- * @param callback          Callback to write long characteristic value with offset.
- * @param con_handle        Connection handle to write long characteristic value on.
- * @param characteristic_value_handle  Handle of the characteristic value to write.
- * @param offset            Offset from which to start writing the long characteristic value.
- * @param length            Length of the data to write.
- * @param data              Pointer to the data to write.
- * @return                 0 on success, or error code on failure.
+ * @param callback                      Callback to write long characteristic value with offset.
+ * @param con_handle                    Connection handle to write long characteristic value on.
+ * @param characteristic_value_handle   Handle of the characteristic value to write.
+ * @param offset                        Offset from which to start writing the long characteristic value.
+ * @param length                        Length of the data to write.
+ * @param data                          Pointer to the data to write.
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_write_long_value_of_characteristic_with_offset(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t offset, uint16_t length, const uint8_t  * data);
 
 /**
  * @brief Writes of the long characteristic value using the characteristic's value handle. It uses server response to validate that the write was correctly received. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE marks the end of write. The write is successfully performed, if the event's status field is set to 0.
  * @note This function is used for writing long values that may exceed the maximum transmission unit (MTU) size.
- * @param callback          Callback to write long characteristic value with reliable write.
- * @param con_handle        Connection handle to write long characteristic value on.
- * @param characteristic_value_handle  Handle of the characteristic value to write.
- * @param length            Length of the data to write.
- * @param data              Pointer to the data to write.
- * @return                 0 on success, or error code on failure.
+ * @param callback                      Callback to write long characteristic value with reliable write.
+ * @param con_handle                    Connection handle to write long characteristic value on.
+ * @param characteristic_value_handle   Handle of the characteristic value to write.
+ * @param length                        Length of the data to write.
+ * @param data                          Pointer to the data to write.
+ * @return                              0 on success, or error code on failure.
  */
 uint8_t gatt_client_reliable_write_long_value_of_characteristic(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t characteristic_value_handle, uint16_t length, const uint8_t  * data);
 
@@ -347,7 +348,7 @@ uint8_t gatt_client_read_characteristic_descriptor_using_descriptor_handle(btsta
  * @param callback          Callback to read long characteristic descriptor.
  * @param con_handle        Connection handle to read long characteristic descriptor on.
  * @param descriptor_handle Handle of the characteristic descriptor to read.
- * @return                 0 on success, or error code on failure.
+ * @return                  0 on success, or error code on failure.
  */
 uint8_t gatt_client_read_long_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle);
 
@@ -367,18 +368,18 @@ uint8_t gatt_client_read_long_characteristic_descriptor_using_descriptor_handle_
  * @param descriptor_handle Handle of the characteristic descriptor to write.
  * @param length            Length of the data to write.
  * @param data              Pointer to the data to write.
- * @return                 0 on success, or error code on failure.
+ * @return                  0 on success, or error code on failure.
  */
 uint8_t gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle, uint16_t length, uint8_t  * data);
 
 /**
-    * @brief Writes the long characteristic descriptor using its handle. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of write. The write is successfully performed, if the event's status field is set to 0.
-    * @param callback          Callback to write long characteristic descriptor.
-    * @param con_handle        Connection handle to write long characteristic descriptor on.
-    * @param descriptor_handle Handle of the characteristic descriptor to write.
-    * @param length            Length of the data to write.
-    * @param data              Pointer to the data to write.
-    * @return                 0 on success, or error code on failure.
+ * @brief Writes the long characteristic descriptor using its handle. The gatt_complete_event_t with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of write. The write is successfully performed, if the event's status field is set to 0.
+ * @param callback          Callback to write long characteristic descriptor.
+ * @param con_handle        Connection handle to write long characteristic descriptor on.
+ * @param descriptor_handle Handle of the characteristic descriptor to write.
+ * @param length            Length of the data to write.
+ * @param data              Pointer to the data to write.
+ * @return                  0 on success, or error code on failure.
  */
 uint8_t gatt_client_write_long_characteristic_descriptor_using_descriptor_handle(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint16_t descriptor_handle, uint16_t length, uint8_t  * data);
 
@@ -467,22 +468,22 @@ int gatt_client_exchange_mtu_request(hci_con_handle_t con_handle, uint16_t mtu);
 /**
  * @brief Returns if the GATT client is ready to receive a query. It is used with daemon.
  * @param con_handle        connection handle
- * @return                 1 if ready, 0 if not ready
+ * @return                  1 if ready, 0 if not ready
  */
 int gatt_client_is_ready(hci_con_handle_t con_handle);
 
 /**
  * @brief Register for notifications and indications of a characteristic enabled by gatt_client_write_client_characteristic_configuration
- * @param notification struct used to store registration
- * @param packet_handler callback to receive notifications or indications
- * @param con_handle connection handle to register for notifications or indications
- * @param characteristic characteristic to register for notifications or indications
+ * @param notification      struct used to store registration
+ * @param packet_handler    callback to receive notifications or indications
+ * @param con_handle        connection handle to register for notifications or indications
+ * @param characteristic    characteristic to register for notifications or indications
  */
 void gatt_client_listen_for_characteristic_value_updates(gatt_client_notification_t * notification, btstack_packet_handler_t packet_handler, hci_con_handle_t con_handle, uint16_t value_handle);
 
 /**
  * @brief Register for general events
- * @param handler btstack packet handler to receive GATT client events
+ * @param handler           btstack packet handler to receive GATT client events
  */
 void gatt_client_register_handler(btstack_packet_handler_t handler);
 
