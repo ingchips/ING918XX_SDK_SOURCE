@@ -3,11 +3,11 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9010400000000",
-    "addr": 151704
+    "addr": 151616
    }
   },
   "rom": {
-   "size": 139324,
+   "size": 139236,
    "base": 16384
   },
   "ram": {
@@ -15,10 +15,10 @@
    "base": 536870912
   },
   "app": {
-   "base": 163840
+   "base": 155648
   },
   "version": [
-   1,10,5]
+   1,10,7]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",
@@ -45,8 +45,8 @@
  "power_saving": false,
  "gatt_handle_value": "6",
  "bundle": "mini",
- "app_rom_size": "376832",
- "app_rom_addr": "163840",
+ "app_rom_size": "385024",
+ "app_rom_addr": "155648",
  "family": "ing918",
  "vcode": false,
  "role": "peripheral",
