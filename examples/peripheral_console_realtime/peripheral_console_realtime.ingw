@@ -4,22 +4,22 @@
   "var": {
    "link_layer_features": {
     "value": "bf79ff07fe000000",
-    "addr": 33691744
+    "addr": 33691796
    }
   },
   "rom": {
-   "size": 152704,
+   "size": 152828,
    "base": 33562624
   },
   "ram": {
-   "size": 18300,
+   "size": 18372,
    "base": 536870912
   },
   "app": {
    "base": 33718272
   },
   "version": [
-   2,4,9]
+   2,4,11]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -76,8 +76,8 @@
  },
  "keil": true,
  "cmsis": "",
- "app_ram_size": 39040,
- "app_ram_addr": 536889216,
+ "app_ram_size": 38968,
+ "app_ram_addr": 536889288,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",

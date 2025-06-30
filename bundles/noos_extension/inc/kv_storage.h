@@ -40,16 +40,12 @@ extern "C" {
  * @brief key-collision between different modules should be strictly avoided.
  *        Here is a pre-defined range for keys:
  */
-#define KV_HOST_KEY_START              1
-#define KV_HOST_KEY_END                50
-#define KV_MESH_KEY_START              51
-#define KV_MESH_KEY_END                200
-#define KV_USER_KEY_START              201
-#define KV_USER_KEY_END                255
-
-#ifndef DB_CAPACITY_SIZE
-    #define DB_CAPACITY_SIZE 1024
-#endif
+#define KV_HOST_KEY_START             (  1)
+#define KV_HOST_KEY_END               ( 50)
+#define KV_MESH_KEY_START             ( 51)
+#define KV_MESH_KEY_END               (200)
+#define KV_USER_KEY_START             (201)
+#define KV_USER_KEY_END               (255)
 
 typedef uint8_t kvkey_t;
 
