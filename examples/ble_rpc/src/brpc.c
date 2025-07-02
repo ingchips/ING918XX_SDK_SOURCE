@@ -81,7 +81,7 @@ void sys_mem_map_add(void *addr, uint16_t size, const void *buf)
             map = &mem_maps[i];
             break;
         }
-    } 
+    }
     if ((map == NULL) || (size > sizeof(map->buf)))
         platform_raise_assertion(__FILE__, __LINE__);
     map->addr = addr;
@@ -1140,6 +1140,7 @@ uint32_t cb_assertion(assertion_info_t *info, void *_)
     int len = sizeof(struct ret) + strlen(info->file_name);
     _r = (struct ret *)alloca(sizeof(struct ret) + len);
     strcpy(_r->fn, info->file_name);
+    _r->line_no = info->line_no;
     send_platform_event(PLATFORM_CB_EVT_ASSERTION, _r, len);
     driver_flush_tx();
     platform_printf("[ASSERTION] @ %s:%d\n",
