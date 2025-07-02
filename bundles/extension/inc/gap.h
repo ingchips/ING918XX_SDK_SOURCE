@@ -1752,7 +1752,7 @@ typedef enum {
 /**
  * @brief gap connection parameter update reply
  * @note This function is used when STACK_CONNECTION_UPDATE_PARAMETER_REPLY_USER is set,
- *       and when `HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_COMPLETE` is received.
+ *       and when `HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST` is received.
  * @param handle                The connection handle.
  *                              Range 0x0000 to 0x0EFF
  * @param min_interval          Minimum connection interval.
@@ -1788,7 +1788,7 @@ uint8_t gap_connection_parameter_update_reply(hci_con_handle_t handle, uint16_t 
 /**
  * @brief gap connection parameter update negative reply
  * @note This function is used when STACK_CONNECTION_UPDATE_PARAMETER_REPLY_USER is set,
- *       and when `HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_COMPLETE` is received.
+ *       and when `HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST` is received.
  * @param handle                The connection handle.
  *                              Range 0x0000 to 0x0EFF
  * @param error_code            The error code for rejecting the connection parameter update request.
