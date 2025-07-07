@@ -4,11 +4,11 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9ff0700000000",
-    "addr": 162580
+    "addr": 162760
    }
   },
   "rom": {
-   "size": 150672,
+   "size": 150848,
    "base": 16384
   },
   "ram": {
@@ -19,7 +19,7 @@
    "base": 172032
   },
   "version": [
-   1,10,9]
+   1,10,14]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
