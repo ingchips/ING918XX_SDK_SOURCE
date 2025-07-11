@@ -548,7 +548,7 @@ bG9hZGVyIEludGVyZmFjZQBJbmdjaGlwcyBVU0IgRGV2aWNlAAAAAAAAAAAA"""]
 
 def prepare_loader(intf: intf_base, d: device, config) -> bool:
     use_ram = False
-    use_ext = False
+    use_ext = config.getboolean('options', 'AlwaysUseExtBootloader', fallback=False)
     for i in range(6):
         bcfg = dict(config.items('bin-' + str(i)))
         if bcfg['checked'] != '1':
