@@ -40,7 +40,7 @@ static void EraseEFlashPage(uint32_t PageIdx)
 
 static void EflashBaseTime(void)
 {
-		*(uint32_t *)0xc4008 = 0x19000;
+		*(uint32_t volatile*)0xc4008 = 0x19000;
 }
 
 static void EflashRepair(void)
@@ -55,12 +55,12 @@ static void EflashRepair(void)
 
 static void EflashCacheBypass(void)
 {
-		*(uint32_t *)0x40041000 = 0x2;
+		*(uint32_t volatile*)0x40041000 = 0x2;
 }
 
 static void EflashCacheEna(void)
 {
-		*(uint32_t *)0x40041000 = 0x0;
+		*(uint32_t volatile*)0x40041000 = 0x0;
 }
 
 static void EflashCacheFlush(void)
@@ -71,19 +71,19 @@ static void EflashCacheFlush(void)
 
 static void EflashProgramEnable(void)
 {
-		*(uint32_t *)0xc400c = 0x2;
+		*(uint32_t volatile*)0xc400c = 0x2;
 }
 
 static void EflashProgramDisable(void)
 {
 #ifndef FPGA_SIM
-		*(uint32_t *)0xc400c = 0x0;
+		*(uint32_t volatile*)0xc400c = 0x0;
 #endif
 }
 
 static void EflashProgram(uint32_t addr, uint32_t data)
 {
-		*(uint32_t *)addr = data;
+		*(uint32_t volatile*)addr = data;
 		Delay10US(1);
 		while((*(uint32_t volatile*)0x4007002c) & 0x1);
 }

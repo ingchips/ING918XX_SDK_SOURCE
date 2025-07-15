@@ -154,14 +154,26 @@ void uuid_add_bluetooth_prefix(uint8_t * uuid128, uint32_t short_uuid);
 int  uuid_has_bluetooth_prefix(const uint8_t * uuid128);
 
 enum btstack_config_item {
-    STACK_ATT_SERVER_ENABLE_AUTO_DATA_LEN_REQ = 1,      // enable automatic LL_DATA_LENGTH_REQ in MTU exchange of att server (default: Disabled)
-    STACK_GATT_CLIENT_DISABLE_AUTO_DATA_LEN_REQ = 2,    // disable automatic LL_DATA_LENGTH_REQ in MTU exchange of gatt client (default: Enabled)
-                                                        // See also `gap_set_data_length()`.
-    STACK_DISABLE_L2CAP_TIMEOUT = 4,                    // Disable automatic L2CAP disconnect if no L2CAP connection is established (default: Enabled)
-                                                        // Only for PTS testing
-    STACK_SM_USE_FIXED_CSRK = 8,                        // for testing only (default: SM not use fixed CSRK)
-    STACK_GATT_CLIENT_DISABLE_MTU_EXCHANGE = 16,        // suppress MTU exchange in gatt client
-                                                        // Only for PTS testing
+    // enable automatic LL_DATA_LENGTH_REQ in MTU exchange of att server (default: Disabled)
+    STACK_ATT_SERVER_ENABLE_AUTO_DATA_LEN_REQ       = 1,
+    // disable automatic LL_DATA_LENGTH_REQ in MTU exchange of gatt client (default: Enabled)
+    // See also `gap_set_data_length()`.
+    STACK_GATT_CLIENT_DISABLE_AUTO_DATA_LEN_REQ     = 2,
+    // Disable automatic L2CAP disconnect if no L2CAP connection is established (default: Enabled)
+    // Only for PTS testing
+    STACK_DISABLE_L2CAP_TIMEOUT                     = 4,
+    // for testing only (default: SM not use fixed CSRK)
+    STACK_SM_USE_FIXED_CSRK                         = 8,
+    // suppress MTU exchange in gatt client
+    // Only for PTS testing
+    STACK_GATT_CLIENT_DISABLE_MTU_EXCHANGE          = 16,
+    // Enable user to update parameters reply (default: Disabled)
+    STACK_CONNECTION_UPDATE_PARAMETER_REPLY_USER    = 32,
+    // LE device database: support more devices (up to `KV_HOST_KEY_END - KV_HOST_KEY_START + 1`)
+    // If this flash is used, it shall be set before stack starting up. (e.g. in `app_main`)
+    // Note: Customized kv implementation is required, since the built-in kv storage uses a small
+    //       memory and can't support `KV_HOST_KEY_END - KV_HOST_KEY_START + 1` devices.
+    STACK_DEVICE_DATABASE_SUPPORT_MORE_DEVICES      = 64,
 };
 
 /**

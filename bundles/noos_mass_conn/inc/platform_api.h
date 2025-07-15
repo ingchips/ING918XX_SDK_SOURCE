@@ -460,6 +460,8 @@ uint8_t platform_read_persistent_reg(void);
  */
 void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_data, const uint32_t data_size);
 
+// Link Layer flags.
+// These flags can be dynamically configured.
 typedef enum
 {
     LL_FLAG_DISABLE_CTE_PREPROCESSING   = 1,    // disable internal CTE preprocessing
@@ -863,10 +865,9 @@ typedef void * platform_us_timer_handle_t;
  * @param[in]   timer_handle    handle of this timer
  * @param[in]   time_us         internal timer counter when invoke this callback
  * @param[in]   param           user parameter
- * @return                      (must be NULL)
  ****************************************************************************************
  */
-typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer_handle,
+typedef void (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer_handle,
     uint64_t time_us, void *param);
 
 /**
@@ -883,7 +884,6 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  * Pseudo code:
  *
  * ```c
- * if (time passed) return NULL;
  * if (out of memory) return NULL;
  * r = allocate a handle;
  * if (timer is too near) {
@@ -896,7 +896,22 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  * return r;
  * ```
  *
- * CAUTION: DO NOT call `platform_create_us_timer` again in `callback`.
+ * Since the callback might be called by `platform_create_us_timer`, below might not
+ * work as expected:
+ *
+ * ```c
+ * platform_us_timer_handle_t my_timer;
+ *
+ * void callback(timer_handle, uint64_t time_us, void *param)
+ * {
+ *     my_timer = NULL;  // cleared before set
+ *     ....
+ * }
+ *
+ * my_timer = platform_create_us_timer(abs_time, callback, ...);
+ * ```
+ *
+ * In these cases, it is recommended to use `platform_create_us_timer2` instead.
  *
  * @param[in]  abs_time         when `platform_get_us_time() == abs_time`, callback is invoked.
  * @param[in]  callback         the callback function
@@ -906,6 +921,39 @@ typedef void * (* f_platform_us_timer_callback)(platform_us_timer_handle_t timer
  */
 platform_us_timer_handle_t platform_create_us_timer(uint64_t abs_time,
     f_platform_us_timer_callback callback, void *param);
+
+/**
+ ****************************************************************************************
+ * @brief Setup a single-shot platform timer with microsecond (us) resolution
+ *
+ * @see `platform_create_us_timer`
+ *
+ * Pseudo code:
+ *
+ * ```c
+ * if (out of memory) return -1;
+ * r = allocate a handle;
+ * *timer_handle = r;
+ * if (timer is too near) {
+ *     // callback is invoked immediately in the context of the caller
+ *     callback(param);
+ *     free memory;
+ *     return 0;
+ * }
+ * save r into a queue;     // callback will be invoked in an ISR later
+ * return 0;
+ * ```
+ *
+ * @param[in]  abs_time         when `platform_get_us_time() == abs_time`, callback is invoked.
+ * @param[in]  callback         the callback function
+ * @param[in]  param            user parameter
+ * @param[out] timer_handle     timer handle
+ * @return                      0 if timer created succeeded. Otherwise, -1.
+ ****************************************************************************************
+ */
+int platform_create_us_timer2(uint64_t abs_time,
+    f_platform_us_timer_callback callback, void *param,
+    platform_us_timer_handle_t *timer_handle);
 
 /**
  ****************************************************************************************
@@ -942,7 +990,18 @@ int platform_cancel_us_timer(platform_us_timer_handle_t timer_handle);
  * @brief Get generic OS driver
  *
  * For NoOS variants, driver provided by app is returned;
- * For RTOS variants, an emulated driver is returned.
+ *
+ *  When called in `app_main`, NULL is returned.
+ *
+ * For RTOS variants:
+ *  - in `app_main`: an driver emulated by the built-in RTOS is returned;
+ *  - after `app_main`:
+ *      * if a driver is provided by app, the driver is returned;
+ *      * if app does not provided a driver (i.e. `app_main` returned NULL),
+ *        the driver emulated by the built-in RTOS is returned
+ *
+ *  In other words, if developers are going to replace the built-in RTOS, DO NOT
+ *  use this in `app_main`, because it will return an driver emulated by the built-in RTOS.
  *
  * @return                       driver pointer casted from `const gen_os_driver_t *`
  ****************************************************************************************

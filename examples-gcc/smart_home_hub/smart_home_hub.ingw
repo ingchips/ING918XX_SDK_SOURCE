@@ -4,22 +4,22 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9010400000000",
-    "addr": 150536
+    "addr": 152580
    }
   },
   "rom": {
-   "size": 138164,
+   "size": 140208,
    "base": 16384
   },
   "ram": {
-   "size": 29812,
+   "size": 29972,
    "base": 536870912
   },
   "app": {
-   "base": 155648
+   "base": 163840
   },
   "version": [
-   1,10,3]
+   1,10,16]
  },
  "tc_dir": "C:\\Programs\\gcc-arm-none-eabi-10.3-2021.10\\bin",
  "eflash_addr": "0x42000",
@@ -51,8 +51,8 @@
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples-gcc\\smart_home_hub",
  "power_saving": false,
  "bundle": "typical",
- "app_rom_size": "385024",
- "app_rom_addr": "155648",
+ "app_rom_size": "376832",
+ "app_rom_addr": "163840",
  "family": "ing918",
  "vcode": true,
  "io_cap": "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
@@ -64,8 +64,8 @@
   "proxy": true
  },
  "cmsis": "C:\/projects\/ingchips\/ingWizard\/CMSIS",
- "app_ram_size": 35720,
- "app_ram_addr": 536900728,
+ "app_ram_size": 35560,
+ "app_ram_addr": 536900888,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",

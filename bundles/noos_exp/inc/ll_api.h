@@ -1356,6 +1356,30 @@ typedef void (*f_ll_hci_acl_data_preview)(uint16_t conn_handle,
 void ll_register_hci_acl_previewer(f_ll_hci_acl_data_preview preview);
 
 /**
+ * @brief Signature of callback for connection PDU previewer
+ *
+ * @param[in] conn_handle           connection handle
+ * @param[in] status                reception status:
+ *                                  - 0: no error
+ *                                  - `ERROR_CODE_UNSPECIFIED_ERROR`: CRC or other error occurs.
+ * @param[in] rssi_dBm              RSSI in dBm
+ * @param[in] data                  payload data
+ * @param[in] len                   length of payload data
+*/
+typedef void (*f_ll_hci_conn_pdu_preview)(uint16_t conn_handle, uint8_t status, int8_t rssi_dBm,
+    const void *data, int len);
+
+/**
+ * @brief Register a function to _preview_ BLE connection PDU data before posting to Host.
+ *
+ * This function is be called in the context of controller task. This may be used
+ * to achieve **least** PDU (ACL, LLCP, or empty PDU, even if received with errors) processing latency.
+ *
+ * @param[in] cb                    the callback function
+*/
+void ll_register_hci_conn_pdu_previewer(f_ll_hci_conn_pdu_preview preview);
+
+/**
  ****************************************************************************************
  * @brief Override standard whitening init value
  *
