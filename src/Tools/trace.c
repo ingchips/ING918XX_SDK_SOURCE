@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include "trace.h"
 #include "peripheral_uart.h"
 #include "platform_api.h"
@@ -519,4 +520,20 @@ void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size)
 #else
     #error unknown or unsupported chip family
 #endif
+}
+
+void platform_trace_raw_printf(const void *fmt, ...)
+{
+#ifndef TRACE_RAW_PRINTF_MAX_LEN
+#define TRACE_RAW_PRINTF_MAX_LEN 64
+#endif
+
+    static char buf[TRACE_RAW_PRINTF_MAX_LEN];
+    va_list va;
+    va_start(va, fmt);
+    int len = vsprintf(buf, fmt, va);
+    va_end(va);
+    if (len > TRACE_RAW_PRINTF_MAX_LEN - 1)
+        platform_raise_assertion(__FILE__, __LINE__);
+    platform_trace_raw(buf, len);
 }

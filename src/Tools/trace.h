@@ -235,6 +235,16 @@ void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size);
 
 #define trace_full_dump(f_puts, size)  trace_full_dump2(f_puts, size, size)
 
+/**
+ ****************************************************************************************
+ * @brief `printf` version of `platform_trace_raw`
+ *
+ * @param[in] fmt       format-control string
+ * @param[in] ...       Optional arguments to be formatted
+ ****************************************************************************************
+ */
+void platform_trace_raw_printf(const void *fmt, ...);
+
 #ifdef __cplusplus
 }
 #endif

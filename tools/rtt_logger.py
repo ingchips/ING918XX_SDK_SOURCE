@@ -2,6 +2,8 @@ import ctypes
 import logging
 import argparse
 import time
+import struct
+from datetime import datetime
 
 import logging
 
@@ -85,6 +87,14 @@ def find_rtt_ctx(FLAGS, dap):
 
     raise Exception(f"SEGGER RTT not found in specified range")
 
+def make_file_header():
+    now = datetime.now()
+    milliseconds_since_midnight = int((now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds() * 1000)
+    packed = struct.pack('<I', milliseconds_since_midnight)
+    padded = bytearray(b'\xff' * 8)
+    padded[1::2] = packed
+    return b'\xff\x54\xff\x52\xff\x41\xFF\x01' + bytes(padded)
+
 def run(FLAGS):
     pyocd.utility.color_log.build_color_logger(color_setting='auto')
 
@@ -132,6 +142,22 @@ def run(FLAGS):
             block_size = 0
             last_time = time.time()
 
+            def is_rtt_empty():
+                data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
+                up = SEGGER_RTT_BUFFER_UP.from_buffer(bytearray(data))
+                return up.WrOff == up.RdOff
+
+            def rtt_flush():
+                data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
+                up = SEGGER_RTT_BUFFER_UP.from_buffer(bytearray(data))
+                target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
+
+            rtt_flush()
+            while is_rtt_empty():
+                time.sleep(0.01)
+
+            log_file.write(make_file_header())
+
             while True:
                 # read data from up buffers (target -> host)
                 data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
@@ -167,17 +193,16 @@ def run(FLAGS):
                     # Wrap-around case
                     first_part = up.SizeOfBuffer - up.RdOff
                     data = target.read_memory_block8(up.pBuffer + up.RdOff, first_part)
-                    
+
                     second_part = up.WrOff
                     if second_part > 0:
                         data += target.read_memory_block8(up.pBuffer, second_part)
-                    
+
                     target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
 
                 log_file.write(bytes(data))
-                log_file.flush()  # Ensure data is written to disk
                 error_count = 0  # Reset error counter on successful read
-                
+
                 s = len(data)
                 block_size += s
                 total_size += s
@@ -195,7 +220,6 @@ def run(FLAGS):
             session.close()
         if kb:
             kb.set_normal_term()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
