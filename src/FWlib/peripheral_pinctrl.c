@@ -147,6 +147,7 @@ static void PINCTRL_SelIn(const uint32_t mux_offset, uint8_t offset, const uint8
 // Select input io_pin for UART RXD
 void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index)
 {
+    PINCTRL_Pull(io_pin_index, PINCTRL_PULL_UP);
     PINCTRL_SelIn(IO_MUX_CTRL5, port == UART_PORT_0 ? 0 : 18, io_pin_index);
 }
 
@@ -453,6 +454,7 @@ int PINCTRL_SelUartIn(uart_port_t port,
                       uint8_t io_pin_rxd,
                       uint8_t io_pin_cts)
 {
+    PINCTRL_Pull(io_pin_rxd, PINCTRL_PULL_UP);
     switch (port)
     {
     case UART_PORT_0:
@@ -471,6 +473,7 @@ int PINCTRL_SelUartIn(uart_port_t port,
 
 void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index)
 {
+    PINCTRL_Pull(io_pin_index, PINCTRL_PULL_UP);
     switch (port)
     {
     case UART_PORT_0:
