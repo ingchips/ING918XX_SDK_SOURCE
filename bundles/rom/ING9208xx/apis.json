@@ -256,7 +256,7 @@
     "platform_get_task_handle": "0x000251f1",
     "platform_get_timer_counter": "0x00025211",
     "platform_get_us_time": "0x00025215",
-    "platform_get_version": "0x0200338d",
+    "platform_get_version": "0x020033c1",
     "platform_hrng": "0x00025235",
     "platform_install_isr_stack": "0x0002523d",
     "platform_install_task_stack": "0x00025249",
