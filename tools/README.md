@@ -13,6 +13,9 @@ families.
 
 This script supports COM (UART), USB and SWD (through J-Link).
 
+> [!NOTE]
+> Downloading using ING-DAPLink is not supported yet.
+
 Use 'pip install -r requirements.txt' to install all dependency packages
 
 ### Extra Command Line Options

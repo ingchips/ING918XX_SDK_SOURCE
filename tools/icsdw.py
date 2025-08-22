@@ -169,6 +169,8 @@ def do_test(ser, config):
 
 class device(object):
     def __init__(self, port, timeout, config):
+        if port.lower().startswith('daplink'):
+            raise Exception(f'Port {port} is NOT supported yet.')
         self.dev_type = 1 if port.lower().startswith('usb') else 0
         self.dev = None
         if self.dev_type == 1:
@@ -314,6 +316,10 @@ def run_proj(proj: str, go = False, port = '', timeout = 5, counter = -1, user_d
             r = icsdw918.do_run(mod, d.dev, config, go, timeout, counter, user_data)
         elif family == 'ing916':
             import icsdw916
+            r = icsdw916.do_run(mod, d, config, go, timeout, counter, user_data)
+        elif family == 'ing920':
+            import icsdw916
+            icsdw916.BOOT_HELLO = b'UartBurnStart920\n'
             r = icsdw916.do_run(mod, d, config, go, timeout, counter, user_data)
         else:
             raise Exception('unknown chip family: ' + family)
