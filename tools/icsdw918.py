@@ -91,7 +91,7 @@ def wait_handshaking3(ser: serial.Serial, timeout: float, hello: str):
     ser.dtr = True
     time.sleep(0.1)
     ser.dtr = False
-    ser.rts = True
+    ser.rts = False
     start = time.time()
     acc = bytes()
     while True:
