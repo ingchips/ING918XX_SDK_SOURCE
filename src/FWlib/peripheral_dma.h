@@ -230,6 +230,18 @@ typedef enum
     DMA_DESC_OPTION_BIT_HIGH_PRIORITY = 29,
 } DMA_DescriptorOptionBit;
 
+typedef enum
+{
+    DMA_BURST_SIZE_1   = 0,
+    DMA_BURST_SIZE_2   = 1,
+    DMA_BURST_SIZE_4   = 2,
+    DMA_BURST_SIZE_8   = 3,
+    DMA_BURST_SIZE_16  = 4,
+    DMA_BURST_SIZE_32  = 5,
+    DMA_BURST_SIZE_64  = 6,
+    DMA_BURST_SIZE_128 = 7,
+} DMA_SrcBurstSize;
+
 #define DMA_MAKE_BURST_SIZE_OPTION(size)        (((uint32_t)(size) & 0x7) << 24)
 
 /**

@@ -848,6 +848,7 @@ static int PINCTRL_SelInput(uint8_t io_pin,
     int id = pin_id_for_input_source(source_id, io_pin);
     if (id < 0) return id;
     set_reg_bits(&APB_PINCTRL->IN_CTRL[reg_index], (uint32_t)id, bit_width, bit_offset);
+    PINCTRL_SetPadMux((uint8_t)io_pin, (io_source_t)(source_id));
     return 0;
 }
 
@@ -903,12 +904,12 @@ static int PINCTRL_SelSpiIn0(spi_port_t port,
 }
 
 int PINCTRL_SelSpiPins(spi_port_t port,
-                      uint8_t io_pin_clk,
-                      uint8_t io_pin_csn,
-                      uint8_t io_pin_hold,
-                      uint8_t io_pin_wp,
-                      uint8_t io_pin_miso,
-                      uint8_t io_pin_mosi)
+                       uint8_t io_pin_clk,
+                       uint8_t io_pin_csn,
+                       uint8_t io_pin_hold,
+                       uint8_t io_pin_wp,
+                       uint8_t io_pin_miso,
+                       uint8_t io_pin_mosi)
 {
     static const io_source_t source_tab[][6] =
             {
@@ -1028,7 +1029,12 @@ int PINCTRL_SelKeyScanColIn(int index, uint8_t io_pin)
     else if (index <= 29)
         return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_COL_0 + index, 7, 3, 0 + (index - 28) * 3);
     else
-    return -1;
+        return -1;
+}
+
+int PINCTRL_SelKeyScanRowIn(int index, uint8_t io_pin)
+{
+    return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_ROW_0 + index, 7, 3, 6 + index * 3);
 }
 
 int PINCTRL_SelPCAPIn(int index, uint8_t io_pin)
@@ -1044,6 +1050,17 @@ int PINCTRL_SelQDECIn(uint8_t phase_a,
     return 0;
 }
 
+int PINCTRL_SelQDECPcapIn(int index, uint8_t io_pin)
+{
+    if(index == IO_SOURCE_QDEC_PHASEA)
+        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_PHASEA, 9, 5, 5)) return -1;
+    if(index == IO_SOURCE_QDEC_TIMER_EXT_IN1_A)
+        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_TIMER_EXT_IN1_A, 9, 3, 22)) return -1;
+    if(index == IO_SOURCE_QDEC_TIMER_EXT_IN2_A)
+        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_TIMER_EXT_IN2_A, 9, 3, 25)) return -1;
+    return 0;
+}
+
 int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode)
 {
     int index = io_pin;
@@ -1052,9 +1069,10 @@ int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode)
     volatile uint32_t *pe = (volatile uint32_t *)&APB_PINCTRL->PE_CTRL[reg];
     volatile uint32_t *ps = (volatile uint32_t *)&APB_PINCTRL->PS_CTRL[reg];
     if (PINCTRL_PULL_DISABLE == mode)
-    {
+	{
         *pe &= ~bit;
-}
+
+    }
     else
     {
         if (PINCTRL_PULL_UP == mode)
@@ -1071,7 +1089,7 @@ int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 {
     int r = source_id_on_pin(io_pin_index, source);
     if (r < 0) return r;
-
+    
     if (io_pin_index <= 22)
         set_reg_bits(&APB_PINCTRL->OUT_CTRL[io_pin_index >> 2], (uint32_t)r, 7, 7 * (io_pin_index & 0x3));
     else if (io_pin_index == 23)
@@ -1123,7 +1141,7 @@ int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins)
 int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index)
 {
     if ((dp_io_pin_index != 16) || (dm_io_pin_index != 17))
-    return -1;
+        return -1;
     PINCTRL_EnableAnalog((GIO_Index_t)dp_io_pin_index);
     PINCTRL_EnableAnalog((GIO_Index_t)dm_io_pin_index);
     return 0;
@@ -1177,7 +1195,7 @@ int PINCTRL_SelClockOutput(const uint8_t io_index)
     {
         io_write(APB_SYSCTRL_BASE + 0x190, 0);
         return 0;
-}
+    }
 
     for (i = 0; i < sizeof(settings) / sizeof(settings[0]); i++)
     {

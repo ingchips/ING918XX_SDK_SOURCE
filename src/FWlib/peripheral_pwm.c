@@ -291,7 +291,7 @@ void PWM_SetupSimple(const uint8_t channel_index, const uint32_t frequency, cons
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PWM_SetMultiDutyCycleCtrl(channel_index, 0);        // do not use multi duty cycles
 #endif
-    PWM_SetHighThreshold(channel_index, 0, high);
+    PWM_SetHighThreshold(channel_index, 0, high);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
     PWM_SetMode(channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
     PWM_SetMask(channel_index, 0, 0);
     PWM_Enable(channel_index, 1);

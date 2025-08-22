@@ -28,8 +28,8 @@ typedef enum
     PLATFORM_CB_IRQ_TIMER2,
     PLATFORM_CB_IRQ_TIMER3,
     PLATFORM_CB_IRQ_WDT,
-    PLATFORM_CB_IRQ_AHPSPI,
-    PLATFORM_CB_IRQ_SPI0 = PLATFORM_CB_IRQ_AHPSPI,
+    PLATFORM_CB_IRQ_AHBSPI,
+    PLATFORM_CB_IRQ_SPI0 = PLATFORM_CB_IRQ_AHBSPI,
     PLATFORM_CB_IRQ_APBSPI,
     PLATFORM_CB_IRQ_SPI1 = PLATFORM_CB_IRQ_APBSPI,
     PLATFORM_CB_IRQ_SADC,
@@ -83,16 +83,16 @@ typedef struct
 {
     __IO uint32_t OUT_CTRL[9];      // 0x00
          uint32_t Reserved0[7];
-    __IO uint32_t IN_CTRL[11];      // 0x40
+    __IO uint32_t IN_CTRL[12];      // 0x40
          uint32_t Reserved1[5];
     __IO uint32_t PE_CTRL[2];       // 0x80
     __IO uint32_t PS_CTRL[2];       // 0x88
-    __IO uint32_t Reserved2[28];
+    __IO uint32_t PU_SEL_CTRL[2];  // 0x90
+    __IO uint32_t Reserved2[26];
     __IO uint32_t IS_CTRL[2];       // 0x100
     __IO uint32_t DR_CTRL[3];       // 0x108
     __IO uint32_t SPI_CFG0;         // 0x114
     __IO uint32_t SPI_CFG1;         // 0x118
-    __IO uint32_t SYS_BOND_CFG;     // 0x11c
 } PINCTRL_TypeDef;
 
 typedef struct
@@ -246,18 +246,6 @@ typedef struct
     __IO uint32_t DeBounceCtrl;         // 0x74
 } GIO_TypeDef;
 
-// RTC
-typedef struct
-{
-    __IO uint32_t Reserved[4];
-    __IO uint32_t Cntr;                 // 0x10
-    __IO uint32_t Alarm;                // 0x14
-    __IO uint32_t Ctrl;                 // 0x18
-    __IO uint32_t St;                   // 0x1c
-    __IO uint32_t Trim;                 // 0x20
-    __IO uint32_t SEC_CFG;              // 0x24
-} RTC_TypeDef;
-
 typedef struct tagDMA_Descriptor
 {
     uint32_t Ctrl;                  // +0x00
@@ -334,37 +322,6 @@ typedef struct
     __IO uint32_t Config;             //0x7C
 } SSP_TypeDef;
 
-typedef struct
-{
-    __IO uint32_t Efuse_cfg0;         //0x0
-    __IO uint32_t Efuse_cfg1;         //0x4
-    __IO uint32_t Efuse_cfg2;         //0x8
-    __IO uint32_t Efuse_cfg3;         //0xC
-    __IO uint32_t Reserved0[3];       //0x10
-    __IO uint32_t Efuse_cfg4;         //0x1C
-    __IO uint32_t Efuse_dly_cfg0;     //0x20
-    __IO uint32_t Efuse_dly_cfg1;     //0x24
-    __IO uint32_t Reserved1[2];       //0x28
-    __IO uint32_t Efuse_status;       //0x30
-    __IO uint32_t Reserved2[3];       //0x34
-    __IO uint32_t Efuse_rdata[4];     //0x40
-} EFUSE_TypeDef;
-
-typedef struct
-{
-    __IO uint32_t ir_ctrl;                //0x0
-    __IO uint32_t ir_tx_config;           //0x4
-    __IO uint32_t ir_carry_config;        //0x8
-    __IO uint32_t ir_time_1;              //0xC
-    __IO uint32_t ir_time_2;              //0x10
-    __IO uint32_t ir_time_3;              //0x14
-    __IO uint32_t ir_time_4;              //0x18
-    __IO uint32_t ir_time_5;              //0x1C
-    __IO uint32_t ir_rx_code;             //0x20
-    __IO uint32_t ir_tx_code;             //0x24
-    __IO uint32_t ir_fsm;                 //0x28
-} IR_TypeDef;
-
 typedef struct{
     __IO uint32_t sadc_cfg[3];            // 0x0
     __IO uint32_t sadc_data;              // 0x0c
@@ -391,6 +348,7 @@ typedef struct
     __IO uint32_t channel_int_rd        ; // 0x2c
     __IO uint32_t Reserved[4]           ; // 0x30
 } QDEC_ChannelCtrlReg;
+
 typedef struct{
     __IO QDEC_ChannelCtrlReg channels[3]; // 0x0
     __IO uint32_t bcr;                    // 0xc0
@@ -509,7 +467,8 @@ typedef struct
     __IO uint32_t      reg_ch_en;              //0x100
     __IO uint32_t      reg_ch_en_set;          //0x104
     __IO uint32_t      reg_ch_en_clr;          //0x108
-    __IO uint32_t      reg_chg_map[4];         //0x10C
+    __IO uint32_t      _NOT_USED_2[62];         //0x10C
+    __IO uint32_t      reg_chg_map[4];         //0x200
 }PTEC_TypeDef;
 
 typedef struct
@@ -596,11 +555,12 @@ typedef struct
 typedef struct
 {
     __IO uint32_t      reg_task[21];         //0x300
+    __IO uint32_t      _NOT_USED0[3];
     __IO uint32_t      reg_sub_task[21];         //0x160
-    __IO uint32_t      _NOT_USED[3];
+    __IO uint32_t      _NOT_USED1[3];
     __IO uint32_t      reg_event;           //0x160
     __IO uint32_t      reg_pub_event[9];         //0x164
-    __IO uint32_t      _NOT_USED1[2];
+    __IO uint32_t      _NOT_USED2[2];
 }PTE_PWM_TypeDef;
 
 typedef struct
@@ -648,26 +608,26 @@ typedef struct
 
 typedef struct
 {
-    __IO uint32_t asdm_ctrl;
-    __IO uint32_t asdm_sr;
-    __IO uint32_t asdm_clr;
-    __IO uint32_t asdm_mute_ctrl;
-    __IO uint32_t asdm_vol_ctrl;
-    __IO uint32_t asdm_dout;
-    __IO uint32_t asdm_hpf_coef;
-    __IO uint32_t asdm_rx_ctrl;
-    __IO uint32_t asdm_agc_ctrl0;
-    __IO uint32_t asdm_agc_ctrl1;
-    __IO uint32_t asdm_agc_ctrl2;
-    __IO uint32_t asdm_agc_st;
-    __IO uint32_t asdm_ana_ctrl0;
-    __IO uint32_t asdm_pga_en_ibias;
-    __IO uint32_t Reserved1;
-    __IO uint32_t pga_l_ctrl;
-    __IO uint32_t pga_l_vol_ctrl;
-    __IO uint32_t micbias_ctrl;
-    __IO uint32_t ckgt_ctrl;
-    __IO uint32_t fifo_addr;
+    __IO uint32_t asdm_ctrl;        //0x0
+    __IO uint32_t asdm_sr;          //0x4
+    __IO uint32_t asdm_clr;         //0x8
+    __IO uint32_t asdm_mute_ctrl;   //0xc
+    __IO uint32_t asdm_vol_ctrl;    //0x10
+    __IO uint32_t asdm_dout;        //0x14
+    __IO uint32_t asdm_hpf_coef;    //0x18
+    __IO uint32_t asdm_rx_ctrl;     //0x1c
+    __IO uint32_t asdm_agc_ctrl0;   //0x20
+    __IO uint32_t asdm_agc_ctrl1;   //0x24
+    __IO uint32_t asdm_agc_ctrl2;   //0x28
+    __IO uint32_t asdm_agc_st;      //0x2c
+    __IO uint32_t asdm_ana_ctrl0;   //0x30
+    __IO uint32_t asdm_pga_en_ibias;//0x34
+    __IO uint32_t Reserved1;        //0x38
+    __IO uint32_t pga_l_ctrl;       //0x3c
+    __IO uint32_t pga_l_vol_ctrl;   //0x40
+    __IO uint32_t micbias_ctrl;     //0x44
+    __IO uint32_t ckgt_ctrl;        //0x48
+    __IO uint32_t fifo_addr;        //0x4c
 }ASDM_TypeDef;
 /******************************************************************************/
 /*                         memory map                                         */
@@ -708,8 +668,7 @@ typedef struct
 
 #define AHB_QSPI_BASE      ((uint32_t)0x40160000UL)
 #define AHB_USB_BASE       ((uint32_t)0x40180000UL)
-#define APB_GPIOTE_BASE    (APB_SYSCTRL_BASE + 0x1f0)
-#define APB_PINC_BASE      APB_IOMUX_BASE
+#define APB_PINCTRL_BASE   APB_IOMUX_BASE
 
 #define APB_SYSCTRL        ((SYSCTRL_TypeDef *)APB_SYSCTRL_BASE)
 #define APB_WDT            ((WDT_TypeDef *)APB_WDT_BASE)
@@ -721,7 +680,7 @@ typedef struct
 #define APB_I2S            ((I2S_TypeDef *)APB_I2S_BASE)
 #define APB_SADC           ((SADC_TypeDef *)APB_SARADC_BASE)
 #define APB_QDEC           ((QDEC_TypeDef *)APB_QDEC_BASE)
-#define APB_PINCTRL        ((PINCTRL_TypeDef *)APB_PINC_BASE)
+#define APB_PINCTRL        ((PINCTRL_TypeDef *)APB_PINCTRL_BASE)
 #define APB_UART0          ((UART_TypeDef *)APB_UART0_BASE)
 #define APB_UART1          ((UART_TypeDef *)APB_UART1_BASE)
 #define APB_GPIO0          ((GIO_TypeDef *)APB_GPIO0_BASE)
@@ -730,12 +689,10 @@ typedef struct
 #define AHB_SSP0           ((SSP_TypeDef *)AHB_QSPI_BASE)
 #define APB_SSP1           ((SSP_TypeDef *)APB_SPI_BASE)
 #define APB_DMA            ((DMA_TypeDef *)APB_DMACFG_BASE)
-#define APB_RTC            ((RTC_TypeDef *)AON_RTC_BASE)
 #define AHB_USB            ((USB_TypeDef *)AHB_USB_BASE)
 #define APB_KEYSCAN        ((KEYSCAN_TypeDef *)APB_KEYSCAN_BASE)
 #define APB_PTE            ((PTEC_TypeDef *)APB_PTE_BASE)
 #define APB_PTE_BUS        ((PTE_BUS_TypeDef *)APB_PTE_BUS_BASE)
-#define APB_GPIOTE         ((GPIOTE_TypeDef *)APB_GPIOTE_BASE)
 #define APB_ASDM           ((ASDM_TypeDef *)APB_ASDM_BASE)
 
 #define APB_SPI            APB_SSP1

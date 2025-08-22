@@ -275,7 +275,7 @@ uint32_t PWM_GetFifoStatus(const uint8_t channel_index);
  * @brief The PWM step mode.
  *
  * @param[in] channel           channel index (0 .. PWM_CHANNEL_NUMBER - 1)
- * @param[in] enable        Enable (1) or disable (0)
+ * @param[in] enable            Enable (1) or disable (0)
  */
 void PWM_StepEnabled(const uint8_t channel,uint8_t enable);
 /**

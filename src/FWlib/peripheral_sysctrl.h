@@ -1305,17 +1305,6 @@ void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock mode of PDM
- *
- * Clock of PDM is divided from SLOW_CLK.`mode` should be `(SYSCTRL_ClkMode)N`, where N = 1..63;
- *
- * \param port          the timer
- * \param mode          clock mode
- *
- */
-void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode);
-
-/**
  * \brief Select SPI clock mode
  * \param port          the port
  * \param mode          clock mode
@@ -2137,6 +2126,9 @@ void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles);
  * and all registers are restored to their default state
  */
 void SYSCTRL_Reset(void);
+
+void SYSCTRL_UpdateAsdmClk(uint32_t div);
+
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
