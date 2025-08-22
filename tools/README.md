@@ -34,6 +34,18 @@ Type `python icsdw.py` to see the help message for command line format.
 Note: `--port`, `--batch`, `--counter` and `--timeout` override the corresponding
 settings in the project file (`flash_download.ini`).
 
+When a `.bin` file is given, _icsdw.py_ will download the file to a specified location
+through J-Link. The `.bin` file can either be a file on local system, or on the Web
+(`http` or `https` URL).
+
+|Option                 | Explanation                              |
+|:----------------------|:-----------------------------------------|
+|--port PORT            |Use `PORT` to download.                   |
+|--addr AAA             |Downloading to this address.                 |
+|--family FFF           |Specify chip family (such as ing918, ing916).|
+|--loop                 |Enable loop mode.                            |
+
+
 ### Note for USB Flash Download
 
 - Use `python icsdw.py list-usb` to query all usb port. It will print the full name of
@@ -60,6 +72,17 @@ settings in the project file (`flash_download.ini`).
 
     where `123` is the serial number of the selected probe.
 
+### Note for Single Bin Download
+
+When the 1st parameter ends with `.bin`, single binary file downloading mode is selected.
+In this case, chip family, address must be specified from command line.
+The file path can be a local one or an URL.
+
+Example:
+
+```shell
+python icsdw.py /path/to/bin/file --family ing916 --addr 0x02002000 --port JLINK
+```
 
 ## Flash Dumper
 
@@ -107,3 +130,31 @@ python rtt_logger.py -RTTSearchRanges "0x2000XXXX 0xYYYY" log_file
 `Ranges` is specified as `start` address and `size`, for example
 "0x2000XXXX 0xYYYY" tells this tool to search for RTT in the memory range
 from `0x2000XXXX` to `(0x2000XXXX + 0xYYYY)`.
+
+### Add Jlink and PyOCD support
+
+Use the ingchips_packs_addon.py script to install Jlink and PyOCD support. You can use the -h parameter to get help on how to use it.
+
+```shell
+python ingchips_packs_addon.py -h
+```
+
+Example:
+Jlink versions prior to V7.62 add device support using the following command:
+
+```shell
+python ingchips_packs_addon.py -t jlink_v6 -tp "/path/to/sdk" -p "/path/to/jlink_path"
+```
+
+Versions of Jlink after V7.62 use the following command to add device support:
+
+```shell
+python ingchips_packs_addon.py -t jlink_v7 -tp "/path/to/sdk"
+```
+
+You must run `pycod pack update` before pyocd can install the pack.
+To install PyOCD pack, use the following command:
+
+```shell
+python ingchips_packs_addon.py -t pyocd -tp "/path/to/sdk"
+```

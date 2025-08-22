@@ -85,8 +85,13 @@ def send_file(ser: serial.Serial, addr: int, data: bytes):
 
     return True
 
-def wait_handshaking3(ser: serial.Serial, timeout: int, hello: str):
+def wait_handshaking3(ser: serial.Serial, timeout: float, hello: str):
     print("wait for handshaking...", end = '\r')
+    ser.rts = False
+    ser.dtr = True
+    time.sleep(0.1)
+    ser.dtr = False
+    ser.rts = True
     start = time.time()
     acc = bytes()
     while True:
@@ -99,7 +104,7 @@ def wait_handshaking3(ser: serial.Serial, timeout: int, hello: str):
             print()
             return False
 
-def wait_handshaking(ser: serial.Serial, timeout: int):
+def wait_handshaking(ser: serial.Serial, timeout: float):
     return wait_handshaking3(ser, timeout, BOOT_HELLO)
 
 def do_run(mod: ModuleType, ser, config, go, timeout, counter, user_data):
@@ -133,6 +138,8 @@ def do_run(mod: ModuleType, ser, config, go, timeout, counter, user_data):
     if call_on_batch(SCRIPT_MOD, batch_counter):
         return 10
 
+    meas = icsdw.TimeMeasurement()
+
     for i in range(6):
         bcfg = dict(config.items('bin-' + str(i)))
         if bcfg['checked'] != '1':
@@ -145,8 +152,11 @@ def do_run(mod: ModuleType, ser, config, go, timeout, counter, user_data):
         abort, new_data = call_on_file(SCRIPT_MOD, batch_counter, i + 1, data, user_data)
         if abort:
             return 10
+
+        meas.start()
         if not send_file(ser, addr, new_data):
             return 4
+        meas.show_throughput(len(new_data))
 
     if config.getboolean('options', 'set-entry'):
         entry_addr = int(config.get('options', 'entry'), 0)

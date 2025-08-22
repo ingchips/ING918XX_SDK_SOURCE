@@ -3,23 +3,23 @@
  "bundle_meta": {
   "var": {
    "link_layer_features": {
-    "value": "bff90104fe000000",
-    "addr": 164932
+    "value": "3f790104fe000000",
+    "addr": 168228
    }
   },
   "rom": {
-   "size": 153196,
+   "size": 156660,
    "base": 16384
   },
   "ram": {
-   "size": 30060,
+   "size": 30228,
    "base": 536870912
   },
   "app": {
-   "base": 172032
+   "base": 180224
   },
   "version": [
-   1,9,69]
+   1,10,18]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -49,8 +49,8 @@
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\hid_keyboard",
  "power_saving": false,
  "bundle": "exp",
- "app_rom_size": "368640",
- "app_rom_addr": "172032",
+ "app_rom_size": "360448",
+ "app_rom_addr": "180224",
  "family": "ing918",
  "vcode": false,
  "io_cap": "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
@@ -63,8 +63,8 @@
  },
  "keil": true,
  "cmsis": "",
- "app_ram_size": 35472,
- "app_ram_addr": 536900976,
+ "app_ram_size": 35304,
+ "app_ram_addr": 536901144,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",

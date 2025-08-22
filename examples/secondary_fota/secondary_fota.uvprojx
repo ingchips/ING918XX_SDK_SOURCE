@@ -297,8 +297,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536900712</StartAddress>
-                <Size>35736</Size>
+                <StartAddress>536900888</StartAddress>
+                <Size>35560</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -434,6 +434,11 @@
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
             </File>
           </Files>
         </Group>

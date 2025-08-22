@@ -273,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>33730560</StartAddress>
-                <Size>348160</Size>
+                <StartAddress>33734656</StartAddress>
+                <Size>344064</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -298,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536892432</StartAddress>
-                <Size>11248</Size>
+                <StartAddress>536892600</StartAddress>
+                <Size>11080</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -435,6 +435,11 @@
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_gpio.c</FileName>

@@ -77,6 +77,8 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
+#define ADC_FIFO_DEPTH      16
+
 typedef enum {
     CALIBRATION_MODE,
     CONVERSION_MODE,
@@ -354,6 +356,17 @@ SADC_channelId ADC_GetDataChannel(const uint32_t data);
 
 /**
  * @brief To get ADC data of the data read by ADC_PopFifoData
+ * @note The data obtained by this api is the raw data of the registers, 
+ *       which has not been processed in any way and may be biased.
+ *
+ * @param[in] data           data read by ADC_PopFifoData
+ * @return                   ADC data
+ */
+uint16_t ADC_GetRawData(const uint32_t data);
+
+/**
+ * @brief To get ADC data of the data read by ADC_PopFifoData
+ * @note The data obtained by this api has been calibrated by ft-data.
  *
  * @param[in] data           data read by ADC_PopFifoData
  * @return                   ADC data
@@ -432,8 +445,15 @@ void ADC_Reset(void);
 
 /**
  * @brief Close ADC
+ * @note The api must ensure that the calibration parameters are initialized by ADC_ftInit before use.
  */
 void ADC_AdcClose(void);
+
+/**
+ * @brief Close ADC
+ * @note If the initialization API uses ADC_ftInitCali, exit the ADC should use this API.
+ */
+void ADC_AdcCloseCali(void);
 
 /**
  * @brief ADC calibration standard configuration interface

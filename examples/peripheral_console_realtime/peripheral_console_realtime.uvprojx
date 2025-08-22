@@ -7,7 +7,7 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
+      <pCCUsed>6210000::V6.21::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -273,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>33714176</StartAddress>
-                <Size>364544</Size>
+                <StartAddress>33718272</StartAddress>
+                <Size>360448</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -298,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536888144</StartAddress>
-                <Size>40112</Size>
+                <StartAddress>536889480</StartAddress>
+                <Size>38776</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -445,6 +445,11 @@
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_gpio.c</FileName>

@@ -15,6 +15,7 @@
     <folder Name="FWLib">
       <file file_name="../../src/FWlib/peripheral_uart.c"/>
       <file file_name="../../src/FWlib/peripheral_sysctrl.c"/>
+      <file file_name="../../src/FWlib/peripheral_timer.c"/>
     </folder>
     <folder Name="Tools"/>
     <folder Name="RTT Files"/>

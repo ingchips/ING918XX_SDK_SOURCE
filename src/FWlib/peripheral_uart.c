@@ -115,6 +115,21 @@ uint8_t apUART_Check_TXFIFO_FULL(UART_TypeDef* pBase)
 	return ( (pBase->Flag >> bsUART_TRANSMIT_FULL) & BW2M(bwUART_TRANSMIT_FULL) );
 }
 
+uint8_t apUART_Check_EnableSta(UART_TypeDef* pBase)
+{
+    return ( (pBase->Control >> bsUART_ENABLE) & BW2M(bwUART_ENABLE) );
+}
+
+uint8_t apUART_Check_TxEnableSta(UART_TypeDef* pBase)
+{
+    return ( (pBase->Control >> bsUART_TRANSMIT_ENABLE) & BW2M(bwUART_TRANSMIT_ENABLE) );
+}
+
+uint8_t apUART_Check_RxEnableSta(UART_TypeDef* pBase)
+{
+    return ( (pBase->Control >> bsUART_RECEIVE_ENABLE) & BW2M(bwUART_RECEIVE_ENABLE) );
+}
+
 uint8_t apUART_Check_BUSY(UART_TypeDef* pBase)
 {
 	return ( (pBase->Flag >> bsUART_BUSY) & BW2M(bwUART_BUSY) );

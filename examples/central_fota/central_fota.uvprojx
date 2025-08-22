@@ -7,7 +7,7 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6160000::V6.16::ARMCLANG</pCCUsed>
+      <pCCUsed>6210000::V6.21::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -183,6 +183,7 @@
             <RvdsVP>0</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -272,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>155648</StartAddress>
-                <Size>385024</Size>
+                <StartAddress>163840</StartAddress>
+                <Size>376832</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -297,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536900712</StartAddress>
-                <Size>35736</Size>
+                <StartAddress>536900888</StartAddress>
+                <Size>35560</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -391,9 +392,9 @@
               <FilePath>..\..\examples-gcc\central_fota\src\profile.c</FilePath>
             </File>
             <File>
-              <FileName>fota_client.o</FileName>
+              <FileName>ing918_fota_client.o</FileName>
               <FileType>3</FileType>
-              <FilePath>.\src\fota_client.o</FilePath>
+              <FilePath>.\src\ing918_fota_client.o</FilePath>
             </File>
             <File>
               <FileName>gatt_client_async_helper.c</FileName>

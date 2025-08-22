@@ -58,8 +58,6 @@ void gatt_client_util_free(struct gatt_client_discoverer *ctx);
  ****************************************************************************************
  * @brief Get the first service of a discovering context
  *
- * Note: this can only be freed after discover operation is completed.
- *
  * @param[in] ctx                   discovering context
  * @return                          the first service
  ****************************************************************************************
@@ -77,22 +75,22 @@ void gatt_client_util_dump_profile(service_node_t *first, void *user_data, int e
 
 /**
  ****************************************************************************************
- * @brief Find charasteristic node
+ * @brief Find characteristic node
  *
  * @param[in] discoverer            discovering context
- * @param[in] handle                handle of the charasteristic
- * @return                          the found charasteristic node
+ * @param[in] handle                handle of the characteristic
+ * @return                          the found characteristic node
  ****************************************************************************************
  */
 char_node_t *gatt_client_util_find_char(struct gatt_client_discoverer *discoverer, uint16_t handle);
 
 /**
  ****************************************************************************************
- * @brief Find charasteristic node from uuid
+ * @brief Find characteristic node from uuid
  *
  * @param[in] discoverer            discovering context
  * @param[in] uuid                  uuid
- * @return                          the found charasteristic node
+ * @return                          the found characteristic node
  ****************************************************************************************
  */
 char_node_t *gatt_client_util_find_char_uuid128(struct gatt_client_discoverer *discoverer,
@@ -100,11 +98,11 @@ char_node_t *gatt_client_util_find_char_uuid128(struct gatt_client_discoverer *d
 
 /**
  ****************************************************************************************
- * @brief Find charasteristic node from sig uuid
+ * @brief Find characteristic node from sig uuid
  *
  * @param[in] discoverer            discovering context
  * @param[in] uuid                  sig uuid
- * @return                          the found charasteristic node
+ * @return                          the found characteristic node
  ****************************************************************************************
  */
 char_node_t *gatt_client_util_find_char_uuid16(struct gatt_client_discoverer *discoverer,
@@ -112,9 +110,9 @@ char_node_t *gatt_client_util_find_char_uuid16(struct gatt_client_discoverer *di
 
 /**
  ****************************************************************************************
- * @brief Find the client configuration descriptor of a charasteristic node
+ * @brief Find the client configuration descriptor of a characteristic node
  *
- * @param[in] c                     the charasteristic node
+ * @param[in] c                     the characteristic node
  * @return                          the client configuration descriptor node
  ****************************************************************************************
  */
@@ -133,7 +131,7 @@ void gatt_client_util_print_uuid(const uint8_t *uuid);
 
 /**
  ****************************************************************************************
- * @brief Print properties of a charasteristic
+ * @brief Print properties of a characteristic
  *
  * @param[in] v                     properties
  ****************************************************************************************

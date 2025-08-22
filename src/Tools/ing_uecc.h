@@ -21,7 +21,9 @@ extern "C"
 {
 #endif
 
+uECC_Curve uECC_secp160r1(void);
 uECC_Curve uECC_secp192r1(void);
+uECC_Curve uECC_secp224r1(void);
 uECC_Curve uECC_secp256r1(void);
 uECC_Curve uECC_secp256k1(void);
 

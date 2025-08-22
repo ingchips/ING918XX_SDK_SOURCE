@@ -20,6 +20,18 @@ uint8_t DataSendBuf[EP_X_MPS_BYTES] __attribute__ ((aligned (4)));
 
 BSP_KEYB_DATA_s KeybReport __attribute__ ((aligned (4))) = {.pending = U_TRUE};
 BSP_MOUSE_DATA_s MouseReport __attribute__ ((aligned (4))) = {.pending = U_TRUE};
+
+uint32_t InterfaceProtocol[bNUM_INTERFACES] __attribute__ ((aligned (4)));
+
+static void usb_reset_handle(void)
+{
+  uint32_t i;
+  for(i=0; i<bNUM_INTERFACES; i++)
+  {
+    InterfaceProtocol[i] = USB_HID_PROTO_TYPE_REPORT;
+  }
+}
+
 static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
 {
   uint32_t size;
@@ -32,6 +44,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
       #ifdef FEATURE_DISCONN_DETECT
       platform_set_timer(bsp_usb_device_disconn_timeout,160);
       #endif
+      usb_reset_handle();
     }break;
     case USB_EVENT_DEVICE_SOF:
     {
@@ -91,7 +104,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
                 case USB_REQUEST_DEVICE_DESCRIPTOR_DEVICE:
                 {
                   size = sizeof(USB_DEVICE_DESCRIPTOR_REAL_T);
-                  size = (setup->wLength < size) ? (setup->wLength) : size;
+                  size = (setup->wLength <= size) ? (setup->wLength) : ((size > USB_EP0_MPS) ? USB_EP0_MPS : size);
 
                   status |= USB_SendData(0, (void*)&DeviceDescriptor, size, 0);
                 }
@@ -256,6 +269,49 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
               }
             }
             break;
+            case USB_REQUEST_HID_CLASS_REQUEST_GET_PROTOCOL:
+            {
+              uint8_t interface_num = (uint8_t)setup->wIndex;
+              if(setup->wLength == 1)
+              {
+                if(interface_num < bNUM_INTERFACES)
+                {
+                  status |= USB_SendData(0, (void*)&InterfaceProtocol[interface_num], 1, 0);
+                  status = USB_ERROR_NONE;
+                }
+                else
+                {
+                  status = USB_ERROR_REQUEST_NOT_SUPPORT;
+                }
+              }
+              else
+              {
+                status = USB_ERROR_REQUEST_NOT_SUPPORT;
+              }
+            }
+            break;
+            case USB_REQUEST_HID_CLASS_REQUEST_SET_PROTOCOL:
+            {
+              uint8_t protocol_type = (uint8_t)setup->wValue;
+              uint8_t interface_num = (uint8_t)setup->wIndex;
+              if(protocol_type == USB_HID_PROTO_TYPE_BOOT || protocol_type == USB_HID_PROTO_TYPE_REPORT)
+              {
+                if(interface_num < bNUM_INTERFACES)
+                {
+                  InterfaceProtocol[interface_num] = protocol_type;
+                  status = USB_ERROR_NONE;
+                }
+                else
+                {
+                  status = USB_ERROR_REQUEST_NOT_SUPPORT;
+                }
+              }
+              else
+              {
+                status = USB_ERROR_REQUEST_NOT_SUPPORT;
+              }
+            }
+            break;
             default:
             {
               status = USB_ERROR_REQUEST_NOT_SUPPORT;
@@ -350,8 +406,8 @@ void bsp_usb_handle_hid_keyb_key_report(uint8_t key, uint8_t press)
       if(j == KEY_TABLE_LEN){return;}
     }
 
-    USB_SendData(USB_EP_DIRECTION_IN(EP_KB_IN), (void*)&(KeybReport.report), sizeof(BSP_KEYB_REPORT_s), 0);
     KeybReport.pending = U_TRUE;
+    USB_SendData(USB_EP_DIRECTION_IN(EP_KB_IN), (void*)&(KeybReport.report), sizeof(BSP_KEYB_REPORT_s), 0);
   }
 }
 
@@ -369,8 +425,8 @@ void bsp_usb_handle_hid_keyb_modifier_report(BSP_KEYB_KEYB_MODIFIER_e modifier, 
       KeybReport.report.modifier &= ~modifier;
     }
 
-    USB_SendData(USB_EP_DIRECTION_IN(EP_KB_IN), (void*)&(KeybReport.report), sizeof(BSP_KEYB_REPORT_s), 0);
     KeybReport.pending = U_TRUE;
+    USB_SendData(USB_EP_DIRECTION_IN(EP_KB_IN), (void*)&(KeybReport.report), sizeof(BSP_KEYB_REPORT_s), 0);
   }
 }
 
@@ -387,8 +443,8 @@ void bsp_usb_handle_hid_mouse_report(int8_t x, int8_t y, uint8_t btn)
     MouseReport.report.pos_y = y;
     MouseReport.report.button = btn;
 
-    USB_SendData(USB_EP_DIRECTION_IN(EP_MO_IN), (void*)&MouseReport, sizeof(BSP_MOUSE_REPORT_s), 0);
     MouseReport.pending = U_TRUE;
+    USB_SendData(USB_EP_DIRECTION_IN(EP_MO_IN), (void*)&MouseReport, sizeof(BSP_MOUSE_REPORT_s), 0);
   }
 }
 

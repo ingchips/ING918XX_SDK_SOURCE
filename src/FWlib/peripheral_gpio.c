@@ -172,7 +172,7 @@ uint8_t GIO_GetIntStatus(const GIO_Index_t io_index)
 void GIO_ClearIntStatus(const GIO_Index_t io_index)
 {
     DEF_GIO_AND_PIN(io_index);
-    pDef->IntStatus |= 1 << index;
+    pDef->IntStatus = 1 << index;
 }
 
 void GIO_DebounceCtrl(uint8_t group_mask, uint8_t clk_pre_scale, GIO_DbClk_t clk)
@@ -296,6 +296,7 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
 
     if ((1 <= io_index) && (io_index <= 4)
      || (7 <= io_index) && (io_index <= 17)
+     || (24 <= io_index) && (io_index <= 25)
      || (29 <= io_index) && (io_index <= 35))
     {
         if (io_index <= 31)

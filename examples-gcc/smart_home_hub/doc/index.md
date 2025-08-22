@@ -1,6 +1,6 @@
 # Smart Home Hub
 
-This example is developped using [Nim](https://nim-lang.org) programming language.
+This example is developed using [Nim](https://nim-lang.org) programming language.
 It demonstrates how to:
 
 * Use Nim together with C:
@@ -21,7 +21,7 @@ It demonstrates how to:
 
 To build this project, both Gnu Arm Toolchain & 32-bit Nim are needed.
 
-Set `NIM_PATH` to the path containing `nim` executable, and `make`.
+Set `NIM_PATH` to the path containing `nim` executable, and `make`. Tested with Nim 1.6.10, 2.0.0 and 2.0.2.
 
 ## Test
 

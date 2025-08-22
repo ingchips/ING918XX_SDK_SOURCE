@@ -95,6 +95,7 @@ typedef struct ecc_driver
 /**
  * @brief FOTA client.
  *
+ * @param target_family     target chip family (INGCHIPS_FAMILY_916, INGCHIPS_FAMILY_918, etc)
  * @param latest            latest version (a.k.a this version)
  * @param conn_handle       connection handle
  * @param handle_ver        handle of INGCHIPS_UUID_OTA_VER
@@ -108,7 +109,8 @@ typedef struct ecc_driver
  *                               err_code == 1: nothing to update
  *                               err_code < 0 : error occurs
  * */
-void fota_client_do_update(const ota_ver_t *latest, uint16_t conn_handle,
+void fota_client_do_update(int target_chip_family,
+                              const ota_ver_t *latest, uint16_t conn_handle,
                               uint16_t handle_ver, uint16_t handle_ctrl, uint16_t handle_data,
                               int item_cnt, const ota_item_t *items,
                               uint32_t entry,
@@ -118,6 +120,7 @@ void fota_client_do_update(const ota_ver_t *latest, uint16_t conn_handle,
 /**
  * @brief FOTA client.
  *
+ * @param target_family     target chip family (INGCHIPS_FAMILY_916, INGCHIPS_FAMILY_918, etc)
  * @param latest            latest version (a.k.a this version)
  * @param conn_handle       connection handle
  * @param handle_ver        handle of INGCHIPS_UUID_OTA_VER
@@ -133,7 +136,8 @@ void fota_client_do_update(const ota_ver_t *latest, uint16_t conn_handle,
  *                               err_code < 0 : error occurs
  * @param driver            ECC function driver
  */
-void secure_fota_client_do_update(const ota_ver_t *latest, uint16_t conn_handle,
+void secure_fota_client_do_update(int target_chip_family,
+                              const ota_ver_t *latest, uint16_t conn_handle,
                               uint16_t handle_ver, uint16_t handle_ctrl, uint16_t handle_data,
                               uint16_t handle_pk,
                               int item_cnt, const ota_item_t *items,

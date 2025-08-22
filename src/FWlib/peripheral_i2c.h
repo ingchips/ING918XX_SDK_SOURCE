@@ -500,7 +500,9 @@ typedef enum
     I2C_CLOCKFREQUENY_FASTMODE,//400kbit/s
     I2C_CLOCKFREQUENY_FASTMODE_PLUS,//1Mbit/s
     I2C_CLOCKFREQUENY_MANUAL
-} I2C_ClockFrequenyOptions;
+} I2C_ClockFrequencyOptions;
+
+#define I2C_ClockFrequenyOptions    I2C_ClockFrequencyOptions
 
 #define bsI2C_CTRL_TRANSACTION_DIR               8
 #define bsI2C_CTRL_MASTER_PRE_SEND_START         12
@@ -559,7 +561,7 @@ I2C_TransactionDir I2C_GetTransactionDir(I2C_TypeDef *I2C_BASE);
  * @brief Enable/Disable interrupts of I2C
  *
  * @param[in] I2C_BASE              base address
- * @param[in] mask                  bits combinatoin of `I2C_IntBit`
+ * @param[in] mask                  bits combination of `I2C_IntBit`
  */
 void I2C_IntEnable(I2C_TypeDef *I2C_BASE, uint32_t mask);
 void I2C_IntDisable(I2C_TypeDef *I2C_BASE, uint32_t mask);
@@ -567,7 +569,7 @@ void I2C_IntDisable(I2C_TypeDef *I2C_BASE, uint32_t mask);
  * @brief Get interrupts status of I2C
  *
  * @param[in] I2C_BASE              base address
- * @return                          interrupt status (bits combinatoin of `I2C_IntBit`)
+ * @return                          interrupt status (bits combination of `I2C_IntBit`)
  */
 uint32_t I2C_GetIntState(I2C_TypeDef *I2C_BASE);
 
@@ -575,7 +577,7 @@ uint32_t I2C_GetIntState(I2C_TypeDef *I2C_BASE);
  * @brief Clear interrupts of I2C
  *
  * @param[in] I2C_BASE              base address
- * @param[in] mask                  bits combinatoin of `I2C_IntBit`
+ * @param[in] mask                  bits combination of `I2C_IntBit`
  */
 void I2C_ClearIntState(I2C_TypeDef *I2C_BASE, uint32_t mask);
 
@@ -656,11 +658,22 @@ void I2C_CtrlUpdateDirection(I2C_TypeDef *I2C_BASE, I2C_TransactionDir dir);
 uint8_t I2C_CtrlGetDataCnt(I2C_TypeDef *I2C_BASE);
 
 /**
- * @brief Set clk frequency for controller.
+ * @brief Set clk frequency for controller.(Check the return value to see if the parameters are set correctly.)
  * @param[in] I2C_BASE              base address
- * @param[in] option                see I2C_ClockFrequenyOptions
+ * @param[in] option                see I2C_ClockFrequencyOptions
+ *
+ * @return                          calculated status,0 means success.others means fail.
  */
-void I2C_ConfigClkFrequency(I2C_TypeDef *I2C_BASE, I2C_ClockFrequenyOptions option);
+uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOptions option);
+
+/**
+ * @note Interface deprecated, recommended to use I2C_ConfigClkFrequencyCalc().
+ *
+ * @brief Set clk frequency for controller.(if calculation is failed,use normal parameters).
+ * @param[in] I2C_BASE              base address
+ * @param[in] option                see I2C_ClockFrequencyOptions
+ */
+void I2C_ConfigClkFrequency(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOptions option);
 #endif
 
 #ifdef __cplusplus

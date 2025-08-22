@@ -31,7 +31,7 @@ static void init(void)
 {
     FLASH_PRE_OPS();
 
-    ClkFreq = (*(uint32_t *)RTC_CHIP_STAT_ADDR >> CLK_FREQ_STAT_POS) & 0x1;
+    ClkFreq = (*(uint32_t volatile*)RTC_CHIP_STAT_ADDR >> CLK_FREQ_STAT_POS) & 0x1;
     EflashCacheBypass();
     EflashBaseTime();
 #ifdef FOR_ASIC
@@ -177,6 +177,76 @@ int program_fota_metadata(const uint32_t entry, const int block_num, const fota_
 
     EflashProgramDisable();
     uninit();
+    return 0;
+}
+
+#define FACTORY_DATA_LOC    (0x80000 + 0x4000)
+#define VERSION             0x20230817
+
+const die_info_t *flash_get_die_info(void)
+{
+    return ((const die_info_t *)(FACTORY_DATA_LOC + 0x4000));
+}
+
+const factory_calib_data_t *flash_get_factory_calib_data(void)
+{
+    const factory_calib_data_t *p = (const factory_calib_data_t *)(FACTORY_DATA_LOC + 0x3000);
+    
+    if(p->ft_version > VERSION)
+        return p;
+    else
+        return NULL;
+}
+
+const adc_calib_data_t *flash_get_adc_calib_data(void)
+{
+    return (const adc_calib_data_t *)(FACTORY_DATA_LOC);
+}
+
+void flash_read_uid(uint32_t uid[4])
+{
+    const die_info_t* die_info;
+    const factory_calib_data_t* factory_calib;
+    
+    if(NULL == uid)
+        return;
+
+    EflashCacheBypass();
+    die_info = flash_get_die_info();
+    factory_calib = flash_get_factory_calib_data();
+    uid[0] = die_info->lot_id[0];
+    uid[1] = die_info->lot_id[1] | (die_info->metal_id<<16) | (die_info->wafer_id<<24);
+    if(factory_calib)
+    {
+        uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8) | ((*((uint32_t*)(&factory_calib->TRng_data[0]))) << 16);
+        uid[3] = *((uint32_t*)(&factory_calib->TRng_data[2]));
+    }
+    else 
+    {
+        uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8);
+        uid[3] = 0;
+    }
+    EflashCacheEna();
+}
+
+int flash_read_uid45(uint8_t uid[6])
+{
+    const die_info_t* pDie_info;
+
+    if(NULL == uid) 
+        return -1;
+
+    EflashCacheBypass();
+    pDie_info = flash_get_die_info();
+    uint8_t *pLot = (uint8_t*)&pDie_info->lot_id[0];
+    uid[0] = pDie_info->wafer_id&0x1f;
+    uid[1] = pLot[1];
+    uid[2] = pLot[3];
+    uid[3] = pLot[5];
+    uid[4] = pDie_info->Die_x_local;
+    uid[5] = pDie_info->Die_y_local;
+    EflashCacheEna();
+    
     return 0;
 }
 

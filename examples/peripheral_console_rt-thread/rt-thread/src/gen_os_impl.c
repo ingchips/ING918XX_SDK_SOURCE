@@ -81,19 +81,19 @@ int port_queue_recv_msg(gen_handle_t queue, void *msg)
     struct queue_info *p = (struct queue_info *)queue;
     rt_err_t err = rt_mq_recv(p->handle, msg, p->msg_size, RT_WAITING_FOREVER);
     return err == RT_EOK ? 0 : 1;
-}    
+}
 
 gen_handle_t port_event_create()
 {
     return rt_event_create(NULL, RT_IPC_FLAG_FIFO);
-}    
+}
 
 // return 0 if msg received; otherwise failed (timeout)
 int port_event_wait(gen_handle_t event)
 {
     rt_err_t err = rt_event_recv((rt_event_t)event, 1, RT_EVENT_FLAG_AND | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, RT_NULL);
     return err == RT_EOK ? 0 : 1;
-}    
+}
 
 // event_set(event) will release the task in waiting.
 void port_event_set(gen_handle_t event)
@@ -161,7 +161,7 @@ uint32_t _SysTick_Config(rt_uint32_t ticks)
     }
 
     _SYSTICK_PRI = 0xFF;
-    portNVIC_SYSTICK_LOAD_REG = ticks - 1;    
+    portNVIC_SYSTICK_LOAD_REG = ticks - 1;
     portNVIC_SYSTICK_CURRENT_VALUE_REG  = 0;
     portNVIC_SYSTICK_CTRL_REG = portNVIC_SYSTICK_INT_BIT | portNVIC_SYSTICK_ENABLE_BIT | portNVIC_SYSTICK_CLK_BIT;
 
@@ -182,13 +182,13 @@ static void SVC_Handler(void)
 #ifdef POWER_SAVING
 
 // This is a re-implementation of FreeRTOS's suppress ticks and sleep function.
-static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
+static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_cycles)
 {
     uint32_t ulCompleteTickPeriods;
-    
+
     portNVIC_SYSTICK_CTRL_REG &= ~portNVIC_SYSTICK_ENABLE_BIT;
 
-    uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + (RTC_CYCLES_PER_TICK * (expected_ticks - 1UL));
+    uint32_t ulReloadValue = portNVIC_SYSTICK_CURRENT_VALUE_REG + expected_cycles - 1UL;
     if( ulReloadValue > STOPPED_TIMER_COMPENSATION )
     {
         ulReloadValue -= STOPPED_TIMER_COMPENSATION;
@@ -199,7 +199,7 @@ static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
     portNVIC_SYSTICK_LOAD_REG = ulReloadValue;
     portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
     portNVIC_SYSTICK_CTRL_REG |= portNVIC_SYSTICK_ENABLE_BIT;
-    
+
     platform_pre_sleep_processing();
     platform_post_sleep_processing();
 
@@ -222,11 +222,11 @@ static uint32_t _rt_suppress_ticks_and_sleep(uint32_t expected_ticks)
 
         portNVIC_SYSTICK_LOAD_REG = ulCalculatedLoadValue;
 
-        ulCompleteTickPeriods = expected_ticks - 1UL;
+        ulCompleteTickPeriods = ulReloadValue / RTC_CYCLES_PER_TICK;
     }
     else
     {
-        uint32_t ulCompletedSysTickDecrements = (expected_ticks * RTC_CYCLES_PER_TICK) - portNVIC_SYSTICK_CURRENT_VALUE_REG;
+        uint32_t ulCompletedSysTickDecrements = ulReloadValue - portNVIC_SYSTICK_CURRENT_VALUE_REG;
 
         ulCompleteTickPeriods = ulCompletedSysTickDecrements / RTC_CYCLES_PER_TICK;
 
@@ -249,7 +249,7 @@ void rt_system_power_manager(void)
 {
 #ifdef POWER_SAVING
     rt_tick_t timeout_tick;
-   
+
     timeout_tick = rt_timer_next_timeout_tick();
     if (timeout_tick != RT_TICK_MAX)
         timeout_tick = timeout_tick - rt_tick_get();
@@ -259,18 +259,18 @@ void rt_system_power_manager(void)
     if (timeout_tick > MAXIMUM_SUPPRESSED_TICKS)
         timeout_tick = MAXIMUM_SUPPRESSED_TICKS;
 
-    timeout_tick = platform_pre_suppress_ticks_and_sleep_processing(timeout_tick);
-    if (timeout_tick < EXPECTED_IDLE_TIME_BEFORE_SLEEP)
+    uint32_t timeout_cycles = platform_pre_suppress_cycles_and_sleep_processing(timeout_tick * RTC_CYCLES_PER_TICK);
+    if (timeout_cycles < EXPECTED_IDLE_TIME_BEFORE_SLEEP * RTC_CYCLES_PER_TICK)
         return;
-    
+
     rt_enter_critical();
-    
-    uint32_t delta_ticks = _rt_suppress_ticks_and_sleep(timeout_tick);
+
+    uint32_t delta_ticks = _rt_suppress_ticks_and_sleep(timeout_cycles);
 
     rt_exit_critical();
-    
+
     platform_os_idle_resumed_hook();
-    
+
     if (delta_ticks)
         rt_timer_check();
 #endif
@@ -298,17 +298,17 @@ const gen_os_driver_t gen_os_driver =
     .timer_start = port_timer_start,
     .timer_stop = port_timer_stop,
     .timer_delete = port_timer_delete,
-    
+
     .task_create = port_task_create,
-    
+
     .queue_create = port_queue_create,
     .queue_send_msg = port_queue_send_msg,
     .queue_recv_msg = port_queue_recv_msg,
-    
+
     .event_create = port_event_create,
     .event_set = port_event_set,
     .event_wait = port_event_wait,
-    
+
     .malloc = port_malloc,
     .free = rt_free,
     .enter_critical = port_enter_critical,
@@ -321,11 +321,16 @@ const gen_os_driver_t gen_os_driver =
 
 const gen_os_driver_t *os_impl_get_driver(void)
 {
-    static uint8_t heap[RT_THREAD_HEAP_SIZE] = {0};
-
     rt_hw_interrupt_disable();
-    
+
+#ifdef USE_NOOS_BUNDLES
+    static uint8_t heap[RT_THREAD_HEAP_SIZE] = {0};
     rt_system_heap_init(heap, heap + sizeof(heap));
+#else
+    int size = 0;
+    char *heap = platform_get_rtos_heap_mem(&size);
+    rt_system_heap_init(heap, heap + size);
+#endif
 
     /* timer system initialization */
     rt_system_timer_init();
@@ -336,6 +341,7 @@ const gen_os_driver_t *os_impl_get_driver(void)
     return &gen_os_driver;
 }
 
+#ifdef USE_NOOS_BUNDLES
 void platform_get_heap_status(platform_heap_status_t *status)
 {
     rt_uint32_t used, max_used;
@@ -343,3 +349,4 @@ void platform_get_heap_status(platform_heap_status_t *status)
     status->bytes_free = RT_THREAD_HEAP_SIZE - used;
     status->bytes_minimum_ever_free = RT_THREAD_HEAP_SIZE - max_used;
 }
+#endif

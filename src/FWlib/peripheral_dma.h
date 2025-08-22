@@ -29,6 +29,18 @@ typedef enum
     DMA_DESC_OPTION_BIT_HIGH_PRIORITY = 29,
 } DMA_DescriptorOptionBit;
 
+typedef enum
+{
+    DMA_BURST_SIZE_1   = 0,
+    DMA_BURST_SIZE_2   = 1,
+    DMA_BURST_SIZE_4   = 2,
+    DMA_BURST_SIZE_8   = 3,
+    DMA_BURST_SIZE_16  = 4,
+    DMA_BURST_SIZE_32  = 5,
+    DMA_BURST_SIZE_64  = 6,
+    DMA_BURST_SIZE_128 = 7,
+} DMA_SrcBurstSize;
+
 #define DMA_MAKE_BURST_SIZE_OPTION(size)        (((uint32_t)(size) & 0x7) << 24)
 
 /**
@@ -44,9 +56,9 @@ typedef enum
  * @return                      0 if no error else non-0
  */
 int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
-                        void *dst, void *src, int size,
-                        DMA_AddressControl dst_addr_ctrl, DMA_AddressControl src_addr_ctrl,
-                        uint32_t options);
+                       void *dst, void *src, int size,
+                       DMA_AddressControl dst_addr_ctrl, DMA_AddressControl src_addr_ctrl,
+                       uint32_t options);
 
 /**
  * @brief Prepare DMA descriptor for peripheral to memory transfer
@@ -60,9 +72,9 @@ int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
  * @return                      0 if no error else non-0
  */
 int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
-                            uint32_t *dst, SYSCTRL_DMA src, int size,
-                            DMA_AddressControl dst_addr_ctrl,
-                            uint32_t options);
+                              uint32_t *dst, SYSCTRL_DMA src, int size,
+                              DMA_AddressControl dst_addr_ctrl,
+                              uint32_t options);
 
 /**
  * @brief Prepare DMA descriptor for memory to peripheral transfer
@@ -76,9 +88,9 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
  * @return                      0 if no error else non-0
  */
 int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
-                            SYSCTRL_DMA dst, uint32_t *src, int size,
-                            DMA_AddressControl src_addr_ctrl,
-                            uint32_t options);
+                              SYSCTRL_DMA dst, uint32_t *src, int size,
+                              DMA_AddressControl src_addr_ctrl,
+                              uint32_t options);
 
 /**
  * @brief Prepare DMA descriptor for RAM to peripheral transfer
@@ -91,15 +103,15 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
  * @param[out] *srcWidth        size(bits) per unit, refer to DMA_TransferWidth
  * @param[out] *srcSize         size in unit per transfer, real transfer num is 1<<srcSize
  * @return                      0 if no error else non-0
- * Application need to check the return value of *srcWidth and *srcSize and set corresponding 
+ * Application need to check the return value of *srcWidth and *srcSize and set corresponding
  * fifo trigger level.
  * for example, if srcWidth is DMA_WIDTH_BYTE, and srcSize is 2(which means 1<<2 = 4)
  * then the fifo trigger level should be set to 4bytes(srcWidth*(1<<srcSize))
  * so that src fifo will issue a dma req every 4bytes to trigger dma transaction.
  */
 int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
-                                    SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
-                                    uint32_t options, uint8_t *srcWidth, uint8_t *srcSize);
+                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
+                                     uint32_t options, uint8_t *srcWidth, uint8_t *srcSize);
 /**
  * @brief Reset DMA peripheral
  *
@@ -179,6 +191,23 @@ uint32_t DMA_GetChannelIntState(int channel_id);
  * @param[in] state                     interrupt state (combination of `DMA_IRQ`) to be cleared.
  */
 void DMA_ClearChannelIntState(int channel_id, uint32_t state);
+
+
+/**
+ * @brief Modify source burst size in the DMA descriptor
+ *
+ * @param[in] pDesc             the descriptor
+ * @param[in] burst_size        Source burst size of `DMA_SrcBurstSize`, The burst transfer byte number is SrcBurstSize * SrcWidth.
+ */
+void DMA_ConfigSrcBurstSize(DMA_Descriptor *pDesc, DMA_SrcBurstSize burst_size);
+
+/**
+ * @brief Get DMA descriptor of a channel
+ *
+ * @param[in] channel_id                channel id
+ * @return                              DMA descriptor
+ */
+DMA_Descriptor *DMA_GetChannelDescriptor(int channel_id);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 

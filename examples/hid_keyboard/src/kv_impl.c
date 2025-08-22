@@ -1,5 +1,5 @@
 /**
- * @brief An backend for kv storage
+ * @brief A demo of customized backend for kv storage
  *
  * Features:
  *

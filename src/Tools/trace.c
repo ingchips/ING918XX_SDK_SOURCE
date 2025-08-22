@@ -1,5 +1,7 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdarg.h>
 #include "trace.h"
 #include "peripheral_uart.h"
 #include "platform_api.h"
@@ -11,6 +13,58 @@
 #include "att_db.h"
 
 #define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
+
+#ifdef TRACE_IGNORE_SOME_DATA
+static bool trace_is_ext_adv_report(const platform_evt_trace_t *trace)
+{
+    #pragma pack (push, 1)
+    typedef struct
+    {
+        uint32_t A;
+        uint32_t B;
+        uint8_t  id;
+
+        uint8_t  evt_code;
+        uint8_t  len;
+    } header_t;
+    #pragma pack (pop)
+
+    if (trace->len1 != sizeof(header_t)) return false;
+    if (trace->len2 <  10) return false;
+    const header_t *p = (const header_t *)(trace->data1);
+    if (p->id != PLATFORM_TRACE_ID_HCI_EVENT) return false;
+    if (p->evt_code != HCI_EVENT_LE_META) return false;
+    const uint8_t *d = (const uint8_t *)trace->data2;
+    return d[0] == HCI_SUBEVENT_LE_EXTENDED_ADVERTISING_REPORT;
+}
+
+static bool trace_is_internal_msg(const platform_evt_trace_t *trace)
+{
+    #pragma pack (push, 1)
+    typedef struct
+    {
+        uint32_t A;
+        uint32_t B;
+        uint8_t  id;
+    } header_t;
+    #pragma pack (pop)
+
+    if (trace->len1 != sizeof(header_t)) return false;
+    if (trace->len2 <  3) return false;
+    const header_t *p = (const header_t *)(trace->data1);
+    if (p->id != PLATFORM_TRACE_ID_EVENT) return false;
+    const uint8_t *d = (const uint8_t *)trace->data2;
+    return d[0] >= 4;
+}
+
+#define IGNORE_SOME_DATA() do {                               \
+        if (trace_is_ext_adv_report(trace)) return 0;       \
+        if (trace_is_internal_msg(trace)) return 0;         \
+    } while (false)
+
+#else
+#define IGNORE_SOME_DATA()
+#endif
 
 static void trace_task(void *data)
 {
@@ -73,6 +127,8 @@ uint32_t cb_trace_uart(const platform_evt_trace_t *trace, trace_uart_t *ctx)
     int16_t free_size;
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
+    IGNORE_SOME_DATA();
+
     if (use_mutex)
         GEN_OS->enter_critical();
 
@@ -102,6 +158,8 @@ uint32_t cb_trace_rtt(const platform_evt_trace_t *trace, trace_rtt_t *ctx)
 {
     int free_size;
     uint8_t use_mutex = !IS_IN_INTERRUPT();
+
+    IGNORE_SOME_DATA();
 
     if (use_mutex)
         GEN_OS->enter_critical();
@@ -191,6 +249,8 @@ static void flash_trace_append(trace_flash_t *ctx, const uint8_t *data, int len)
 uint32_t cb_trace_flash(const platform_evt_trace_t *trace, trace_flash_t *ctx)
 {
     if (ctx->enable == 0) return 0;
+
+    IGNORE_SOME_DATA();
 
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
@@ -344,6 +404,8 @@ uint32_t cb_trace_air(const platform_evt_trace_t *trace, trace_air_t *ctx)
     int free_size;
     uint8_t use_mutex = !IS_IN_INTERRUPT();
 
+    IGNORE_SOME_DATA();
+
     if (use_mutex)
         GEN_OS->enter_critical();
 
@@ -460,4 +522,20 @@ void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size)
 #else
     #error unknown or unsupported chip family
 #endif
+}
+
+void platform_trace_raw_printf(const void *fmt, ...)
+{
+#ifndef TRACE_RAW_PRINTF_MAX_LEN
+#define TRACE_RAW_PRINTF_MAX_LEN 64
+#endif
+
+    static char buf[TRACE_RAW_PRINTF_MAX_LEN];
+    va_list va;
+    va_start(va, fmt);
+    int len = vsprintf(buf, fmt, va);
+    va_end(va);
+    if (len > TRACE_RAW_PRINTF_MAX_LEN - 1)
+        platform_raise_assertion(__FILE__, __LINE__);
+    platform_trace_raw(buf, len);
 }

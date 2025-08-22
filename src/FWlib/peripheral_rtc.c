@@ -103,7 +103,7 @@ uint32_t RTC_GetIntState(void)
 
 void RTC_ClearIntState(uint32_t state)
 {
-    APB_RTC->St |= state &  _RTC_INT_MASK;
+    APB_RTC->St = state &  _RTC_INT_MASK;
 }
 
 void RTC_EnableDeepSleepWakeupSource(uint8_t enable)

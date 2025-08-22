@@ -2,5 +2,5 @@
 
 This example demonstrates how to:
 
-* Integreate NoOS bundle with RT-Thread;
+* Integrate NoOS bundle with RT-Thread Nano;
 * See also `Peripheral Console`.

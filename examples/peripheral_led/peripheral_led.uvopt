@@ -122,6 +122,11 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
+          <Key>CMSIS_AGDI</Key>
+          <Name>-X"" -U-O14 -O14 -S0 -C-1 -P00 -FO2 -FD20000000 -FC8000 -FN1 -FF0ING91800 -FS04000 -FL080000</Name>
+        </SetRegEntry>
+        <SetRegEntry>
+          <Number>0</Number>
           <Key>UL2CM3</Key>
           <Name>-U -O14 -S0 -C-1 -P00 -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO2 -FD20000000 -FC8000 -FN1 -FF0ING91800 -FS04000 -FL080000</Name>
         </SetRegEntry>

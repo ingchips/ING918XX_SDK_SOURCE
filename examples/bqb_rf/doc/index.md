@@ -12,15 +12,18 @@ Recent releases of BLE Core Spec added new variants of test commands. A simple s
 * **HCI_LE_Transmitter_Test_v4**: Change Tx power.
 
 For ING916xx, this app also demonstrates how to tune frequency offset.
+
 ## Customization
 
 1. UART configuration
 
     Update `config_uart` to configure UART.
 
-1. RF Tx power boosting
+1. Power Mode
 
-    Add `rf_enable_powerboost()` to `app_main()`.
+    Power mode can be adjusted by RF Test Tool after connected:
+
+    ![](./img/power_mode.png)
 
 ## Testing
 

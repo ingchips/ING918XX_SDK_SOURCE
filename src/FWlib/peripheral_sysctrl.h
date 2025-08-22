@@ -67,7 +67,7 @@ enum
 {
     SYSCTRL_BOR_0V85 = 0x06,        // BOR Vdd threshold = 0.85V
     SYSCTRL_BOR_0V90 = 0x07,        // BOR Vdd threshold = 0.90V
-    SYSCTRL_BOR_0V95 = 0x09,        // BOR Vdd threshold = 0.95V
+    SYSCTRL_BOR_0V95 = 0x08,        // BOR Vdd threshold = 0.95V
     SYSCTRL_BOR_1V00 = 0x09,        // BOR Vdd threshold = 1.00V
     SYSCTRL_BOR_1V05 = 0x0A,        // BOR Vdd threshold = 1.05V
 };
@@ -2130,7 +2130,13 @@ int SYSCTRL_Init(void);
  */
 void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles);
 
-void SYSCTRL_UpdateAsdmClk(uint32_t div);
+/**
+ * @brief System reset
+ *
+ * This function resets the system with a watchdog, 
+ * and all registers are restored to their default state
+ */
+void SYSCTRL_Reset(void);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */

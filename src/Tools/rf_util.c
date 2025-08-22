@@ -15,6 +15,8 @@ static const int16_t power_mapping[] = {
 
 void rf_enable_powerboost(void)
 {
+    // CW is already in power boosted mode;
+    // this function will enable power boost for data packets.
     platform_set_rf_init_data(rf_data);
     platform_set_rf_power_mapping(power_mapping);
 }

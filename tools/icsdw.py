@@ -63,6 +63,18 @@ def calc_crc_16(PData: bytes):
 
   return (uchCRCHi << 8) | uchCRCLo
 
+class TimeMeasurement:
+    def __init__(self) -> None:
+        pass
+
+    def start(self):
+        self.t0 = time.time()
+
+    def show_throughput(self, size, prefix: str = ' |'):
+        duration = time.time() - self.t0
+        if duration > 0:
+            print(f"{prefix}{size} bytes in {duration:.2f}s ({size/duration:.1f} B/s)")
+
 def load_mod(fn: str):
     import importlib.machinery, importlib.util
     loader = importlib.machinery.SourceFileLoader('script_mod', fn)
@@ -173,6 +185,9 @@ class device(object):
             raise Exception(f'Port {port} is NOT supported yet.')
         self.dev_type = 1 if port.lower().startswith('usb') else 0
         self.dev = None
+        self.port = port
+        self.timeout = timeout
+        self.config = config
         if self.dev_type == 1:
             self.backend = usb.backend.libusb1.get_backend(find_library=libusb_package.find_library)
         self.open(port, timeout, config)
@@ -200,19 +215,32 @@ class device(object):
             self.dev = open_serial(config, port)
             self.dev.timeout = timeout
         else: #usb
-            if port.lower() == 'usb': #pick the first usb device
-                self.dev = usb.core.find(idVendor=0xffff, idProduct=0xfa2f, backend=self.backend)
-            else:
-                nouse,vid,pid,addr,bus,p = port.split('#')
-                self.dev = usb.core.find(custom_match = lambda d: d.idProduct==int(pid.split('_')[1],16) and d.idVendor==int(vid.split('_')[1],16) and d.address==int(addr,16), backend=self.backend)
+            print("wait for USB device ...", end = '\r')
+            start = time.time()
+            while time.time() - start < timeout:
+                if port.lower() == 'usb': #pick the first usb device
+                    self.dev = usb.core.find(idVendor=0xffff, idProduct=0xfa2f, backend=self.backend)
+                else:
+                    nouse,vid,pid,addr,bus,p = port.split('#')
+                    self.dev = usb.core.find(custom_match = lambda d: d.idProduct==int(pid.split('_')[1],16) and d.idVendor==int(vid.split('_')[1],16) and d.address==int(addr,16), backend=self.backend)
+                if self.dev is not None:
+                    time.sleep(0.5)
+                    break
+                time.sleep(0.2)
 
         return self.dev
 
     def close(self):
+        if self.dev is None: return
         if self.dev_type == 0: #uart
             self.dev.close()
         else: #usb
             usb.util.dispose_resources(self.dev)
+        self.dev = None
+
+    def reopen(self):
+        self.close()
+        self.open(self.port, self.timeout, self.config)
 
 def list_jlink():
     import pylink
@@ -341,12 +369,62 @@ def format_exception(e):
 
     return exception_str
 
+def download_through_jlink(file_url, addr, family, loop, serial_no: str):
+    import pylink, urllib
+    import urllib.request
+
+    def get_file_content(url: str) -> bytes:
+        if url.startswith('http://') or url.startswith('https://'):
+            with urllib.request.urlopen(url) as f:
+                return f.read()
+        else:
+            with open(url, 'rb') as f:
+                return f.read()
+
+    def download(data, addr, family, serial_no):
+
+        def jlink_on_progress(action, progress_string, percentage):
+            printProgressBar(percentage, 100, action.decode(), auto_nl = False)
+
+        jlink = pylink.JLink()
+        jlink.open(serial_no=serial_no)
+        jlink.set_tif(pylink.enums.JLinkInterfaces.SWD)
+        jlink.disable_dialog_boxes()
+
+        if family == 'ing918':
+            jlink.connect('ING9188xx')
+        elif family == 'ing916':
+            jlink.connect('ING9168xx')
+        else:
+            raise ValueError("Invalid device type")
+
+        jlink.reset()
+
+        if not jlink.target_connected():
+            raise ConnectionError("Failed to connect to target")
+
+        jlink.flash(data, addr, on_progress=jlink_on_progress)
+        print()
+
+        jlink.reset()
+        jlink.close()
+
+    if serial_no == '':
+        serial_no = None
+    cnt = 0
+    while True:
+        cnt = cnt + 1
+        download(get_file_content(file_url), addr, family, serial_no)
+        if not loop: break
+        print(f'(#{cnt}) press Enter to download again', end='')
+        input()
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'proj',
         type=str,
-        help='Location of project file (.ini).')
+        help='Location of project file (.ini), or a .bin file.')
 
     parser.add_argument(
         '--go',
@@ -389,6 +467,26 @@ def parse_args():
         default='',
         help='User data.')
 
+    parser.add_argument(
+        '--addr',
+        type=lambda x: int(x, 0),
+        default=0x2027000,
+        help='Download address for .bin file or URL')
+
+    parser.add_argument(
+        '--family',
+        type=str,
+        default='ing916',
+        help='Chip family.')
+
+    parser.add_argument(
+        '--loop',
+        type=bool,
+        default=False,
+        nargs='?',
+        const=True,
+        help='Downloading (.bin file or URL file) again and again.')
+
     return parser.parse_known_args()
 
 if __name__ == '__main__':
@@ -404,8 +502,13 @@ if __name__ == '__main__':
         sys.exit(0)
 
     try:
-        r = run_proj(FLAGS.proj, FLAGS.go, FLAGS.port, FLAGS.timeout, FLAGS.counter, FLAGS.user_data)
-        sys.exit(r)
+        if FLAGS.proj.endswith('.ini'):
+            r = run_proj(FLAGS.proj, FLAGS.go, FLAGS.port, FLAGS.timeout, FLAGS.counter, FLAGS.user_data)
+            sys.exit(r)
+        elif FLAGS.proj.endswith('.bin'):
+            download_through_jlink(FLAGS.proj, FLAGS.addr, FLAGS.family, FLAGS.loop, FLAGS.port)
+        else:
+            raise Exception(f"supported project file: {FLAGS.proj}")
     except Exception as e:
         print("Exception: ", e)
         print("")

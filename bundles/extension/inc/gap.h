@@ -26,12 +26,12 @@ extern "C" {
  * @{
  */
 typedef struct le_connection_parameter_range{
-    uint16_t le_conn_interval_min;
-    uint16_t le_conn_interval_max;
-    uint16_t le_conn_latency_min;
-    uint16_t le_conn_latency_max;
-    uint16_t le_supervision_timeout_min;
-    uint16_t le_supervision_timeout_max;
+    uint16_t le_conn_interval_min;          // Minimum connection interval
+    uint16_t le_conn_interval_max;          // Maximum connection interval
+    uint16_t le_conn_latency_min;           // Minimum connection latency
+    uint16_t le_conn_latency_max;           // Maximum connection latency
+    uint16_t le_supervision_timeout_min;    // Minimum supervision timeout
+    uint16_t le_supervision_timeout_max;    // Maximum supervision timeout
 } le_connection_parameter_range_t;
 
 //LE Scan type
@@ -263,9 +263,9 @@ uint8_t gap_le_read_channel_map(hci_con_handle_t handle);
  */
 typedef enum phy_type
 {
-    PHY_1M = 0x01,
-    PHY_2M = 0x02,
-    PHY_CODED = 0x03,
+    PHY_1M = 0x01,      // 1M PHY
+    PHY_2M = 0x02,      // 2M PHY
+    PHY_CODED = 0x03,   // Coded PHY
 } phy_type_t;
 
 /**
@@ -273,10 +273,10 @@ typedef enum phy_type
  */
 typedef enum unified_phy_type
 {
-    UNIFIED_PHY_1M = 0x01,
-    UNIFIED_PHY_2M = 0x02,
-    UNIFIED_PHY_CODED_S8 = 0x03,
-    UNIFIED_PHY_CODED_S2 = 0x04,
+    UNIFIED_PHY_1M = 0x01,          // Unified 1M PHY
+    UNIFIED_PHY_2M = 0x02,          // Unified 2M PHY
+    UNIFIED_PHY_CODED_S8 = 0x03,    // Unified Coded PHY with S8 coding
+    UNIFIED_PHY_CODED_S2 = 0x04,    // Unified Coded PHY with S2 coding
 } unified_phy_type_t;
 
 /**
@@ -284,11 +284,15 @@ typedef enum unified_phy_type
  */
 typedef enum phy_bittype
 {
-    PHY_1M_BIT    = BIT(0),
-    PHY_2M_BIT    = BIT(1),
-    PHY_CODED_BIT = BIT(2),
+    PHY_1M_BIT    = BIT(0), // 1M PHY bit
+    PHY_2M_BIT    = BIT(1), // 2M PHY bit
+    PHY_CODED_BIT = BIT(2), // Coded PHY bit
 } phy_bittype_t;
 
+/**
+ * @brief phy_bittypes_t is a bit field type for PHY types
+ * It can be used to represent multiple PHY types in a single variable.
+ */
 typedef uint8_t phy_bittypes_t;
 
 /**
@@ -296,13 +300,13 @@ typedef uint8_t phy_bittypes_t;
  */
 typedef enum
 {
-    ADV_CONNECTABLE,
-    ADV_SCANNABLE,
-    ADV_DIRECT,
-    ADV_HIGH_DUTY_DIR_ADV,
-    ADV_LEGACY,
-    ADV_ANONYMOUS,
-    ADV_INC_TX_POWER
+    ADV_CONNECTABLE,        // Connectable advertising event
+    ADV_SCANNABLE,          // Scannable advertising event
+    ADV_DIRECT,             // Directed advertising event
+    ADV_HIGH_DUTY_DIR_ADV,  // High Duty Cycle Directed Advertising event
+    ADV_LEGACY,             // Legacy advertising event
+    ADV_ANONYMOUS,          // Anonymous advertising event
+    ADV_INC_TX_POWER        // Include Transmit Power in advertising event
 } adv_event_property_t;
 
 #define    CONNECTABLE_ADV_BIT       BIT(ADV_CONNECTABLE)
@@ -312,10 +316,12 @@ typedef enum
 #define    LEGACY_PDU_BIT            BIT(ADV_LEGACY)
 #define    ANONY_ADV_BIT             BIT(ADV_ANONYMOUS)
 #define    INC_TX_ADV_BIT            BIT(ADV_INC_TX_POWER)
-
+/** adv event properties */
 typedef uint8_t adv_event_properties_t;
 
 #define PERIODIC_ADV_BIT_INC_TX      BIT(ADV_INC_TX_POWER)
+
+/** periodic adv properties */
 typedef uint8_t periodic_adv_properties_t;
 
 /**
@@ -353,9 +359,9 @@ uint8_t gap_set_def_phy(const uint8_t all_phys, const phy_bittypes_t tx_phys, co
  */
 typedef enum phy_option
 {
-    HOST_NO_PREFERRED_CODING,
-    HOST_PREFER_S2_CODING,
-    HOST_PREFER_S8_CODING
+    HOST_NO_PREFERRED_CODING,       // No preferred coding
+    HOST_PREFER_S2_CODING,          // Prefer S2 coding
+    HOST_PREFER_S8_CODING           // Prefer S8 coding
 } phy_option_t;
 
 /**
@@ -610,8 +616,8 @@ uint8_t gap_set_ext_adv_para(const uint8_t adv_handle,
  */
 typedef enum adv_data_frag_pref
 {
-    ADV_DATA_CTRL_MAY_FRAG = 0,
-    ADV_DATA_CTRL_NOT_FRAG = 1
+    ADV_DATA_CTRL_MAY_FRAG = 0,     // The Controller may fragment all Host advertising data
+    ADV_DATA_CTRL_NOT_FRAG = 1      // The Controller should not fragment or should minimize fragmentation of Host advertising data
 } adv_data_frag_pref_t_t;
 
 /**
@@ -875,8 +881,8 @@ typedef struct {
  */
 typedef struct initiating_phy_config
 {
-    phy_type_t phy;
-    conn_para_t conn_param;
+    phy_type_t phy;         // Which phy to use for initiating process (valid phys: 1M, 2M & Coded)
+    conn_para_t conn_param; // Connection parameters for the PHY
 } initiating_phy_config_t;
 
 /**
@@ -999,9 +1005,9 @@ uint8_t gap_set_data_length(uint16_t connection_handle, uint16_t tx_octets, uint
  */
 typedef enum
 {
-    CTE_AOA,
-    CTE_AOD_1US,
-    CTE_AOD_2US
+    CTE_AOA,        // Angle of Arrival
+    CTE_AOD_1US,    // Angle of Departure with 1us slot duration
+    CTE_AOD_2US     // Angle of Departure with 2us slot duration
 } cte_type_t;
 
 /**
@@ -1044,8 +1050,8 @@ uint8_t gap_set_connectionless_cte_tx_enable(const uint8_t       adv_handle,
  */
 typedef enum
 {
-    CTE_SLOT_DURATION_1US = 1,
-    CTE_SLOT_DURATION_2US = 2
+    CTE_SLOT_DURATION_1US = 1,  // 1us slot duration
+    CTE_SLOT_DURATION_2US = 2   // 2us slot duration
 } cte_slot_duration_type_t;
 
 /**
@@ -1198,9 +1204,12 @@ uint8_t gap_periodic_adv_set_info_transfer(const hci_con_handle_t   conn_handle,
 
 typedef enum
 {
-    PERIODIC_TRANS_MODE_NULL,
-    PERIODIC_TRANS_MODE_SEND_EVT_DISABLE_REPORT,
-    PERIODIC_TRANS_MODE_SEND_EVT_ENABLE_REPORT
+    PERIODIC_TRANS_MODE_NULL,                       // No attempt is made to synchronize to the periodic advertising and
+                                                    // no HCI_LE_Periodic_Advertising_Sync_Transfer_Received event is sent to the Host.
+    PERIODIC_TRANS_MODE_SEND_EVT_DISABLE_REPORT,    // An HCI_LE_Periodic_Advertising_Sync_Transfer_Received event is sent to the Host.
+                                                    // HCI_LE_Periodic_Advertising_Report events will be disabled.
+    PERIODIC_TRANS_MODE_SEND_EVT_ENABLE_REPORT,     // An HCI_LE_Periodic_Advertising_Sync_Transfer_Received event is sent to the Host.
+                                                    // HCI_LE_Periodic_Advertising_Report events will be enabled with duplicate filtering disabled
 } periodic_adv_sync_transfer_mode_t;
 
 // synchronize exclusion flags
@@ -1294,13 +1303,22 @@ int gap_update_connection_parameters(hci_con_handle_t con_handle, uint16_t conn_
     uint16_t min_ce_len, uint16_t max_ce_len);
 
 /**
- * @brief Set accepted connection parameter range
+ * @brief Get accepted connection parameter range
  * @param range                 see structure @link #le_connection_parameter_range_t  @endlink
  */
 void gap_get_connection_parameter_range(le_connection_parameter_range_t * range);
 
 /**
- * @brief Get accepted connection parameter range
+ * @brief Set accepted connection parameter range
+ *
+ * Default: All zero which means any incoming parameter is accepted.
+ *
+ * Set to an **invalid** range will reject any incoming connection parameter request.
+ *
+ * An **invalid** range is defined by:
+ * - `le_conn_interval_min` is 0xffff.
+ * - other fields: all 0.
+ *
  * @param range                 see structure @link #le_connection_parameter_range_t  @endlink
  */
 void gap_set_connection_parameter_range(le_connection_parameter_range_t * range);
@@ -1663,6 +1681,7 @@ uint8_t gap_vendor_tx_continuous_wave(uint8_t enable, uint8_t power_level_index,
  * @param[in]  msg_len               message length to be encrypt or decrypt (<= 384 bytes)
  * @param[in]  aad_len               Additional authenticated data length (<= 16 bytes)
  * @param[in]  tag                   a value to identify a AES-CCM request.
+ *                                   the same value will be reported in the event.
  * @param[in]  key                   128 bits long key as required by AES-CCM
  * @param[in]  nonce                 random value of each AES-CCM require 13 bytes long
  * @param[in]  msg                   pointer to the message input
@@ -1674,11 +1693,11 @@ uint8_t gap_vendor_tx_continuous_wave(uint8_t enable, uint8_t power_level_index,
  * @return                           0: success    others: failed
  */
 uint8_t gap_start_ccm(
-        uint8_t  type,          // 0: encrypt  1: decrypt
+        uint8_t  type,
         uint8_t  mic_size,
         uint16_t msg_len,
         uint16_t aad_len,
-        uint32_t tag,          // same value will be reported in event
+        uint32_t tag,
         const uint8_t *key,
         const uint8_t *nonce,
         const uint8_t *msg,
@@ -1729,6 +1748,54 @@ typedef enum {
     // Authenticated LE Secure Connections pairing with encryption
     LEVEL_4,
 } gap_security_level_t;
+
+/**
+ * @brief gap connection parameter update reply
+ * @note This function is used when STACK_CONNECTION_UPDATE_PARAMETER_REPLY_USER is set,
+ *       and when `HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST` is received.
+ * @param handle                The connection handle.
+ *                              Range 0x0000 to 0x0EFF
+ * @param min_interval          Minimum connection interval.
+ *                              Minimum value of the connection interval.
+ *                              Range: 0x0006 to 0x0C80
+ *                              Time = N × 1.25 ms
+ *                              Time Range: 7.5 ms to 4 s
+ * @param max_interval          Maximum connection interval.
+ *                              Maximum value of the connection interval.
+ *                              Range: 0x0006 to 0x0C80
+ *                              Time = N × 1.25 ms
+ *                              Time Range: 7.5 ms to 4 s
+ * @param latency               Peripheral latency.
+ *                              Maximum allowed Peripheral latency for the connection specified as the number of subrated connection events.
+ *                              Range: 0x0000 to 0x01F3 (499)
+ * @param timeout               Supervision timeout for the connection requested by the remote device.
+ *                              Range: 0x000A to 0x0C80
+ *                              Time = N × 10 ms
+ *                              Time Range: 100 ms to 32 s
+ * @param min_ce_len            Information parameter about the minimum length of connection event needed for this LE connection
+ *                              Range: 0x0000 to 0xFFFF
+ *                              Time = N × 0.625 ms
+*                               Time Range: 0 ms to 40.9 s
+ * @param max_ce_len            Information parameter about the maximum length of connection event needed for this LE connection
+ *                              Range: 0x0000 to 0xFFFF
+ *                              Time = N × 0.625 ms
+*                               Time Range: 0 ms to 40.9 s
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_connection_parameter_update_reply(hci_con_handle_t handle, uint16_t min_interval, uint16_t max_interval,
+    uint16_t latency, uint16_t timeout, uint16_t min_ce_len, uint16_t max_ce_len);
+
+/**
+ * @brief gap connection parameter update negative reply
+ * @note This function is used when STACK_CONNECTION_UPDATE_PARAMETER_REPLY_USER is set,
+ *       and when `HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST` is received.
+ * @param handle                The connection handle.
+ *                              Range 0x0000 to 0x0EFF
+ * @param error_code            The error code for rejecting the connection parameter update request.
+ *                              for example ERROR_CODE_UNACCEPTABLE_CONNECTION_PARAMETERS
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_connection_parameter_update_negative_reply(hci_con_handle_t handle, uint8_t error_code);
 
 /**
  * @}

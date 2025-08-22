@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${env:CMSIS_BASE}/Include",
-                "../../bundles/noos_typical/inc",
+                "../../bundles/typical/inc",
                 "../../src/BSP",
                 "../../src/FWlib",
                 "../../src/StartUP",
@@ -15,7 +15,8 @@
             ],
             "defines": [
                 "USE_STDPERIPH_DRIVER=",
-                "__packed="
+                "__packed=",
+                "POWER_SAVING=1"
             ],
             "intelliSenseMode": "gcc-x64"
         }

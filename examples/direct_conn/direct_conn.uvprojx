@@ -272,8 +272,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>172032</StartAddress>
-                <Size>368640</Size>
+                <StartAddress>180224</StartAddress>
+                <Size>360448</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -297,8 +297,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536900976</StartAddress>
-                <Size>35472</Size>
+                <StartAddress>536901144</StartAddress>
+                <Size>35304</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>

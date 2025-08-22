@@ -6,6 +6,7 @@
 #include "btstack_event.h"
 #include "btstack_defines.h"
 #include "uart_driver.h"
+#include "bluetooth_hci.h"
 
 #include "ll_api.h"
 
@@ -70,17 +71,18 @@ void rx_hci_byte(void *user_data, uint8_t c)
     hci_cmd_fsm.rx_cnt = 0;
 }
 
-#define HCI_Reset                   0x0c03
-#define HCI_LE_Receiver_Test_v1     0x201d
-#define HCI_LE_Receiver_Test_v2     0x2033
-#define HCI_LE_Transmitter_Test_v1  0x201E
-#define HCI_LE_Transmitter_Test_v2  0x2034
-#define HCI_LE_Transmitter_Test_v4  0x207b
-#define HCI_LE_Test_End             0x201f
+#define HCI_Reset                   HCI_RESET_CMD_OPCODE
+#define HCI_LE_Receiver_Test_v1     HCI_LE_RX_TEST_CMD_OPCODE
+#define HCI_LE_Receiver_Test_v2     HCI_LE_ENH_RX_TEST_CMD_OPCODE
+#define HCI_LE_Transmitter_Test_v1  HCI_LE_TX_TEST_CMD_OPCODE
+#define HCI_LE_Transmitter_Test_v2  HCI_LE_ENH_TX_TEST_CMD_OPCODE
+#define HCI_LE_Transmitter_Test_v4  HCI_LE_ENH_TX_TEST_V4_CMD_OPCODE
+#define HCI_LE_Test_End             HCI_LE_TEST_END_CMD_OPCODE
 
-#define HCI_LE_Vendor_CW_Test       0xfc02
+#define HCI_LE_Vendor_CW_Test               0xfc02
+#define HCI_LE_Vendor_Tx_Power_Mode         0xfc03
 
-#define DEF_NUM_OF_HCI              0x0b
+#define DEF_NUM_OF_HCI                      0x0b
 
 static uint16_t test_op_code = 0;
 
@@ -303,7 +305,28 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                     }
                 }
                 break;
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+
+            case HCI_LE_Vendor_Tx_Power_Mode:
+                {
+                    #pragma pack (push, 1)
+                    typedef struct
+                    {
+                        uint8_t mode;
+                    } param_t;
+                    #pragma pack (pop)
+                    if (cmd->header.param_len == sizeof(param_t))
+                    {
+                        param_t *param = (param_t *)cmd->data;
+                        platform_write_persistent_reg(param->mode);
+                        platform_reset();
+                    }
+                    else
+                    {
+                        send_command_complete(DEF_NUM_OF_HCI, cmd->header.op_code, &status, 1);
+                    }
+                }
+                break;
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
             case HCI_LE_Vendor_FO_Test:
                 {
                     if (cmd->header.param_len == sizeof(struct rf_fo_cmd))
@@ -356,6 +379,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
+        status = platform_read_persistent_reg();
         send_command_complete(DEF_NUM_OF_HCI,
                               HCI_Reset,
                               &status,
