@@ -88,7 +88,8 @@ typedef struct
     __IO uint32_t PE_CTRL[2];       // 0x80
     __IO uint32_t PS_CTRL[2];       // 0x88
     __IO uint32_t PU_SEL_CTRL[2];   // 0x90
-    __IO uint32_t Reserved2[26];
+    __IO uint32_t Reserved2
+    [26];
     __IO uint32_t IS_CTRL[2];       // 0x100
     __IO uint32_t DR_CTRL[3];       // 0x108
     __IO uint32_t SPI_CFG0;         // 0x114
@@ -156,9 +157,9 @@ typedef struct
 // function-reduced timer
 typedef struct
 {
-  __IO uint32_t CNT;
-  __IO uint32_t CMP;
-  __IO uint32_t CTL;
+    __IO uint32_t CNT;
+    __IO uint32_t CMP;
+    __IO uint32_t CTL;
 } RTMR_TypeDef;
 
 // watchdog timer
