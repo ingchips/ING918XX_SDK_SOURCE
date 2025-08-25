@@ -2127,6 +2127,13 @@ void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles);
  */
 void SYSCTRL_Reset(void);
 
+/**
+ * @brief Update asdm clock
+ *
+ * This function update the asdm clock divider.
+ *
+ * @param[in]   div             divider
+ */
 void SYSCTRL_UpdateAsdmClk(uint32_t div);
 
 
