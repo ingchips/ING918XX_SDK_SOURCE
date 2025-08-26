@@ -142,6 +142,9 @@ static void fully_discovered(service_node_t *first, void *user_data, int err_cod
                             ENTRY,
                             fota_done);
     }
+    
+    gatt_client_util_free(discoverer);
+    discoverer = NULL;
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
@@ -225,8 +228,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         platform_printf("disconnected\n");
-        gatt_client_util_free(discoverer);
-        discoverer = NULL;
         break;
 
     case L2CAP_EVENT_CAN_SEND_NOW:
