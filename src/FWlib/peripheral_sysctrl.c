@@ -1551,7 +1551,7 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
     else if ((60 <= freq) && (freq <= 120))
         vco = 1;
     else
-        return 2;
+        return 3;
 
     const uint32_t reg = AON1_CTRL_BASE + 0x28;
     uint32_t t = io_read(reg);
@@ -1571,8 +1571,8 @@ void SYSCTRL_EnablePLL(uint8_t enable)
 
 uint32_t SYSCTRL_GetPLLClk()
 {
-    uint32_t pll_ctrl = io_read(AON2_CTRL_BASE + 28);
-    if (pll_ctrl & (1ul << 20))
+    uint32_t pll_ctrl = io_read(AON1_CTRL_BASE + 0x28);
+    if (pll_ctrl & 1ul)
     {
         uint32_t div = ((pll_ctrl >> 1) & 0x3f) * ((pll_ctrl >> 15) & 0x3f);
         return (uint32_t)((uint64_t)SYSCTRL_GetSlowClk() * ((pll_ctrl >> 7) & 0xff) / div);
