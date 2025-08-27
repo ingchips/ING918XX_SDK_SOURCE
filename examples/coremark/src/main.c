@@ -6,7 +6,7 @@
 #include "task.h"
 #include "trace.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if   (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
 #include "../data/setup_soc.cgen"
 #endif
 
@@ -74,7 +74,7 @@ void setup_peripherals(void)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     config_uart(OSC_CLK_FREQ, 115200);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#else
     cube_setup_peripherals();
 #endif
 }
@@ -97,7 +97,7 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 
 int app_main()
 {
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
     cube_soc_init();
 #endif
     // setup handlers

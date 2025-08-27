@@ -86,7 +86,7 @@ void rx_hci_byte(void *user_data, uint8_t c)
 
 static uint16_t test_op_code = 0;
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
 
 #define HCI_LE_Vendor_FO_Test       0xff01
 
@@ -358,7 +358,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             ll_free(cmd);
         }
         break;
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
     case USER_TRIGGER_RAW_PKT:
         send_next_one();
         break;

@@ -21,7 +21,6 @@ extern "C" {
  */
 void platform_power_up(uint8_t pmu_mode);
 
-
 /**
  * @brief Launches the platform.
  *

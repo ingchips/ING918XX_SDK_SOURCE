@@ -788,7 +788,7 @@ typedef void (* f_platform_timer_callback)(void);
  *       1. Comparing to RTOS software timers, this timer is software + hardware too,
  *       1. Comparing to RTOS software timers, this timer may be more accurate in some
  *          circumstance;
- *       1. This will always succeed, except when running out of memory;
+ *       1. This will always succeed, except when running out of memory (Link Layer's heap);
  *       1. `callback` is also the identifier of the timer, below two lines defines only
  *          a timer expiring after 200 units but not two separate timers:
  *          ```c

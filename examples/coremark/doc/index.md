@@ -20,3 +20,11 @@ always use latest IDE/toolchain, and below are recommendations on compiler optio
     * Optimization: `-Ofast`
     * One ELF per function
     * Preprocessor: `ITERATIONS=15000`
+
+* ING920xx Family
+
+    * Use compiler version 6 (ARMClang)
+    * Enable LTO
+    * Optimization: `-Ofast`
+    * One ELF per function
+    * Preprocessor: `ITERATIONS=5000`

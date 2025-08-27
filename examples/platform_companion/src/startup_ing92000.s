@@ -27,7 +27,7 @@
 
 VER_MAJOR   EQU  20
 VER_MINOR   EQU  3
-VER_PATCH   EQU  0
+VER_PATCH   EQU  52
 
 Stack_Size      EQU     0x00000200
 
@@ -172,7 +172,7 @@ __VECTORS_LOC   DCD     0x02002000
 Reset_Handler   PROC
                 EXPORT  Reset_Handler
                 IMPORT  __scatterload
-			    
+
 
                 LDR     R0, =__scatterload
                 BX      R0

@@ -17,6 +17,9 @@ int main(void)
 
     SYSCTRL_EnableSlowRC(0, (SYSCTRL_SlowRCClkMode)0);
 
+    platform_config(PLATFORM_CFG_RT_CLK, PLATFORM_RT_RC);
+    platform_config(PLATFORM_CFG_RT_OSC_EN, 0);
+
     launch_platform();
 
     return 0;

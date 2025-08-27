@@ -392,7 +392,12 @@
             <File>
               <FileName>ing920_platform_lib.lib</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\src\Tools\ing920_platform_lib.lib</FilePath>
+              <FilePath>.\src\ing920_platform_lib.lib</FilePath>
+            </File>
+            <File>
+              <FileName>symdefs.m</FileName>
+              <FileType>3</FileType>
+              <FilePath>.\scripts\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -428,6 +433,11 @@
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
               <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_timer.c</FilePath>
             </File>
           </Files>
         </Group>

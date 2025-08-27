@@ -495,6 +495,8 @@ void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size)
         sys_size = 64;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
         sys_size = 32;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+        sys_size = 40;
 #endif
     }
 
@@ -504,6 +506,8 @@ void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size)
         share_size = 64;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
         share_size = 32;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+        share_size = 16;
 #endif
     }
 
@@ -518,7 +522,7 @@ void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     hex_dump(str, buf, f_puts, 0x40120000, share_size);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
-    #warning WIP
+    hex_dump(str, buf, f_puts, 0x40120000, share_size);
 #else
     #error unknown or unsupported chip family
 #endif

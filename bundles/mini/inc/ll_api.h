@@ -176,30 +176,28 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
  * @return                      0 if successful else error code
  ****************************************************************************************
  */
-// int ll_create_conn(uint8_t role,
-//                    uint8_t addr_types,
-//                    const uint8_t *adv_addr,
-//                    const uint8_t *init_addr,
-//                    uint8_t rx_phy,
-//                    uint8_t tx_phy,
-//                    uint32_t access_addr,
-//                    uint32_t crc_init,
-//                    uint32_t interval,
-//                    uint16_t sup_timeout,
-//                    const uint8_t *channel_map,
-//                    uint8_t  ch_sel_algo,
-//                    uint8_t  hop_inc,
-//                    uint8_t  last_unmapped_ch,
-//                    uint16_t min_ce_len,
-//                    uint16_t max_ce_len,
-//                    uint64_t start_time,
-//                    uint16_t event_counter,
-//                    uint16_t slave_latency,
-//                    uint8_t  sleep_clk_acc,
-//                    uint32_t sync_window,
-//                    const void *security);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_create_conn(uint8_t role,
+                   uint8_t addr_types,
+                   const uint8_t *adv_addr,
+                   const uint8_t *init_addr,
+                   uint8_t rx_phy,
+                   uint8_t tx_phy,
+                   uint32_t access_addr,
+                   uint32_t crc_init,
+                   uint32_t interval,
+                   uint16_t sup_timeout,
+                   const uint8_t *channel_map,
+                   uint8_t  ch_sel_algo,
+                   uint8_t  hop_inc,
+                   uint8_t  last_unmapped_ch,
+                   uint16_t min_ce_len,
+                   uint16_t max_ce_len,
+                   uint64_t start_time,
+                   uint16_t event_counter,
+                   uint16_t slave_latency,
+                   uint8_t  sleep_clk_acc,
+                   uint32_t sync_window,
+                   const void *security);
 
 /**
  ****************************************************************************************

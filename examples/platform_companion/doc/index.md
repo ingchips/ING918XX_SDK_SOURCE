@@ -4,7 +4,8 @@ This is a companion for platform binary in ROM of ING920. Purpose of this
 companion:
 
 * To initialize SoC, such as system clocks;
-* To provide patches.
+* To provide patches, i.e. `platform_patches`, which override particular functions;
+* To provide hotfix, i.e. `platform_rom_hotfix`, which corrects internal registers configuration, etc.
 
 Base on this example, developers can create their own companion to fulfill the needs.
 For example:

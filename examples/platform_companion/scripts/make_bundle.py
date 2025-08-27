@@ -11,6 +11,8 @@ PROJ_NAME = 'platform_companion'
 STACK_BIN = f'{OUTPUT_DIR}/platform.bin'
 map_fn = f'../listing/{PROJ_NAME}.map'
 
+added_api = ['platform_rom_hotfix']
+
 PAGE = 1024 * 4 # size of a sector
 BIN_INFO_OFFSET = 0x000000CC
 
@@ -70,6 +72,7 @@ def parse_map(fn):
     return r
 
 def merge_api(fmapping):
+    global added_api
     with open('apis.json') as f:
         rom_apis = json.load(f)
     r = {}
@@ -77,6 +80,9 @@ def merge_api(fmapping):
         if m in fmapping:
             print(f"overriding API: {m}")
         r[m] = fmapping[m] if m in fmapping else rom_apis[m]
+    for m in added_api:
+        print(f"    adding API: {m}")
+        r[m] = fmapping[m]
     return r
 
 fmapping = parse_map(map_fn)

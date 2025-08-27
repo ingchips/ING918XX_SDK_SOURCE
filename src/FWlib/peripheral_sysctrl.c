@@ -1571,8 +1571,8 @@ void SYSCTRL_EnablePLL(uint8_t enable)
 
 uint32_t SYSCTRL_GetPLLClk()
 {
-    uint32_t pll_ctrl = io_read(AON2_CTRL_BASE + 28);
-    if (pll_ctrl & (1ul << 20))
+    uint32_t pll_ctrl = io_read(AON1_CTRL_BASE + 0x28);
+    if (pll_ctrl & 1)
     {
         uint32_t div = ((pll_ctrl >> 1) & 0x3f) * ((pll_ctrl >> 15) & 0x3f);
         return (uint32_t)((uint64_t)SYSCTRL_GetSlowClk() * ((pll_ctrl >> 7) & 0xff) / div);
@@ -1854,6 +1854,21 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode)
 {
     set_reg_bits(&APB_SYSCTRL->USBCfg, mode, 4, 0);
     set_reg_bit(&APB_SYSCTRL->USBCfg, 1, 4);
+}
+
+void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level)
+{
+    // WIP
+}
+
+void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level)
+{
+    // WIP
+}
+
+void SYSCTRL_EnableBuckDCDC(uint8_t enable)
+{
+    // WIP
 }
 
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
