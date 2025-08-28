@@ -64,7 +64,7 @@ static void send(uint8_t i)
     profile_cfg_t *prof = profile_cfgs + i;
     if (INVALID_SET_ID == prof->adv_handle) return;
     if (0 == (prof->notify_enable | prof->to_send.size)) return;
-    
+
     if (att_server_notify(i, HANDLE_GENERIC_OUTPUT, (uint8_t *)prof->to_send.buf, prof->to_send.size) != BTSTACK_ACL_BUFFERS_FULL)
         prof->to_send.size = 0;
     else
@@ -82,7 +82,7 @@ static void append_data(str_buf_t *buf, const char *d, const uint8_t len)
 {
     if (buf->size + len > sizeof(buf->buf))
         buf->size = 0;
-    
+
     if (buf->size + len <= sizeof(buf->buf))
     {
         memcpy(buf->buf + buf->size, d, len);
@@ -95,9 +95,9 @@ static void send_to_client(uint8_t conn_handle, const char *data, uint8_t len)
     profile_cfg_t *prof = profile_cfgs + conn_handle;
     if (INVALID_SET_ID == prof->adv_handle) return;
     if (0 == prof->notify_enable) return;
-    
+
     append_data(&prof->to_send, data, len);
-    
+
     send(conn_handle);
 }
 
@@ -120,7 +120,7 @@ static void handle_client_speak(uint8_t conn_handle, const char *data, uint8_t l
         prof->spoken.size = strlen(prof->spoken.buf);
     }
     append_data(&prof->spoken, data, len);
-    
+
     if (prof->spoken.size && (prof->spoken.buf[prof->spoken.size - 1] == '\0'))
     {
         send_to_except(conn_handle, prof->spoken.buf, prof->spoken.size);
@@ -138,7 +138,7 @@ static void send_greetings(uint8_t conn_handle)
     send_to_except(0xff, temp, len);
 }
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -149,7 +149,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     }
 }
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -167,7 +167,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         {
             profile_cfgs[connection_handle].notify_enable = 0;
         }
-        
+
         return 0;
     default:
         return 0;
@@ -204,7 +204,7 @@ static void adv_enable_all()
 static void setup_adv(uint8_t handle, const uint8_t *adv_data, uint8_t adv_len, const uint8_t *rand_addr)
 {
     gap_set_adv_set_random_addr(handle, rand_addr);
-    gap_set_ext_adv_para(handle, 
+    gap_set_ext_adv_para(handle,
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             0x0200, 0x0200,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -233,7 +233,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        
+
         setup_adv(0, adv_data0, sizeof(adv_data0), rand_addr0);
         setup_adv(1, adv_data1, sizeof(adv_data1), rand_addr1);
         setup_adv(2, adv_data2, sizeof(adv_data2), rand_addr2);
@@ -245,6 +245,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             {
                 const le_meta_event_enh_create_conn_complete_t *conn_cmpl = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
                 att_set_db(conn_cmpl->handle, profile_data);

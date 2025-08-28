@@ -69,7 +69,7 @@ static int cb_ring_buf_peek_data(const void *data, int len, int has_more, void *
 extern void handle_input(const uint8_t *data, const int len);
 extern void show_state(const io_state_t state);
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -82,7 +82,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -112,7 +112,7 @@ void trigger_write(int flush)
 
     if (is_triggering && (0 == flush))
         return;
-    
+
     is_triggering = 1;
     btstack_push_user_msg(USER_MSG_ID_REQUEST_SEND, NULL, flush);
 }
@@ -130,7 +130,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         {
             int flush = size;
             xTimerReset(flush_timer, portMAX_DELAY);
-            do_write(flush);            
+            do_write(flush);
             is_triggering = 0;
         }
         break;
@@ -143,7 +143,7 @@ static void setup_adv()
 {
     const static ext_adv_set_en_t adv_sets_en[1] = {{.handle = 0, .duration = 0, .max_events = 0}};
     gap_set_adv_set_random_addr(0, pair_config.slave.ble_addr);
-    gap_set_ext_adv_para(0, 
+    gap_set_ext_adv_para(0,
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             0x0320, 0x0320,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -181,6 +181,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             show_state(STATE_CONNECTED);

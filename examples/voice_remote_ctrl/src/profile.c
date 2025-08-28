@@ -103,7 +103,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
             #if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
             update_conn_interval(handle_send, 12); // 15ms
             #endif
-            
+
         }
         else
         {
@@ -200,6 +200,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             handle_send = decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle;
             att_set_db(handle_send, profile_data);
             break;

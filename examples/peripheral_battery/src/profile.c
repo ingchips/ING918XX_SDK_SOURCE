@@ -107,6 +107,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             break;
@@ -260,7 +261,7 @@ uint32_t timer_isr(void *user_data)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     TMR_IntClr(APB_TMR1, 0, 0xf);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
-    TMR_IntClr(APB_TMR1, 0, 0xf);    
+    TMR_IntClr(APB_TMR1, 0, 0xf);
 #else
     #error unknown or unsupported chip family
 #endif

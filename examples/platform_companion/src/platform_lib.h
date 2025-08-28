@@ -8,18 +8,11 @@ extern "C" {
 #endif
 
 /**
- * @brief Powers up the system with the specified PMU mode.
- *
- * This function initializes the platform by setting the power management unit (PMU) mode.
- * The PMU mode determines the power-up sequence and configuration of the platform.
- *
- * @param pmu_mode          The mode to set for the PMU.
- *                          * 0: PMU in LDO mode. It's default mode
- *                          * 1: PMU in DCDC mode
+ * @brief Additional initialization for platform in ROM
  *
  * @return void
  */
-void platform_power_up(uint8_t pmu_mode);
+void platform_init(void);
 
 /**
  * @brief Launches the platform.

@@ -26,45 +26,45 @@ typedef struct
 } eink_image_t;
 
 #if (HEIGHT == 128)
-const eink_image_t def_image1 = 
+const eink_image_t def_image1 =
 {
     .black_white = {
-        #include "../data/image1_black.dat" 
+        #include "../data/image1_black.dat"
     },
     .red_white = {
-        #include "../data/image1_red.dat" 
+        #include "../data/image1_red.dat"
     }
 };
 
-const eink_image_t def_image2 = 
+const eink_image_t def_image2 =
 {
     .black_white = {
-        #include "../data/image2_black.dat" 
+        #include "../data/image2_black.dat"
     },
     .red_white = {
-        #include "../data/image2_red.dat" 
+        #include "../data/image2_red.dat"
     }
 };
 #endif
 
 #if (HEIGHT == 152)
-const eink_image_t def_image1 = 
+const eink_image_t def_image1 =
 {
     .black_white = {
-        #include "../data/img152_1_b.dat" 
+        #include "../data/img152_1_b.dat"
     },
     .red_white = {
-        #include "../data/img152_1_r.dat" 
+        #include "../data/img152_1_r.dat"
     }
 };
 
-const eink_image_t def_image2 = 
+const eink_image_t def_image2 =
 {
     .black_white = {
-        #include "../data/img152_2_b.dat" 
+        #include "../data/img152_2_b.dat"
     },
     .red_white = {
-        #include "../data/img152_2_r.dat" 
+        #include "../data/img152_2_r.dat"
     }
 };
 #endif
@@ -97,7 +97,7 @@ void refresh_display(const eink_image_t *image)
 {
     queue_msg_t msg = {NULL, NULL};
     extern QueueHandle_t xQueue;
-    if (image) 
+    if (image)
     {
         msg.black_white = image->black_white;
         msg.red_white = image->red_white;
@@ -114,8 +114,8 @@ uint32_t calc_check_sum(const uint8_t *data, const uint16_t size)
     for (i = 0; i < size; i++) r += data[i];
     return r;
 }
- 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -143,7 +143,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     uint32_t check_sum;
@@ -184,7 +184,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
             break;
         }
         return 0;
-    case HANDLE_ETAG_DATA:       
+    case HANDLE_ETAG_DATA:
         if (img_write_offset + buffer_size > sizeof(image))
             etag_status = ETAG_STATUS_ERR;
         if (ETAG_STATUS_OK != etag_status)
@@ -224,7 +224,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
         gap_set_adv_set_random_addr(0, rand_addr);
-        gap_set_ext_adv_para(0, 
+        gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -247,6 +247,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             break;
@@ -275,7 +276,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 }
 
 uint32_t setup_profile(void *data, void *user_data)
-{   
+{
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

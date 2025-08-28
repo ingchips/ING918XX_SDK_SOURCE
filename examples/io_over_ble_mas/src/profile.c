@@ -43,7 +43,7 @@ typedef struct slave_info
     gatt_client_notification_t              output_notify;
 } slave_info_t;
 
-slave_info_t slave = 
+slave_info_t slave =
 {
     .conn_handle = INVALID_HANDLE,
     .service_console = { .start_group_handle = INVALID_HANDLE},
@@ -82,14 +82,14 @@ static int cb_ring_buf_peek_data(const void *data, int len, int has_more, void *
     while (len)
     {
         int size = len > mtu ? mtu : len;
-        uint8_t t = gatt_client_write_value_of_characteristic_without_response(slave.conn_handle, slave.input_char.value_handle, 
+        uint8_t t = gatt_client_write_value_of_characteristic_without_response(slave.conn_handle, slave.input_char.value_handle,
                                                                        size, p);
         if (t)
         {
             att_dispatch_client_request_can_send_now_event(slave.conn_handle);
             break;
         }
-        
+
         len -= size;
         p += size;
         r += size;
@@ -107,7 +107,7 @@ static void output_notification_handler(uint8_t packet_type, uint16_t channel, c
     switch (packet[0])
     {
     case GATT_EVENT_NOTIFICATION:
-        show_state(STATE_RX);        
+        show_state(STATE_RX);
         value = gatt_event_notification_parse(packet, size, &value_size);
         handle_output(value->value, value_size);
         total_rx += value_size;
@@ -136,12 +136,12 @@ void descriptor_discovery_callback(uint8_t packet_type, uint16_t channel, const 
     case GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT:
         result = gatt_event_all_characteristic_descriptors_query_result_parse(packet);
         slave.output_desc = result->descriptor;
-        dbg_printf("output desc: %d\n", slave.output_desc.handle);               
+        dbg_printf("output desc: %d\n", slave.output_desc.handle);
         break;
     case GATT_EVENT_QUERY_COMPLETE:
         if (slave.output_desc.handle != INVALID_HANDLE)
-        {            
-            gatt_client_listen_for_characteristic_value_updates(&slave.output_notify, output_notification_handler, 
+        {
+            gatt_client_listen_for_characteristic_value_updates(&slave.output_notify, output_notification_handler,
                                                                 channel, slave.output_char.value_handle);
             gatt_client_write_characteristic_descriptor_using_descriptor_handle(btstack_callback, channel, slave.output_desc.handle, sizeof(char_config_notification),
                                                         (uint8_t *)&char_config_notification);
@@ -167,7 +167,7 @@ void characteristic_discovery_callback(uint8_t packet_type, uint16_t channel, co
     case GATT_EVENT_QUERY_COMPLETE:
         if (INVALID_HANDLE == slave.output_char.value_handle)
         {
-            gatt_client_discover_characteristics_for_handle_range_by_uuid128(characteristic_discovery_callback, channel, 
+            gatt_client_discover_characteristics_for_handle_range_by_uuid128(characteristic_discovery_callback, channel,
                                                                         slave.service_console.start_group_handle,
                                                                         slave.service_console.end_group_handle,
                                                                         UUID_ING_GENERIC_OUTPUT);
@@ -186,13 +186,13 @@ void service_discovery_callback(uint8_t packet_type, uint16_t channel, const uin
     case GATT_EVENT_SERVICE_QUERY_RESULT:
         {
             slave.service_console = gatt_event_service_query_result_parse(packet)->service;
-            dbg_printf("svc handle: %d %d\n", slave.service_console.start_group_handle, slave.service_console.end_group_handle);               
+            dbg_printf("svc handle: %d %d\n", slave.service_console.start_group_handle, slave.service_console.end_group_handle);
         }
         break;
     case GATT_EVENT_QUERY_COMPLETE:
         if (slave.service_console.start_group_handle != INVALID_HANDLE)
         {
-            gatt_client_discover_characteristics_for_handle_range_by_uuid128(characteristic_discovery_callback, channel, 
+            gatt_client_discover_characteristics_for_handle_range_by_uuid128(characteristic_discovery_callback, channel,
                                                                         slave.service_console.start_group_handle,
                                                                         slave.service_console.end_group_handle,
                                                                         UUID_ING_GENERIC_INPUT);
@@ -214,7 +214,7 @@ void slave_connected(uint16_t conn_handle)
     slave.service_console.start_group_handle = INVALID_HANDLE;
     slave.conn_handle = conn_handle;
     gatt_client_discover_primary_services_by_uuid128(service_discovery_callback, slave.conn_handle, UUID_ING_CONSOLE_SERVICE);
-    dbg_printf(">> discovering\n");    
+    dbg_printf(">> discovering\n");
 }
 
 static initiating_phy_config_t phy_configs[] =
@@ -259,7 +259,7 @@ void trigger_write(int flush)
 
     if (is_triggering && (0 == flush))
         return;
-    
+
     is_triggering = 1;
     btstack_push_user_msg(USER_MSG_WRITE_DATA, NULL, flush);
 }
@@ -270,7 +270,7 @@ static void flush_timer_callback(TimerHandle_t xTimer)
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
-{    
+{
     switch (msg_id)
     {
     case USER_MSG_WRITE_DATA:
@@ -318,14 +318,14 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 if (memcmp(peer_addr, slave.addr, 6) == 0)
                 {
                     gap_set_ext_scan_enable(0, 0, 0, 0);
-                    
+
                     dbg_printf(">> connecting to salve ...\n");
                     show_state(STATE_CONNECTING);
 
                     if (report->evt_type & HCI_EXT_ADV_PROP_USE_LEGACY)
                         phy_configs[0].phy = PHY_1M;
                     else
-                        phy_configs[0].phy = (phy_type_t)(report->s_phy != 0 ? report->s_phy : report->p_phy); 
+                        phy_configs[0].phy = (phy_type_t)(report->s_phy != 0 ? report->s_phy : report->p_phy);
                     gap_ext_create_connection(    INITIATING_ADVERTISER_FROM_PARAM, // Initiator_Filter_Policy,
                                                   BD_ADDR_TYPE_LE_RANDOM,           // Own_Address_Type,
                                                   report->addr_type,                // Peer_Address_Type,
@@ -336,6 +336,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             if (decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->status)
                 platform_reset();
             else
