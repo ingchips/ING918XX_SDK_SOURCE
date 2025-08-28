@@ -8,8 +8,9 @@
 #include "trace.h"
 #include "../data/setup_soc.cgen"
 
-#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_916)
-#error This example is ING916xx ONLY.
+#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
+#else
+#error This example is ING916xx/ING920xx ONLY.
 #endif
 
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)

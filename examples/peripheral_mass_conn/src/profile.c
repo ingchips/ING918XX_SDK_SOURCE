@@ -17,6 +17,9 @@
     #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
         #define MAX_CONN_NUMBER     10
         #define MAX_CONN_CENTRAL    MAX_CONN_NUMBER
+    #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+        #define MAX_CONN_NUMBER     5
+        #define MAX_CONN_CENTRAL    MAX_CONN_NUMBER
     #else
         #error unknown INGCHIPS_FAMILY
     #endif

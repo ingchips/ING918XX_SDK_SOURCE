@@ -177,6 +177,13 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
     ws2881_write(cmd);
 }
 
+#else
+
+void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
+{
+    platform_printf("TODO: `set_rgb_led_color`\n");
+}
+
 #endif
 
 void setup_rgb_led()
@@ -204,7 +211,7 @@ void setup_rgb_led()
     PINCTRL_SetPadMux(PIN_RGB_LED, PWM_IO_SOURCE);
     PWM_SinglePulseInit(PWM_LED_CHANNEL, (PWM_IO_SOURCE==IO_SOURCE_PWM0_A) );
 #else
-    #error unknown or unsupported board type
+    #warning "TODO: Init LED according to hardware"
 #endif
    set_rgb_led_color(50, 50, 50);
 }
@@ -355,6 +362,9 @@ float get_temperature()
     symbolbit = reg_data[0] >> 7;
 
     return (float)(4000 + (((symbolbit == 0 ? (temperature_2bytes & 0X7fff) : ((-1) * ((~(temperature_2bytes - 1)) & 0xffff))) * 100) >> 8));
+#else
+    #error unsupported BOARD_ID
+    return 0;
 #endif
 }
 
@@ -439,6 +449,8 @@ uint16_t get_thermo_addr()
 
     #define ACCEL_NAME          "stk8ba58"
     #define VAL_BIT_WIDTH       12
+#else
+    #error unsupported BOARD_ID
 #endif
 
 typedef enum {
@@ -518,6 +530,8 @@ void get_acc_xyz(float *x, float *y, float *z)
 #define BUZZ_PIN        GIO_GPIO_8
 #elif (BOARD_ID ==  BOARD_DB682AC1A)
 #define BUZZ_PIN        GIO_GPIO_13
+#else
+#define BUZZ_PIN        GIO_GPIO_13
 #endif
 
 void setup_buzzer()
@@ -526,7 +540,7 @@ void setup_buzzer()
     | (1 << SYSCTRL_ClkGate_APB_PWM));
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, BUZZ_PWM_CH, 0);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
     SYSCTRL_SelectPWMClk(SYSCTRL_CLK_32k);
     PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM0_B);
 #else
@@ -557,6 +571,10 @@ void set_buzzer_freq(uint16_t freq)
         GIO_GPIO_1, GIO_GPIO_5, GIO_GPIO_7, GIO_GPIO_4
     };
 #elif (BOARD_ID ==  BOARD_DB682AC1A)
+    const static GIO_Index_t key_pins[] = {
+        GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
+    };
+#else
     const static GIO_Index_t key_pins[] = {
         GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
     };

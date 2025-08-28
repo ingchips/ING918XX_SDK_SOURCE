@@ -206,14 +206,14 @@ void QDEC_QdecCfg(uint8_t filter, uint8_t miss)
     QDEC_RegWrBits(QDEC_CH_WRITE_A, 0xf , 0, 16);
     QDEC_RegWrBits(QDEC_CH_WRITE_B, 0x12, 0, 16);
     QDEC_RegWrBits(QDEC_CH_WRITE_C, 0x22, 0, 16);
-    
+
     QDEC_RegWrBit(QDEC_BMR, 1, 9);
     QDEC_RegWrBit(QDEC_BMR, 1, 8);
     QDEC_RegWrBit(QDEC_BMR, 1, 18);
     QDEC_RegWrBits(QDEC_BMR, filter, 20, 6);
     QDEC_RegWrBit(QDEC_BMR, 1, 19);
     QDEC_RegWrBits(QDEC_BMR, miss, 26, 4);
-    
+
     QDEC_RegWrBits(QDEC_CH_INT_EN, 0x20, 0, 10);
 }
 
@@ -244,7 +244,7 @@ void QDEC_Reset(void)
 
 void QDEC_ChannelEnable(uint8_t enable)
 {
-    if (enable) 
+    if (enable)
         QDEC_RegWrBits(QDEC_CH_CTRL, 5, 0, 3);
     else
         QDEC_RegClr(QDEC_CH_CTRL, 0, 3);
@@ -273,9 +273,9 @@ void Qdec_Nop(uint32_t vale)
 static uint32_t QDEC_ReadRegBits(volatile uint32_t *reg, uint8_t bit_width, uint8_t bit_offset)
 {
     uint32_t mask;
-    
+
     mask = (1 << bit_width) - 1;
-    
+
     return ((*reg)>>bit_offset)&mask;
 }
 
@@ -283,7 +283,7 @@ static uint32_t QDEC_ReadRegBits(volatile uint32_t *reg, uint8_t bit_width, uint
 static void QDEC_ClrRegBits(volatile uint32_t *reg, uint8_t bit_width, uint8_t bit_offset)
 {
     uint32_t mask,reg_val;
-    
+
     Qdec_Nop(NOP_NUME);
     mask = ((1 << bit_width) - 1) << bit_offset;
     reg_val = (*reg) & (~mask);
@@ -294,7 +294,7 @@ static void QDEC_ClrRegBits(volatile uint32_t *reg, uint8_t bit_width, uint8_t b
 static void QDEC_SetRegBits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
     uint32_t mask,reg_val;
-    
+
     QDEC_ClrRegBits(reg,bit_width,bit_offset);
     Qdec_Nop(NOP_NUME);
     mask = ((1 << bit_width) - 1) << bit_offset;
@@ -306,7 +306,7 @@ static void QDEC_SetRegBits(volatile uint32_t *reg, uint32_t v, uint8_t bit_widt
 static void QDEC_SetRegBit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset)
 {
     uint32_t mask,reg_val;
-    
+
     QDEC_ClrRegBits(reg,1,bit_offset);
     Qdec_Nop(NOP_NUME);
     mask = 1 << bit_offset;
@@ -315,6 +315,10 @@ static void QDEC_SetRegBit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset
     *reg = reg_val;
 }
 
+void QDEC_SetEtrg(QDEC_CHX Channel, uint8_t val)
+{
+    QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_mode, val, 2, 10);
+}
 
 void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)
 {
@@ -322,7 +326,7 @@ void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)
 
     {
     case QDEC_TIMER:
-//        *(uint32_t*)0x040009004UL |= (1<<15); 
+//        *(uint32_t*)0x040009004UL |= (1<<15);
         QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15);//Wave
         QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);//Qdec        break;
         QDEC_SetEtrg(Channel,1);//must use,becaues b cant get
@@ -389,11 +393,6 @@ void QDEC_SetOutxEdge(QDEC_CHX Channel,QDEC_OUTX_Config OutxChannal, QDEC_ExTrig
     QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_mode, (uint8_t)edge, 2, offset);
 }
 
-void QDEC_SetEtrg(QDEC_CHX Channel, uint8_t val)
-{
-    QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_mode, val, 2, 10);
-}
-
 void QDEC_SetEtrgEn(QDEC_CHX Channel, uint8_t enable)
 {
     QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, enable, 12);
@@ -419,7 +418,7 @@ void QDEC_SetCHxTmrCntC(QDEC_CHX Channel, uint16_t val)
 
 void QDEC_SetChxIntEn(QDEC_CHX Channel, uint8_t enable, uint16_t items)
 {
-    
+
     if(enable)
         APB_QDEC->channels[Channel].channel_int_en = items;
     else
@@ -482,14 +481,14 @@ void QDEC_QdecCfg(uint8_t fliter, uint8_t miss)
     QDEC_SetRegBits(&APB_QDEC->channels[0].channel_write_a, 0xf , 16, 0);
     QDEC_SetRegBits(&APB_QDEC->channels[0].channel_write_b, 0x12, 16, 0);
     QDEC_SetRegBits(&APB_QDEC->channels[0].channel_write_c, 0x22, 16, 0);
-    
+
     QDEC_SetRegBit(&APB_QDEC->bmr, 1, 9);
     QDEC_SetRegBit(&APB_QDEC->bmr, 1, 8);
     QDEC_SetRegBit(&APB_QDEC->bmr, 1, 18);
     QDEC_SetRegBits(&APB_QDEC->bmr, fliter, 6, 20);
     QDEC_SetRegBit(&APB_QDEC->bmr, 1, 19);
     QDEC_SetRegBits(&APB_QDEC->bmr, miss, 4, 26);
-    
+
     QDEC_SetRegBits(&APB_QDEC->qdec_inten, 0x20, 10, 0);
 }
 
@@ -510,7 +509,7 @@ void QDEC_Reset(void)
 
 void QDEC_ChannelEnable(uint8_t enable)
 {
-    if (enable) 
+    if (enable)
         QDEC_SetRegBits(&APB_QDEC->channels[0].channel_ctrl, 5, 3, 0);
     else
         QDEC_ClrRegBits(&APB_QDEC->channels[0].channel_ctrl, 3, 0);

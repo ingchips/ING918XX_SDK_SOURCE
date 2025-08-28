@@ -63,6 +63,7 @@ void __aeabi_assert(const char *a ,const char* b, int c)
 }
 
 static void uart_gpio_init(void){
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ClkGate_APB_UART0);
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO) |
                                 (1 << SYSCTRL_ClkGate_APB_PWM)  |
@@ -73,6 +74,9 @@ static void uart_gpio_init(void){
     PINCTRL_SetPadMux(USER_UART0_IO_TX, IO_SOURCE_UART0_TXD);
     PINCTRL_Pull(USER_UART0_IO_RX, PINCTRL_PULL_UP);
     PINCTRL_SelUartRxdIn(UART_PORT_0, USER_UART0_IO_RX);
+#else
+    #warning "TODO: Init hardware"
+#endif
 }
 
 void config_uart(uint32_t freq, uint32_t baud)

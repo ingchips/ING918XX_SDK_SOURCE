@@ -43,7 +43,7 @@ static void uninit()
 {
     EflashCacheEna();
     EflashCacheFlush();
-    
+
     FLASH_POST_OPS();
 }
 
@@ -191,7 +191,7 @@ const die_info_t *flash_get_die_info(void)
 const factory_calib_data_t *flash_get_factory_calib_data(void)
 {
     const factory_calib_data_t *p = (const factory_calib_data_t *)(FACTORY_DATA_LOC + 0x3000);
-    
+
     if(p->ft_version > VERSION)
         return p;
     else
@@ -207,7 +207,7 @@ void flash_read_uid(uint32_t uid[4])
 {
     const die_info_t* die_info;
     const factory_calib_data_t* factory_calib;
-    
+
     if(NULL == uid)
         return;
 
@@ -221,7 +221,7 @@ void flash_read_uid(uint32_t uid[4])
         uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8) | ((*((uint32_t*)(&factory_calib->TRng_data[0]))) << 16);
         uid[3] = *((uint32_t*)(&factory_calib->TRng_data[2]));
     }
-    else 
+    else
     {
         uid[2] = die_info->Die_x_local | (die_info->Die_y_local<<8);
         uid[3] = 0;
@@ -233,7 +233,7 @@ int flash_read_uid45(uint8_t uid[6])
 {
     const die_info_t* pDie_info;
 
-    if(NULL == uid) 
+    if(NULL == uid)
         return -1;
 
     EflashCacheBypass();
@@ -246,7 +246,7 @@ int flash_read_uid45(uint8_t uid[6])
     uid[4] = pDie_info->Die_x_local;
     uid[5] = pDie_info->Die_y_local;
     EflashCacheEna();
-    
+
     return 0;
 }
 
@@ -493,12 +493,12 @@ int flash_prepare_factory_data(void)
     if (t != MAGIC_0) return 1;
     t = read_flash_security(0x1004);
     if (t != MAGIC_1) return 2;
-    
+
     uint8_t region;
     uint8_t reverse_selection;
     flash_read_protection_status(&region, &reverse_selection);
     flash_enable_write_protection(FLASH_REGION_NONE, 0);
-    
+
     erase_flash_sector(FACTORY_DATA_LOC);
     copy_security_data(FACTORY_DATA_LOC,
         0x1000, sizeof(die_info_t) / 4);
@@ -507,9 +507,9 @@ int flash_prepare_factory_data(void)
     copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
         0x2000, EXTRA_DATA_LEN / 4);
     write_ft_sum();
-    
+
     flash_enable_write_protection(region, reverse_selection);
-    
+
     return 0;
 }
 
@@ -572,6 +572,13 @@ void flash_read_uid(uint32_t uid[4])
         ROM_FlashRUID(uid);
     }
     FLASH_POST_OPS();
+}
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+
+int erase_flash_sector(const uint32_t addr)
+{
+    return -1;
 }
 
 #endif

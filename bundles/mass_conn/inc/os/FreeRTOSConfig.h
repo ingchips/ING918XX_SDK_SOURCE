@@ -100,7 +100,7 @@
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 #define configCPU_CLOCK_HZ          SYSCTRL_GetHClk()
 #else
-#error unknow chip family
+#error unknown chip family
 #endif
 
 #if (configSYSTICK_CLOCK_HZ == 32768)

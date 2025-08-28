@@ -48,6 +48,8 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
     #define LOCAL_STORAGE_START     0x00044000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define LOCAL_STORAGE_START     0x02041000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+    #define LOCAL_STORAGE_START     0x02041000    
 #else
     #error unknown or unsupported chip family
 #endif

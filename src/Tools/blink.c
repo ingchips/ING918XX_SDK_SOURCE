@@ -131,7 +131,7 @@ void blink_lightness(const uint8_t pwm_channel_index, const uint8_t lightness)
     PWM_HaltCtrlEnable(pwm_channel_index, 0);
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
 
 #define LIGHT_PERA_THRESHOLD            (PWM_CLOCK_FREQ / 1000)
 #define SINGLE_PERA_THRESHOLD           (PWM_CLOCK_FREQ / 5)

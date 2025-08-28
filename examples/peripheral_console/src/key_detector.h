@@ -9,6 +9,8 @@
 #define KEY_PIN     GIO_GPIO_9
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define KEY_PIN     GIO_GPIO_4
+#else
+#define KEY_PIN     GIO_GPIO_9
 #endif
 #endif
 

@@ -5,6 +5,8 @@
     #include "../FreeRTOS/portable/GCC/ARM_CM3/port.c"
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #include "../FreeRTOS/portable/GCC/ARM_CM4F/port.c" 
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+    #include "../FreeRTOS/portable/GCC/ARM_CM3/port.c"
 #else
     #error unknown or unsupported chip family
 #endif
@@ -13,6 +15,8 @@
     #include "../FreeRTOS/portable/RVDS/ARM_CM3/port.c"
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #include "../FreeRTOS/portable/RVDS/ARM_CM4F/port.c"
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+    #include "../FreeRTOS/portable/RVDS/ARM_CM3/port.c"
 #else
     #error unknown or unsupported chip family
 #endif

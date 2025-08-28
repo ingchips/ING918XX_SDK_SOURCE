@@ -91,4 +91,6 @@ void SPI_Write( uint8_t data)
     // write dummy addr and cmd to trigger the writing
     apSSP_WriteCmd(APB_SPI,0x00,0x00);
 }
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#error WIP
 #endif

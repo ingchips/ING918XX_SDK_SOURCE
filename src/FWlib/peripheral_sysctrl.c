@@ -1724,6 +1724,11 @@ void SYSCTRL_SetPClkDiv(uint8_t div)
     set_reg_bit(APB_SYSCTRL->CguCfg, 1, 29);
 }
 
+void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode)
+{
+    // WIP
+}
+
 void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
 {
     set_reg_bit(APB_SYSCTRL->CguCfg + 1, (mode == 0) ? 1 : 0, 13);

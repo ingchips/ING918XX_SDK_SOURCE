@@ -70,6 +70,8 @@ void config_uart(uint32_t freq, uint32_t baud)
 #define DB_FLASH_ADDRESS  0x42000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define DB_FLASH_ADDRESS  0x2042000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#define DB_FLASH_ADDRESS  0x2042000
 #else
 #error unknown or unsupported chip family
 #endif

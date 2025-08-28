@@ -67,7 +67,9 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(PIN_BLUE, IO_SOURCE_GENERAL);
     PINCTRL_SetPadPwmSel(PIN_BLUE, 1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #error WIP
+    #warning WIP
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+    #warning WIP
 #else
     #error unknown or unsupported chip family
 #endif
