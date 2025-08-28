@@ -361,8 +361,6 @@ void flash_read_uid(uint32_t uid[4]);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 
-#warning WIP
-
 #define EFLASH_PAGE_SIZE        256
 #define EFLASH_SECTOR_SIZE      4096
 #define EFLASH_ERASABLE_SIZE    EFLASH_SECTOR_SIZE

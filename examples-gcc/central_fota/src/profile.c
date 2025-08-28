@@ -40,6 +40,12 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
     #define TARGET_STORAGE_START    0x02041000
     #define PLATFORM_BIN_SIZE       0x00028000
     #define APP_BIN_SIZE            0x00004000
+
+#elif (TARGET_FAMILY == INGCHIPS_FAMILY_920)
+    #define ENTRY                   0x02002000
+    #define TARGET_STORAGE_START    0x02041000
+    #define PLATFORM_BIN_SIZE       0x00028000
+    #define APP_BIN_SIZE            0x00004000
 #else
     #error unknown or unsupported target chip family
 #endif
@@ -49,7 +55,7 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define LOCAL_STORAGE_START     0x02041000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
-    #define LOCAL_STORAGE_START     0x02041000    
+    #define LOCAL_STORAGE_START     0x02041000
 #else
     #error unknown or unsupported chip family
 #endif

@@ -1106,6 +1106,11 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x14), masked, 5, 8);
 }
 
+static void SYSCTRL_CacheFlush(const uintptr_t base)
+{
+    *(volatile uint32_t *)(base + 0x58) =  (1UL<<31) | 0x4;
+}
+
 static void SYSCTRL_CacheControl0(const uintptr_t base, SYSCTRL_CacheMemCtrl ctrl, uint8_t bit_offset)
 {
     if (SYSCTRL_MEM_BLOCK_AS_CACHE != ctrl)
@@ -1115,7 +1120,7 @@ static void SYSCTRL_CacheControl0(const uintptr_t base, SYSCTRL_CacheMemCtrl ctr
 
     if (SYSCTRL_MEM_BLOCK_AS_CACHE == ctrl)
     {
-        *(volatile uint32_t *)(base + 0x58) =  (1UL<<31) | 0x4;
+        SYSCTRL_CacheFlush(base);
         set_reg_bit((volatile uint32_t *)(base), 1, 1);
     }
 }
@@ -1132,6 +1137,11 @@ void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache)
     #define IC_BASE 0x40140000
 
     SYSCTRL_CacheControl0(IC_BASE, i_cache, 1);
+}
+
+void SYSCTRL_ICacheFlush(void)
+{
+    SYSCTRL_CacheFlush(IC_BASE);
 }
 
 void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_cache)
@@ -1825,6 +1835,37 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
 {
     uint32_t masked = block_map & 0x3f;
     set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), masked, 6, 12);
+}
+
+static void SYSCTRL_CacheFlush(const uintptr_t base)
+{
+    *(volatile uint32_t *)(base + 0x58) =  (1UL<<31) | 0x4;
+}
+
+static void SYSCTRL_CacheControl0(const uintptr_t base, SYSCTRL_CacheMemCtrl ctrl, uint8_t bit_offset)
+{
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE != ctrl)
+        set_reg_bit((volatile uint32_t *)(base), 0, 1);
+
+    set_reg_bits(&APB_SYSCTRL->SysCtrl, ctrl, 1, bit_offset);
+
+    if (SYSCTRL_MEM_BLOCK_AS_CACHE == ctrl)
+    {
+        SYSCTRL_CacheFlush(base);
+        set_reg_bit((volatile uint32_t *)(base), 1, 1);
+    }
+}
+
+void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache)
+{
+    #define IC_BASE 0x40140000
+
+    SYSCTRL_CacheControl0(IC_BASE, i_cache, 1);
+}
+
+void SYSCTRL_ICacheFlush(void)
+{
+    SYSCTRL_CacheFlush(IC_BASE);
 }
 
 int SYSCTRL_Init(void)

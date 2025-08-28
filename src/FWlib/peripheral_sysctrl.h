@@ -1084,6 +1084,12 @@ void SYSCTRL_DCacheControl(SYSCTRL_CacheMemCtrl d_cache);
  */
 void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache);
 
+/**
+ * @brief Flush I-Cache
+ *
+ */
+void SYSCTRL_ICacheFlush(void);
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 
 typedef enum
@@ -1987,6 +1993,12 @@ typedef enum
  */
 void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache);
 
+/**
+ * @brief Flush I-Cache
+ *
+ */
+void SYSCTRL_ICacheFlush(void);
+
 #endif
 
 /**
@@ -2122,7 +2134,7 @@ void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles);
 /**
  * @brief System reset
  *
- * This function resets the system with a watchdog, 
+ * This function resets the system with a watchdog,
  * and all registers are restored to their default state
  */
 void SYSCTRL_Reset(void);
