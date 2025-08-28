@@ -16,7 +16,7 @@ This script supports COM (UART), USB and SWD (through J-Link).
 > [!NOTE]
 > Downloading using ING-DAPLink is not supported yet.
 
-Use 'pip install -r requirements.txt' to install all dependency packages
+Use `pip install -r requirements.txt` to install all dependency packages
 
 ### Extra Command Line Options
 
@@ -47,6 +47,11 @@ through J-Link. The `.bin` file can either be a file on local system, or on the 
 
 
 ### Note for USB Flash Download
+
+- `icsdw.py` uses [_pyusb_](https://github.com/pyusb/pyusb), which depends on
+  _libusb_. _libusb_ is not installed automatically when installing _pyusb_ by `pip`.
+  [Here](https://github.com/pyusb/pyusb?tab=readme-ov-file#requirements-and-platform-support) is how to
+  install _libusb_ for _pyusb_.
 
 - Use `python icsdw.py list-usb` to query all usb port. It will print the full name of
   all available USB devices.
