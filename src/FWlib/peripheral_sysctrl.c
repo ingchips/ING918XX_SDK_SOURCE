@@ -1209,9 +1209,9 @@ static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, 
 static void set_reg_bit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset)
 {
     if (v)
-        *reg |= v << bit_offset;
+        *reg |= 1 << bit_offset;
     else
-        *reg &= ~(v << bit_offset);
+        *reg &= ~(1 << bit_offset);
 }
 
 static uint32_t get_safe_divider(uint32_t reg, int bit_offset, int bit_width)
@@ -1535,6 +1535,32 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
     }
 }
 
+void SYSCTRL_SelectTimerClk(timer_port_t port, uint8_t div, pre_clk_source_t source)
+{
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (source == SOURCE_32K_CLK) ? 1 : 0, 15 + port * 2);
+    if (source == SOURCE_32K_CLK)
+        return;
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (source == SOURCE_SLOW_CLK) ? 0 : 1, 16);
+    if (div)
+    {
+        set_reg_bits(&APB_SYSCTRL->CguCfg8, div&0xf, 4, 20);
+        set_reg_bit(&APB_SYSCTRL->CguCfg8, 1, 24);
+    }
+}
+
+void SYSCTRL_SelectPWMClk(uint8_t div, pre_clk_source_t source)
+{
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (source == SOURCE_32K_CLK) ? 0 : 1, 23);
+    if (source == SOURCE_32K_CLK)
+        return;
+    set_reg_bit(&APB_SYSCTRL->CguCfg8, (source == SOURCE_SLOW_CLK) ? 0 : 1, 15);
+    if (div)
+    {
+        set_reg_bits(&APB_SYSCTRL->CguCfg8, div&0xf, 4, 27);
+        set_reg_bit(&APB_SYSCTRL->CguCfg8, 1, 31);
+    }
+}
+
 int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
 {
     div_pre     &= 0x3f;
@@ -1582,7 +1608,7 @@ void SYSCTRL_EnablePLL(uint8_t enable)
 uint32_t SYSCTRL_GetPLLClk()
 {
     uint32_t pll_ctrl = io_read(AON1_CTRL_BASE + 0x28);
-    if (pll_ctrl & 1)
+    if (pll_ctrl & 1ul)
     {
         uint32_t div = ((pll_ctrl >> 1) & 0x3f) * ((pll_ctrl >> 15) & 0x3f);
         return (uint32_t)((uint64_t)SYSCTRL_GetSlowClk() * ((pll_ctrl >> 7) & 0xff) / div);
@@ -1708,7 +1734,7 @@ void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode)
     }
 }
 
-int SYSCTRL_GetCLK32k(void)
+uint32_t SYSCTRL_GetCLK32k(void)
 {
     if (APB_SYSCTRL->CguCfg[1] & (1 << 12))
     {
@@ -1732,11 +1758,6 @@ void SYSCTRL_SetPClkDiv(uint8_t div)
 {
     set_reg_bits(APB_SYSCTRL->CguCfg, div, 4, 4);
     set_reg_bit(APB_SYSCTRL->CguCfg, 1, 29);
-}
-
-void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode)
-{
-    // WIP
 }
 
 void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)

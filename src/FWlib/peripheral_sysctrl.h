@@ -73,26 +73,26 @@ enum
 };
 
 /**
- * \brief Set clock gating state of all components
- * \param data      clock gating state of each component
+ * @brief Set clock gating state of all components
+ * @param data      clock gating state of each component
  */
 void SYSCTRL_WriteClkGate(uint32_t data);
 
 /**
- * \brief Get clock gating state of all components
- * \return clock gating state of each components
+ * @brief Get clock gating state of all components
+ * @return clock gating state of each components
  */
 uint32_t SYSCTRL_ReadClkGate(void);
 
 /**
- * \brief Reset/Release control of all components
- * \param data      Reset/Release control of each component
+ * @brief Reset/Release control of all components
+ * @param data      Reset/Release control of each component
  */
 void SYSCTRL_WriteBlockRst(uint32_t data) ;
 
 /**
- * \brief Get Reset/Release state of all components
- * \return Reset/Release state of each components
+ * @brief Get Reset/Release state of all components
+ * @return Reset/Release state of each components
  */
 uint32_t SYSCTRL_ReadBlockRst(void) ;
 
@@ -114,11 +114,11 @@ typedef enum
 #define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_MEM_BLOCK_0 | SYSCTRL_MEM_BLOCK_1 | SYSCTRL_SHARE_BLOCK_0)
 
 /**
- * \brief Get current HClk (same as MCU working clock) in Hz
+ * @brief Get current HClk (same as MCU working clock) in Hz
  *
  * Compatible API with ING916's
  *
- * \return              clock in Hz
+ * @return              clock in Hz
  */
 #define SYSCTRL_GetHClk()       48000000
 
@@ -131,7 +131,7 @@ typedef struct
 } SYSCTRL_WakeupSource_t;
 
 /**
- * \brief Enable the PA, the TXEN is set to GPIO2 and RXEN is set to GPIO6.
+ * @brief Enable the PA, the TXEN is set to GPIO2 and RXEN is set to GPIO6.
  * This function is only allowed to be called after the stack initialized. For example, at
  * the BTSTACK_EVENT_STATE of `user_packet_handler`.
  * When PLATFORM_CB_EVT_LLE_INIT occurred, the function should also be called.
@@ -327,7 +327,7 @@ typedef enum
 } SYSCTRL_ClkMode;
 
 /**
- * \brief Select clock mode of TIMER
+ * @brief Select clock mode of TIMER
  *
  * All timers share the same clock divider, which means that if timer K is
  * set to use (SYSCTRL_CLK_SLOW_DIV_X), all previously configures timers that
@@ -335,49 +335,49 @@ typedef enum
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
- * \param port          the timer
- * \param mode          clock mode
+ * @param port          the timer
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock mode of PWM
+ * @brief Select clock mode of PWM
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
- * \param port          the timer
- * \param mode          clock mode
+ * @param port          the timer
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock mode of KeyScan
+ * @brief Select clock mode of KeyScan
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
- * \param port          the timer
- * \param mode          clock mode
+ * @param port          the timer
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock mode of PDM
+ * @brief Select clock mode of PDM
  *
  * Clock of PDM is divided from SLOW_CLK.`mode` should be `(SYSCTRL_ClkMode)N`, where N = 1..63;
  *
- * \param port          the timer
- * \param mode          clock mode
+ * @param port          the timer
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select SPI clock mode
- * \param port          the port
- * \param mode          clock mode
+ * @brief Select SPI clock mode
+ * @param port          the port
+ * @param mode          clock mode
  *
  * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
@@ -385,28 +385,28 @@ void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select UART clock mode
- * \param port          the port
- * \param mode          clock mode (SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_HCLK)
+ * @brief Select UART clock mode
+ * @param port          the port
+ * @param mode          clock mode (SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_HCLK)
  */
 void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select I2S clock mode
- * \param mode          clock mode
+ * @brief Select I2S clock mode
+ * @param mode          clock mode
  *
  * Note: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;.
  */
 void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get current PLL clock in Hz
- * \return              clock in Hz
+ * @brief Get current PLL clock in Hz
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetPLLClk(void);
 
 /**
- * \brief Config PLL clock in Hz
+ * @brief Config PLL clock in Hz
  *
  *               f_in * loop
  * f_vco = ------------------------
@@ -421,16 +421,16 @@ uint32_t SYSCTRL_GetPLLClk(void);
  *    1. f_vco should be in [60, 600]MHz;
  *    1. f_pll should not exceed 500MHz.
  *
- * \param div_pre       div_pre (8 bits)
- * \param loop          loop (6 bits)
- * \param div_output    div_output (6 bits)
- * \return              0 if config is proper else non-0
+ * @param div_pre       div_pre (8 bits)
+ * @param loop          loop (6 bits)
+ * @param div_output    div_output (6 bits)
+ * @return              0 if config is proper else non-0
  */
 int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output);
 
 /**
- * \brief Select HClk clock mode
- * \param mode          clock mode
+ * @brief Select HClk clock mode
+ * @param mode          clock mode
  *
  * Note: mode should be SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_PLL_DIV_N,
  *       where N = 1..15.
@@ -440,88 +440,88 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output);
 void SYSCTRL_SelectHClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get current HClk (same as MCU working clock) in Hz
- * \return              clock in Hz
+ * @brief Get current HClk (same as MCU working clock) in Hz
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetHClk(void);
 
 /**
- * \brief Select PClk (APB Clk) divider
- * \param div           divider (1..15)
+ * @brief Select PClk (APB Clk) divider
+ * @param div           divider (1..15)
  *
  * Note:  PClk is divided from HClk.
  */
 void SYSCTRL_SetPClkDiv(uint8_t div);
 
 /**
- * \brief Get PClk (APB Clk) divider
- * \return              divider (1..15)
+ * @brief Get PClk (APB Clk) divider
+ * @return              divider (1..15)
  */
 uint8_t SYSCTRL_GetPClkDiv(void);
 
 /**
- * \brief Get current PClk in Hz
- * \return              clock in Hz
+ * @brief Get current PClk in Hz
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetPClk(void);
 
 /**
- * \brief Get the clock of an item in Hz
- * \param item          the item
- * \return              clock in Hz
+ * @brief Get the clock of an item in Hz
+ * @param item          the item
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetClk(SYSCTRL_Item item);
 
 /**
- * \brief Select ADC Clk divider
- * \param denom         denominator (6 bits)
+ * @brief Select ADC Clk divider
+ * @param denom         denominator (6 bits)
   */
 void SYSCTRL_SetAdcClkDiv(uint8_t denom);
 
 /**
- * \brief Get ADC Clk from divider
- * \return              clock in Hz
+ * @brief Get ADC Clk from divider
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetAdcClkDiv(void);
 
 /**
- * \brief Select Clk mode for a type of items
- * \param item          item of type A (IR/ADC/EFUSE)
- * \param mode          clock mode ({SYSCTRL_CLK_SLOW, SYSCTRL_CLK_ADC_DIV})
+ * @brief Select Clk mode for a type of items
+ * @param item          item of type A (IR/ADC/EFUSE)
+ * @param mode          clock mode ({SYSCTRL_CLK_SLOW, SYSCTRL_CLK_ADC_DIV})
  */
 void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock mode of USB
+ * @brief Select clock mode of USB
  *
  * `mode` should be `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock mode of Flash
+ * @brief Select clock mode of Flash
  *
  * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *
  * Default mode: see `SYSCTRL_ConfigClocksAfterWakeup()`.
  *
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get the frequency of Flash clock
+ * @brief Get the frequency of Flash clock
  *
- * \return                      frequency
+ * @return                      frequency
  */
 uint32_t SYSCTRL_GetFlashClk(void);
 
 /**
- * \brief Select the two clocks of QDEC
+ * @brief Select the two clocks of QDEC
  *
  * This function configures two clocks for QDEC:
  *
@@ -530,14 +530,14 @@ uint32_t SYSCTRL_GetFlashClk(void);
  *
  * Note: `clk_qdec` must be >= PClk (see `SYSCTRL_GetPClk()`).
  *
- * \param mode          clock mode
- * \param div           clock divider (10 bits)
+ * @param mode          clock mode
+ * @param div           clock divider (10 bits)
  *
  */
 void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 
 /**
- * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan
+ * @brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `(SYSCTRL_ClkMode)N`,
  *  where N is in [1..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
@@ -545,14 +545,14 @@ void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
  *
  * Note: The default mode is (`(SYSCTRL_ClkMode)750`), i.e. (SLOW_CLK / 750).
  *
- * \param mode                  clock mode
+ * @param mode                  clock mode
  */
 void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan
+ * @brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
- * \return                      frequency of the 32k
+ * @return                      frequency of the 32k
  */
 int SYSCTRL_GetCLK32k(void);
 
@@ -568,7 +568,7 @@ int SYSCTRL_GetCLK32k(void);
 #define PLL_HW_DEF_DIV_OUTPUT       1
 
 /**
- * \brief Automatically config core clocks after wakeup
+ * @brief Automatically config core clocks after wakeup
  *
  * There is a functionality in the boot loader which can automatically configure
  * core clocks after wakeup. This function update its parameters.
@@ -584,12 +584,12 @@ int SYSCTRL_GetCLK32k(void);
  *                PLL_BOOT_DEF_DIV_OUTPUT respectively.
  * So, PLL output is 336MHz, HClk is 112MHz, Flash clock is 168MHz.
  *
- * \param   enable_pll          enable(1)/disable(0) PLL
- * \param   pll_loop            loop of PLL (see `SYSCTRL_ConfigPLLClk`)
+ * @param   enable_pll          enable(1)/disable(0) PLL
+ * @param   pll_loop            loop of PLL (see `SYSCTRL_ConfigPLLClk`)
  *                              ignored when PLL is disabled
- * \param   hclk                HCLK clock mode (see `SYSCTRL_SelectHClk`)
- * \param   flash_clk           Flash clock mode (see `SYSCTRL_SelectFlashClk`)
- * \param   enabled_watchdog    enable(1)/disable(0) watchdog
+ * @param   hclk                HCLK clock mode (see `SYSCTRL_SelectHClk`)
+ * @param   flash_clk           Flash clock mode (see `SYSCTRL_SelectFlashClk`)
+ * @param   enabled_watchdog    enable(1)/disable(0) watchdog
  *                              When enabled, watchdog is configured to be timed out
  *                              after about 3 seconds. Developer are free to update
  *                              its configuration later.
@@ -600,7 +600,7 @@ void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
         uint8_t enable_watchdog);
 
 /**
- * \brief Disable automatic configuration of core clocks after wakeup
+ * @brief Disable automatic configuration of core clocks after wakeup
  *
  * Once disabled, after wake up, following settings of core clocks apply:
  * - PLL enable is kept with `div_pre`, `loop` and `div_output` defaults to 5, 80 and 1 respectively;
@@ -616,19 +616,19 @@ typedef enum
 } SYSCTRL_CPU32kMode;
 
 /**
- * \brief Select clock of 32k for MCU
+ * @brief Select clock of 32k for MCU
  *
  * Note: The default mode is `SYSCTRL_CPU_32k_INTERNAL`.
  *
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
 
 /**
- * \brief Get the frequency of CPU 32k
+ * @brief Get the frequency of CPU 32k
  *
- * \return                      frequency of CPU 32k
+ * @return                      frequency of CPU 32k
  */
 int SYSCTRL_GetCPU32k(void);
 
@@ -639,26 +639,26 @@ typedef enum
 } SYSCTRL_SlowClkMode;
 
 /**
- * \brief Select clock source of slow clock
+ * @brief Select clock source of slow clock
  *
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode);
 
 /**
- * \brief Get current slow clock in Hz
- * \return              clock in Hz
+ * @brief Get current slow clock in Hz
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetSlowClk(void);
 
 /**
- * \brief Enable/Disable PLL
+ * @brief Enable/Disable PLL
  *
  * Caution: Before turning off PLL, all parts (such as Flash) using PLL clock
  * must be switched to other clocks.
  *
- * \param enable        Enable(1)/Disable(0)
+ * @param enable        Enable(1)/Disable(0)
  *
  */
 void SYSCTRL_EnablePLL(uint8_t enable);
@@ -673,43 +673,43 @@ typedef enum
 } SYSCTRL_SlowRCClkMode;
 
 /**
- * \brief Enable/Disable RC clock for slow clock
+ * @brief Enable/Disable RC clock for slow clock
  *
- * \param enable        Enable(1)/Disable(0)
- * \param mode          Clock frequency mode
+ * @param enable        Enable(1)/Disable(0)
+ * @param mode          Clock frequency mode
  *                      Ignored if (enable == 0)
  *
  */
 void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode);
 
 /**
- * \brief Tune the RC clock for slow clock to the frequency given by
+ * @brief Tune the RC clock for slow clock to the frequency given by
  * `SYSCTRL_SlowRCClkMode` automatically.
  *
  * Note: 1. The returned value can be stored in NVM for later use (see `SYSCTRL_TuneSlowRC`)
  *       2. The internal configuration is different for different `SYSCTRL_SlowRCClkMode`.
  *
- * \return              the internal configuration after tunning
+ * @return              the internal configuration after tunning
  *
  */
 uint32_t SYSCTRL_AutoTuneSlowRC(void);
 
 /**
- * \brief Set the internal configuration the RC clock for slow clock
+ * @brief Set the internal configuration the RC clock for slow clock
  *
- * \param value         the internal configuration which is returned from
+ * @param value         the internal configuration which is returned from
  *                      `SYSCTRL_AutoTuneSlowRC` to tune the clock
  */
 void SYSCTRL_TuneSlowRC(uint32_t value);
 
 /**
- * \brief Configure clock output functionality
+ * @brief Configure clock output functionality
  *
  * There is a dedicated divider dividing PLL output. The output of this divider
  * can be routed to some PINs for debugging (see `PINCTRL_SelClockOutput`).
  *
- * \param enable        Enable(1) or Disable(0) this divider
- * \param denom         denominator (10 bits) (ignored when `enabled` is 0)
+ * @param enable        Enable(1) or Disable(0) this divider
+ * @param denom         denominator (10 bits) (ignored when `enabled` is 0)
  */
 void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom);
 
@@ -741,9 +741,9 @@ typedef enum
 } SYSCTRL_DMA;
 
 /**
- * \brief Select used DMA items
- * \param items         combination of bits whose positions are listed in `SYSCTRL_DMA`
- * \return              0 if no error occurred else non-0
+ * @brief Select used DMA items
+ * @param items         combination of bits whose positions are listed in `SYSCTRL_DMA`
+ * @return              0 if no error occurred else non-0
  *
  * Note:
  *   1. This function should be used when using DMA on hardware peripherals.
@@ -753,9 +753,9 @@ typedef enum
 int SYSCTRL_SelectUsedDmaItems(uint32_t items);
 
 /**
- * \brief Get the DMA request ID of an item
- * \param item          Previously configured `SYSCTRL_DMA` in `SYSCTRL_SelectUsedDmaItems`
- * \return              request ID of the item (if not found, -1 is returned)
+ * @brief Get the DMA request ID of an item
+ * @param item          Previously configured `SYSCTRL_DMA` in `SYSCTRL_SelectUsedDmaItems`
+ * @return              request ID of the item (if not found, -1 is returned)
  */
 int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 
@@ -1227,6 +1227,13 @@ enum
 
 typedef enum
 {
+    SOURCE_SLOW_CLK,
+    SOURCE_32K_CLK,
+    SOURCE_PLL_CLK,
+} pre_clk_source_t;
+
+typedef enum
+{
     SYSCTRL_CLK_SLOW = 0,            // use slow clock
     SYSCTRL_CLK_32k = 0,             // use 32kHz clock
     SYSCTRL_CLK_HCLK = 1,            // use HCLK (same as MCU)
@@ -1274,7 +1281,7 @@ typedef enum
 } SYSCTRL_ClkMode;
 
 /**
- * \brief Select clock mode of TIMER
+ * @brief Select clock mode of TIMER
  *
  * All timers share the same clock divider, which means that if timer K is
  * set to use (SYSCTRL_CLK_SLOW_DIV_X), all previously configures timers that
@@ -1282,38 +1289,38 @@ typedef enum
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
- * \param port          the timer
- * \param mode          clock mode
+ * @param port          the timer
+ * @param div           clock divider
+ * @param source        clock source
  *
  */
-//void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode);
+void SYSCTRL_SelectTimerClk(timer_port_t port, uint8_t div, pre_clk_source_t source);
 
 /**
- * \brief Select clock mode of PWM
+ * @brief Select clock mode of PWM
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
- * \param port          the timer
- * \param mode          clock mode
+ * @param div           clock divider
+ * @param source        clock source
  *
  */
-void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode);
+void SYSCTRL_SelectPWMClk(uint8_t div, pre_clk_source_t source);
 
 /**
- * \brief Select clock mode of KeyScan
+ * @brief Select clock mode of KeyScan
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
- * \param port          the timer
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select SPI clock mode
- * \param port          the port
- * \param mode          clock mode
+ * @brief Select SPI clock mode
+ * @param port          the port
+ * @param mode          clock mode
  *
  * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
@@ -1321,28 +1328,28 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select UART clock mode
- * \param port          the port
- * \param mode          clock mode (SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_HCLK)
+ * @brief Select UART clock mode
+ * @param port          the port
+ * @param mode          clock mode (SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_HCLK)
  */
 //void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select I2S clock mode
- * \param mode          clock mode
+ * @brief Select I2S clock mode
+ * @param mode          clock mode
  *
  * Note: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;.
  */
 void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get current PLL clock in Hz
- * \return              clock in Hz
+ * @brief Get current PLL clock in Hz
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetPLLClk(void);
 
 /**
- * \brief Config PLL clock in Hz
+ * @brief Config PLL clock in Hz
  *
  *               f_in * loop
  * f_vco = ------------------------
@@ -1357,16 +1364,16 @@ uint32_t SYSCTRL_GetPLLClk(void);
  *    1. f_vco should be in [60, 600]MHz;
  *    1. f_pll should not exceed 500MHz.
  *
- * \param div_pre       div_pre (8 bits)
- * \param loop          loop (6 bits)
- * \param div_output    div_output (6 bits)
- * \return              0 if config is proper else non-0
+ * @param div_pre       div_pre (8 bits)
+ * @param loop          loop (6 bits)
+ * @param div_output    div_output (6 bits)
+ * @return              0 if config is proper else non-0
  */
 int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output);
 
 /**
- * \brief Select HClk clock mode
- * \param mode          clock mode
+ * @brief Select HClk clock mode
+ * @param mode          clock mode
  *
  * Note: mode should be SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_PLL_DIV_N,
  *       where N = 1..15.
@@ -1376,88 +1383,88 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output);
 void SYSCTRL_SelectHClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get current HClk (same as MCU working clock) in Hz
- * \return              clock in Hz
+ * @brief Get current HClk (same as MCU working clock) in Hz
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetHClk(void);
 
 /**
- * \brief Select PClk (APB Clk) divider
- * \param div           divider (1..15)
+ * @brief Select PClk (APB Clk) divider
+ * @param div           divider (1..15)
  *
  * Note:  PClk is divided from HClk.
  */
 void SYSCTRL_SetPClkDiv(uint8_t div);
 
 /**
- * \brief Get PClk (APB Clk) divider
- * \return              divider (1..15)
+ * @brief Get PClk (APB Clk) divider
+ * @return              divider (1..15)
  */
 uint8_t SYSCTRL_GetPClkDiv(void);
 
 /**
- * \brief Get current PClk in Hz
- * \return              clock in Hz
+ * @brief Get current PClk in Hz
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetPClk(void);
 
 /**
- * \brief Get the clock of an item in Hz
- * \param item          the item
- * \return              clock in Hz
+ * @brief Get the clock of an item in Hz
+ * @param item          the item
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetClk(SYSCTRL_Item item);
 
 /**
- * \brief Select ADC Clk divider
- * \param denom         denominator (6 bits)
+ * @brief Select ADC Clk divider
+ * @param denom         denominator (6 bits)
   */
 void SYSCTRL_SetAdcClkDiv(uint8_t denom);
 
 /**
- * \brief Get ADC Clk from divider
- * \return              clock in Hz
+ * @brief Get ADC Clk from divider
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetAdcClkDiv(void);
 
 /**
- * \brief Select Clk mode for a type of items
- * \param item          item of type A (IR/ADC/EFUSE)
- * \param mode          clock mode ({SYSCTRL_CLK_SLOW, SYSCTRL_CLK_ADC_DIV})
+ * @brief Select Clk mode for a type of items
+ * @param item          item of type A (IR/ADC/EFUSE)
+ * @param mode          clock mode ({SYSCTRL_CLK_SLOW, SYSCTRL_CLK_ADC_DIV})
  */
 void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock mode of USB
+ * @brief Select clock mode of USB
  *
  * `mode` should be `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Select clock mode of Flash
+ * @brief Select clock mode of Flash
  *
  * `mode` should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *
  * Default mode: see `SYSCTRL_ConfigClocksAfterWakeup()`.
  *
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get the frequency of Flash clock
+ * @brief Get the frequency of Flash clock
  *
- * \return                      frequency
+ * @return                      frequency
  */
 uint32_t SYSCTRL_GetFlashClk(void);
 
 /**
- * \brief Select the two clocks of QDEC
+ * @brief Select the two clocks of QDEC
  *
  * This function configures two clocks for QDEC:
  *
@@ -1466,14 +1473,14 @@ uint32_t SYSCTRL_GetFlashClk(void);
  *
  * Note: `clk_qdec` must be >= PClk (see `SYSCTRL_GetPClk()`).
  *
- * \param mode          clock mode
- * \param div           clock divider (10 bits)
+ * @param mode          clock mode
+ * @param div           clock divider (10 bits)
  *
  */
 void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 
 /**
- * \brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan
+ * @brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `(SYSCTRL_ClkMode)N`,
  *  where N is in [1..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
@@ -1481,16 +1488,16 @@ void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
  *
  * Note: The default mode is (`(SYSCTRL_ClkMode)750`), i.e. (SLOW_CLK / 750).
  *
- * \param mode                  clock mode
+ * @param mode                  clock mode
  */
 void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
 
 /**
- * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan
+ * @brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
- * \return                      frequency of the 32k
+ * @return                      frequency of the 32k
  */
-int SYSCTRL_GetCLK32k(void);
+uint32_t SYSCTRL_GetCLK32k(void);
 
 // default PLL settings for automatic config after wakeup in boot loader
 #define PLL_BOOT_DEF_DIV_PRE        5
@@ -1504,7 +1511,7 @@ int SYSCTRL_GetCLK32k(void);
 #define PLL_HW_DEF_DIV_OUTPUT       1
 
 /**
- * \brief Automatically config core clocks after wakeup
+ * @brief Automatically config core clocks after wakeup
  *
  * There is a functionality in the boot loader which can automatically configure
  * core clocks after wakeup. This function update its parameters.
@@ -1520,12 +1527,12 @@ int SYSCTRL_GetCLK32k(void);
  *                PLL_BOOT_DEF_DIV_OUTPUT respectively.
  * So, PLL output is 336MHz, HClk is 112MHz, Flash clock is 168MHz.
  *
- * \param   enable_pll          enable(1)/disable(0) PLL
- * \param   pll_loop            loop of PLL (see `SYSCTRL_ConfigPLLClk`)
+ * @param   enable_pll          enable(1)/disable(0) PLL
+ * @param   pll_loop            loop of PLL (see `SYSCTRL_ConfigPLLClk`)
  *                              ignored when PLL is disabled
- * \param   hclk                HCLK clock mode (see `SYSCTRL_SelectHClk`)
- * \param   flash_clk           Flash clock mode (see `SYSCTRL_SelectFlashClk`)
- * \param   enabled_watchdog    enable(1)/disable(0) watchdog
+ * @param   hclk                HCLK clock mode (see `SYSCTRL_SelectHClk`)
+ * @param   flash_clk           Flash clock mode (see `SYSCTRL_SelectFlashClk`)
+ * @param   enabled_watchdog    enable(1)/disable(0) watchdog
  *                              When enabled, watchdog is configured to be timed out
  *                              after about 3 seconds. Developer are free to update
  *                              its configuration later.
@@ -1536,7 +1543,7 @@ void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
         uint8_t enable_watchdog);
 
 /**
- * \brief Disable automatic configuration of core clocks after wakeup
+ * @brief Disable automatic configuration of core clocks after wakeup
  *
  * Once disabled, after wake up, following settings of core clocks apply:
  * - PLL enable is kept with `div_pre`, `loop` and `div_output` defaults to 5, 80 and 1 respectively;
@@ -1552,19 +1559,19 @@ typedef enum
 } SYSCTRL_CPU32kMode;
 
 /**
- * \brief Select clock of 32k for MCU
+ * @brief Select clock of 32k for MCU
  *
  * Note: The default mode is `SYSCTRL_CPU_32k_INTERNAL`.
  *
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
 
 /**
- * \brief Get the frequency of CPU 32k
+ * @brief Get the frequency of CPU 32k
  *
- * \return                      frequency of CPU 32k
+ * @return                      frequency of CPU 32k
  */
 int SYSCTRL_GetCPU32k(void);
 
@@ -1575,26 +1582,26 @@ typedef enum
 } SYSCTRL_SlowClkMode;
 
 /**
- * \brief Select clock source of slow clock
+ * @brief Select clock source of slow clock
  *
- * \param mode          clock mode
+ * @param mode          clock mode
  *
  */
 void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode);
 
 /**
- * \brief Get current slow clock in Hz
- * \return              clock in Hz
+ * @brief Get current slow clock in Hz
+ * @return              clock in Hz
  */
 uint32_t SYSCTRL_GetSlowClk(void);
 
 /**
- * \brief Enable/Disable PLL
+ * @brief Enable/Disable PLL
  *
  * Caution: Before turning off PLL, all parts (such as Flash) using PLL clock
  * must be switched to other clocks.
  *
- * \param enable        Enable(1)/Disable(0)
+ * @param enable        Enable(1)/Disable(0)
  *
  */
 void SYSCTRL_EnablePLL(uint8_t enable);
@@ -1609,43 +1616,43 @@ typedef enum
 } SYSCTRL_SlowRCClkMode;
 
 /**
- * \brief Enable/Disable RC clock for slow clock
+ * @brief Enable/Disable RC clock for slow clock
  *
- * \param enable        Enable(1)/Disable(0)
- * \param mode          Clock frequency mode
+ * @param enable        Enable(1)/Disable(0)
+ * @param mode          Clock frequency mode
  *                      Ignored if (enable == 0)
  *
  */
 void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode);
 
 /**
- * \brief Tune the RC clock for slow clock to the frequency given by
+ * @brief Tune the RC clock for slow clock to the frequency given by
  * `SYSCTRL_SlowRCClkMode` automatically.
  *
  * Note: 1. The returned value can be stored in NVM for later use (see `SYSCTRL_TuneSlowRC`)
  *       2. The internal configuration is different for different `SYSCTRL_SlowRCClkMode`.
  *
- * \return              the internal configuration after tunning
+ * @return              the internal configuration after tunning
  *
  */
 uint32_t SYSCTRL_AutoTuneSlowRC(void);
 
 /**
- * \brief Set the internal configuration the RC clock for slow clock
+ * @brief Set the internal configuration the RC clock for slow clock
  *
- * \param value         the internal configuration which is returned from
+ * @param value         the internal configuration which is returned from
  *                      `SYSCTRL_AutoTuneSlowRC` to tune the clock
  */
 void SYSCTRL_TuneSlowRC(uint32_t value);
 
 /**
- * \brief Configure clock output functionality
+ * @brief Configure clock output functionality
  *
  * There is a dedicated divider dividing PLL output. The output of this divider
  * can be routed to some PINs for debugging (see `PINCTRL_SelClockOutput`).
  *
- * \param enable        Enable(1) or Disable(0) this divider
- * \param denom         denominator (10 bits) (ignored when `enabled` is 0)
+ * @param enable        Enable(1) or Disable(0) this divider
+ * @param denom         denominator (10 bits) (ignored when `enabled` is 0)
  */
 void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom);
 
@@ -1660,28 +1667,28 @@ typedef enum
     SYSCTRL_DMA_QDEC0,
     SYSCTRL_DMA_PWM1,
     SYSCTRL_DMA_I2S_RX,
-	SYSCTRL_DMA_SPIFLASH,
-	SYSCTRL_DMA_SADC,
-	SYSCTRL_DMA_AUDIO_ENC_RX,
+    SYSCTRL_DMA_SPIFLASH,
+    SYSCTRL_DMA_SADC,
+    SYSCTRL_DMA_AUDIO_ENC_RX,
 
     SYSCTRL_DMA_UART0_TX = 0x10,
     SYSCTRL_DMA_UART1_TX,
     SYSCTRL_DMA_SPI0_RX,
     SYSCTRL_DMA_SPI1_RX,
-	SYSCTRL_DMA_AUDIO_ENC_TX,
+    SYSCTRL_DMA_AUDIO_ENC_TX,
     SYSCTRL_DMA_QDEC1,
     SYSCTRL_DMA_KeyScan,
     SYSCTRL_DMA_I2S_TX,
     SYSCTRL_DMA_PWM0,
     SYSCTRL_DMA_PWM2,
     SYSCTRL_DMA_QDEC2,
-	SYSCTRL_DMA_SDADC_RX,
+    SYSCTRL_DMA_SDADC_RX,
     SYSCTRL_DMA_LAST,
 } SYSCTRL_DMA;
 /**
- * \brief Select used DMA items
- * \param items         combination of bits whose positions are listed in `SYSCTRL_DMA`
- * \return              0 if no error occurred else non-0
+ * @brief Select used DMA items
+ * @param items         combination of bits whose positions are listed in `SYSCTRL_DMA`
+ * @return              0 if no error occurred else non-0
  *
  * Note:
  *   1. This function should be used when using DMA on hardware peripherals.
@@ -1691,9 +1698,9 @@ typedef enum
 int SYSCTRL_SelectUsedDmaItems(uint32_t items);
 
 /**
- * \brief Get the DMA request ID of an item
- * \param item          Previously configured `SYSCTRL_DMA` in `SYSCTRL_SelectUsedDmaItems`
- * \return              request ID of the item (if not found, -1 is returned)
+ * @brief Get the DMA request ID of an item
+ * @param item          Previously configured `SYSCTRL_DMA` in `SYSCTRL_SelectUsedDmaItems`
+ * @return              request ID of the item (if not found, -1 is returned)
  */
 int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 
@@ -2002,43 +2009,43 @@ void SYSCTRL_ICacheFlush(void);
 #endif
 
 /**
- * \brief Set clock gating state of a component
- * \param item      the component to enable clock gating
+ * @brief Set clock gating state of a component
+ * @param item      the component to enable clock gating
  */
 void SYSCTRL_SetClkGate(SYSCTRL_ClkGateItem item);
 
 /**
- * \brief Clear clock gating state of a component
- * \param item      the component to clear clock gating
+ * @brief Clear clock gating state of a component
+ * @param item      the component to clear clock gating
  */
 void SYSCTRL_ClearClkGate(SYSCTRL_ClkGateItem item);
 
 /**
- * \brief Set clock gating state of several components
- * \param items      the bitmap of components to enable clock gating
+ * @brief Set clock gating state of several components
+ * @param items      the bitmap of components to enable clock gating
  */
 void SYSCTRL_SetClkGateMulti(uint32_t items);
 
 /**
- * \brief Clear clock gating state of several components
- * \param items      the bitmap of components to clear clock gating
+ * @brief Clear clock gating state of several components
+ * @param items      the bitmap of components to clear clock gating
  */
 void SYSCTRL_ClearClkGateMulti(uint32_t items);
 
 /**
- * \brief Reset a component
- * \param item      the component to be reset
+ * @brief Reset a component
+ * @param item      the component to be reset
  */
 void SYSCTRL_ResetBlock(SYSCTRL_ResetItem item);
 
 /**
- * \brief Reset all components
+ * @brief Reset all components
  */
 void SYSCTRL_ResetAllBlocks(void);
 
 /**
- * \brief Release a component from reset
- * \param item      the component to be released
+ * @brief Release a component from reset
+ * @param item      the component to be released
  */
 void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item);
 
