@@ -199,7 +199,7 @@ static __INLINE void GIO_ClearBits(const uint32_t index_mask){ *GPIO_DOC = index
  */
 static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = index_mask;}
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
 
 typedef enum
 {
