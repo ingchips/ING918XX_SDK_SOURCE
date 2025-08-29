@@ -241,6 +241,7 @@ typedef enum
     PLATFORM_TRACE_ID_LLCP                  = 4,
     PLATFORM_TRACE_ID_RAW                   = 5,
     PLATFORM_TRACE_ID_EVENT_ERROR           = 6,
+    PLATFORM_TRACE_ID_TASKS                 = 7,
     PLATFORM_TRACE_ID_SM                    = 8,
 } platform_trace_item_t;
 
