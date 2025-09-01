@@ -46,7 +46,7 @@ void config_uart(uint32_t freq, uint32_t baud)
     #define KB_KEY_1        GIO_GPIO_1
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define KB_KEY_1        GIO_GPIO_6
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #define KB_KEY_1        GIO_GPIO_6
 #else
     #error unknown or unsupported chip family

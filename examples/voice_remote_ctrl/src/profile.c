@@ -100,7 +100,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
         {
             audio_notify_enable = 1;
-            #if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+            #if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
             update_conn_interval(handle_send, 12); // 15ms
             #endif
 

@@ -50,7 +50,7 @@ void blink(const uint8_t led_id)
 {
     const static uint8_t led_pins[] = {PIN_RED, PIN_RED, PIN_BLUE, PIN_GREEN};
     uint8_t channel_index = led_pins[led_id] >> 1;
-    blink_style(channel_index, BLINK_SINGLE); 
+    blink_style(channel_index, BLINK_SINGLE);
 }
 
 void setup_peripherals(void)
@@ -68,7 +68,7 @@ void setup_peripherals(void)
     PINCTRL_SetPadPwmSel(PIN_BLUE, 1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #warning WIP
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #warning WIP
 #else
     #error unknown or unsupported chip family

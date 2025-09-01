@@ -14,7 +14,7 @@
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
 
 typedef enum
 {
@@ -38,7 +38,7 @@ typedef enum
     KEY_IN_COL_17  ,
     KEY_IN_COL_18  ,
     KEY_IN_COL_19  ,
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     KEY_IN_COL_20  ,
     KEY_IN_COL_21  ,
 #endif
@@ -72,7 +72,7 @@ typedef enum
     KEY_OUT_ROW_NUMBER,
 } KEYSCAN_OutRowIndex_t;
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 typedef  enum {
     SCAN_HIGH,
     SCAN_LOW,
@@ -116,7 +116,7 @@ typedef struct {
     uint16_t release_time;
     uint16_t scan_interval;
     uint8_t debounce_counter;
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     uint8_t table_mode_en;
     uint8_t lpkey_mode_en;
 #endif
@@ -209,7 +209,7 @@ void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set, KEYSCAN
  *                              1: find key pressed, *row and *col are key positions in keyboard array
  */
 uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 /**
  * @brief Gets the value of the key scan mode
  *
@@ -270,11 +270,11 @@ void KEYSCAN_SetScannerEn(uint8_t enable);
 
 /**
  * @brief Set the interval between two keyscan loops.
- * 
- * The time of interval is calculated by interval_time(ms) = scan_itv / keyscan_clk(khz), 
+ *
+ * The time of interval is calculated by interval_time(ms) = scan_itv / keyscan_clk(khz),
  * and keyscan_clk is keyscan's clock, which selected by 'SYSCTRL_SelectKeyScanClk'.
- * 
- * @note Initialize keyscan module will also change this interval, such as 
+ *
+ * @note Initialize keyscan module will also change this interval, such as
  *      'KEYSCAN_InitializeScanParameter' or 'KEYSCAN_Initialize'.
  *
  * @param[in] scan_itv          the clock count for keyscan interval. range: 0 ~ 65535

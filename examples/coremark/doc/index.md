@@ -21,7 +21,7 @@ always use latest IDE/toolchain, and below are recommendations on compiler optio
     * One ELF per function
     * Preprocessor: `ITERATIONS=15000`
 
-* ING920xx Family
+* ING20xx Family
 
     * Use compiler version 6 (ARMClang)
     * Enable LTO

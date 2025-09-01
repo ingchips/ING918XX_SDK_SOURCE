@@ -1090,7 +1090,7 @@ void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache);
  */
 void SYSCTRL_ICacheFlush(void);
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 typedef enum
 {

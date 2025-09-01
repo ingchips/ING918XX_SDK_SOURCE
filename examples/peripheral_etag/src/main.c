@@ -68,12 +68,12 @@ void setup_peripherals(void)
     GIO_SetDirection(SPI_EPD_POWER, GIO_DIR_OUTPUT);   // set output
     GIO_SetDirection(SPI_EPD_RST, GIO_DIR_OUTPUT);     // set RST output
     GIO_SetDirection(SPI_EPD_BUSY, GIO_DIR_INPUT);     // set Busy input
-    
+
     PINCTRL_SelUartRxdIn(UART_PORT_1, 0x3f);
     PINCTRL_SelI2cSclIn(I2C_PORT_0, 0x3f);
 
     SPI_Init(AHB_SSP0);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_AHB_SPI0) | (1 << SYSCTRL_ClkGate_APB_GPIO0));
 
     // for eTAG
@@ -99,14 +99,14 @@ void setup_peripherals(void)
 
 // message queue
 #define QUEUE_LENGTH    1
-#define ITEM_SIZE       sizeof(queue_msg_t) 
-static StaticQueue_t xStaticQueue; 
+#define ITEM_SIZE       sizeof(queue_msg_t)
+static StaticQueue_t xStaticQueue;
 uint8_t ucQueueStorageArea[QUEUE_LENGTH * ITEM_SIZE];
 QueueHandle_t xQueue;
 static SemaphoreHandle_t sem_display;
 
 void driver_delay_xms(uint32_t ms)
-{ 
+{
 	xSemaphoreTake(sem_display, pdMS_TO_TICKS(ms));
 }
 
@@ -126,7 +126,7 @@ static void display_task(void *pdata)
     {
         if (xQueueReceive(xQueue, &msg, portMAX_DELAY) != pdPASS)
             continue;
-        
+
         LCD_Init();
         pic_display(msg.black_white, msg.red_white);
         driver_delay_xms(15000);
@@ -141,7 +141,7 @@ int app_main()
     // platform_set_rf_clk_source(0);
 
     setup_peripherals();
-    
+
     // setup putc handle
     // platform_set_evt_callback(PLATFORM_CB_EVT_PUTC, (f_platform_evt_cb)cb_putc, NULL);
 

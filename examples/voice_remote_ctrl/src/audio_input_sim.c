@@ -18,7 +18,7 @@
     #define SAMPLES_LOCATION        0x00084000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define SAMPLES_LOCATION        0x02041000
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #define SAMPLES_LOCATION        0x02041000
 #else
     #error unknown or unsupport chip family

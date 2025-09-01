@@ -18,7 +18,7 @@
     #else
       #include "./portable/GCC/ARM_CM4F/portmacro.h"
     #endif
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #if   defined ( __CC_ARM )
       #include "./portable/RVDS/ARM_CM3/portmacro.h"
 

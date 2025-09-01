@@ -183,7 +183,7 @@ typedef enum
     WDT_RSTTIME_INTERVAL_62MS         = 4,    //62.5ms
     WDT_RSTTIME_INTERVAL_125MS        = 5,
     WDT_RSTTIME_INTERVAL_250MS        = 6,
-    WDT_RSTTIME_INTERVAL_500MS        = 7 
+    WDT_RSTTIME_INTERVAL_500MS        = 7
 }wdt_rsttime_interval_t;
 
 
@@ -304,10 +304,10 @@ void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask);
 
 /**
  * @brief Get counter value of a timer
- * 
- * @param[in] pTMR              timer peripheral address 
- * @param[in] ch_id             channel ID 
- * @return    Current counter value 
+ *
+ * @param[in] pTMR              timer peripheral address
+ * @param[in] ch_id             channel ID
+ * @return    Current counter value
  */
 uint32_t TMR_GetCNT(TMR_TypeDef *pTMR, uint8_t ch_id);
 
@@ -357,8 +357,8 @@ uint8_t TMR_IntHappened(TMR_TypeDef *pTMR, uint8_t ch_id);
 
 /**
  * @brief Pause a timer
- * 
- * @param[in] pTMR              timer peripheral address    
+ *
+ * @param[in] pTMR              timer peripheral address
  * @param[in] enable            pause(1)/not pause(0)
  */
 void TMR_PauseEnable(TMR_TypeDef *pTMR, uint8_t enable);
@@ -419,7 +419,7 @@ void TMR_WatchDogClearInt(void);
  */
 void TMR_WatchDogDisable(void);
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 typedef enum
 {
@@ -714,7 +714,7 @@ void RTMR_Disable(RTMR_TypeDef *pTMR);
 /**
  ****************************************************************************************
  * @brief Set work mode of a timer
- * 
+ *
  *
  * @param[in] pTMR          timer address
  * @param[in] mode          work mode

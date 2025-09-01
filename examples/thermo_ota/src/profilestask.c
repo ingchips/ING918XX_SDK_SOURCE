@@ -311,7 +311,7 @@ void setup_peripherals_i2c_pin(void)
                                   | (1 << SYSCTRL_ITEM_APB_GPIO0));
 
     PINCTRL_SelI2cIn(I2C_PORT_0, I2C_SCL, I2C_SDA);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     SYSCTRL_ClearClkGateMulti(    (1 << SYSCTRL_ITEM_APB_I2C0)
                                   | (1 << SYSCTRL_ITEM_APB_SysCtrl)
                                   | (1 << SYSCTRL_ITEM_APB_PinCtrl)

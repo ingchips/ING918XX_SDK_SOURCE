@@ -209,7 +209,7 @@ void DMA_ConfigSrcBurstSize(DMA_Descriptor *pDesc, DMA_SrcBurstSize burst_size);
  */
 DMA_Descriptor *DMA_GetChannelDescriptor(int channel_id);
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define DMA_CHANNEL_NUMBER          8
 

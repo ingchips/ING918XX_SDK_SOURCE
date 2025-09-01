@@ -7,7 +7,7 @@
 #error only 16kHz is supported
 #endif
 
-#if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #include "peripheral_asdm.h"
 #endif
 
@@ -72,7 +72,7 @@ void audio_input_stop(void)
     PDM_Start(APB_PDM, 0);
     I2S_Enable(APB_I2S, 0, 0);
 }
-#elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 static uint32_t cb_isr(void *user_data)
 {
@@ -86,7 +86,7 @@ static uint32_t cb_isr(void *user_data)
         if (sample_counter & 1)
             audio_rx_sample((pcm_sample_t)(sample));
             audio_rx_sample((pcm_sample_t)(sample >> 16));
-            
+
     }
 
     return 0;
@@ -104,11 +104,11 @@ void audio_input_setup(void)
     //pclk_in
     *((uint32_t*)&(APB_SYSCTRL->CguCfg[4])) |= (1<<28);//asdm_posedge_sample
     *((uint32_t*) 0x40102028) |= 1;
-    
+
     //enable clk
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ASDM);
     //fclk clk
-    //if use pull 30 - 12.801MHz, 34 - 11.295MHz 
+    //if use pull 30 - 12.801MHz, 34 - 11.295MHz
     //fpga use 24m 1 12m
     //¸üÐÂÄ£¿éfclkÊ±ÖÓ10·ÖÆµ
     SYSCTRL_UpdateAsdmClk(9);
@@ -118,8 +118,8 @@ void audio_input_setup(void)
     ASDM_InvertInput(APB_ASDM,1);
     ASDM_SelMic(APB_ASDM,1);
     ASDM_SelDownSample(APB_ASDM,1);
-    
-    ASDM_UpdateSr(APB_ASDM, 1<<7);//asdm_sr fs 12k 
+
+    ASDM_UpdateSr(APB_ASDM, 1<<7);//asdm_sr fs 12k
 
     ASDM_MuteEn(APB_ASDM,0);//asdm_mute_l
     ASDM_FadeInOutEn(APB_ASDM,0);//asdm_fadedis_l
@@ -142,11 +142,11 @@ void audio_input_setup(void)
 
     ASDM_SetAGCMute(APB_ASDM, 0);//asdm_agc_mute
 
-    
+
     ASDM_FifoEn(APB_ASDM, 1);//fifo enable
     ASDM_SetFifoInt(APB_ASDM, 2);
     ASDM_SetFifoTrig(APB_ASDM, 3);//fifo_trig
-    
+
     pdm_io_init();
     platform_set_irq_callback(PLATFORM_CB_IRQ_ASDM, cb_isr, 0);
 }

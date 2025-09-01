@@ -345,7 +345,7 @@ void GIO_ToggleBits(const uint64_t index_mask)
     APB_GPIO1->DataOut ^= index_mask >> 21;
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #define START_OF_GPIO1          GIO_GPIO_21
 #define MASK_GPIO0_BITS         ((1 << 21) - 1)
 

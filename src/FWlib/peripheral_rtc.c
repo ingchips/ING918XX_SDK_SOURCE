@@ -307,7 +307,7 @@ void RTC_EnableFreeRun(uint8_t enable)
     }
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 uint32_t RTC_CurrentHigh(void)
 {

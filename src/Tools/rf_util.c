@@ -45,7 +45,7 @@ void rf_enable_powerboost(void)
     SYSCTRL_SetLDOOutputRF(SYSCTRL_LDO_RF_OUTPUT_1V800);
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #include "peripheral_sysctrl.h"
 

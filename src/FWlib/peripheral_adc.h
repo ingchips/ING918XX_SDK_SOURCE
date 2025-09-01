@@ -356,7 +356,7 @@ SADC_channelId ADC_GetDataChannel(const uint32_t data);
 
 /**
  * @brief To get ADC data of the data read by ADC_PopFifoData
- * @note The data obtained by this api is the raw data of the registers, 
+ * @note The data obtained by this api is the raw data of the registers,
  *       which has not been processed in any way and may be biased.
  *
  * @param[in] data           data read by ADC_PopFifoData
@@ -482,7 +482,7 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
                  uint8_t dmaEnNum,
                  SADC_adcIputMode inputMode,
                  uint32_t loopDelay);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 typedef enum {
     CALIBRATION_MODE,

@@ -574,7 +574,7 @@ void flash_read_uid(uint32_t uid[4])
     FLASH_POST_OPS();
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #include "peripheral_sysctrl.h"
 
 typedef void (* f_void)(void);

@@ -88,7 +88,7 @@ extern "C" {
     #define BLE_QIOT_RECORD_FLASH_ADDR   0x42000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define BLE_QIOT_RECORD_FLASH_ADDR 0x02050000
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #define BLE_QIOT_RECORD_FLASH_ADDR 0x02050000
 #else
     #error unknown or unsupported chip family

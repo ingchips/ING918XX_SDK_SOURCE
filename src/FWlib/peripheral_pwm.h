@@ -21,7 +21,7 @@ extern "C" {	/* allow C++ to use these headers */
 
 #define PWM_CHANNEL_NUMBER      3
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define PWM_CLOCK_FREQ          SYSCTRL_GetClk(SYSCTRL_ITEM_APB_PWM)
 
@@ -39,7 +39,7 @@ typedef enum
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     PWM_WORK_MODE_DMA                           = 0x5,
     PWM_WORK_MODE_PCAP                          = 0x6
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     PWM_WORK_MODE_DMA                           = 0x5,
     PWM_WORK_MODE_PCAP                          = 0x6,
     PWM_WORK_MODE_IR                            = 0x7
@@ -106,7 +106,7 @@ void PWM_SetupSingle(const uint8_t channel_index, const uint32_t pulse_width);
 // comp_num is in [0..3], which means [1..4] duty-cycles are used (\ref PWM_SetHighThreshold)
 void PWM_SetMultiDutyCycleCtrl(const uint8_t channel_index, const uint8_t comp_num);
 
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
 
 /**
  * @brief Enable PWM halt control
@@ -270,7 +270,7 @@ void PWM_SetIntTrigLevel(const uint8_t channel_index, const uint8_t trig_cfg);
 uint32_t PWM_GetFifoStatus(const uint8_t channel_index);
 
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 /**
  * @brief The PWM step mode.
  *

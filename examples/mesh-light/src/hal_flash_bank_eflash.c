@@ -17,7 +17,7 @@
     #define ERASE_BANK              erase_flash_page
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define ERASE_BANK              erase_flash_sector
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #define ERASE_BANK              erase_flash_sector
 #else
     #error unknown or unsupported chip family

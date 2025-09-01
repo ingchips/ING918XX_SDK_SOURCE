@@ -10,7 +10,7 @@
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 #define I2C_BASE(port)    ((port) == I2C_PORT_0 ? APB_I2C0 : APB_I2C1)
-    
+
 #ifndef I2C_HW_TIME_OUT
 #define I2C_HW_TIME_OUT      200000
 #endif
@@ -164,11 +164,11 @@ int i2c_read(const i2c_port_t port, uint16_t addr,
     return 0;
 }
 
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
 
 #if   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define I2C_BASE(port)    ((port) == I2C_PORT_0 ? APB_I2C0 : APB_I2C1)
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #define I2C_BASE(port)    APB_I2C0
 #endif
 

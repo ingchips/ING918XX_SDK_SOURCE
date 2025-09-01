@@ -7,7 +7,7 @@
     #define RX_BUFFER_SIZE      (BLOCK_SIZE * 65 + RING_BUF_OBJ_SIZE)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define RX_BUFFER_SIZE      (BLOCK_SIZE * 15 + RING_BUF_OBJ_SIZE)
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #define RX_BUFFER_SIZE      (BLOCK_SIZE * 10 + RING_BUF_OBJ_SIZE)
 #else
     #error unknown or unsupported chip family

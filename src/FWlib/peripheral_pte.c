@@ -27,7 +27,7 @@ void PTE_SetChannelIntMask(SYSCTRL_PTE_CHANNEL_ID ch, uint32_t options)
     uint32_t *m;
     uint32_t Cm;
 
-    if (options) 
+    if (options)
         APB_PTE->Channels[ch].IntMask = 1;
     else {
         m = (uint32_t *)&(APB_PTE->Channels[ch]);
@@ -59,8 +59,8 @@ void PTE_ChannelClose(SYSCTRL_PTE_CHANNEL_ID ch)
     PTE_SetChannelIntMask(ch, 0);
 }
 
-int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch, 
-                          SYSCTRL_PTE_SRC_INT src, 
+int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch,
+                          SYSCTRL_PTE_SRC_INT src,
                           SYSCTRL_PTE_DST_EN dst)
 {
     if (ch  >  SYSCTRL_PTE_CHANNEL_3   ||
@@ -82,7 +82,7 @@ int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch,
     return 0;
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 static void PTE_SetRegBit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset)
 {
@@ -121,7 +121,7 @@ uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channel SetTas
             else
             {
                 APB_PTE_BUS->PTE_QDEC.reg_pub_event[PTETaskEvt] = ((uint32_t)SetTaskChannel | (1ul<<31));
-            }    
+            }
         break;
         case PTE_DMA_MODULE:
             if(PTETaskEvt > PTE_EVENT_DMA_TRANS_CMPL)
@@ -283,7 +283,7 @@ uint8_t PTE_SetModuleTaskEventConfig(PTE_Module SetPTEModule, PTE_Channel SetTas
                 APB_PTE_BUS->PTE_ASDM.reg_pub_event0 = ((uint32_t)SetTaskChannel | (1ul<<31));
             }
             break;
-        
+
         default:
             break;
     }
@@ -306,7 +306,7 @@ uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, ui
             else
             {
                 PTE_SetRegBit(&APB_PTE_BUS->PTE_QDEC.reg_pub_event[PTETaskEvt], enable, 31);
-            }    
+            }
         break;
         case PTE_DMA_MODULE:
             if(PTETaskEvt > PTE_EVENT_DMA_TRANS_CMPL)
@@ -468,7 +468,7 @@ uint8_t PTE_TaskEnable(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, ui
                 PTE_SetRegBit(&APB_PTE_BUS->PTE_ASDM.reg_pub_event0 , enable, 31);
             }
             break;
-        
+
         default:
             break;
     }
@@ -497,7 +497,7 @@ uint8_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, u
             return 0;
                 reg_num = (PTETaskEvt - PTE_TASK_TIMER_CHX_TMRX_ENABLE) * (PTE_TASK_TIMER_CHX_TMRX_DISABLE - PTE_TASK_TIMER_CHX_TMRX_ENABLE + 1) + TaskEvtSer;
                 APB_PTE_BUS->PTE_TIMER0.reg_task[reg_num] = 1ul;
-            
+
         break;
         case PTE_QSPI_MODULE:
             if(PTETaskEvt < PTE_TASK_SPI_INITIATE )
@@ -564,7 +564,7 @@ uint8_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, u
             if(reg_num == 1ul)
                 APB_PTE_BUS->PTE_ASDM.reg_task1 = 1ul;
             break;
-        
+
         default:
             break;
     }
@@ -572,7 +572,7 @@ uint8_t PTE_TriggerTask(PTE_Module SetPTEModule, PTE_ModuleTaskEvt PTETaskEvt, u
 }
 
 void PTE_SetTaskChxGroupEN(PTEC_ChannelGroup SetChannelGroup)
-{   
+{
     APB_PTE->reg_task_chg_en[SetChannelGroup] = 1ul;
 }
 

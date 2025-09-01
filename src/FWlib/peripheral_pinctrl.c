@@ -742,7 +742,7 @@ int PINCTRL_SelClockOutput(const uint8_t io_index)
     return 1;
 }
 
-#elif  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
@@ -1105,7 +1105,7 @@ int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 {
     int r = source_id_on_pin(io_pin_index, source);
     if (r < 0) return r;
-    
+
     if (io_pin_index <= 22)
         set_reg_bits(&APB_PINCTRL->OUT_CTRL[io_pin_index >> 2], (uint32_t)r, 7, 7 * (io_pin_index & 0x3));
     else if (io_pin_index == 23)
