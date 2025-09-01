@@ -896,14 +896,6 @@ int PINCTRL_SelI2cIn(i2c_port_t port,
 void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index);
 
 /**
- * @brief Select PDM input IOs
- *
- * @param[in] io_pin_dmic       DMIC
- * @return                      0 if successful else non-0
- */
-int PINCTRL_SelPdmIn(uint8_t io_pin_dmic);
-
-/**
  * @brief Select KeyScan column input IOs
  *
  * @param[in] index             column index (0..19)
@@ -958,6 +950,13 @@ int PINCTRL_SelQDECPcapIn(int index, uint8_t io_pin);
  * @return                  0 if successful else non-0
  */
 int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode);
+
+/**
+ * @brief Enable/disable automatic key scan polling
+ * @param io_pin            IO source
+ * @param enable 1: Enable automatic polling, 0: Disable automatic polling
+ */
+int PINCTRL_KeyScanPullSel(const uint8_t io_pin, uint8_t enable);
 
 /**
  * @brief Select antenna control PINs

@@ -93,7 +93,7 @@ uint8_t  KEYSCAN_SetPsReg(uint8_t pull)
 #endif
 void KEYSCAN_SetDebounceEn(uint32_t debounce_en_bits)
 {
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     uint8_t offset = 1;
     uint8_t bits_width = 20;
 
@@ -109,7 +109,7 @@ void KEYSCAN_SetDebounceEn(uint32_t debounce_en_bits)
 
 void KEYSCAN_SetDebounceCounter(uint32_t cnt)
 {
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     uint8_t offset = 21;
     uint8_t bits_width = 8;
 
@@ -135,7 +135,7 @@ void KEYSCAN_SetDmaEn(uint8_t enable)
 
 void KEYSCAN_DbClkSel(uint8_t sel)
 {
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     uint8_t offset = 30;
     uint8_t bits_width = 1;
     uint32_t data = (sel == 0) ? 0: 1;
@@ -172,7 +172,7 @@ void KEYSCAN_SetScanInterval(uint32_t scan_itv)
 void KEYSCAN_SetOutRowMask(uint32_t row_mask)
 {
     uint8_t offset = 0;
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     uint8_t bits_width = 20;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
     uint8_t bits_width = 8;
@@ -185,7 +185,7 @@ void KEYSCAN_SetOutRowMask(uint32_t row_mask)
 void KEYSCAN_SetInColMask(uint32_t col_mask)
 {
     uint8_t offset = 0;
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     uint8_t bits_width = 20;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
     uint8_t bits_width = 22;
@@ -356,6 +356,7 @@ uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, ui
         return 1;
     }
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+
 uint8_t KEYSCAN_GetScanMode(uint8_t table_en, KEYSCAN_ScanMode_t* scan_mode, uint32_t key_data)
 {
     uint8_t key_val = 0;
@@ -397,10 +398,8 @@ uint8_t KEYSCAN_GetScanMode(uint8_t table_en, KEYSCAN_ScanMode_t* scan_mode, uin
                 return 0;
         }
     }
-        return 1;
-    }
-
-
+    return 1;
+}
 
 uint8_t KEYSCAN_NormalHighLowDataToIdex(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col)
 {
@@ -480,26 +479,26 @@ int KEYSCAN_InitializeScanParameter(const KEYSCAN_SetStateStruct* keyscan_set)
     row = 0;
     if(keyscan_set->row_num) {
         for (i = 0; i < keyscan_set->row_num; i++) {
-            int io_source = IO_SOURCE_KEYSCN_ROW_0 + keyscan_set->row[i].out_row;
+            uint32_t io_source = (uint32_t)IO_SOURCE_KEYSCN_ROW_0 + keyscan_set->row[i].out_row;
             row = row | (0x1 << keyscan_set->row[i].out_row);
+            r = PINCTRL_SelKeyScanRowIn(keyscan_set->row[i].out_row, keyscan_set->row[i].gpio);
+            if (r) return r;
             r = PINCTRL_SetPadMux(keyscan_set->row[i].gpio, (io_source_t) io_source);
             if (r) return r;
-            r = PINCTRL_SelKeyScanColIn((int) (keyscan_set->row[i].out_row + 22), keyscan_set->row[i].gpio);
-            if (r) return r;
-            PINCTRL_Pull(keyscan_set->row[i].gpio, PINCTRL_PULL_DOWN);
+            PINCTRL_KeyScanPullSel(keyscan_set->row[i].gpio,1);
         }
     }
 
     col = 0;
     if(keyscan_set->col_num) {
         for (i = 0; i < keyscan_set->col_num; i++) {
-            int io_source = IO_SOURCE_KEYSCN_COL_0 + keyscan_set->col[i].in_col;
+            uint32_t io_source = (uint32_t)IO_SOURCE_KEYSCN_COL_0 + keyscan_set->col[i].in_col;
             col = col | (0x1 << keyscan_set->col[i].in_col);
-            r = PINCTRL_SetPadMux(keyscan_set->col[i].gpio, (io_source_t) io_source);
-            if (r) return r;
             r = PINCTRL_SelKeyScanColIn(keyscan_set->col[i].in_col, keyscan_set->col[i].gpio);
             if (r) return r;
-            PINCTRL_Pull(keyscan_set->col[i].gpio, PINCTRL_PULL_DOWN);
+            r = PINCTRL_SetPadMux(keyscan_set->col[i].gpio, (io_source_t) io_source);
+            if (r) return r;
+            PINCTRL_KeyScanPullSel(keyscan_set->col[i].gpio,1);
         }
     }
 #endif
