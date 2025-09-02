@@ -578,7 +578,7 @@ void PINCTRL_EnableAnalog(const uint8_t io_index);
  */
 int PINCTRL_SelClockOutput(const uint8_t io_index);
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define IO_PIN_NUMBER                   42
 

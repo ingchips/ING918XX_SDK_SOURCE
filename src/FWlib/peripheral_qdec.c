@@ -255,7 +255,7 @@ void QDEC_IntClear(void)
     QDEC_RegRd(QDEC_CH_TIOB0_RD, 0, 10);
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define NOP_NUME    2
 __IO uint32_t nop_vale = NOP_NUME;

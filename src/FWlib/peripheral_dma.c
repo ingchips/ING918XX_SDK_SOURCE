@@ -426,7 +426,7 @@ int DMA_MemCopy(int channel_id, void *dst, void *src, int size)
     return (state & (DMA_IRQ_ERROR | DMA_IRQ_ABORT)) ? 1 : 0;
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define bsDMA_DST_REQ_SEL        4
 #define bsDMA_SRC_REQ_SEL        8

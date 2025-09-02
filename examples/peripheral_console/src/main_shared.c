@@ -96,7 +96,7 @@ void setup_peripherals(void)
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     config_uart(OSC_CLK_FREQ, 115200);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     config_uart(SYSCTRL_GetClk(SYSCTRL_ITEM_APB_UART0), 115200);
 
 #ifdef DETECT_KEY
@@ -155,7 +155,7 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     GIO_EnableRetentionGroupA(1);
     return PLATFORM_ALLOW_DEEP_SLEEP;
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     GIO_EnableRetentionGroupA(1);
     return PLATFORM_ALLOW_DEEP_SLEEP;
 #else

@@ -359,7 +359,7 @@ uint32_t read_flash_security(uint32_t addr);
  */
 void flash_read_uid(uint32_t uid[4]);
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define EFLASH_PAGE_SIZE        256
 #define EFLASH_SECTOR_SIZE      4096

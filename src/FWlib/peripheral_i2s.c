@@ -1,6 +1,6 @@
 #include "peripheral_i2s.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 void I2S_Config(I2S_TypeDef *base, i2s_role_t role, i2s_mode_t mode,
                 uint8_t mono,

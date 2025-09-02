@@ -459,9 +459,9 @@ void ADC_VrefCalibration(void)
                 min_val = data;
             }
         }
-        
+
         sum += data;
-        count++; 
+        count++;
     }
 
     data = (sum - max_val - min_val) / (count - 2);
@@ -755,7 +755,7 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
     ADC_SetLoopDelay(loopDelay);
     ADC_EnableCtrlSignal();
 }
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 //#include "platform_api.h"
 #include <stdlib.h>
 #include <string.h>

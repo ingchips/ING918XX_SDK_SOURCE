@@ -426,7 +426,7 @@ void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data);
 
 #endif
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #endif
 

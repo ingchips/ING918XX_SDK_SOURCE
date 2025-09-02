@@ -95,8 +95,8 @@ void setup_peripherals(void)
     PINCTRL_SetPadPwmSel(LED_PIN, 1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM0_A);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
-    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM0_A);    
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_PWM0_A);
 #else
     #error unknown or unsupported chip family
 #endif

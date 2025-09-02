@@ -116,18 +116,18 @@ void PTE_EnableChannel(SYSCTRL_PTE_CHANNEL_ID ch);
  * @param[in] dst            destination peripheral
  * @return                   0 if no error else non-0
  */
-int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch, 
-                          SYSCTRL_PTE_SRC_INT src, 
+int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch,
+                          SYSCTRL_PTE_SRC_INT src,
                           SYSCTRL_PTE_DST_EN dst);
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 
 /**
  * @brief PTE can used modules
- * 
+ *
  * Range: 0 ~ 14
- * 
+ *
  * Deafault: PTE_QDEC_MODULE
  */
 typedef enum
@@ -151,9 +151,9 @@ typedef enum
 
 /**
  * @brief PTE Channel
- * 
+ *
  * Range: 0 ~ 15
- * 
+ *
  * Deafault: channel 0
  */
 typedef enum
@@ -354,9 +354,9 @@ void PTE_SetTaskChxGroupDisConfig(PTEC_ChannelGroup SetChannelGroup,uint32_t Set
  * @param PTEC_ChannelGroup      PTE group. Must be one of `PTEC_ChannelGroup`
  * @param SetSubChannel          combination of bits whose positions are listed in `PTE_Channel`
  * @return                 None
- * 
+ *
  * @note A group only can map up to 4 channels
- * 
+ *
  * @example Map PTE channel group 0, PTE_CHANNEL_0 to PTE_CHANNEL_3 is a group
  *          PTE_SetTaskChxGroupMap(PTEC_CHANNEL_GROUP_0,(1<<PTE_CHANNEL_0)|(1<<PTE_CHANNEL_1)|(1<<PTE_CHANNEL_2)|(1<<PTE_CHANNEL_3)
  */

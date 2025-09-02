@@ -164,7 +164,7 @@ void setup_peripherals(void)
     ADC_ftInitCali(&SADC_ftCali_data);
     ADC_VrefCalibration();
 #endif
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     // setup channel 0 timer 1: 0.5s (2Hz)
     SYSCTRL_SelectTimerClk(TMR_PORT_1, SYSCTRL_CLK_32k);
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_EXTERNAL, 0);

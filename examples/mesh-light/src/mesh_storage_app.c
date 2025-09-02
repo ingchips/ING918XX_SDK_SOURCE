@@ -11,7 +11,7 @@
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define HAL_FLASH_BANK_SIZE     EFLASH_PAGE_SIZE  //For ingchips ing918xx eflash, the true unit of bank is page, and one page = 8KB(0x2000).
 #define HAL_FLASH_BANK_0_ADDR   ((uint32_t)0x02070000)                                      //Bank for mesh stack.
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #define HAL_FLASH_BANK_SIZE     EFLASH_PAGE_SIZE  //For ingchips ing918xx eflash, the true unit of bank is page, and one page = 8KB(0x2000).
 #define HAL_FLASH_BANK_0_ADDR   ((uint32_t)0x02070000)                                      //Bank for mesh stack.
 #else

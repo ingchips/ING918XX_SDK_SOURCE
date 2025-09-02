@@ -64,8 +64,8 @@ void setup_peripherals_i2c_pin(void)
     PINCTRL_SelI2cSclIn(I2C_PORT_0, I2C_SCL);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     PINCTRL_SelI2cIn(I2C_PORT_0, I2C_SCL, I2C_SDA);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
-    PINCTRL_SelI2cIn(I2C_PORT_0, I2C_SCL, I2C_SDA);   
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    PINCTRL_SelI2cIn(I2C_PORT_0, I2C_SCL, I2C_SDA);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -95,7 +95,7 @@ void setup_peripherals(void)
 	TMR_IntEnable(APB_TMR1);
     TMR_Reload(APB_TMR1);
 	TMR_Enable(APB_TMR1);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920))
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     // setup channel 0 of timer 1: 50Hz
     SYSCTRL_SelectTimerClk(TMR_PORT_0,SYSCTRL_CLK_32k);
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
@@ -135,7 +135,7 @@ uint32_t timer_isr(void *user_data)
     TMR_IntClr(APB_TMR1);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     TMR_IntClr(APB_TMR1, 0, 0xf);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     TMR_IntClr(APB_TMR1, 0, 0xf);
 #else
     #error unknown or unsupported chip family

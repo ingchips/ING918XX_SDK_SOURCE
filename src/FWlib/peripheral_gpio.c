@@ -345,7 +345,7 @@ void GIO_ToggleBits(const uint64_t index_mask)
     APB_GPIO1->DataOut ^= index_mask >> 21;
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #define START_OF_GPIO1          GIO_GPIO_21
 #define MASK_GPIO0_BITS         ((1 << 21) - 1)
 
@@ -379,6 +379,8 @@ static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t typ
             return 6;
         case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
             return 7;
+        default:
+            return 0;
         }
         break;
 
@@ -389,8 +391,12 @@ static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t typ
             return 3;
         case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
             return 2;
+        default:
+            return 0;
         }
         break;
+    default:
+        return 0;
     }
 
     return 0;

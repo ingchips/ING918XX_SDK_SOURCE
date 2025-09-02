@@ -3,7 +3,7 @@
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 void SPI_Init(SSP_TypeDef * SSP_Ptr)
 {
-    apSSP_sDeviceControlBlock Param; 
+    apSSP_sDeviceControlBlock Param;
 
     apSSP_Initialize(SSP_Ptr);
 
@@ -24,19 +24,19 @@ void SPI_Init(SSP_TypeDef * SSP_Ptr)
 //
 //********************************************/
 void SPI_Delay(uint8_t t)
-{ 
-    for(t=255; t>0; t--) 
+{
+    for(t=255; t>0; t--)
     {
-        __NOP(); 
+        __NOP();
     }
 }
- 
- 
+
+
 //********************************************/
 //
 //
 //
-//********************************************/ 
+//********************************************/
 void SPI_Write(uint8_t data)
 {
     // send data
@@ -71,15 +71,15 @@ void SPI_Init(SSP_TypeDef * SPI_BASE)
                                       (data_len-1)                        << bsSPI_TRANSCTRL_RDTRANCNT |
                                       SPI_ADDREN_DISABLE                  << bsSPI_TRANSCTRL_ADDREN |
                                       SPI_CMDEN_DISABLE                   << bsSPI_TRANSCTRL_CMDEN);
-  
+
     apSSP_IntEnable(SPI_BASE, 1 << bsSPI_INTREN_ENDINTEN);
 }
 
 void SPI_Delay(uint8_t t)
-{ 
-    for(t=255; t>0; t--) 
+{
+    for(t=255; t>0; t--)
     {
-        __NOP(); 
+        __NOP();
     }
 }
 
@@ -91,6 +91,6 @@ void SPI_Write( uint8_t data)
     // write dummy addr and cmd to trigger the writing
     apSSP_WriteCmd(APB_SPI,0x00,0x00);
 }
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_920)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #error WIP
 #endif
