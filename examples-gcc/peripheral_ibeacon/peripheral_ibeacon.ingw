@@ -3,11 +3,11 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9010400000000",
-    "addr": 152572
+    "addr": 152704
    }
   },
   "rom": {
-   "size": 140200,
+   "size": 140328,
    "base": 16384
   },
   "ram": {
@@ -18,7 +18,7 @@
    "base": 163840
   },
   "version": [
-   1,10,18]
+   1,10,19]
  },
  "tc_dir": "C:\\Programs\\gcc-arm-none-eabi-10.3-2021.10\\bin",
  "ide_ver": "",

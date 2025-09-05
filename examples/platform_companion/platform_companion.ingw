@@ -40,7 +40,7 @@
  "template": "C:\\projects\\ingchips\\ingWizard\\templates\\typical\\blank",
  "coding_adv": false,
  "key_incode": true,
- "series": "ING9208xx",
+ "series": "ING20xx",
  "proj_name": "platform_companion",
  "sdk_release_path": "..\/..",
  "printf_port": "uart0",

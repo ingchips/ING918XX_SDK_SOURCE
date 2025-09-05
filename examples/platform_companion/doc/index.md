@@ -28,7 +28,7 @@ Here are the steps to develop a customized companion and use it in a new project
     Assume the project is located in "/path/my_project".
 
 1. Use files in [_generated_](../generated/) to replace corresponding files
-   in directory "/path/my_project/sdk/bundles/rom/ING9208xx" of the newly created project;
+   in directory "/path/my_project/sdk/bundles/rom/ING20xx" of the newly created project;
 
 1. Run [`gen_files`] to generate symbol files:
 
