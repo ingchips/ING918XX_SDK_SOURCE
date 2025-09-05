@@ -39,6 +39,7 @@ jobs:
         working-directory: ${{ github.workspace }}/tools
         run: |
           export PATH=~/nim/nim_x64/bin:$PATH
+          nimble refresh
           nimble install malebolgia
           nim -d:release c gen_files.nim
           ${{ github.workspace }}/tools/gen_files ${{ github.workspace }}/bundles
