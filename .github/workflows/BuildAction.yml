@@ -39,7 +39,8 @@ jobs:
         working-directory: ${{ github.workspace }}/tools
         run: |
           export PATH=~/nim/nim_x64/bin:$PATH
-          nim -d:release --threads:on c gen_files.nim
+          nimble install malebolgia
+          nim -d:release c gen_files.nim
           ${{ github.workspace }}/tools/gen_files ${{ github.workspace }}/bundles
 
       - name: Install Zig

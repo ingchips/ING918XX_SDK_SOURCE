@@ -162,7 +162,7 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>0</UpdateFlashBeforeDebugging>
-            <Capability>1</Capability>
+            <Capability>0</Capability>
             <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
@@ -351,7 +351,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>../../bundles/rom/inc;../../bundles/rom/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing920;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/rom/inc;../../bundles/rom/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing20;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -398,14 +398,9 @@
               <FilePath>.\src\main.c</FilePath>
             </File>
             <File>
-              <FileName>ing920_platform_lib.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>.\src\ing920_platform_lib.lib</FilePath>
-            </File>
-            <File>
-              <FileName>symdefs.m</FileName>
+              <FileName>ing920_platform_lib.o</FileName>
               <FileType>3</FileType>
-              <FilePath>.\scripts\symdefs.m</FilePath>
+              <FilePath>.\src\ing920_platform_lib.o</FilePath>
             </File>
           </Files>
         </Group>
