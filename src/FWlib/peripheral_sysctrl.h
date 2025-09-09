@@ -1810,26 +1810,6 @@ typedef struct
 void SYSCTRL_EnableWakeupSourceDetection(void);
 
 /**
- * @brief Configure 32kHz clock behavior in shutdown mode.
- *
- * This function controls whether the 32kHz clock is disabled when the chip enters shutdown mode.
- * - If disabled (disable = 1): The 32kHz clock is turned off during shutdown.
- *   - This reduces power consumption further.
- *   - The counter (if any) will not run.
- *   - Only specific IOs can wake up the MCU.
- *   - Upon wake-up, the 32kHz clock is automatically re-enabled.
- * - If enabled (disable = 0): The 32kHz clock remains running (default behavior).
- *
- * @param[in] disable   32kHz clock control in shutdown mode:
- *                      - 0: Keep 32kHz clock enabled (default)
- *                      - 1: Disable 32kHz clock during shutdown
- *
- * @note This setting only takes effect in shutdown mode.
- *       By default, the 32kHz clock is enabled.
- */
-void SYSCTRL_SetShutdown32KClk(uint8_t disable);
-
-/**
  * @brief Enable/Disable p_cap mode for a certain pwm channel
  *
  * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)

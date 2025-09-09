@@ -1990,11 +1990,6 @@ void SYSCTRL_EnableDCDCMode(uint8_t mode)
     }
 }
 
-void SYSCTRL_SetShutdown32KClk(uint8_t disable)
-{
-    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), disable, 6);
-}
-
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
 {
     if(enable)
