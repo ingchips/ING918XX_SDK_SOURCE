@@ -105,6 +105,7 @@ _gen_files.nim_ generates following files for other tools:
 Usage:
 
 ```shell
+nimble install malebolgia
 nim -d:release c gen_files.nim
 gen_files /path/to/sdk/bundles
 ```

@@ -1,15 +1,15 @@
 #ifndef PERPHERAL_ASDM_H_
 #define PERPHERAL_ASDM_H_
-// #include <stdint.h>
-#include "ingsoc.h"
 
+#include "ingsoc.h"
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 /**
  * @brief Fifo int mask
  */
 typedef enum {
-    ASDM_RX_FLG_EN           = (1 << 16),
-    ASDM_FIFO_FULL_EN        = (1 << 17),
-    ASDM_FIFO_EMPTY_EN       = (1 << 18),
+    ASDM_RX_FLG_EN           = 1,
+    ASDM_FIFO_FULL_EN        = 1<<1,
+    ASDM_FIFO_EMPTY_EN       = 1<<2,
 }ASDM_FifoMask;
 
 /**
@@ -309,7 +309,7 @@ void ASDM_NoiseHold(ASDM_TypeDef *base, uint32_t hold);
  * @param base              ASDM base address
  * @return                  pcm out mute state
  */
-uint8_t ASDM_SetAGCMute(ASDM_TypeDef *base);
+uint8_t ASDM_GetAGCMute(ASDM_TypeDef *base);
 /**
  * @brief get fifo full state
  * 
@@ -360,11 +360,11 @@ void ASDM_SetFifoDepth(ASDM_TypeDef *base, uint8_t depth);
  * @brief Set FIFO interrupt mask
  * 
  * @param base              ASDM base address
- * @param enable            combination of bits whose positions are listed in `ASDM_FifoMask`
+ * @param mask            combination of bits whose positions are listed in `ASDM_FifoMask`
  * @return                  None
- * @example ASDM_SetFifoInt(APB_ASDM,ASDM_FIFO_FULL_EN|ASDM_FIFO_EMPTY_EN)
+ * @code ASDM_IntMask(APB_ASDM,ASDM_FIFO_FULL_EN|ASDM_FIFO_EMPTY_EN)
  */
-void ASDM_SetFifoInt(ASDM_TypeDef *base, uint8_t items);
+void ASDM_IntMask(ASDM_TypeDef *base, uint8_t mask);
 /**
  * @brief set FIFO trigger depth
  * 
@@ -373,6 +373,12 @@ void ASDM_SetFifoInt(ASDM_TypeDef *base, uint8_t items);
  * @return                  None
  * @example ASDM_SetFifoTrig(APB_ASDM,3)
  */
-void ASDM_SetFifoTrig(ASDM_TypeDef *base, uint8_t trig);
+void ASDM_SetDMATrig(ASDM_TypeDef *base, uint8_t trig);
+
+void ASDM_SetPgaVolume(ASDM_TypeDef *base, uint32_t volume);
+
+void ASDM_MicBiasEn(ASDM_TypeDef *base, uint8_t enable);
+#endif
+
 
 #endif

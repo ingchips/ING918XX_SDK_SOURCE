@@ -28,18 +28,20 @@ jobs:
           mkdir ~/nim
           cd ~/nim
           pwd
-          wget https://nim-lang.org/download/nim-1.6.6-linux_x32.tar.xz -O nim.tar.xz
+          wget https://nim-lang.org/download/nim-2.2.4-linux_x32.tar.xz -O nim.tar.xz
           tar -Jxvf nim.tar.xz
-          mv nim-1.6.6 nim_x32
-          wget https://nim-lang.org/download/nim-1.6.6-linux_x64.tar.xz -O nim.tar.xz
+          mv nim-2.2.4 nim_x32
+          wget https://nim-lang.org/download/nim-2.2.4-linux_x64.tar.xz -O nim.tar.xz
           tar -Jxvf nim.tar.xz
-          mv nim-1.6.6 nim_x64
+          mv nim-2.2.4 nim_x64
 
       - name: Build gen_files.nim
         working-directory: ${{ github.workspace }}/tools
         run: |
           export PATH=~/nim/nim_x64/bin:$PATH
-          nim -d:release --threads:on c gen_files.nim
+          nimble refresh
+          nimble install malebolgia
+          nim -d:release c gen_files.nim
           ${{ github.workspace }}/tools/gen_files ${{ github.workspace }}/bundles
 
       - name: Install Zig

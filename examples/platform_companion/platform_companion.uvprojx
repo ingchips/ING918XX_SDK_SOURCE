@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>../../bundles/rom/inc;../../bundles/rom/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing920;../../src/Tools;../../src</IncludePath>
+              <IncludePath>../../bundles/rom/inc;../../bundles/rom/inc/os;../../src/BSP;../../src/FWlib;..\..\src\StartUP\ing20;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -374,7 +374,7 @@
             <ScatterFile></ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc>--keep=main.o(*) --keep=*.o(i.platform_*)</Misc>
+            <Misc>--keep=main.o(*) --keep=*.*(i.platform_*)</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
@@ -390,14 +390,9 @@
               <FilePath>.\src\main.c</FilePath>
             </File>
             <File>
-              <FileName>symdefs.m</FileName>
+              <FileName>ing920_platform_lib.o</FileName>
               <FileType>3</FileType>
-              <FilePath>.\scripts\symdefs.m</FilePath>
-            </File>
-            <File>
-              <FileName>ing920_platform_lib.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>.\src\ing920_platform_lib.lib</FilePath>
+              <FilePath>.\src\ing920_platform_lib.o</FilePath>
             </File>
           </Files>
         </Group>

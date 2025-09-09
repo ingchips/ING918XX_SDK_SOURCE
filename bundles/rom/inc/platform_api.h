@@ -969,6 +969,16 @@ typedef void (*f_platform_function)(void *user_data);
 void platform_call_on_stack(f_platform_function f, void *user_data,
                             void *stack_start, uint32_t stack_size);
 
+#define PLATFORM_IN_ROM     1
+
+/**
+ * @brief Hotfix for platform.bin in ROM
+ *
+ * This function is provided by `Platform Companion` and must be called by app
+ * in `app_main`.
+ */
+void platform_rom_hotfix(void);
+
 #ifdef __cplusplus
 }
 #endif

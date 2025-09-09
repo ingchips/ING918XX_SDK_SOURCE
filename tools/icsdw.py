@@ -345,7 +345,7 @@ def run_proj(proj: str, go = False, port = '', timeout = 5, counter = -1, user_d
         elif family == 'ing916':
             import icsdw916
             r = icsdw916.do_run(mod, d, config, go, timeout, counter, user_data)
-        elif family == 'ing920':
+        elif family == 'ing20':
             import icsdw916
             icsdw916.BOOT_HELLO = b'UartBurnStart920\n'
             r = icsdw916.do_run(mod, d, config, go, timeout, counter, user_data)
