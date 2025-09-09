@@ -1146,59 +1146,6 @@ typedef SYSCTRL_Item SYSCTRL_ClkGateItem;
 typedef SYSCTRL_Item SYSCTRL_ResetItem;
 
 /**
- * @brief LDO Core Output
- *
- * @see `SYSCTRL_SetLDOOutput`
- *
- * Range: [1.000, 1.300]V
- *
- * Default: 1.200V. Step: 20mV
- */
-typedef enum
-{
-    SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0,      // 1.000V
-    SYSCTRL_LDO_OUTPUT_CORE_1V020 = 1,
-    SYSCTRL_LDO_OUTPUT_CORE_1V040 = 2,
-    SYSCTRL_LDO_OUTPUT_CORE_1V060 = 3,
-    SYSCTRL_LDO_OUTPUT_CORE_1V080 = 4,
-    SYSCTRL_LDO_OUTPUT_CORE_1V100 = 5,
-    SYSCTRL_LDO_OUTPUT_CORE_1V120 = 6,
-    SYSCTRL_LDO_OUTPUT_CORE_1V140 = 7,
-    SYSCTRL_LDO_OUTPUT_CORE_1V160 = 8,
-    SYSCTRL_LDO_OUTPUT_CORE_1V180 = 9,
-    SYSCTRL_LDO_OUTPUT_CORE_1V200 = 10,
-    SYSCTRL_LDO_OUTPUT_CORE_1V220 = 11,
-    SYSCTRL_LDO_OUTPUT_CORE_1V240 = 12,
-    SYSCTRL_LDO_OUTPUT_CORE_1V260 = 13,
-    SYSCTRL_LDO_OUTPUT_CORE_1V280 = 14,
-    SYSCTRL_LDO_OUTPUT_CORE_1V300 = 15
-} SYSCTRL_LDOOutputCore;
-
-/**
- * @brief LDO Flash Output
- *
- * @see `SYSCTRL_SetLDOOutputFlash`
- *
- * Range: [2.100, 3.100]V
- *
- * Default: 2.100V. Step: 100mV
- */
-typedef enum
-{
-    SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5,     // 2.100V
-    SYSCTRL_LDO_OUTPUT_FLASH_2V200 = 6,
-    SYSCTRL_LDO_OUTPUT_FLASH_2V300 = 7,
-    SYSCTRL_LDO_OUTPUT_FLASH_2V400 = 8,
-    SYSCTRL_LDO_OUTPUT_FLASH_2V500 = 9,
-    SYSCTRL_LDO_OUTPUT_FLASH_2V600 = 10,
-    SYSCTRL_LDO_OUTPUT_FLASH_2V700 = 11,
-    SYSCTRL_LDO_OUTPUT_FLASH_2V800 = 12,
-    SYSCTRL_LDO_OUTPUT_FLASH_2V900 = 13,
-    SYSCTRL_LDO_OUTPUT_FLASH_3V000 = 14,
-    SYSCTRL_LDO_OUTPUT_FLASH_3V100 = 15
-} SYSCTRL_LDOOutputFlash;
-
-/**
  * @brief BOR Threshold on VBAT
  *
  * @see `SYSCTRL_ConfigBOR`
@@ -1510,48 +1457,6 @@ uint32_t SYSCTRL_GetCLK32k(void);
 #define PLL_HW_DEF_LOOP             80
 #define PLL_HW_DEF_DIV_OUTPUT       1
 
-/**
- * @brief Automatically config core clocks after wakeup
- *
- * There is a functionality in the boot loader which can automatically configure
- * core clocks after wakeup. This function update its parameters.
- *
- * This functionality in the boot loader is Enabled by default with following parameters:
- * - enable_pll:        1
- * - pll_loop:          PLL_BOOT_DEF_LOOP
- * - hclk:              SYSCTRL_CLK_PLL_DIV_3
- * - flash_clk:         SYSCTRL_CLK_PLL_DIV_2
- * - enable_watchdog:   Disabled
- *
- * Note: For PLL, `div_pre` and `div_output` are fixed as PLL_BOOT_DEF_DIV_PRE and
- *                PLL_BOOT_DEF_DIV_OUTPUT respectively.
- * So, PLL output is 336MHz, HClk is 112MHz, Flash clock is 168MHz.
- *
- * @param   enable_pll          enable(1)/disable(0) PLL
- * @param   pll_loop            loop of PLL (see `SYSCTRL_ConfigPLLClk`)
- *                              ignored when PLL is disabled
- * @param   hclk                HCLK clock mode (see `SYSCTRL_SelectHClk`)
- * @param   flash_clk           Flash clock mode (see `SYSCTRL_SelectFlashClk`)
- * @param   enabled_watchdog    enable(1)/disable(0) watchdog
- *                              When enabled, watchdog is configured to be timed out
- *                              after about 3 seconds. Developer are free to update
- *                              its configuration later.
- */
-void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
-        SYSCTRL_ClkMode hclk,
-        SYSCTRL_ClkMode flash_clk,
-        uint8_t enable_watchdog);
-
-/**
- * @brief Disable automatic configuration of core clocks after wakeup
- *
- * Once disabled, after wake up, following settings of core clocks apply:
- * - PLL enable is kept with `div_pre`, `loop` and `div_output` defaults to 5, 80 and 1 respectively;
- * - hclk:          SYSCTRL_CLK_SLOW
- * - flash_clk:     SYSCTRL_CLK_SLOW
- */
-void SYSCTRL_DisableConfigClocksAfterWakeup(void);
-
 typedef enum
 {
     SYSCTRL_CPU_32k_CLK_32k = 0,    // use the clock configured by `SYSCTRL_SelectCLK32k`
@@ -1705,13 +1610,6 @@ int SYSCTRL_SelectUsedDmaItems(uint32_t items);
 int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
 
 /**
- * @brief Set LDO output level for Flash
- *
- * @param[in] level         output level
- */
-void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level);
-
-/**
  * @brief LDO for RF output level
  *
  * Range: [1.200, 2.750]V
@@ -1753,13 +1651,6 @@ typedef enum
     SYSCTRL_LDO_RF_OUTPUT_2V700 = 30,
     SYSCTRL_LDO_RF_OUTPUT_2V750 = 31,
 } SYSCTRL_LDOOutputRF;
-
-/**
- * @brief Set LDO output level for RF
- *
- * @param[in] level         output level
- */
-void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level);
 
 /**
  * @brief ADC V1.2 reference (VREF12_ADC) level
@@ -1805,13 +1696,6 @@ typedef enum
 } SYSCTRL_AdcVrefOutput;
 
 /**
- * @brief Set LDO ADC V1.2 reference (VREF12_ADC) output level
- *
- * @param[in] level         output level
- */
-void SYSCTRL_SetAdcVrefOutput(SYSCTRL_AdcVrefOutput level);
-
-/**
  * @brief BUCK DC-DC output level
  *
  * @see `SYSCTRL_SetLDOOutputFlash`
@@ -1822,28 +1706,25 @@ void SYSCTRL_SetAdcVrefOutput(SYSCTRL_AdcVrefOutput level);
  */
 typedef enum
 {
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0, // 1.2V
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 1,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 2,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V500 = 3,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V600 = 4,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V700 = 5,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V800 = 6,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V900 = 7,
-    SYSCTRL_BUCK_DCDC_OUTPUT_2V000 = 8,
-    SYSCTRL_BUCK_DCDC_OUTPUT_2V100 = 9,
-    SYSCTRL_BUCK_DCDC_OUTPUT_2V200 = 10,
-    SYSCTRL_BUCK_DCDC_OUTPUT_2V300 = 11,
-    SYSCTRL_BUCK_DCDC_OUTPUT_2V400 = 12,
-    SYSCTRL_BUCK_DCDC_OUTPUT_2V500 = 13,
-    SYSCTRL_BUCK_DCDC_OUTPUT_2V600 = 14,
-    SYSCTRL_BUCK_DCDC_OUTPUT_2V700 = 15,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0x3f, // 1.2V
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 0x35,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 0x2a,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V500 = 0x20,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V600 = 0x15,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V700 = 0xb,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V800 = 0,// 1.8V
 } SYSCTRL_BuckDCDCOutput;
 
 /**
  * @brief Set BUCK DC-DC output level
  *
  * @param[in] level         output level
+ *
+ * @note
+ * The output level is set to 1.4 V by default.
+ * The DCDC output range is 1.2 V to 1.8 V, adjustable in approximately 95 mV steps.
+ * The enumeration (SYSCTRL_BuckDCDCOutput) lists typical values in 100 mV increments.
+ * A trim value of zero corresponds to the maximum output voltage (1.8 V).
  */
 void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
 
@@ -1909,8 +1790,6 @@ void SYSCTRL_ClearPDRInt(void);
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
-#define SYSCTRL_WAKEUP_SOURCE_COMPARATOR    2       // waken up by comparator
-#define SYSCTRL_WAKEUP_SOURCE_RTC_ALARM     4       // waken up by RTC alarm
 
 typedef struct
 {
@@ -1922,7 +1801,7 @@ typedef struct
  * @brief Enable wake up source detection once
  *
  * After enabled, wake up source can be read through `SYSCTRL_GetLastWakeupSource`.
- *
+ *s
  * This function only enable the detection for one time, and needs to be called
  * each time before entering DEEP/DEEPER sleep modes if apps need to know the
  * wake up sources.
@@ -1950,8 +1829,9 @@ typedef enum
     SYSCTRL_MEM_REMAPPABLE_BLOCK_1 = 0x02,
 
     // SYS RAM block #0, 16KiB starting from 0x20000000 (0x20000000~0x20003fff)
-    // This block is always ON, and can't be turned off.
-    SYSCTRL_SYS_MEM_BLOCK_0 = 0x30,
+    SYSCTRL_SYS_BLOCK00 = 0x10,
+    SYSCTRL_SYS_BLOCK01 = 0x20,
+    SYSCTRL_SYS_MEM_BLOCK_0 = SYSCTRL_SYS_BLOCK00|SYSCTRL_SYS_BLOCK01,
     // SYS RAM block #1, 8KiB following block #0        (0x20004000~0x20005fff)
     SYSCTRL_SYS_MEM_BLOCK_1 = 0x08,
     // SYS RAM block #2, 16KiB following block #1       (0x20006000~0x20009fff)
@@ -1962,7 +1842,6 @@ typedef enum
     SYSCTRL_SYS_MEM_BLOCK_3 = SYSCTRL_MEM_REMAPPABLE_BLOCK_1,
 
     // SHARE RAM block #0, 8KiB starting from 0x40120000    (0x40120000~0x40121fff)
-    // This shall not be turned off.
     SYSCTRL_SHARE_MEM_BLOCK_0 = 0x01,
     // SHARE RAM block #1, 8KiB following block #0          (0x40122000~0x40123fff)
     // remapped from `SYSCTRL_MEM_REMAPPABLE_BLOCK_1`
@@ -1978,10 +1857,12 @@ typedef enum
     SYSCTRL_SHARE_BLOCK_0 = SYSCTRL_SHARE_MEM_BLOCK_0,
     SYSCTRL_SHARE_BLOCK_1 = SYSCTRL_SHARE_MEM_BLOCK_1,
     SYSCTRL_SHARE_BLOCK_2 = SYSCTRL_SHARE_MEM_BLOCK_2,
+    SYSCTRL_CACHE_BLOCK = 0x40,
+
 } SYSCTRL_MemBlock;
 
 // this blocks (16 + 8) KiB are reversed in _mini_bundles
-#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0)
+#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0 | SYSCTRL_CACHE_BLOCK)
 
 typedef enum
 {
@@ -1990,6 +1871,31 @@ typedef enum
 } SYSCTRL_CacheMemCtrl;
 
 #define SYSCTRL_I_CACHE_AS_MEM_BASE_ADDR 0x2000C000
+
+/**
+ * @brief Configure memory retention settings for different sleep modes.
+ *
+ * This function controls which memory blocks remain powered (retained) during
+ * low-power modes such as shutdown or deep sleep.
+ *
+ * - In **shutdown mode (mode = 0)**: Only MEM0 and MEM1 (each 8 KB) can be retained.
+ * - In **deep sleep mode (mode = 1)**: Any combination of memory blocks can be retained,
+ *   but retaining more blocks increases power consumption.
+ *
+ * @param[in] mode      Sleep mode selection:
+ *                      - 0: Shutdown mode (only MEM0 and MEM1 can be retained)
+ *                      - 1: Deep sleep mode (configurable retention)
+ * @param[in] block_map Bitmap indicating which memory blocks to retain.
+ *                      Each bit corresponds to a memory block, as defined in
+ *                      the enumeration #SYSCTRL_MemBlock.
+ *                      Example: (1 << SYSCTRL_MEM0) | (1 << SYSCTRL_MEM1)
+ *
+ * @return              0 if successful, 1 if failed (invalid input)
+ *
+ * @note                For shutdown mode, only bits corresponding to MEM0 and MEM1 are valid.
+ *                      Other bits will result in an error.
+ */
+uint8_t SYSCTRL_MemoryRetentionCtrl(uint8_t mode, uint32_t block_map);
 
 /**
  * @brief Control the usage of I-Cache
@@ -2005,6 +1911,19 @@ void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache);
  *
  */
 void SYSCTRL_ICacheFlush(void);
+
+/**
+ * @brief Enable DCDC mode or switch back to LDO mode for the internal power supply.
+ *
+ * This function configures the chip's internal regulator to use either DCDC or LDO mode.
+ * - Mode 0: Use LDO (Low-Dropout Regulator) mode. This is the default at power-on.
+ * - Mode 1: Use DCDC (Buck Converter) mode.
+ *
+ * @param[in] mode  Power mode selection:
+ *                  - 0: LDO mode
+ *                  - 1: DCDC mode
+ */
+void SYSCTRL_EnableDCDCMode(uint8_t mode);
 
 #endif
 
@@ -2049,12 +1968,33 @@ void SYSCTRL_ResetAllBlocks(void);
  */
 void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item);
 
+#if(INGCHIPS_FAMILY != INGCHIPS_FAMILY_20)
 /**
  * @brief Set LDO Core output level
  *
  * @param[in] level         output level (available values see `SYSCTRL_LDO_OUTPUT...`)
  */
 void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level);
+
+/**
+ * @brief Wait for LDO state ready
+ */
+void SYSCTRL_WaitForLDO(void);
+
+/**
+ * @brief Select the set of memory blocks to be used and power off unused blocks.
+ *
+ * Note: Only allowed to be used in _mini_ bundles (and, for ING918 MCU mode,
+ * i.e. without platform/BLE stack). NEVER use this in other ones.
+ *
+ * All blocks are selected as default.
+ *
+ * @param[in] block_map         combination of `SYSCTRL_MemBlock`
+ *                              When a bit is absent from `block_map`, the corresponding
+ *                              memory block is powered off.
+ */
+void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
+#endif
 
 /**
  * @brief Config BOR (Brownout Reset) functionality
@@ -2080,25 +2020,6 @@ void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level);
  *                              default: DISABLED
  */
 void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
-
-/**
- * @brief Wait for LDO state ready
- */
-void SYSCTRL_WaitForLDO(void);
-
-/**
- * @brief Select the set of memory blocks to be used and power off unused blocks.
- *
- * Note: Only allowed to be used in _mini_ bundles (and, for ING918 MCU mode,
- * i.e. without platform/BLE stack). NEVER use this in other ones.
- *
- * All blocks are selected as default.
- *
- * @param[in] block_map         combination of `SYSCTRL_MemBlock`
- *                              When a bit is absent from `block_map`, the corresponding
- *                              memory block is powered off.
- */
-void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
 
 /**
  * @brief Get wake up source of last wake up from DEEP/DEEPER sleep

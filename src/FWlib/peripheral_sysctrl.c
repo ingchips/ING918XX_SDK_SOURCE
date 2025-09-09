@@ -1599,10 +1599,19 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
 
 void SYSCTRL_EnablePLL(uint8_t enable)
 {
+    typedef void    (*rom_PLLinUse)(uint8_t PLLEn, uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
+    #define ROM_PLLinUse    ((rom_PLLinUse)(0x00000e7d))
     uint8_t enabled = io_read(AON1_CTRL_BASE + 0x28) & 1;
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x28), enable, 0);
     if ((0 == enabled) && enable)
+    {
+        ROM_PLLinUse(1, 1, 1, 1);
         while ((APB_SYSCTRL->PllCtrl & (1u << 30)) == 0) ;
+    }
+    else
+    {
+        ROM_PLLinUse(0, 0, 0, 0);
+    }
 }
 
 uint32_t SYSCTRL_GetPLLClk()
@@ -1852,10 +1861,28 @@ uint32_t SYSCTRL_GetAdcClkDiv(void)
     return SYSCTRL_GetSlowClk() * num / denom;
 }
 
-void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
+uint8_t SYSCTRL_MemoryRetentionCtrl(uint8_t mode, uint32_t block_map)
 {
-    uint32_t masked = block_map & 0x3f;
-    set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), masked, 6, 12);
+    if (mode == 0)
+    {
+        block_map &= 0x30;
+        if (block_map)
+        {
+            set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 0,13);
+            set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 0,18);
+            set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), block_map&SYSCTRL_SYS_BLOCK00, 13);
+            set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), block_map&SYSCTRL_SYS_BLOCK01, 18);
+        }
+        else
+            return 1;
+    }
+    else
+    {
+        block_map &= 0x30;
+        set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), 0, 7, 12);
+        set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), block_map, 7, 12);
+    }
+    return 0;
 }
 
 static void SYSCTRL_CacheFlush(const uintptr_t base)
@@ -1891,6 +1918,22 @@ void SYSCTRL_ICacheFlush(void)
 
 int SYSCTRL_Init(void)
 {
+    typedef void    (*rom_PowerOnSeq)(uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
+    typedef void    (*rom_PowerDownSeq)(void);
+    #define ROM_PowerOnSeq      ((rom_PowerOnSeq)(0x00000fa9))
+    #define ROM_PowerDownSeq    ((rom_PowerDownSeq)(0x00000ef1))
+    ROM_PowerOnSeq(1, 1, 1);
+    ROM_PowerDownSeq();
+
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x38) |= 0x5<<15;
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x30) |= (0x5<<28) | (0x1a<<5);
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x34) |= 0x30<<14;
+
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0, 6, 24);
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c), 150, 8, 24);
+
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x4),0,18);
+
     // TODO:
     return 0;
 }
@@ -1908,13 +1951,13 @@ void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode)
 void SYSCTRL_UpdateAsdmClk(uint32_t div)
 {
     set_reg_bits((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x21c), div, 5, 5);
-    set_reg_bit((uint32_t*)(APB_SYSCTRL_BASE + 0x21c), 1, 10);
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x21c), 1, 10);
 }
 
 void SYSCTRL_UpdateQdecClk(uint32_t div)
 {
     set_reg_bits((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x21c), div, 4, 0);
-    set_reg_bit((uint32_t*)(APB_SYSCTRL_BASE + 0x21c), 1, 4);
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x21c), 1, 4);
 }
 
 void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode)
@@ -1923,19 +1966,28 @@ void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode)
     set_reg_bit(&APB_SYSCTRL->USBCfg, 1, 4);
 }
 
-void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level)
-{
-    // WIP
-}
-
 void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level)
 {
-    // WIP
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x34), level, 6, 14);
 }
 
 void SYSCTRL_EnableBuckDCDC(uint8_t enable)
 {
-    // WIP
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), enable, 1);
+}
+
+void SYSCTRL_EnableDCDCMode(uint8_t mode)
+{
+    if (mode)
+    {
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), 0x3, 4, 0);
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),  1, 19);
+    }
+    else
+    {
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), 0xc, 4, 0);
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),  1, 19);
+    }
 }
 
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
@@ -1948,6 +2000,50 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
     {
         set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE), 0, 9, 17);
     }
+}
+
+
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
+{
+    source->other = 0;
+    source->gpio = APB_SYSCTRL->SysIoWkSource;
+    uint32_t a = APB_SYSCTRL->SysIoStatus >> 16;
+    if ((source->gpio == 0) && (a == 0))
+    {
+        a = io_read(AON2_CTRL_BASE + 0x74);
+        switch (a & 3)
+        {
+        case 0:
+            return 0;
+        case 1:
+            source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO;
+            break;
+        case 3:
+            source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO; // fall through
+        case 2:
+            a >>= 2;
+            source->gpio = a & 1;
+            source->gpio |= (a & (0x3 << 1)) << (5 - 1);
+            source->gpio |= (a & (0x7 << 3)) << (21 - 3);
+            source->gpio |= ((uint64_t)(a & (0x3 << 5))) << (36 - 5);
+            break;
+        default:
+            break;
+        }
+
+        return 1;
+    }
+
+    source->gpio |= ((uint64_t)(a & 0x0f)) << 32;
+    if (a & (1 << 4))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO;
+
+    return 1;
+}
+
+void SYSCTRL_EnableWakeupSourceDetection(void)
+{
+    set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x84), 1, 16);
 }
 
 void SYSCTRL_Reset(void)
