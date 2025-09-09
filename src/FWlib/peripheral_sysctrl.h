@@ -1146,30 +1146,61 @@ typedef SYSCTRL_Item SYSCTRL_ClkGateItem;
 typedef SYSCTRL_Item SYSCTRL_ResetItem;
 
 /**
- * @brief BOR Threshold on VBAT
+ * @brief BOR (Brown-Out Reset) Threshold on VBAT
  *
- * @see `SYSCTRL_ConfigBOR`
+ * This enumeration defines the threshold values for low voltage detection using PDR (Power Down Reset)
+ * and PVD (Programmable Voltage Detector) on the ING20 series.
  *
- * Range: [1.5, 3]V
+ * - **PDR Thresholds**:
+ *   - Range: 1.35V to 1.80V.
+ *   - Available values: `SYSCTRL_PDR_1V35` to `SYSCTRL_PDR_1V80`.
+ *   - When a PDR threshold is selected, PDR is enabled, and PVD is disabled.
+ *
+ * - **PVD Thresholds**:
+ *   - Mode 0 (VM pin connected to GND):
+ *     - Range: 1.51V to 1.69V.
+ *     - Available values: `SYSCTRL_PVD_1V51` to `SYSCTRL_PVD_1V69`.
+ *   - Mode 1 (VM pin connected to VCC):
+ *     - Range: 2.38V to 3.19V.
+ *     - Available values: `SYSCTRL_PVD_2V38` to `SYSCTRL_PVD_3V19`.
+ *   - When a PVD threshold is selected, PVD is enabled, and PDR is disabled.
+ *
+ * - **Default Behavior**:
+ *   - For packages without a VM pin, the default mode is Mode 0 (VM pin internally grounded),
+ *     and only thresholds in the range of 1.51V to 1.69V are supported.
+ *
+ * @see `SYSCTRL_ConfigBOR`: Configures the BOR threshold and enables either PDR or PVD based on the selected threshold.
+ * @see `SYSCTRL_EnablePVDInt`: Enables interrupt generation for PVD events.
+ * @see `SYSCTRL_EnablePDRInt`: Enables interrupt generation for PDR events.
  */
 enum
 {
-    SYSCTRL_BOR_1V5 = 0,
-    SYSCTRL_BOR_1V6 = 1,
-    SYSCTRL_BOR_1V7 = 2,
-    SYSCTRL_BOR_1V8 = 3,
-    SYSCTRL_BOR_1V9 = 4,
-    SYSCTRL_BOR_2V0 = 5,
-    SYSCTRL_BOR_2V1 = 6,
-    SYSCTRL_BOR_2V2 = 7,
-    SYSCTRL_BOR_2V3 = 8,
-    SYSCTRL_BOR_2V4 = 9,
-    SYSCTRL_BOR_2V5 = 10,
-    SYSCTRL_BOR_2V6 = 11,
-    SYSCTRL_BOR_2V7 = 12,
-    SYSCTRL_BOR_2V8 = 13,
-    SYSCTRL_BOR_2V9 = 14,
-    SYSCTRL_BOR_3V0 = 15
+    SYSCTRL_PDR_1V35 = 0,
+    SYSCTRL_PDR_1V44 = 1,
+    SYSCTRL_PDR_1V50 = 2,
+    SYSCTRL_PDR_1V56 = 3,
+    SYSCTRL_PDR_1V62 = 4,
+    SYSCTRL_PDR_1V68 = 5,
+    SYSCTRL_PDR_1V74 = 6,
+    SYSCTRL_PDR_1V80 = 7,
+    SYSCTRL_PDR_END = SYSCTRL_PDR_1V80,
+    SYSCTRL_PVD_1V51 = 8,
+    SYSCTRL_PVD_1V54 = 9,
+    SYSCTRL_PVD_1V56 = 10,
+    SYSCTRL_PVD_1V59 = 11,
+    SYSCTRL_PVD_1V61 = 12,
+    SYSCTRL_PVD_1V64 = 13,
+    SYSCTRL_PVD_1V66 = 14,
+    SYSCTRL_PVD_1V69 = 15,
+    SYSCTRL_PVD_2V38 = SYSCTRL_PVD_1V51,
+    SYSCTRL_PVD_2V48 = SYSCTRL_PVD_1V54,
+    SYSCTRL_PVD_2V59 = SYSCTRL_PVD_1V56,
+    SYSCTRL_PVD_2V70 = SYSCTRL_PVD_1V59,
+    SYSCTRL_PVD_2V81 = SYSCTRL_PVD_1V61,
+    SYSCTRL_PVD_2V93 = SYSCTRL_PVD_1V64,
+    SYSCTRL_PVD_3V06 = SYSCTRL_PVD_1V66,
+    SYSCTRL_PVD_3V19 = SYSCTRL_PVD_1V69,
+    SYSCTRL_PVD_END = SYSCTRL_PVD_3V19,
 };
 
 typedef enum
@@ -1279,7 +1310,7 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
  * @param port          the port
  * @param mode          clock mode (SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_HCLK)
  */
-//void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
+void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
 
 /**
  * @brief Select I2S clock mode
@@ -1740,13 +1771,33 @@ void SYSCTRL_EnableBuckDCDC(uint8_t enable);
 /**
  * @brief Enable PVD interrupt
  *
- * Note: BOR of ING916 relies on both PVD (Power Voltage Detector) & PDR (Power Down Reset):
+ * Note:
+ * ING916:
+ *      BOR of ING916 relies on both PVD (Power Voltage Detector) & PDR (Power Down Reset):
  *      * If BOR threshold > SYSCTRL_BOR_1V5:
  *          1) PDR disabled;
  *          2) PVD is enabled, threshold is configured, and PVD is configured to reset the SoC.
  *      * If BOR threshold == SYSCTRL_BOR_1V5:
  *          1) PVD disabled;
  *          2) PDR is enabled and configured to reset the SoC.
+ * ING20:
+ *      BOR (Brown-Out Reset) of ING20 relies on both PVD (Programmable Voltage Detector) and PDR (Power Down Reset):
+ *
+ *      * If BOR threshold is set to SYSCTRL_PVD_1V51 (VM pin connected to GND, Mode 0):
+ *          1) PDR is disabled;
+ *          2) PVD is enabled, threshold is configured to 1.51V, and PVD is configured to reset the SoC.
+ *
+ *      * If BOR threshold is set to SYSCTRL_PVD_2V38 (VM pin connected to VCC, Mode 1):
+ *          1) PDR is disabled;
+ *          2) PVD is enabled, threshold is configured to 2.38V, and PVD is configured to reset the SoC.
+ *
+ *      * If BOR threshold is set to SYSCTRL_PDR_1V80:
+ *          1) PVD is disabled;
+ *          2) PDR is enabled and configured to reset the SoC when voltage drops below 1.80V.
+ *
+ *      - PVD and PDR cannot be enabled simultaneously for a given threshold configuration.
+ *      - For packages without a VM pin, only Mode 0 is supported (VM pin is internally grounded),
+ *        and the PVD detection range is fixed at 1.51V (SYSCTRL_PVD_1V51).
  *
  * Effects of PVD & PDR are: either raise an interrupt or reset the SoC.
  *
@@ -1766,11 +1817,42 @@ void SYSCTRL_ClearPVDInt(void);
 /**
  * @brief Enable PDR interrupt
  *
- * See also `SYSCTRL_EnablePVDInt`.
+ * Note:
+ * ING916:
+ *      BOR of ING916 relies on both PVD (Power Voltage Detector) & PDR (Power Down Reset):
+ *      * If BOR threshold > SYSCTRL_BOR_1V5:
+ *          1) PDR disabled;
+ *          2) PVD is enabled, threshold is configured, and PVD is configured to reset the SoC.
+ *      * If BOR threshold == SYSCTRL_BOR_1V5:
+ *          1) PVD disabled;
+ *          2) PDR is enabled and configured to reset the SoC.
+ * ING20:
+ *      BOR (Brown-Out Reset) of ING20 relies on both PVD (Programmable Voltage Detector) and PDR (Power Down Reset):
+ *
+ *      * If BOR threshold is set to SYSCTRL_PVD_1V51 (VM pin connected to GND, Mode 0):
+ *          1) PDR is disabled;
+ *          2) PVD is enabled, threshold is configured to 1.51V, and PVD is configured to reset the SoC.
+ *
+ *      * If BOR threshold is set to SYSCTRL_PVD_2V38 (VM pin connected to VCC, Mode 1):
+ *          1) PDR is disabled;
+ *          2) PVD is enabled, threshold is configured to 2.38V, and PVD is configured to reset the SoC.
+ *
+ *      * If BOR threshold is set to SYSCTRL_PDR_1V80:
+ *          1) PVD is disabled;
+ *          2) PDR is enabled and configured to reset the SoC when voltage drops below 1.80V.
+ *
+ *      - PVD and PDR cannot be enabled simultaneously for a given threshold configuration.
+ *      - For packages without a VM pin, only Mode 0 is supported (VM pin is internally grounded),
+ *        and the PVD detection range is fixed at 1.51V (SYSCTRL_PVD_1V51).
+ *
+ * Effects of PVD & PDR are: either raise an interrupt or reset the SoC.
+ *
+ * This function reconfigures PVD to raise an interrupt.
  *
  * @param[in] enable        Enable(1)/disable(0)
+ * @param[in] level         trigger level (see SYSCTRL_BOR_...)
  */
-void SYSCTRL_EnablePDRInt(uint8_t enable);
+void SYSCTRL_EnablePDRInt(uint8_t enable, uint8_t level);
 
 /**
  * @brief Clear PDR interrupt state
@@ -2011,9 +2093,43 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
  *
  *         See also `SYSCTRL_EnablePVDInt`, `SYSCTRL_EnablePDRInt`.
  *
- * @param[in] threshold         Threshold (available values see `SYSCTRL_BOR_...`)
- *                              default: 0.95V (ING918)
- *                                       2.30V (ING916)
+ * ING20: `enable_active` and `enable_sleep` should be the same.
+ *         Power consumption is higher when PVD (Programmable Voltage Detector) is enabled,
+ *         typically ~2.x uA. When using PDR (Power Down Reset) detection, power consumption
+ *         is lower, typically ~0.x uA.
+ *
+ *         The PVD and PDR reset functions need to be enabled or disabled by setting the `threshold`
+ *         value separately. Both PVD and PDR trigger a reset when the voltage drops below the
+ *         specified threshold. By default, low voltage detection reset functionality is disabled.
+ *
+ *         PDR voltage detection range:
+ *           - 1.35V to 1.80V
+ *
+ *         PVD voltage detection range depends on the chip package and VM pin configuration:
+ *           - For chips with a VM pin:
+ *               - If VM is connected to GND, the detection range is 1.51V to 1.69V.
+ *               - If VM is connected to VCC, the detection range is 2.38V to 3.19V.
+ *           - For chips without a VM pin (default VM = GND), the detection range is 1.51V to 1.69V.
+ *
+ *         See also `SYSCTRL_EnablePVDInt`, `SYSCTRL_EnablePDRInt`.
+ *
+ * @param[in] threshold         Threshold value for low voltage detection.
+ *                              - For ING918 and ING916, use values defined in `SYSCTRL_BOR_...`.
+ *                                Default thresholds:
+ *                                  - 0.95V (ING918)
+ *                                  - 2.30V (ING916)
+ *
+ *                              - For ING20, use values defined in `SYSCTRL_PDR_...` or `SYSCTRL_PVD_...`:
+ *                                - When using PVD (Programmable Voltage Detector):
+ *                                    - Mode 0 (VM pin connected to GND): 1.51V
+ *                                    - Mode 1 (VM pin connected to VCC): 2.38V
+ *                                - When using PDR (Power Down Reset): 1.80V
+ *
+ *                                Notes:
+ *                                  - Mode 0 corresponds to VM pin grounded (default for packages without a VM pin).
+ *                                  - Mode 1 corresponds to VM pin connected to VCC.
+ *                                  - Packages without a VM pin default to Mode 0 and only support Mode 0.
+ *
  * @param[in] enable_active     Enable(1)/Disable(0) for active mode
  *                              default: DISABLED
  * @param[in] enable_sleep      Enable(1)/Disable(0) for sleep mode
@@ -2024,7 +2140,7 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
 /**
  * @brief Get wake up source of last wake up from DEEP/DEEPER sleep
  *
- * @param[out] source           source of the last wake up
+ * @param[out] source           source of the last wake-up
  * @return                      1 if any wake up source is found else 0
  */
 uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);

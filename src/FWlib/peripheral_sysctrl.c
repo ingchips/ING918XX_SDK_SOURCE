@@ -1387,6 +1387,62 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item)
     return -1;
 }
 
+void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep)
+{
+    uint8_t enable = enable_active || enable_sleep;
+
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), 0x0, 2, 12);
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x3, 2, 4);
+
+    if (0 == enable) return;
+
+    if (threshold > SYSCTRL_PDR_END)
+    {
+        threshold -= SYSCTRL_PDR_END + 1;
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), 0x1, 12);
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x30),  threshold, 3, 18);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x0, 5);
+    }
+    else
+    {
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), 0x1, 13);
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x30), threshold, 3, 24);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x0, 4);
+    }
+}
+
+void SYSCTRL_EnablePVDInt(uint8_t enable, uint8_t polarity, uint8_t level)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), 0x0, 12);
+    if (0 == enable) return;
+    level -= SYSCTRL_PDR_END + 1;
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x30), level, 3, 18);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1, 5);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), 0x1, 12);
+    set_reg_bit(&APB_SYSCTRL->AnaCtrl, polarity, 2);
+    APB_SYSCTRL->AnaCtrl |= (1ul << 4);
+}
+
+void SYSCTRL_ClearPVDInt(void)
+{
+    APB_SYSCTRL->AnaCtrl |= (1ul << 11);
+}
+
+void SYSCTRL_EnablePDRInt(uint8_t enable, uint8_t level)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), 0x0, 13);
+    if (0 == enable) return;
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x30), level, 3, 24);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1, 4);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), 0x1, 13);
+    APB_SYSCTRL->AnaCtrl |= (1ul << 3);
+}
+
+void SYSCTRL_ClearPDRInt(void)
+{
+    APB_SYSCTRL->AnaCtrl |= (1ul << 10);
+}
+
 void SYSCTRL_ClearClkGateMulti(uint32_t items)
 {
     SYSCTRL_Item i;
@@ -1533,6 +1589,11 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
     default:
         break;
     }
+}
+
+void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode)
+{
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, port == UART_PORT_0 ? 19 : 20);
 }
 
 void SYSCTRL_SelectTimerClk(timer_port_t port, uint8_t div, pre_clk_source_t source)
@@ -1929,7 +1990,7 @@ int SYSCTRL_Init(void)
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x30) |= (0x5<<28) | (0x1a<<5);
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x34) |= 0x30<<14;
 
-    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0, 6, 24);
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1d, 6, 16);
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c), 150, 8, 24);
 
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x4),0,18);
