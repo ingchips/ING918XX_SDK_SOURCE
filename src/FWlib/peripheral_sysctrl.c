@@ -1544,6 +1544,11 @@ void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item)
     SYSCTRL_ResetBlockCtrl(item, 1);
 }
 
+void SYSCTRL_ResetAllBlocks(void)
+{
+    APB_SYSCTRL->RstuCfg[1] &= 0x21;
+}
+
 void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
 {
     set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), enable & 0x1, channel_index);
@@ -1660,19 +1665,11 @@ int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
 
 void SYSCTRL_EnablePLL(uint8_t enable)
 {
-    typedef void    (*rom_PLLinUse)(uint8_t PLLEn, uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
-    #define ROM_PLLinUse    ((rom_PLLinUse)(0x00000e7d))
+
     uint8_t enabled = io_read(AON1_CTRL_BASE + 0x28) & 1;
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x28), enable, 0);
     if ((0 == enabled) && enable)
-    {
-        ROM_PLLinUse(1, 1, 1, 1);
-        while ((APB_SYSCTRL->PllCtrl & (1u << 30)) == 0) ;
-    }
-    else
-    {
-        ROM_PLLinUse(0, 0, 0, 0);
-    }
+        while ((APB_SYSCTRL->PllCtrl & (1u << 30)) == 0);
 }
 
 uint32_t SYSCTRL_GetPLLClk()
@@ -1981,10 +1978,17 @@ int SYSCTRL_Init(void)
 {
     typedef void    (*rom_PowerOnSeq)(uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
     typedef void    (*rom_PowerDownSeq)(void);
+    typedef void    (*rom_PLLinUse)(uint8_t PLLEn, uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
+    #define ROM_PLLinUse    ((rom_PLLinUse)(0x00000e7d))
     #define ROM_PowerOnSeq      ((rom_PowerOnSeq)(0x00000fa9))
     #define ROM_PowerDownSeq    ((rom_PowerDownSeq)(0x00000ef1))
     ROM_PowerOnSeq(1, 1, 1);
     ROM_PowerDownSeq();
+
+    if (io_read(AON1_CTRL_BASE + 0x28) & 1)
+        ROM_PLLinUse(1, 1, 1, 1);
+    else
+        ROM_PLLinUse(0, 0, 0, 0);
 
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x38) |= 0x5<<15;
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x30) |= (0x5<<28) | (0x1a<<5);
@@ -2063,7 +2067,6 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
     }
 }
 
-
 uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
 {
     source->other = 0;
@@ -2124,6 +2127,21 @@ void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom)
     {
         io_write(APB_SYSCTRL_BASE + 0x1e0, 1);
     }
+}
+
+void SYSCTRL_EnableInternalVref(uint8_t enable)
+{
+    set_reg_bit((uint32_t*)(AON1_CTRL_BASE+0X18), enable, 16);
+}
+
+void SYSCTRL_EnableAsdmVrefOutput(uint8_t enable)
+{
+    set_reg_bit((uint32_t*)(APB_SYSCTRL_BASE + 0x234), !enable, 8);
+}
+
+void SYSCTRL_SetAdcVrefSel(uint8_t val)
+{
+    set_reg_bits((uint32_t*)(APB_SYSCTRL_BASE + 0x234), val, 4, 9);
 }
 
 #endif

@@ -2007,6 +2007,33 @@ void SYSCTRL_ICacheFlush(void);
  */
 void SYSCTRL_EnableDCDCMode(uint8_t mode);
 
+/**
+ * @brief Enable or disable the internal voltage reference.
+ *
+ * @note The internal voltage reference is used by the ADC and ASDM. If your ADC and ASDM
+ *     modules use the internal reference voltage source, you must enable it.
+ *
+ * @param enable [in] 1: enable, 0: disable
+ */
+void SYSCTRL_EnableInternalVref(uint8_t enable);
+
+/**
+ * @brief Set ADC reference voltage selection
+ * @param val [in]
+ */
+//TODO
+void SYSCTRL_SetAdcVrefSel(uint8_t val);
+
+/**
+ * @brief Update asdm clock
+ *
+ * This function update the asdm clock divider.
+ *
+ * @param[in]   div             divider
+ */
+void SYSCTRL_UpdateAsdmClk(uint32_t div);
+
+
 #endif
 
 /**
@@ -2182,16 +2209,6 @@ void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles);
  * and all registers are restored to their default state
  */
 void SYSCTRL_Reset(void);
-
-/**
- * @brief Update asdm clock
- *
- * This function update the asdm clock divider.
- *
- * @param[in]   div             divider
- */
-void SYSCTRL_UpdateAsdmClk(uint32_t div);
-
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
