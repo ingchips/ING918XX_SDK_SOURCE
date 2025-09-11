@@ -87,13 +87,14 @@ def find_rtt_ctx(FLAGS, dap):
 
     raise Exception(f"SEGGER RTT not found in specified range")
 
-def make_file_header():
+def make_file_header(pre_size: int):
     now = datetime.now()
     milliseconds_since_midnight = int((now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds() * 1000)
-    packed = struct.pack('<I', milliseconds_since_midnight)
-    padded = bytearray(b'\xff' * 8)
-    padded[1::2] = packed
-    return b'\xff\x54\xff\x52\xff\x41\xFF\x01' + bytes(padded)
+    padded1 = bytearray(b'\xff' * 8)
+    padded1[1::2] = struct.pack('<I', milliseconds_since_midnight)
+    padded2 = bytearray(b'\xff' * 8)
+    padded2[1::2] = struct.pack('<I', pre_size)
+    return b'\xff\x54\xff\x52\xff\x41\xFF\x01' + bytes(padded1) + bytes(padded2)
 
 def run(FLAGS):
     pyocd.utility.color_log.build_color_logger(color_setting='auto')
@@ -141,53 +142,32 @@ def run(FLAGS):
             total_size = 0
             block_size = 0
             last_time = time.time()
+            error_count = 0
+            MAX_ERRORS = 10
 
             def is_rtt_empty():
                 data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
                 up = SEGGER_RTT_BUFFER_UP.from_buffer(bytearray(data))
                 return up.WrOff == up.RdOff
 
-            def rtt_flush():
+            def read_up_channel() -> bytes:
+                nonlocal error_count, MAX_ERRORS, up_addr
+
                 data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
                 up = SEGGER_RTT_BUFFER_UP.from_buffer(bytearray(data))
-                target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
-
-            rtt_flush()
-            while is_rtt_empty():
-                time.sleep(0.01)
-
-            log_file.write(make_file_header())
-
-            while True:
-                # read data from up buffers (target -> host)
-                data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
-                up = SEGGER_RTT_BUFFER_UP.from_buffer(bytearray(data))
-
-                # Initialize error counter
-                error_count = 0
-                MAX_ERRORS = 10
 
                 if up.WrOff == up.RdOff:
-                    if kb.kbhit():
-                        LOG.info("Abort...")
-                        break
-                    time.sleep(0.001)  # Short delay to prevent busy waiting
-                    continue
+                    return bytes([])
 
                 # Validate buffer pointers
                 if up.WrOff >= up.SizeOfBuffer or up.RdOff >= up.SizeOfBuffer:
                     error_count += 1
-                    LOG.error(f"Invalid buffer pointers - WrOff: {up.WrOff}, RdOff: {up.RdOff}, Size: {up.SizeOfBuffer}")
-                    if error_count >= MAX_ERRORS:
-                        raise Exception("Too many buffer pointer errors")
-                    time.sleep(0.01)
-                    continue
+                    return bytes([])
 
                 if up.WrOff > up.RdOff:
                     # Normal case - read contiguous block
                     read_size = up.WrOff - up.RdOff
                     data = target.read_memory_block8(up.pBuffer + up.RdOff, read_size)
-                    target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
 
                 elif up.WrOff < up.RdOff:
                     # Wrap-around case
@@ -198,7 +178,27 @@ def run(FLAGS):
                     if second_part > 0:
                         data += target.read_memory_block8(up.pBuffer, second_part)
 
-                    target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
+                target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
+                return bytes(data)
+
+            data = read_up_channel()
+            while is_rtt_empty():
+                time.sleep(0.01)
+
+            log_file.write(make_file_header(len(data)))
+            log_file.write(data)
+
+            while True:
+                data = read_up_channel()
+                if len(data) == 0:
+                    if error_count > MAX_ERRORS:
+                        LOG.error("too many errors, abort...")
+                        break
+                    if kb.kbhit():
+                        LOG.info("Abort...")
+                        break
+                    time.sleep(0.001)  # Short delay to prevent busy waiting
+                    continue
 
                 log_file.write(bytes(data))
                 error_count = 0  # Reset error counter on successful read
