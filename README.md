@@ -1,9 +1,9 @@
-# ING918XX/ING916XX SDK Source Code
+# ING918XX/ING916XX/ING20XX SDK Source Code
 
-This repository contains ING918XX/ING916XX SDK source code, including platform header files,
+This repository contains ING918XX/ING916XX/ING20XX SDK source code, including platform header files,
 bundle binaries, and examples.
 
-ING918XX/ING916XX are fully integrated Bluetooth Low Energy wireless communication SoC(s)
+ING918XX/ING916XX/ING20XX are fully integrated Bluetooth Low Energy wireless communication SoC(s)
 targeting Bluetooth 5.1 and 5.3 specification.
 
 ## Get Started
@@ -52,7 +52,7 @@ contributions via Github [Pull Requests](pulls) in the `develop` branch.
 
 ## License
 
-   Copyright 2019-2024 INGCHIPS
+   Copyright 2019-2025 INGCHIPS
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

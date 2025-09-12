@@ -10,16 +10,23 @@ The key matrix is available on the dedicated remote control board. To simplify t
 This example support several audio input types which is selected by defining `AUDIO_INPUT=0..3`.
 Below table shows how to connect the microphone to the Dev-Board for each input type:
 
-|Audio Input        | Note                          | ING918xx Family   | ING916xx Family           | Tested Microphone |
-| ---               | ---                           | ---               | ---                       | ---               |
-|0                  | Simulated                     | Universal         | Universal                 | --                |
-|1                  | ADC                           | ADC Channel 4     | ADC Channel 4             | Analog MIC        |
-|2                  | I2S                           | Not available     | BCLK(21),IN(22),LRCLK(35) | INMP441: <img src="./img/i2s_mic.png" width="50%" />|
-|3                  | PDM                           | Not available     | MCLK(28),IN(29)           | MP34DT01: <img src="./img/pdm_mic.png" width="50%" />|
+|Audio Input  | Note       | ING918         | ING916                    | ING920      | Tested Microphone |
+| ---         | ---        | ---            | ---                       | ---         | ---               |
+|0            | Simulated  | Universal      | Universal                 | Universal   | --                |
+|1            | ADC        | ADC Channel 4  | ADC Channel 4             | WIP         | Single-ended analog MIC        |
+|2            | I2S        | Not available  | BCLK(21),IN(22),LRCLK(35) | WIP         | INMP441: <img src="./img/i2s_mic.png" width="50%" />|
+|3            | PDM        | Not available  | MCLK(28),IN(29)           | WIP         | MP34DT01: <img src="./img/pdm_mic.png" width="50%" />|
 
 Note: for type `0`, audio is playback from a data file (ITU standard testing data), and no microphone is used.
-The [data file](../data/itu_female_16k.bin) containing raw PCM samples needs to be downloaded to
-[`SAMPLES_LOCATION`](../src/audio_input_sim.c).
+The sample data files containing raw PCM samples needs to be downloaded to
+[`SAMPLES_LOCATION`](../src/audio_input_sim.c). Different chips use different data files due to different flash sizes.
+
+|Chip Family  | Binary Data File                | PCM Samples |
+| ---         | ---                             | ---                           |
+|ING918       | itu_female_16k.bin              | [itu_female_16k.m](../data/itu_female_16k.m)   |
+|ING916       | itu_female_16k.bin              | [itu_female_16k.m](../data/itu_female_16k.m)   |
+|ING20        | itu_female_16k_short.bin        | [itu_female_16k_short.m](../data/itu_female_16k_short.m)   |
+
 
 ## Audio Codec
 
