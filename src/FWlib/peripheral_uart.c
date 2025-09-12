@@ -55,16 +55,16 @@ int apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t Ba
 //
 uint32_t apUART_BaudRateGet (UART_TypeDef* pBase, uint32_t ClockFrequency)
 {
-  float BaudRateDiv;
-  if (pBase->FractBaudDivisor != 0)
-  {
-      BaudRateDiv = (float) (((pBase->FractBaudDivisor - 0.5)/64) + pBase->IntBaudDivisor);
-      return (uint32_t) (ClockFrequency / BaudRateDiv);
-  }
-  else
-  {
-      return (uint32_t) ((ClockFrequency >> 4) / pBase->IntBaudDivisor);
-  }
+    float BaudRateDiv;
+    if (pBase->FractBaudDivisor != 0)
+    {
+        BaudRateDiv = (float) (((pBase->FractBaudDivisor - 0.5)/64) + pBase->IntBaudDivisor);
+        return (uint32_t) (ClockFrequency / BaudRateDiv);
+    }
+    else
+    {
+        return (uint32_t) ((ClockFrequency >> 4) / pBase->IntBaudDivisor);
+    }
 }
 
 //
@@ -77,42 +77,42 @@ uint32_t apUART_BaudRateGet (UART_TypeDef* pBase, uint32_t ClockFrequency)
 //
 uint8_t apUART_Check_Rece_ERROR(UART_TypeDef* pBase)
 {
-	uint8_t error = 0;
+    uint8_t error = 0;
 
-	if ( (pBase->StatusClear >> bsUART_STAT_FRAME) & BW2M(bwUART_STAT_FRAME) )   // FE
-		error += 1<<0;
+    if ( (pBase->StatusClear >> bsUART_STAT_FRAME) & BW2M(bwUART_STAT_FRAME) )   // FE
+        error += 1<<0;
 
-	if ( (pBase->StatusClear >> bsUART_STAT_PARITY) & BW2M(bwUART_STAT_PARITY) )   // PE
-	  error += 1<<1;
+    if ( (pBase->StatusClear >> bsUART_STAT_PARITY) & BW2M(bwUART_STAT_PARITY) )   // PE
+      error += 1<<1;
 
-	if ( (pBase->StatusClear >> bsUART_STAT_BREAK) & BW2M(bwUART_STAT_BREAK) )   // BE
-		error += 1<<2;
+    if ( (pBase->StatusClear >> bsUART_STAT_BREAK) & BW2M(bwUART_STAT_BREAK) )   // BE
+        error += 1<<2;
 
-	if ( (pBase->StatusClear >> bsUART_STAT_OVERRUN) & BW2M(bwUART_STAT_OVERRUN) )   // OE
-		error += 1<<3;
+    if ( (pBase->StatusClear >> bsUART_STAT_OVERRUN) & BW2M(bwUART_STAT_OVERRUN) )   // OE
+        error += 1<<3;
 
-	return error;
+    return error;
 }
 
 //
 uint8_t apUART_Check_RXFIFO_EMPTY(UART_TypeDef* pBase)
 {
-	return ( (pBase->Flag >> bsUART_RECEIVE_EMPTY) & BW2M(bwUART_RECEIVE_EMPTY) );
+    return ( (pBase->Flag >> bsUART_RECEIVE_EMPTY) & BW2M(bwUART_RECEIVE_EMPTY) );
 }
 
 uint8_t apUART_Check_RXFIFO_FULL(UART_TypeDef* pBase)
 {
-	return ( (pBase->Flag >> bsUART_RECEIVE_FULL) & BW2M(bwUART_RECEIVE_FULL) );
+    return ( (pBase->Flag >> bsUART_RECEIVE_FULL) & BW2M(bwUART_RECEIVE_FULL) );
 }
 
 uint8_t apUART_Check_TXFIFO_EMPTY(UART_TypeDef* pBase)
 {
-	return ( (pBase->Flag >> bsUART_TRANSMIT_EMPTY) & BW2M(bwUART_TRANSMIT_EMPTY) );
+    return ( (pBase->Flag >> bsUART_TRANSMIT_EMPTY) & BW2M(bwUART_TRANSMIT_EMPTY) );
 }
 
 uint8_t apUART_Check_TXFIFO_FULL(UART_TypeDef* pBase)
 {
-	return ( (pBase->Flag >> bsUART_TRANSMIT_FULL) & BW2M(bwUART_TRANSMIT_FULL) );
+    return ( (pBase->Flag >> bsUART_TRANSMIT_FULL) & BW2M(bwUART_TRANSMIT_FULL) );
 }
 
 uint8_t apUART_Check_EnableSta(UART_TypeDef* pBase)
@@ -132,13 +132,13 @@ uint8_t apUART_Check_RxEnableSta(UART_TypeDef* pBase)
 
 uint8_t apUART_Check_BUSY(UART_TypeDef* pBase)
 {
-	return ( (pBase->Flag >> bsUART_BUSY) & BW2M(bwUART_BUSY) );
+    return ( (pBase->Flag >> bsUART_BUSY) & BW2M(bwUART_BUSY) );
 }
 
 //  ljl add get Receive Status Register
 uint8_t apUART_Get_ITStatus(UART_TypeDef* pBase,uint8_t UART_IT)
 {
-	return ( (pBase->IntRaw >> UART_IT) & BW2M(UART_IT) );
+    return ( (pBase->IntRaw >> UART_IT) & BW2M(UART_IT) );
 }
 
 
@@ -147,21 +147,21 @@ uint8_t apUART_Get_ITStatus(UART_TypeDef* pBase,uint8_t UART_IT)
 //
 void apUART_Enable_TRANSMIT_INT(UART_TypeDef* pBase)
 {
-	pBase->IntMask |= 1<<bsUART_TRANSMIT_INTENAB;
+    pBase->IntMask |= 1<<bsUART_TRANSMIT_INTENAB;
 }
 
 void apUART_Disable_TRANSMIT_INT(UART_TypeDef* pBase)
 {
-	pBase->IntMask &= ~(1<<bsUART_TRANSMIT_INTENAB);
+    pBase->IntMask &= ~(1<<bsUART_TRANSMIT_INTENAB);
 }
 
 void apUART_Enable_RECEIVE_INT(UART_TypeDef* pBase)
 {
-	pBase->IntMask |= 1<<bsUART_RECEIVE_INTENAB;
+    pBase->IntMask |= 1<<bsUART_RECEIVE_INTENAB;
 }
 void apUART_Disable_RECEIVE_INT(UART_TypeDef* pBase)
 {
-	pBase->IntMask &= ~(1<<bsUART_RECEIVE_INTENAB);
+    pBase->IntMask &= ~(1<<bsUART_RECEIVE_INTENAB);
 }
 
 ////////////////////////////////////////////add for controller
@@ -210,23 +210,23 @@ static void uart_enable_fifo(UART_TypeDef* pBase)
 
 void uart_reset(UART_TypeDef* pBase)
 {
-	apUART_Disable_RECEIVE_INT(pBase);
+    apUART_Disable_RECEIVE_INT(pBase);
 
-	uart_disable(pBase);
+    uart_disable(pBase);
 
-	while (apUART_Check_RXFIFO_EMPTY(pBase) != 1)
-	{
-		volatile uint32_t trash = pBase->DataRead;
+    while (apUART_Check_RXFIFO_EMPTY(pBase) != 1)
+    {
+        volatile uint32_t trash = pBase->DataRead;
         (void)trash;
-	}
+    }
 
-	uart_empty_fifo(pBase);
+    uart_empty_fifo(pBase);
 
-	uart_enable_fifo(pBase);
+    uart_enable_fifo(pBase);
 
-	uart_enable(pBase);
+    uart_enable(pBase);
 
-	apUART_Enable_RECEIVE_INT(pBase);
+    apUART_Enable_RECEIVE_INT(pBase);
 
 }
 
@@ -235,38 +235,38 @@ void uart_reset(UART_TypeDef* pBase)
 //
 int apUART_Initialize(UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t IntMask)
 {
-	// clear Control Register, UARTCR
-	pBase->Control = 0;
-	// clear all interrupt
-	pBase->IntClear = 0;
-	// clear all interrupt mask bit
-	pBase->IntMask = 0;
-	// clear Receive Status Register/Error Clear Register, UARTRSR/UARTECR
-	pBase->StatusClear = 0;
-	// clear Integer Baud Rate Register, UARTIBRD
-	pBase->IntBaudDivisor = 0;
-	// clear Fractional Baud Rate Register, UARTFBRD
-	pBase->FractBaudDivisor = 0;
-	// clear Line Control Register, UARTLCR_H
-	pBase->LineCon_H = 0;
-	// set BaudDivisor
-	if(0 != apUART_BaudRateSet(pBase, UARTx->ClockFrequency, UARTx->BaudRate)){
+    // clear Control Register, UARTCR
+    pBase->Control = 0;
+    // clear all interrupt
+    pBase->IntClear = 0;
+    // clear all interrupt mask bit
+    pBase->IntMask = 0;
+    // clear Receive Status Register/Error Clear Register, UARTRSR/UARTECR
+    pBase->StatusClear = 0;
+    // clear Integer Baud Rate Register, UARTIBRD
+    pBase->IntBaudDivisor = 0;
+    // clear Fractional Baud Rate Register, UARTFBRD
+    pBase->FractBaudDivisor = 0;
+    // clear Line Control Register, UARTLCR_H
+    pBase->LineCon_H = 0;
+    // set BaudDivisor
+    if(0 != apUART_BaudRateSet(pBase, UARTx->ClockFrequency, UARTx->BaudRate)){
         return -1;
     }
     // set Line Control Register, UARTLCR_H
-	pBase->LineCon_H = ( ((UARTx->parity >> 2) & 1) << bsUART_STICK_PARITY ) |  // SPS
-                     (   UARTx->word_length       << bsUART_WORD_LENGTH  ) |  // WLEN
-                     (   UARTx->fifo_enable       << bsUART_FIFO_ENABLE  ) |  // FEN
-                     (   UARTx->two_stop_bits     << bsUART_TWO_STOP_BITS) |  // STP2
-                     ( ( UARTx->parity       & 3) << bsUART_PARITY_SELECT) ;  // EPS, EPN
+    pBase->LineCon_H = (((  UARTx->parity >> 2) & 1) << bsUART_STICK_PARITY ) |  // SPS
+                        (   UARTx->word_length       << bsUART_WORD_LENGTH  ) |  // WLEN
+                        (   UARTx->fifo_enable       << bsUART_FIFO_ENABLE  ) |  // FEN
+                        (   UARTx->two_stop_bits     << bsUART_TWO_STOP_BITS) |  // STP2
+                        ((  UARTx->parity       & 3) << bsUART_PARITY_SELECT) ;  // EPS, EPN
 
     // set Interrupt FIFO Level Select Register, UARTIFLS
     pBase->FifoSelect = (UARTx->txfifo_waterlevel << bsUART_TRANS_INT_LEVEL ) | // TXIFLSEL
-                      (UARTx->rxfifo_waterlevel << bsUART_RECV_INT_LEVEL  ) ; // RXIFLSEL
+                        (UARTx->rxfifo_waterlevel << bsUART_RECV_INT_LEVEL  ) ; // RXIFLSEL
 
     /* Empty the receive FIFO */
 
-	//	set all interrupt mask bit
+    //	set all interrupt mask bit
     pBase->IntMask = IntMask;
 
     // set Control Register, UARTCR, at last
@@ -281,12 +281,12 @@ int apUART_Initialize(UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t In
 
 void UART_SendData(UART_TypeDef* pBase, uint8_t Data)
 {
-	pBase->DataRead = Data;
+    pBase->DataRead = Data;
 }
 
 uint8_t UART_ReceData(UART_TypeDef* pBase)
 {
-	return pBase->DataRead;
+    return pBase->DataRead;
 }
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
