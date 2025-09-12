@@ -1,6 +1,6 @@
 import strutils, complex, algorithm, sugar
 import os, json, tables, std/jsonutils, std/strformat
-import std/threadpool
+import malebolgia
 
 type
     SymDict = Table[string, string]
@@ -128,8 +128,11 @@ proc hex_916(p, target: string, more: proc (f: File) {.closure.}) =
 
 proc hex_916(p: string) =
     hex_916(p, "platform.hex", (f: File) => (discard))
-
     hex_916(p, "platform_lock.hex", (f: File) => dump_hex(f, @[0xFFu8, 0xEF, 0xFF, 0xFF], 0x02000000u32))
+
+proc hex_920(p: string) =
+    hex_916(p, "platform.hex", (f: File) => (discard))
+    hex_916(p, "platform_lock.hex", (f: File) => dump_hex(f, @[0xFEu8, 0xFF, 0xFF, 0xFF], 0x02000000u32))
 
 proc hex_918(p: string) =
     hex_918(p, "platform.hex", (f: File) => (discard))
@@ -151,6 +154,8 @@ proc process_bin(x: string) =
         hex_918(p)
     elif series.startsWith("ing916"):
         hex_916(p)
+    elif series.startsWith("ing20"):
+        hex_920(p)
     else:
         debugEcho "unknown: ", series
 
@@ -167,12 +172,14 @@ for x in walkDirRec(sdk):
     if x.endsWith("apis.json"):
         all_binaries.add(x)
 
-echo "generating symdefs..."
-for x in all_binaries:
-    spawn gen_symdefs x
-sync()
+var m = createMaster()
 
-echo "generating hex files..."
-for x in all_binaries:
-    spawn process_bin(x)
-sync()
+m.awaitAll:
+    echo "generating symdefs..."
+    for x in all_binaries:
+        m.spawn gen_symdefs(x)
+
+m.awaitAll:
+    echo "generating hex files..."
+    for x in all_binaries:
+        m.spawn process_bin(x)

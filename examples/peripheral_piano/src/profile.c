@@ -22,7 +22,7 @@ const static uint8_t profile_data[] = {
     #include "../data/gatt.profile"
 };
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -37,7 +37,7 @@ void set_freq(uint16_t freq);
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -77,7 +77,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
         gap_set_adv_set_random_addr(0, rand_addr);
-        gap_set_ext_adv_para(0, 
+        gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -100,6 +100,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t)->handle,
                        profile_data);
             break;
@@ -128,7 +129,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 }
 
 uint32_t setup_profile(void *data, void *user_data)
-{   
+{
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

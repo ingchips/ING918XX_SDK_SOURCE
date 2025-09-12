@@ -15,7 +15,7 @@ const uint8_t scan_data[] = {
     #include "../data/scan_response.adv"
 };
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -26,7 +26,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     }
 }
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -57,9 +57,9 @@ static void setup_adv(void)
     gap_add_whitelist(dev_info.master, BD_ADDR_TYPE_LE_RANDOM);
 
 //#define LEGACY
-    
+
 #ifdef LEGACY
-    gap_set_ext_adv_para(0, 
+    gap_set_ext_adv_para(0,
                             CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                             0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -76,7 +76,7 @@ static void setup_adv(void)
     gap_set_ext_adv_data(0, sizeof(adv_data), (uint8_t*)adv_data);
     gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
 #else
-    gap_set_ext_adv_para(0, 
+    gap_set_ext_adv_para(0,
                             SCANNABLE_ADV_BIT,
                             0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -116,6 +116,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         {
         case HCI_SUBEVENT_LE_CONNECTION_COMPLETE:
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             gap_disconnect(0);
             break;
         case HCI_SUBEVENT_LE_SCAN_REQUEST_RECEIVED:
@@ -124,7 +125,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     scan_received();
                     printf("scanner: %02X:%02X:%02X:%02X:%02X:%02X\n",
                         scan_req->scanner_addr[5], scan_req->scanner_addr[4], scan_req->scanner_addr[3],
-                        scan_req->scanner_addr[2], scan_req->scanner_addr[1], scan_req->scanner_addr[0]);                    
+                        scan_req->scanner_addr[2], scan_req->scanner_addr[1], scan_req->scanner_addr[0]);
             }
             break;
         case HCI_SUBEVENT_LE_ADVERTISING_SET_TERMINATED:

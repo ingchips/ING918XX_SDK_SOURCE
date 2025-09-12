@@ -14,7 +14,7 @@ static void blink_simple(const uint8_t pwm_channel_index, const uint32_t pera)
     PWM_SetHighThreshold(pwm_channel_index, 0, pera >> 1);
     PWM_SetMode(pwm_channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
     PWM_SetMask(pwm_channel_index, 0, 0);
-    PWM_Enable(pwm_channel_index, 1); 
+    PWM_Enable(pwm_channel_index, 1);
     PWM_HaltCtrlEnable(pwm_channel_index, 0);
 }
 
@@ -39,10 +39,10 @@ void blink_morse(const uint8_t pwm_channel_index, const char *pattern)
     }
     PWM_SetHighThreshold(pwm_channel_index, i, MORSE_PERA_THRESHOLD + 1);
     PWM_SetMultiDutyCycleCtrl(pwm_channel_index, i);
-    
+
     PWM_SetMode(pwm_channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
     PWM_SetMask(pwm_channel_index, 0, 0);
-    PWM_Enable(pwm_channel_index, 1); 
+    PWM_Enable(pwm_channel_index, 1);
     PWM_HaltCtrlEnable(pwm_channel_index, 0);
 }
 
@@ -64,7 +64,7 @@ void blink_style(const uint8_t pwm_channel_index, const blink_style_t style)
         PWM_SetHighThreshold(pwm_channel_index, 0, SINGLE_PERA_THRESHOLD >> 1);
         PWM_SetMode(pwm_channel_index, PWM_WORK_MODE_SINGLE_WITHOUT_DIED_ZONE);
         PWM_SetMask(pwm_channel_index, 0, 0);
-        PWM_Enable(pwm_channel_index, 1); 
+        PWM_Enable(pwm_channel_index, 1);
         PWM_HaltCtrlEnable(pwm_channel_index, 0);
         break;
     case BLINK_FAST:
@@ -127,11 +127,11 @@ void blink_lightness(const uint8_t pwm_channel_index, const uint8_t lightness)
     PWM_SetHighThreshold(pwm_channel_index, 0, (LIGHT_PERA_THRESHOLD << 8) / lightness);
     PWM_SetMode(pwm_channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
     PWM_SetMask(pwm_channel_index, 0, 0);
-    PWM_Enable(pwm_channel_index, 1); 
+    PWM_Enable(pwm_channel_index, 1);
     PWM_HaltCtrlEnable(pwm_channel_index, 0);
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
 
 #define LIGHT_PERA_THRESHOLD            (PWM_CLOCK_FREQ / 1000)
 #define SINGLE_PERA_THRESHOLD           (PWM_CLOCK_FREQ / 5)
@@ -142,7 +142,7 @@ static void blink_simple(const uint8_t pwm_channel_index, const uint32_t pera)
     PWM_SetHighThreshold(pwm_channel_index, 0, pera >> 1);
     PWM_SetMode(pwm_channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
     PWM_SetMask(pwm_channel_index, 0, 0);
-    PWM_Enable(pwm_channel_index, 1); 
+    PWM_Enable(pwm_channel_index, 1);
     PWM_HaltCtrlEnable(pwm_channel_index, 0);
 }
 
@@ -154,7 +154,7 @@ void blink_lightness(const uint8_t pwm_channel_index, const uint8_t lightness)
     PWM_SetHighThreshold(pwm_channel_index, 0, (LIGHT_PERA_THRESHOLD << 8) / lightness);
     PWM_SetMode(pwm_channel_index, PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE);
     PWM_SetMask(pwm_channel_index, 0, 0);
-    PWM_Enable(pwm_channel_index, 1); 
+    PWM_Enable(pwm_channel_index, 1);
     PWM_HaltCtrlEnable(pwm_channel_index, 0);
 }
 
@@ -175,7 +175,7 @@ void blink_style(const uint8_t pwm_channel_index, const blink_style_t style)
         PWM_SetHighThreshold(pwm_channel_index, 0, SINGLE_PERA_THRESHOLD >> 1);
         PWM_SetMode(pwm_channel_index, PWM_WORK_MODE_SINGLE_WITHOUT_DIED_ZONE);
         PWM_SetMask(pwm_channel_index, 0, 0);
-        PWM_Enable(pwm_channel_index, 1); 
+        PWM_Enable(pwm_channel_index, 1);
         PWM_HaltCtrlEnable(pwm_channel_index, 0);
         break;
     case BLINK_FAST:

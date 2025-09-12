@@ -27,7 +27,7 @@ static char buffer[100] = {0};
 uint32_t stack[10] = {0};
 int8_t sp;
 
-static void tx_data(const char *d, const uint8_t len);
+static void tx_data(const char *d, const int len);
 
 void cmd_help(const char *param)
 {
@@ -226,7 +226,7 @@ typedef struct
 str_buf_t input = {0};
 str_buf_t output = {0};
 
-static void append_data(str_buf_t *buf, const char *d, const uint8_t len)
+static void append_data(str_buf_t *buf, const char *d, const int len)
 {
     if (buf->size + len > sizeof(buf->buf))
         buf->size = 0;
@@ -251,7 +251,7 @@ void console_rx_data(const char *d, const uint8_t len)
 
 extern void stack_notify_tx_data(void);
 
-static void tx_data(const char *d, const uint8_t len)
+static void tx_data(const char *d, const int len)
 {
     append_data(&output, d, len);
 

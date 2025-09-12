@@ -8,7 +8,7 @@
 extern "C" {	/* allow C++ to use these headers */
 #endif	/* __cplusplus */
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define I2S_FIFO_DEPTH      16
 

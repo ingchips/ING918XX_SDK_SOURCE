@@ -7,6 +7,10 @@
     #define RX_BUFFER_SIZE      (BLOCK_SIZE * 65 + RING_BUF_OBJ_SIZE)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define RX_BUFFER_SIZE      (BLOCK_SIZE * 15 + RING_BUF_OBJ_SIZE)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    #define RX_BUFFER_SIZE      (BLOCK_SIZE * 10 + RING_BUF_OBJ_SIZE)
+#else
+    #error unknown or unsupported chip family
 #endif
 
 static uint8_t ring_buff_storage[RX_BUFFER_SIZE];
@@ -38,7 +42,7 @@ int8_t send_data(const uint8_t *data, int len, int flush)
         || (len < 1))
         return 1;
 #endif
-    
+
     int written = ring_buf_write_data(ring_buffer, data, len);
     if (written < len)
         dbg_printf("data lost: %d!!!\n", len - written);
@@ -57,7 +61,7 @@ void do_write(int flush)
     if (0 == notify_enable)
         return;
 #endif
-    
+
     if (flush) uart_driver_read_data();
     ring_buf_peek_data(ring_buffer, cb_ring_buf_peek_data, (void *)flush);
     //show_state(STATE_TX);

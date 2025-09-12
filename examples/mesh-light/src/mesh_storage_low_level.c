@@ -7,9 +7,18 @@
 #include "eflash.h"
 #include "app_debug.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#define ERASE_BANK              erase_flash_page
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define ERASE_BANK              erase_flash_sector
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#define ERASE_BANK              erase_flash_sector
+#else
+#error unknown or unsupported chip family
+#endif
 
 // Application flash related.
-#define MESH_STORAGE_KEY_START      KV_MESH_KEY_START 
+#define MESH_STORAGE_KEY_START      KV_MESH_KEY_START
 #define MESH_STORAGE_KEY_END        KV_MESH_KEY_END
 
 #define MESH_STORAGE_APP_KEY        MESH_STORAGE_KEY_START
@@ -23,7 +32,7 @@
 typedef struct mesh_app_storage_db {
     // control flag.
     uint32_t flag;
-    
+
     // name
     uint8_t  name[30];
     uint16_t name_len;
@@ -46,7 +55,7 @@ int mesh_storage_flag_get(uint32_t *flag){
     mesh_app_storage_db_t *store = (mesh_app_storage_db_t *)kv_get(MESH_STORAGE_APP_KEY, NULL);
     if (NULL == store)
         return -1;
-    
+
     *flag = store->flag;
     return 0;
 }
@@ -56,7 +65,7 @@ int mesh_storage_single_flag_check(uint32_t bit){
     mesh_app_storage_db_t *store = (mesh_app_storage_db_t *)kv_get(MESH_STORAGE_APP_KEY, NULL);
     if (NULL == store)
         return -1;
-    
+
     if(store->flag & bit){
         return 1;
     }
@@ -70,7 +79,7 @@ void mesh_storage_name_get(uint8_t *name, uint16_t *len){
     mesh_app_storage_db_t *store = (mesh_app_storage_db_t *)kv_get(MESH_STORAGE_APP_KEY, NULL);
     if (NULL == store)
         return;
-    
+
     if(store->flag & MESH_FLAG_BIT_NAME){
         memcpy(name, store->name, store->name_len);
         *len = store->name_len;
@@ -111,7 +120,7 @@ void mesh_storage_gatt_addr_get(bd_addr_t addr){
     mesh_app_storage_db_t *store = (mesh_app_storage_db_t *)kv_get(MESH_STORAGE_APP_KEY, NULL);
     if (NULL == store)
         return;
-    
+
     if(store->flag & MESH_FLAG_BIT_GATT_ADDR){
         memcpy(addr, store->gatt_addr, sizeof(bd_addr_t));
     } else {
@@ -146,7 +155,7 @@ void mesh_storage_beacon_addr_get(bd_addr_t addr){
     mesh_app_storage_db_t *store = (mesh_app_storage_db_t *)kv_get(MESH_STORAGE_APP_KEY, NULL);
     if (NULL == store)
         return;
-    
+
     if(store->flag & MESH_FLAG_BIT_BEACON_ADDR){
         memcpy(addr, store->beacon_addr, sizeof(bd_addr_t));
     } else {
@@ -181,7 +190,7 @@ void mesh_storage_device_uuid_get(uint8_t *uuid, uint16_t *len){
     mesh_app_storage_db_t *store = (mesh_app_storage_db_t *)kv_get(MESH_STORAGE_APP_KEY, NULL);
     if (NULL == store)
         return;
-    
+
     if(store->flag & MESH_FLAG_BIT_UUID){
         memcpy(uuid, store->device_uuid, sizeof(store->device_uuid));
         *len = sizeof(store->device_uuid);
@@ -209,7 +218,7 @@ void mesh_storage_device_uuid_set(uint8_t *uuid, uint16_t len){
         app_log_error("error: uuid len err=%d(right Len =%d)\n", len, sizeof(store->device_uuid));
         return;
     }
-    
+
     memcpy(store->device_uuid, uuid, sizeof(store->device_uuid));
     store->uuid_len = len;
     store->flag |= MESH_FLAG_BIT_UUID;
@@ -222,7 +231,7 @@ void mesh_storage_device_uuid_set(uint8_t *uuid, uint16_t len){
 // erase flash
 static void my_kv_erase_flash(void){
     app_assert(app_flash_start_address != 0);
-    erase_flash_page(app_flash_start_address);
+    ERASE_BANK(app_flash_start_address);
 }
 
 // write to flash.
@@ -246,11 +255,11 @@ static int my_kv_read_from_flash(void *db, const int max_size){
 // init.
 int mesh_storage_low_level_init(uint32_t start_address){
     uint32_t flag = 0;
-    
+
     app_flash_start_address = start_address;
-    
+
     kv_init(&my_kv_write_to_flash, &my_kv_read_from_flash);
-    // if not init, init it. 
+    // if not init, init it.
     if(mesh_storage_flag_get(&flag) < 0){
         app_log_info("kv storage init\n");
         kv_put(MESH_STORAGE_APP_KEY, NULL, sizeof(mesh_app_storage_db_t));

@@ -4,11 +4,11 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9010400000000",
-    "addr": 152572
+    "addr": 152668
    }
   },
   "rom": {
-   "size": 140200,
+   "size": 141316,
    "base": 16384
   },
   "ram": {
@@ -19,7 +19,7 @@
    "base": 163840
   },
   "version": [
-   1,10,18]
+   1,10,20]
  },
  "tc_dir": "C:\\Programs\\gcc-arm-none-eabi-10.3-2021.10\\bin",
  "eflash_addr": "0x42000",

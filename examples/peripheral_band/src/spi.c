@@ -2,10 +2,11 @@
 
 void SPI_Init(SSP_TypeDef * SSP_Ptr)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     apSSP_sDeviceControlBlock param;
 
     apSSP_Initialize(SSP_Ptr);
-    
+
     SYSCTRL_ResetBlock(SYSCTRL_Reset_AHB_SPI0);
     SYSCTRL_ReleaseBlock(SYSCTRL_Reset_AHB_SPI0);    
 
@@ -20,7 +21,9 @@ void SPI_Init(SSP_TypeDef * SSP_Ptr)
     param.eMasterSlaveMode = apSSP_MASTER;
     param.eSlaveOutput     = apSSP_SLAVEOUTPUTDISABLED;
     apSSP_DeviceParametersSet(SSP_Ptr, &param);
-    
+#else
+    #warning WIP
+#endif
 }
 
 /*********************************************/
@@ -42,6 +45,7 @@ void SPI_Delay(uint8_t t)
 //********************************************/ 
 void SPI_Write(uint8_t data)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     // send data
     apSSP_WriteFIFO(AHB_SSP0, data);
     // wait data send complete
@@ -50,5 +54,8 @@ void SPI_Write(uint8_t data)
     apSSP_DeviceDisable(AHB_SSP0);
     // clear dummy data
     apSSP_ReadFIFO(AHB_SSP0);
+#else
+    #warning WIP
+#endif
 }
   

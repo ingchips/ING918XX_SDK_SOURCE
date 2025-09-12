@@ -13,3 +13,5 @@ Note: Define `BOARD=BOARD_DEV` to run this on development board (no keyboard);
 define `BOARD=BOARD_REM` to a special remote controller.
 
 Use `AUDIO_INPUT` to select input.
+
+Note: Keil 4 can't build _libsbc_.

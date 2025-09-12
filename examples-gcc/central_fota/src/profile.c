@@ -40,6 +40,12 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
     #define TARGET_STORAGE_START    0x02041000
     #define PLATFORM_BIN_SIZE       0x00028000
     #define APP_BIN_SIZE            0x00004000
+
+#elif (TARGET_FAMILY == INGCHIPS_FAMILY_20)
+    #define ENTRY                   0x02002000
+    #define TARGET_STORAGE_START    0x02041000
+    #define PLATFORM_BIN_SIZE       0x00028000
+    #define APP_BIN_SIZE            0x00004000
 #else
     #error unknown or unsupported target chip family
 #endif
@@ -47,6 +53,8 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #define LOCAL_STORAGE_START     0x00044000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define LOCAL_STORAGE_START     0x02041000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #define LOCAL_STORAGE_START     0x02041000
 #else
     #error unknown or unsupported chip family
@@ -142,6 +150,9 @@ static void fully_discovered(service_node_t *first, void *user_data, int err_cod
                             ENTRY,
                             fota_done);
     }
+    
+    gatt_client_util_free(discoverer);
+    discoverer = NULL;
 }
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)

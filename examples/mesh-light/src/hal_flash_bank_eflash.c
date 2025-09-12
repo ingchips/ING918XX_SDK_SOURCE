@@ -1,6 +1,6 @@
 /*
  *  hal_flash_bank_eflash.c
- * 
+ *
  *  HAL abstraction for Flash memory that can be written anywhere
  *  after being erased
  */
@@ -12,6 +12,16 @@
 #include "hal_flash_bank_eflash.h"
 #include "app_config.h"
 #include "app_debug.h"
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define ERASE_BANK              erase_flash_page
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define ERASE_BANK              erase_flash_sector
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    #define ERASE_BANK              erase_flash_sector
+#else
+    #error unknown or unsupported chip family
+#endif
 
 static uint32_t hal_flash_bank_eflash_get_bank_num(void * context){
     hal_flash_bank_eflash_t * self = (hal_flash_bank_eflash_t *) context;
@@ -32,7 +42,7 @@ static void hal_flash_bank_eflash_erase(void * context, int bank){
     if (bank > 1) { app_log_error("Erase: bank error."); return; }
 
     // Erase page.
-    erase_flash_page(self->banks[bank]);
+    ERASE_BANK(self->banks[bank]);
     app_log_debug("== erase flash[0x%x]\n", self->banks[bank]);
 }
 
@@ -48,7 +58,7 @@ static void hal_flash_bank_eflash_read(void * context, int bank, uint32_t offset
 
 static void hal_flash_bank_eflash_write(void * context, int bank, uint32_t offset, const uint8_t * data, uint32_t size){
     hal_flash_bank_eflash_t * self = (hal_flash_bank_eflash_t *) context;
-    
+
 #if !defined(MESH_STACK_TLV_USE_FLASH)
     app_log_debug("Write not avaliable!");
     return;
@@ -76,7 +86,7 @@ static const hal_flash_bank_t hal_flash_bank_eflash_impl = {
     /* void (*write)(..);             */ &hal_flash_bank_eflash_write,
 };
 
-const hal_flash_bank_t * hal_flash_bank_eflash_init_instance(hal_flash_bank_eflash_t * context, 
+const hal_flash_bank_t * hal_flash_bank_eflash_init_instance(hal_flash_bank_eflash_t * context,
         uint32_t bank_size, uintptr_t bank_0_addr, uintptr_t bank_1_addr){
     context->bank_size  = bank_size;
     context->banks[0]   = bank_0_addr;

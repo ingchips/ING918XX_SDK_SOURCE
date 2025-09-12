@@ -17,8 +17,8 @@
 #define CONFIG_USB_DBG_LEVEL USB_DBG_INFO
 #endif
 
-#define CONFIG_USE_USB_HOST     0
-#define CONFIG_USE_USB_DEVICE   1
+#define CONFIG_USE_USB_HOST     1
+#define CONFIG_USE_USB_DEVICE   0
 
 #if CONFIG_USE_USB_DEVICE
 /* ---------------- DWC2 Configuration ---------------- */

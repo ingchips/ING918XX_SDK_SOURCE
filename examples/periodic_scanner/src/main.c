@@ -52,14 +52,14 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_PORT, &config, 0);
 }
 
-const int ant_pins[] = {7, 8, 10, 11, 16, 17, 18, 19};
+const uint8_t ant_pins[] = {7, 8, 10, 11, 16, 17, 18, 19};
 
 void setup_peripherals(void)
 {
     int i;
     config_uart(OSC_CLK_FREQ, 921600);
     
-    PINCTRL_EnableAllAntSelPins();
+    PINCTRL_EnableAntSelPins(sizeof(ant_pins) / sizeof(ant_pins[0]), ant_pins);
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)

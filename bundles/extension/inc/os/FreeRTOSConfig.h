@@ -97,8 +97,10 @@
 #define configCPU_CLOCK_HZ          PLL_CLK_FREQ
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define configCPU_CLOCK_HZ          SYSCTRL_GetHClk()
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#define configCPU_CLOCK_HZ          SYSCTRL_GetHClk()
 #else
-#error unknow chip family
+#error unknown chip family
 #endif
 
 #if (configSYSTICK_CLOCK_HZ == 32768)
@@ -111,7 +113,7 @@
 #define configMAX_PRIORITIES        ( 15 )
 #define configMINIMAL_STACK_SIZE    ( ( unsigned short ) 128 )
 #ifndef configTOTAL_HEAP_SIZE
-#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 24896 ) )
+#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 25576 ) )
 #endif
 #define configMAX_TASK_NAME_LEN     ( 16 )
 #define configUSE_TRACE_FACILITY    0
@@ -180,8 +182,8 @@ standard names. */
 #ifdef POWER_SAVING
 
 #define configPRE_SUPPRESS_TICKS_AND_SLEEP_PROCESSING(xExpectedIdleTime)    \
-        do {    extern TickType_t sysPreSuppressTicksAndSleepProcessing(TickType_t expectedTicks);  \
-                xExpectedIdleTime = sysPreSuppressTicksAndSleepProcessing(xExpectedIdleTime);       \
+        do {    extern uint32_t sysPreSuppressCyclesAndSleepProcessing(uint32_t);  \
+                xExpectedIdleTime = sysPreSuppressCyclesAndSleepProcessing(xExpectedIdleTime * (configSYSTICK_CLOCK_HZ / configTICK_RATE_HZ)) / (configSYSTICK_CLOCK_HZ / configTICK_RATE_HZ);\
         } while (0)
 
 #define configPRE_SLEEP_PROCESSING(xModifiableIdleTime)                             \
@@ -214,6 +216,12 @@ standard names. */
         } while (0)
 #endif
 */
+
+#ifdef OPT_RAM_CODE
+#define MAYBE_RAM_CODE    __attribute__((section(".ram_code")))
+#else
+#define MAYBE_RAM_CODE
+#endif
 
 #endif /* FREERTOS_CONFIG_H */
 

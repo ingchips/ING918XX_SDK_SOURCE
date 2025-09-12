@@ -9,7 +9,7 @@ const char *log_rtc_timestamp(void)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     return fmt_rtc_timestamp(str_buf, RTC_Current());
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     return fmt_us_timestamp(str_buf, platform_get_us_time());
 #else
     #error unknown or unsupported chip family

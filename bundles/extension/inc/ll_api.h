@@ -176,30 +176,28 @@ void ll_hint_on_ce_len(const uint16_t conn_handle, const uint16_t min_ce_len, co
  * @return                      0 if successful else error code
  ****************************************************************************************
  */
-// int ll_create_conn(uint8_t role,
-//                    uint8_t addr_types,
-//                    const uint8_t *adv_addr,
-//                    const uint8_t *init_addr,
-//                    uint8_t rx_phy,
-//                    uint8_t tx_phy,
-//                    uint32_t access_addr,
-//                    uint32_t crc_init,
-//                    uint32_t interval,
-//                    uint16_t sup_timeout,
-//                    const uint8_t *channel_map,
-//                    uint8_t  ch_sel_algo,
-//                    uint8_t  hop_inc,
-//                    uint8_t  last_unmapped_ch,
-//                    uint16_t min_ce_len,
-//                    uint16_t max_ce_len,
-//                    uint64_t start_time,
-//                    uint16_t event_counter,
-//                    uint16_t slave_latency,
-//                    uint8_t  sleep_clk_acc,
-//                    uint32_t sync_window,
-//                    const void *security);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_create_conn(uint8_t role,
+                   uint8_t addr_types,
+                   const uint8_t *adv_addr,
+                   const uint8_t *init_addr,
+                   uint8_t rx_phy,
+                   uint8_t tx_phy,
+                   uint32_t access_addr,
+                   uint32_t crc_init,
+                   uint32_t interval,
+                   uint16_t sup_timeout,
+                   const uint8_t *channel_map,
+                   uint8_t  ch_sel_algo,
+                   uint8_t  hop_inc,
+                   uint8_t  last_unmapped_ch,
+                   uint16_t min_ce_len,
+                   uint16_t max_ce_len,
+                   uint64_t start_time,
+                   uint16_t event_counter,
+                   uint16_t slave_latency,
+                   uint8_t  sleep_clk_acc,
+                   uint32_t sync_window,
+                   const void *security);
 
 /**
  ****************************************************************************************
@@ -298,9 +296,7 @@ int ll_get_conn_events_info(const uint16_t conn_handle,
  * @return                      0 if aborting is ongoing else non-0
  ****************************************************************************************
  */
-// int ll_conn_abort(uint16_t conn_handle);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_conn_abort(uint16_t conn_handle);
 
 /**
  ****************************************************************************************
@@ -931,10 +927,8 @@ typedef struct
 * @warning This function should not be called again after one or more burst packet
 * objects are created.
 */
-// int ll_burst_packet_config_enhanced(const ll_burst_packet_common_param_t *param,
-//    const ll_burst_packet_enhanced_param_t *enhanced);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_config_enhanced(const ll_burst_packet_common_param_t *param,
+   const ll_burst_packet_enhanced_param_t *enhanced);
 
 /**
  * @brief Enable and Configure the legacy burst mode
@@ -948,10 +942,8 @@ typedef struct
  * @warning This function should not be called again after one or more burst packet
 * objects are created.
  */
-// int ll_burst_packet_config_legacy(const ll_burst_packet_common_param_t *param,
-//     const ll_burst_packet_legacy_param_t *legacy);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_config_legacy(const ll_burst_packet_common_param_t *param,
+    const ll_burst_packet_legacy_param_t *legacy);
 
 /**
  * @brief Create a burst packet object in initiator role
@@ -968,11 +960,9 @@ typedef struct
  * @param user_data                 A pointer to user data to be passed to the callback function.
  * @return                          On success, returns a pointer to the `ll_raw_packet` structure. On failure, returns `NULL`.
  */
-// struct ll_raw_packet *ll_burst_packet_initiator_alloc(uint8_t rx_fifo_depth, uint8_t tx_fifo_depth,
-//     uint16_t wait_for_ack_timeout_us, uint8_t enable_whiten,
-//     f_ll_raw_packet_done on_done, void *user_data);
-// WARNING: ^^^ this API is not available in this release
-
+struct ll_raw_packet *ll_burst_packet_initiator_alloc(uint8_t rx_fifo_depth, uint8_t tx_fifo_depth,
+    uint16_t wait_for_ack_timeout_us, uint8_t enable_whiten,
+    f_ll_raw_packet_done on_done, void *user_data);
 
 /**
  * @brief Set additional parameter of a burst packet object in initiator role
@@ -988,11 +978,9 @@ typedef struct
  *                                      - if `crc_len_bytes == 1`: lowest 8 bits are used
  * @return                          0 on success, or an error code on failure.
  */
-// int ll_burst_packet_initiator_set_param(struct ll_raw_packet *packet,
-//     int8_t tx_power, int8_t phy_channel_id, uint8_t phy,
-//     uint16_t auto_retrans_cnt, const uint8_t *addr, uint16_t crc_init);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_initiator_set_param(struct ll_raw_packet *packet,
+    int8_t tx_power, int8_t phy_channel_id, uint8_t phy,
+    uint16_t auto_retrans_cnt, const uint8_t *addr, uint16_t crc_init);
 
 /**
  * @brief Pushes data into the transmit FIFO of a burst packet in initiator role.
@@ -1006,10 +994,8 @@ typedef struct
  *
  * @warning Ensure that the data size does not exceed the maximum payload length.
  */
-// int ll_burst_packet_initiator_tx_fifo_push_data(struct ll_raw_packet *packet,
-//     uint8_t header, uint8_t enable_ack, const void *data, int size);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_initiator_tx_fifo_push_data(struct ll_raw_packet *packet,
+    uint8_t header, uint8_t enable_ack, const void *data, int size);
 
 /**
  * @brief Create a burst packet object in responder role
@@ -1026,11 +1012,9 @@ typedef struct
  * @param user_data                 A pointer to user data to be passed to the callback function.
  * @return                          On success, returns a pointer to the `ll_raw_packet` structure. On failure, returns `NULL`.
  */
-// struct ll_raw_packet *ll_burst_packet_responder_alloc(uint8_t rx_fifo_depth, uint8_t tx_fifo_depth,
-//     uint8_t lanes_num, uint8_t enable_whiten,
-//     f_ll_raw_packet_done on_done, void *user_data);
-// WARNING: ^^^ this API is not available in this release
-
+struct ll_raw_packet *ll_burst_packet_responder_alloc(uint8_t rx_fifo_depth, uint8_t tx_fifo_depth,
+    uint8_t lanes_num, uint8_t enable_whiten,
+    f_ll_raw_packet_done on_done, void *user_data);
 
 /**
  * @brief Configuration of a lane
@@ -1060,11 +1044,9 @@ typedef struct
  * @param lanes             Pointer to configurations of each lane.
  * @return                  0 on success, non-zero on failure.
  */
-// int ll_burst_packet_responder_set_param(struct ll_raw_packet *packet,
-//     int8_t tx_power, int8_t phy_channel_id, uint8_t phy,
-//     const ll_burst_responder_lane_cfg_t *lanes);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_responder_set_param(struct ll_raw_packet *packet,
+    int8_t tx_power, int8_t phy_channel_id, uint8_t phy,
+    const ll_burst_responder_lane_cfg_t *lanes);
 
 /**
  * @brief Pushes data into the transmit FIFO for a burst packet in responder role.
@@ -1080,10 +1062,8 @@ typedef struct
  *
  * @warning Ensure that the size does not exceed the maximum allowed payload length.
  */
-// int ll_burst_packet_responder_tx_fifo_push_data(struct ll_raw_packet *packet,
-//                                 uint8_t lane_id, uint8_t header, const void *data, int size);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_responder_tx_fifo_push_data(struct ll_raw_packet *packet,
+                                uint8_t lane_id, uint8_t header, const void *data, int size);
 
 /**
  * @brief Flushes the transmit FIFO of a burst packet.
@@ -1097,9 +1077,7 @@ typedef struct
  *
  * @warning When the burst packet is still running, this function will fail.
  */
-// int ll_burst_packet_flush_tx_fifo(struct ll_raw_packet *packet);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_flush_tx_fifo(struct ll_raw_packet *packet);
 
 /**
  * @brief Runs a burst packet operation.
@@ -1118,9 +1096,7 @@ typedef struct
  * @note "Success" means that the burst packet operation will be scheduled.
  * This function returns immediately.
  */
-// int ll_burst_packet_run(struct ll_raw_packet *packet, uint64_t when, uint32_t window);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_run(struct ll_raw_packet *packet, uint64_t when, uint32_t window);
 
 /**
  * @brief Callback function type for visiting each received PDU in a burst packet.
@@ -1154,10 +1130,8 @@ typedef void (* f_ll_burst_pdu_visitor)(int index, uint8_t lane_id,
  * @return                  Total number of PDUs visited. When error occurs,
  *                          a negative error code is returned.
  */
-// int ll_burst_packet_check_each_rx_pdu(struct ll_raw_packet *packet,
-//     f_ll_burst_pdu_visitor visitor, void *user_data);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_check_each_rx_pdu(struct ll_raw_packet *packet,
+    f_ll_burst_pdu_visitor visitor, void *user_data);
 
 /**
  * @brief Retrieves the number of transmit (TX) PDUs in the burst packet in
@@ -1166,9 +1140,7 @@ typedef void (* f_ll_burst_pdu_visitor)(int index, uint8_t lane_id,
  * @param packet            The burst packet object.
  * @return                  The number of transmit PDUs in the burst.
  */
-// int ll_burst_packet_initiator_get_tx_num(struct ll_raw_packet *packet);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_initiator_get_tx_num(struct ll_raw_packet *packet);
 
 /**
  * @brief Retrieves the number of transmit (TX) PDUs on a lane in the burst packet in
@@ -1178,9 +1150,7 @@ typedef void (* f_ll_burst_pdu_visitor)(int index, uint8_t lane_id,
  * @param lane_id           The lane ID
  * @return                  The number of transmit PDUs on the lane.
  */
-// int ll_burst_packet_responder_get_tx_num(struct ll_raw_packet *packet, uint8_t lane_id);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_burst_packet_responder_get_tx_num(struct ll_raw_packet *packet, uint8_t lane_id);
 
 /**
  * @brief Support shorter IFS (`rtx_turn_around_time_us`) for 2M PHY in burst packet.
@@ -1192,9 +1162,7 @@ typedef void (* f_ll_burst_pdu_visitor)(int index, uint8_t lane_id,
  *
  * @note Once enabled, BLE communication will be affected.
  */
-// void ll_burst_packet_enable_2m_phy_shorter_ifs(void);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_burst_packet_enable_2m_phy_shorter_ifs(void);
 
 /**
  * @brief Disable shorter IFS for 2M PHY in burst packet.

@@ -25,7 +25,7 @@ static hci_con_handle_t handle_send = 0;
 static uint8_t notify_enable = 0;
 uint8_t loopback_mode = 0;
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -45,7 +45,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -58,15 +58,15 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
                 att_server_notify(handle_send, HANDLE_GENERIC_OUTPUT, (uint8_t *)buffer, buffer_size);
         }
         return 0;
-    case HANDLE_GENERIC_OUTPUT + 1:        
+    case HANDLE_GENERIC_OUTPUT + 1:
         if(*(uint16_t *)buffer == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION)
         {
             notify_enable = 1;
             if (loopback_mode == 0)
-                att_server_request_can_send_now_event(handle_send);            
+                att_server_request_can_send_now_event(handle_send);
         }
         else
-            notify_enable = 0;        
+            notify_enable = 0;
         return 0;
     default:
         return 0;
@@ -86,7 +86,7 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 }
 
 void send_data(void)
-{    
+{
     uint16_t len = att_server_get_mtu(handle_send) - 3;
     if (0 == notify_enable)
         return;
@@ -120,7 +120,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         gap_set_adv_set_random_addr(0, rand_addr);
 
 #ifdef LONG_RANGE
-        gap_set_ext_adv_para(0, 
+        gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -135,7 +135,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                                 0x00,                      // Advertising_SID
                                 0x00);                     // Scan_Request_Notification_Enable
 #else
-        gap_set_ext_adv_para(0, 
+        gap_set_ext_adv_para(0,
                                 CONNECTABLE_ADV_BIT | SCANNABLE_ADV_BIT | LEGACY_PDU_BIT,
                                 0x00a1, 0x00a1,            // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                                 PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -159,6 +159,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             {
                 const le_meta_event_enh_create_conn_complete_t *cmpl =
                     decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
@@ -180,7 +181,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         notify_enable = 0;
         gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
         break;
-    
+
     case ATT_EVENT_MTU_EXCHANGE_COMPLETE:
         platform_printf("ATT_EVENT_MTU updated: %d\n", att_event_mtu_exchange_complete_get_MTU(packet));
         break;
@@ -201,7 +202,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 }
 
 uint32_t setup_profile(void *data, void *user_data)
-{   
+{
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

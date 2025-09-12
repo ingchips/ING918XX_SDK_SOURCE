@@ -171,10 +171,15 @@ uint8_t apSSP_TxFifoEmpty(SSP_TypeDef * SSP_Ptr);
 
 #endif
 
-#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
+
+#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_20) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
 
 /* same depth for both RX FIFO and TX FIFO */
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define SPI_FIFO_DEPTH (8)//8 words
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#define SPI_FIFO_DEPTH (4)//4 words
+#endif
 
 /* ----------------------------------------------------------
  * Description:
@@ -262,6 +267,9 @@ typedef enum
 #define bsSPI_TRANSCTRL_RDTRANCNT         0
 #define bsSPI_TRANSCTRL_DUMMYCNT          9
 #define bsSPI_TRANSCTRL_WRTRANCNT         12
+#if (INGCHIPS_FAMILY_20 == INGCHIPS_FAMILY)
+#define bsSPI_TRANSCTRL_WRENLARGECNT      8
+#endif
 /* SPI_TransCtrl_DualQuad_e */
 #define bsSPI_TRANSCTRL_DUALQUAD          22
 /* SPI_TransCtrl_TransMode_e */
@@ -279,6 +287,9 @@ typedef enum
 #define bwSPI_TRANSCTRL_ADDRFMT           1
 #define bwSPI_TRANSCTRL_ADDREN            1
 #define bwSPI_TRANSCTRL_CMDEN             1
+#if (INGCHIPS_FAMILY_20 == INGCHIPS_FAMILY)
+#define bsSPI_TRANSCTRL_WRENLARGEEN       6
+#endif
 
 #define SPI_TRANSCTRL_RDTRANCNT_X(x) ((x && 0x1FF) - 1)
 #define SPI_TRANSCTRL_WRTRANCNT_X(x) ((x && 0x1FF) - 1)
@@ -348,6 +359,16 @@ typedef enum
     SPI_MOSI_UNI_DIR_MODE = 0,
     SPI_MOSI_BI_DIR_MODE = 1
 }SPI_MOSI_Dir_Set_e;
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+/*  SPI_ERITE_ENLARGED_CNT_DISABLE: disable enlarged cnt, write data count use WrTranCnt.
+    SPI_ERITE_ENLARGED_CNT_ENABLE: enable enlarged cnt, write data count not use. */
+typedef enum
+{
+    SPI_ERITE_ENLARGED_CNT_DISABLE = 0,
+    SPI_ERITE_ENLARGED_CNT_ENABLE = 1
+}SPI_Write_Enlarged_e;
+#endif
 
 /* ----------------------------------------------------------
  * Description:
@@ -470,7 +491,7 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
 #define SPI_INTERFACETIMINGSCLKDIV_10   (4)
 #define SPI_INTERFACETIMINGSCLKDIV_12   (5)
 /* default clk config for spi0 and spi1
-   for default, spi interface clock is 24M, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   for default, spi interface clock is 24M, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation
    for example, "eSclkDiv == 1" means 24M/(2*(1+1)) = 6M(spi clk speed)*/
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_24M    (SPI_INTERFACETIMINGSCLKDIV_1 )
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_6M     (SPI_INTERFACETIMINGSCLKDIV_4 )
@@ -479,23 +500,23 @@ In slave mode, SPIActive becomes 1 after the SPI CS signal is asserted and becom
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M4    (SPI_INTERFACETIMINGSCLKDIV_10)
 #define SPI_INTERFACETIMINGSCLKDIV_DEFAULT_2M     (SPI_INTERFACETIMINGSCLKDIV_12)
 
-/* high speed SPI1 clk config 
+/* high speed SPI1 clk config
    1. SPI1 use HCLK, use SYSCTRL_SelectHClk() and SYSCTRL_SelectSpiClk() to increase spi interface clock
    for instance, below config would setup a spi interface clock for 84M(if pll clock is 336M), use SYSCTRL_GetClk() to confirm
     SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_1+3);//setup hclk, 336/4 = 84M
     SYSCTRL_SelectSpiClk(SPI_PORT_1,SYSCTRL_CLK_HCLK);//switch spi clock to hclk
    this is only an example, use API "SYSCTRL_GetClk(SYSCTRL_ITEM_APB_SPI1)" to check the real spi interface clock
-   2. again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   2. again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation
    for example, "eSclkDiv == 1" means 84M/(2*(1+1)) = 21M(spi clk speed)
 #define SPI_INTERFACETIMINGSCLKDIV_SPI1_21M    (1)
 #define SPI_INTERFACETIMINGSCLKDIV_SPI1_14M    (2)
 */
 
-/* high speed SPI0 clk config 
+/* high speed SPI0 clk config
    1. for SPI0, use SYSCTRL_GetPLLClk() to check the source clock, then use below API to config spi interface clock
    //for say, pll clock is 336M, then below api would generate a spi interface clock of 336/4 = 84M
    SYSCTRL_SelectSpiClk(SPI_PORT_0,SYSCTRL_CLK_PLL_DIV_1+3);
-   2. again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation 
+   2. again, use "spi interface clock / (2 * (eSclkDiv + 1))" for calculation
    for example, "eSclkDiv == 1" means 84M/(2*(1+1)) = 21M(spi clk speed)
 #define SPI_INTERFACETIMINGSCLKDIV_SPI0_21M    (1)
 #define SPI_INTERFACETIMINGSCLKDIV_SPI0_14M    (2)
@@ -576,6 +597,12 @@ typedef struct apSSP_xDeviceControlBlock
   SPI_TransFmt_AddrLen_e       eAddrLen;
   /* 0x0  MOSI is uni-directional signal in regular mode. 0x1: MOSI is bi-directional signal in regular mode. */
   SPI_MOSI_Dir_Set_e            eMOSI_Dir;
+
+  #if (INGCHIPS_FAMILY_20 == INGCHIPS_FAMILY)
+  SPI_Write_Enlarged_e          eEnlarged_En;
+
+  SPI_TransCtrl_TransCnt        eEnlargedWriteTransCnt;
+  #endif
 } apSSP_sDeviceControlBlock;
 
 /**
@@ -622,6 +649,30 @@ void apSSP_SetTransferControl(SSP_TypeDef *SPI_BASE, uint32_t val, uint32_t shif
  */
 void apSSP_SetTransferControlWrTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val);
 void apSSP_SetTransferControlRdTranCnt(SSP_TypeDef *SPI_BASE, uint32_t val);
+
+/**
+ * @brief Set the transfer mode of the SPI master.
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] SPI_TransCtrl_TransMode_e   TransMode
+ */
+void apSSP_SetTransMode(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_TransMode_e mode);
+
+/**
+ * @brief Enable master send device address.
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] enable                enable: 1; disable: 0
+ */
+void apSSP_SetAddrEn(SSP_TypeDef *SPI_BASE, uint8_t enable);
+
+/**
+ * @brief Enable master send device commond.
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] enable                enable: 1; disable: 0
+ */
+void apSSP_SetCmdEn(SSP_TypeDef *SPI_BASE, uint8_t enable);
 /**
  * @brief Enable SPI Int, see apSSP_DeviceParametersSet for reference
  *

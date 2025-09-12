@@ -16,7 +16,7 @@
 
 const bd_addr_t rand_addr = { 0xE4, 0x75, 0x03, 0xE4, 0xEE, 0x89 };
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -27,7 +27,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
     }
 }
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     if (att_handle == qcloud_char_defs[Q_CHAR_DEVICE_INFO].handle)
@@ -45,7 +45,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         qcloud_char_defs[Q_CHAR_EVENT].config = *(uint16_t *)buffer;
         return 0;
     }
-    
+
     return 0;
 }
 
@@ -91,6 +91,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         switch (hci_event_le_meta_get_subevent_code(packet))
         {
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             att_set_db(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle,
                        att_db_util_get_address());
             ble_gap_connect_cb();

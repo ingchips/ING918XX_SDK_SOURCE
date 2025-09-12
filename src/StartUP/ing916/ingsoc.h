@@ -29,8 +29,8 @@ typedef enum
     PLATFORM_CB_IRQ_TIMER2,
     PLATFORM_CB_IRQ_WDT,
     PLATFORM_CB_IRQ_PDM,
-    PLATFORM_CB_IRQ_AHPSPI,
-    PLATFORM_CB_IRQ_SPI0 = PLATFORM_CB_IRQ_AHPSPI,
+    PLATFORM_CB_IRQ_AHBSPI,
+    PLATFORM_CB_IRQ_SPI0 = PLATFORM_CB_IRQ_AHBSPI,
     PLATFORM_CB_IRQ_APBSPI,
     PLATFORM_CB_IRQ_SPI1 = PLATFORM_CB_IRQ_APBSPI,
     PLATFORM_CB_IRQ_SADC,
@@ -64,8 +64,9 @@ typedef enum
     PLATFORM_CB_IRQ_MAX
 } platform_irq_callback_type_t;
 
-// WARNING: Defined for compatibility with ING918xx. Do not use this.
+// WARNING: Defined for compatibility. Do not use these.
 #define PLATFORM_CB_IRQ_GPIO        PLATFORM_CB_IRQ_GPIO0
+#define PLATFORM_CB_IRQ_AHPSPI      PLATFORM_CB_IRQ_AHBSPI
 
 /* ================================================================================ */
 /* ================      Processor and Core Peripheral Section     ================ */

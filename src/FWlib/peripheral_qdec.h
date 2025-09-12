@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 )
 typedef enum {
     QDEC_CH_CTRL        = 0x00,
     QDEC_CH_MODE        = 0x04,
@@ -48,8 +48,8 @@ typedef enum {
     QDEC_CH2,
 } QDEC_CHX;
 
-/** 
- *  Configures the different modes of QDEC external triggering. 
+/**
+ *  Configures the different modes of QDEC external triggering.
 */
 typedef enum {
     QDEC_EX_NO_TRIG = 0,
@@ -58,7 +58,7 @@ typedef enum {
     QDEC_EX_BOTH_EDGE,
 }QDEC_ExTrigger;
 
-/** 
+/**
 * Qdec module interrupt flag.
  * - QDEC_INT_COVFS_CMB_STATE: Counter overflow state.
  * - QDEC_INT_LOVFS_CMB_STATE: Counter underflow state.
@@ -70,7 +70,7 @@ typedef enum {
  * - QDEC_INT_ETRGS_CMB_STATE: External trigger state.
  * - QDEC_INT_PDC_END_STATE: Periodic data conversion end state.
  * - QDEC_INT_BUF_FULL_STATE: Buffer full state.
-*/ 
+*/
 typedef enum {
     QDEC_INT_COVFS_CMB_STATE = 1<<0,
     QDEC_INT_LOVFS_CMB_STATE = 1<<1,

@@ -24,6 +24,11 @@ typedef void (* f_void_void_t)(void);
 #define ROM_FUNC_ADDR_CRC                   (0x00001d21)
 #define ROM_FUNC_ADDR_BOOT_UART_INIT        (0x00003aa1)
 
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+#define ROM_FUNC_ADDR_CRC                   (0x00001ccd)
+#define ROM_FUNC_ADDR_BOOT_UART_INIT        (0x000013c3)
+
 #endif
 
 /**

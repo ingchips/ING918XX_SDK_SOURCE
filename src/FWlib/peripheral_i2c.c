@@ -90,7 +90,7 @@ void I2C_DEBUG0_TOG(I2C_TypeDef *I2C_BASE, uint32_t data)
 }
 #endif
 
-#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define I2C_INT_FULL_MASK       ((1 << (I2C_INT_CMPL + 1)) - 1)
 
@@ -197,7 +197,7 @@ static uint8_t I2C_SCL_ParamExhaustiveSearch(uint32_t pclk_hz,uint32_t sclk_hz,u
     uint8_t best_T_SCLHi = 0;
     uint8_t best_T_SP = 0;
     uint8_t best_TPM = 0;
-    float  best_error = 999999.0; 
+    float  best_error = 999999.0;
     float  tpclk = (float)(1000000000.0 / pclk_hz);
     float  tsclk_h = (float)(1000000000.0 / sclk_hz)/(2.0+scl_ratio);
     uint8_t find_flag = 1;
@@ -225,7 +225,7 @@ static uint8_t I2C_SCL_ParamExhaustiveSearch(uint32_t pclk_hz,uint32_t sclk_hz,u
 
 }
 
-static uint8_t I2C_GetSetupDataTime(uint32_t pclk_hz, uint8_t Tpm, 
+static uint8_t I2C_GetSetupDataTime(uint32_t pclk_hz, uint8_t Tpm,
         uint8_t T_sp, float su_data_time_max)
 {
     uint8_t T_SUDATA = 0;
@@ -243,7 +243,7 @@ static uint8_t I2C_GetSetupDataTime(uint32_t pclk_hz, uint8_t Tpm,
     return T_SUDATA - 1;
 }
 
-static uint8_t I2C_GetDataHoldTime(uint32_t pclk_hz,uint8_t T_SCLHi, uint8_t Tpm, 
+static uint8_t I2C_GetDataHoldTime(uint32_t pclk_hz,uint8_t T_SCLHi, uint8_t Tpm,
             uint8_t T_sp, float min_hold_time)
 {
     float  tpclk = (float)(1000000000.0 / pclk_hz);
@@ -283,7 +283,7 @@ uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOpt
       {
           scl_ratio = 1;
           max_su_data_time = 100.0;
-          min_hold_time = 300.0;          
+          min_hold_time = 300.0;
           sclk_hz = 400000;
 
       }break;
@@ -291,7 +291,7 @@ uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOpt
       {
             scl_ratio = 1;
             max_su_data_time = 50.0;
-            min_hold_time = 150.0;         
+            min_hold_time = 150.0;
             sclk_hz = 1000000;
 
       }break;
@@ -314,7 +314,7 @@ uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOpt
     T_HDDATA = I2C_GetDataHoldTime(pclk_hz,T_SCLHi, TPM, T_SP, min_hold_time);
     if(0xff == T_HDDATA){
         return 3;
-    }    
+    }
     I2C_BASE->TPM = TPM;
     I2C_ConfigSCLTiming(I2C_BASE,T_SCLHi,scl_ratio,T_HDDATA,T_SP,T_SUDATA);
     return 0;

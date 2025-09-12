@@ -106,7 +106,7 @@ void gatt_dummy_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet,
 
 static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
-{    
+{
     uint16_t handle = handle_map_to_slave[att_handle];
     char_node_t *c = gatt_client_util_find_char(discoverer, handle);
 
@@ -150,7 +150,7 @@ void clone_gatt_profile(service_node_t *first, void *user_data, int err_code)
     const uint8_t *uuid128;
     uint16_t uuid16;
     uint16_t handle;
-    
+
     if (err_code)
     {
         iprintf("error occured: %d\n", err_code);
@@ -172,7 +172,7 @@ void clone_gatt_profile(service_node_t *first, void *user_data, int err_code)
         }
         else
             att_db_util_add_service_uuid16(uuid16);
-        
+
         char_node_t *c;
         for (c = s->chars; c; c = c->next)
         {
@@ -181,10 +181,10 @@ void clone_gatt_profile(service_node_t *first, void *user_data, int err_code)
             iprintf("\n        HANDLE RANGE: %d - %d\n", c->chara.start_handle, c->chara.end_handle);
             iprintf(  "        VALUE HANDLE: %d\n", c->chara.value_handle);
             iprintf(  "        PROPERTIES  : "); gatt_client_util_print_properties(c->chara.properties); iprintf("\n\n");
-            
+
             if (c->chara.value_handle > 255)
                 platform_raise_assertion(__FILE__, __LINE__);
-            
+
             uuid128 = parse_uuid(c->chara.uuid128, &uuid16);
             if (uuid128)
             {
@@ -194,15 +194,15 @@ void clone_gatt_profile(service_node_t *first, void *user_data, int err_code)
             else
                 handle = att_db_util_add_characteristic_uuid16(uuid16,
                     c->chara.properties | ATT_PROPERTY_DYNAMIC, NULL, 0);
-            
+
             handle_map_to_slave[handle] = c->chara.value_handle;
             handle_map_from_slave[c->chara.value_handle] = handle;
-            
+
             int has_config = 0;
             if (c->chara.properties & (ATT_PROPERTY_NOTIFY | ATT_PROPERTY_INDICATE))
             {
                 has_config = 1;
-                
+
                 c->notification = (gatt_client_notification_t *)malloc(sizeof(gatt_client_notification_t));
                 gatt_client_listen_for_characteristic_value_updates(
                     c->notification, output_notification_handler,
@@ -215,12 +215,12 @@ void clone_gatt_profile(service_node_t *first, void *user_data, int err_code)
                 iprintf("        DESCRIPTOR: ");
                 gatt_client_util_print_uuid(d->desc.uuid128);
                 iprintf("\n        HANDLE: %d\n\n", d->desc.handle);
-                
+
                 if (d->desc.handle > 255)
                     platform_raise_assertion(__FILE__, __LINE__);
 
                 uuid128 = parse_uuid(d->desc.uuid128, &uuid16);
-                
+
                 if (has_config && (GATT_CLIENT_CHARACTERISTICS_CONFIGURATION == uuid16))
                 {
                     handle = handle_map_from_slave[c->chara.value_handle] + 1;
@@ -238,7 +238,7 @@ void clone_gatt_profile(service_node_t *first, void *user_data, int err_code)
             }
         }
     }
-    
+
     setup_adv();
 }
 
@@ -359,7 +359,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case HCI_EVENT_COMMAND_COMPLETE:
         switch (hci_event_command_complete_get_command_opcode(packet))
         {
-        
+
         default:
             break;
         }
@@ -372,7 +372,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_ext_adv_report_t *report = decode_hci_le_meta_event(packet, le_meta_event_ext_adv_report_t)->reports;
                 if (scan_data_len) break;
-                
+
                 if ((report->evt_type & HCI_EXT_ADV_PROP_SCAN_RSP) == 0)
                 {
                     memcpy(adv_data, report->data, report->data_len);
@@ -383,7 +383,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     memcpy(scan_data, report->data, report->data_len);
                     scan_data_len = report->data_len;
                     gap_set_ext_scan_enable(0, 0, 0, 0);
-                    
+
                     show_app_status(APP_CONNECTING);
                     iprintf("create connection...\n");
                     gap_ext_create_connection(INITIATING_ADVERTISER_FROM_LIST,
@@ -397,6 +397,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             break;
 
         case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        case HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
             {
                 const le_meta_event_enh_create_conn_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);

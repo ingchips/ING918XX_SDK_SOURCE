@@ -102,7 +102,7 @@ void setup_peripherals(void)
     RTC_Enable(RTC_ENABLED);
     RTC_SetNextIntOffset(32768 * 10);
 #else
-    #error WIP
+    #warning WIP
 #endif
 }
 
@@ -124,15 +124,23 @@ static void heart_rate_task(void *pdata)
 uint32_t hr_timer_isr(void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR2);
+#else
+    #warning WIP
+#endif
     xSemaphoreGiveFromISR(sem_heart_rate, &xHigherPriorityTaskWoke);
     return 0;
 }
 
 uint32_t rtc_timer_isr(void *user_data)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     RTC_ClearInt();
     RTC_SetNextIntOffset(32768 * 10);
+#else
+    #warning WIP
+#endif
     disp_item(DISP_TIME);
     return 0;
 }
@@ -190,11 +198,14 @@ int app_main()
 
     init_tasks();
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER2, hr_timer_isr, NULL);
     platform_set_irq_callback(PLATFORM_CB_IRQ_RTC, rtc_timer_isr, NULL);
 
     TMR_Enable(APB_TMR1);
-
+#else
+    #warning WIP
+#endif
     return 0;
 }
 

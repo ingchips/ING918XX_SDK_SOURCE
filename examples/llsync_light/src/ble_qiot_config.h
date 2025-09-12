@@ -87,7 +87,11 @@ extern "C" {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #define BLE_QIOT_RECORD_FLASH_ADDR   0x42000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #define BLE_QIOT_RECORD_FLASH_ADDR 0x2100000
+    #define BLE_QIOT_RECORD_FLASH_ADDR 0x02050000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    #define BLE_QIOT_RECORD_FLASH_ADDR 0x02050000
+#else
+    #error unknown or unsupported chip family
 #endif
 
     // define user develop version, pick from "a-zA-Z0-9.-_" and length limits 1～32 bytes.

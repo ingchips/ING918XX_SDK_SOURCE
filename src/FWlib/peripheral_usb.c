@@ -2,7 +2,7 @@
 #include "ingsoc.h"
 #include "peripheral_usb.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 // =============================================================================
 // PRIVATE VARIABLES
@@ -746,7 +746,7 @@ uint8_t USB_IsEpStall(uint8_t ep)
         return U_TRUE;
       }
     }
-    
+
     return U_FALSE;
 }
 
@@ -776,9 +776,9 @@ uint32_t USB_CheckTransferZeroPktCondition(uint8_t ep)
     epNum = USB_EP_NUM(ep);
 
     /*
-      For continuous IN packet transmission, it is sometimes necessary to send a 
-      zero-length packet at the end to inform the host that all data has been sent. 
-      Then, the host switches to the OUT status phase. 
+      For continuous IN packet transmission, it is sometimes necessary to send a
+      zero-length packet at the end to inform the host that all data has been sent.
+      Then, the host switches to the OUT status phase.
     */
 
     if(USB_IS_EP_DIRECTION_IN(ep))
@@ -808,7 +808,7 @@ uint32_t USB_CheckTransferZeroPktCondition(uint8_t ep)
       }
 
       // If the previous packet is not sent completely, it indicates that a hardware problem occurs,
-      // and the sending of zero-length packet is abandoned. 
+      // and the sending of zero-length packet is abandoned.
       if(XferSize != 0)
       {
         return 0;
@@ -846,16 +846,16 @@ static void USB_CheckAutoSendZeroPktFlag(uint8_t ep, uint16_t size, uint32_t * f
 {
     uint8_t   epNum;
     uint32_t  setFlag = 1;
-    
+
     USB_SETUP_T* setup = (USB_SETUP_T*)(g_UsbBufferEp0Out);
-    
+
     epNum = USB_EP_NUM(ep);
-    
+
     if(epNum != 0)
     {
       return;
     }
-    
+
     // Control transfer add flag about sending zero-length at last packet.
     // Except cmd: [Get device descriptor]
     switch(setup->bmRequestType.Recipient)
@@ -887,7 +887,7 @@ static void USB_CheckAutoSendZeroPktFlag(uint8_t ep, uint16_t size, uint32_t * f
       }
       break;
     }
-    
+
     if(setFlag)
     {
       *flag |= (setup->wLength > size) ? (1 << USB_TRANSFERT_FLAG_SEND_ZERO_PKT) : 0;
@@ -914,7 +914,7 @@ USB_ERROR_TYPE_E USB_SendData(uint8_t ep, void* buffer, uint16_t size, uint32_t 
     }
 
     if(!activeEp){return USB_ERROR_INACTIVE_EP;}
-    
+
     USB_CheckAutoSendZeroPktFlag(ep, size, &flag);
 
     USB_StartTransfer(USB_EP_DIRECTION_IN(ep), buffer, size, flag);

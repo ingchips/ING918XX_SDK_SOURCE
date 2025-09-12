@@ -255,6 +255,10 @@ uint32_t uart_isr(void *user_data)
     #define BOOT_ADDR 0x44000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define BOOT_ADDR 0x2042000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    #define BOOT_ADDR 0x2042000
+#else
+    #error unknown or unsupport chip famlify
 #endif
     {
         int i;
@@ -263,7 +267,7 @@ uint32_t uart_isr(void *user_data)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
         SYSCTRL_WriteBlockRst(0);
         SYSCTRL_WriteBlockRst(0x3ffffful);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#else
         for (i = 0; i < SYSCTRL_ITEM_NUMBER; i++)
         {
             SYSCTRL_ResetBlock((SYSCTRL_ResetItem)i);
@@ -315,6 +319,8 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(IIC_SDA_PIN, IO_SOURCE_I2C0_SDA_OUT);
     PINCTRL_SelI2cSclIn(I2C_PORT, IIC_SCL_PIN);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    PINCTRL_SelI2cIn(I2C_PORT, IIC_SCL_PIN, IIC_SDA_PIN);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     PINCTRL_SelI2cIn(I2C_PORT, IIC_SCL_PIN, IIC_SDA_PIN);
 #else
     #error unknown or unsupported chip family

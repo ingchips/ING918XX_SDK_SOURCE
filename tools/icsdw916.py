@@ -8,14 +8,16 @@ import struct
 import math
 
 SCRIPT_MOD = None
-AHB_QSPI_MEM_BASE   = 0x04000000
+BOOT_HELLO = b'UartBurnStart916\n'
 
 class intf_base(object):
     def __init__(self):
+        global BOOT_HELLO
+
         self.PAGE_SIZE = 256
         self.SECTOR_SIZE = 4 * 1024
 
-        self.BOOT_HELLO    = b'UartBurnStart916\n'
+        self.BOOT_HELLO    = BOOT_HELLO
         self.ACK           = b'#$ack\n'
         self.NACK          = b'#$nak\n'
         self.STATUS_LOCKED   = b'#$lck\n'

@@ -11,7 +11,7 @@ static uint32_t RTC_ReadStable(volatile uint32_t * reg)
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
-void RTC_Enable(const uint8_t flag)
+void RTC_EnableFreeRun(const uint8_t flag)
 {
     volatile uint32_t * reg = (volatile uint32_t *)(APB_RTC_BASE + 0x130);
     const uint32_t mask = 1 << 3;
@@ -29,29 +29,6 @@ uint32_t RTC_Current(void)
 {
     volatile uint32_t * reg = (volatile uint32_t *)(APB_RTC_BASE + 0x168);
     return RTC_ReadStable(reg);
-}
-
-uint64_t RTC_CurrentFull(void)
-{
-    union
-    {
-        struct
-        {
-            uint32_t low;
-            uint32_t high;
-        } parts;
-        uint64_t v;
-    } r;
-    uint32_t t;
-    r.parts.low = RTC_Current();
-    r.parts.high = RTC_CurrentHigh();
-    t = RTC_Current();
-    if (t < r.parts.low)
-    {
-        r.parts.high = RTC_CurrentHigh();
-        r.parts.low = t;
-    }
-    return r.v;
 }
 
 void RTC_SetNextIntOffset(const uint32_t offset)
@@ -313,29 +290,6 @@ uint32_t RTC_Current(void)
     return RTC_ReadStable(reg);
 }
 
-uint64_t RTC_CurrentFull(void)
-{
-    union
-    {
-        struct
-        {
-            uint32_t low;
-            uint32_t high;
-        } parts;
-        uint64_t v;
-    } r;
-    uint32_t t;
-    r.parts.low = RTC_Current();
-    r.parts.high = RTC_CurrentHigh();
-    t = RTC_Current();
-    if (t < r.parts.low)
-    {
-        r.parts.high = RTC_CurrentHigh();
-        r.parts.low = t;
-    }
-    return r.v;
-}
-
 void RTC_EnableFreeRun(uint8_t enable)
 {
     #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE
@@ -350,6 +304,35 @@ void RTC_EnableFreeRun(uint8_t enable)
     {
         *AON1_REG0 &= ~(1u << 3);
         *AON1_REG3 &= ~(1u << 4);
+    }
+}
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+uint32_t RTC_CurrentHigh(void)
+{
+    volatile uint32_t * reg = (volatile uint32_t *)(AON2_CTRL_BASE + 0x4C);
+    uint32_t r = RTC_ReadStable(reg);
+    return r & 0x7fful;
+}
+
+uint32_t RTC_Current(void)
+{
+    volatile uint32_t * reg = (volatile uint32_t *)(AON2_CTRL_BASE + 0x48);
+    return RTC_ReadStable(reg);
+}
+
+void RTC_EnableFreeRun(uint8_t enable)
+{
+    #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE
+
+    if (enable)
+    {
+        *AON1_REG0 |= 1ul << 6;
+    }
+    else
+    {
+        *AON1_REG0 &= ~(1ul << 6);
     }
 }
 
@@ -549,3 +532,26 @@ void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data)
 }
 
 #endif
+
+uint64_t RTC_CurrentFull(void)
+{
+    union
+    {
+        struct
+        {
+            uint32_t low;
+            uint32_t high;
+        } parts;
+        uint64_t v;
+    } r;
+    uint32_t t;
+    r.parts.low = RTC_Current();
+    r.parts.high = RTC_CurrentHigh();
+    t = RTC_Current();
+    if (t < r.parts.low)
+    {
+        r.parts.high = RTC_CurrentHigh();
+        r.parts.low = t;
+    }
+    return r.v;
+}

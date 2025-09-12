@@ -119,7 +119,7 @@ void setup_peripherals(void)
 
     PINCTRL_SetPadMux(LED_PIN, IO_SOURCE_GENERAL);
     PINCTRL_SetGeneralPadMode(LED_PIN, IO_MODE_PWM, LED_PWM_CH, 1);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     // setup channel 0 of timer 1: 10Hz
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
     TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / 10);
@@ -138,7 +138,7 @@ uint32_t timer_isr(void *user_data)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR1);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     TMR_IntClr(APB_TMR1, 0, 0xf);
 #else
     #error unknown or unsupported chip family
@@ -151,6 +151,8 @@ uint32_t timer_isr(void *user_data)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define DB_FLASH_ADDRESS  0x42000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define DB_FLASH_ADDRESS  0x2042000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #define DB_FLASH_ADDRESS  0x2042000
 #else
 #error unknown or unsupported chip family

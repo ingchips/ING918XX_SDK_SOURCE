@@ -22,6 +22,10 @@
 
 #define PAGE_SIZE (EFLASH_SECTOR_SIZE)
 
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+#define PAGE_SIZE (EFLASH_SECTOR_SIZE)
+
 #else
 
 #error unknown or unsupported chip family
@@ -87,7 +91,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                     ota_ctrl[0] = OTA_STATUS_WAIT_DATA;
                     break;
                 }
-                    
+
                 if (crc((uint8_t *)ota_start_addr, len) != crc_value)
                     ota_ctrl[0] = OTA_STATUS_ERROR;
                 else
@@ -116,7 +120,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                     break;
                 }
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-                program_fota_metadata(meta->entry, 
+                program_fota_metadata(meta->entry,
                                       (s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
                                       meta->blocks);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
@@ -153,7 +157,7 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 ota_ctrl[0] = OTA_STATUS_ERROR;
                 return 0;
             }
-            
+
             memcpy(page_buffer + ota_page_offset,
                    buffer, buffer_size);
             ota_page_offset += buffer_size;

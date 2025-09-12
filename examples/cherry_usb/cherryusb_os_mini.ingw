@@ -4,22 +4,22 @@
   "var": {
    "link_layer_features": {
     "value": "bf79ff07fe000000",
-    "addr": 33702088
+    "addr": 33691956
    }
   },
   "rom": {
-   "size": 164428,
+   "size": 153824,
    "base": 33562624
   },
   "ram": {
-   "size": 30836,
+   "size": 18620,
    "base": 536870912
   },
   "app": {
-   "base": 33730560
+   "base": 33718272
   },
   "version": [
-   2,4,18]
+   2,4,20]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -37,7 +37,7 @@
  "enable_hci_log": false,
  "ota_ver_minor": "0",
  "ota_ver_major": "0",
- "template": "C:\\INGCHIPS\\ING_SDK\\wizard\\templates\\typical\\peripheral",
+ "template": "C:\\INGCHIPS\\ING_SDK\\wizard\\templates\\noos_mini\\peripheral",
  "coding_adv": false,
  "key_incode": true,
  "series": "ING9168xx",
@@ -59,9 +59,9 @@
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
- "bundle": "mini",
- "app_rom_size": "348160",
- "app_rom_addr": "33730560",
+ "bundle": "noos_mini",
+ "app_rom_size": "360448",
+ "app_rom_addr": "33718272",
  "family": "ing916",
  "vcode": true,
  "heap_override": false,
@@ -78,8 +78,8 @@
  "keil": true,
  "cmsis": "",
  "cube": true,
- "app_ram_size": 26504,
- "app_ram_addr": 536901752,
+ "app_ram_size": 38720,
+ "app_ram_addr": 536889536,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",

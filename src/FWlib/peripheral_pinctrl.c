@@ -1,5 +1,6 @@
 #include "ingsoc.h"
 #include "peripheral_pinctrl.h"
+#include "peripheral_gpio.h"
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
@@ -734,6 +735,495 @@ int PINCTRL_SelClockOutput(const uint8_t io_index)
                 | (1 << 6)
                 | ((uint32_t)settings[i].sel_data << 7)
                 | ((uint32_t)settings[i].swap << 12));
+
+            return 0;
+        }
+    }
+    return 1;
+}
+
+#elif  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
+{
+    uint32_t mask1 = (1 << bit_width) - 1;
+    uint32_t mask = ~(mask1 << bit_offset);
+    *reg = (*reg & mask) | ((v & mask1) << bit_offset);
+}
+
+const uint8_t io_output_source_map[IO_PIN_NUMBER][20] =
+{
+    {0xdf,0xff,0xff,0xaa,0xaa,0x48,0x80,0x80,0x08,0x02,0x0a,0x7f,0xff,0xfe,0x00,0x20,0x08,0x0e,0x1f,0x90},
+    {0xdf,0xff,0xff,0x55,0x55,0x24,0x40,0x40,0x04,0x01,0x06,0x7f,0xff,0xfd,0x00,0x10,0x04,0x0e,0x9f,0x90},
+    {0xdf,0xff,0xff,0xaa,0xa8,0x90,0x20,0x20,0x02,0x00,0x82,0x7f,0xff,0xfc,0x80,0x08,0x02,0x0e,0x5f,0xd0},
+    {0xdf,0xff,0xff,0x55,0x56,0x48,0x10,0x10,0x01,0x00,0x42,0xff,0xff,0xfc,0x40,0x04,0x01,0x0f,0x1f,0xb0},
+    {0xff,0xff,0xff,0xaa,0xa9,0x26,0x08,0x08,0x00,0x80,0x2b,0x7f,0xff,0xfc,0x20,0x02,0x00,0x8e,0x1f,0x90},
+    {0xdf,0xff,0xff,0x55,0x54,0x93,0x04,0x04,0x00,0x40,0x16,0x7f,0xff,0xfc,0x10,0x01,0x00,0x4e,0x3f,0x90},
+    {0xdf,0xff,0xff,0xaa,0xaa,0x48,0x02,0x02,0x00,0x22,0x02,0x7f,0xff,0xfc,0x08,0x00,0x80,0x2e,0x1f,0xd0},
+    {0xdf,0xff,0xff,0x55,0x55,0x26,0x01,0x01,0x00,0x11,0x02,0x7f,0xff,0xfc,0x04,0x00,0x40,0x1e,0x9f,0xb0},
+    {0xdf,0xff,0xff,0xaa,0xa8,0x92,0x80,0x00,0x80,0x08,0x8a,0x7f,0xff,0xfc,0x02,0x00,0x28,0x0e,0x5f,0x90},
+    {0xdf,0xff,0xff,0x55,0x56,0x4a,0x40,0x00,0x40,0x04,0x46,0x7f,0xff,0xfc,0x01,0x00,0x14,0x0f,0x1f,0x90},
+    {0xdf,0xff,0xff,0xaa,0xa9,0x26,0x20,0x00,0x20,0x00,0x22,0x7f,0xff,0xfc,0x00,0x80,0x02,0x0e,0x1f,0xd0},
+    {0xdf,0xff,0xff,0x55,0x54,0x90,0x10,0x00,0x10,0x00,0x12,0x7f,0xff,0xfc,0x00,0x40,0x01,0x0e,0x3f,0xb0},
+    {0xdf,0xff,0xff,0xaa,0xaa,0x49,0x08,0x80,0x08,0x02,0x0a,0x7f,0xff,0xfe,0x00,0x20,0x00,0x8e,0x1f,0x90},
+    {0xdf,0xff,0xff,0x55,0x55,0x25,0x04,0x40,0x04,0x01,0x06,0x7f,0xff,0xfd,0x00,0x10,0x00,0x4e,0x9f,0x90},
+    {0xdf,0xff,0xff,0xaa,0xa8,0x91,0x02,0x20,0x02,0x00,0x82,0x7f,0xff,0xfc,0x80,0x08,0x00,0x2e,0x5f,0xd0},
+    {0xdf,0xff,0xff,0x55,0x56,0x49,0x01,0x10,0x01,0x00,0x42,0x7f,0xff,0xfc,0x40,0x04,0x00,0x1e,0x1f,0xb0},
+    {0xdf,0xff,0xff,0xaa,0xa9,0x25,0x80,0x08,0x00,0x80,0x2a,0x7f,0xff,0xfc,0x20,0x02,0x08,0x0e,0x1f,0x90},
+    {0xdf,0xff,0xff,0x55,0x54,0x90,0x40,0x04,0x00,0x40,0x16,0x7f,0xff,0xfc,0x10,0x01,0x04,0x0e,0x3f,0x90},
+    {0xdf,0xff,0xff,0x55,0x42,0x48,0x20,0x02,0x00,0x22,0x02,0x7f,0xff,0xfc,0x08,0x00,0x82,0x0e,0x1f,0xd0},
+    {0xdf,0xff,0xff,0xaa,0x81,0x24,0x10,0x01,0x00,0x11,0x02,0x7f,0xff,0xfc,0x04,0x00,0x41,0x0e,0x9f,0xb0},
+    {0xdf,0xff,0xff,0x55,0x40,0x91,0x08,0x00,0x80,0x08,0x8a,0x7f,0xff,0xfc,0x02,0x00,0x20,0x8e,0x5f,0x90},
+    {0xdf,0xff,0xff,0xaa,0xaa,0x4b,0x04,0x00,0x40,0x04,0x46,0x7f,0xff,0xfc,0x01,0x00,0x10,0x4e,0x1f,0x90},
+    {0xdf,0xff,0xff,0x55,0x55,0x27,0x02,0x00,0x20,0x00,0x22,0x7f,0xff,0xfc,0x00,0x80,0x00,0x2e,0x1f,0xd0},
+    {0xd0,0x11,0xf2,0xaa,0xa8,0x8b,0x01,0x00,0x10,0x00,0x10,0x40,0x47,0xc4,0x00,0x40,0x00,0x10,0x2a,0xa0},
+    {0xc8,0x09,0xe9,0x55,0x56,0x64,0x80,0x80,0x08,0x00,0x08,0x20,0x27,0xb2,0x00,0x20,0x08,0x00,0x15,0x10},
+    {0xc4,0x05,0xe4,0xaa,0xa9,0x10,0x40,0x40,0x04,0x00,0x06,0x10,0x17,0x89,0x00,0x10,0x04,0x00,0x0a,0x80},
+    {0xc2,0x03,0xf2,0x55,0x54,0x88,0x20,0x20,0x02,0x00,0x00,0x08,0x0f,0xc4,0x80,0x08,0x02,0x00,0x15,0x40},
+    {0xc1,0x01,0xe9,0xaa,0xaa,0x64,0x10,0x10,0x01,0x00,0x00,0x04,0x07,0xb0,0x40,0x04,0x01,0x00,0x0a,0xa0},
+    {0xc0,0x00,0x00,0x55,0x54,0x00,0x08,0x08,0x00,0x80,0x00,0x00,0x00,0x00,0x20,0x02,0x00,0x80,0x00,0x00},
+    {0xc0,0x00,0x00,0xaa,0xa8,0x00,0x04,0x04,0x00,0x40,0x00,0x00,0x00,0x00,0x10,0x01,0x00,0x40,0x00,0x00},
+    {0xc0,0x81,0xe4,0x55,0x55,0x12,0x02,0x02,0x00,0x20,0x08,0x02,0x07,0x88,0x08,0x00,0x80,0x20,0x15,0x10},
+    {0xc0,0x41,0xf2,0xaa,0xa8,0x88,0x01,0x01,0x00,0x10,0x04,0x01,0x07,0xc4,0x04,0x00,0x40,0x10,0x0a,0x80},
+    {0xc0,0x21,0xe9,0x55,0x56,0x64,0x80,0x00,0x80,0x08,0x02,0x00,0x87,0xb0,0x02,0x00,0x28,0x00,0x15,0x40},
+    {0xc0,0x00,0x00,0xaa,0xa8,0x00,0x40,0x00,0x40,0x04,0x00,0x00,0x00,0x00,0x01,0x00,0x14,0x00,0x00,0x00},
+    {0xc0,0x00,0x00,0x55,0x54,0x00,0x20,0x00,0x20,0x00,0x00,0x00,0x00,0x00,0x00,0x80,0x02,0x00,0x00,0x00},
+    {0xc0,0x00,0x00,0xaa,0xa8,0x00,0x10,0x00,0x10,0x00,0x00,0x00,0x00,0x00,0x00,0x40,0x01,0x00,0x00,0x00},
+    {0xc8,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0xd0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x40,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0xc4,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x10,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0xc2,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0xc1,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0xc0,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
+};
+
+static int source_id_on_pin(uint8_t io_pin_index, io_source_t source)
+{
+    if (io_pin_index >= IO_PIN_NUMBER) return -1;
+
+    const uint8_t *map = io_output_source_map[io_pin_index];
+    int r = 0;
+    int i = source - 1;
+    if ((map[source / 8] & (0x80 >> (source & 7))) == 0) return -1;
+
+    for (; i >= 0; i--)
+    {
+        if (map[i / 8] & (0x80 >> (i & 7)))
+            r++;
+    }
+    return r;
+}
+
+static int pin_id_for_input_source(int source, uint8_t io_pin_index)
+{
+    int byte_n = source / 8;
+    int bit_mask = (0x80 >> (source & 7));
+    int r = 0;
+    int i = (int)io_pin_index - 1;
+    const uint8_t *map = io_output_source_map[io_pin_index];
+    if ((map[byte_n] & bit_mask) == 0) return -1;
+
+    for (; i >= 0; i--)
+    {
+        map = io_output_source_map[i];
+        if (map[byte_n] & bit_mask)
+            r++;
+    }
+
+    return r;
+}
+
+static int PINCTRL_SelInput(uint8_t io_pin,
+                        int source_id,
+                        int reg_index,
+                        int bit_width,
+                        int bit_offset)
+{
+    if (io_pin == IO_NOT_A_PIN)
+    {
+        set_reg_bits(&APB_PINCTRL->IN_CTRL[reg_index], (uint32_t)(-1), bit_width, bit_offset);
+        return 0;
+    }
+
+    int id = pin_id_for_input_source(source_id, io_pin);
+    if (id < 0) return id;
+    set_reg_bits(&APB_PINCTRL->IN_CTRL[reg_index], (uint32_t)id, bit_width, bit_offset);
+    PINCTRL_SetPadMux((uint8_t)io_pin, (io_source_t)(source_id));
+    return 0;
+}
+
+int PINCTRL_SelSwIn(uint8_t io_pin_dio, uint8_t io_pin_clk)
+{
+    if (PINCTRL_SelInput(io_pin_dio, IO_SOURCE_SW_DIO, 0, 1, 0)) return -1;
+    if (PINCTRL_SelInput(io_pin_clk, IO_SOURCE_SW_CLK, 0, 1, 5)) return -2;
+    PINCTRL_SetPadMux(io_pin_dio, IO_SOURCE_SW_DATA_OUT);
+    return 0;
+}
+
+int PINCTRL_SelAsdm(uint8_t io_pin_sck, uint8_t io_pin_data)
+{
+    if (PINCTRL_SelInput(io_pin_data, IO_SOURCE_ASDM_DMIC_IN, 11, 5, 0)) return -1;
+    if (PINCTRL_SetPadMux(io_pin_sck,IO_SOURCE_ASDM_DMIC_MCLK)) return -2;
+
+    return 0;
+}
+
+static int PINCTRL_SelSpiIn0(spi_port_t port,
+                             uint8_t io_pin_clk,
+                             uint8_t io_pin_csn,
+                             uint8_t io_pin_hold,
+                             uint8_t io_pin_wp,
+                             uint8_t io_pin_miso,
+                             uint8_t io_pin_mosi)
+{
+    static const io_source_t source_tab[][6] =
+            {
+                    {IO_SOURCE_SPI0_CLK_IN, IO_SOURCE_SPI0_CSN_IN, IO_SOURCE_SPI0_HOLD_IN, IO_SOURCE_SPI0_WP_IN, IO_SOURCE_SPI0_MISO_IN, IO_SOURCE_SPI0_MOSI_IN},
+                    {IO_SOURCE_SPI1_CLK_IN, IO_SOURCE_SPI1_CSN_IN, IO_SOURCE_SPI1_HOLD_IN, IO_SOURCE_SPI1_WP_IN, IO_SOURCE_SPI1_MISO_IN, IO_SOURCE_SPI1_MOSI_IN},
+            };
+
+    static const uint8_t reg_tab[][6] =
+            {
+                    { 0, 0, 0, 1, 1, 1 },
+                    { 1, 1, 2, 2, 2, 2 },
+            };
+
+    static const uint8_t bit_offset_tab[][6] =
+            {
+                    { 10, 15, 20, 0, 5, 10, },
+                    { 15, 20, 10,15, 0,  5, },
+            };
+
+    if (PINCTRL_SelInput(io_pin_clk, source_tab[port][0], reg_tab[port][0], 5, bit_offset_tab[port][0])) return -1;
+    if (PINCTRL_SelInput(io_pin_csn, source_tab[port][1], reg_tab[port][1], 5, bit_offset_tab[port][1])) return -2;
+    if (PINCTRL_SelInput(io_pin_hold,source_tab[port][2], reg_tab[port][2], 5, bit_offset_tab[port][2])) return -3;
+    if (PINCTRL_SelInput(io_pin_wp,  source_tab[port][3], reg_tab[port][3], 5, bit_offset_tab[port][3])) return -4;
+    if (PINCTRL_SelInput(io_pin_miso,source_tab[port][4], reg_tab[port][4], 5, bit_offset_tab[port][4])) return -5;
+    if (PINCTRL_SelInput(io_pin_mosi,source_tab[port][5], reg_tab[port][5], 5, bit_offset_tab[port][5])) return -6;
+    return 0;
+}
+
+int PINCTRL_SelSpiPins(spi_port_t port,
+                       uint8_t io_pin_clk,
+                       uint8_t io_pin_csn,
+                       uint8_t io_pin_hold,
+                       uint8_t io_pin_wp,
+                       uint8_t io_pin_miso,
+                       uint8_t io_pin_mosi)
+{
+    static const io_source_t source_tab[][6] =
+            {
+                    {IO_SOURCE_SPI0_CLK_OUT, IO_SOURCE_SPI0_CSN_OUT, IO_SOURCE_SPI0_HOLD_OUT, IO_SOURCE_SPI0_WP_OUT, IO_SOURCE_SPI0_MISO_OUT, IO_SOURCE_SPI0_MOSI_OUT},
+                    {IO_SOURCE_SPI1_CLK_OUT, IO_SOURCE_SPI1_CSN_OUT, IO_SOURCE_SPI1_HOLD_OUT, IO_SOURCE_SPI1_WP_OUT, IO_SOURCE_SPI1_MISO_OUT, IO_SOURCE_SPI1_MOSI_OUT},
+            };
+
+    int r = PINCTRL_SelSpiIn0(port, io_pin_clk, io_pin_csn, io_pin_hold, io_pin_wp,
+                              io_pin_miso, io_pin_mosi);
+
+    if (r) return r;
+
+    if (PINCTRL_SetPadMux(io_pin_clk, source_tab[port][0])) return -1;
+    if (PINCTRL_SetPadMux(io_pin_csn, source_tab[port][1])) return -2;
+    if (PINCTRL_SetPadMux(io_pin_hold,source_tab[port][2])) return -3;
+    if (PINCTRL_SetPadMux(io_pin_wp,  source_tab[port][3])) return -4;
+    if (PINCTRL_SetPadMux(io_pin_miso,source_tab[port][4])) return -5;
+    if (PINCTRL_SetPadMux(io_pin_mosi,source_tab[port][5])) return -6;
+    return 0;
+}
+
+int PINCTRL_SelI2sIn(uint8_t io_pin_bclk,
+                      uint8_t io_pin_lrclk,
+                      uint8_t io_pin_data)
+{
+    if (PINCTRL_SelInput(io_pin_bclk, IO_SOURCE_I2S_BCLK_IN, 3, 5, 0)) return -1;
+    if (PINCTRL_SelInput(io_pin_lrclk,IO_SOURCE_I2S_LRCLK_IN,3, 5, 5)) return -1;
+    if (PINCTRL_SelInput(io_pin_data, IO_SOURCE_I2S_DATA_IN, 3, 5, 10)) return -1;
+    return 0;
+}
+
+int PINCTRL_SelUartIn(uart_port_t port,
+                      uint8_t io_pin_rxd,
+                      uint8_t io_pin_cts)
+{
+    switch (port)
+    {
+    case UART_PORT_0:
+        if (PINCTRL_SelInput(io_pin_rxd, IO_SOURCE_UART0_RXD, 3, 5, 15)) return -1;
+        if (PINCTRL_SelInput(io_pin_cts, IO_SOURCE_UART0_CTS, 3, 5, 20)) return -1;
+        break;
+    case UART_PORT_1:
+        if (PINCTRL_SelInput(io_pin_rxd, IO_SOURCE_UART1_RXD, 4, 5, 0)) return -1;
+        if (PINCTRL_SelInput(io_pin_cts, IO_SOURCE_UART1_CTS, 4, 5, 5)) return -1;
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
+void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index)
+{
+    switch (port)
+    {
+    case UART_PORT_0:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART0_RXD, 3, 5, 15);
+        break;
+    case UART_PORT_1:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART1_RXD, 4, 5, 0);
+        break;
+    default:
+        break;
+    }
+}
+
+void PINCTRL_SelUartCtsIn(const uart_port_t port, const uint8_t io_pin_index)
+{
+    switch (port)
+    {
+    case UART_PORT_0:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART0_CTS, 3, 5, 20);
+        break;
+    case UART_PORT_1:
+        PINCTRL_SelInput(io_pin_index, IO_SOURCE_UART1_CTS, 4, 5, 5);
+        break;
+    default:
+        break;
+    }
+}
+
+int PINCTRL_SelI2cIn(i2c_port_t port,
+                      uint8_t io_pin_scl,
+                      uint8_t io_pin_sda)
+{
+    if (PINCTRL_SelInput(io_pin_scl, IO_SOURCE_I2C0_SCL_IN, 4, 5, 10)) return -1;
+    if (PINCTRL_SelInput(io_pin_sda, IO_SOURCE_I2C0_SDA_IN, 4, 5, 15)) return -1;
+    PINCTRL_SetPadMux(io_pin_scl, IO_SOURCE_I2C0_SCL_OUT);
+    PINCTRL_SetPadMux(io_pin_sda, IO_SOURCE_I2C0_SDA_OUT);
+
+    if (io_pin_scl < IO_PIN_NUMBER)
+        PINCTRL_Pull(io_pin_scl, PINCTRL_PULL_UP);
+    if (io_pin_sda < IO_PIN_NUMBER)
+        PINCTRL_Pull(io_pin_sda, PINCTRL_PULL_UP);
+    return 0;
+}
+
+void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index)
+
+{
+    PINCTRL_SelInput(io_pin_index, IO_SOURCE_I2C0_SCL_IN, 4, 5, 10);
+
+
+    PINCTRL_SetPadMux(io_pin_index, IO_SOURCE_I2C0_SCL_OUT);
+    if (io_pin_index < IO_PIN_NUMBER)
+        PINCTRL_Pull(io_pin_index, PINCTRL_PULL_UP);
+}
+
+int PINCTRL_SelKeyScanColIn(int index, uint8_t io_pin)
+{
+    if (index <= 14)
+        return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_COL_0 + index, 5, 2, 0 + index * 2);
+    else if (index <= 21)
+        return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_COL_0 + index, 6, 2, 0 + (index - 15) * 2);
+    else
+        return -1;
+}
+
+int PINCTRL_SelKeyScanRowIn(int index, uint8_t io_pin)
+{
+    if (index <6)
+        return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_ROW_0 + index, 6, 3, 14 + index * 3);
+    else if (index < 8)
+        return PINCTRL_SelInput(io_pin, IO_SOURCE_KEYSCN_IN_ROW_0 + index, 7, 3, 0 + (index - 6) * 3);
+    else
+        return -1;
+}
+
+int PINCTRL_SelPCAPIn(int index, uint8_t io_pin)
+{
+    return PINCTRL_SelInput(io_pin, IO_SOURCE_PCAP0_IN + index, 10, 5, index * 5);
+}
+
+int PINCTRL_SelQDECIn(uint8_t phase_a,
+                      uint8_t phase_b)
+{
+    if (PINCTRL_SelInput(phase_a, IO_SOURCE_QDEC_PHASEA, 9, 5, 5)) return -1;
+    if (PINCTRL_SelInput(phase_b, IO_SOURCE_QDEC_PHASEB, 9, 5, 10)) return -2;
+    return 0;
+}
+
+int PINCTRL_SelQDECPcapIn(int index, uint8_t io_pin)
+{
+    if(index == IO_SOURCE_QDEC_PHASEA)
+        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_PHASEA, 9, 5, 5)) return -1;
+    if(index == IO_SOURCE_QDEC_TIMER_EXT_IN1_A)
+        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_TIMER_EXT_IN1_A, 9, 3, 22)) return -1;
+    if(index == IO_SOURCE_QDEC_TIMER_EXT_IN2_A)
+        if (PINCTRL_SelInput(io_pin, IO_SOURCE_QDEC_TIMER_EXT_IN2_A, 9, 3, 25)) return -1;
+    return 0;
+}
+
+int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode)
+{
+    uint32_t reg = io_pin >= 32 ? 1 : 0;
+    uint32_t bit = 1ul << (io_pin & 0x1f);
+    volatile uint32_t *pe = (volatile uint32_t *)&APB_PINCTRL->PE_CTRL[reg];
+    volatile uint32_t *ps = (volatile uint32_t *)&APB_PINCTRL->PS_CTRL[reg];
+    if (PINCTRL_PULL_DISABLE == mode)
+	{
+        *pe &= ~bit;
+
+    }
+    else
+    {
+        if (PINCTRL_PULL_UP == mode)
+            *ps |= bit;
+        else
+            *ps &= ~bit;
+
+        *pe |= bit;
+    }
+    return 0;
+}
+
+int PINCTRL_KeyScanPullSel(const uint8_t io_pin, uint8_t enable)
+{
+    uint32_t reg = io_pin >= 32 ? 1 : 0;
+    uint32_t bit = 1ul << (io_pin & 0x1f);
+    volatile uint32_t *pe_sel = (volatile uint32_t *)&APB_PINCTRL->PU_SEL_CTRL[reg];
+    if (enable)
+    {
+        *pe_sel |= bit;
+    }
+    else
+    {
+        *pe_sel &= ~bit;
+    }
+    return 0;
+}
+
+int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
+{
+    int r = source_id_on_pin(io_pin_index, source);
+    if (r < 0) return r;
+
+    if (io_pin_index <= 22)
+        set_reg_bits(&APB_PINCTRL->OUT_CTRL[io_pin_index >> 2], (uint32_t)r, 7, 7 * (io_pin_index & 0x3));
+    else if (io_pin_index == 23)
+        set_reg_bits(&APB_PINCTRL->OUT_CTRL[5], (uint32_t)r, 6, 21);
+    else if (io_pin_index <= 27)
+        set_reg_bits(&APB_PINCTRL->OUT_CTRL[6], (uint32_t)r, 6, 6 * (io_pin_index - 24));
+    else if (io_pin_index <= 29)
+        set_reg_bits(&APB_PINCTRL->OUT_CTRL[6], (uint32_t)r, 4, 24 + 4 * (io_pin_index - 28));
+    else if (io_pin_index <= 32)
+        set_reg_bits(&APB_PINCTRL->OUT_CTRL[7], (uint32_t)r, 6, 6 * (io_pin_index - 30));
+    else if (io_pin_index <= 35)
+        set_reg_bits(&APB_PINCTRL->OUT_CTRL[7], (uint32_t)r, 4, 18 + 4 * (io_pin_index - 33));
+    else
+        set_reg_bits(&APB_PINCTRL->OUT_CTRL[8], (uint32_t)r, 2, 2 * (io_pin_index - 36));
+    return 0;
+}
+
+void PINCTRL_DisableAllInputs(void)
+{
+    int i;
+    for (i = 0; i < sizeof(APB_PINCTRL->IN_CTRL) / sizeof(APB_PINCTRL->IN_CTRL[0]); i++)
+        APB_PINCTRL->IN_CTRL[i] = (uint32_t)-1;
+}
+
+void PINCTRL_SetDriveStrength(const uint8_t io_pin_index, const pinctrl_drive_strength_t strength)
+{
+    int reg = io_pin_index / 16;
+    int index = io_pin_index & 0xf;
+    uint32_t mask = 3 << (2 * index);
+    uint32_t val = ((uint32_t)strength) << (index * 2);
+    if (io_pin_index == 1) val ^= 0x4ul;
+    volatile uint32_t *dr = (volatile uint32_t *)&APB_PINCTRL->DR_CTRL[reg];
+    *dr &= ~mask;
+    *dr |= val;
+}
+
+int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins)
+{
+    int i;
+    for (i = 0; i < count; i++)
+    {
+        if (io_pins[i] == IO_NOT_A_PIN) continue;
+        if (PINCTRL_SetPadMux(io_pins[i], (io_source_t)(IO_SOURCE_ANT_SW0 + i)))
+            return -(i + 1);
+    }
+    return 0;
+}
+
+int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index)
+{
+    if ((dp_io_pin_index != 16) || (dm_io_pin_index != 17))
+        return -1;
+    PINCTRL_EnableAnalog((GIO_Index_t)dp_io_pin_index);
+    PINCTRL_EnableAnalog((GIO_Index_t)dm_io_pin_index);
+    return 0;
+}
+
+void PINCTRL_EnableAnalog(const uint8_t io_index)
+{
+    PINCTRL_SetPadMux(io_index, IO_SOURCE_GPIO);
+    PINCTRL_Pull(io_index, PINCTRL_PULL_DISABLE);
+
+    // GIO_SetDirection(io_index, GIO_DIR_NONE)
+    uint8_t start_gpio1 = GIO_GPIO_NUMBER / 2;
+    GIO_TypeDef *pDef = io_index >= start_gpio1 ? APB_GPIO1 : APB_GPIO0;
+    int index = io_index >= start_gpio1 ? io_index - start_gpio1 : io_index;
+    uint32_t mask = ~(1ul << index);
+    pDef->ChDir &= mask;
+    pDef->IOIE &= mask;
+}
+
+int PINCTRL_SelClockOutput(const uint8_t io_index)
+{
+    const static struct
+    {
+        uint8_t io_index;
+        uint8_t sel_clk;
+        uint8_t sel_data;
+        uint8_t swap;
+    } settings[] = {
+            {.io_index = 36, .sel_clk = 0xd,},
+            {.io_index = 37, .sel_clk = 0xd,},
+            {.io_index = 0, .sel_clk = 0xd, .swap = 0x0},
+            {.io_index = 9, .sel_clk = 0xd, .swap = 0x6},
+            {.io_index = 18, .sel_clk = 0xd, .swap = 0xC},
+            {.io_index = 27, .sel_clk = 0xd, .swap = 0x12},
+            {.io_index = 20, .sel_data = 0xe, .swap = 0x0},
+            {.io_index = 2, .sel_data = 0xe, .swap = 0x8},
+            {.io_index = 11, .sel_data = 0xe, .swap = 0xc},
+            {.io_index = 29, .sel_data = 0xe, .swap = 0x10},
+            {.io_index = 16, .sel_data = 0xf, .swap = 0x0},
+            {.io_index = 7, .sel_data = 0xf, .swap = 0x6},
+            {.io_index = 25, .sel_data = 0xf, .swap = 0x8},
+            {.io_index = 34, .sel_data = 0xf, .swap = 0x3},
+            {.io_index = 17, .sel_data = 0x11, .swap = 0x0},
+            {.io_index = 8, .sel_data = 0x11, .swap = 0x6},
+            {.io_index = 26, .sel_data = 0x11, .swap = 0x8},
+            {.io_index = 35, .sel_data = 0x11, .swap = 0x3},
+    };
+    int i;
+
+    if (IO_NOT_A_PIN == io_index)
+    {
+        io_write(APB_SYSCTRL_BASE + 0x190, 0);
+        return 0;
+    }
+
+    for (i = 0; i < sizeof(settings) / sizeof(settings[0]); i++)
+    {
+        if (settings[i].io_index == io_index)
+        {
+            PINCTRL_SetPadMux(io_index, IO_SOURCE_DEBUG_BUS);
+            io_write(APB_SYSCTRL_BASE + 0x190,
+                     (1 << 0)
+                     | ((uint32_t)settings[i].sel_clk << 1)
+                     | (1 << 6)
+                     | ((uint32_t)settings[i].sel_data << 7)
+                     | ((uint32_t)settings[i].swap << 12));
 
             return 0;
         }

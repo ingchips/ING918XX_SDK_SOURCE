@@ -11,16 +11,12 @@ families.
     python icsdw.py /path/to/flash_download.ini
     ```
 
-This script supports COM (UART), USB and SWD (through J-Link). There are subtle
-differences in the features of these ports.
+This script supports COM (UART), USB and SWD (through J-Link).
 
-|Port    |  Basic Functions | External Flash | Single Bin |
-|:---------:|:---------:|:---------:|:---------:|
-| UART      |  Yes      |  Yes      |  No       |
-| USB       |  Yes      |  Yes      |  No       |
-| SWD/J-Link|  Yes      |  No       |  Yes      |
+> [!NOTE]
+> Downloading using ING-DAPLink is not supported yet.
 
-Use 'pip install -r requirements.txt' to install all dependency packages.
+Use `pip install -r requirements.txt` to install all dependency packages
 
 ### Extra Command Line Options
 
@@ -51,6 +47,11 @@ through J-Link. The `.bin` file can either be a file on local system, or on the 
 
 
 ### Note for USB Flash Download
+
+- `icsdw.py` uses [_pyusb_](https://github.com/pyusb/pyusb), which depends on
+  _libusb_. _libusb_ is not installed automatically when installing _pyusb_ by `pip`.
+  [Here](https://github.com/pyusb/pyusb?tab=readme-ov-file#requirements-and-platform-support) is how to
+  install _libusb_ for _pyusb_.
 
 - Use `python icsdw.py list-usb` to query all usb port. It will print the full name of
   all available USB devices.
@@ -104,6 +105,7 @@ _gen_files.nim_ generates following files for other tools:
 Usage:
 
 ```shell
+nimble install malebolgia
 nim -d:release c gen_files.nim
 gen_files /path/to/sdk/bundles
 ```

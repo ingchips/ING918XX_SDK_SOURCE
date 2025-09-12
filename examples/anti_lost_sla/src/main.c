@@ -87,7 +87,7 @@ void vTimerCallback(TimerHandle_t _)
     set_buzzer_freq(500);
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
 
 void setup_peripherals(void)
 {

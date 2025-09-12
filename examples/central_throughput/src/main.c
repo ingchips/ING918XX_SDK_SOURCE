@@ -70,7 +70,7 @@ void hw_timer_restart(void)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_Reload(APB_TMR1);
     TMR_Enable(APB_TMR1);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     TMR_Enable(APB_TMR1, 0, 0xf);
 #else
     #error unknown or unsupported chip family
@@ -81,7 +81,7 @@ void hw_timer_clear_int(void)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR1);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     TMR_IntClr(APB_TMR1, 0, 0xf);
 #else
     #error unknown or unsupported chip family
@@ -92,7 +92,7 @@ void hw_timer_stop(void)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_Disable(APB_TMR1);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     TMR_Enable(APB_TMR1, 0, 0);
 #else
     #error unknown or unsupported chip family
@@ -110,7 +110,7 @@ void setup_peripherals(void)
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ);
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
 	TMR_IntEnable(APB_TMR1);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
     TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0));
     TMR_IntEnable(APB_TMR1, 0, 0xf);

@@ -61,11 +61,19 @@ void heart_meas_ctrl(const uint8_t enable)
         hr_bh1790_Init();
         hr_bh1790_StartMeasure();
 #endif
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
         TMR_Enable(APB_TMR2);
+#else
+        #warning WIP
+#endif
     }
     else
     {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
         TMR_Disable(APB_TMR2);
+#else
+        #warning WIP
+#endif
     }
 }
 

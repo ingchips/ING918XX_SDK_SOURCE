@@ -269,7 +269,7 @@ uint32_t apSSP_GetIntRawStatus(SSP_TypeDef * SSP_Ptr)
 
 #endif
 
-#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
+#if ((INGCHIPS_FAMILY_20 == INGCHIPS_FAMILY) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
 /*====================================================================*/
 void apSSP_Initialize (SSP_TypeDef *SPI_BASE)
 {
@@ -329,6 +329,28 @@ void apSSP_SetCmdEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
         SPI_BASE->TransCtrl |= (1 << bsSPI_TRANSCTRL_CMDEN);
     else
         SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_CMDEN));
+}
+
+#if (INGCHIPS_FAMILY_20 == INGCHIPS_FAMILY)
+
+void apSSP_WrtEnlargeEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
+{
+    if (enable)
+        SPI_BASE->IntrEn |= (1 << bsSPI_TRANSCTRL_WRENLARGEEN);
+    else
+        SPI_BASE->IntrEn &= (~(1 << bsSPI_TRANSCTRL_WRENLARGEEN));
+}
+
+void apSSP_WrtEnlargeCnt(SSP_TypeDef *SPI_BASE, uint16_t cnt)
+{
+    SPI_BASE->IntrEn &= (~(BW2M(bsSPI_TRANSCTRL_WRENLARGECNT) << bsSPI_TRANSCTRL_WRENLARGECNT));
+    SPI_BASE->IntrEn |= ((0xffff & (cnt-1)) << bsSPI_TRANSCTRL_WRENLARGECNT);
+}
+#endif
+/*====================================================================*/
+uint32_t apSSP_GetStatus(SSP_TypeDef *SPI_BASE)
+{
+    return SPI_BASE->Status;
 }
 
 /*====================================================================*/

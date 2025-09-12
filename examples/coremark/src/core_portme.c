@@ -131,6 +131,8 @@ void portable_init(core_portable *p, int *argc, char *argv[])
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     SystemCoreClock = SYSCTRL_GetHClk();
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    SystemCoreClock = SYSCTRL_GetHClk();
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #else
     #error unknown or unsupported chip family

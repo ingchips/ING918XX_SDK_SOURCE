@@ -2,6 +2,8 @@ import ctypes
 import logging
 import argparse
 import time
+import struct
+from datetime import datetime
 
 import logging
 
@@ -85,6 +87,15 @@ def find_rtt_ctx(FLAGS, dap):
 
     raise Exception(f"SEGGER RTT not found in specified range")
 
+def make_file_header(pre_size: int):
+    now = datetime.now()
+    milliseconds_since_midnight = int((now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds() * 1000)
+    padded1 = bytearray(b'\xff' * 8)
+    padded1[1::2] = struct.pack('<I', milliseconds_since_midnight)
+    padded2 = bytearray(b'\xff' * 8)
+    padded2[1::2] = struct.pack('<I', pre_size)
+    return b'\xff\x54\xff\x52\xff\x41\xFF\x01' + bytes(padded1) + bytes(padded2)
+
 def run(FLAGS):
     pyocd.utility.color_log.build_color_logger(color_setting='auto')
 
@@ -131,53 +142,67 @@ def run(FLAGS):
             total_size = 0
             block_size = 0
             last_time = time.time()
+            error_count = 0
+            MAX_ERRORS = 10
 
-            while True:
-                # read data from up buffers (target -> host)
+            def is_rtt_empty():
+                data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
+                up = SEGGER_RTT_BUFFER_UP.from_buffer(bytearray(data))
+                return up.WrOff == up.RdOff
+
+            def read_up_channel() -> bytes:
+                nonlocal error_count, MAX_ERRORS, up_addr
+
                 data = target.read_memory_block8(up_addr, sizeof(SEGGER_RTT_BUFFER_UP))
                 up = SEGGER_RTT_BUFFER_UP.from_buffer(bytearray(data))
 
-                # Initialize error counter
-                error_count = 0
-                MAX_ERRORS = 10
-
                 if up.WrOff == up.RdOff:
+                    return bytes([])
+
+                # Validate buffer pointers
+                if up.WrOff >= up.SizeOfBuffer or up.RdOff >= up.SizeOfBuffer:
+                    error_count += 1
+                    return bytes([])
+
+                if up.WrOff > up.RdOff:
+                    # Normal case - read contiguous block
+                    read_size = up.WrOff - up.RdOff
+                    data = target.read_memory_block8(up.pBuffer + up.RdOff, read_size)
+
+                elif up.WrOff < up.RdOff:
+                    # Wrap-around case
+                    first_part = up.SizeOfBuffer - up.RdOff
+                    data = target.read_memory_block8(up.pBuffer + up.RdOff, first_part)
+
+                    second_part = up.WrOff
+                    if second_part > 0:
+                        data += target.read_memory_block8(up.pBuffer, second_part)
+
+                target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
+                return bytes(data)
+
+            data = read_up_channel()
+            while is_rtt_empty():
+                time.sleep(0.01)
+
+            log_file.write(make_file_header(len(data)))
+            log_file.write(data)
+
+            while True:
+                data = read_up_channel()
+                if len(data) == 0:
+                    if error_count > MAX_ERRORS:
+                        LOG.error("too many errors, abort...")
+                        break
                     if kb.kbhit():
                         LOG.info("Abort...")
                         break
                     time.sleep(0.001)  # Short delay to prevent busy waiting
                     continue
 
-                # Validate buffer pointers
-                if up.WrOff >= up.SizeOfBuffer or up.RdOff >= up.SizeOfBuffer:
-                    error_count += 1
-                    LOG.error(f"Invalid buffer pointers - WrOff: {up.WrOff}, RdOff: {up.RdOff}, Size: {up.SizeOfBuffer}")
-                    if error_count >= MAX_ERRORS:
-                        raise Exception("Too many buffer pointer errors")
-                    time.sleep(0.01)
-                    continue
-
-                if up.WrOff > up.RdOff:
-                    # Normal case - read contiguous block
-                    read_size = up.WrOff - up.RdOff
-                    data = target.read_memory_block8(up.pBuffer + up.RdOff, read_size)
-                    target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
-
-                elif up.WrOff < up.RdOff:
-                    # Wrap-around case
-                    first_part = up.SizeOfBuffer - up.RdOff
-                    data = target.read_memory_block8(up.pBuffer + up.RdOff, first_part)
-                    
-                    second_part = up.WrOff
-                    if second_part > 0:
-                        data += target.read_memory_block8(up.pBuffer, second_part)
-                    
-                    target.write_memory(up_addr + SEGGER_RTT_BUFFER_UP.RdOff.offset, up.WrOff)
-
                 log_file.write(bytes(data))
-                log_file.flush()  # Ensure data is written to disk
                 error_count = 0  # Reset error counter on successful read
-                
+
                 s = len(data)
                 block_size += s
                 total_size += s
@@ -195,7 +220,6 @@ def run(FLAGS):
             session.close()
         if kb:
             kb.set_normal_term()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
