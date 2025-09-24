@@ -1694,6 +1694,7 @@ int  hci_power_control(HCI_POWER_MODE mode);
 
 /*********************************/
 typedef enum {
+    LEVEL_0 = 0,  // No security
     // No security
     // No encryption required
     // No authentication

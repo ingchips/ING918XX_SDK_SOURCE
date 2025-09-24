@@ -26,7 +26,10 @@ extern "C" {
 #include "btstack_linked_list.h"
 
 /* API_START */
-
+/*
+ * @brief get address of the private random address update event
+ * @param[in] packet pointer to the event packet
+ */
 const static __INLINE uint8_t * sm_private_random_addr_update_get_address(const uint8_t *packet){
     return decode_event_offset(packet, uint8_t, 2);
 }
@@ -36,8 +39,8 @@ const static __INLINE uint8_t * sm_private_random_addr_update_get_address(const 
  */
 typedef struct sm_persistent
 {
-    sm_key_t        er;
-    sm_key_t        ir;
+    sm_key_t        er;                 // Encryption Root Key
+    sm_key_t        ir;                 // Identity Resolving Key       
     bd_addr_t       identity_addr;      // A public device address or static random address used as identity address
                                         // When privacy is not enabled, this should be the public device address or static random address.
                                         // This should not be changed, once changed, paring is lost
@@ -46,10 +49,10 @@ typedef struct sm_persistent
 
 // Authorization state
 typedef enum {
-    AUTHORIZATION_UNKNOWN,
-    AUTHORIZATION_PENDING,
-    AUTHORIZATION_DECLINED,
-    AUTHORIZATION_GRANTED
+    AUTHORIZATION_UNKNOWN,              // Authorization state is unknown   
+    AUTHORIZATION_PENDING,              // Authorization is pending, waiting for user input
+    AUTHORIZATION_DECLINED,             // Authorization is declined by user
+    AUTHORIZATION_GRANTED               // Authorization is granted by user
 } authorization_state_t;
 
 /**
