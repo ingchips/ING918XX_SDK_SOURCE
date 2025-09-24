@@ -8,6 +8,7 @@
     "att_emit_general_event": "0x000058e5",
     "att_server_can_send_packet_now": "0x00006051",
     "att_server_deferred_read_response": "0x00006055",
+    "att_server_eatt_init": "0x0000636d",
     "att_server_get_mtu": "0x00006435",
     "att_server_indicate": "0x000065c1",
     "att_server_init": "0x00006645",
