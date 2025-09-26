@@ -68,6 +68,20 @@ typedef uint16_t (*att_read_callback_t)(hci_con_handle_t con_handle, uint16_t at
  */
 typedef int (*att_write_callback_t)(hci_con_handle_t con_handle, uint16_t attribute_handle, uint16_t transaction_mode, uint16_t offset, const uint8_t *buffer, uint16_t buffer_size);
 
+/**
+ * @brief Enable support for Enhanced ATT bearer
+ * @note Requires ENABLE_GATT_OVER_EATT
+ * @param num_eatt_bearers
+ * @param storage_buffer
+ * @param storage_size must be >= num_eatt_bearers * sizeof(att_server_eatt_bearer_t)
+ * @return status   ERROR_CODE_SUCCESS
+ *                  ERROR_CODE_MEMORY_CAPACITY_EXCEEDED if buffer too small or no entry in l2cap service pool
+ *                  L2CAP_SERVICE_ALREADY_REGISTERED if called twice
+ */
+// uint8_t att_server_eatt_init(uint8_t num_eatt_bearers, uint8_t * storage_buffer, uint16_t storage_size);
+// WARNING: ^^^ this API is not available in this release
+
+
 /* API_START */
 /*
  * @brief setup ATT server

@@ -4,11 +4,11 @@
     },
     "ram": {
         "base": 536870912,
-        "size": 17416
+        "size": 18236
     },
     "rom": {
         "base": 33562624,
-        "size": 7064
+        "size": 7048
     },
     "var": {
         "link_layer_features": {
