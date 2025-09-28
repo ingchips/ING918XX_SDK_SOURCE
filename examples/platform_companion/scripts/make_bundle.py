@@ -11,7 +11,7 @@ PROJ_NAME = 'platform_companion'
 STACK_BIN = f'{OUTPUT_DIR}/platform.bin'
 map_fn = f'../listing/{PROJ_NAME}.map'
 
-added_api = ['platform_rom_hotfix']
+added_api = ['platform_rom_hotfix', 'platform_rom_hotfix_using_fpb']
 
 PAGE = 1024 * 4 # size of a sector
 BIN_INFO_OFFSET = 0x000000CC

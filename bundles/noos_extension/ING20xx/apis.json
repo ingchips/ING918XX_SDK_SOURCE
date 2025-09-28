@@ -325,8 +325,8 @@
     "sm_set_key_distribution_flags": "0x0202761d",
     "sm_set_persistent_irk": "0x02027629",
     "sscanf_bd_addr": "0x020279f5",
-    "sysSetPublicDeviceAddr": "0x02028209",
-    "uuid128_to_str": "0x02028b69",
-    "uuid_add_bluetooth_prefix": "0x02028bc1",
-    "uuid_has_bluetooth_prefix": "0x02028be1"
+    "sysSetPublicDeviceAddr": "0x02028219",
+    "uuid128_to_str": "0x02028b79",
+    "uuid_add_bluetooth_prefix": "0x02028bd1",
+    "uuid_has_bluetooth_prefix": "0x02028bf1"
 }
