@@ -972,12 +972,27 @@ void platform_call_on_stack(f_platform_function f, void *user_data,
 #define PLATFORM_IN_ROM     1
 
 /**
+ *****************************************************************************************
  * @brief Hotfix for platform.bin in ROM
  *
  * This function is provided by `Platform Companion` and must be called by app
  * in `app_main`.
+ ****************************************************************************************
  */
 void platform_rom_hotfix(void);
+
+/**
+ ****************************************************************************************
+ * @brief Additional hotfix for platform.bin in ROM using FPB (Flash Patch and Breakpoints)
+ *
+ * This fixes following issue(s):
+ * - occasional assertion in `ble50_ble.c`.
+ *
+ * Note: this uses 1 literal comparator in FPB. Debugging or emulation with probe might be
+ * affected.
+ ****************************************************************************************
+ */
+void platform_rom_hotfix_using_fpb(void);
 
 #ifdef __cplusplus
 }
