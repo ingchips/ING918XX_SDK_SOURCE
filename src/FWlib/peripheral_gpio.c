@@ -296,10 +296,10 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
     else
         return -1;
 
-    if ((1 <= io_index) && (io_index <= 4)
-     || (7 <= io_index) && (io_index <= 17)
-     || (24 <= io_index) && (io_index <= 25)
-     || (29 <= io_index) && (io_index <= 35))
+    if (((1 <= io_index) && (io_index <= 4))
+     || ((7 <= io_index) && (io_index <= 17))
+     || ((24 <= io_index) && (io_index <= 25))
+     || ((29 <= io_index) && (io_index <= 35)))
     {
         if (io_index <= 31)
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x60), io_index, enable);
@@ -382,7 +382,6 @@ static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t typ
         default:
             return 0;
         }
-        break;
 
     case GIO_INT_LOGIC:
         switch (enable)
@@ -394,12 +393,9 @@ static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t typ
         default:
             return 0;
         }
-        break;
     default:
         return 0;
     }
-
-    return 0;
 }
 
 
@@ -497,7 +493,6 @@ uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index)
     return (pDef->DataOut >> index) & 1;
 }
 
-
 void GIO_SetBits(const uint64_t index_mask)
 {
     APB_GPIO0->DoutSet |= index_mask & 0x1fffff;
@@ -587,10 +582,10 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
     else
         return -1;
 
-    if ((1 <= io_index) && (io_index <= 4)
-        || (7 <= io_index) && (io_index <= 20)
-        || (24 <= io_index) && (io_index <= 31)
-        || (34 <= io_index) && (io_index <= 35))
+    if (((1 <= io_index) && (io_index <= 4))
+        || ((7 <= io_index) && (io_index <= 20))
+        || ((24 <= io_index) && (io_index <= 31))
+        || ((34 <= io_index) && (io_index <= 35)))
     {
         if (io_index <= 31)
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x30), io_index, enable);
@@ -610,6 +605,12 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
         }
     }
     return 0;
+}
+
+void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level)
+{
+    GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 9, (level & 1) ^ 1);
+    GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 10, enable);
 }
 
 #endif
