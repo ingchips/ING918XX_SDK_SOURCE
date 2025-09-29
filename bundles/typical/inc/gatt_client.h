@@ -119,6 +119,21 @@ typedef struct {
 
 #pragma pack(pop)
 
+#define MAX_NR_EATT_CHANNELS 5
+
+/**
+ * @brief Setup Enhanced LE Bearer with up to 5 channels on existing LE connection
+ * @param callback for GATT_EVENT_CONNECTED and GATT_EVENT_DISCONNECTED events
+ * @param con_handle
+ * @param num_channels
+ * @param storage_buffer for L2CAP connection
+ * @param storage_size - each channel requires (2 * ATT MTU) + 10 bytes
+ * @return
+ */
+// uint8_t gatt_client_le_enhanced_connect(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint8_t num_channels, uint8_t * storage_buffer, uint16_t storage_size);
+// WARNING: ^^^ this API is not available in this release
+
+
 /**
  * @brief Discovers all primary services. For each found service, an le_service_event_t with type set to GATT_EVENT_SERVICE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t, with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
  * @param callback          Callback to discover primary services.

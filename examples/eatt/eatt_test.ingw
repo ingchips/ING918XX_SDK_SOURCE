@@ -3,23 +3,23 @@
  "bundle_meta": {
   "var": {
    "link_layer_features": {
-    "value": "3f790104fe000000",
-    "addr": 168320
+    "value": "3f79ff07fe000000",
+    "addr": 183660
    }
   },
   "rom": {
-   "size": 157780,
+   "size": 173512,
    "base": 16384
   },
   "ram": {
-   "size": 30228,
+   "size": 30276,
    "base": 536870912
   },
   "app": {
-   "base": 180224
+   "base": 196608
   },
   "version": [
-   1,10,20]
+   1,10,22]
  },
  "tc_dir": "D:\/Users\/yuxiz\/AppData\/Local\/Keil_v5\/uv4",
  "eflash_addr": "0x42000",
@@ -40,8 +40,8 @@
  "template": "D:\\Users\\yuxiz\\AppData\\Roaming\\Local\\Program\\ING_SDK\\wizard\\templates\\typical\\peripheral",
  "coding_adv": false,
  "key_incode": true,
- "series": "ING9187xx",
- "proj_name": "eatt",
+ "series": "ING9188xx",
+ "proj_name": "eatt_test",
  "sdk_release_path": "..\/..",
  "printf_port": "uart0",
  "security": false,
@@ -55,13 +55,13 @@
  "is_sdk_path_rel": true,
  "pb_gatt": true,
  "deep_sleep": true,
- "proj_dir": "D:\\workspace\\ingchips\\ING918XX_SDK_SOURCE\\examples\\eatt",
+ "proj_dir": "D:\\workspace\\ingchips\\ING918XX_SDK_SOURCE\\examples\\eatt_test",
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
  "bundle": "exp",
- "app_rom_size": "360448",
- "app_rom_addr": "180224",
+ "app_rom_size": "344064",
+ "app_rom_addr": "196608",
  "family": "ing918",
  "vcode": false,
  "heap_override": false,
@@ -78,8 +78,8 @@
  "keil": true,
  "cmsis": "D:\/Users\/yuxiz\/AppData\/Roaming\/Local\/Program\/ING_SDK\/wizard\/CMSIS",
  "cube": true,
- "app_ram_size": 35304,
- "app_ram_addr": 536901144,
+ "app_ram_size": 35256,
+ "app_ram_addr": 536901192,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",

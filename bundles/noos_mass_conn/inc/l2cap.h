@@ -14,6 +14,7 @@
 #ifndef __L2CAP_H
 #define __L2CAP_H
 
+#include <stdbool.h>
 #include "bluetooth.h"
 #include "bt_types.h"
 #include "gap.h"
@@ -209,6 +210,148 @@ uint8_t l2cap_request_connection_parameter_update(hci_con_handle_t con_handle, u
 /** @brief for PTS Testing
  */
 uint8_t l2cap_send_echo_request(hci_con_handle_t con_handle, const uint8_t *data, uint16_t len);
+
+//
+// L2CAP Connection-Oriented Channels in Enhanced Credit-Based Flow-Control Mode - ECBM
+//
+
+/**
+ * @brief Register L2CAP service in Enhanced Credit-Based Flow-Control Mode
+ * @note MTU and initial credits are specified in l2cap_enhanced_accept_connection(..) call
+ * @param packet_handler
+ * @param psm
+ * @param min_remote_mtu
+ * @param security_level
+ * @oaram authorization_required
+ * @return status
+ */
+// uint8_t l2cap_ecbm_register_service(btstack_packet_handler_t packet_handler, uint16_t psm, uint16_t min_remote_mtu,
+//                                     gap_security_level_t security_level, bool authorization_required);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Unregister L2CAP service in Enhanced Credit-Based Flow-Control Mode
+ * @param psm
+ * @return status
+ */
+
+// uint8_t l2cap_ecbm_unregister_service(uint16_t psm);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Set Minimal MPS for channel in Enhanced Credit-Based Flow-Control Mode
+ * @param mps_min
+ */
+// void l2cap_ecbm_mps_set_min(uint16_t mps_min);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Set Minimal MPS for channel in Enhanced Credit-Based Flow-Control Mode
+ * @param mps_max
+ */
+// void l2cap_ecbm_mps_set_max(uint16_t mps_max);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Create outgoing channel in Enhanced Credit-Based Flow-Control Mode
+ * @note receive_buffer points to an array of receive buffers with num_channels elements
+ * @note out_local_cid points to an array where CID is stored with num_channel elements
+ * @param packet_handler        Packet handler for this connection
+ * @param con_handle            HCI Connection Handle
+ * @param security_level        Minimum required security level
+ * @param psm                   Service PSM to connect to
+ * @param num_channels          number of channels to create
+ * @param initial_credits       Number of initial credits provided to peer per channel or L2CAP_LE_AUTOMATIC_CREDITS to enable automatic credits
+ * @param receive_buffer_size   buffer size equals MTU
+ * @param receive_buffers       Array of buffers used for reassembly of L2CAP Information Frames into service data unit (SDU) with given MTU
+ * @param out_local_cids        Array of L2CAP Channel Identifiers is stored here on success
+ * @return status
+ */
+// uint8_t l2cap_ecbm_create_channels(btstack_packet_handler_t packet_handler, hci_con_handle_t con_handle,
+//                                        gap_security_level_t security_level,
+//                                        uint16_t psm, uint8_t num_channels, uint16_t initial_credits, uint16_t receive_buffer_size,
+//                                        uint8_t ** receive_buffers, uint16_t * out_local_cids);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief  Accept incoming connection Enhanced Credit-Based Flow-Control Mode
+ * @param local_cid            from L2CAP_EVENT_INCOMING_DATA_CONNECTION
+ * @param num_channels
+ * @param initial_credits      Number of initial credits provided to peer per channel or L2CAP_LE_AUTOMATIC_CREDITS to enable automatic credits
+ * @param receive_buffer_size
+ * @param receive_buffers      Array of buffers used for reassembly of L2CAP Information Frames into service data unit (SDU) with given MTU
+ * @param out_local_cids       Array of L2CAP Channel Identifiers is stored here on success
+ * @return status
+ */
+// uint8_t l2cap_ecbm_accept_channels(uint16_t local_cid, uint8_t num_channels, uint16_t initial_credits,
+//                                             uint16_t receive_buffer_size, uint8_t ** receive_buffers, uint16_t * out_local_cids);
+// WARNING: ^^^ this API is not available in this release
+
+/**
+ * @brief Decline connection in Enhanced Credit-Based Flow-Control Mode
+ * @param local_cid           from L2CAP_EVENT_INCOMING_DATA_CONNECTION
+ * @param result              See L2CAP_ECBM_CONNECTION_RESULT_ALL_SUCCESS in bluetooth.h
+ * @return status
+ */
+// uint8_t l2cap_ecbm_decline_channels(uint16_t local_cid, uint16_t result);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Provide credits for channel in Enhanced Credit-Based Flow-Control Mode
+ * @param local_cid             L2CAP Channel Identifier
+ * @param credits               Number additional credits for peer
+ * @return status
+ */
+// uint8_t l2cap_ecbm_provide_credits(uint16_t local_cid, uint16_t credits);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Request emission of L2CAP_EVENT_ECBM_CAN_SEND_NOW as soon as possible
+ * @note L2CAP_EVENT_ECBM_CAN_SEND_NOW might be emitted during call to this function
+ *       so packet handler should be ready to handle it
+ * @param local_cid             L2CAP Channel Identifier
+ * @return status
+ */
+// uint8_t l2cap_ecbm_request_can_send_now_event(uint16_t local_cid);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Reconfigure MPS/MTU of local channels
+ * @param num_cids
+ * @param local_cids            array of local_cids to reconfigure
+ * @param receive_buffer_size   buffer size equals MTU
+ * @param receive_buffers       Array of buffers used for reassembly of L2CAP Information Frames into service data unit (SDU) with given MTU
+ * @return status
+ */
+// uint8_t l2cap_ecbm_reconfigure_channels(uint8_t num_cids, uint16_t * local_cids, int16_t receive_buffer_size, uint8_t ** receive_buffers);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Trigger pending connection responses after pairing completed
+ * @note Must be called after receiving an SM_PAIRING_COMPLETE event, will be removed eventually
+ * @param con_handle
+ */
+// void l2cap_ecbm_trigger_pending_connection_responses(hci_con_handle_t con_handle);
+// WARNING: ^^^ this API is not available in this release
+
+
+/**
+ * @brief Returns the number of outgoing credits provided by peer
+ * @param local_cid
+ * @return number of credits
+ */
+// uint16_t l2cap_ecbm_available_credits(uint16_t local_cid);
+// WARNING: ^^^ this API is not available in this release
+
 
 /* API_END */
 

@@ -181,6 +181,14 @@ enum btstack_config_item {
  * @param flags     flags (combination of btstack_config_item)
  */
 void btstack_config(uint32_t flags);
+/**
+ * @brief return min/max of two uint32_t values
+ */
+// uint32_t btstack_min(uint32_t a, uint32_t b);
+// WARNING: ^^^ this API is not available in this release
+
+// uint32_t btstack_max(uint32_t a, uint32_t b);
+// WARNING: ^^^ this API is not available in this release
 
 #ifdef __cplusplus
 }
