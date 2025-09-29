@@ -426,6 +426,17 @@ int DMA_MemCopy(int channel_id, void *dst, void *src, int size)
     return (state & (DMA_IRQ_ERROR | DMA_IRQ_ABORT)) ? 1 : 0;
 }
 
+void DMA_ConfigSrcBurstSize(DMA_Descriptor *pDesc, DMA_SrcBurstSize burst_size)
+{
+    pDesc->Ctrl &= ~(uint32_t)(0xF << bsDMA_SRC_BURSIZE);
+    pDesc->Ctrl |= (uint32_t)(burst_size << bsDMA_SRC_BURSIZE);
+}
+
+DMA_Descriptor *DMA_GetChannelDescriptor(int channel_id)
+{
+    return &(APB_DMA->Channels[channel_id].Descriptor);
+}
+
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 #define bsDMA_DST_REQ_SEL        4
@@ -608,6 +619,7 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_I2C0:
         case SYSCTRL_DMA_UART0_TX:
         case SYSCTRL_DMA_UART1_TX:
+            return DMA_WIDTH_BYTE;
 
         case SYSCTRL_DMA_SPI0_TX:
         case SYSCTRL_DMA_SPI0_RX:
@@ -624,7 +636,6 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_QDEC0:
         case SYSCTRL_DMA_QDEC1:
         case SYSCTRL_DMA_QDEC2:
-            return DMA_WIDTH_32_BITS;
         case SYSCTRL_DMA_SDADC_RX:
             return DMA_WIDTH_32_BITS;
         default:

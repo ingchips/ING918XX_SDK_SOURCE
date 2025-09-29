@@ -1198,6 +1198,8 @@ void SYSCTRL_Reset(void)
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+static volatile uint32_t g_slow_rc_clk;
+#define AON1_REG5       ((volatile uint32_t *)(AON1_CTRL_BASE + 0x18))
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
@@ -1310,6 +1312,12 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 4);
         set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 2);
         break;
+    case SYSCTRL_ITEM_APB_PTE        :
+        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 26);
+        break;
+    case SYSCTRL_ITEM_APB_GPIOTE     :
+        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 27);
+        break;
     default:
         break;
     }
@@ -1338,7 +1346,7 @@ int SYSCTRL_SelectUsedDmaItems(uint32_t items)
     int i = 0;
     uint32_t value = 0;
     int cnt = 0;
-    for (i = 0; i <= SYSCTRL_DMA_AUDIO_ENC_RX; i++)
+    for (i = 0; i <= SYSCTRL_DMA_ASDM_RX; i++)
     {
         if (items & (1ul << i))
         {
@@ -1529,6 +1537,12 @@ static void SYSCTRL_ResetBlockCtrl(SYSCTRL_ResetItem item, uint8_t v)
         set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 14);
         set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 4);
         break;
+    case SYSCTRL_ITEM_APB_PTE      :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 28);
+        break;
+    case SYSCTRL_ITEM_APB_GPIOTE   :
+        set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 29);
+        break;
     default:
         break;
     }
@@ -1568,12 +1582,46 @@ uint32_t SYSCTRL_GetSlowClk(void)
     {
         return OSC_CLK_FREQ;
     }
-    else
-    {
-        // TODO: RC should be tune to a specific frequency
-        // 24M is recommended?
-        return 24000000;
-    }
+    return g_slow_rc_clk;
+}
+
+uint32_t SYSCTRL_AutoTuneSlowRC(SYSCTRL_SlowRCClkMode value)
+{
+    uint32_t tune;
+    uint32_t pll_reg_vale = *(volatile uint32_t *)(AON1_CTRL_BASE + 0x28);
+    uint32_t reg5 = *AON1_REG5;
+    uint32_t aon1_int = *(volatile uint32_t *)(AON1_CTRL_BASE + 0x1c);
+    uint32_t clk_src = (*(volatile uint32_t *)(AON1_CTRL_BASE + 0x10)) & 0x100;
+
+    g_slow_rc_clk = (uint32_t)value * 8000000;
+
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
+    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_SLOW);
+    set_reg_bit((volatile uint32_t*)(AON1_CTRL_BASE + 0x10), 1, 8);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x28), 1, 0);
+    while ((APB_SYSCTRL->PllCtrl & (1u << 30)) == 0);
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x28), 6 | ((value*4)<<6) | (1<<14), 20, 1);
+    *(volatile uint32_t*)(APB_SYSCTRL_BASE + 0x1e0) = 0x271 | (0x7<<10);
+    set_reg_bits((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x230), 0x4e2, 16, 12);
+    set_reg_bit((volatile uint32_t*)(AON1_CTRL_BASE + 0x3c), 1, 19);
+    set_reg_bit((volatile uint32_t*)(AON1_CTRL_BASE + 0x38), 0, 19);
+    set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x230), 1, 30);
+    while ((((*(volatile uint32_t*)(APB_SYSCTRL_BASE + 0x230))>>28)&0x1) == 0);
+    tune = (*(volatile uint32_t*)(APB_SYSCTRL_BASE + 0x230)) & 0xfff;
+    set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x230), 0, 30);
+    set_reg_bits((volatile uint32_t*)(AON1_CTRL_BASE + 0x3c), tune, 12, 4);
+    set_reg_bit((volatile uint32_t*)(AON1_CTRL_BASE + 0x38), 1, 19);
+    set_reg_bit((volatile uint32_t*)(AON1_CTRL_BASE + 0x3c), 0, 19);
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x28) = pll_reg_vale;
+    *AON1_REG5 = reg5;
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x1c) = aon1_int;
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x10) |= clk_src;
+    return tune;
+}
+
+void SYSCTRL_TuneSlowRC(uint32_t tune)
+{
+    set_reg_bits((volatile uint32_t*)(AON1_CTRL_BASE + 0x3c), tune, 12, 4);
 }
 
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
@@ -1690,15 +1738,14 @@ void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode)
 
     if (enable)
     {
-        // TODO:
+        SYSCTRL_AutoTuneSlowRC(mode);
+        set_reg_bit(AON1_PMU3, 1, 19);
     }
     else
     {
         set_reg_bit(AON1_PMU3, 0, 19);
     }
 }
-
-#define AON1_REG5       ((volatile uint32_t *)(AON1_CTRL_BASE + 0x18))
 
 static void enabled_div_hclk_update_act(uint8_t enable)
 {
@@ -1759,12 +1806,12 @@ void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode)
 
 uint8_t SYSCTRL_GetPClkDiv(void)
 {
-    return get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg, 4, 4);
+    return get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg[0], 4, 4);
 }
 
 uint32_t SYSCTRL_GetPClk()
 {
-    return SYSCTRL_GetHClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg, 4, 4);
+    return SYSCTRL_GetHClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg[0], 4, 4);
 }
 
 void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode)
@@ -1786,39 +1833,9 @@ void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode)
     }
 }
 
-void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode)
-{
-    if (mode == SYSCTRL_CLK_32k)
-    {
-        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 12);
-    }
-    else
-    {
-        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 11);
-        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 0, 12);
-        set_reg_bits(APB_SYSCTRL->CguCfg + 7, mode, 12, 20);
-        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 10);
-    }
-}
-
 uint32_t SYSCTRL_GetCLK32k(void)
 {
-    if (APB_SYSCTRL->CguCfg[1] & (1 << 12))
-    {
-        return RTC_CLK_FREQ;
-    }
-
-    return SYSCTRL_GetSlowClk() / (APB_SYSCTRL->CguCfg[7] >> 20);
-}
-
-int SYSCTRL_GetCPU32k(void)
-{
-    return APB_SYSCTRL->CguCfg8 & (1 << 13) ? RTC_CLK_FREQ : SYSCTRL_GetCLK32k();
-}
-
-void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode)
-{
-    set_reg_bit(&APB_SYSCTRL->CguCfg8, mode, 13);
+    return RTC_CLK_FREQ;
 }
 
 void SYSCTRL_SetPClkDiv(uint8_t div)
@@ -1861,18 +1878,18 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
     case SYSCTRL_ITEM_APB_TMR1:
         if (APB_SYSCTRL->CguCfg[1] & (1 << (15 + item - SYSCTRL_ITEM_APB_TMR0)))
             return SYSCTRL_GetCLK32k();
-        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg8, 20, 4);
+        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
     case SYSCTRL_ITEM_APB_PWM:
         if (APB_SYSCTRL->CguCfg8 & (1 << 15))
             return SYSCTRL_GetCLK32k();
-        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg8, 27, 4);
+        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 27, 4);
     case SYSCTRL_ITEM_APB_KeyScan:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 13))
             return SYSCTRL_GetCLK32k();
-        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg, 24, 4);
+        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg[0], 24, 4);
     case SYSCTRL_ITEM_AHB_SPI0:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 21))
-            return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg, 20, 4);
+            return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg[0], 20, 4);
         return SYSCTRL_GetSlowClk();
     case SYSCTRL_ITEM_APB_SPI1:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 22))
@@ -1880,7 +1897,7 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
         return SYSCTRL_GetSlowClk();
     case SYSCTRL_ITEM_APB_I2S:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 23))
-            return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->CguCfg, 12, 4);
+            return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg[1], 6, 4);
         return SYSCTRL_GetSlowClk();
     case SYSCTRL_ITEM_APB_UART0:
     case SYSCTRL_ITEM_APB_UART1:
@@ -1892,11 +1909,11 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetAdcClkDiv();
         return SYSCTRL_GetSlowClk();
     case SYSCTRL_ITEM_APB_USB:
-        return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->USBCfg, 0, 4);
+        return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->USBCfg, 0, 4);
     case SYSCTRL_ITEM_APB_QDEC:
         if (APB_SYSCTRL->QdecCfg & (1 << 15))
-            return SYSCTRL_GetHClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->QdecCfg, 1, 10);
-        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)&APB_SYSCTRL->QdecCfg, 1, 10);
+            return SYSCTRL_GetHClk() / get_safe_divider((uint32_t)APB_SYSCTRL->QdecCfg, 1, 10);
+        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->QdecCfg, 1, 10);
     case SYSCTRL_ITEM_APB_I2C0:
     case SYSCTRL_ITEM_APB_RTIMER2:
     case SYSCTRL_ITEM_APB_RTIMER3:
@@ -2131,17 +2148,23 @@ void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom)
 
 void SYSCTRL_EnableInternalVref(uint8_t enable)
 {
-    set_reg_bit((uint32_t*)(AON1_CTRL_BASE+0X18), enable, 16);
+    set_reg_bit((volatile uint32_t*)(AON1_CTRL_BASE+0X18), !enable, 16);
 }
 
 void SYSCTRL_EnableAsdmVrefOutput(uint8_t enable)
 {
-    set_reg_bit((uint32_t*)(APB_SYSCTRL_BASE + 0x234), !enable, 8);
+    set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x234), enable, 7);
 }
 
 void SYSCTRL_SetAdcVrefSel(uint8_t val)
 {
-    set_reg_bits((uint32_t*)(APB_SYSCTRL_BASE + 0x234), val, 4, 9);
+    if (val)
+    {
+        set_reg_bits((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x234), val, 4, 9);
+        set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x234), 0, 8);
+    }
+    else
+        set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x234), 1, 8);
 }
 
 #endif

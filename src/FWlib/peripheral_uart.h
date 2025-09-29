@@ -354,7 +354,7 @@ void UART_SendData(UART_TypeDef* pBase, uint8_t Data);
 uint8_t UART_ReceData(UART_TypeDef* pBase);
 void uart_reset(UART_TypeDef* pBase);
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 /**
  * @brief Enable/Disable DMA transfer
  * @param[in] pBase                 base address

@@ -289,7 +289,7 @@ uint8_t UART_ReceData(UART_TypeDef* pBase)
     return pBase->DataRead;
 }
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 void UART_DmaEnable(UART_TypeDef *pBase, uint8_t tx_enable, uint8_t rx_enable, uint8_t dma_on_err)
 {
     pBase->DmaCon = rx_enable | (tx_enable << 1) | (dma_on_err << 2);

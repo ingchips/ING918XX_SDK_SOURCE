@@ -346,7 +346,6 @@ void SYSCTRL_SelectTimerClk(timer_port_t port, SYSCTRL_ClkMode mode);
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
- * @param port          the timer
  * @param mode          clock mode
  *
  */
@@ -357,7 +356,6 @@ void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode);
  *
  * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
  *
- * @param port          the timer
  * @param mode          clock mode
  *
  */
@@ -368,7 +366,6 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
  *
  * Clock of PDM is divided from SLOW_CLK.`mode` should be `(SYSCTRL_ClkMode)N`, where N = 1..63;
  *
- * @param port          the timer
  * @param mode          clock mode
  *
  */
@@ -589,7 +586,7 @@ int SYSCTRL_GetCLK32k(void);
  *                              ignored when PLL is disabled
  * @param   hclk                HCLK clock mode (see `SYSCTRL_SelectHClk`)
  * @param   flash_clk           Flash clock mode (see `SYSCTRL_SelectFlashClk`)
- * @param   enabled_watchdog    enable(1)/disable(0) watchdog
+ * @param   enable_watchdog    enable(1)/disable(0) watchdog
  *                              When enabled, watchdog is configured to be timed out
  *                              after about 3 seconds. Developer are free to update
  *                              its configuration later.
@@ -1113,9 +1110,11 @@ typedef enum
     SYSCTRL_ITEM_APB_SysCtrl   ,
     SYSCTRL_ITEM_APB_PinCtrl   ,
     SYSCTRL_ITEM_APB_USB       ,
-	SYSCTRL_ITEM_APB_ASDM       ,
+    SYSCTRL_ITEM_APB_ASDM       ,
     SYSCTRL_ITEM_APB_RTIMER2    ,
     SYSCTRL_ITEM_APB_RTIMER3    ,
+    SYSCTRL_ITEM_APB_PTE        ,
+    SYSCTRL_ITEM_APB_GPIOTE     ,
     SYSCTRL_ITEM_NUMBER,
 } SYSCTRL_Item;
 
@@ -1140,6 +1139,8 @@ typedef enum
 #define  SYSCTRL_ClkGate_APB_SDM                SYSCTRL_ITEM_APB_ASDM
 #define  SYSCTRL_ClkGate_APB_RTMR2              SYSCTRL_ITEM_APB_RTIMER2
 #define  SYSCTRL_ClkGate_APB_RTMR3              SYSCTRL_ITEM_APB_RTIMER3
+#define  SYSCTRL_ClkGate_APB_PTE                SYSCTRL_ITEM_APB_PTE
+#define  SYSCTRL_ClkGate_APB_GPIOTE             SYSCTRL_ITEM_APB_GPIOTE
 
 typedef SYSCTRL_Item SYSCTRL_ClkGateItem;
 
@@ -1298,7 +1299,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 /**
  * @brief Select SPI clock mode
  * @param port          the port
- * @param mode          clock mode
+q * @param mode          clock mode
  *
  * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
@@ -1458,19 +1459,6 @@ uint32_t SYSCTRL_GetFlashClk(void);
 void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 
 /**
- * @brief Select clock of 32k which can be used by IR/WDT/GPIO/KeyScan
- *
- * `mode` should be `SYSCTRL_CLK_32k`, or `(SYSCTRL_ClkMode)N`,
- *  where N is in [1..0xfff], `SYSCTRL_CLK_32k` is referring to the internal 32k
- *  clock source (32k OSC or 32k RC).
- *
- * Note: The default mode is (`(SYSCTRL_ClkMode)750`), i.e. (SLOW_CLK / 750).
- *
- * @param mode                  clock mode
- */
-void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
-
-/**
  * @brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan
  *
  * @return                      frequency of the 32k
@@ -1487,29 +1475,6 @@ uint32_t SYSCTRL_GetCLK32k(void);
 #define PLL_HW_DEF_DIV_PRE          5
 #define PLL_HW_DEF_LOOP             80
 #define PLL_HW_DEF_DIV_OUTPUT       1
-
-typedef enum
-{
-    SYSCTRL_CPU_32k_CLK_32k = 0,    // use the clock configured by `SYSCTRL_SelectCLK32k`
-    SYSCTRL_CPU_32k_INTERNAL = 1,   // use the internal 32k clock source (32k OSC or 32k RC)
-} SYSCTRL_CPU32kMode;
-
-/**
- * @brief Select clock of 32k for MCU
- *
- * Note: The default mode is `SYSCTRL_CPU_32k_INTERNAL`.
- *
- * @param mode          clock mode
- *
- */
-void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
-
-/**
- * @brief Get the frequency of CPU 32k
- *
- * @return                      frequency of CPU 32k
- */
-int SYSCTRL_GetCPU32k(void);
 
 typedef enum
 {
@@ -1548,7 +1513,8 @@ typedef enum
     SYSCTRL_SLOW_RC_16M = 2,
     SYSCTRL_SLOW_RC_24M = 3,
     SYSCTRL_SLOW_RC_32M = 4,
-    SYSCTRL_SLOW_RC_48M = 5,
+    SYSCTRL_SLOW_RC_48M = 6,
+    SYSCTRL_SLOW_RC_64M = 8,
 } SYSCTRL_SlowRCClkMode;
 
 /**
@@ -1562,25 +1528,22 @@ typedef enum
 void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode);
 
 /**
- * @brief Tune the RC clock for slow clock to the frequency given by
- * `SYSCTRL_SlowRCClkMode` automatically.
- *
- * Note: 1. The returned value can be stored in NVM for later use (see `SYSCTRL_TuneSlowRC`)
- *       2. The internal configuration is different for different `SYSCTRL_SlowRCClkMode`.
- *
- * @return              the internal configuration after tunning
- *
- */
-uint32_t SYSCTRL_AutoTuneSlowRC(void);
-
-/**
  * @brief Set the internal configuration the RC clock for slow clock
  *
  * @param value         the internal configuration which is returned from
  *                      `SYSCTRL_AutoTuneSlowRC` to tune the clock
+ *
+ * @return [out] get turn vale.
  */
-void SYSCTRL_TuneSlowRC(uint32_t value);
+uint32_t SYSCTRL_AutoTuneSlowRC(SYSCTRL_SlowRCClkMode value);
 
+/**
+ * @brief Tune the slow RC clock
+ *
+ * @param tune          Tune value
+ *
+ */
+void SYSCTRL_TuneSlowRC(uint32_t tune);
 /**
  * @brief Configure clock output functionality
  *
@@ -1605,13 +1568,13 @@ typedef enum
     SYSCTRL_DMA_I2S_RX,
     SYSCTRL_DMA_SPIFLASH,
     SYSCTRL_DMA_SADC,
-    SYSCTRL_DMA_AUDIO_ENC_RX,
+    SYSCTRL_DMA_ASDM_RX,
 
     SYSCTRL_DMA_UART0_TX = 0x10,
     SYSCTRL_DMA_UART1_TX,
     SYSCTRL_DMA_SPI0_RX,
     SYSCTRL_DMA_SPI1_RX,
-    SYSCTRL_DMA_AUDIO_ENC_TX,
+    SYSCTRL_DMA_ASDM_TX,
     SYSCTRL_DMA_QDEC1,
     SYSCTRL_DMA_KeyScan,
     SYSCTRL_DMA_I2S_TX,
@@ -1897,7 +1860,7 @@ void SYSCTRL_EnableWakeupSourceDetection(void);
  * @param[in] channel_index     channel index (0 .. PWM_CHANNEL_NUMBER - 1)
  * @param[in] enable            Enable(1)/Disable(0)
  */
-void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable);
+void SYSCTRL_EnablePcapMode(uint8_t channel_index, uint8_t enable);
 
 typedef enum
 {
@@ -2016,6 +1979,17 @@ void SYSCTRL_EnableDCDCMode(uint8_t mode);
  * @param enable [in] 1: enable, 0: disable
  */
 void SYSCTRL_EnableInternalVref(uint8_t enable);
+
+/**
+ * @brief Enable or disable the ASDM Vref output.
+ *
+ * @param enable [in] 1: enable, 0: disable
+ *
+ * @note The ASDM Vref output is used by the ASDM module. If your ASDM module uses the ASDM
+ *    Vref output, you must enable it. If you enable VrefOut, the external IO11 must
+ *    be connected to a filter capacitor, otherwise it will affect the sound noise floor.
+ * */
+void SYSCTRL_EnableAsdmVrefOutput(uint8_t enable);
 
 /**
  * @brief Set ADC reference voltage selection

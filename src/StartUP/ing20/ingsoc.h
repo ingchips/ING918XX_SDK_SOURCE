@@ -326,7 +326,8 @@ typedef struct{
     __IO uint32_t sadc_cfg[3];            // 0x0
     __IO uint32_t sadc_data;              // 0x0c
     __IO uint32_t sadc_status;            // 0x10
-    __IO uint32_t Reserved[7];            // 0x14
+    __IO uint32_t sadc_cfg3;              // 0x14
+    __IO uint32_t Reserved[6];            // 0x18
     __IO uint32_t sadc_int_mask;          // 0x30
     __IO uint32_t sadc_int;               // 0x34
 } SADC_TypeDef;
@@ -473,132 +474,129 @@ typedef struct
 
 typedef struct
 {
-    __IO uint32_t      reg_task[6];         //0x000
-    __IO uint32_t      _NOT_USED_1[2];         //0x01c
-    __IO uint32_t      reg_sub_task[6];     //0x020
-    __IO uint32_t      _NOT_USED_2[2];         //0x03c
-    __IO uint32_t      reg_event;           //0x040
-    __IO uint32_t      reg_pub_event[3];    //0x044
+    __IO uint32_t      reg_task[6];
+    __IO uint32_t      _NOT_USED_1[2];
+    __IO uint32_t      reg_sub_task[6];
+    __IO uint32_t      _NOT_USED_2[2];
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event[3];
 }PTE_QDEC_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_event;           //0x050
-    __IO uint32_t      reg_pub_event[8];    //0x054
-    __IO uint32_t      _NOT_USED_3[3];         //0x074
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event[8];
+    __IO uint32_t      _NOT_USED_3[3];
 }PTE_DMA_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task[24];         //0x080
-    __IO uint32_t      reg_sub_task[24];         //0x0f0
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event[8];         //0x164
+    __IO uint32_t      reg_task[24];
+    __IO uint32_t      reg_sub_task[24];
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event[8];
     __IO uint32_t      _NOT_USED[3];
 }PTE_GPIOTE_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task[16];         //0x0170
-    __IO uint32_t      reg_sub_task[16];         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event[8];         //0x164
+    __IO uint32_t      reg_task[16];
+    __IO uint32_t      reg_sub_task[16];
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event[8];
     __IO uint32_t      _NOT_USED[3];
 }PTE_Timer_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task[2];         //0x220
-    __IO uint32_t      reg_sub_task[2];         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event0;         //0x164
+    __IO uint32_t      reg_task[2];
+    __IO uint32_t      reg_sub_task[2];
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event0;
     __IO uint32_t      _NOT_USED[2];
 }PTE_QSPI_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task0;         //0x240
-    __IO uint32_t      reg_sub_task0;         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event0;         //0x164
+    __IO uint32_t      reg_task0;
+    __IO uint32_t      reg_sub_task0;
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event0;
 }PTE_I2C_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task[3];         //0x250
+    __IO uint32_t      reg_task[3];
     __IO uint32_t      _NOT_USED;
-    __IO uint32_t      reg_sub_task[3];         //0x260
+    __IO uint32_t      reg_sub_task[3];
     __IO uint32_t      _NOT_USED1;
-    __IO uint32_t      reg_event;           //0x270
-    __IO uint32_t      reg_pub_event[2];         //0x164
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event[2];
     __IO uint32_t      _NOT_USED2;
 }PTE_SADC_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task[4];         //0x280
-    __IO uint32_t      reg_sub_task[4];         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event[2];         //0x164
+    __IO uint32_t      reg_task[4];
+    __IO uint32_t      reg_sub_task[4];
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event[2];
     __IO uint32_t      _NOT_USED;
 }PTE_Uart_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task[2];         //0x2e0
-    __IO uint32_t      reg_sub_task[2];         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event0;         //0x164
+    __IO uint32_t      reg_task[2];
+    __IO uint32_t      reg_sub_task[2];
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event0;
     __IO uint32_t      _NOT_USED[2];
 }PTE_SPI_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task[21];         //0x300
+    __IO uint32_t      reg_task[21];
     __IO uint32_t      _NOT_USED0[3];
-    __IO uint32_t      reg_sub_task[21];         //0x160
+    __IO uint32_t      reg_sub_task[21];
     __IO uint32_t      _NOT_USED1[3];
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event[9];         //0x164
+    __IO uint32_t      reg_event;
+    __IO uint32_t      reg_pub_event[9];
     __IO uint32_t      _NOT_USED2[2];
 }PTE_PWM_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task[4];         //0x4a0
-    __IO uint32_t      reg_sub_task[4];         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event0;         //0x164
+    __IO uint32_t      reg_task[4];
+    __IO uint32_t      reg_sub_task[4];
 }PTE_I2S_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task0;         //0x3f0
-    __IO uint32_t      reg_sub_task0;         //0x160
-    __IO uint32_t      reg_task1;         //0x0f0
-    __IO uint32_t      reg_sub_task1;         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event0;         //0x164
+    __IO uint32_t      reg_task0;
+    __IO uint32_t      reg_sub_task0;
+    __IO uint32_t      reg_task1;
+    __IO uint32_t      reg_sub_task1;
+    __IO uint32_t      reg_event;
+    __IO uint32_t      _NOT_USED1[8];
+    __IO uint32_t      reg_pub_event0;
 }PTE_ASDM_TypeDef;
-
-
 
 typedef struct
 {
-    PTE_QDEC_TypeDef 	PTE_QDEC;
-    PTE_DMA_TypeDef 	PTE_DMA;
-    PTE_GPIOTE_TypeDef 	PTE_GPIOTE;
-    PTE_Timer_TypeDef 	PTE_TIMER0;
-    PTE_QSPI_TypeDef 	PTE_QSPI;
-    PTE_I2C_TypeDef 	PTE_I2C;
-    PTE_SADC_TypeDef 	PTE_SADC;
-    PTE_Uart_TypeDef 	PTE_UART0;
-    PTE_Uart_TypeDef 	PTE_UART1;
-    PTE_SPI_TypeDef 	PTE_SPI;
-    PTE_PWM_TypeDef 	PTE_PWM;
-    PTE_Timer_TypeDef 	PTE_TIMER1;
-    PTE_I2S_TypeDef 	PTE_I2S;
-    PTE_ASDM_TypeDef 	PTE_ASDM;
+    PTE_QDEC_TypeDef    PTE_QDEC;
+    PTE_DMA_TypeDef     PTE_DMA;
+    PTE_GPIOTE_TypeDef  PTE_GPIOTE;
+    PTE_Timer_TypeDef   PTE_TIMER0;
+    PTE_QSPI_TypeDef    PTE_QSPI;
+    PTE_I2C_TypeDef     PTE_I2C;
+    PTE_SADC_TypeDef    PTE_SADC;
+    PTE_Uart_TypeDef    PTE_UART0;
+    PTE_Uart_TypeDef    PTE_UART1;
+    PTE_SPI_TypeDef     PTE_SPI;
+    PTE_PWM_TypeDef     PTE_PWM;
+    PTE_Timer_TypeDef   PTE_TIMER1;
+    PTE_I2S_TypeDef     PTE_I2S;
+    PTE_ASDM_TypeDef    PTE_ASDM;
 }PTE_BUS_TypeDef;
 
 typedef struct
@@ -661,6 +659,7 @@ typedef struct
 #define APB_ASDM_BASE      (APB_BASE + 0x1a000)
 #define APB_TMR2_BASE      (APB_BASE + 0x1c000)
 #define APB_TMR3_BASE      (APB_BASE + 0x1c010)
+#define APB_GPIOTE_BASE    (APB_BASE + 0x001f0)
 
 #define AON_APB_BASE       ((uint32_t)0x40100000UL)
 #define AON2_CTRL_BASE     (AON_APB_BASE + 0x0000)
@@ -694,6 +693,7 @@ typedef struct
 #define APB_PTE            ((PTEC_TypeDef *)APB_PTE_BASE)
 #define APB_PTE_BUS        ((PTE_BUS_TypeDef *)APB_PTE_BUS_BASE)
 #define APB_ASDM           ((ASDM_TypeDef *)APB_ASDM_BASE)
+#define APB_GPIOTE         ((GPIOTE_TypeDef *)APB_GPIOTE_BASE)
 
 #define APB_SPI            APB_SSP1
 #define AHB_QSPI           AHB_SSP0
