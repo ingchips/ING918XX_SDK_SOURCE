@@ -96,6 +96,22 @@ typedef enum {
     NORMAL_MODE,
     LPKEY_MODE,
 }KEYSCAN_RunMode_t;
+
+/*
+ * Keyscan Data Result Structure.
+ *
+ * scan_mode : Scan mode. See KEYSCAN_ScanMode_t.
+ * out_pin : In normal mode, it is the row pin. In LPKEY mode, it is the output pin.
+ * in_pin : In normal mode, it is the column pin. In LPKEY mode, it is the input pin.
+ *
+ * NOTE: In LPKEY mode, Both output and input pins are row pins.
+ */
+typedef struct
+{
+    KEYSCAN_ScanMode_t scan_mode;
+    uint8_t out_pin;
+    uint8_t in_pin;
+} KEYSCAN_GET_Idx;
 #endif
 
 typedef struct {
@@ -113,22 +129,6 @@ typedef struct
     uint8_t row_to_idx[KEY_OUT_ROW_NUMBER];
     uint8_t col_to_idx[KEY_IN_COL_NUMBER];
 } KEYSCAN_Ctx;
-
-/*
- * Keyscan Data Result Structure.
- *
- * scan_mode : Scan mode. See KEYSCAN_ScanMode_t.
- * out_pin : In normal mode, it is the row pin. In LPKEY mode, it is the output pin.
- * in_pin : In normal mode, it is the column pin. In LPKEY mode, it is the input pin.
- *
- * NOTE: In LPKEY mode, Both output and input pins are row pins.
- */
-typedef struct
-{
-    KEYSCAN_ScanMode_t scan_mode;
-    uint8_t out_pin;
-    uint8_t in_pin;
-} KEYSCAN_GET_Idx;
 
 typedef struct {
     KEYSCAN_InColList *col;
@@ -251,8 +251,29 @@ uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, ui
  * @param[in]  key_data         keyscan FIFO raw data
  * @return                      0: Success;
  *                              1: error arg or keyscan_data
+ * NOTE:
+ * When the out_pin or in_pin is 0xFF, it indicates a scan cycle (High or Low) where no valid
+ *       key is present. In this case, only one of the key values is valid while the other
+ *       represents the scan period.
  */
 uint8_t KEYSCAN_HighLowDataToIdex(const KEYSCAN_Ctx *ctx, KEYSCAN_GET_Idx *Idx, uint32_t key_data);
+
+/**
+ * @brief Parse the raw key value from FIFO data and determine the corresponding row and column.
+ *
+ * This function analyzes the input FIFO data to extract the original key value and updates
+ * the Idx structure with the corresponding row (out_pin) and column (in_pin) information.
+ *
+ * @param Idx Pointer to KEYSCAN_GET_Idx structure that will store the row and column information.
+ *            - out_pin: Represents the row value of the key
+ *            - in_pin: Represents the column value of the key
+ * @param key_data The FIFO data containing the key scan information to be parsed
+ *
+ * @note When the out_pin or in_pin is 0xFF, it indicates a scan cycle (High or Low) where no valid
+ *       key is present. In this case, only one of the key values is valid while the other
+ *       represents the scan period.
+ */
+void KEYSCAN_GetColRow(KEYSCAN_GET_Idx *Idx, uint32_t key_data);
 
 #endif
 /**
