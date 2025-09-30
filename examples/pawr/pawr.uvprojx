@@ -7,7 +7,7 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
+      <pCCUsed>6230000::V6.23::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -273,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>33746944</StartAddress>
-                <Size>331776</Size>
+                <StartAddress>33759232</StartAddress>
+                <Size>319488</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -298,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>536892696</StartAddress>
-                <Size>10984</Size>
+                <StartAddress>536892736</StartAddress>
+                <Size>10944</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>

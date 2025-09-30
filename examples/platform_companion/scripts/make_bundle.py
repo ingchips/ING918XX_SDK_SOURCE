@@ -11,10 +11,11 @@ PROJ_NAME = 'platform_companion'
 STACK_BIN = f'{OUTPUT_DIR}/platform.bin'
 map_fn = f'../listing/{PROJ_NAME}.map'
 
-added_api = ['platform_rom_hotfix']
+added_api = ['platform_rom_hotfix', 'platform_rom_hotfix_using_fpb']
 
 PAGE = 1024 * 4 # size of a sector
 BIN_INFO_OFFSET = 0x000000CC
+patch_ram_usage = None
 
 if not os.path.exists(OUTPUT_DIR):
     os.mkdir(OUTPUT_DIR)
@@ -27,7 +28,7 @@ shutil.copyfile(f'../{PROJ_NAME}.bin', STACK_BIN)
 def get_meta_from_map(fn):
     r = {}
     global BIN_INFO_OFFSET
-    global PAGE
+    global PAGE, patch_ram_usage
     with open(fn, 'r') as f:
         for line in f:
             m = re.match(r".*LR_IROM1 \(Base: 0x([0-9a-fA-F]{8}), .+COMPRESSED\[0x([0-9a-fA-F]{8})\]", line)
@@ -41,21 +42,13 @@ def get_meta_from_map(fn):
                 continue
 
             x = False
-            m = re.match(r".*RW_IRAM1 \(Base: 0x([0-9a-fA-F]{8}),.*Size: 0x([0-9a-fA-F]{8})", line)
+            m = re.match(r".*RW_IRAM2 \(Base: 0x([0-9a-fA-F]{8}),.*Size: 0x([0-9a-fA-F]{8})", line)
             if m is None:
-                m = re.match(r".*RW_IRAM1 \(Exec base: 0x([0-9a-fA-F]{8}),.*Size: 0x([0-9a-fA-F]{8})", line)
+                m = re.match(r".*RW_IRAM2 \(Exec base: 0x([0-9a-fA-F]{8}),.*Size: 0x([0-9a-fA-F]{8})", line)
             if not (m is None):
                 size =  int(m.group(2), 16)
                 size = (size + 3) // 4 * 4
-                r['ram'] = {"base" : int(m.group(1), 16), "size" : size}
-
-    if not ('ram' in r):
-        raise Exception("CANNOT FIND RAM INFO!!!!!")
-
-    RAMBASE = 0x20000000
-    offset = r['ram']['base'] - RAMBASE
-    r['ram']['size'] = r['ram']['size'] + offset
-    r['ram']['base'] = RAMBASE
+                patch_ram_usage = {"base" : int(m.group(1), 16), "size" : size}
 
     app_base = ((r['rom']['size'] + PAGE - 1) // PAGE) * PAGE + r['rom']['base']
     r['app'] = {"base": app_base}
@@ -77,9 +70,11 @@ def merge_api(fmapping):
         rom_apis = json.load(f)
     r = {}
     for m in rom_apis:
-        if m in fmapping:
+        r[m] = rom_apis[m]
+        if (m in fmapping) and (fmapping[m] != r[m]):
             print(f"overriding API: {m}")
-        r[m] = fmapping[m] if m in fmapping else rom_apis[m]
+            r[m] = fmapping[m]
+
     for m in added_api:
         print(f"    adding API: {m}")
         r[m] = fmapping[m]
@@ -92,6 +87,12 @@ meta['var'] = {}
 with open('meta.json') as f:
     meta0 = json.load(f)
     meta['ram'] = meta0['ram']
+    if patch_ram_usage is not None:
+        size = patch_ram_usage['size'] + patch_ram_usage['base'] - meta['ram']['base']
+        size = ((size + 3) // 4) * 4
+        print(f"{size - meta['ram']['size']} bytes of RAM reserved")
+        meta['ram']['size'] = size
+
     vars = meta0['var']
     for k in vars.keys():
         v: dict = vars[k]

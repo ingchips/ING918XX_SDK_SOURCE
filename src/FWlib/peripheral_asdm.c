@@ -67,8 +67,17 @@ int ASDM_SetSampleRate(ASDM_TypeDef *base, ASDM_SampleRate sample, ASDM_AgcMode 
 {
     float div;
     uint32_t rounded, i;
-    uint16_t hpf_arr[18] = {78, 16, 85, 17, 117, 23, 154, 31, 167, 34, 227, 47, 298, 63,
-        322, 68, 431, 94};
+    uint16_t hpf_arr[18] = {
+        4017, 4079,
+        4010, 4078,
+        3978, 4072,
+        3941, 4064,
+        3928, 4061,
+        3868, 4048,
+        3797, 4032,
+        3773, 4027,
+        3664, 4001,
+    };
 
     uint32_t pll_clk = SYSCTRL_GetPLLClk();
     if (pll_clk > 390000000)

@@ -51,34 +51,31 @@ uint8_t KEYSCAN_GetScannerEn(void)
     return ret;
 }
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-uint8_t  KEYSCAN_SetTableModeEn(uint8_t enable)
+void  KEYSCAN_SetTableModeEn(uint8_t enable)
 {
     uint8_t offset = 1;
     uint8_t bits_width = 1;
     uint32_t data = (enable == 0) ? 0: 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_scanner_ctrl0, offset, bits_width, data);
-    return 0;
 }
 
-uint8_t  KEYSCAN_SetLpkeyModeEn(uint8_t enable)
+void  KEYSCAN_SetLpkeyModeEn(uint8_t enable)
 {
     uint8_t offset = 2;
     uint8_t bits_width = 1;
     uint32_t data = (enable == 0) ? 0: 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_scanner_ctrl0, offset, bits_width, data);
-    return 0;
 }
 
-uint8_t  KEYSCAN_SetPeReg(uint8_t enable)
+void  KEYSCAN_SetPeReg(uint8_t enable)
 {
     uint8_t offset = 3;
     uint8_t bits_width = 1;
     uint32_t data = (enable == 0) ? 0: 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_scanner_ctrl0, offset, bits_width, data);
-    return 0;
 }
 
 uint8_t  KEYSCAN_SetPsReg(uint8_t pull)
@@ -148,7 +145,6 @@ void KEYSCAN_DbClkSel(uint8_t sel)
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_debouncd_cfg1, offset, bits_width, data);
 #endif
-    return;
 }
 
 void KEYSCAN_SetReleaseTime(uint32_t time)
@@ -157,7 +153,6 @@ void KEYSCAN_SetReleaseTime(uint32_t time)
     uint8_t bits_width = 11;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_scanner_ctrl1, offset, bits_width, time);
-    return;
 }
 
 void KEYSCAN_SetScanInterval(uint32_t scan_itv)
@@ -166,7 +161,6 @@ void KEYSCAN_SetScanInterval(uint32_t scan_itv)
     uint8_t bits_width = 16;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_scanner_ctrl1, offset, bits_width, scan_itv);
-    return;
 }
 
 void KEYSCAN_SetOutRowMask(uint32_t row_mask)
@@ -179,7 +173,6 @@ void KEYSCAN_SetOutRowMask(uint32_t row_mask)
 #endif
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_row_mask_ctrl, offset, bits_width, row_mask);
-    return;
 }
 
 void KEYSCAN_SetInColMask(uint32_t col_mask)
@@ -192,7 +185,6 @@ void KEYSCAN_SetInColMask(uint32_t col_mask)
 #endif
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_col_mask_ctrl, offset, bits_width, col_mask);
-    return;
 }
 
 void KEYSCAN_SetIntTrigEn(uint8_t enable)
@@ -202,7 +194,6 @@ void KEYSCAN_SetIntTrigEn(uint8_t enable)
     uint32_t data = (enable == 0) ? 0: 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_int_en, offset, bits_width, data);
-    return;
 }
 
 void KEYSCAN_SetFifoClrReg(void)
@@ -212,7 +203,6 @@ void KEYSCAN_SetFifoClrReg(void)
     uint32_t data = 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_int_en, offset, bits_width, data);
-    return;
 }
 
 void KEYSCAN_LoopIntClr(void)
@@ -222,7 +212,6 @@ void KEYSCAN_LoopIntClr(void)
     uint32_t data = 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_int_en, offset, bits_width, data);
-    return;
 }
 
 void KEYSCAN_LoopIntEn(uint8_t enable)
@@ -232,7 +221,6 @@ void KEYSCAN_LoopIntEn(uint8_t enable)
     uint32_t data = (enable == 0) ? 0: 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_int_en, offset, bits_width, data);
-    return;
 }
 
 uint8_t KEYSCAN_GetIntStateFifoFullRaw(void)
@@ -291,7 +279,6 @@ void KEYSCAN_SetFifoNumTrigInt(uint32_t trig_num)
     uint8_t bits_width = 5;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_trig, offset, bits_width, trig_num);
-    return;
 }
 
 void KEYSCAN_SetDmaNumTrigInt(uint32_t trig_num)
@@ -300,7 +287,6 @@ void KEYSCAN_SetDmaNumTrigInt(uint32_t trig_num)
     uint8_t bits_width = 5;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_trig, offset, bits_width, trig_num);
-    return;
 }
 
 void KEYSCAN_SetLoopNumTrigInt(uint32_t trig_num)
@@ -309,7 +295,6 @@ void KEYSCAN_SetLoopNumTrigInt(uint32_t trig_num)
     uint8_t bits_width = 3;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_trig, offset, bits_width, trig_num);
-    return;
 }
 
 static uint8_t KEYSCAN_CheckStatePara(const KEYSCAN_SetStateStruct* keyscan_set)
@@ -357,93 +342,111 @@ uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, ui
     }
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
-uint8_t KEYSCAN_GetScanMode(uint8_t table_en, KEYSCAN_ScanMode_t* scan_mode, uint32_t key_data)
+uint8_t KEYSCAN_GetScanMode(KEYSCAN_ScanMode_t* scan_mode, uint32_t key_data)
 {
     uint8_t key_val = 0;
     key_val = (key_data>>8) & 0xf;
-    if(table_en){
-        switch (key_val) {
+    if(APB_KEYSCAN->key_scanner_ctrl0 & 0x2){
+            switch (key_val) {
+            case 0x7:
+                *scan_mode = SCAN_HIGH_PRESS;
+                break;
+            case 0x6:
+                *scan_mode = SCAN_LOW_PRESS;
+                break;
+            case 0x4:
+                *scan_mode = SCAN_NUMBER;
+                break;
             case 0x3:
-                *scan_mode = SCAN_HIGH;
+                *scan_mode = SCAN_HIGH_RELEASE;
+                break;
             case 0x2:
-                *scan_mode = SCAN_LOW;
+                *scan_mode = SCAN_LOW_RELEASE;
+                break;
             case 0x0:
                 *scan_mode = SCAN_NUMBER;
-            case 0x4:
-                return 0;
+                break;
             default:
+                *scan_mode = SCAN_NONE;
                 return 0;
         }
     } else {
         switch (key_val) {
-            case 0x7:
-                *scan_mode = SCAN_HIGH;
-                break;
-            case 0x6:
-                *scan_mode = SCAN_LOW;
-                break;
-            case 0x4:
-                *scan_mode = SCAN_NUMBER;
-                break;
             case 0x3:
-                *scan_mode = SCAN_HIGH;
+            *scan_mode = SCAN_HIGH_PRESS;
                 break;
             case 0x2:
-                *scan_mode = SCAN_LOW;
+            *scan_mode = SCAN_LOW_PRESS;
                 break;
             case 0x0:
-                *scan_mode = SCAN_NUMBER;
+            *scan_mode = SCAN_NUMBER;
                 break;
+            case 0x4:
             default:
-                return 0;
+            *scan_mode = SCAN_NONE;
+            return 0;
         }
     }
     return 1;
 }
 
-uint8_t KEYSCAN_NormalHighLowDataToIdex(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col)
+uint8_t KEYSCAN_HighLowDataToIdex(const KEYSCAN_Ctx *ctx, KEYSCAN_GET_Idx *Idx, uint32_t key_data)
 {
-    if((key_data & 0x1f) > (KEY_IN_COL_NUMBER - 1)){
-        *row = ctx->row_to_idx[((key_data & 0x1f) - KEY_IN_COL_NUMBER + 1)];
+    if ((ctx == 0) || (Idx == 0))
         return 1;
-    }
-    else{
-        *col = ctx->col_to_idx[(key_data & 0x1f)];
-    return 0;
-}
-}
 
-uint8_t KEYSCAN_TableHighLowDataToIdex(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col, uint8_t *key_stae)
-{
-    uint8_t key_val = 0;
-    key_val = (key_data>>8) & 0xf;
-    if((key_val == 0x7) || (key_val == 0x6)){
-        *key_stae = 1;
-    } else {
-        *key_stae = 0;
-    }
-
-    if((key_data & 0x1f) > (KEY_IN_COL_NUMBER - 1)){
-        *row = ctx->row_to_idx[((key_data & 0x1f) - KEY_IN_COL_NUMBER + 1)];
+    if (KEYSCAN_GetScanMode(&Idx->scan_mode, key_data) == 0)
         return 1;
-    }
-    else{
-        *col = ctx->col_to_idx[(key_data & 0x1f)];
+    if (Idx->scan_mode != SCAN_NUMBER) {
+        key_data &= 0x1ful;
+        if (key_data > (KEY_IN_COL_NUMBER - 1)) {
+            Idx->out_pin = ctx->row_to_idx[key_data - KEY_IN_COL_NUMBER];
+        }
+        else {
+            Idx->out_pin = ctx->col_to_idx[key_data];
+        }
+        Idx->in_pin = 0xff;
         return 0;
     }
-
-
+    if (APB_KEYSCAN->key_scanner_ctrl0 & 0x4) {
+        Idx->out_pin = ctx->col_to_idx[(key_data >> 4)&0xf];
+        Idx->in_pin = ctx->col_to_idx[key_data & 0xf];
+    } else {
+        Idx->out_pin = ctx->row_to_idx[(key_data >> 5)&0xf];
+        Idx->in_pin = ctx->col_to_idx[key_data & 0x1f];
+    }
+    return 0;
 }
 
-void KEYSCAN_ScanDataToIdex(const KEYSCAN_Ctx *ctx, KEYSCAN_RunMode_t mode, uint32_t key_data, uint8_t *row, uint8_t *col)
+void KEYSCAN_GetColRow(KEYSCAN_GET_Idx *Idx, uint32_t key_data)
 {
-    if(mode == NORMAL_MODE){
-        *row = ctx->row_to_idx[(key_data >> 5) & 0x07];
-    *col = ctx->col_to_idx[key_data & 0x1f];
-    } else if (mode == LPKEY_MODE) {
-        *row = ctx->row_to_idx[(key_data >> 4) & 0xf];
-        *col = ctx->col_to_idx[key_data & 0xf];
-}
+    KEYSCAN_GetScanMode(&Idx->scan_mode, key_data);
+    if (Idx->scan_mode != SCAN_NUMBER)
+    {
+        key_data &= 0x1f;
+        if (key_data > (KEY_IN_COL_NUMBER - 1))
+        {
+            Idx->out_pin = key_data - KEY_IN_COL_NUMBER;
+            Idx->in_pin = 0xff;
+        }
+        else
+        {
+            Idx->in_pin = key_data;
+            Idx->out_pin = 0xff;
+        }
+        return;
+    }
+
+    if (APB_KEYSCAN->key_scanner_ctrl0 & 0x4)
+    {
+        Idx->out_pin = (key_data>>4)&0xf;
+        Idx->in_pin = key_data&0xf;
+    }
+    else
+    {
+        Idx->out_pin = (key_data>>5)&0xf;
+        Idx->in_pin = key_data&0x7;
+    }
 }
 
 #endif

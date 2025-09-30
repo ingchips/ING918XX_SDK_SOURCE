@@ -392,6 +392,23 @@ uint32_t DMA_GetChannelIntState(int channel_id);
  * @param[in] state                     interrupt state (combination of `DMA_IRQ`) to be cleared.
  */
 void DMA_ClearChannelIntState(int channel_id, uint32_t state);
+
+/**
+ * @brief Modify source burst size in the DMA descriptor
+ *
+ * @param[in] pDesc             the descriptor
+ * @param[in] burst_size        Source burst size of `DMA_SrcBurstSize`, The burst transfer byte number is SrcBurstSize * SrcWidth.
+ */
+void DMA_ConfigSrcBurstSize(DMA_Descriptor *pDesc, DMA_SrcBurstSize burst_size);
+
+/*
+* @brief Get DMA descriptor of a channel
+*
+* @param[in] channel_id                channel id
+* @return                              DMA descriptor
+*/
+DMA_Descriptor *DMA_GetChannelDescriptor(int channel_id);
+
 #endif
 
 #ifdef __cplusplus

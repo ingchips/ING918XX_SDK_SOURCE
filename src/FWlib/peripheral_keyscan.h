@@ -73,15 +73,45 @@ typedef enum
 } KEYSCAN_OutRowIndex_t;
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+/*
+ * Keyscan Scan result enumeration.
+ *
+ * SCAN_HIGH_PRESS: A button with one pin connected to VCC is pressed.
+ * SCAN_LOW_PRESS: A button with one pin connected to GND is pressed.
+ * SCAN_HIGH_RELEASE: A button with one pin connected to VCC is released.
+ * SCAN_LOW_RELEASE: A button with one pin connected to GND is released.
+ * SCAN_NUMBER: The number of scan results.
+ * SCAN_NONE: Input data is error or end loop.
+ */
 typedef  enum {
-    SCAN_HIGH,
-    SCAN_LOW,
+    SCAN_HIGH_PRESS,
+    SCAN_LOW_PRESS,
+    SCAN_HIGH_RELEASE,
+    SCAN_LOW_RELEASE,
     SCAN_NUMBER,
+    SCAN_NONE,
 }KEYSCAN_ScanMode_t;
+
 typedef enum {
     NORMAL_MODE,
     LPKEY_MODE,
 }KEYSCAN_RunMode_t;
+
+/*
+ * Keyscan Data Result Structure.
+ *
+ * scan_mode : Scan mode. See KEYSCAN_ScanMode_t.
+ * out_pin : In normal mode, it is the row pin. In LPKEY mode, it is the output pin.
+ * in_pin : In normal mode, it is the column pin. In LPKEY mode, it is the input pin.
+ *
+ * NOTE: In LPKEY mode, Both output and input pins are row pins.
+ */
+typedef struct
+{
+    KEYSCAN_ScanMode_t scan_mode;
+    uint8_t out_pin;
+    uint8_t in_pin;
+} KEYSCAN_GET_Idx;
 #endif
 
 typedef struct {
@@ -210,56 +240,41 @@ void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set, KEYSCAN
  */
 uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-/**
- * @brief Gets the value of the key scan mode
- *
- * @param[in]  table_en          keyscan table mode enable?
- * @param[in]  scan_mode         key scan mode
- * @param[out] key_data          keyscan FIFO raw data
- * @return                       0: scan cycle end data or error;
- *                               1: find key pressed, *row and *col are key positions in keyboard array
- */
-uint8_t KEYSCAN_GetScanMode(uint8_t table_en, KEYSCAN_ScanMode_t* scan_mode, uint32_t key_data);
-/**
- * @brief In normal mode, transfer keyscan FIFO raw data to keyboard array row and col
- *
- * To use this helper function, `ctx` must be initialized with `KEYSCAN_InitKeyScanToIdx`.
- *
- * @param[in]  ctx              keyboard array mapping table
- * @param[in]  key_data         keyscan FIFO raw data
- * @param[out] row              pressed key's 0-based row index in keyboard array
- * @param[out] col              pressed key's 0-based col index in keyboard array
- * @return                      0: scan key vale is row
- *                              1: scan key vale is col
- */
-uint8_t KEYSCAN_NormalHighLowDataToIdex(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col);
-/**
- * @brief In table mode, transfer keyscan FIFO raw data to keyboard array row and col
- *
- * To use this helper function, `ctx` must be initialized with `KEYSCAN_InitKeyScanToIdx`.
- *
- * @param[in]  ctx              keyboard array mapping table
- * @param[in]  key_data         keyscan FIFO raw data
- * @param[out] row              pressed key's 0-based row index in keyboard array
- * @param[out] col              pressed key's 0-based col index in keyboard array
- * @param[out] key_stae         key state press or unpress
- * @return                      0: scan key vale is row
- *                              1: scan key vale is col
- */
-uint8_t KEYSCAN_TableHighLowDataToIdex(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col, uint8_t *key_stae);
+
 /**
  * @brief Transfer keyscan FIFO raw data to keyboard array row and col
  *
  * To use this helper function, `ctx` must be initialized with `KEYSCAN_InitKeyScanToIdx`.
  *
  * @param[in]  ctx              keyboard array mapping table
- * @param[in]  mode             keyscan mode lpkey or normal
+ * @param[out] Idx              Transfer struct, contains row and col index and keyscan mode.
  * @param[in]  key_data         keyscan FIFO raw data
- * @param[out] row              pressed key's 0-based row index in keyboard array
- * @param[out] col              pressed key's 0-based col index in keyboard array
- *
+ * @return                      0: Success;
+ *                              1: error arg or keyscan_data
+ * NOTE:
+ * When the out_pin or in_pin is 0xFF, it indicates a scan cycle (High or Low) where no valid
+ *       key is present. In this case, only one of the key values is valid while the other
+ *       represents the scan period.
  */
-void KEYSCAN_ScanDataToIdex(const KEYSCAN_Ctx *ctx, KEYSCAN_RunMode_t mode, uint32_t key_data, uint8_t *row, uint8_t *col);
+uint8_t KEYSCAN_HighLowDataToIdex(const KEYSCAN_Ctx *ctx, KEYSCAN_GET_Idx *Idx, uint32_t key_data);
+
+/**
+ * @brief Parse the raw key value from FIFO data and determine the corresponding row and column.
+ *
+ * This function analyzes the input FIFO data to extract the original key value and updates
+ * the Idx structure with the corresponding row (out_pin) and column (in_pin) information.
+ *
+ * @param Idx Pointer to KEYSCAN_GET_Idx structure that will store the row and column information.
+ *            - out_pin: Represents the row value of the key
+ *            - in_pin: Represents the column value of the key
+ * @param key_data The FIFO data containing the key scan information to be parsed
+ *
+ * @note When the out_pin or in_pin is 0xFF, it indicates a scan cycle (High or Low) where no valid
+ *       key is present. In this case, only one of the key values is valid while the other
+ *       represents the scan period.
+ */
+void KEYSCAN_GetColRow(KEYSCAN_GET_Idx *Idx, uint32_t key_data);
+
 #endif
 /**
  * @brief Set keyscan start scan

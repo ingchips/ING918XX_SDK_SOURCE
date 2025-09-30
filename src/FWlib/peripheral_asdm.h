@@ -319,7 +319,7 @@ void ASDM_SetVol(ASDM_TypeDef *base, uint32_t vol);
  * @brief ADSM get out data
  *
  * @param [in] base              ASDM base address
- * @return [out]                  Dmicc 16bit data (data_next[15:0],data[15:0])
+ * @return [out]                  Dmic 16bit data (data_next[15:0],data[15:0])
  */
 uint32_t ASDM_GetOutData(ASDM_TypeDef *base);
 
