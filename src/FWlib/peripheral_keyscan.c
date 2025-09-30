@@ -418,6 +418,37 @@ uint8_t KEYSCAN_HighLowDataToIdex(const KEYSCAN_Ctx *ctx, KEYSCAN_GET_Idx *Idx, 
     return 0;
 }
 
+void KEYSCAN_GetColRow(KEYSCAN_GET_Idx *Idx, uint32_t key_data)
+{
+    KEYSCAN_GetScanMode(&Idx->scan_mode, key_data);
+    if (Idx->scan_mode != SCAN_NUMBER)
+    {
+        key_data &= 0x1f;
+        if (key_data > (KEY_IN_COL_NUMBER - 1))
+        {
+            Idx->out_pin = key_data - KEY_IN_COL_NUMBER;
+            Idx->in_pin = 0xff;
+        }
+        else
+        {
+            Idx->in_pin = key_data;
+            Idx->out_pin = 0xff;
+        }
+        return;
+    }
+
+    if (APB_KEYSCAN->key_scanner_ctrl0 & 0x4)
+    {
+        Idx->out_pin = (key_data>>4)&0xf;
+        Idx->in_pin = key_data&0xf;
+    }
+    else
+    {
+        Idx->out_pin = (key_data>>5)&0xf;
+        Idx->in_pin = key_data&0x7;
+    }
+}
+
 #endif
 int KEYSCAN_InitializeScanParameter(const KEYSCAN_SetStateStruct* keyscan_set)
 {

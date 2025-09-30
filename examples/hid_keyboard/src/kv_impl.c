@@ -21,7 +21,7 @@
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define DB_FLASH_ADDRESS  0x2042000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-#define DB_FLASH_ADDRESS  0x2042000
+#define DB_FLASH_ADDRESS  0x2038000
 #else
 #error unknown or unsupported chip family
 #endif
