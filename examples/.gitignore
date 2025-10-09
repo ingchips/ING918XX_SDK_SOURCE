@@ -15,3 +15,4 @@ music_player/
 mesh_prov/
 ble_dongle/
 !peripheral_ancs/data/0x00.bin
+platform_companion_dbg/
