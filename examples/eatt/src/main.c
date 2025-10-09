@@ -7,7 +7,7 @@
 #include "task.h"
 #include "trace.h"
 #include "../data/setup_soc.cgen"
-
+#include "uart_console.h"
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
@@ -121,7 +121,26 @@ static const platform_evt_cb_table_t evt_cb_table =
         },
     }
 };
+uint32_t uart_isr(void *user_data)
+{
+    uint32_t status;
 
+    while(1)
+    {
+        status = apUART_Get_all_raw_int_stat(APB_UART0);
+        if (status == 0)
+            break;
+
+        APB_UART0->IntClear = status;
+
+        while (apUART_Check_RXFIFO_EMPTY(APB_UART0) != 1)
+        {
+            char c = APB_UART0->DataRead;
+            console_rx_data(&c, 1);
+        }
+    }
+    return 0;
+}
 uintptr_t app_main()
 {
 #ifdef PLATFORM_IN_ROM
@@ -133,12 +152,14 @@ uintptr_t app_main()
 
     // setup event handlers
     platform_set_evt_callback_table(&evt_cb_table);
-
+    platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
     setup_peripherals();
+    uart_console_start();
     xTaskCreate(watchdog_task, "w", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     trace_rtt_init(&trace_ctx);
     // TODO: config trace mask
+    platform_printf("eatt example build @ %s \n", __TIME__);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0);
 
     return 0;

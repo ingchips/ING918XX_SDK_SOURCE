@@ -55,7 +55,7 @@
  "is_sdk_path_rel": true,
  "pb_gatt": true,
  "deep_sleep": true,
- "proj_dir": "D:\\workspace\\ingchips\\ING918XX_SDK_SOURCE\\examples\\eatt_test",
+ "proj_dir": "D:\/workspace\/ingchips\/ING918XX_SDK_SOURCE\/examples\\eatt",
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
@@ -76,7 +76,7 @@
   "proxy": true
  },
  "keil": true,
- "cmsis": "D:\/Users\/yuxiz\/AppData\/Roaming\/Local\/Program\/ING_SDK\/wizard\/CMSIS",
+ "cmsis": "",
  "cube": true,
  "app_ram_size": 35256,
  "app_ram_addr": 536901192,

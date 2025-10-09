@@ -1,10 +1,8 @@
 #define HANDLE_DEVICE_NAME                                   3
-#define HANDLE_GENERIC_INPUT                                 6
-#define HANDLE_GENERIC_OUTPUT                                8
-#define HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG             9
+#define HANDLE_TRACE_DATA                                    6
+#define HANDLE_TRACE_DATA_CLIENT_CHAR_CONFIG                 7
 
 #define HANDLE_DEVICE_NAME_OFFSET                            31
-#define HANDLE_GENERIC_INPUT_OFFSET                          111
-#define HANDLE_GENERIC_OUTPUT_OFFSET                         160
-#define HANDLE_GENERIC_OUTPUT_CLIENT_CHAR_CONFIG_OFFSET      168
+#define HANDLE_TRACE_DATA_OFFSET                             116
+#define HANDLE_TRACE_DATA_CLIENT_CHAR_CONFIG_OFFSET          124
 
