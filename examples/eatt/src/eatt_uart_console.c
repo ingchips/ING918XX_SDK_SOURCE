@@ -198,7 +198,6 @@ extern sm_persistent_t sm_persistent;
 extern uint8_t slave_addr[];
 extern bd_addr_type_t slave_addr_type;
 
-void update_addr(void);
 void conn_to_slave(void);
 void sync_conn_to_slave(void);
 void cancel_create_conn(void);
@@ -223,12 +222,6 @@ int parse_addr(uint8_t *output, const char *param)
     }
     for (i = 0; i < 6; i++) output[i] = addr[i];
     return 0;
-}
-
-void cmd_addr(const char *param)
-{
-    if (0 == parse_addr(sm_persistent.identity_addr, param))
-        update_addr();
 }
 
 void cmd_conn(const char *param)
@@ -499,10 +492,6 @@ static cmd_t cmds[] =
     {
         .cmd = "name",
         .handler = cmd_name
-    },
-    {
-        .cmd = "addr",
-        .handler = cmd_addr
     },
     {
         .cmd = "start",

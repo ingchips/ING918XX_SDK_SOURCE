@@ -59,12 +59,20 @@ sm_persistent_t sm_persistent =
     .identity_addr          = {0xA6, 0xA6, 0x5C, 0x20, 0x87, 0xA7}
 };
 #endif
+
 #define MAX_ADVERTISERS     50
+#define STORAGE_SIZE 1024*4
+uint8_t num_eatt_bearers = 5;
+uint8_t test_storage_buffer[STORAGE_SIZE] = {0};
+uint8_t gatt_client_storage[STORAGE_SIZE] = {0};
 bd_addr_t scaned_advertisers[MAX_ADVERTISERS] = {0};
 int advertiser_num = 0;
 int is_targeted_scan = 0;
 uint64_t last_seen = 0;
 static uint16_t custom_mtu = 0;
+
+// 测试数据缓冲区
+static uint16_t test_value_handle;
 
 struct gatt_client_discoverer *discoverer = NULL;
 struct btstack_synced_runner *synced_runner = NULL;
@@ -970,6 +978,56 @@ static const char *decode_tx_power_reason(le_tx_power_reporting_reason_t reason)
         return "HCI COMPLETE";
     }
 }
+void gatt_event_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size) {
+    platform_printf("my_gatt_callback: packet_type=%d, channel=0x%04X, size=%d\n", packet_type, channel, size);
+    if (packet_type != HCI_EVENT_PACKET) return;
+    uint8_t event = hci_event_packet_get_type(packet);
+    switch (event) {
+        case GATT_EVENT_MTU:
+            printf("[EATT] MTU exchanged: %u\n", little_endian_read_16(packet, 4));
+            break;
+        case GATT_EVENT_SERVICE_QUERY_RESULT:
+            printf("[EATT] Service found\n");
+            break;
+        case GATT_EVENT_CHARACTERISTIC_QUERY_RESULT:
+            test_value_handle = gatt_event_characteristic_query_result_get_handle(packet);
+            printf("test_value_handle=0x%04x\n", test_value_handle);
+            break;
+        case GATT_EVENT_NOTIFICATION:
+            {
+                uint16_t len = size - 3;
+                const uint8_t *value = packet + 3;
+                printf("received notification: ");
+                uint16_t i;
+                for (i = 0; i < len; i++) {
+                    printf("%02x ", value[i]);
+                }
+                printf("\n");
+            }
+            break;
+        case GATT_EVENT_QUERY_COMPLETE:
+            printf("[EATT] Query complete, status: 0x%02x\n", gatt_event_query_complete_get_att_status(packet));
+            break;
+        default:
+            break;
+    }
+}
+
+void start_enhanced_gatt(hci_con_handle_t con_handle){
+    uint8_t status = gatt_client_le_enhanced_connect(
+        gatt_event_handler,
+        con_handle,
+        num_eatt_bearers,
+        gatt_client_storage,
+        sizeof(gatt_client_storage)
+    );
+
+    if (status != 0){
+        printf("Enhanced GATT connect failed: %d\n", status);
+    } else {
+        printf("Enhanced GATT connect started\n");
+    }
+}
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
@@ -1076,6 +1134,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     mas_conn_handle = complete->handle;
                     if (custom_mtu > 0)
                         gatt_client_exchange_mtu_request(mas_conn_handle, custom_mtu);
+                     start_enhanced_gatt(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle);
                 }
 
                 if (reconnecting_after_aborted)
@@ -1402,9 +1461,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
 }
 
 static btstack_packet_callback_registration_t sm_event_callback_registration  = {.callback = &sm_packet_handler};
-#define STORAGE_SIZE 4096
-uint8_t num_eatt_bearers = 5;
-uint8_t test_storage_buffer[STORAGE_SIZE];
+
 
 uint32_t setup_profile(void *data, void *user_data)
 {
