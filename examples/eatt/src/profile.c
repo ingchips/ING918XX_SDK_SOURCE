@@ -18,7 +18,7 @@
 #include "ll_api.h"
 #include "bluetooth_hci.h"
 
-#include "uart_console.h"
+#include "eatt_uart_console.h"
 #include "gatt_client_util.h"
 #include "btstack_sync.h"
 

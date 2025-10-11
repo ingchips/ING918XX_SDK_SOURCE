@@ -1,5 +1,5 @@
-#ifndef _CMDS_H
-#define _CMDS_H
+#ifndef _EATT_UART_CONSOLE_H
+#define _EATT_UART_CONSOLE_H
 #include <stdint.h>
 
 typedef struct block_value

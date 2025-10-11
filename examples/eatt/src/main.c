@@ -7,7 +7,7 @@
 #include "task.h"
 #include "trace.h"
 #include "../data/setup_soc.cgen"
-#include "uart_console.h"
+#include "eatt_uart_console.h"
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"

@@ -1,4 +1,4 @@
-#include "uart_console.h"
+#include "eatt_uart_console.h"
 
 #include "ingsoc.h"
 
@@ -269,24 +269,6 @@ void cmd_pat(const char *param)
         return;
     }
     slave_addr_type = (bd_addr_type_t)t;
-}
-
-void cmd_trace(const char *param)
-{
-#ifdef TRACE_TO_FLASH
-    extern trace_flash_t trace_ctx;
-    int t = 0;
-    if (sscanf(param, "%d", &t) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    if (t) trace_flash_erase_all(&trace_ctx);
-    trace_flash_enable(&trace_ctx, t);
-#else
-    static const char msg[] = "only available with `TRACE_TO_FLASH`";
-    tx_data(msg, strlen(msg) + 1);
-#endif
 }
 
 void cmd_read_char(const char *param)
@@ -597,10 +579,6 @@ static cmd_t cmds[] =
     {
         .cmd = "assert",
         .handler = cmd_assert
-    },
-    {
-        .cmd = "trace",
-        .handler = cmd_trace
     },
     {
         .cmd = "cpwr",
