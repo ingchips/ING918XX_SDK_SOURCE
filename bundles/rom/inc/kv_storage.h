@@ -40,16 +40,12 @@ extern "C" {
  * @brief key-collision between different modules should be strictly avoided.
  *        Here is a pre-defined range for keys:
  */
-#define KV_HOST_KEY_START              1
-#define KV_HOST_KEY_END                50
-#define KV_MESH_KEY_START              51
-#define KV_MESH_KEY_END                200
-#define KV_USER_KEY_START              201
-#define KV_USER_KEY_END                255
-
-#ifndef DB_CAPACITY_SIZE
-    #define DB_CAPACITY_SIZE 1024
-#endif
+#define KV_HOST_KEY_START             (  1)
+#define KV_HOST_KEY_END               ( 50)
+#define KV_MESH_KEY_START             ( 51)
+#define KV_MESH_KEY_END               (200)
+#define KV_USER_KEY_START             (201)
+#define KV_USER_KEY_END               (255)
 
 typedef uint8_t kvkey_t;
 
@@ -78,6 +74,7 @@ typedef void (*f_kv_remove)(const kvkey_t key);
  * @param[in]   key             the key
  * @param[in]   data            data for the key
  * @param[in]   len             data length for the key
+ * @return                      KV_OK if created or updated, otherwise error code
  *
  * Note: if key does not exist, k-v pair is created; if already exists, value is updated.
  */
@@ -106,7 +103,7 @@ typedef void (*f_kv_value_modified_of_key)(const kvkey_t key);
  * @param[in]  data             data for current key
  * @param[in]  len              data length for current key
  * @param[in]  user_data        user data
- * @return                      KV_OK to continue visit other k-v pair, else to abor visiting
+ * @return                      KV_OK to continue visit other k-v pair, else to abort visiting
  */
 typedef int (*f_kv_visitor)(const kvkey_t key, const uint8_t *data, const int16_t len, void *user_data);
 

@@ -1,15 +1,15 @@
-// ----------------------------------------------------------------------------
-// Copyright Message
-// ----------------------------------------------------------------------------
-//
-// INGCHIPS confidential and proprietary.
-// COPYRIGHT (c) 2018 by INGCHIPS
-//
-// All rights are reserved. Reproduction in whole or in part is
-// prohibited without the written consent of the copyright owner.
-//
-// ----------------------------------------------------------------------------
-
+/** @file
+*   @brief special basic definition for INGchips Stack
+*  Copyright Message
+*
+*
+*  INGCHIPS confidential and proprietary.
+*  COPYRIGHT (c) 2018-2023 by INGCHIPS
+*
+*  All rights are reserved. Reproduction in whole or in part is
+*  prohibited without the written consent of the copyright owner.
+*
+*/
 #ifndef __BT_TYPES_H
 #define __BT_TYPES_H
 #include <stdint.h>
@@ -18,7 +18,10 @@
 
 #define BIT(pos) (1UL<<(pos))
 
-typedef enum {
+/**
+ *  type of Bluetooth address
+ */
+ typedef enum {
     GAP_RANDOM_ADDRESS_OFF = 0,
     GAP_RANDOM_ADDRESS_NON_RESOLVABLE,
     GAP_RANDOM_ADDRESS_RESOLVABLE,
@@ -30,16 +33,22 @@ typedef enum {
 typedef uint8_t sm_key_t[16];
 
 
-// packet handler
+/**
+ * @brief function protype definition
+ */
 typedef void (*btstack_packet_handler_t) (uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size);
 
-// packet callback supporting multiple registrations
+/**
+ * @brief packet callback supporting multiple registrations
+ */
 typedef struct {
     btstack_linked_item_t    item;
     btstack_packet_handler_t callback;
 } btstack_packet_callback_registration_t;
 
-// packet handler
+/**
+ * @brief function prototype definition for packet handler
+ */
 typedef void (*user_packet_handler_t) (uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size);
 
 //macro definition:
@@ -54,7 +63,7 @@ typedef enum {
 } HCI_POWER_MODE;
 
 /**
- * State of BTstack
+ * State of btstack
  */
 typedef enum {
     HCI_STATE_OFF = 0,
