@@ -160,7 +160,7 @@ uintptr_t app_main()
     trace_rtt_init(&trace_ctx);
     // TODO: config trace mask
     platform_printf("eatt example build @ %s \n", __TIME__);
-    platform_config(PLATFORM_CFG_TRACE_MASK, 0);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0x1ff);
 
     return 0;
 }
