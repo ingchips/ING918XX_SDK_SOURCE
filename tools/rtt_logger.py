@@ -56,8 +56,9 @@ def get_default_probe_id():
     if len(daplinks) == 1:
         return daplinks[0].unique_id
 
-    LOG.info("Multiple DAP-Link found. Use -Id .. to specify one:\n")
-    LOG.info(list(daplinks.keys()))
+    LOG.info("Multiple DAP-Link found. Use -ID .. to specify one:\n")
+    for prob in daplinks:
+        LOG.info(prob.unique_id)
 
     exit(-2)
 
