@@ -214,6 +214,8 @@ void TMR_WatchDogClearInt(void)
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
+#include "peripheral_sysctrl.h"
+
 void TMR_SetOpMode(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t op_mode, uint8_t clk_mode, uint8_t pwm_park_value)
 {
     pTMR->Channels[ch_id].Ctrl = (op_mode & 0x7) | (clk_mode << 3) | (pwm_park_value << 4);
