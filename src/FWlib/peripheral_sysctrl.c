@@ -1664,7 +1664,7 @@ void SYSCTRL_SelectTimerClk(timer_port_t port, uint8_t div, pre_clk_source_t sou
 
 void SYSCTRL_SelectPWMClk(uint8_t div, pre_clk_source_t source)
 {
-    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (source == SOURCE_32K_CLK) ? 0 : 1, 23);
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (source == SOURCE_32K_CLK) ? 1 : 0, 23);
     if (source == SOURCE_32K_CLK)
         return;
     set_reg_bit(&APB_SYSCTRL->CguCfg8, (source == SOURCE_SLOW_CLK) ? 0 : 1, 15);
@@ -1953,7 +1953,7 @@ uint8_t SYSCTRL_MemoryRetentionCtrl(uint8_t mode, uint32_t block_map)
     }
     else
     {
-        block_map &= 0x30;
+        block_map &= 0x7f;
         set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), 0, 7, 12);
         set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), block_map, 7, 12);
     }
