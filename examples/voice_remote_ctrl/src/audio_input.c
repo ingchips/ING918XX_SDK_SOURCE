@@ -10,6 +10,8 @@ extern void audio_rx_sample(pcm_sample_t sample);
 #include "audio_input_i2s.c"
 #elif (AUDIO_INPUT == 3)
 #include "audio_input_pdm.c"
+#elif (AUDIO_INPUT == 4)
+#include "audio_input_asdm.c"
 #else
 #error unknown AUDIO_INPUT
 #endif

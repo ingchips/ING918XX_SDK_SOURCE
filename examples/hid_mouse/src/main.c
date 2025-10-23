@@ -98,6 +98,7 @@ void setup_peripherals(void)
     config_uart(OSC_CLK_FREQ, 115200);
 
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
+                              | (1 << SYSCTRL_ClkGate_APB_GPIO1)
                               | (1 << SYSCTRL_ClkGate_APB_TMR1)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                               | (1 << SYSCTRL_ClkGate_APB_PWM));
@@ -153,7 +154,7 @@ uint32_t timer_isr(void *user_data)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define DB_FLASH_ADDRESS  0x2042000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-#define DB_FLASH_ADDRESS  0x2042000
+#define DB_FLASH_ADDRESS  0x203F000
 #else
 #error unknown or unsupported chip family
 #endif

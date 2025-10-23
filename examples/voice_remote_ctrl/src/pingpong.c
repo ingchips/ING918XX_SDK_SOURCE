@@ -1,6 +1,6 @@
 #include "pingpong.h"
 
-#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 static uint8_t FindBurstNum(uint8_t burstNum)
 {

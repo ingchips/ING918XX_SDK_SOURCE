@@ -302,11 +302,10 @@ uint32_t bsp_usb_send_data(const uint8_t data[], uint32_t len)
 
 void bsp_usb_disable(void)
 {
+  SYSCTRL_USBPhyConfig(BSP_USB_PHY_DISABLE,0);
   SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
   USB_Close();
   SYSCTRL_SetClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
-
-  SYSCTRL_USBPhyConfig(BSP_USB_PHY_DISABLE,0);
 }
 
 static void internal_bsp_usb_device_remote_wakeup_stop(void)

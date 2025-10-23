@@ -62,6 +62,12 @@ typedef enum
     ASDM_AgcCustom,
 } ASDM_AgcMode;
 
+typedef enum
+{
+    ASDM_AMIC = 0,
+    ASDM_PDM,
+} ASDM_Mode;
+
 /**
  * @bref Structure for configuring AGC settings for ASDM
  *
@@ -104,7 +110,7 @@ typedef struct
  * volume: width [0:13] Configures the volume of the ASDM.
  *          The volume control for the ASDM. format : (2.12) unsigned data.
  *          example: 0x0:0, 0x1:-72.25dB 0x2: -66.23dB .... 0x1000: 0dB ... 0x3fff 12dB
- * Asdm_Mode: width [1] Configures the mode of the ASDM. 0: amic 1: dmic
+ * Asdm_Mode: width [1] Configures the mode of the ASDM. pointer to `ASDM_Mode`.
  *
  * Sample_rate: width [0:8] Configures the sample rate of the ASDM. enumeration value is defined in `ASDM_SampleRate`.
  * @note Requires external sampling clock source of either:
@@ -136,7 +142,7 @@ typedef struct
 typedef struct
 {
     uint32_t volume;
-    uint8_t Asdm_Mode;
+    ASDM_Mode Asdm_Mode;
     ASDM_SampleRate Sample_rate;
     ASDM_AgcMode Agc_mode;
     ASDM_AgcConfigTypeDef *Agc_config;

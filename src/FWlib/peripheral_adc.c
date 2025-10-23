@@ -891,22 +891,57 @@ SADC_channelId ADC_GetDataChannel(const uint32_t data)
     return (SADC_channelId)(ADC_RIGHT_SHIFT(data, 14) & ADC_MK_MASK(4));
 }
 
-//uint16_t ADC_ReadChannelData(const uint8_t channel_id)
-//{
-//    uint32_t data = ADC_PopFifoData();
-//    if (ADC_GetDataChannel(data) == channel_id)
-//        return ADC_GetData(data);
-//    return 0;
-//}
+uint16_t ADC_GetData(const uint32_t data)
+{
+    return (uint16_t)(data & ADC_MK_MASK(12));
+}
+
+void ADC_HardwareCalibration(void)
+{
+    volatile uint32_t rwData;
+    ADC_RegWr(SADC_CFG_0, 1, 17);
+    ADC_RegWrBits(SADC_CFG_0, 1, 18, 4);
+    ADC_RegClr(SADC_CFG_0, 9, 1);
+    ADC_RegWr(SADC_CFG_0, 1, 0);
+    ADC_RegWr(SADC_CFG_2, 1, 0);
+    ADC_RegWrBits(SADC_CFG_2, 1, 3, 12);
+    ADC_RegWr(SADC_INT_MAKS, 1, 0);
+    ADC_RegWr(SADC_CFG_0, 1, 1);
+    for (int i = 1; i < 8; i++)
+    {
+        ADC_RegWrBits(SADC_CFG_3, i, 16, 3);
+        for (uint32_t j = 0; j < 100; j++) __NOP();
+        rwData = APB_SADC->sadc_cfg3;
+    }
+    ADC_RegWr(SADC_CFG_2, 1, 2);
+    while (APB_SADC->sadc_int & 0x1);
+    rwData = APB_SADC->sadc_data;
+    ADC_RegClr(SADC_CFG_0, 1, 1);
+    ADC_RegClr(SADC_CFG_2, 2, 1);
+    ADC_RegWr(SADC_STATUS, 1, 22);
+
+    ADC_RegClr(SADC_CFG_0, 0, 1);
+    ADC_RegWr(SADC_CFG_0, 1, 1);
+    for (int i = 1; i < 8; i++)
+    {
+        ADC_RegWrBits(SADC_CFG_3, i, 16, 3);
+        for (uint32_t j = 0; j < 100; j++) __NOP();
+        rwData = APB_SADC->sadc_cfg3;
+    }
+}
 
 void ADC_Reset(void)
 {
-    ADC_RegWrBits(SADC_CFG_0, 2 << 6, 0, 32);
+    ADC_RegClr(SADC_CFG_0, 28, 1);
+    ADC_RegWrBits(SADC_CFG_0, 4 << 4 | 5 << 7, 0, 32);
     ADC_RegWrBits(SADC_CFG_1, 0x100, 0, 32);
     ADC_RegWrBits(SADC_CFG_2, 4 << 16 | 4 << 20 | 0xa << 24, 0, 32);
     ADC_ClrFifo();
     ADC_RegClr(SADC_STATUS  , 0, 32);
     ADC_RegClr(SADC_INT_MAKS, 0, 32);
+
+    ADC_RegWr(SADC_CFG_0, 1, 28);
+    ADC_RegWrBits(SADC_CFG_2, 0, 3, 12);
 }
 
 void ADC_Start(uint8_t start)
@@ -919,6 +954,7 @@ void ADC_Start(uint8_t start)
         while (ADC_GetBusyStatus());
     }
 }
+
 
 void ADC_SetVref(SADC_Vref vref)
 {

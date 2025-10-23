@@ -419,6 +419,11 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
             set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 20);
             set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
         }
+        else
+        {
+            set_reg_bits(APB_SYSCTRL->CguCfg, 1, 4, 20);
+            set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
+        }
         break;
     case SPI_PORT_1:
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, 22);
@@ -1633,6 +1638,11 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
         if (mode >= SYSCTRL_CLK_PLL_DIV_1)
         {
             set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 20);
+            set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
+        }
+        else
+        {
+            set_reg_bits(APB_SYSCTRL->CguCfg, 1, 4, 20);
             set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
         }
         break;
