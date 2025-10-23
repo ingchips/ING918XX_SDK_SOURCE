@@ -182,6 +182,23 @@ uint16_t read_adc(uint8_t channel)
     }
     ADC_AveDisable();
     return sample;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    ADC_Reset();
+    ADC_ConvCfg(CONTINUES_MODE, (SADC_channelId)channel, AVE_NUM, 0, LOOP_DELAY(ADC_CLK_MHZ, SAMPLERATE, ADC_CH_NUM));
+    ADC_AveInit();
+    ADC_Start(1);
+    while (!ADC_GetIntStatus()) ;
+    ADC_Start(0);
+    ADC_EnableChannel((SADC_channelId)channel, 0);
+    ADC_IntEnable(0);
+    uint32_t data;
+    uint16_t sample;
+    while (!ADC_GetFifoEmpty()) {
+        data = ADC_PopFifoData();
+        sample = ADC_GetAveData(data);
+    }
+    ADC_AveDisable();
+    return sample;
 #endif
 }
 

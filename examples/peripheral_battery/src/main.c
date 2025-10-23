@@ -133,6 +133,70 @@ void ADC_AveDisable(void)
         adcAve[i] = 0;
     }
 }
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+typedef struct {
+    uint8_t s;
+    uint8_t cnt;
+    uint16_t data[AVE_NUM];
+} __attribute__((packed)) SADC_adcAve_t;
+static SADC_adcAve_t *adcAve[12];
+
+uint16_t ADC_GetAveData(uint32_t data)
+{
+    SADC_channelId ch = ADC_GetDataChannel(data);
+    if (!adcAve[ch]) return ADC_GetData(data);
+    adcAve[ch]->data[adcAve[ch]->cnt] = ADC_GetData(data);
+    adcAve[ch]->cnt++;
+    if (adcAve[ch]->cnt >= AVE_NUM)
+        adcAve[ch]->cnt = 0;
+    if (adcAve[ch]->s < AVE_NUM)
+        adcAve[ch]->s++;
+    uint8_t i;
+    uint32_t sum = 0;
+    for (i = 0; i < adcAve[ch]->s; ++i)
+        sum += adcAve[ch]->data[i];
+    if (adcAve[ch]->s <= 2)
+        return sum / i;
+#if (INCLUDE_EXTREMUM == 0)
+    uint16_t min = 0x3fff;
+    uint16_t max = 0;
+    for (i = 0; i < adcAve[ch]->s; ++i) {
+        if (adcAve[ch]->data[i] < min)
+            min = adcAve[ch]->data[i];
+        if (adcAve[ch]->data[i] > max)
+            max = adcAve[ch]->data[i];
+    }
+    sum -= min;
+    sum -= max;
+    i -= 2;
+#endif
+    return sum / i;
+}
+static void ADC_AveInitSet(SADC_channelId ch)
+{
+    if (adcAve[ch])
+        memset(adcAve[ch], 0, 3);
+    else
+        adcAve[ch] = malloc(sizeof(SADC_adcAve_t));
+}
+void ADC_AveInit(void)
+{
+    uint16_t ch;
+    uint16_t reg = ADC_GetEnabledChannels();
+    for (ch = 0; ch < 12; ++ch) {
+        if (reg & (1 << ch))
+            ADC_AveInitSet((SADC_channelId)ch);
+    }
+}
+void ADC_AveDisable(void)
+{
+    uint8_t i;
+    for (i = 0; i < 12; ++i) {
+        if (!adcAve[i]) continue;
+        free(adcAve[i]);
+        adcAve[i] = 0;
+    }
+}
 #endif
 
 void setup_peripherals(void)
@@ -172,7 +236,11 @@ void setup_peripherals(void)
     TMR_Enable(APB_TMR1, 0, 0xf);
     TMR_IntEnable(APB_TMR1, 0, 0xf);
 #ifndef SIMULATION
-    #warning WIP
+    // setup ADC
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
+    SYSCTRL_SetAdcClkDiv(4);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
+    ADC_Reset();
 #endif
 #else
     #error unknown or unsupported chip family
@@ -184,6 +252,9 @@ uint32_t timer_isr(void *user_data);
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 void ADC_ClearChannelDataValid(const uint8_t channel_id) { }
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+void ADC_ClearChannelDataValid(const uint8_t channel_id) { }
+uint16_t ADC_ReadChannelData(const uint8_t channel_id) { return 0;}
 #endif
 
 const platform_evt_cb_table_t evt_cb_table =

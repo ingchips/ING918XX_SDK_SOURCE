@@ -83,7 +83,7 @@ void audio_input_start(void)
 {
     pcm_index = 0;
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    TMR_Enable(APB_TMR1);sdfsdf
+    TMR_Enable(APB_TMR1);
 #elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     TMR_Enable(APB_TMR1, 0, 0x1);
 #endif

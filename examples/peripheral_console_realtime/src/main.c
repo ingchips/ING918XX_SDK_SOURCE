@@ -71,6 +71,7 @@ ADDITIONAL_ATTRIBUTE void config_uart(uint32_t freq, uint32_t baud)
 ADDITIONAL_ATTRIBUTE void setup_peripherals(void)
 {
     SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
+    config_uart(OSC_CLK_FREQ, 115200);
 
 #ifdef LISTEN_TO_POWER_SAVING
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
@@ -109,6 +110,8 @@ ADDITIONAL_ATTRIBUTE uint32_t query_deep_sleep_allowed(void *dummy, void *user_d
 #endif
     return PLATFORM_ALLOW_DEEP_SLEEP;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    return PLATFORM_ALLOW_DEEP_SLEEP | PLATFORM_ALLOW_BLE_ONLY_SLEEP;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     return PLATFORM_ALLOW_DEEP_SLEEP | PLATFORM_ALLOW_BLE_ONLY_SLEEP;
 #endif
 }

@@ -96,14 +96,14 @@ static void setup_adv_set(uint8_t adv_handle,
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    // some chips may only support 4 adv sets
+    // some chips may only support 3 adv sets
     const static ext_adv_set_en_t adv_sets_en_0_3[] = {
         {.handle = 0, .duration = 0, .max_events = 0},
         {.handle = 1, .duration = 0, .max_events = 0},
         {.handle = 2, .duration = 0, .max_events = 0},
-        {.handle = 3, .duration = 0, .max_events = 0},
     };
     const static ext_adv_set_en_t adv_sets_en_4[] = {
+        {.handle = 3, .duration = 0, .max_events = 0},
         {.handle = 4, .duration = 0, .max_events = 0}
     };
     const static bd_addr_t rand_addr1 = {1};

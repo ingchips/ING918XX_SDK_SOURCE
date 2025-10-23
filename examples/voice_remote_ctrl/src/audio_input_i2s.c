@@ -9,7 +9,7 @@
 #error only 16kHz is supported
 #endif
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 // Note: MIC is on the RIGHT channel.
 // Tested on INMP441.
@@ -75,5 +75,5 @@ void audio_input_stop(void)
 }
 
 #else
-#error only ING916xx is supported
+#error only ING916xx and ING20xx is supported
 #endif

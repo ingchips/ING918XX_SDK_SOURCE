@@ -95,6 +95,7 @@ void audio_input_setup(void)
     DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_ADC, 80, 8);
     platform_set_irq_callback(PLATFORM_CB_IRQ_DMA, DMA_cb_isr, 0);
 }
+
 void audio_input_start(void)
 {
     DMA_PingPongEnable(&PingPong, DMA_CHANNEL);
