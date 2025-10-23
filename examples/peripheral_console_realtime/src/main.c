@@ -70,8 +70,12 @@ ADDITIONAL_ATTRIBUTE void config_uart(uint32_t freq, uint32_t baud)
 
 ADDITIONAL_ATTRIBUTE void setup_peripherals(void)
 {
+#ifdef ENABLE_PRINT
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
     config_uart(OSC_CLK_FREQ, 115200);
+#else
+    SYSCTRL_SetClkGateMulti((1 << SYSCTRL_ClkGate_APB_UART0));
+#endif
 
 #ifdef LISTEN_TO_POWER_SAVING
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
