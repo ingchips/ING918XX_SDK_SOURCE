@@ -111,8 +111,6 @@ void audio_input_stop(void)
 
 #elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
-static uint32_t sample_counter = 0;
-
 #if (SAMPLING_RATE != 16000)
 #error only 16kHz is supported
 #endif
@@ -128,10 +126,9 @@ static uint32_t cb_isr(void *user_data)
     while (ASDM_GetFifoCount(APB_ASDM))
     {
         DataGet = ASDM_GetOutData(APB_ASDM);
-        sample_counter++;
-        if (sample_counter & 1)
-            audio_rx_sample((pcm_sample_t)(DataGet));
-            audio_rx_sample((pcm_sample_t)(DataGet >> 16));
+
+        audio_rx_sample((pcm_sample_t)(DataGet));
+        audio_rx_sample((pcm_sample_t)(DataGet >> 16));
     }
 
     return 0;
@@ -158,6 +155,8 @@ ASDM_ConfigTypeDef AsdmConfig = {
 void audio_input_setup(void)
 {
     int ret;
+    
+    SYSCTRL_ConfigPLLClk(6, 128, 2);// PLL = 307.2MHz
 
     AsdmInitGpio();
 
