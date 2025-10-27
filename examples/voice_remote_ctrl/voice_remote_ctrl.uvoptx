@@ -125,7 +125,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>CMSIS_AGDI</Key>
-          <Name>-X"CMSIS-DAP v2" -U0x249a815bb9c808833b50a1349aa057 -O206 -S10 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO10 -FD20000000 -FC2000 -FN1 -FF0ING2000.FLM -FS02000000 -FL0200000 -FP0($$Device:ING2000$Flash\ING2000.FLM)</Name>
+          <Name>-X"CMSIS-DAP v2" -U0x249a815bb9c808833b50a1349aa057 -O206 -S10 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO10 -FD20000000 -FC2000 -FN1 -FF0ING91600 -FS02000000 -FL0200000 -FP0($$Device:ING91600$Flash\ING91600.FLM)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -323,8 +323,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\src\startup_ing2000.s</PathWithFileName>
-      <FilenameWithoutPath>startup_ing2000.s</FilenameWithoutPath>
+      <PathWithFileName>.\src\startup_ing91600.s</PathWithFileName>
+      <FilenameWithoutPath>startup_ing91600.s</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -335,7 +335,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\bundles\typical\ING20xx\symdefs.m</PathWithFileName>
+      <PathWithFileName>..\..\bundles\typical\ING9168xx\symdefs.m</PathWithFileName>
       <FilenameWithoutPath>symdefs.m</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

@@ -928,6 +928,7 @@ void ADC_HardwareCalibration(void)
         for (uint32_t j = 0; j < 100; j++) __NOP();
         rwData = APB_SADC->sadc_cfg3;
     }
+    ADC_RegWrBits(SADC_CFG_2, 0, 3, 12);
 }
 
 void ADC_Reset(void)
