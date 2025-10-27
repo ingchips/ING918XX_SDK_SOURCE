@@ -2072,13 +2072,21 @@ void SYSCTRL_EnableDCDCMode(uint8_t mode)
 {
     if (mode)
     {
-        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), 0x3, 4, 0);
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x20), 50, 6, 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  1, 1);
         set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),  1, 19);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  0, 2);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  1, 0);
+        while ((*(volatile uint32_t *)(APB_SYSCTRL_BASE + 0x234)&0x40) == 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  0, 3);
     }
     else
     {
-        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), 0xc, 4, 0);
-        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),  1, 19);
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x20), 1, 6, 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  1, 2);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  0, 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  1, 3);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  0, 1);
     }
 }
 
