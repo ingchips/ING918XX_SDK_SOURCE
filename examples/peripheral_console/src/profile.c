@@ -168,7 +168,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-        platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, (1250 << 16) | 750);
+        ll_legacy_adv_set_interval(1250, 750);
         setup_adv();
         platform_set_timer(stack_on_first_wake_up, 200);
         break;

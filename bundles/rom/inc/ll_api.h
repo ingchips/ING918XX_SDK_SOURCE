@@ -214,7 +214,7 @@ void ll_set_conn_tx_power(uint16_t conn_handle, int16_t tx_power);
  * @param[in]  conn_handle      handle of an existing connection
  * @param[in]  delta            delta of tx power in dB
  *                              Note: A positive value indicates a request to increase the
- *                                    transmit power level; negtive to decrease the transmit
+ *                                    transmit power level; negative to decrease the transmit
  *                                    power level.
  ****************************************************************************************
  */

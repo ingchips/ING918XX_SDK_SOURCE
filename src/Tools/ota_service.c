@@ -33,8 +33,9 @@
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
+// Note supported
 #ifndef SEC_FOTA_APP_ADDR
-#define SEC_FOTA_APP_ADDR 0x2040000
+#define SEC_FOTA_APP_ADDR 0x0
 #endif
 
 #define PAGE_SIZE (EFLASH_SECTOR_SIZE)
@@ -161,20 +162,30 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
             if ((0 == ota_downloading) || (buffer_size < 1 + sizeof(ota_meta_t)))
             {
                 const ota_meta_t  *meta = (const ota_meta_t *)(buffer + 1);
-                int s = buffer_size - 1;
-                if (crc((uint8_t *)&meta->entry, s - sizeof(meta->crc_value)) != meta->crc_value)
+                const int block_num = (buffer_size - 1 - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]);
+
+                if (crc((uint8_t *)&meta->entry, buffer_size - 1 - sizeof(meta->crc_value)) != meta->crc_value)
                 {
                     ota_ctrl[0] = OTA_STATUS_ERROR;
                     break;
                 }
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-                program_fota_metadata(meta->entry,
-                                      (s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
-                                      meta->blocks);
+                uint32_t entry = meta->entry;
+#endif
+
+                // move `blocks` to aligned address
+                fota_update_block_t *blocks = (fota_update_block_t *)(((uintptr_t)meta + 3) & ~0x3);
+                memmove(blocks, meta->blocks, block_num * sizeof(blocks[0]));
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+                program_fota_metadata(entry, block_num, blocks);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-                flash_do_update((s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
-                                meta->blocks,
-                                page_buffer);
+                flash_do_update(block_num, blocks, page_buffer);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+                flash_do_update(block_num, blocks, page_buffer);
+#else
+                #error unknown chip family
 #endif
             }
             else

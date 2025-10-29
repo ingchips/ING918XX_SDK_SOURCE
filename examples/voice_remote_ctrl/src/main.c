@@ -178,6 +178,12 @@ int app_main()
 
     setup_peripherals();
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    // PLL might be adjusted to a lower frequency. So a larger delay compensation
+    // is reserved.
+    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 1200);
+#endif
+
     platform_set_evt_callback(PLATFORM_CB_EVT_HARD_FAULT, (f_platform_evt_cb)cb_hard_fault, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_ASSERTION, (f_platform_evt_cb)cb_assertion, NULL);
     platform_set_evt_callback(PLATFORM_CB_EVT_PROFILE_INIT, setup_profile, NULL);

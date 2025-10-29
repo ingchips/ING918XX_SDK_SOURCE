@@ -28,29 +28,22 @@
 #define SM_DATA_PACKET          0x09
 
 // ERRORS
-// last error code in 2.1 is 0x38 - we start with 0x51 for Bluetooth LE stack errors
-#define BTSTACK_ACTIVATION_FAILED_SYSTEM_BLUETOOTH         0x51
-#define BTSTACK_ACTIVATION_POWERON_FAILED                  0x52
-#define BTSTACK_ACTIVATION_FAILED_UNKNOWN                  0x53
-#define BTSTACK_NOT_ACTIVATED                              0x54
+// we start with 0x51 for Bluetooth LE stack errors
 #define BTSTACK_BUSY                                       0x55
 #define BTSTACK_MEMORY_ALLOC_FAILED                        0x56
 #define BTSTACK_ACL_BUFFERS_FULL                           0x57
-#define BTSTACK_LE_CHANNEL_DISCONNECTED                    0x58
 #define BTSTACK_LE_CHANNEL_NOT_EXIST                       0x59
 
 // l2cap errors - enumeration by the command that created them
 #define L2CAP_COMMAND_REJECT_REASON_COMMAND_NOT_UNDERSTOOD 0x60
 #define L2CAP_COMMAND_REJECT_REASON_SIGNALING_MTU_EXCEEDED 0x61
 #define L2CAP_COMMAND_REJECT_REASON_INVALID_CID_IN_REQUEST 0x62
-
 #define L2CAP_CONNECTION_RESPONSE_RESULT_SUCCESSFUL        0x63
 #define L2CAP_CONNECTION_RESPONSE_RESULT_PENDING           0x64
 #define L2CAP_CONNECTION_RESPONSE_RESULT_REFUSED_PSM       0x65
 #define L2CAP_CONNECTION_RESPONSE_RESULT_REFUSED_SECURITY  0x66
 #define L2CAP_CONNECTION_RESPONSE_RESULT_REFUSED_RESOURCES 0x67
 #define L2CAP_CONNECTION_RESPONSE_RESULT_RTX_TIMEOUT       0x68
-
 #define L2CAP_SERVICE_ALREADY_REGISTERED                   0x69
 #define L2CAP_DATA_LEN_EXCEEDS_REMOTE_MTU                  0x6A
 #define L2CAP_SERVICE_NOT_REGISTERED                       0x6B
@@ -65,7 +58,6 @@
 #define GATT_CLIENT_NOT_CONNECTED                          0x93
 #define GATT_CLIENT_BUSY                                   0x94
 #define GATT_CLIENT_IN_WRONG_STATE                         0x95
-#define GATT_CLIENT_DIFFERENT_CONTEXT_FOR_ADDRESS_ALREADY_EXISTS 0x96
 #define GATT_CLIENT_VALUE_TOO_LONG                         0x97
 #define GATT_CLIENT_CHARACTERISTIC_NOTIFICATION_NOT_SUPPORTED 0x98
 #define GATT_CLIENT_CHARACTERISTIC_INDICATION_NOT_SUPPORTED   0x99

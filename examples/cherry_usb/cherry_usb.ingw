@@ -8,18 +8,18 @@
    }
   },
   "rom": {
-   "size": 153824,
+   "size": 153816,
    "base": 33562624
   },
   "ram": {
-   "size": 18620,
+   "size": 18612,
    "base": 536870912
   },
   "app": {
    "base": 33718272
   },
   "version": [
-   2,4,20]
+   2,4,25]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -41,7 +41,7 @@
  "coding_adv": false,
  "key_incode": true,
  "series": "ING9168xx",
- "proj_name": "cherryusb_os_mini",
+ "proj_name": "cherry_usb",
  "sdk_release_path": "..\/..",
  "printf_port": "uart0",
  "security": false,
@@ -78,8 +78,8 @@
  "keil": true,
  "cmsis": "",
  "cube": true,
- "app_ram_size": 38720,
- "app_ram_addr": 536889536,
+ "app_ram_size": 38728,
+ "app_ram_addr": 536889528,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",

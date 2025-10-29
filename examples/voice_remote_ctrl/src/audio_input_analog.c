@@ -87,7 +87,7 @@ void audio_input_setup(void)
     ADC_Reset();
     ADC_Calibration(DIFFERENTAIL_MODE);
     ADC_ftInitCali(&AdcCaliData);
-    ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 
+    ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE,
                 LOOP_DELAY(ADC_CLK_MHZ, SAMPLING_RATE, ADC_CHANNEL_NUM));
 
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_DMA));
@@ -95,6 +95,7 @@ void audio_input_setup(void)
     DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_ADC, 80, 8);
     platform_set_irq_callback(PLATFORM_CB_IRQ_DMA, DMA_cb_isr, 0);
 }
+
 void audio_input_start(void)
 {
     DMA_PingPongEnable(&PingPong, DMA_CHANNEL);
@@ -107,4 +108,73 @@ void audio_input_stop(void)
     ADC_Start(0);
 }
 
+#elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+#if (SAMPLING_RATE != 8000)
+#error only 8kHz is supported
+#endif
+
+#include "peripheral_asdm.h"
+
+static uint32_t cb_isr(void *user_data)
+{
+    uint32_t DataGet;
+
+    while (ASDM_GetFifoCount(APB_ASDM))
+    {
+        DataGet = ASDM_GetOutData(APB_ASDM);
+
+        audio_rx_sample((pcm_sample_t)(DataGet));
+        audio_rx_sample((pcm_sample_t)(DataGet >> 16));
+    }
+
+    return 0;
+}
+
+void AsdmInitGpio(void)
+{
+    PINCTRL_EnableAnalog(GIO_GPIO_11); // vref pad
+    PINCTRL_EnableAnalog(GIO_GPIO_12); // mic bias pad
+    PINCTRL_EnableAnalog(GIO_GPIO_13); // mic in p
+    PINCTRL_EnableAnalog(GIO_GPIO_14); // mic in n
+}
+
+ASDM_ConfigTypeDef AsdmConfig = {
+    .Agc_config = 0,
+    .Asdm_Mode = ASDM_AMIC,
+    .Agc_mode = ASDM_AgcVoice,
+    .Sample_rate = ASDM_SR_8k,
+    .Fifo_Enable = 1,
+    .volume = 0x3fff,
+    .FifoIntMask = ASDM_FIFO_FULL_EN,
+    .Fifo_DmaTrigNum = 1,
+};
+
+void audio_input_setup(void)
+{
+    int ret;
+
+    SYSCTRL_ConfigPLLClk(6, 128, 2);// PLL = 307.2MHz
+
+    AsdmInitGpio();
+
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ASDM);
+    SYSCTRL_SetAdcVrefSel(0x1);
+    SYSCTRL_EnableAsdmVrefOutput(0);
+    SYSCTRL_EnableInternalVref(1);
+    ret = ASDM_Config(APB_ASDM, &AsdmConfig);
+    if (ret)
+        return;
+    platform_set_irq_callback(PLATFORM_CB_IRQ_ASDM, cb_isr, 0);
+}
+
+void audio_input_start(void)
+{
+    ASDM_Enable(APB_ASDM,1);
+}
+
+void audio_input_stop(void)
+{
+    ASDM_Enable(APB_ASDM,0);
+}
 #endif

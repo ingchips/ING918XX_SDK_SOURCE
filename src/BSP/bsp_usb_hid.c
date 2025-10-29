@@ -481,11 +481,10 @@ void bsp_usb_init(void)
 
 void bsp_usb_disable(void)
 {
+  SYSCTRL_USBPhyConfig(BSP_USB_PHY_DISABLE,0);
   SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
   USB_Close();
   SYSCTRL_SetClkGateMulti(1 << SYSCTRL_ITEM_APB_USB);
-
-  SYSCTRL_USBPhyConfig(BSP_USB_PHY_DISABLE,0);
 }
 
 static void internal_bsp_usb_device_remote_wakeup_stop(void)

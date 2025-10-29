@@ -302,7 +302,7 @@ int ll_conn_abort(uint16_t conn_handle);
  ****************************************************************************************
  * @brief Set default antenna ID
  *
- *          Note: This ID restored to default value (i.e. 0) when LLE is resetted.
+ * Note: This ID restored to default value (i.e. 0) when LLE is resetted.
  *
  * @param[in]  ant_id           ID of default antenna (default: 0)
  *
@@ -313,6 +313,10 @@ void ll_set_def_antenna(uint8_t ant_id);
 /**
  ****************************************************************************************
  * @brief Set legacy advertising PDU interval within a single event
+ *
+ * New intervals take effect when an advertising set is enabled.
+ *
+ * Intervals restore to defaults when Controller is initialized or resetted.
  *
  * @param[in]  for_hdc      interval for high duty cycle advertising in micro sec  (default 1250)
  * @param[in]  not_hdc      interval for normal duty cycle advertising is micro sec (default 1500)

@@ -374,7 +374,7 @@
             <ScatterFile></ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc>--keep=main.o(*) --keep=*.*(i.platform_*)</Misc>
+            <Misc>--keep=main.o(*) --keep=*.*(i.platform_*) --keep=*.*(i.hci*)</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>

@@ -419,6 +419,11 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
             set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 20);
             set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
         }
+        else
+        {
+            set_reg_bits(APB_SYSCTRL->CguCfg, 1, 4, 20);
+            set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
+        }
         break;
     case SPI_PORT_1:
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, 22);
@@ -1635,6 +1640,11 @@ void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
             set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 20);
             set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
         }
+        else
+        {
+            set_reg_bits(APB_SYSCTRL->CguCfg, 1, 4, 20);
+            set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
+        }
         break;
     case SPI_PORT_1:
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, 22);
@@ -1664,7 +1674,7 @@ void SYSCTRL_SelectTimerClk(timer_port_t port, uint8_t div, pre_clk_source_t sou
 
 void SYSCTRL_SelectPWMClk(uint8_t div, pre_clk_source_t source)
 {
-    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (source == SOURCE_32K_CLK) ? 0 : 1, 23);
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, (source == SOURCE_32K_CLK) ? 1 : 0, 23);
     if (source == SOURCE_32K_CLK)
         return;
     set_reg_bit(&APB_SYSCTRL->CguCfg8, (source == SOURCE_SLOW_CLK) ? 0 : 1, 15);
@@ -1953,7 +1963,7 @@ uint8_t SYSCTRL_MemoryRetentionCtrl(uint8_t mode, uint32_t block_map)
     }
     else
     {
-        block_map &= 0x30;
+        block_map &= 0x7f;
         set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), 0, 7, 12);
         set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x4), block_map, 7, 12);
     }
@@ -2062,13 +2072,21 @@ void SYSCTRL_EnableDCDCMode(uint8_t mode)
 {
     if (mode)
     {
-        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), 0x3, 4, 0);
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x20), 50, 6, 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  1, 1);
         set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),  1, 19);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  0, 2);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  1, 0);
+        while ((*(volatile uint32_t *)(APB_SYSCTRL_BASE + 0x234)&0x40) == 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  0, 3);
     }
     else
     {
-        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), 0xc, 4, 0);
-        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),  1, 19);
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x20), 1, 6, 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  1, 2);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  0, 0);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  1, 3);
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18),  0, 1);
     }
 }
 

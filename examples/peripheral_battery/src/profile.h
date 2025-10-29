@@ -3,7 +3,11 @@
 
 #include <stdint.h>
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#define AVE_NUM 3
+#else
 #define AVE_NUM 10
+#endif
 #define INCLUDE_EXTREMUM 0
 
 /**

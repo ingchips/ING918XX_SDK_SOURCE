@@ -8,7 +8,7 @@ extern "C" {    /* allow C++ to use these headers */
 #include <stdlib.h>
 #include "peripheral_dma.h"
 
-#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 typedef enum {
     PING_WRITE,

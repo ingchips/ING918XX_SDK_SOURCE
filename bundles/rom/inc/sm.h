@@ -26,7 +26,10 @@ extern "C" {
 #include "btstack_linked_list.h"
 
 /* API_START */
-
+/*
+ * @brief get address of the private random address update event
+ * @param[in] packet pointer to the event packet
+ */
 const static __INLINE uint8_t * sm_private_random_addr_update_get_address(const uint8_t *packet){
     return decode_event_offset(packet, uint8_t, 2);
 }
@@ -36,8 +39,8 @@ const static __INLINE uint8_t * sm_private_random_addr_update_get_address(const 
  */
 typedef struct sm_persistent
 {
-    sm_key_t        er;
-    sm_key_t        ir;
+    sm_key_t        er;                 // Encryption Root Key
+    sm_key_t        ir;                 // Identity Resolving Key       
     bd_addr_t       identity_addr;      // A public device address or static random address used as identity address
                                         // When privacy is not enabled, this should be the public device address or static random address.
                                         // This should not be changed, once changed, paring is lost
@@ -46,10 +49,10 @@ typedef struct sm_persistent
 
 // Authorization state
 typedef enum {
-    AUTHORIZATION_UNKNOWN,
-    AUTHORIZATION_PENDING,
-    AUTHORIZATION_DECLINED,
-    AUTHORIZATION_GRANTED
+    AUTHORIZATION_UNKNOWN,              // Authorization state is unknown   
+    AUTHORIZATION_PENDING,              // Authorization is pending, waiting for user input
+    AUTHORIZATION_DECLINED,             // Authorization is declined by user
+    AUTHORIZATION_GRANTED               // Authorization is granted by user
 } authorization_state_t;
 
 /**
@@ -73,6 +76,21 @@ int sm_config(uint8_t enable,
                io_capability_t io_capability,
                int   request_security,
                const sm_persistent_t *persistent);
+
+/**
+ * @brief Sets the persistent IRK (Identity Resolving Key).
+ *
+ * This function sets the local Identity Resolving Key (IRK). Once set, stack will
+ * use it and not derive it from (IR, d1)
+ *
+ * @param irk           The IRK to be set.
+ *                      This should be a valid `sm_key_t` type, and all 0s are not allowed.
+ *
+ * @note This function shall **only** be called during the initialization phase of the
+ *       Bluetooth stack, for example, in the handler of `PLATFORM_CB_EVT_PROFILE_INIT`.
+ *       This function shall **only** be called ahead of other SM APIs such as `sm_config`.
+ */
+void sm_set_persistent_irk(sm_key_t irk);
 
 /**
  * @brief add an sm event handler
@@ -214,6 +232,16 @@ int sm_address_resolution_lookup(uint8_t addr_type, bd_addr_t addr);
 void sm_config_conn(hci_con_handle_t con_handle,
                     io_capability_t io_capability,
                     uint8_t auth_req);
+
+/**
+ * @brief Set key distribution flags
+ *
+ * Note: Do not add `SM_KEYDIST_ENC_KEY` into flags, which will be added automatically.
+ *
+ * @param[in] flags     combination of `SM_KEYDIST_...`.
+ *                      default: `SM_KEYDIST_ID_KEY` | `SM_KEYDIST_SIGN`.
+ */
+void sm_set_key_distribution_flags(uint8_t flags);
 
 /**
  * @brief Decline bonding triggered by event before

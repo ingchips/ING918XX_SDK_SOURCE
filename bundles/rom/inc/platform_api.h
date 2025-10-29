@@ -438,7 +438,7 @@ typedef enum
 
 typedef enum
 {
-    PLATFORM_CFG_LOG_HCI,       // flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_LOG_HCI,       // (ING918 only) flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
     PLATFORM_CFG_TRACE_MASK,    // flag is bitmap of platform_trace_item_t. default: 0
     PLATFORM_CFG_RT_RC_EN,         // Enable/Disable internal real time RC clock. Default: Enable
@@ -537,7 +537,7 @@ uint32_t platform_read_info(const platform_info_item_t item);
 
 /**
  ****************************************************************************************
- * @brief Calibrate real-time RC clock and get the calibration value.
+ * @brief Calibrate real-time clock and get the calibration value.
  *
  * Real time clock auto-calibration timer is also reset, which means that next auto-calibration
  * is supposed to be carried out after `PLATFORM_CFG_RT_CLK_CALI_PERIOD` seconds.
@@ -560,7 +560,7 @@ void platform_rt_rc_tune(uint16_t value);
  ****************************************************************************************
  * @brief Automatically tune the internal real time RC clock, and get the tuning value.
  *
- * This is equivalent to `platform_rt_rc_auto_tune2(65536000000 / frequency)`.
+ * This is equivalent to `platform_rt_rc_auto_tune2(frequency)`.
  *
  * @return                  Value used to tune the clock
  ****************************************************************************************
@@ -719,7 +719,7 @@ uintptr_t platform_get_task_handle(platform_task_id_t id);
  * For NoOS bundles, and `task_create` is NULL in generic OS driver:
  *
  *     To use raw packet APIs, controller needs to be initialized, and call
- *     `platform_controller_run()` continously.
+ *     `platform_controller_run()` continuously.
  ****************************************************************************************
  */
 // void platform_init_controller(void);
@@ -748,7 +748,7 @@ typedef void (* f_platform_timer_callback)(void);
  *       1. Comparing to RTOS software timers, this timer is software + hardware too,
  *       1. Comparing to RTOS software timers, this timer may be more accurate in some
  *          circumstance;
- *       1. This will always succeed, except when running out of memory;
+ *       1. This will always succeed, except when running out of memory (Link Layer's heap);
  *       1. `callback` is also the identifier of the timer, below two lines defines only
  *          a timer expiring after 200 units but not two separate timers:
  *          ```c

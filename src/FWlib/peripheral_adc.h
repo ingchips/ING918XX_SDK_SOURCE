@@ -485,8 +485,8 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 typedef enum {
-    CALIBRATION_MODE,
     CONVERSION_MODE,
+    CALIBRATION_MODE,
 } SADC_adcMode;
 
 typedef enum
@@ -638,6 +638,15 @@ uint32_t ADC_PopFifoData(void);
 SADC_channelId ADC_GetDataChannel(const uint32_t data);
 
 /**
+ * @brief To get ADC data of the data read by ADC_PopFifoData
+ * @note The data obtained by this api has been calibrated by ft-data.
+ *
+ * @param[in] data           data read by ADC_PopFifoData
+ * @return                   ADC data
+ */
+uint16_t ADC_GetData(const uint32_t data);
+
+/**
  * @brief Get ADC-Channel's enabled status
  * Example:
  * 1.single-mode with CH0/CH4/CH6 are enabled, it returns 0x51.
@@ -661,6 +670,13 @@ void ADC_Start(uint8_t start);
 void ADC_Reset(void);
 
 /**
+ * @brief Set ADC Voltage Reference
+ *
+ * @param[in] vref           ADC Voltage Reference, see 'SADC_Vref'
+ */
+void ADC_SetVref(SADC_Vref vref);
+
+/**
  * @brief ADC conversion standard configuration interface
  *
  * @param[in] ctrlMode       ADC control mode, see 'SADC_adcCtrlMode'
@@ -677,6 +693,13 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
                  uint8_t enNum,
                  uint8_t dmaEnNum,
                  uint32_t loopDelay);
+
+/**
+ * @brief ADC hardware calibration
+ * */
+void ADC_HardwareCalibration(void);
+
+
 #endif
 
 #ifdef __cplusplus
