@@ -3,10 +3,9 @@
 #include "app_cfg.h"
 #include "platform_api.h"
 
-// Note: MIC is on the RIGHT channel.
-
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
+// Note: MIC is on the RIGHT channel.
 static uint32_t sample_counter = 0;
 
 static uint32_t cb_isr(void *user_data)
@@ -108,7 +107,7 @@ ASDM_ConfigTypeDef AsdmConfig = {
 void audio_input_setup(void)
 {
     int ret;
-    
+
     SYSCTRL_ConfigPLLClk(6, 128, 2);// PLL = 307.2MHz
 
     pdm_io_init();

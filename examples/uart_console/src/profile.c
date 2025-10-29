@@ -954,7 +954,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
         synced_runner = btstack_create_sync_runner(1);
 
-        platform_config(PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL, 1500);
+        ll_legacy_adv_set_interval(1250, 1500);
         ll_set_tx_power_range(-30, 10);
 
         gap_set_random_device_address(sm_persistent.identity_addr);

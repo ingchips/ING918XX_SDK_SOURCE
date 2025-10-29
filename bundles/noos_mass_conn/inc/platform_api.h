@@ -497,9 +497,11 @@ typedef enum
     PLATFORM_CFG_PS_DBG_2 = PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // obsoleted
     PLATFORM_CFG_LL_DBG_FLAGS,  // Link layer flags (combination of `ll_cfg_flag_t`)
     PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL,    // Link layer legacy advertising intervals for high duty cycle (higher 16bits)
-                                            //      and normal duty cylce (lower 16bits) in micro seconds
+                                            //      and normal duty cycle (lower 16bits) in micro seconds
                                             // Default:   high duty cycle: 1250
                                             //          normal duty cycle: 1500
+                                            // This is equivalent to `ll_legacy_adv_set_interval(flag >> 16, flag & 0xffff)`.
+                                            // Recommend to use `ll_legacy_adv_set_interval` instead.
     PLATFORM_CFG_RTOS_ENH_TICK,             // Enhanced Ticks. Default: DISABLE
                                             // When enabled: IRQ's impact on accuracy of RTOS ticks is reduced
                                             // Note: this feature has negative impact on power consumption.

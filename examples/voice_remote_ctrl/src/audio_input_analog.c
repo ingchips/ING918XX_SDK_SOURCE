@@ -87,7 +87,7 @@ void audio_input_setup(void)
     ADC_Reset();
     ADC_Calibration(DIFFERENTAIL_MODE);
     ADC_ftInitCali(&AdcCaliData);
-    ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE, 
+    ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_4, 1, ADC_CHANNEL, 0, 8, DIFFERENTAIL_MODE,
                 LOOP_DELAY(ADC_CLK_MHZ, SAMPLING_RATE, ADC_CHANNEL_NUM));
 
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_DMA));
@@ -108,16 +108,13 @@ void audio_input_stop(void)
     ADC_Start(0);
 }
 
-
 #elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
-#if (SAMPLING_RATE != 16000)
-#error only 16kHz is supported
+#if (SAMPLING_RATE != 8000)
+#error only 8kHz is supported
 #endif
 
-#if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #include "peripheral_asdm.h"
-#endif
 
 static uint32_t cb_isr(void *user_data)
 {
@@ -146,16 +143,17 @@ ASDM_ConfigTypeDef AsdmConfig = {
     .Agc_config = 0,
     .Asdm_Mode = ASDM_AMIC,
     .Agc_mode = ASDM_AgcVoice,
-    .Sample_rate = ASDM_SR_16k,
+    .Sample_rate = ASDM_SR_8k,
     .Fifo_Enable = 1,
     .volume = 0x3fff,
-    .FifoIntMask = ASDM_RX_FLG_EN,
+    .FifoIntMask = ASDM_FIFO_FULL_EN,
+    .Fifo_DmaTrigNum = 1,
 };
 
 void audio_input_setup(void)
 {
     int ret;
-    
+
     SYSCTRL_ConfigPLLClk(6, 128, 2);// PLL = 307.2MHz
 
     AsdmInitGpio();
@@ -172,7 +170,6 @@ void audio_input_setup(void)
 
 void audio_input_start(void)
 {
-    sample_counter = 1;
     ASDM_Enable(APB_ASDM,1);
 }
 

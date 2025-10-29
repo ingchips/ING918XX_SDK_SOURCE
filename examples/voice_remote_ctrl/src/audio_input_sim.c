@@ -23,7 +23,7 @@
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define SAMPLES_LOCATION        0x02041000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-    #define SAMPLES_LOCATION        0x0202e000
+    #define SAMPLES_LOCATION        0x02030000
 #else
     #error unknown or unsupport chip family
 #endif
@@ -70,7 +70,7 @@ void audio_input_setup(void)
     SYSCTRL_SelectTimerClk(TMR_PORT_1, SYSCTRL_CLK_SLOW_DIV_4);
 #else
     SYSCTRL_SelectTimerClk(TMR_PORT_1, 4, SOURCE_SLOW_CLK);
-#endif    
+#endif
     TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_EXTERNAL, 0);
     TMR_SetReload(APB_TMR1, 0, OSC_CLK_FREQ / 4 / SAMPLING_RATE);
     TMR_IntEnable(APB_TMR1, 0, 0x1);

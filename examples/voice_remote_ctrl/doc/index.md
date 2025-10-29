@@ -10,12 +10,12 @@ The key matrix is available on the dedicated remote control board. To simplify t
 This example support several audio input types which is selected by defining `AUDIO_INPUT=0..3`.
 Below table shows how to connect the microphone to the Dev-Board for each input type:
 
-|Audio Input  | Note       | ING918         | ING916                    | ING920      | Tested Microphone |
+|Audio Input  | Note       | ING918         | ING916                    | ING20       | Tested Microphone |
 | ---         | ---        | ---            | ---                       | ---         | ---               |
 |0            | Simulated  | Universal      | Universal                 | Universal   | --                |
-|1            | ADC        | ADC Channel 4  | ADC Channel 4             | WIP         | Single-ended analog MIC        |
-|2            | I2S        | Not available  | BCLK(21),IN(22),LRCLK(35) | WIP         | INMP441: <img src="./img/i2s_mic.png" width="50%" />|
-|3            | PDM        | Not available  | MCLK(28),IN(29)           | WIP         | MP34DT01: <img src="./img/pdm_mic.png" width="50%" />|
+|1            | Analog     | ADC Channel 4  | ADC Channel 4             | P(13), N(14)    | Single-ended analog MIC for ING918/ING916; differential output MIC for ING20        |
+|2            | I2S        | Not available  | BCLK(21),IN(22),LRCLK(35) | Same as ING916  | INMP441: <img src="./img/i2s_mic.png" width="50%" />|
+|3            | PDM        | Not available  | MCLK(28),IN(29)           | MCLK(9),IN(10)  | MP34DT01: <img src="./img/pdm_mic.png" width="50%" />|
 
 Note: for type `0`, audio is playback from a data file (ITU standard testing data), and no microphone is used.
 The sample data files containing raw PCM samples needs to be downloaded to
@@ -27,6 +27,10 @@ The sample data files containing raw PCM samples needs to be downloaded to
 |ING916       | itu_female_16k.bin              | [itu_female_16k.m](../data/itu_female_16k.m)   |
 |ING20        | itu_female_16k_short.bin        | [itu_female_16k_short.m](../data/itu_female_16k_short.m)   |
 
+## Sample Rate
+
+Sample rate is defined by `EFFECTIVE_SAMPLING_RATE` in [`app_cfg.h`](../src/app_cfg.h). Sample rate for most of input types
+is 16kHz. Please check the code of specific input modes on specific chips for supported settings.
 
 ## Audio Codec
 
