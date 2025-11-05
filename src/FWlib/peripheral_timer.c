@@ -284,7 +284,7 @@ void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interva
     APB_WDT->Ctrl = (rst_timeout << 8) | (int_timeout << 4) | (enable_int ? 0xd : 0x9);
 
 #define AON1_BOOT   (volatile uint32_t *)(AON1_CTRL_BASE + 0x14)
-    *AON1_BOOT |= 1u << 28;
+    *AON1_BOOT |= 1u << 22;
 }
 
 void TMR_WatchDogDisable(void)
