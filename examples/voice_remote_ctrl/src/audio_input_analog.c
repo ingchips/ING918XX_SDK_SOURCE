@@ -110,22 +110,30 @@ void audio_input_stop(void)
 
 #elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
-#if (SAMPLING_RATE != 8000)
-#error only 8kHz is supported
+#if (SAMPLING_RATE != 16000)
+#error only 16kHz is supported
 #endif
 
 #include "peripheral_asdm.h"
+#include "pingpong.h"
 
-static uint32_t cb_isr(void *user_data)
+#define TRIGGER_NUMBER  1
+#define CHANNEL_ID  0
+#define PP_LEN  80
+DMA_PingPong_t PingPong;
+
+static uint32_t DMA_cb_isr(void *user_data)
 {
-    uint32_t DataGet;
+    uint32_t cnt = 0;
+    uint32_t state = DMA_GetChannelIntState(CHANNEL_ID);
+    DMA_ClearChannelIntState(CHANNEL_ID, state);
 
-    while (ASDM_GetFifoCount(APB_ASDM))
-    {
-        DataGet = ASDM_GetOutData(APB_ASDM);
-
-        audio_rx_sample((pcm_sample_t)(DataGet));
-        audio_rx_sample((pcm_sample_t)(DataGet >> 16));
+    uint32_t *rr = DMA_PingPongIntProc(&PingPong, CHANNEL_ID);
+    uint32_t transSize = DMA_PingPongGetTransSize(&PingPong);
+    while (transSize--) {
+        audio_rx_sample((pcm_sample_t)(rr[cnt] & 0xff));
+        audio_rx_sample((pcm_sample_t)(rr[cnt] >> 16));
+        cnt++;
     }
 
     return 0;
@@ -143,11 +151,11 @@ ASDM_ConfigTypeDef AsdmConfig = {
     .Agc_config = 0,
     .Asdm_Mode = ASDM_AMIC,
     .Agc_mode = ASDM_AgcVoice,
-    .Sample_rate = ASDM_SR_8k,
+    .Sample_rate = ASDM_SR_16k,
     .Fifo_Enable = 1,
     .volume = 0x3fff,
-    .FifoIntMask = ASDM_FIFO_FULL_EN,
-    .Fifo_DmaTrigNum = 1,
+    .FifoIntMask = 0,
+    .Fifo_DmaTrigNum = TRIGGER_NUMBER,
 };
 
 void audio_input_setup(void)
@@ -159,22 +167,27 @@ void audio_input_setup(void)
     AsdmInitGpio();
 
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ASDM);
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_DMA);
+    SYSCTRL_SelectUsedDmaItems((1<<SYSCTRL_DMA_ASDM_RX)|(1<<SYSCTRL_DMA_UART1_TX)|(1<<SYSCTRL_DMA_UART0_TX)|(1<<SYSCTRL_DMA_SDADC_RX));
     SYSCTRL_SetAdcVrefSel(0x1);
     SYSCTRL_EnableAsdmVrefOutput(0);
     SYSCTRL_EnableInternalVref(1);
     ret = ASDM_Config(APB_ASDM, &AsdmConfig);
     if (ret)
         return;
-    platform_set_irq_callback(PLATFORM_CB_IRQ_ASDM, cb_isr, 0);
+    DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_SDADC_RX, PP_LEN, TRIGGER_NUMBER);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_DMA, DMA_cb_isr, 0);
 }
 
 void audio_input_start(void)
 {
+    DMA_PingPongEnable(&PingPong, CHANNEL_ID);
     ASDM_Enable(APB_ASDM,1);
 }
 
 void audio_input_stop(void)
 {
+    DMA_PingPongDisable(&PingPong, CHANNEL_ID);
     ASDM_Enable(APB_ASDM,0);
 }
 #endif
