@@ -465,6 +465,17 @@ extern void bsp_usb_init(void);
 extern void bsp_usb_device_remote_wakeup(void);
 extern int bsp_cdc_push_data(uint8_t *data, uint32_t len);
 
+/**
+ * @brief use this API to recive data from usb.
+ *
+ * @param[in] data: buffer potinter.
+ * @param[in] len: recive data length.            
+ * @param[out] null.
+ *
+ * @note The user should have to implement the API to obtain the received data.
+ */
+extern void bsp_recive_cdc_data(uint8_t *data, uint32_t len);
+
 #ifdef FEATURE_DISCONN_DETECT
 void bsp_usb_device_disconn_timeout(void);
 #endif

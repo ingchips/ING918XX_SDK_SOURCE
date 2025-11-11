@@ -1,16 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include "ingsoc.h"
-//#include "platform_api.h"
+#include "platform_api.h"
 #include "bsp_usb_cdc_acm.h"
 #include "ring_buf.h"
 
 /* User defined area */
-#define RX_BUFFER_SIZE      (2048)
+#define RX_BUFFER_SIZE      (1024)
 static uint8_t ring_buff_storage_tx[RX_BUFFER_SIZE];
-static uint8_t ring_buff_storage_rx[2*RX_BUFFER_SIZE];
 static struct ring_buf *ring_buffer_tx;
-struct ring_buf *ring_buffer_rx;
 static int cb_ring_buf_peek_data_tx(const void *data, int len, int has_more, void *extra);
 
 /* variables and functions area */
@@ -365,7 +363,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
       // if status equals to USB_ERROR_NONE: it is successfully executed.
       if((USB_ERROR_NONE != status) && (USB_ERROR_REQUEST_NOT_SUPPORT != status))
       {
-//        platform_printf("USB event exec error %x (0x%x 0x%x)\n", status, *(uint32_t*)setup,*((uint32_t*)setup+1));
+        platform_printf("USB event exec error %x (0x%x 0x%x)\n", status, *(uint32_t*)setup,*((uint32_t*)setup+1));
       }
       }break;
 
@@ -386,8 +384,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
               break;
               case EP_CDC_BULK_OUT:
               {
-                int bsp_cdc_push_data_rx(uint8_t *data, uint32_t len);
-                bsp_cdc_push_data_rx((uint8_t*)DataRecvBuf, event->data.size);
+                bsp_recive_cdc_data((uint8_t*)DataRecvBuf, event->data.size);
                 status |= USB_RecvData(ConfigDescriptor.ep_1_out.ep, DataRecvBuf,
                           ConfigDescriptor.ep_1_out.mps, 1<<USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN);
               }
@@ -445,28 +442,6 @@ static void ring_buf_highwater_cb_tx(struct ring_buf *buf)
     ring_buf_peek_data(buf, cb_ring_buf_peek_data_tx, 0);
 }
 
-__attribute__((weak)) int bsp_cdc_push_data_rx(uint8_t *data, uint32_t len) 
-{
-    // This function implements USB reception of CDC endpoint data.
-    // Users can customize a simpler and more efficient handling function according to their specific application scenario.
-    // By default, received data is stored into a ring buffer, which may lead to suboptimal transmit/receive efficiency.
-
-    return ring_buf_write_data(ring_buffer_rx, data, len);
-}
-
-__attribute__((weak)) int cb_ring_buf_peek_data_rx(const void *data, int len, int has_more, void *extra)
-{
-    
-    // When the data in the ring buffer reaches a specified threshold, the buffered data needs to be processed.
-    // The user must define their own function to handle the data in the buffer.
-    return 0;
-}
-
-static void ring_buf_highwater_cb_rx(struct ring_buf *buf)
-{
-    ring_buf_peek_data(buf, cb_ring_buf_peek_data_rx, 0);
-}
-
 void bsp_usb_init(void)
 {
     USB_INIT_CONFIG_T config;
@@ -483,7 +458,6 @@ void bsp_usb_init(void)
     config.handler = bsp_usb_event_handler;
     USB_InitConfig(&config);
     ring_buffer_tx = ring_buf_init(ring_buff_storage_tx, sizeof(ring_buff_storage_tx), ring_buf_highwater_cb_tx);
-    ring_buffer_rx = ring_buf_init(ring_buff_storage_rx, sizeof(ring_buff_storage_rx), ring_buf_highwater_cb_rx);    
 }
 
 int32_t bsp_cdc_acm_notify(uint16_t stat)
@@ -524,7 +498,7 @@ static void internal_bsp_usb_device_remote_wakeup_stop(void)
 void bsp_usb_device_remote_wakeup(void)
 {
     USB_DeviceSetRemoteWakeupBit(U_TRUE);
-//    platform_set_timer(internal_bsp_usb_device_remote_wakeup_stop,16);// setup timer for 10ms, then disable resume signal
+    platform_set_timer(internal_bsp_usb_device_remote_wakeup_stop,16);// setup timer for 10ms, then disable resume signal
 }
 
 #ifdef FEATURE_DISCONN_DETECT
