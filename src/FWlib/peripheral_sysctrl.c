@@ -1854,6 +1854,12 @@ void SYSCTRL_SetPClkDiv(uint8_t div)
     set_reg_bit(APB_SYSCTRL->CguCfg, 1, 29);
 }
 
+void SYSCTRL_SetFastPreDiv(uint8_t div)
+{
+    set_reg_bits(APB_SYSCTRL->CguCfg, div, 4, 12);
+    set_reg_bit(APB_SYSCTRL->CguCfg, 1, 31);
+}
+
 void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
 {
     set_reg_bit(APB_SYSCTRL->CguCfg + 1, (mode == 0) ? 1 : 0, 13);
@@ -1864,7 +1870,7 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
     }
 }
 
-uint32_t SYSCTRL_GetHClk()
+uint32_t SYSCTRL_GetHClk(void)
 {
     if (*AON1_REG5 & (1ul << 30))
         return SYSCTRL_GetPLLClk() / get_safe_divider(*AON1_REG5, 20, 4);
@@ -1872,10 +1878,15 @@ uint32_t SYSCTRL_GetHClk()
     return SYSCTRL_GetSlowClk();
 }
 
+uint32_t SYSCTRL_GetFastPreCLK(void)
+{
+    return SYSCTRL_GetPLLClk() / get_safe_divider(APB_SYSCTRL->CguCfg[0], 12, 4);
+}
+
 uint32_t SYSCTRL_GetFlashClk()
 {
     if (*AON1_REG5 & (1ul << 31))
-        return SYSCTRL_GetPLLClk() / get_safe_divider(*AON1_REG5, 24, 4);
+        return SYSCTRL_GetPLLClk() / get_safe_divider(APB_SYSCTRL->CguCfg[0], 24, 4);
 
     return SYSCTRL_GetSlowClk();
 }
@@ -1903,7 +1914,7 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
         return SYSCTRL_GetSlowClk();
     case SYSCTRL_ITEM_APB_SPI1:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 22))
-            return SYSCTRL_GetHClk();
+            return SYSCTRL_GetFastPreCLK();
         return SYSCTRL_GetSlowClk();
     case SYSCTRL_ITEM_APB_I2S:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 23))
@@ -1912,7 +1923,7 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
     case SYSCTRL_ITEM_APB_UART0:
     case SYSCTRL_ITEM_APB_UART1:
         if (APB_SYSCTRL->CguCfg[1] & (1 << (19 + item - SYSCTRL_ITEM_APB_UART0)))
-            return SYSCTRL_GetHClk();
+            return SYSCTRL_GetFastPreCLK();
         return SYSCTRL_GetSlowClk();
     case SYSCTRL_ITEM_APB_ADC:
         if (APB_SYSCTRL->CguCfg8 & (1 << 17))
@@ -1922,7 +1933,7 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
         return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->USBCfg, 0, 4);
     case SYSCTRL_ITEM_APB_QDEC:
         if (APB_SYSCTRL->QdecCfg & (1 << 15))
-            return SYSCTRL_GetHClk() / get_safe_divider((uint32_t)APB_SYSCTRL->QdecCfg, 1, 10);
+            return SYSCTRL_GetFastPreCLK() / get_safe_divider((uint32_t)APB_SYSCTRL->QdecCfg, 1, 10);
         return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->QdecCfg, 1, 10);
     case SYSCTRL_ITEM_APB_I2C0:
     case SYSCTRL_ITEM_APB_RTIMER2:
@@ -2024,7 +2035,8 @@ int SYSCTRL_Init(void)
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1d, 6, 16);
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c), 150, 8, 24);
 
-    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x4),0,18);
+    set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),0,18);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x14),0,26);
 
     // TODO:
     return 0;

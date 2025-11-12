@@ -1215,6 +1215,7 @@ typedef enum
 {
     SYSCTRL_CLK_SLOW = 0,            // use slow clock
     SYSCTRL_CLK_32k = 0,             // use 32kHz clock
+    SYSCTRL_CLK_FAST_PER = 1,         // use fast peripheral clock
     SYSCTRL_CLK_HCLK = 1,            // use HCLK (same as MCU)
     SYSCTRL_CLK_ADC_DIV = 1,         // use clock from ADC divider
 
@@ -2006,6 +2007,17 @@ void SYSCTRL_SetAdcVrefSel(uint8_t val);
  * @param[in]   div             divider
  */
 void SYSCTRL_UpdateAsdmClk(uint32_t div);
+
+/**
+ * @brief Set FastPreCLK(Fast Peripheral CLK) divider
+ * @param[in]   div             divider
+ */
+void SYSCTRL_SetFastPreDiv(uint8_t div);
+
+/**
+ * @brief current FastPreCLK(Fast Peripheral CLK) in Hz.
+ */
+uint32_t SYSCTRL_GetFastPreCLK(void);
 
 
 #endif
