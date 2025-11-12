@@ -462,6 +462,7 @@ extern BSP_USB_CDC_VAR_s USB_CDC_Var;
  * @param[out] null.
  */
 extern void bsp_usb_init(void);
+extern void bsp_usb_state_init(void);
 extern void bsp_usb_device_remote_wakeup(void);
 extern int bsp_cdc_push_data(uint8_t *data, uint32_t len);
 
@@ -474,7 +475,7 @@ extern int bsp_cdc_push_data(uint8_t *data, uint32_t len);
  *
  * @note The user should have to implement the API to obtain the received data.
  */
-extern void bsp_recive_cdc_data(uint8_t *data, uint32_t len);
+extern void bsp_receive_cdc_data(uint8_t *data, uint32_t len);
 
 #ifdef FEATURE_DISCONN_DETECT
 void bsp_usb_device_disconn_timeout(void);

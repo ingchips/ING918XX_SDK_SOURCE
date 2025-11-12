@@ -384,7 +384,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
               break;
               case EP_CDC_BULK_OUT:
               {
-                bsp_recive_cdc_data((uint8_t*)DataRecvBuf, event->data.size);
+                bsp_receive_cdc_data((uint8_t*)DataRecvBuf, event->data.size);
                 status |= USB_RecvData(ConfigDescriptor.ep_1_out.ep, DataRecvBuf,
                           ConfigDescriptor.ep_1_out.mps, 1<<USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN);
               }
@@ -452,6 +452,17 @@ void bsp_usb_init(void)
 
     PINCTRL_SelUSB(USB_PIN_DP,USB_PIN_DM);
     SYSCTRL_USBPhyConfig(BSP_USB_PHY_ENABLE,BSP_USB_PHY_DP_PULL_UP);
+
+    memset(&config, 0x00, sizeof(USB_INIT_CONFIG_T));
+    config.intmask = USBINTMASK_SUSP | USBINTMASK_RESUME | USBINTMASK_SOF;
+    config.handler = bsp_usb_event_handler;
+    USB_InitConfig(&config);
+    ring_buffer_tx = ring_buf_init(ring_buff_storage_tx, sizeof(ring_buff_storage_tx), ring_buf_highwater_cb_tx);
+}
+
+void bsp_usb_state_init(void)
+{
+    USB_INIT_CONFIG_T config;
 
     memset(&config, 0x00, sizeof(USB_INIT_CONFIG_T));
     config.intmask = USBINTMASK_SUSP | USBINTMASK_RESUME | USBINTMASK_SOF;
