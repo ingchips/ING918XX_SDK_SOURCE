@@ -886,9 +886,10 @@ uint32_t ADC_PopFifoData(void)
 {
     return ADC_RegRd(SADC_DATA, 0, 18);
 }
+
 SADC_channelId ADC_GetDataChannel(const uint32_t data)
 {
-    return (SADC_channelId)(ADC_RIGHT_SHIFT(data, 14) & ADC_MK_MASK(4));
+    return (SADC_channelId)(ADC_RIGHT_SHIFT(data, 12) & ADC_MK_MASK(4));
 }
 
 uint16_t ADC_GetData(const uint32_t data)
@@ -928,7 +929,11 @@ void ADC_HardwareCalibration(void)
         for (uint32_t j = 0; j < 100; j++) __NOP();
         rwData = APB_SADC->sadc_cfg3;
     }
-    ADC_RegWrBits(SADC_CFG_2, 0, 3, 12);
+    ADC_RegClr(SADC_CFG_2, 3, 12);
+    ADC_RegClr(SADC_CFG_2, 0, 1);
+    while (ADC_GetBusyStatus());
+    ADC_RegClr(SADC_CFG_0, 1, 1);
+    APB_SADC->sadc_int_mask = 0;
 }
 
 void ADC_Reset(void)
@@ -942,7 +947,11 @@ void ADC_Reset(void)
     ADC_RegClr(SADC_INT_MAKS, 0, 32);
 
     ADC_RegWr(SADC_CFG_0, 1, 28);
-    ADC_RegWrBits(SADC_CFG_2, 0, 3, 12);
+    ADC_RegClr(SADC_CFG_2, 3, 12);
+    ADC_RegClr(SADC_CFG_2, 0, 1);
+    while (ADC_GetBusyStatus());
+    ADC_RegClr(SADC_CFG_0, 1, 1);
+    APB_SADC->sadc_int_mask = 0;
 }
 
 void ADC_Start(uint8_t start)
@@ -955,7 +964,6 @@ void ADC_Start(uint8_t start)
         while (ADC_GetBusyStatus());
     }
 }
-
 
 void ADC_SetVref(SADC_Vref vref)
 {

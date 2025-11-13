@@ -2197,6 +2197,19 @@ void SYSCTRL_SetAdcVrefSel(uint8_t val)
         set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x234), 1, 8);
 }
 
+void SYSCTRL_EnableResetSource(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x218), enable, 0);
+}
+
+SYSCTRL_ResetSource SYSCTRL_GetResetSource(void)
+{
+    uint32_t val;
+    val = *(volatile uint32_t*)(APB_SYSCTRL_BASE + 0x218);
+
+    return (val>>1)&0x3f;
+}
+
 #endif
 
 void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles)
