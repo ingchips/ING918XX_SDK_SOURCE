@@ -1886,7 +1886,7 @@ uint32_t SYSCTRL_GetFastPreCLK(void)
 uint32_t SYSCTRL_GetFlashClk()
 {
     if (*AON1_REG5 & (1ul << 31))
-        return SYSCTRL_GetPLLClk() / get_safe_divider(APB_SYSCTRL->CguCfg[0], 24, 4);
+        return SYSCTRL_GetPLLClk() / get_safe_divider(*AON1_REG5, 24, 4);
 
     return SYSCTRL_GetSlowClk();
 }
@@ -2195,6 +2195,19 @@ void SYSCTRL_SetAdcVrefSel(uint8_t val)
     }
     else
         set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x234), 1, 8);
+}
+
+void SYSCTRL_EnableRestSource(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t*)(APB_SYSCTRL_BASE + 0x218), enable, 0);
+}
+
+SYSCTRL_RestSource SYSCTRL_GetRestSource(void)
+{
+    uint32_t val;
+    val = *(volatile uint32_t*)(APB_SYSCTRL_BASE + 0x218);
+
+    return (val>>1)&0x3f;
 }
 
 #endif

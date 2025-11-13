@@ -1261,6 +1261,28 @@ typedef enum
 } SYSCTRL_ClkMode;
 
 /**
+ * @brief Get system rest source
+ *
+ * SYSCTRL_RESET_PDR: PDR module tigger reset.
+ * SYSCTRL_RESET_PVD: PVD module tigger reset.
+ * SYSCTRL_RESET_GLOBAL_SOFT: register reset is set.
+ * SYSCTRL_RESET_CPU: CPU core reset.
+ * SYSCTRL_RESET_PIN: Pressing the external reset button.
+ * SYSCTRL_RESET_WDT: Watchdog timeout.
+ * SYSCTRL_RESET_POR: Power on reset or feature is note open.
+ */
+typedef enum
+{
+    SYSCTRL_RESET_PDR = 0x4,
+    SYSCTRL_RESET_PVD = 0x8,
+    SYSCTRL_RESET_GLOBAL_SOFT = 0x10,
+    SYSCTRL_RESET_CPU = 0x20,
+    SYSCTRL_RESET_PIN = 0x31,
+    SYSCTRL_RESET_WDT = 0x32,
+    SYSCTRL_RESET_POR = 0x3f,
+} SYSCTRL_RestSource;
+
+/**
  * @brief Select clock mode of TIMER
  *
  * All timers share the same clock divider, which means that if timer K is
@@ -2018,6 +2040,32 @@ void SYSCTRL_SetFastPreDiv(uint8_t div);
  * @brief current FastPreCLK(Fast Peripheral CLK) in Hz.
  */
 uint32_t SYSCTRL_GetFastPreCLK(void);
+
+/**
+ * @brief Set Qdec pclk divider
+ * @param[in]   div             divider
+ */
+void SYSCTRL_UpdateQdecClk(uint32_t div);
+
+/**
+ * @brief Enable feature for getting the current reset source.
+ *
+ * @param[in] enable 1 : enable 0: disable
+ *
+ * @note When this feature is enabled, the reset cause recording module will be reset;
+ * therefore, the reset cause from the previous reset must be read prior to enabling this feature.
+ */
+void SYSCTRL_EnableRestSource(uint8_t enable);
+
+/**
+ * @brief Get reset source.
+ * You can determine the previous reset cause
+ * by checking the return value of this function during system startup.
+ * The reset cause is one of the values from the SYSCTRL_RestSource enumeration.
+ *
+ * @return reset source.
+ */
+SYSCTRL_RestSource SYSCTRL_GetRestSource(void);
 
 
 #endif

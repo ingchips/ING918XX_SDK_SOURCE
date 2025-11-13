@@ -680,12 +680,9 @@ void ADC_SetVref(SADC_Vref vref);
  * @brief ADC conversion standard configuration interface
  *
  * @param[in] ctrlMode       ADC control mode, see 'SADC_adcCtrlMode'
- * @param[in] pgaPara        pga-para, see 'SADC_pgaPara'
- * @param[in] pgaEnable      enable/diable pga
  * @param[in] ch             ADC channel id, see 'SADC_channelId'
- * @param[in] enNum          ADC interrupt trigger number(0-15)
- * @param[in] dmaEnNum       DMA transmition require trigger number(0-15)
- * @param[in] inputMode      ADC input mode, see 'SADC_adcIputMode'
+ * @param[in] enNum          ADC interrupt trigger number(0-4)
+ * @param[in] dmaEnNum       DMA transmition require trigger number(0-4)
  * @param[in] loopDelay      ADC loop delay(0-0xffffffff)
  */
 void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
