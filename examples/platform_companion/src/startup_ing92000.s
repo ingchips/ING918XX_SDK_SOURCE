@@ -27,7 +27,7 @@
 
 VER_MAJOR   EQU  20
 VER_MINOR   EQU  3
-VER_PATCH   EQU  56
+VER_PATCH   EQU  60
 
 Stack_Size      EQU     0x00000200
 
@@ -173,6 +173,41 @@ Reset_Handler   PROC
                 EXPORT  Reset_Handler
                 IMPORT  __scatterload
 
+                LDR     R0, =0x40000008
+                LDR     R1, [R0]
+                ORR     R1, R1, #0x2
+                STR     R1, [R0]
+
+                LDR     R0, =0x4000001c
+                LDR     R1, [R0]
+                ORR     R1, R1, #0x400
+                STR     R1, [R0]
+
+POWER_CS_START_READ
+                LDR      r3, =0x40100000
+                MOVS     r1,#0x01
+                LDR      r0,[r3,#0x54]
+                UBFX     r0,r0,#12,#4
+POWER_CS_READ_AGAIN
+                LDR      r2,[r3,#0x54]
+                UBFX     r2,r2,#12,#4
+                CMP      r0,r2
+                BNE      POWER_CS_START_READ
+                ADDS     r1,r1,#1
+                CMP      r1,#0x03
+                BLT      POWER_CS_READ_AGAIN
+                CMP      r0,#0x02
+                BLT      POWER_CS_START_READ
+
+                LDR     r3, =0x40110000
+                LDR     r0, [r3]
+                CMP     r0, #0
+                BEQ     POWER_CS_START_READ
+
+                LDR     r3, =0x40000044
+                LDR     r0, [r3]
+                ORR     r0, r0, #0x10000; (1ul << 16)
+                STR     r0, [r3]
 
                 LDR     R0, =__scatterload
                 BX      R0

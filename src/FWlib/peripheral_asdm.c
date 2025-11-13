@@ -201,7 +201,7 @@ uint8_t ADSM_GetReadFlag(ASDM_TypeDef *base)
 
 void ASDM_ClrOverflowError(ASDM_TypeDef *base)
 {
-    ASDM_SetRegBit(&base->asdm_rx_ctrl, 1, 9);
+    ASDM_SetRegBit(&base->asdm_rx_ctrl, 1, 1);
 }
 
 uint8_t ASDM_GetAGCMute(ASDM_TypeDef *base)

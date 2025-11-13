@@ -9,6 +9,7 @@ import math
 
 SCRIPT_MOD = None
 BOOT_HELLO = b'UartBurnStart916\n'
+AHB_QSPI_MEM_BASE = 0x04000000
 
 class intf_base(object):
     def __init__(self):
