@@ -6,7 +6,10 @@
 #include "ring_buf.h"
 
 /* User defined area */
+#ifndef RX_BUFFER_SIZE
 #define RX_BUFFER_SIZE      (1024)
+#endif
+
 static uint8_t ring_buff_storage_tx[RX_BUFFER_SIZE];
 static struct ring_buf *ring_buffer_tx;
 static int cb_ring_buf_peek_data_tx(const void *data, int len, int has_more, void *extra);
@@ -510,6 +513,10 @@ void bsp_usb_device_remote_wakeup(void)
 {
     USB_DeviceSetRemoteWakeupBit(U_TRUE);
     platform_set_timer(internal_bsp_usb_device_remote_wakeup_stop,16);// setup timer for 10ms, then disable resume signal
+}
+
+__attribute((weak)) void bsp_receive_cdc_data(uint8_t *data, uint32_t len)
+{
 }
 
 #ifdef FEATURE_DISCONN_DETECT

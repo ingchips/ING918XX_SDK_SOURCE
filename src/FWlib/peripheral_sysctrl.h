@@ -1215,7 +1215,7 @@ typedef enum
 {
     SYSCTRL_CLK_SLOW = 0,            // use slow clock
     SYSCTRL_CLK_32k = 0,             // use 32kHz clock
-    SYSCTRL_CLK_FAST_PER = 1,         // use fast peripheral clock
+    SYSCTRL_CLK_FAST_PER = 1,        // use fast peripheral clock
     SYSCTRL_CLK_HCLK = 1,            // use HCLK (same as MCU)
     SYSCTRL_CLK_ADC_DIV = 1,         // use clock from ADC divider
 
