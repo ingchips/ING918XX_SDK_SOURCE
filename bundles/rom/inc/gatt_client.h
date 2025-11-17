@@ -120,7 +120,6 @@ typedef struct {
 #pragma pack(pop)
 
 /**
-/**
  * @brief Discovers all primary services. For each found service, an le_service_event_t with type set to GATT_EVENT_SERVICE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t, with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
  * @param callback          Callback to discover primary services.
  * @param con_handle        Connection handle to discover services on.
