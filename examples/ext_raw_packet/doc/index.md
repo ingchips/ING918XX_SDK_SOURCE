@@ -11,9 +11,9 @@ to two Dev-Boards. Check the log printed through the default UART.
 
 `APP_TESTER` should not be defined.
 
-### Make ING916 into a Tester
+### Make a Frequency Offset Tester
 
-Build this example with `APP_TESTER` and download it to an ING916 Dev-Board. Then, this
+Build this example with `APP_TESTER` and download it to an ING916/ING20 Dev-Board. Then, this
 Dev-Board can be used as a tester by Frequency Offset Tester program.
 
 ## Other Resources
