@@ -436,7 +436,11 @@ uint8_t GET_I2C_DEBUG0_DMAREQ(I2C_TypeDef *I2C_BASE);
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define I2C_FIFO_DEPTH      8
+#elif  (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#define I2C_FIFO_DEPTH      4
+#endif
 
 typedef enum
 {
@@ -462,6 +466,7 @@ typedef enum
 {
     I2C_STATUS_FIFO_EMPTY = 0,
     I2C_STATUS_FIFO_FULL = 1,
+    I2C_STATUS_FIFO_HALF = 2,
     I2C_STATUS_ADDRHIT = 3, // indicates a transaction is addressed on this controller
     I2C_STATUS_CMPL = 9   , // indicates transaction completion
     I2C_STATUS_ACK  = 10  , // indicates the type of the last received/transmitted

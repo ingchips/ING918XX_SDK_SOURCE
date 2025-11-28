@@ -291,7 +291,7 @@ void TMR_WatchDogDisable(void)
 {
     WDT_UNLOCK();
     APB_WDT->Ctrl = 0;
-    *AON1_BOOT &= ~(1u << 28);
+    *AON1_BOOT &= ~(1u << 22);
 }
 
 void TMR_WatchDogRestart()

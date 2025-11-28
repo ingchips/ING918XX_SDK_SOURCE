@@ -606,6 +606,8 @@ int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode)
 
 int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 {
+    if (io_pin_index == IO_NOT_A_PIN)
+        return 0;
     int r = source_id_on_pin(io_pin_index, source);
     if (r < 0) return r;
 
@@ -1103,6 +1105,8 @@ int PINCTRL_KeyScanPullSel(const uint8_t io_pin, uint8_t enable)
 
 int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 {
+    if (io_pin_index == IO_NOT_A_PIN)
+        return 0;
     int r = source_id_on_pin(io_pin_index, source);
     if (r < 0) return r;
 

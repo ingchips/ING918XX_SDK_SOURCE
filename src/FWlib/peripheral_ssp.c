@@ -343,7 +343,7 @@ void apSSP_WrtEnlargeEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
 
 void apSSP_WrtEnlargeCnt(SSP_TypeDef *SPI_BASE, uint16_t cnt)
 {
-    SPI_BASE->IntrEn &= (~(BW2M(bsSPI_TRANSCTRL_WRENLARGECNT) << bsSPI_TRANSCTRL_WRENLARGECNT));
+    SPI_BASE->IntrEn &= (~(BW2M(bwSPI_TRANSCTRL_WRENLARGECNT) << bsSPI_TRANSCTRL_WRENLARGECNT));
     SPI_BASE->IntrEn |= ((0xffff & (cnt-1)) << bsSPI_TRANSCTRL_WRENLARGECNT);
 }
 #endif
