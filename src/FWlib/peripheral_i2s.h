@@ -10,7 +10,11 @@ extern "C" {	/* allow C++ to use these headers */
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define I2S_FIFO_DEPTH      16
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#define I2S_FIFO_DEPTH      4
+#endif
 
 typedef enum
 {
@@ -179,12 +183,14 @@ int I2S_GetTxFIFOCount(I2S_TypeDef *base);
  */
 int I2S_GetRxFIFOCount(I2S_TypeDef *base);
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 /**
  * @brief Enable/Disable data from PDM
  *
  * @param[in] enable                    Enable or disable(default)
  */
 void I2S_DataFromPDM(uint8_t enable);
+#endif
 
 #endif
 

@@ -620,6 +620,8 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_UART0_TX:
         case SYSCTRL_DMA_UART1_TX:
             return DMA_WIDTH_BYTE;
+        case SYSCTRL_DMA_SADC:
+            return DMA_WIDTH_16_BITS;
 
         case SYSCTRL_DMA_SPI0_TX:
         case SYSCTRL_DMA_SPI0_RX:
@@ -663,7 +665,8 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
             return 0;
         case SYSCTRL_DMA_I2S_RX:
             return &APB_I2S->RX;
-
+        case SYSCTRL_DMA_SADC:
+            return &APB_SADC->sadc_data;
         case SYSCTRL_DMA_UART0_TX:
             return &APB_UART0->DataRead;
         case SYSCTRL_DMA_UART1_TX:

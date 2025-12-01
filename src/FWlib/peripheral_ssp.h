@@ -269,6 +269,7 @@ typedef enum
 #define bsSPI_TRANSCTRL_WRTRANCNT         12
 #if (INGCHIPS_FAMILY_20 == INGCHIPS_FAMILY)
 #define bsSPI_TRANSCTRL_WRENLARGECNT      8
+#define bwSPI_TRANSCTRL_WRENLARGECNT      16
 #endif
 /* SPI_TransCtrl_DualQuad_e */
 #define bsSPI_TRANSCTRL_DUALQUAD          22
@@ -832,6 +833,38 @@ void apSSP_SetTransferControlAddrFmt(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_AddrFm
  * @param[in] cmd                   refer to apSSP_sDeviceMemRdCmd for different cmd format
  */
 void apSSP_SetMemAccessCmd(SSP_TypeDef *SPI_BASE, apSSP_sDeviceMemRdCmd cmd);
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+/**
+ * @brief SPI long data write feature enabled (greater than 512 counts)
+ *
+ * @note If enable this feature, 'apSSP_SetTransferControlWrTranCnt' change to 'apSSP_WrtEnlargeCnt'
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] enable                enable long cnt mode
+ */
+void apSSP_WrtEnlargeEn(SSP_TypeDef *SPI_BASE, uint8_t enable);
+
+/**
+ * @brief SPI long data write cnt (greater than 512 counts)
+ *
+ * @note If enable this feature, 'apSSP_SetTransferControlWrTranCnt' change to 'apSSP_WrtEnlargeCnt'
+ *
+ * @param[in] SPI_BASE              base address
+ * @param[in] val                   write cnt number for one spi transfer(CS down and up)
+ */
+void apSSP_WrtEnlargeCnt(SSP_TypeDef *SPI_BASE, uint16_t cnt);
+
+#endif
+
+/**
+ * @brief Get spi status
+ *
+ * @param[in] SPI_BASE              base address, only apply to SPI0
+ * @param[out] status
+ */
+uint32_t apSSP_GetStatus(SSP_TypeDef *SPI_BASE);
 #endif
 
 #ifdef __cplusplus

@@ -416,6 +416,26 @@ void QDEC_SetCHxTmrCntC(QDEC_CHX Channel, uint16_t val)
     APB_QDEC->channels[Channel].channel_write_c = val;
 }
 
+void QDEC_EnableInt(uint8_t mask)
+{
+    QDEC_SetRegBits(&APB_QDEC->qdec_inten, mask, 0, 4);
+}
+
+void QDEC_EnableDoubleEdge(uint8_t enable)
+{
+    QDEC_SetRegBits(&APB_QDEC->bmr, enable, 1, 12);
+}
+
+void QDEC_SetExternalTrigger(QDEC_CHX Channel, uint8_t val)
+{
+    QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_mode, val, 2, 10);
+}
+
+void QDEC_SetExternalTriggerEn(QDEC_CHX Channel, uint8_t enable)
+{
+    QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, enable, 12);
+}
+
 void QDEC_SetChxIntEn(QDEC_CHX Channel, uint8_t enable, uint16_t items)
 {
 
@@ -519,7 +539,6 @@ void QDEC_IntClear(void)
 {
     QDEC_ReadRegBits(&APB_QDEC->channels[0].channel_tiob0_rd, 10, 0);
 }
-
 
 #endif
 

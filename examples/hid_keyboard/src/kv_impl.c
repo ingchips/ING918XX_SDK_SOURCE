@@ -106,6 +106,18 @@ static void kv_do_backup(uint32_t from, uint32_t to)
             from += sizeof(buf);
             to += sizeof(buf);
         }
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+        int i;
+        uint32_t buf[16];
+        erase_flash_sector(to);
+
+        for (i = 0; i < BLOCK_SIZE / sizeof(buf); i++)
+        {
+            memcpy(buf, (void *)from, sizeof(buf));
+            write_flash(to, (uint8_t *)buf, sizeof(buf));
+            from += sizeof(buf);
+            to += sizeof(buf);
+        }
 #endif
 }
 
@@ -114,6 +126,8 @@ static void kv_reset(void)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     erase_flash_page(DB_FLASH_ADDRESS);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    erase_flash_sector(DB_FLASH_ADDRESS);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     erase_flash_sector(DB_FLASH_ADDRESS);
 #endif
     kv_storage_tail = DB_FLASH_ADDRESS;
