@@ -469,58 +469,61 @@ typedef enum
 
 typedef enum
 {
-    PLATFORM_CFG_LOG_HCI,       // (ING918 only) flag is ENABLE or DISABLE. default: DISABLE
-    PLATFORM_CFG_POWER_SAVING,  // flag is ENABLE or DISABLE. default: DISABLE
-    PLATFORM_CFG_TRACE_MASK,    // flag is bitmap of platform_trace_item_t. default: 0
-    PLATFORM_CFG_RT_RC_EN,         // Enable/Disable internal real time RC clock. Default: Enable
-    PLATFORM_CFG_RC32K_EN = PLATFORM_CFG_RT_RC_EN,
-    PLATFORM_CFG_RT_OSC_EN,     // Enable/Disable external real time crystal oscillator. Default: Enable
-    PLATFORM_CFG_OSC32K_EN = PLATFORM_CFG_RT_OSC_EN,
-    PLATFORM_CFG_RT_CLK,        // real time clock selection. flag is platform_rt_clk_src_t. default: PLATFORM_RT_RC
-                                // Note 1: When modifying this configuration, both RT_RC and RT_OSC should be ENABLED.
-                                // Note 2: Unused clock can be disabled.
-    PLATFORM_CFG_32K_CLK = PLATFORM_CFG_RT_CLK,
-    PLATFORM_CFG_RT_CLK_ACC,    // Configure real time clock accuracy in ppm.
-    PLATFORM_CFG_32K_CLK_ACC = PLATFORM_CFG_RT_CLK_ACC,
-    PLATFORM_CFG_RT_CLK_CALI_PERIOD, // real time clock auto-calibration period in seconds. Default: 3600 * 2
-    PLATFORM_CFG_32K_CALI_PERIOD = PLATFORM_CFG_RT_CLK_CALI_PERIOD,
-    PLATFORM_CFG_PS_DBG_0,      // debugging parameter
-    PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (deep sleep mode) in us. (default: ~550us)
-    PLATFORM_CFG_PS_DBG_1 = PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, // obsoleted
-    PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // sleep time reduction (other sleep mode) in us. (default: ~550us)
-    PLATFORM_CFG_PS_DBG_2 = PLATFORM_CFG_SLEEP_TIME_REDUCTION,      // obsoleted
-    PLATFORM_CFG_LL_DBG_FLAGS,  // Link layer flags (combination of `ll_cfg_flag_t`)
-    PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL,    // Link layer legacy advertising intervals for high duty cycle (higher 16bits)
-                                            //      and normal duty cycle (lower 16bits) in micro seconds
-                                            // Default:   high duty cycle: 1250
-                                            //          normal duty cycle: 1500
-                                            // This is equivalent to `ll_legacy_adv_set_interval(flag >> 16, flag & 0xffff)`.
-                                            // Recommend to use `ll_legacy_adv_set_interval` instead.
-    PLATFORM_CFG_RTOS_ENH_TICK,             // Enhanced Ticks. Default: DISABLE
-                                            // When enabled: IRQ's impact on accuracy of RTOS ticks is reduced
-                                            // Note: this feature has negative impact on power consumption.
-    PLATFORM_CFG_LL_DELAY_COMPENSATION,     // When system runs at a lower frequency,
-                                            // more time (in us) is needed to run Link layer.
-                                            // For example, if ING916 runs at 24MHz, configure this to 2500
-    PLATFORM_CFG_24M_OSC_TUNE,              // 24M OSC tunning (not available for ING918)
-                                            // For ING916: values may vary in 0x16~0x2d, etc.
-    PLATFORM_CFG_ALWAYS_CALL_WAKEUP,        // always trigger `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` no matter if deep sleep
-                                            // procedure is completed or aborted (failed).
-                                            // Default for ING918: Disabled(0) for backward compatibility
-                                            // Default for ING916: Enabled(1)
-    PLATFORM_CFG_PS_DBG_3,
-    PLATFORM_CFG_PS_DBG_4,                  // Debugging parameters for ING916. Default (0)
-                                            // Bit [0]: `platform_shutdown` uses DEEPER SLEEP (1) or SLEEP (0)
-    PLATFORM_CFG_FAST_DEEP_SLEEP_TIME_REDUCTION, // sleep time reduction (fast deep sleep mode) in us.
-                                                 // Requirement: <= PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION
-                                                 // When equal to PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, fast deep sleep mode is not used
-                                                 // Only available for ING916 (default: ~2000us)
-    PLATFORM_CFG_AUTO_REDUCE_CLOCK_FREQ,    // automatic reduce CPU clock frequency in these circumstances:
-                                            // * the default IDLE procedure
-                                            // * when entering sleep modes
-                                            // Only available for ING916 (default: Enabled)
-    PLATFORM_CFG_PS_DBG_5,                  // Reserved debugging parameter
+    PLATFORM_CFG_LOG_HCI        = 0,    // (ING918 only) flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_POWER_SAVING   = 1,    // flag is ENABLE or DISABLE. default: DISABLE
+    PLATFORM_CFG_TRACE_MASK     = 2,    // flag is bitmap of platform_trace_item_t. default: 0
+    PLATFORM_CFG_RT_RC_EN       = 3,    // Enable/Disable internal real time RC clock. Default: Enable
+    PLATFORM_CFG_RT_OSC_EN      = 4,    // Enable/Disable external real time crystal oscillator. Default: Enable
+    PLATFORM_CFG_RT_CLK         = 5,    // real time clock selection. flag is platform_rt_clk_src_t. default: PLATFORM_RT_RC
+                                        // Note 1: When modifying this configuration, both RT_RC and RT_OSC should be ENABLED.
+                                        // Note 2: Unused clock can be disabled.
+    PLATFORM_CFG_RT_CLK_ACC     = 6,    // Configure real time clock accuracy in ppm.
+    PLATFORM_CFG_RT_CLK_CALI_PERIOD = 7,// real time clock auto-calibration period in seconds. Default: 3600 * 2
+    PLATFORM_CFG_PS_DBG_0                   = 8,  // debugging parameter
+    PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION  = 9,  // sleep time reduction (deep sleep mode) in us. (default: ~550us)
+    PLATFORM_CFG_SLEEP_TIME_REDUCTION       = 10, // sleep time reduction (other sleep mode) in us. (default: ~550us)
+    PLATFORM_CFG_LL_DBG_FLAGS               = 11, // Link layer flags (combination of `ll_cfg_flag_t`)
+    PLATFORM_CFG_LL_LEGACY_ADV_INTERVAL     = 12, // Link layer legacy advertising intervals for high duty cycle (higher 16bits)
+                                                  //      and normal duty cycle (lower 16bits) in micro seconds
+                                                  // Default:   high duty cycle: 1250
+                                                  //          normal duty cycle: 1500
+                                                  // This is equivalent to `ll_legacy_adv_set_interval(flag >> 16, flag & 0xffff)`.
+                                                  // Recommend to use `ll_legacy_adv_set_interval` instead.
+    PLATFORM_CFG_RTOS_ENH_TICK          = 13,     // Enhanced Ticks. Default: DISABLE
+                                                  // When enabled: IRQ's impact on accuracy of RTOS ticks is reduced
+                                                  // Note: this feature has negative impact on power consumption.
+    PLATFORM_CFG_LL_DELAY_COMPENSATION  = 14,     // When system runs at a lower frequency,
+                                                  // more time (in us) is needed to run Link layer.
+                                                  // For example, if ING916 runs at 24MHz, configure this to 2500
+    PLATFORM_CFG_24M_OSC_TUNE           = 15,     // 24M OSC tunning (not available for ING918)
+                                                  // For ING916: values may vary in 0x16~0x2d, etc.
+    PLATFORM_CFG_ALWAYS_CALL_WAKEUP     = 16,     // always trigger `PLATFORM_CB_EVT_ON_DEEP_SLEEP_WAKEUP` no matter if deep sleep
+                                                  // procedure is completed or aborted (failed).
+                                                  // Default for ING918: Disabled(0) for backward compatibility
+                                                  // Default for ING916: Enabled(1)
+    PLATFORM_CFG_PS_DBG_3               = 17,     // Reserved debugging parameter
+    PLATFORM_CFG_PS_DBG_4               = 18,     // Debugging parameters for ING916. Default (0)
+                                                  // Bit [0]: `platform_shutdown` uses DEEPER SLEEP (1) or SLEEP (0)
+    PLATFORM_CFG_FAST_DEEP_SLEEP_TIME_REDUCTION = 19, // sleep time reduction (fast deep sleep mode) in us.
+                                                      // Requirement: <= PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION
+                                                      // When equal to PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, fast deep sleep mode is not used
+                                                      // Only available for ING916 (default: ~2000us)
+    PLATFORM_CFG_AUTO_REDUCE_CLOCK_FREQ = 20,   // automatic reduce CPU clock frequency in these circumstances:
+                                                // * the default IDLE procedure
+                                                // * when entering sleep modes
+                                                // Only available for ING916 (default: Enabled)
+    PLATFORM_CFG_PS_DBG_5   = 21,   // Reserved debugging parameter
+    PLATFORM_CFG_PS_DBG_6   = 22,   // Reserved debugging parameter
 } platform_cfg_item_t;
+
+// obsoleted platform_cfg_item_t values
+#define PLATFORM_CFG_RC32K_EN        (PLATFORM_CFG_RT_RC_EN)
+#define PLATFORM_CFG_OSC32K_EN       (PLATFORM_CFG_RT_OSC_EN)
+#define PLATFORM_CFG_32K_CLK         (PLATFORM_CFG_RT_CLK)
+#define PLATFORM_CFG_32K_CLK_ACC     (PLATFORM_CFG_RT_CLK_ACC)
+#define PLATFORM_CFG_32K_CALI_PERIOD (PLATFORM_CFG_RT_CLK_CALI_PERIOD)
+#define PLATFORM_CFG_PS_DBG_1        (PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION)
+#define PLATFORM_CFG_PS_DBG_2        (PLATFORM_CFG_SLEEP_TIME_REDUCTION)
 
 typedef enum
 {

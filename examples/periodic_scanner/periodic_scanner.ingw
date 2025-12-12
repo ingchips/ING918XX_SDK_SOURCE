@@ -4,22 +4,22 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9ff0700000000",
-    "addr": 158384
+    "addr": 158540
    }
   },
   "rom": {
-   "size": 147376,
+   "size": 147540,
    "base": 16384
   },
   "ram": {
-   "size": 29972,
+   "size": 29980,
    "base": 536870912
   },
   "app": {
-   "base": 163840
+   "base": 172032
   },
   "version": [
-   1,10,31]
+   1,10,37]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -50,8 +50,8 @@
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\periodic_scanner",
  "power_saving": false,
  "bundle": "typical",
- "app_rom_size": "376832",
- "app_rom_addr": "163840",
+ "app_rom_size": "368640",
+ "app_rom_addr": "172032",
  "family": "ing918",
  "vcode": false,
  "io_cap": "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
@@ -64,8 +64,8 @@
  },
  "keil": true,
  "cmsis": "",
- "app_ram_size": 35560,
- "app_ram_addr": 536900888,
+ "app_ram_size": 35552,
+ "app_ram_addr": 536900896,
  "uart_log": true,
  "ota_ver_patch": "0",
  "profile_data": "0, 0\r\n",
