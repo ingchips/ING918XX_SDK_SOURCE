@@ -1,0 +1,8 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_TRACE_DATA                                    6
+#define HANDLE_TRACE_DATA_CLIENT_CHAR_CONFIG                 7
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_TRACE_DATA_OFFSET                             116
+#define HANDLE_TRACE_DATA_CLIENT_CHAR_CONFIG_OFFSET          124
+

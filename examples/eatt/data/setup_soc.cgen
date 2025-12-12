@@ -1,0 +1,56 @@
+void cube_soc_init(void)
+{
+platform_config(PLATFORM_CFG_RT_OSC_EN, PLATFORM_CFG_DISABLE);
+platform_config(PLATFORM_CFG_RT_CLK_ACC, 500);
+
+}
+
+void cube_setup_peripherals(void)
+{
+SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_PinCtrl)
+ | (1 << SYSCTRL_ClkGate_APB_TMR0)
+ | (1 << SYSCTRL_ClkGate_APB_UART0));
+
+// TIMER0
+if (!IS_DEBUGGER_ATTACHED())
+{
+    TMR_WatchDogEnable((uint32_t)(TMR_CLK_FREQ * 10.000000));
+}
+
+// UART0
+PINCTRL_SetPadMux(2, IO_SOURCE_UART0_TXD);
+PINCTRL_SetPadMux(3, IO_SOURCE_GENERAL);
+PINCTRL_SelUartRxdIn(UART_PORT_0, 3);
+{
+    APB_UART0->Control = 0;
+    APB_UART0->IntClear = 0;
+    APB_UART0->IntMask = 0;
+    APB_UART0->StatusClear = 0;
+    APB_UART0->IntBaudDivisor = 13;
+    APB_UART0->FractBaudDivisor = 1;
+    APB_UART0->LineCon_H = ( ((UART_PARITY_NOT_CHECK >> 2) & 1) << bsUART_STICK_PARITY ) |  // SPS
+                        (   3      << bsUART_WORD_LENGTH  ) |  // WLEN
+                        (   1      << bsUART_FIFO_ENABLE  ) |  // FEN
+                        (   0      << bsUART_TWO_STOP_BITS) |  // STP2
+                        ( ( UART_PARITY_NOT_CHECK & 3) << bsUART_PARITY_SELECT) ;  // EPS, EPN
+    APB_UART0->FifoSelect =   (1 << bsUART_TRANS_INT_LEVEL)
+                     | (1 << bsUART_RECV_INT_LEVEL);
+    APB_UART0->IntMask = ((uint32_t)1 << bsUART_RECEIVE_INTENAB)  |
+                  ((uint32_t)0 << bsUART_TRANSMIT_INTENAB) |
+                  ((uint32_t)0 << bsUART_TIMEOUT_INTENAB)  |
+                  ((uint32_t)0 << bsUART_FRAME_INTENAB)    |
+                  ((uint32_t)0 << bsUART_PARITY_INTENAB)   |
+                  ((uint32_t)0 << bsUART_BREAK_INTENAB)    |
+                  ((uint32_t)0 << bsUART_OVERRUN_INTENAB);
+    APB_UART0->Control = ((uint32_t)1 << bsUART_RECEIVE_ENABLE) |
+                  ((uint32_t)1 << bsUART_TRANSMIT_ENABLE)|
+                  ((uint32_t)1 << bsUART_ENABLE)         |
+                  ((uint32_t)0 << bsUART_CTS_ENA)        |
+                  ((uint32_t)0 << bsUART_RTS_ENA);
+}
+
+}
+
+void cube_on_lle_init(void)
+{
+}
