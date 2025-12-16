@@ -144,8 +144,10 @@ void cmd_fcpu(const char *param)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     sprintf(buffer, "cpu @ 48MHz");
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     sprintf(buffer, "cpu @ %u Hz", SYSCTRL_GetHClk());
+#else
+    #error unknown chip
 #endif
     tx_data(buffer, strlen(buffer) + 1);
 }
