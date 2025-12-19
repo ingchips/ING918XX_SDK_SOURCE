@@ -604,7 +604,7 @@ typedef uint16_t (*rom_FlashGetStatusReg)(void);
     uint32_t prim = __get_PRIMASK();            \
     uint8_t mode = 0;                           \
     __disable_irq();                            \
-    if((*(uint32_t*)0x40150004) & 0x10000a0) {    \
+    if((*(uint32_t*)0x40150004) & 0x1000000ul) {    \
         mode = 1;                               \
         ROM_FlashDisableContinuousMode();       \
     }
