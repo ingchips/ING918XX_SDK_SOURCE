@@ -4,11 +4,11 @@
   "var": {
    "link_layer_features": {
     "value": "ff79ff07fe000000",
-    "addr": 33745520
+    "addr": 33751016
    }
   },
   "rom": {
-   "size": 192832,
+   "size": 198860,
    "base": 33562624
   },
   "ram": {
@@ -16,10 +16,10 @@
    "base": 536870912
   },
   "app": {
-   "base": 33759232
+   "base": 33763328
   },
   "version": [
-   2,4,37]
+   2,4,38]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
@@ -49,8 +49,8 @@
  "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\hid_mouse",
  "power_saving": false,
  "bundle": "exp",
- "app_rom_size": "319488",
- "app_rom_addr": "33759232",
+ "app_rom_size": "315392",
+ "app_rom_addr": "33763328",
  "family": "ing916",
  "vcode": false,
  "io_cap": "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
