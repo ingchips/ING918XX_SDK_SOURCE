@@ -264,7 +264,7 @@ void IR_CycleCarrierSetup(uint8_t channel, uint8_t carry_channel, uint32_t frequ
 void IR_WriteCarrierData(uint8_t channel, uint32_t data)
 {
     uint32_t  reg;
-    reg = data &  ((1<<16) - 1);
+    reg = data &  ((1<<20) - 1);
     APB_PWM->Channels[channel].DmaData = reg;
 }
 
@@ -272,7 +272,7 @@ uint8_t IR_BusyState(uint8_t channel)
 {
     uint8_t state;
 
-    state = APB_PWM->Channels[channel].Ctrl1 & (1<<1);
+    state = APB_PWM->Channels[channel].Ctrl1 >> 9;
 
     return state;
 }
