@@ -1,3 +1,4 @@
+#include "port_gen_os_driver.h"
 #include "eatt_uart_console.h"
 
 #include "ingsoc.h"
@@ -9,8 +10,7 @@
 #include "bluetooth.h"
 #include "sm.h"
 
-#include "btstack_mt.h"
-#include "port_gen_os_driver.h"
+//#include "btstack_mt.h"
 
 #define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
 
@@ -198,6 +198,7 @@ extern sm_persistent_t sm_persistent;
 extern uint8_t slave_addr[];
 extern bd_addr_type_t slave_addr_type;
 
+void update_addr(void);
 void conn_to_slave(void);
 void sync_conn_to_slave(void);
 void cancel_create_conn(void);
@@ -222,6 +223,12 @@ int parse_addr(uint8_t *output, const char *param)
     }
     for (i = 0; i < 6; i++) output[i] = addr[i];
     return 0;
+}
+
+void cmd_addr(const char *param)
+{
+    if (0 == parse_addr(sm_persistent.identity_addr, param))
+        update_addr();
 }
 
 void cmd_conn(const char *param)
@@ -262,6 +269,24 @@ void cmd_pat(const char *param)
         return;
     }
     slave_addr_type = (bd_addr_type_t)t;
+}
+
+void cmd_trace(const char *param)
+{
+#ifdef TRACE_TO_FLASH
+    extern trace_flash_t trace_ctx;
+    int t = 0;
+    if (sscanf(param, "%d", &t) != 1)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    if (t) trace_flash_erase_all(&trace_ctx);
+    trace_flash_enable(&trace_ctx, t);
+#else
+    static const char msg[] = "only available with `TRACE_TO_FLASH`";
+    tx_data(msg, strlen(msg) + 1);
+#endif
 }
 
 void cmd_read_char(const char *param)
@@ -320,6 +345,30 @@ int parse_handle_value(int *handle, const char *param)
     return 0;
 }
 
+void cmd_notify_char(const char *param)
+{
+    int handle;
+
+    if (parse_handle_value(&handle, param) != 0)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    extern void notify_value_of_char(int handle, block_value_t *value);
+    notify_value_of_char(handle, &char_value);
+}
+void cmd_indicate_char(const char *param)
+{
+    int handle;
+
+    if (parse_handle_value(&handle, param) != 0)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
+    extern void indicate_value_of_char(int handle, block_value_t *value);
+    indicate_value_of_char(handle, &char_value);
+}
 void cmd_write_char(const char *param)
 {
     int handle;
@@ -458,7 +507,11 @@ static void cmd_status(const char *param)
 {
     ble_show_status();
 }
-
+static void cmd_discover(const char *param)
+{
+    extern void discover_services(void);
+    discover_services();
+}
 static cmd_t cmds[] =
 {
     {
@@ -492,6 +545,10 @@ static cmd_t cmds[] =
     {
         .cmd = "name",
         .handler = cmd_name
+    },
+    {
+        .cmd = "addr",
+        .handler = cmd_addr
     },
     {
         .cmd = "start",
@@ -534,6 +591,14 @@ static cmd_t cmds[] =
         .handler = cmd_sread_char
     },
     {
+        .cmd = "indicate",
+        .handler = cmd_indicate_char
+    },
+    {
+        .cmd = "notify",
+        .handler = cmd_notify_char
+    },
+    {
         .cmd = "write",
         .handler = cmd_write_char
     },
@@ -570,6 +635,10 @@ static cmd_t cmds[] =
         .handler = cmd_assert
     },
     {
+        .cmd = "trace",
+        .handler = cmd_trace
+    },
+    {
         .cmd = "cpwr",
         .handler = cmd_cpwr
     },
@@ -604,6 +673,10 @@ static cmd_t cmds[] =
     {
         .cmd = "mtu",
         .handler = cmd_mtu
+    },
+    {
+        .cmd = "discover",
+        .handler = cmd_discover
     },
 };
 

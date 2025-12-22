@@ -35,8 +35,8 @@ extern trace_air_t trace_ctx;
 #define CONST_MASTER    0
 #define CONST_SLAVE     1
 #ifndef APP_ROLE
-// #define APP_ROLE        CONST_MASTER
-#define APP_ROLE        CONST_SLAVE
+#define APP_ROLE        CONST_MASTER
+// #define APP_ROLE        CONST_SLAVE
 #endif
 
 #define RX_GOLDEN_RAGE_MIN (-75)
@@ -98,7 +98,7 @@ const static uint8_t profile_data[] = {
 #define INVALID_HANDLE  0xffff
 uint16_t mas_conn_handle = INVALID_HANDLE;
 uint16_t sla_conn_handle = INVALID_HANDLE;
-static int bonding_flag = 0;
+static int bonding_flag = 1;
 uint8_t peer_feature_power_control = 0;
 uint8_t peer_feature_subrate = 0;
 uint8_t auto_power_ctrl = 0;
@@ -112,6 +112,7 @@ bd_addr_t peer_addr;
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
 {
+    platform_printf("ATT read: handle = %d, size = %d\n", att_handle, buffer_size);
     switch (att_handle)
     {
 
@@ -146,7 +147,9 @@ void do_set_data()
 }
 
 #define iprintf platform_printf
-
+void discover_services(void) {
+    discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);
+}
 void print_fun(const char *s)
 {
     printf("%s\n", s);
@@ -266,7 +269,8 @@ static void demo_synced_api(struct btstack_synced_runner *runner, void *user_dat
 #define USER_MSG_SUB_TO_CHAR        9
 #define USER_MSG_UNSUB_TO_CHAR      10
 #define USER_MSG_SET_BONDING        11
-
+#define USER_MSG_NOTIFY             12
+#define USER_MSG_INDICATE           13
 const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
 #define CONN_PARAM  {                   \
@@ -331,8 +335,30 @@ struct
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
+    platform_printf("user_msg_handler msg_id %d, size %d\n", msg_id, size);
+    int i;
+    for (i = 0; i < size; i++)
+    {
+        platform_printf("%02x ", ((uint8_t *)data)[i]);
+    }
+    platform_printf("\n");
     switch (msg_id)
     {
+    case USER_MSG_NOTIFY:
+        {
+            uint16_t attribute_handle = size;
+            block_value_t *v = (block_value_t *)(data);
+            att_server_notify(sla_conn_handle, size,v->value, v->len);
+
+        }
+        break;
+    case USER_MSG_INDICATE:
+        {
+            uint16_t attribute_handle = size;
+            block_value_t *v = (block_value_t *)(data);
+            att_server_indicate(sla_conn_handle, size, v->value, v->len);
+        }
+        break;
     case USER_MSG_READ_CHAR:
         {
             char_node_t *c = find_char(size);
@@ -610,6 +636,14 @@ void sync_read_value_of_char(int handle)
     btstack_sync_run(synced_runner, demo_synced_api, (void *)(uintptr_t)c->chara.value_handle);
 }
 
+void notify_value_of_char(int handle, block_value_t *value)
+{
+    btstack_push_user_msg(USER_MSG_NOTIFY, value, (uint16_t)handle);
+}
+void indicate_value_of_char(int handle, block_value_t *value)
+{
+    btstack_push_user_msg(USER_MSG_INDICATE, value, (uint16_t)handle);
+}
 void write_value_of_char(int handle, block_value_t *value)
 {
     btstack_push_user_msg(USER_MSG_WRITE_CHAR, value, (uint16_t)handle);
@@ -1134,9 +1168,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     mas_conn_handle = complete->handle;
                     if (custom_mtu > 0)
                         gatt_client_exchange_mtu_request(mas_conn_handle, custom_mtu);
-                     start_enhanced_gatt(decode_hci_le_meta_event(packet, le_meta_event_create_conn_complete_t)->handle);
                 }
-
+                gatt_client_is_ready(complete->handle);
                 if (reconnecting_after_aborted)
                 {
                     reconnecting_after_aborted = 0;
@@ -1167,8 +1200,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                         iprintf("discovering...\n");
                         discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);
                     }
-                    else
+                    else {
                         sm_request_pairing(mas_conn_handle);
+					}
                 }
             }
             break;
@@ -1252,13 +1286,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_ENCRYPTION_CHANGE:
         {
-            const hci_encryption_change_event_t *complete =
-                decode_hci_event(packet, hci_encryption_change_event_t);
-            if (complete->conn_handle == mas_conn_handle)
-            {
-                iprintf("discovering...\n");
-                discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);
-            }
+            iprintf("encryption change\n");
         }
         break;
 
@@ -1271,8 +1299,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 sla_conn_handle = INVALID_HANDLE;
 #if (defined TRACE_TO_AIR)
                 trace_air_enable(&trace_ctx, 0, 0, 0);
+                #endif
                 start_adv();
-#endif
             }
             if (complete->conn_handle == mas_conn_handle)
             {
@@ -1453,7 +1481,41 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
         platform_printf("not authourized\n");
         break;
     case SM_EVENT_IDENTITY_RESOLVING_SUCCEEDED:
+        platform_printf("authourized\n");
+        platform_printf("discovering...\n");
         discoverer = gatt_client_util_discover_all(mas_conn_handle, gatt_client_util_dump_profile, NULL);
+        break;
+    case SM_EVENT_STATE_CHANGED:
+        {
+            const sm_event_state_changed_t *state_changed = decode_hci_event(packet, sm_event_state_changed_t);
+            switch (state_changed->reason)
+            {
+                case SM_STARTED:
+                    platform_printf("SM: STARTED\n");
+                    break;
+                case SM_FINAL_PAIRED:
+                    platform_printf("SM: PAIRED\n");
+                    #if APP_ROLE == CONST_MASTER
+                    start_enhanced_gatt(state_changed->conn_handle);
+                    #endif
+                    // start_detect_peer_os_type(synced_runner, state_changed->conn_handle);
+                    break;
+                case SM_FINAL_REESTABLISHED:
+                    platform_printf("SM: REESTABLISHED");
+                    // if (kv_get(KV_USER_PEER_OS, NULL) == NULL)
+                    //     start_detect_peer_os_type(synced_runner,state_changed->conn_handle);
+                    // if (0 == att_handle_notify)
+                    // {
+                    //     platform_printf(" BUT LOCAL INFO DELETED");
+                    // }
+                    platform_printf("\n");
+                    break;
+                default:
+                    platform_printf("SM: FINAL ERROR: %d\n", state_changed->reason);
+                    break;
+            }
+        }
+
         break;
     default:
         break;
