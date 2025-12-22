@@ -6,3 +6,4 @@ This example demonstrates how to:
 * Act as Master (Central) or Slave (Peripheral) depending on compile-time role definition;
 * Establish a BLE connection and start an Enhanced GATT (EATT) Client with multiple bearers;
 * Send/Receive data over EATT channels.
+* 

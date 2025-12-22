@@ -1099,7 +1099,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 gap_set_ext_scan_response_data(0, sizeof(scan_data), (uint8_t*)scan_data);
                 gap_read_white_lists_size();
 #if (APP_ROLE == CONST_SLAVE)
-                        start_adv();
+            start_adv();
 #endif
         break;
 

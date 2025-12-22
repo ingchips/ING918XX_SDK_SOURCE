@@ -80,59 +80,6 @@ void cmd_help(const char *param)
     tx_data(help, strlen(help) + 1);
 }
 
-void cmd_sync_gap(const char *param)
-{
-    extern void ble_sync_gap(void);
-    ble_sync_gap();
-}
-
-void cmd_auto(const char *param)
-{
-    extern void ble_set_auto_power_control(int enable);
-    int enable = 0;
-    if (sscanf(param, "%d", &enable) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    ble_set_auto_power_control(enable);
-}
-
-void cmd_cpwr(const char *param)
-{
-    extern void ble_set_conn_power(int level);
-    int level = 0;
-    if (sscanf(param, "%d", &level) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    ble_set_conn_power(level);
-}
-
-void cmd_subr(const char *param)
-{
-    extern void ble_set_conn_subrate(int factor);
-    int value = 0;
-    if (sscanf(param, "%d", &value) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    ble_set_conn_subrate(value);
-}
-
-void cmd_pwrctl(const char *param)
-{
-    extern void ble_adjust_peer_tx_power(int delta);
-    int delta = 0;
-    if (sscanf(param, "%d", &delta) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    ble_adjust_peer_tx_power(delta);
-}
 
 void cmd_read(const char *param)
 {
@@ -170,20 +117,6 @@ void cmd_version(const char *param)
     const platform_ver_t *ver = platform_get_version();
     sprintf(buffer, "version: %d.%d.%d", ver->major, ver->minor, ver->patch);
     tx_data(buffer, strlen(buffer) + 1);
-}
-
-void cmd_advpwr(const char *param)
-{
-    if (sscanf(param, "%d", &adv_tx_power) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    else
-    {
-        sprintf(buffer, "adv tx power: %ddBm", adv_tx_power);
-        tx_data(buffer, strlen(buffer) + 1);
-    }
 }
 
 extern void set_adv_local_name(const char *name, int16_t len);
@@ -260,16 +193,6 @@ void cmd_conn_cancel(const char *param)
     cancel_create_conn();
 }
 
-void cmd_pat(const char *param)
-{
-    int t = 0;
-    if (sscanf(param, "%d", &t) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    slave_addr_type = (bd_addr_type_t)t;
-}
 
 void cmd_trace(const char *param)
 {
@@ -414,18 +337,6 @@ void cmd_sub_char_without_cb(const char *param)
     }
     sub_to_char(t, 0);
 }
-
-void cmd_mtu(const char *param)
-{
-    int t = 0;
-    if (sscanf(param, "%d", &t) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    set_mtu((uint16_t)t);
-}
-
 void cmd_unsub_char(const char *param)
 {
     int t = 0;
@@ -450,53 +361,10 @@ void cmd_stop(const char *param)
 {
     stop_adv();
 }
-
-void set_phy(int phy);
 void change_conn_param(int interval, int latency, int timeout);
 void ble_re_connect(void);
 void ble_show_status(void);
 
-void cmd_phy(const char *param)
-{
-    int phy;
-    if (strcmp(param, "1m") == 0) phy = 0;
-    else if (strcmp(param, "2m") == 0) phy = 1;
-    else if (strcmp(param, "s2") == 0) phy = 2;
-    else if (strcmp(param, "s8") == 0) phy = 3;
-    else return;
-    set_phy(phy);
-}
-
-void cmd_conpar(const char *param)
-{
-    int interval = 0;
-    int latency = 0;
-    int timeout = 0;
-    if (sscanf(param, "%d %d %d", &interval, &latency, &timeout) < 1) return;
-    change_conn_param(interval, latency, timeout);
-}
-
-void cmd_assert(const char *param)
-{
-    platform_raise_assertion("uart_console.c", __LINE__);
-}
-
-int lock_to_freq = 0;
-
-void cmd_lock(const char *param)
-{
-    sscanf(param, "%d", &lock_to_freq);
-    if (lock_to_freq > 0)
-    {
-        ll_lock_frequency(lock_to_freq);
-        platform_printf("locked to %dMHz\n", lock_to_freq);
-    }
-    else
-    {
-        ll_unlock_frequency();
-        platform_printf("unlocked\n");
-    }
-}
 
 static void cmd_reconn(const char *param)
 {
@@ -539,10 +407,6 @@ static cmd_t cmds[] =
         .handler = cmd_version
     },
     {
-        .cmd = "advpwr",
-        .handler = cmd_advpwr
-    },
-    {
         .cmd = "name",
         .handler = cmd_name
     },
@@ -565,10 +429,6 @@ static cmd_t cmds[] =
     {
         .cmd = "sconn",
         .handler = cmd_sconn
-    },
-    {
-        .cmd = "pat",
-        .handler = cmd_pat
     },
     {
         .cmd = "cancel",
@@ -623,56 +483,12 @@ static cmd_t cmds[] =
         .handler = cmd_bond
     },
     {
-        .cmd = "phy",
-        .handler = cmd_phy
-    },
-    {
-        .cmd = "conpar",
-        .handler = cmd_conpar
-    },
-    {
-        .cmd = "assert",
-        .handler = cmd_assert
-    },
-    {
-        .cmd = "trace",
-        .handler = cmd_trace
-    },
-    {
-        .cmd = "cpwr",
-        .handler = cmd_cpwr
-    },
-    {
-        .cmd = "pwrctl",
-        .handler = cmd_pwrctl
-    },
-    {
-        .cmd = "subr",
-        .handler = cmd_subr
-    },
-    {
-        .cmd = "auto",
-        .handler = cmd_auto
-    },
-    {
-        .cmd = "syncgap",
-        .handler = cmd_sync_gap
-    },
-    {
-        .cmd = "lock",
-        .handler = cmd_lock
-    },
-    {
         .cmd = "re-conn",
         .handler = cmd_reconn
     },
     {
         .cmd = "status",
         .handler = cmd_status
-    },
-    {
-        .cmd = "mtu",
-        .handler = cmd_mtu
     },
     {
         .cmd = "discover",
