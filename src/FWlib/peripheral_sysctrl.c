@@ -1897,9 +1897,13 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
     {
     case SYSCTRL_ITEM_APB_TMR0:
     case SYSCTRL_ITEM_APB_TMR1:
-        if (APB_SYSCTRL->CguCfg[1] & (1 << (15 + item - SYSCTRL_ITEM_APB_TMR0)))
+        if (APB_SYSCTRL->CguCfg[1] & (1 << (15 + (item - SYSCTRL_ITEM_APB_TMR0)*2)))
             return SYSCTRL_GetCLK32k();
-        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
+        if(APB_SYSCTRL->CguCfg[1] & (1<<16))
+            return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
+        else
+            return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
+            
     case SYSCTRL_ITEM_APB_PWM:
         if (APB_SYSCTRL->CguCfg8 & (1 << 15))
             return SYSCTRL_GetCLK32k();

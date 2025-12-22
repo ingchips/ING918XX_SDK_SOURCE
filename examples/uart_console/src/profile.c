@@ -50,6 +50,7 @@ int advertiser_num = 0;
 int is_targeted_scan = 0;
 uint64_t last_seen = 0;
 static uint16_t custom_mtu = 0;
+uint8_t remote_features_ready = 0;
 
 struct gatt_client_discoverer *discoverer = NULL;
 struct btstack_synced_runner *synced_runner = NULL;
@@ -1057,6 +1058,9 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             break;
         case HCI_SUBEVENT_LE_READ_REMOTE_USED_FEATURES_COMPLETE:
             {
+                if (remote_features_ready) break;
+                remote_features_ready = 1;
+
                 const le_meta_event_read_remote_feature_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_read_remote_feature_complete_t);
                 check_and_print_features(complete);
