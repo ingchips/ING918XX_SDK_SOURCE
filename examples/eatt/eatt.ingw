@@ -1,0 +1,88 @@
+{
+ "watchdog": true,
+ "bundle_meta": {
+  "var": {
+   "link_layer_features": {
+    "value": "3f79ff07fe000000",
+    "addr": 189776
+   }
+  },
+  "rom": {
+   "size": 179636,
+   "base": 16384
+  },
+  "ram": {
+   "size": 30284,
+   "base": 536870912
+  },
+  "app": {
+   "base": 196608
+  },
+  "version": [
+   1,10,38]
+ },
+ "tc_dir": "D:\/Users\/yuxiz\/AppData\/Local\/Keil_v5\/uv4",
+ "eflash_addr": "0x42000",
+ "ide_ver": "5",
+ "ide_exe": "D:\/Users\/yuxiz\/AppData\/Local\/Keil_v5\/uv4\/uv4.exe",
+ "use_uart_trace": false,
+ "ota": false,
+ "ide": "keil",
+ "git": false,
+ "use_segger_rtt": true,
+ "trace_port": "seggerrtt",
+ "trace_mask": "",
+ "scan_data": "0\r\n",
+ "priv_addr": "GAP_RANDOM_ADDRESS_OFF",
+ "enable_hci_log": false,
+ "ota_ver_minor": "0",
+ "ota_ver_major": "0",
+ "template": "D:\\Users\\yuxiz\\AppData\\Roaming\\Local\\Program\\ING_SDK\\wizard\\templates\\typical\\peripheral",
+ "coding_adv": false,
+ "key_incode": true,
+ "series": "ING9188xx",
+ "proj_name": "eatt",
+ "sdk_release_path": "..\/..",
+ "printf_port": "uart0",
+ "security": false,
+ "legacy_adv": true,
+ "adv_data": "0\r\n",
+ "use_eflash": false,
+ "wizard_dir": "D:\/Users\/yuxiz\/AppData\/Roaming\/Local\/Program\/ING_SDK\/wizard",
+ "key_addr": "0x44000",
+ "trace_enable": true,
+ "pb_adv": true,
+ "is_sdk_path_rel": true,
+ "pb_gatt": true,
+ "deep_sleep": true,
+ "proj_dir": "D:\\workspace\\ingchips\\ING918XX_SDK_SOURCE\\examples\\eatt",
+ "heap_size": 0,
+ "power_saving": false,
+ "secondary": false,
+ "bundle": "exp",
+ "app_rom_size": "344064",
+ "app_rom_addr": "196608",
+ "family": "ing918",
+ "vcode": false,
+ "heap_override": false,
+ "trace_mask_nim": "",
+ "io_cap": "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
+ "role": "peripheral",
+ "noos": false,
+ "mesh": {
+  "lowpower": true,
+  "friend": true,
+  "relay": true,
+  "proxy": true
+ },
+ "keil": true,
+ "cmsis": "D:\/Users\/yuxiz\/AppData\/Roaming\/Local\/Program\/ING_SDK\/wizard\/CMSIS",
+ "cube": true,
+ "app_ram_size": 35248,
+ "app_ram_addr": 536901200,
+ "k5_cc_ver": "6",
+ "printf_enable": true,
+ "ota_ver_patch": "0",
+ "profile_data": "0, 0\r\n",
+ "coding_profile": false
+}
