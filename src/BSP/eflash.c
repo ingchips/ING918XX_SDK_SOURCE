@@ -646,6 +646,7 @@ int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
             }
         }
     }
+    SYSCTRL_ICacheFlush();
     FLASH_POST_OPS();
 
     return 0;
@@ -676,8 +677,8 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
             next_page += EFLASH_PAGE_SIZE;
         }
     }
-    FLASH_POST_OPS();
     SYSCTRL_ICacheFlush();
+    FLASH_POST_OPS();
     return 0;
 }
 

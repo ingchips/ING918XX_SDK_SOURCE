@@ -36,12 +36,39 @@ def zping_folder(path):
     if not os.path.exists(pack_folder):
         log(f"directory {pack_folder} not found!")
         return
+    
+    if os.path.exists(zip_filename):
+        try:
+            os.remove(zip_filename)
+            log(f"Removed existing zip file: {zip_filename}")
+        except Exception as e:
+            log(f"Failed to remove zip file {zip_filename}: {str(e)}")
+            return
+    
+    if os.path.exists(pack_filename):
+        try:
+            os.remove(pack_filename)
+            log(f"Removed existing pack file: {pack_filename}")
+        except Exception as e:
+            log(f"Failed to remove pack file {pack_filename}: {str(e)}")
+            return
 
-    zip_folder(pack_folder, zip_filename)
-    log(f"directory {pack_folder} zipped to: {zip_filename}")
+    try:
+        zip_folder(pack_folder, zip_filename)
+        log(f"directory {pack_folder} zipped to: {zip_filename}")
+    except Exception as e:
+        log(f"Failed to create zip file: {str(e)}")
+        return
 
-    os.rename(zip_filename, pack_filename)
-    log(f"zipped file renamed to: {pack_filename}")
+    try:
+        os.rename(zip_filename, pack_filename)
+        log(f"zipped file renamed to: {pack_filename}")
+    except Exception as e:
+        log(f"Failed to rename zip to pack: {str(e)}")
+        if os.path.exists(zip_filename):
+            os.remove(zip_filename)
+            log(f"Cleaned up zip file: {zip_filename}")
+        return
 
 def is_admin():
     try:
@@ -206,15 +233,22 @@ def pyocd_update(tools_path):
 
         ingchips_dir = os.path.join(target_base, "INGChips")
         ingchips_dfp_dir = os.path.join(ingchips_dir, "ING9_DeviceFamilyPack")
+
+        if os.path.exists(ingchips_dfp_dir):
+            shutil.rmtree(ingchips_dfp_dir)
+            log(f"Removed existing directory: {ingchips_dfp_dir}")
         os.makedirs(ingchips_dfp_dir, exist_ok=True)
 
         src_pack = os.path.join(source_pack_dir, "0.9.0.pack")
         dst_pack = os.path.join(ingchips_dfp_dir, "0.9.0.pack")
-        log(src_pack)
         
         if not os.path.exists(src_pack):
             log(f"fatal: source .pack file does not exist {src_pack}")
             return
+        
+        if os.path.exists(dst_pack):
+            os.remove(dst_pack)
+            log(f"Removed existing pack file: {dst_pack}")
             
         shutil.copy(src_pack, dst_pack)
         os.remove(src_pack)
