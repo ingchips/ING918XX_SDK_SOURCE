@@ -266,7 +266,10 @@ static int kv_do_append_key(kvkey_t key, const void *data, int len)
 {
     int aligned = (2 + len + 3) & ~0x3ul;
     const uint8_t *d = (const uint8_t *)data;
-    uint8_t t[4] = {len, key, d[0], d[1]};
+    uint8_t t[4] = {len, key, 0, 0};
+    
+    if(d != NULL && len > 0)
+        memcpy(t + 2, d, (len > 2 ? 2 : len));
 
     if (kv_storage_tail + aligned > DB_FLASH_ADDR_END)
         kv_do_gc(key);
