@@ -34,9 +34,9 @@ static void SYSCTRL_DisableSlowRC(void)
 
 int main(void)
 {
-    SYSCTRL_ConfigPLLClk(5, 70, 1);
+    SYSCTRL_ConfigPLLClk(5, 80, 1);
     SYSCTRL_EnablePLL(1);
-    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
+    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_5);
     SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_3);
 
     SYSCTRL_DisableSlowRC();
@@ -44,7 +44,7 @@ int main(void)
     platform_config(PLATFORM_CFG_RT_CLK, PLATFORM_RT_RC);
     platform_config(PLATFORM_CFG_RT_OSC_EN, 0);
 
-    launch_platform();
+    launch_platform(3);
 
     return 0;
 }

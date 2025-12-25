@@ -576,7 +576,7 @@ void flash_read_uid(uint32_t uid[4])
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #include "peripheral_sysctrl.h"
-
+#include "platform_api.h"
 typedef void (* f_void)(void);
 typedef void (* f_prog_page)(uint32_t addr, const uint8_t data[256], uint32_t len);
 typedef int (* f_erase_flash_sector)(uint32_t addr);
@@ -600,41 +600,136 @@ typedef uint16_t (*rom_FlashGetStatusReg)(void);
 #define ROM_FlashEnableContinuousMode       ((rom_void_void)0x00000601)
 #define ROM_FlashPageProgram                ((rom_FlashPageProgram)0x00000681)
 
-#define FLASH_PRE_OPS()                     \
-    uint32_t prim = __get_PRIMASK();        \
-    __disable_irq();                        \
-    ROM_FlashDisableContinuousMode();
+#define FLASH_PRE_OPS()                         \
+    uint32_t prim = __get_PRIMASK();            \
+    uint8_t mode = 0;                           \
+    __disable_irq();                            \
+    if((*(uint32_t*)0x40150004) & 0x1000000ul) {    \
+        mode = 1;                               \
+        ROM_FlashDisableContinuousMode();       \
+    }
 
 #define FLASH_POST_OPS()                    \
-    ROM_FlashEnableContinuousMode();        \
+    if (mode) ROM_FlashEnableContinuousMode(); \
     if (!prim) __enable_irq()
 
 int erase_flash_sector(const uint32_t addr)
 {
-    int r = ROM_erase_flash_sector(addr);
+    FLASH_PRE_OPS();
+    ROM_FlashSectorErase(addr);
     SYSCTRL_ICacheFlush();
-    return r;
+    FLASH_POST_OPS();
+    return 0;
 }
 
 int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-    int r = ROM_program_flash(dest_addr, buffer, size);
+    if (dest_addr & (EFLASH_SECTOR_SIZE - 1)) return -1;
+
+    FLASH_PRE_OPS();
+    {
+        while (size > 0)
+        {
+            uint32_t remain = EFLASH_SECTOR_SIZE;
+
+            ROM_FlashSectorErase(dest_addr);
+
+            while ((remain > 0) && (size > 0))
+            {
+                uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
+                cnt = cnt > remain ? remain : cnt;
+                ROM_FlashPageProgram(dest_addr, buffer, cnt);
+                dest_addr += cnt;
+                buffer += cnt;
+                remain -= cnt;
+                size -= cnt;
+            }
+        }
+    }
     SYSCTRL_ICacheFlush();
-    return r;
+    FLASH_POST_OPS();
+
+    return 0;
 }
 
 int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 {
-    int r = ROM_write_flash(dest_addr, buffer, size);
+    uint32_t next_page = (dest_addr & (~((uint32_t)EFLASH_PAGE_SIZE - 1))) + EFLASH_PAGE_SIZE;
+    uint32_t i;
+    for (i = 0; i < size; i++)
+    {
+        if ((*(const uint8_t *)(dest_addr + i) & buffer[i]) != buffer[i])
+            return 1;
+    }
+
+    FLASH_PRE_OPS();
+    {
+        while (size > 0)
+        {
+            uint32_t block = next_page - dest_addr;
+            if (block >= size) block = size;
+
+            ROM_FlashPageProgram(dest_addr, buffer, block);
+
+            dest_addr += block;
+            buffer += block;
+            size -= block;
+            next_page += EFLASH_PAGE_SIZE;
+        }
+    }
     SYSCTRL_ICacheFlush();
-    return r;
+    FLASH_POST_OPS();
+    return 0;
 }
 
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
 {
-    int r = ROM_flash_do_update(block_num, blocks, page_buffer);
-    SYSCTRL_ICacheFlush();
-    return r;
+    int i;
+
+    if (block_num < 1) return -2;
+
+    for (i = 0; i < block_num; i++)
+    {
+        if (blocks[i].dest & (EFLASH_SECTOR_SIZE - 1)) return -1;
+    }
+
+    FLASH_PRE_OPS();
+    for (i = 0; i < block_num; i++)
+    {
+        {
+            uint32_t dest_addr = blocks[i].dest;
+            const uint8_t *buffer = (const uint8_t *)blocks[i].src;
+            int size = blocks[i].size;
+
+            while (size > 0)
+            {
+                uint32_t remain = EFLASH_SECTOR_SIZE;
+
+                ROM_erase_flash_sector(dest_addr);
+
+                while ((remain > 0) && (size > 0))
+                {
+                    int j;
+                    uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
+                    cnt = cnt > remain ? remain : cnt;
+
+                    for (j = 0; j < cnt; j++)
+                        page_buffer[j] = buffer[j];
+
+                    ROM_FlashPageProgram(dest_addr, page_buffer, cnt);
+
+                    dest_addr += cnt;
+                    buffer += cnt;
+                    remain -= cnt;
+                    size -= cnt;
+                }
+            }
+        }
+    }
+    platform_reset();
+    FLASH_POST_OPS();
+
+    return 0;
 }
 
 #endif

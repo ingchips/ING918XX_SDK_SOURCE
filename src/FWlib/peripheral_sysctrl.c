@@ -1258,7 +1258,7 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 10);
         break;
     case SYSCTRL_ITEM_APB_QDEC      :
-        set_reg_bit(APB_SYSCTRL->CguCfg + 4, v, 9);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 9);
         set_reg_bit(&APB_SYSCTRL->QdecCfg, v, 12);
         break;
     case SYSCTRL_ITEM_APB_KeyScan   :
@@ -1886,7 +1886,7 @@ uint32_t SYSCTRL_GetFastPreCLK(void)
 uint32_t SYSCTRL_GetFlashClk()
 {
     if (*AON1_REG5 & (1ul << 31))
-        return SYSCTRL_GetPLLClk() / get_safe_divider(APB_SYSCTRL->CguCfg[0], 24, 4);
+        return SYSCTRL_GetPLLClk() / get_safe_divider(*AON1_REG5, 24, 4);
 
     return SYSCTRL_GetSlowClk();
 }
@@ -1897,9 +1897,13 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
     {
     case SYSCTRL_ITEM_APB_TMR0:
     case SYSCTRL_ITEM_APB_TMR1:
-        if (APB_SYSCTRL->CguCfg[1] & (1 << (15 + item - SYSCTRL_ITEM_APB_TMR0)))
+        if (APB_SYSCTRL->CguCfg[1] & (1 << (15 + (item - SYSCTRL_ITEM_APB_TMR0)*2)))
             return SYSCTRL_GetCLK32k();
-        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
+        if(APB_SYSCTRL->CguCfg[1] & (1<<16))
+            return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
+        else
+            return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
+            
     case SYSCTRL_ITEM_APB_PWM:
         if (APB_SYSCTRL->CguCfg8 & (1 << 15))
             return SYSCTRL_GetCLK32k();
@@ -2037,6 +2041,7 @@ int SYSCTRL_Init(void)
 
     set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),0,18);
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x14),0,26);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10),0,10);
 
     // TODO:
     return 0;

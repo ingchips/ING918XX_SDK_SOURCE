@@ -13,6 +13,28 @@
 
 #include "main_shared.c"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+void config_core_clocks_like_ing916(void)
+{
+    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_SLOW);
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
+    SYSCTRL_ConfigPLLClk(5, 70, 1);
+    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_3);
+
+    // Flash: enable continuous mode
+    // this takes effect after 1st waking up
+    const uint32_t addr = AON1_CTRL_BASE + 0x14;
+    uint32_t t = io_read(addr);
+    if (((t >> 28) & 0x7) == 0x3)
+    {
+        t &= ~(0x7u << 28);
+        t |=   0x6  << 28;
+        io_write(addr, t);
+    }
+}
+#endif
+
 int app_main()
 {
     _app_main();
@@ -70,6 +92,14 @@ int app_main()
     // make sure that RAM does not exceed 0x20004000
     // then, we can power off the unused blocks
     SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#ifdef DETECT_KEY
+    // configure it only once
+    GIO_EnableDeepSleepWakeupSource(PIN_WAKEUP, 1, 1, PINCTRL_PULL_DOWN);
+#endif
+    config_core_clocks_like_ing916();
+    platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 3000);
+    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 1845);
 #endif
 
     return 0;

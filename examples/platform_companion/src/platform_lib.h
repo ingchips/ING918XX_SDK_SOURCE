@@ -21,8 +21,12 @@ void platform_init(void);
  * and starts the platform's main loop.
  *
  * This function never returns.
+ *
+ * @param[in] flash_read_mode   flash reading mode:
+ *                              - 3: 2-SPI
+ *                              - 6: 2-SPI continuous
  */
-void launch_platform(void);
+void launch_platform(uint8_t flash_read_mode);
 
 #ifdef __cplusplus
 }
