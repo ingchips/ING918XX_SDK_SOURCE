@@ -1,0 +1,12 @@
+#define HANDLE_DEVICE_NAME                                   3
+#define HANDLE_APPEARANCE                                    5
+#define HANDLE_DATABASE_HASH                                 8
+#define HANDLE_CLIENT_SUPPORTED_FEATURES                     10
+#define HANDLE_SERVER_SUPPORTED_FEATURES                     12
+
+#define HANDLE_DEVICE_NAME_OFFSET                            31
+#define HANDLE_APPEARANCE_OFFSET                             63
+#define HANDLE_DATABASE_HASH_OFFSET                          96
+#define HANDLE_CLIENT_SUPPORTED_FEATURES_OFFSET              133
+#define HANDLE_SERVER_SUPPORTED_FEATURES_OFFSET              156
+
