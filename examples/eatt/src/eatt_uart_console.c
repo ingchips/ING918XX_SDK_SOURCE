@@ -9,7 +9,8 @@
 #include "platform_api.h"
 #include "bluetooth.h"
 #include "sm.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
 //#include "btstack_mt.h"
 
 #define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
@@ -61,7 +62,39 @@ static const char help[] =  "commands:\n"
                             "phy    1m/2m/s2/s8                  central only\n"
                             "re-conn                             demo of abort & re-connect\n"
                             "status                              show controller status\n"
+                            "mtu    n                            customize mtu for new connections\n"
                             ;
+block_value_t periodic_test_data;
+uint16_t periodic_test_handle = 42; // 
+extern void notify_value_of_char(int handle, block_value_t *value);
+static void notify_task_entry(void *pdata)
+{
+    
+    periodic_test_data.len = sizeof(periodic_test_data.value);
+    uint8_t i = 0;
+    for(i = 0; i < periodic_test_data.len; i++)
+    {
+        periodic_test_data.value[i] = i;
+    }
+    int j = 0;
+    for (;;)
+    {
+        j++;
+        vTaskDelay(500);
+        platform_printf("periodic notify %d times\n", j);
+        notify_value_of_char(periodic_test_handle, &periodic_test_data);
+
+    }
+}
+void cmd_periodic_notify_start(const char *param)
+{
+
+    GEN_OS->task_create("notify task",
+        notify_task_entry,
+        NULL,
+        1024,
+        GEN_TASK_PRIORITY_LOW);
+}
 
 void cmd_help(const char *param)
 {
@@ -265,7 +298,6 @@ void cmd_notify_char(const char *param)
         tx_data(error, strlen(error) + 1);
         return;
     }
-    extern void notify_value_of_char(int handle, block_value_t *value);
     notify_value_of_char(handle, &char_value);
 }
 void cmd_indicate_char(const char *param)
@@ -445,6 +477,10 @@ static cmd_t cmds[] =
     {
         .cmd = "notify",
         .handler = cmd_notify_char
+    },
+    {
+        .cmd = "periodic_notify",
+        .handler = cmd_periodic_notify_start
     },
     {
         .cmd = "write",
