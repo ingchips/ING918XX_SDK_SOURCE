@@ -33,24 +33,13 @@ const static char error[] = "error";
 static char buffer[100] = {0};
 
 static void tx_data(const char *d, const uint16_t len);
-
+static int parse_handle_value(int *handle, const char *param);
 static const char help[] =  "commands:\n"
                             "h/?                                 show this\n"
-                            "r 0x..                              read data\n"
-                            "w 0x.. 0x..                         write data\n"
                             "reboot                              reboot\n"
                             "ver                                 version\n"
-                            "name   name                         set dev name\n"
-                            "addr   01:02:03:04:05:06            set dev address\n"
-                            "start                               start advertising\n"
-                            "stop                                stop advertising\n"
-                            "conn   xx:xx:xx:xx:xx:xx            connect to dev and discover services\n"
+
                             "sconn  xx:xx:xx:xx:xx:xx            connect to dev using synced API\n"
-                            "cancel                              cancel create connection\n"
-                            "scan                                passive scan for all adv\n"
-                            "scan   xx:xx:xx:xx:xx:xx            scan for adv from a device\n"
-                            "ascan                               active scan for all adv\n"
-                            "ascan  xx:xx:xx:xx:xx:xx            active scan for adv from a device\n"
                             "read   value_handle                 read value of a characteristic\n"
                             "sread  value_handle                 read value of a characteristic using sync. API\n"
                             "write  handle XX XX ...             write value to a characteristic\n"
@@ -58,17 +47,17 @@ static const char help[] =  "commands:\n"
                             "sub    handle                       subscribe to a characteristic\n"
                             "sub/o  handle                       subscribe to a characteristic without callback\n"
                             "unsub  handle                       unsubscribe\n"
-                            "bond   0/1                          bonding\n"
-                            "phy    1m/2m/s2/s8                  central only\n"
-                            "re-conn                             demo of abort & re-connect\n"
-                            "status                              show controller status\n"
-                            "mtu    n                            customize mtu for new connections\n"
                             ;
 block_value_t periodic_test_data;
-uint16_t periodic_test_handle = 42; // 
+int periodic_test_handle = 3; // 
 extern void notify_value_of_char(int handle, block_value_t *value);
 static void notify_task_entry(void *pdata)
 {
+    if (parse_handle_value(&periodic_test_handle, pdata) != 0)
+    {
+        tx_data(error, strlen(error) + 1);
+        return;
+    }
     
     periodic_test_data.len = sizeof(periodic_test_data.value);
     uint8_t i = 0;
@@ -91,7 +80,7 @@ void cmd_periodic_notify_start(const char *param)
 
     GEN_OS->task_create("notify task",
         notify_task_entry,
-        NULL,
+        (void *)param,
         1024,
         GEN_TASK_PRIORITY_LOW);
 }
@@ -100,62 +89,14 @@ void cmd_help(const char *param)
 {
     tx_data(help, strlen(help) + 1);
 }
-
-
-void cmd_read(const char *param)
-{
-    uint32_t addr = 0;
-    if (sscanf(param, "0x%x", &addr) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    sprintf(buffer, "[0x%08x] = 0x%08x", addr, *(volatile uint32_t *)(addr));
-    tx_data(buffer, strlen(buffer) + 1);
-}
-
-void cmd_write(const char *param)
-{
-    uint32_t addr = 0;
-    uint32_t value = 0;
-    if (sscanf(param, "0x%x 0x%x", &addr, &value) != 2)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    *(volatile uint32_t *)(addr) = value;
-    sprintf(buffer, "[0x%08x] = 0x%08x", addr, *(volatile uint32_t *)(addr));
-    tx_data(buffer, strlen(buffer) + 1);
-}
-
 void cmd_reboot(const char *param)
 {
     platform_reset();
 }
-
-void cmd_version(const char *param)
-{
-    const platform_ver_t *ver = platform_get_version();
-    sprintf(buffer, "version: %d.%d.%d", ver->major, ver->minor, ver->patch);
-    tx_data(buffer, strlen(buffer) + 1);
-}
-
-extern void set_adv_local_name(const char *name, int16_t len);
-
-void cmd_name(const char *param)
-{
-    while (*param == ' ') param++;
-    set_adv_local_name(param, strlen(param));
-}
-
-extern sm_persistent_t sm_persistent;
 extern uint8_t slave_addr[];
 extern bd_addr_type_t slave_addr_type;
 
-void update_addr(void);
-void conn_to_slave(void);
 void sync_conn_to_slave(void);
-void cancel_create_conn(void);
 void read_value_of_char(int handle);
 void sync_read_value_of_char(int handle);
 void write_value_of_char(int handle, block_value_t *value);
@@ -179,17 +120,6 @@ int parse_addr(uint8_t *output, const char *param)
     return 0;
 }
 
-void cmd_addr(const char *param)
-{
-    if (0 == parse_addr(sm_persistent.identity_addr, param))
-        update_addr();
-}
-
-void cmd_conn(const char *param)
-{
-    if (0 == parse_addr(slave_addr, param))
-        conn_to_slave();
-}
 
 void cmd_sconn(const char *param)
 {
@@ -197,41 +127,6 @@ void cmd_sconn(const char *param)
         sync_conn_to_slave();
 }
 
-void cmd_scan(const char *param)
-{
-    extern void start_scan(int targeted);
-    start_scan(0 == parse_addr(slave_addr, param) ? 1 : 0);
-}
-
-void cmd_active_scan(const char *param)
-{
-    extern void start_scan_legacy(int targeted);
-    start_scan_legacy(0 == parse_addr(slave_addr, param) ? 1 : 0);
-}
-
-void cmd_conn_cancel(const char *param)
-{
-    cancel_create_conn();
-}
-
-
-void cmd_trace(const char *param)
-{
-#ifdef TRACE_TO_FLASH
-    extern trace_flash_t trace_ctx;
-    int t = 0;
-    if (sscanf(param, "%d", &t) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    if (t) trace_flash_erase_all(&trace_ctx);
-    trace_flash_enable(&trace_ctx, t);
-#else
-    static const char msg[] = "only available with `TRACE_TO_FLASH`";
-    tx_data(msg, strlen(msg) + 1);
-#endif
-}
 
 void cmd_read_char(const char *param)
 {
@@ -255,21 +150,9 @@ void cmd_sread_char(const char *param)
     sync_read_value_of_char(t);
 }
 
-void cmd_bond(const char *param)
-{
-    extern void set_bonding(int f);
-    int flag;
-    if (sscanf(param, "%d", &flag) != 1)
-    {
-        tx_data(error, strlen(error) + 1);
-        return;
-    }
-    set_bonding(flag);
-}
-
 block_value_t char_value;
 
-int parse_handle_value(int *handle, const char *param)
+static int parse_handle_value(int *handle, const char *param)
 {
     const char *c = param;
     char *t;
@@ -369,18 +252,6 @@ void cmd_unsub_char(const char *param)
 }
 
 
-extern void start_adv(void);
-extern void stop_adv(void);
-
-void cmd_start(const char *param)
-{
-    start_adv();
-}
-
-void cmd_stop(const char *param)
-{
-    stop_adv();
-}
 void change_conn_param(int interval, int latency, int timeout);
 void ble_re_connect(void);
 void ble_show_status(void);
@@ -411,56 +282,12 @@ static cmd_t cmds[] =
         .handler = cmd_help
     },
     {
-        .cmd = "r",
-        .handler = cmd_read
-    },
-    {
-        .cmd = "w",
-        .handler = cmd_write
-    },
-    {
         .cmd = "reboot",
         .handler = cmd_reboot
     },
     {
-        .cmd = "ver",
-        .handler = cmd_version
-    },
-    {
-        .cmd = "name",
-        .handler = cmd_name
-    },
-    {
-        .cmd = "addr",
-        .handler = cmd_addr
-    },
-    {
-        .cmd = "start",
-        .handler = cmd_start
-    },
-    {
-        .cmd = "stop",
-        .handler = cmd_stop
-    },
-    {
-        .cmd = "conn",
-        .handler = cmd_conn
-    },
-    {
         .cmd = "sconn",
         .handler = cmd_sconn
-    },
-    {
-        .cmd = "cancel",
-        .handler = cmd_conn_cancel
-    },
-    {
-        .cmd = "scan",
-        .handler = cmd_scan
-    },
-    {
-        .cmd = "ascan",
-        .handler = cmd_active_scan
     },
     {
         .cmd = "read",
@@ -501,18 +328,6 @@ static cmd_t cmds[] =
     {
         .cmd = "unsub",
         .handler = cmd_unsub_char
-    },
-    {
-        .cmd = "bond",
-        .handler = cmd_bond
-    },
-    {
-        .cmd = "re-conn",
-        .handler = cmd_reconn
-    },
-    {
-        .cmd = "status",
-        .handler = cmd_status
     },
     {
         .cmd = "discover",
