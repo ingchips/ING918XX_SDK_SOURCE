@@ -1166,12 +1166,15 @@ int SYSCTRL_Init(void)
     int i;
     const factory_calib_data_t *p = flash_get_factory_calib_data();
     if (!p) return 1;
-
-    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), p->band_gap, 7, 4);
+    
+    if(p->band_gap<0x7f)
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), p->band_gap, 7, 4);
     set_reg_bits(APB_SYSCTRL->CguCfg + 7, 750, 12, 20);
 
     for (i = 0; i < sizeof(p->vaon) / sizeof(p->vaon[0]); i++)
     {
+        if (p->vaon[i] >= 1300)
+            return 4;
         if (p->vaon[i] >= 1190)
         {
             set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x0), i, 4, 28);
@@ -1183,6 +1186,8 @@ int SYSCTRL_Init(void)
 
     for (i = 1; i < sizeof(p->vcore) / sizeof(p->vcore[0]); i++)
     {
+        if(p->vcore[i] > 3100)
+            return 5;
         if (p->vcore[i] > 1180)
         {
             SYSCTRL_SetLDOOutput((SYSCTRL_LDOOutputCore)(i - 1));
@@ -1312,8 +1317,8 @@ static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 28);
         set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 21);
         break;
-    case SYSCTRL_ITEM_APB_RTIMER2    :
-    case SYSCTRL_ITEM_APB_RTIMER3    :
+    case SYSCTRL_ITEM_APB_RTIMER0    :
+    case SYSCTRL_ITEM_APB_RTIMER1    :
         set_reg_bit(APB_SYSCTRL->CguCfg + 3, v, 4);
         set_reg_bit(APB_SYSCTRL->CguCfg + 5, v, 2);
         break;
@@ -1537,8 +1542,8 @@ static void SYSCTRL_ResetBlockCtrl(SYSCTRL_ResetItem item, uint8_t v)
         set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 21);
         set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 27);
         break;
-    case SYSCTRL_ITEM_APB_RTIMER2   :
-    case SYSCTRL_ITEM_APB_RTIMER3   :
+    case SYSCTRL_ITEM_APB_RTIMER0   :
+    case SYSCTRL_ITEM_APB_RTIMER1   :
         set_reg_bit(APB_SYSCTRL->RstuCfg + 0, v, 14);
         set_reg_bit(APB_SYSCTRL->RstuCfg + 1, v, 4);
         break;
@@ -1575,7 +1580,7 @@ void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
 
 void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div)
 {
-    set_reg_bit(&APB_SYSCTRL->QdecCfg, mode, 15);
+    set_reg_bit(&APB_SYSCTRL->QdecCfg, mode&1, 15);
     set_reg_bits(&APB_SYSCTRL->QdecCfg, div, 10, 1);
     set_reg_bit(&APB_SYSCTRL->QdecCfg, 1, 11);
 }
@@ -1856,6 +1861,8 @@ void SYSCTRL_SetPClkDiv(uint8_t div)
 
 void SYSCTRL_SetFastPreDiv(uint8_t div)
 {
+    if(div >= SYSCTRL_CLK_FAST_PER_DIV1)
+        div = div - SYSCTRL_CLK_FAST_PER_DIV1 + 1;
     set_reg_bits(APB_SYSCTRL->CguCfg, div, 4, 12);
     set_reg_bit(APB_SYSCTRL->CguCfg, 1, 31);
 }
@@ -1905,8 +1912,10 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
             
     case SYSCTRL_ITEM_APB_PWM:
-        if (APB_SYSCTRL->CguCfg8 & (1 << 15))
+        if (!(APB_SYSCTRL->CguCfg[1] & (1 << 23)))
             return SYSCTRL_GetCLK32k();
+        if (APB_SYSCTRL->CguCfg8 & (1 << 15))
+            return SYSCTRL_GetFastPreCLK() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 27, 4);
         return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 27, 4);
     case SYSCTRL_ITEM_APB_KeyScan:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 13))
@@ -1915,7 +1924,7 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
     case SYSCTRL_ITEM_AHB_SPI0:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 21))
             return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg[0], 20, 4);
-        return SYSCTRL_GetSlowClk();
+        return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg[0], 20, 4);
     case SYSCTRL_ITEM_APB_SPI1:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 22))
             return SYSCTRL_GetFastPreCLK();
@@ -1940,8 +1949,8 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetFastPreCLK() / get_safe_divider((uint32_t)APB_SYSCTRL->QdecCfg, 1, 10);
         return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->QdecCfg, 1, 10);
     case SYSCTRL_ITEM_APB_I2C0:
-    case SYSCTRL_ITEM_APB_RTIMER2:
-    case SYSCTRL_ITEM_APB_RTIMER3:
+    case SYSCTRL_ITEM_APB_RTIMER0:
+    case SYSCTRL_ITEM_APB_RTIMER1:
         return SYSCTRL_GetPClk();
     default:
         return SYSCTRL_GetSlowClk();

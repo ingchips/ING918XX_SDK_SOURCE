@@ -1111,8 +1111,8 @@ typedef enum
     SYSCTRL_ITEM_APB_PinCtrl   ,
     SYSCTRL_ITEM_APB_USB       ,
     SYSCTRL_ITEM_APB_ASDM       ,
-    SYSCTRL_ITEM_APB_RTIMER2    ,
-    SYSCTRL_ITEM_APB_RTIMER3    ,
+    SYSCTRL_ITEM_APB_RTIMER0    ,
+    SYSCTRL_ITEM_APB_RTIMER1    ,
     SYSCTRL_ITEM_APB_PTE        ,
     SYSCTRL_ITEM_APB_GPIOTE     ,
     SYSCTRL_ITEM_NUMBER,
@@ -1136,9 +1136,9 @@ typedef enum
 #define  SYSCTRL_ClkGate_APB_UART1              SYSCTRL_ITEM_APB_UART1
 #define  SYSCTRL_ClkGate_APB_I2C0               SYSCTRL_ITEM_APB_I2C0
 #define  SYSCTRL_ClkGate_APB_PinCtrl            SYSCTRL_ITEM_APB_PinCtrl
-#define  SYSCTRL_ClkGate_APB_SDM                SYSCTRL_ITEM_APB_ASDM
-#define  SYSCTRL_ClkGate_APB_RTMR2              SYSCTRL_ITEM_APB_RTIMER2
-#define  SYSCTRL_ClkGate_APB_RTMR3              SYSCTRL_ITEM_APB_RTIMER3
+#define  SYSCTRL_ClkGate_APB_ASDM               SYSCTRL_ITEM_APB_ASDM
+#define  SYSCTRL_ClkGate_APB_RTIMER0            SYSCTRL_ITEM_APB_RTIMER0
+#define  SYSCTRL_ClkGate_APB_RTIMER1            SYSCTRL_ITEM_APB_RTIMER1
 #define  SYSCTRL_ClkGate_APB_PTE                SYSCTRL_ITEM_APB_PTE
 #define  SYSCTRL_ClkGate_APB_GPIOTE             SYSCTRL_ITEM_APB_GPIOTE
 
@@ -1238,6 +1238,22 @@ typedef enum
     SYSCTRL_CLK_PLL_DIV_13 = 13,
     SYSCTRL_CLK_PLL_DIV_14 = 14,
     SYSCTRL_CLK_PLL_DIV_15 = 15,
+    
+    SYSCTRL_CLK_FAST_PER_DIV1 = 20,     
+    SYSCTRL_CLK_FAST_PER_DIV2 = 21,
+    SYSCTRL_CLK_FAST_PER_DIV3 = 22,
+    SYSCTRL_CLK_FAST_PER_DIV4 = 23,
+    SYSCTRL_CLK_FAST_PER_DIV5 = 24,
+    SYSCTRL_CLK_FAST_PER_DIV6 = 25,
+    SYSCTRL_CLK_FAST_PER_DIV7 = 26,
+    SYSCTRL_CLK_FAST_PER_DIV8 = 27,
+    SYSCTRL_CLK_FAST_PER_DIV9 = 28,
+    SYSCTRL_CLK_FAST_PER_DIV10 = 29,
+    SYSCTRL_CLK_FAST_PER_DIV11 = 30,
+    SYSCTRL_CLK_FAST_PER_DIV12 = 31,
+    SYSCTRL_CLK_FAST_PER_DIV13 = 32,
+    SYSCTRL_CLK_FAST_PER_DIV14 = 33,
+    SYSCTRL_CLK_FAST_PER_DIV15 = 34,
 
     SYSCTRL_CLK_SLOW_DIV_1 = 1,      // use RF OSC clock div 1
                                      // SYSCTRL_CLK_SLOW_DIV_2: use (RF OSC clock div 2)
@@ -1325,14 +1341,14 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 q * @param mode          clock mode
  *
  * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
- *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_HCLK`.
+ *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_FAST_PER`.
  */
 void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
 
 /**
  * @brief Select UART clock mode
  * @param port          the port
- * @param mode          clock mode (SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_HCLK)
+ * @param mode          clock mode (SYSCTRL_CLK_SLOW, or SYSCTRL_CLK_FAST_PER)
  */
 void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
 
@@ -1470,7 +1486,7 @@ uint32_t SYSCTRL_GetFlashClk(void);
  *
  * This function configures two clocks for QDEC:
  *
- * 1. `clk_qdec`: selected by `mode` (`SYSCTRL_CLK_SLOW` or `SYSCTRL_CLK_HCLK`);
+ * 1. `clk_qdec`: selected by `mode` (`SYSCTRL_CLK_SLOW` or `SYSCTRL_CLK_FAST_PER`);
  * 1. `clk_qdec_div`: divided from `qdec_clk`, specified by `div`.
  *
  * Note: `clk_qdec` must be >= PClk (see `SYSCTRL_GetPClk()`).

@@ -187,6 +187,23 @@ typedef enum
 }wdt_rsttime_interval_t;
 
 
+typedef enum
+{
+    TMR_32BIT_TIMER_EN     = 1,
+    
+    TMR_16BIT_X2_TIM0_EN   = 1,
+    TMR_16BIT_X2_TIM1_EN   = 1<<1,
+    TMR_16BIT_X2_ALL_EN    = 0x3,
+    
+    TMR_8_BIT_X4_TIM0_EN   = 1,
+    TMR_8_BIT_X4_TIM1_EN   = 1<<1,
+    TMR_8_BIT_X4_TIM2_EN   = 1<<2,
+    TMR_8_BIT_X4_TIM3_EN   = 1<<3,
+    TMR_8_BIT_X4_ALL_EN    = 0xf,
+    
+    TMR_16BIT_PWM_EN       = 0x8,
+} tmr_enable_type_t;
+
 // timer work mode
 #define TMR_CTL_OP_MODE_32BIT_TIMER_x1            1           // one 32bit timer
 #define TMR_CTL_OP_MODE_16BIT_TIMER_x2            2           // dual 16bit timers
@@ -452,6 +469,23 @@ typedef enum
     WDT_RSTTIME_INTERVAL_250MS        = 6,
     WDT_RSTTIME_INTERVAL_500MS        = 7
 }wdt_rsttime_interval_t;
+
+typedef enum
+{
+    TMR_32BIT_TIMER_EN     = 1,
+    
+    TMR_16BIT_X2_TIM0_EN   = 1,
+    TMR_16BIT_X2_TIM1_EN   = 1<<1,
+    TMR_16BIT_X2_ALL_EN    = 0x3,
+    
+    TMR_8_BIT_X4_TIM0_EN   = 1,
+    TMR_8_BIT_X4_TIM1_EN   = 1<<1,
+    TMR_8_BIT_X4_TIM2_EN   = 1<<2,
+    TMR_8_BIT_X4_TIM3_EN   = 1<<3,
+    TMR_8_BIT_X4_ALL_EN    = 0xf,
+    
+    TMR_16BIT_PWM_EN       = 0x8,
+} tmr_enable_type_t;
 
 
 // timer work mode

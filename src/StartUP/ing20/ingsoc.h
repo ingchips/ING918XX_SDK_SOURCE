@@ -25,8 +25,10 @@ typedef enum
     PLATFORM_CB_IRQ_GPIO1,
     PLATFORM_CB_IRQ_TIMER0,
     PLATFORM_CB_IRQ_TIMER1,
-    PLATFORM_CB_IRQ_TIMER2,
-    PLATFORM_CB_IRQ_TIMER3,
+    PLATFORM_CB_IRQ_RTIMER0,
+    PLATFORM_CB_IRQ_TIMER2 = PLATFORM_CB_IRQ_RTIMER0,
+    PLATFORM_CB_IRQ_RTIMER1,
+    PLATFORM_CB_IRQ_TIMER3 = PLATFORM_CB_IRQ_RTIMER1,
     PLATFORM_CB_IRQ_WDT,
     PLATFORM_CB_IRQ_AHBSPI,
     PLATFORM_CB_IRQ_SPI0 = PLATFORM_CB_IRQ_AHBSPI,
@@ -657,8 +659,8 @@ typedef struct
 #define APB_PTE_BUS_BASE   (APB_BASE + 0x18000)
 #define APB_PTE_BASE       (APB_BASE + 0x19000)
 #define APB_ASDM_BASE      (APB_BASE + 0x1a000)
-#define APB_TMR2_BASE      (APB_BASE + 0x1c000)
-#define APB_TMR3_BASE      (APB_BASE + 0x1c010)
+#define APB_RTIMER0_BASE   (APB_BASE + 0x1c000)
+#define APB_RTIMER1_BASE   (APB_BASE + 0x1c010)
 #define APB_GPIOTE_BASE    (APB_BASE + 0x001f0)
 
 #define AON_APB_BASE       ((uint32_t)0x40100000UL)
@@ -673,8 +675,8 @@ typedef struct
 #define APB_WDT            ((WDT_TypeDef *)APB_WDT_BASE)
 #define APB_TMR0           ((TMR_TypeDef *)APB_TMR0_BASE)
 #define APB_TMR1           ((TMR_TypeDef *)APB_TMR1_BASE)
-#define APB_TMR2           ((RTMR_TypeDef *)APB_TMR2_BASE)
-#define APB_TMR3           ((RTMR_TypeDef *)APB_TMR3_BASE)
+#define APB_RTIMER0        ((RTMR_TypeDef *)APB_RTIMER0_BASE)
+#define APB_RTIMER1        ((RTMR_TypeDef *)APB_RTIMER1_BASE)
 #define APB_PWM            ((PWM_TypeDef *)APB_PWM_BASE)
 #define APB_I2S            ((I2S_TypeDef *)APB_I2S_BASE)
 #define APB_SADC           ((SADC_TypeDef *)APB_SARADC_BASE)
