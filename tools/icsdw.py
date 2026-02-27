@@ -491,6 +491,11 @@ def parse_args():
 
 if __name__ == '__main__':
 
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+
     FLAGS, unparsed = parse_args()
 
     if FLAGS.proj == 'list-usb':

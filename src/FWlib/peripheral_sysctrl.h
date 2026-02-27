@@ -1238,8 +1238,8 @@ typedef enum
     SYSCTRL_CLK_PLL_DIV_13 = 13,
     SYSCTRL_CLK_PLL_DIV_14 = 14,
     SYSCTRL_CLK_PLL_DIV_15 = 15,
-    
-    SYSCTRL_CLK_FAST_PER_DIV1 = 20,     
+
+    SYSCTRL_CLK_FAST_PER_DIV1 = 20,
     SYSCTRL_CLK_FAST_PER_DIV2 = 21,
     SYSCTRL_CLK_FAST_PER_DIV3 = 22,
     SYSCTRL_CLK_FAST_PER_DIV4 = 23,
@@ -1904,8 +1904,7 @@ void SYSCTRL_EnablePcapMode(uint8_t channel_index, uint8_t enable);
 typedef enum
 {
     // remapppable memory block 1, 16KiB
-    // for `mini` and `noos_mini` bundles, this block is mapped to `SYSCTRL_SYS_MEM_BLOCK_2`
-    // for other variants,                 this block is mapped to `SYSCTRL_SHARE_MEM_BLOCK_2`
+    // this block is mapped to `SYSCTRL_SHARE_MEM_BLOCK_2`
     SYSCTRL_MEM_REMAPPABLE_BLOCK_0 = 0x04,
     // remapppable memory block 2, 8KiB
     // for `mini` and `noos_mini` bundles, this block is mapped to `SYSCTRL_SYS_MEM_BLOCK_3`
@@ -1915,7 +1914,7 @@ typedef enum
     // SYS RAM block #0, 16KiB starting from 0x20000000 (0x20000000~0x20003fff)
     SYSCTRL_SYS_BLOCK00 = 0x10,
     SYSCTRL_SYS_BLOCK01 = 0x20,
-    SYSCTRL_SYS_MEM_BLOCK_0 = SYSCTRL_SYS_BLOCK00|SYSCTRL_SYS_BLOCK01,
+    SYSCTRL_SYS_MEM_BLOCK_0 = SYSCTRL_SYS_BLOCK00 | SYSCTRL_SYS_BLOCK01,
     // SYS RAM block #1, 8KiB following block #0        (0x20004000~0x20005fff)
     SYSCTRL_SYS_MEM_BLOCK_1 = 0x08,
     // SYS RAM block #2, 16KiB following block #1       (0x20006000~0x20009fff)

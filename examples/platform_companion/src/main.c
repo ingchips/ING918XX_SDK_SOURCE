@@ -44,7 +44,10 @@ int main(void)
     platform_config(PLATFORM_CFG_RT_CLK, PLATFORM_RT_RC);
     platform_config(PLATFORM_CFG_RT_OSC_EN, 0);
 
+#ifdef USE_2READ
     launch_platform(3);
-
+#else
+    launch_platform(7);
+#endif
     return 0;
 }

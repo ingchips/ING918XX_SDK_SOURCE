@@ -637,6 +637,7 @@ typedef struct
 #define FLASH_BASE         ((uint32_t)0x02000000UL)
 #define AHB_QSPI_MEM_BASE  ((uint32_t)0x04000000UL)
 #define SYS_MEM_BASE       ((uint32_t)0x20000000UL)
+#define SHARE_MEM_BASE     ((uint32_t)0x40120000UL)
 
 #define APB_BASE           ((uint32_t)0x40000000UL)
 #define APB_SYSCTRL_BASE   (APB_BASE + 0x00000)
