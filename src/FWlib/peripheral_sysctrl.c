@@ -1912,10 +1912,10 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
             
     case SYSCTRL_ITEM_APB_PWM:
-        if (!(APB_SYSCTRL->CguCfg[1] & (1 << 23)))
+        if ((APB_SYSCTRL->CguCfg[1] & (1 << 23)))
             return SYSCTRL_GetCLK32k();
         if (APB_SYSCTRL->CguCfg8 & (1 << 15))
-            return SYSCTRL_GetFastPreCLK() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 27, 4);
+            return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 27, 4);
         return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 27, 4);
     case SYSCTRL_ITEM_APB_KeyScan:
         if (APB_SYSCTRL->CguCfg[1] & (1 << 13))
