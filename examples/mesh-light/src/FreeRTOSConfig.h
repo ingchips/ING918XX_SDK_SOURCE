@@ -97,7 +97,11 @@
 #define configMAX_PRIORITIES        ( 15 )
 #define configMINIMAL_STACK_SIZE    ( ( unsigned short ) 128 )
 #ifndef configTOTAL_HEAP_SIZE
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 23520 ) )
+#else
+#define configTOTAL_HEAP_SIZE       ( ( size_t ) ( 18000 ) )
+#endif
 #endif
 #define configMAX_TASK_NAME_LEN     ( 16 )
 #define configUSE_TRACE_FACILITY    0

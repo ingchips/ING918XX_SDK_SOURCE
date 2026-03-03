@@ -19,18 +19,37 @@
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
 #endif
 #elif ((BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_DB72C8K1A))
-#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_916)
+#if ((INGCHIPS_FAMILY != INGCHIPS_FAMILY_916) && (INGCHIPS_FAMILY != INGCHIPS_FAMILY_20))
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
 #endif
 #endif
 
-#ifndef PIN_RGB_LED
 #if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) || (BOARD_ID == BOARD_ING91881B_02_02_06))
-#define PIN_RGB_LED   GIO_GPIO_0
+#ifndef PIN_RGB_LED
+    #define PIN_RGB_LED   GIO_GPIO_0
+#endif
+#ifndef PWM_LED_CHANNEL
+    #define PWM_LED_CHANNEL     0
+#endif
 #elif (BOARD_ID == BOARD_DB682AC1A)
-#define PIN_RGB_LED   GIO_GPIO_6
+#ifndef PIN_RGB_LED
+    #define PIN_RGB_LED   GIO_GPIO_6
+#endif
+#ifndef PWM_LED_CHANNEL
+    #define PWM_LED_CHANNEL     0
+#endif
+#ifndef PWM_IO_SOURCE
+    #define PWM_IO_SOURCE       IO_SOURCE_PWM0_B
+#endif
 #elif (BOARD_ID == BOARD_DB72C8K1A)
-#define PIN_RGB_LED   GIO_GPIO_5
+#ifndef PIN_RGB_LED
+    #define PIN_RGB_LED   GIO_GPIO_5
+#endif
+#ifndef PWM_LED_CHANNEL
+    #define PWM_LED_CHANNEL     0
+#endif
+#ifndef PWM_IO_SOURCE
+    #define PWM_IO_SOURCE       IO_SOURCE_PWM0_B
 #endif
 #endif
 
@@ -44,7 +63,7 @@
 static void delay(int cycles)
 {
     int i;
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
     cycles *= SYSCTRL_GetHClk() / 48000000;
 #endif
     for (i = 0; i < cycles; i++)
@@ -90,7 +109,6 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
 
 #elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
 
-#define PWM_LED_CHANNEL     0
 #define PWM_LED_FREQ    1000000
 
 static void ws2881_write(uint32_t value)
@@ -146,9 +164,6 @@ static void PWM_SinglePulseSend(const uint8_t channel_index, const uint32_t puls
     PWM_SetPeraThreshold(channel_index, pera);
     PWM_Enable(channel_index, 1);
 }
-
-#define PWM_LED_CHANNEL     0
-#define PWM_IO_SOURCE       IO_SOURCE_PWM0_B
 
 static void ws2881_write(uint32_t value)
 {

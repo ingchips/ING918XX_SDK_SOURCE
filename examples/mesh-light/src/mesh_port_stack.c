@@ -40,7 +40,9 @@ static bool notify_enable = false;
 uint16_t mesh_att_read_callback(hci_con_handle_t con_handle, uint16_t attribute_handle, uint8_t *buffer, uint16_t buffer_size)
 {
     if(attribute_handle == PROV_DATA_OUT_CCCD_HDL || attribute_handle == PROXY_DATA_OUT_CCCD_HDL){
-        memcpy(buffer, &notify_enable, 2);
+        if (buffer) {            
+            memcpy(buffer, &notify_enable, 2);
+        }
         return 2;
     }
     return 0;
@@ -55,9 +57,7 @@ int mesh_att_write_callback(hci_con_handle_t con_handle, uint16_t attribute_hand
     mesh_att_write_prov_proxy_callback(con_handle, attribute_handle, buffer, buffer_size);
     
     if(PROV_DATA_OUT_CCCD_HDL == attribute_handle || PROXY_DATA_OUT_CCCD_HDL == attribute_handle ){
-        uint16_t notify_en = little_endian_read_16(buffer, 0);
-        if(notify_en){
-        }
+        notify_enable = little_endian_read_16(buffer, 0) != 0;
     }
     
     return 0;

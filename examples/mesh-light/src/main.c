@@ -12,18 +12,20 @@
 #include "BUTTON_TEST.h"
 #endif
 
-#ifdef ENABLE_LED_TEST
-#include "LED_TEST.h"
-#endif
-
 //-----------------------------------------------------
-// uart config
+// uart config (using default PIN)
 #define PRINT_UART          APB_UART0
 #define PRINT_UART_BAUD     115200
-#define USER_UART0_IO_TX    GIO_GPIO_2 //uart0 tx
-#define USER_UART0_IO_RX    GIO_GPIO_3 //uart0 rx
+#ifndef PIN_LED
+#define PIN_LED             GIO_GPIO_17
+#endif
+#ifndef LED_LEVEL_ON
+#define LED_LEVEL_ON        1           // high level => LED ON
+#endif
+#ifndef LED_LEVEL_OFF
+#define LED_LEVEL_OFF       0           // low  level => LED OFF
+#endif
 //-----------------------------------------------------
-
 
 uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -62,23 +64,6 @@ void __aeabi_assert(const char *a ,const char* b, int c)
     for (;;);
 }
 
-static void uart_gpio_init(void){
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    SYSCTRL_ClearClkGateMulti(1 << SYSCTRL_ClkGate_APB_UART0);
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO) |
-                                (1 << SYSCTRL_ClkGate_APB_PWM)  |
-                                (1 << SYSCTRL_ClkGate_APB_PinCtrl));
-
-    PINCTRL_SetPadMux(USER_UART0_IO_RX, IO_SOURCE_GENERAL);
-    PINCTRL_SetPadPwmSel(USER_UART0_IO_RX, 0);
-    PINCTRL_SetPadMux(USER_UART0_IO_TX, IO_SOURCE_UART0_TXD);
-    PINCTRL_Pull(USER_UART0_IO_RX, PINCTRL_PULL_UP);
-    PINCTRL_SelUartRxdIn(UART_PORT_0, USER_UART0_IO_RX);
-#else
-    #warning "TODO: Init hardware"
-#endif
-}
-
 void config_uart(uint32_t freq, uint32_t baud)
 {
     UART_sStateStruct UART_0;
@@ -100,20 +85,26 @@ void config_uart(uint32_t freq, uint32_t baud)
     apUART_Initialize(PRINT_UART, &UART_0, 0);
 }
 
-#include "../../peripheral_led/src/impl_led.c"
+void led_set_state(uint8_t led_on)
+{
+    GIO_WriteValue(PIN_LED, led_on != 0 ? LED_LEVEL_ON : LED_LEVEL_OFF);
+}
 
 void setup_peripherals(void)
 {
-    uart_gpio_init();
+    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0) |
+                                (1 << SYSCTRL_ClkGate_APB_GPIO1) |
+                                (1 << SYSCTRL_ClkGate_APB_PinCtrl));
+
     config_uart(OSC_CLK_FREQ, PRINT_UART_BAUD);
 
-    setup_rgb_led();
+    // setup GPIOs for keys
+    PINCTRL_SetPadMux(PIN_LED, IO_SOURCE_GPIO);
+    GIO_SetDirection(PIN_LED, GIO_DIR_OUTPUT);
+    GIO_WriteValue(PIN_LED, LED_LEVEL_OFF);
 
 #ifdef ENABLE_BUTTON_TEST
     button_test_init();
-#endif
-#ifdef ENABLE_LED_TEST
-    LED_Test_Init();
 #endif
 }
 

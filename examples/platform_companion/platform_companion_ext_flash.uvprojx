@@ -409,11 +409,6 @@
         <Group>
           <GroupName>BSP</GroupName>
           <Files>
-            <File>
-              <FileName>eflash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../..\src\BSP\eflash.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

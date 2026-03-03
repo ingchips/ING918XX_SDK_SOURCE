@@ -7,11 +7,11 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6160000::V6.16::ARMCLANG</pCCUsed>
+      <pCCUsed>6230000::V6.23::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91800</Device>
           <Vendor>INGChips</Vendor>
           <PackID>INGChips.INGCHIPS_DeviceFamilyPack.0.9.0</PackID>
           <PackURL>http://www.ingchips.com</PackURL>
@@ -30,7 +30,7 @@
           <SLE66CMisc/>
           <SLE66AMisc/>
           <SLE66LinkerMisc/>
-          <SFDFile>$$Device:ING91800$SVD\ING91800.svd</SFDFile>
+          <SFDFile>$$Device:ing91800$SVD\ing91800.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath/>
@@ -171,7 +171,7 @@
             <AdsLsxf>1</AdsLsxf>
             <RvctClst>0</RvctClst>
             <GenPPlst>0</GenPPlst>
-            <AdsCpuType>"Cortex-M3"</AdsCpuType>
+            <AdsCpuType>"Cortex-M4"</AdsCpuType>
             <RvctDeviceName/>
             <mOS>0</mOS>
             <uocRom>0</uocRom>
@@ -180,9 +180,10 @@
             <hadIRAM>1</hadIRAM>
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
-            <RvdsVP>0</RvdsVP>
+            <RvdsVP>2</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -243,12 +244,12 @@
               <IRAM>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0x8000</Size>
               </IRAM>
               <IROM>
                 <Type>1</Type>
-                <StartAddress>0x4000</StartAddress>
-                <Size>0x40000</Size>
+                <StartAddress>0x2000000</StartAddress>
+                <Size>0x200000</Size>
               </IROM>
               <XRAM>
                 <Type>0</Type>
@@ -334,7 +335,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls/>
-              <Define>USE_STDPERIPH_DRIVER,BOARD_USE_RGB_LED,BOARD_ID=BOARD_ING91881B_02_02_05</Define>
+              <Define>USE_STDPERIPH_DRIVER,ENABLE_BUTTON_TEST</Define>
               <Undefine/>
               <IncludePath>..\peripheral_console_freertos\FreeRTOS\include;./src;..\..\src\SigMesh\inc;..\..\src\SigMesh\inc\mesh;..\..\src\SigMesh\inc\mesh_host;../../bundles/noos_exp/inc;../../bundles/noos_exp/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -445,11 +446,6 @@
               <FileType>1</FileType>
               <FilePath>.\src\BUTTON_TEST.c</FilePath>
             </File>
-            <File>
-              <FileName>LED_TEST.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\LED_TEST.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -474,11 +470,6 @@
               <FileName>eflash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\BSP\eflash.c</FilePath>
-            </File>
-            <File>
-              <FileName>board.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\BSP\board.c</FilePath>
             </File>
           </Files>
         </Group>

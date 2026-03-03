@@ -350,7 +350,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     app_log_debug("connect.\n");
                     att_set_db(my_conn_handle, ( mesh_is_provisioned()?  gatt_data_proxy : gatt_data_pb ));
                     mesh_connected(my_conn_handle);
-                    platform_calibrate_rt_clk();
                 }
                 break;
             case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE:{
@@ -383,11 +382,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             uint8_t cmd_packs = hci_event_command_complete_get_num_hci_command_packets(packet);
             uint16_t cmd_opcode = hci_event_command_complete_get_command_opcode(packet);
             const uint8_t *pCmd_param = hci_event_command_complete_get_return_parameters(packet);
-            // platform_printf("==>cmd_complete,packs:0x%02x,opcode:0x%04x,param:0x%02x.\n", cmd_packs, cmd_opcode, pCmd_param[0]);
             switch(cmd_opcode){
-                case 0x2042: //scan enable/disable.
-                    // platform_printf("==>cmd_complete,packs:0x%02x,status:0x%02x.\n", cmd_packs, pCmd_param[0]);
-                    break;
             }
         }
         break;

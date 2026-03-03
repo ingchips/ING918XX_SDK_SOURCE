@@ -9,9 +9,9 @@
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91800</Device>
           <Vendor>INGCHIPS</Vendor>
-          <Cpu>CLOCK(48000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
+          <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
           <FlashUtilSpec/>
           <StartupFile>"Startup\ingchips\startup_91800.s" ("91800 startup code")</StartupFile>
           <FlashDriverDll/>
@@ -346,7 +346,7 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,BOARD_USE_RGB_LED,BOARD_ID=BOARD_ING91881B_02_02_06</Define>
+              <Define>USE_STDPERIPH_DRIVER, ENABLE_BUTTON_TEST</Define>
               <Undefine/>
               <IncludePath>..\peripheral_console_freertos\FreeRTOS\include;./src;..\..\src\SigMesh\inc;..\..\src\SigMesh\inc\mesh;..\..\src\SigMesh\inc\mesh_host;../../bundles/noos_exp/inc;../../bundles/noos_exp/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
@@ -453,11 +453,6 @@
               <FileName>BUTTON_TEST.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\BUTTON_TEST.c</FilePath>
-            </File>
-            <File>
-              <FileName>LED_TEST.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\LED_TEST.c</FilePath>
             </File>
           </Files>
         </Group>

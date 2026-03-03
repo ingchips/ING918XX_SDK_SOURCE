@@ -9,11 +9,6 @@
 // #define APP_LOG_DEBUG_EN
 #define APP_LOG_ERROR_EN
 
-/* BUTTON TEST */
-#define ENABLE_BUTTON_TEST
-/* LED TEST */
-#define ENABLE_LED_TEST
-
 /* Mesh App Config */
 #define ENABLE_MESH_GATT_BEARER
 

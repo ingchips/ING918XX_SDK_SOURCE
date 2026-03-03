@@ -202,6 +202,7 @@ typedef struct{
 #define ROM_BASE           ((uint32_t)0x00000000UL)
 #define FLASH_BASE         ((uint32_t)0x00004000UL)
 #define SYS_MEM_BASE       ((uint32_t)0x20000000UL)
+#define SHARE_MEM_BASE     ((uint32_t)0x400A0000UL)
 
 #define APB_BASE           ((uint32_t)0x40000000UL)
 #define AHB_SPI0_BASE      ((uint32_t)0x40060000UL) // SPI0 site in AHB BUS
@@ -240,6 +241,8 @@ typedef struct{
 // spi
 #define AHB_SSP0     ((SSP_TypeDef *)  AHB_SPI0_BASE) // Actually, APB_SPI0 site in AHB Bus.
 #define APB_SSP1     ((SSP_TypeDef *)  APB_SPI1_BASE)
+
+#define   SYS_MEMORY_SIZE_KiB   64
 
 // Test if in interrupt mode
 #define IS_IN_INTERRUPT() ((SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0)

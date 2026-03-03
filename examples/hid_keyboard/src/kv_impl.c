@@ -19,9 +19,9 @@
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define DB_FLASH_ADDRESS  0x42000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#define DB_FLASH_ADDRESS  0x2042000
+#define DB_FLASH_ADDRESS  0x203C000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-#define DB_FLASH_ADDRESS  0x2038000
+#define DB_FLASH_ADDRESS  0x203C000
 #else
 #error unknown or unsupported chip family
 #endif
@@ -267,7 +267,7 @@ static int kv_do_append_key(kvkey_t key, const void *data, int len)
     int aligned = (2 + len + 3) & ~0x3ul;
     const uint8_t *d = (const uint8_t *)data;
     uint8_t t[4] = {len, key, 0, 0};
-    
+
     if(d != NULL && len > 0)
         memcpy(t + 2, d, (len > 2 ? 2 : len));
 

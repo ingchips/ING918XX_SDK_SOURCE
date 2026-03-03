@@ -1,6 +1,5 @@
 # CoreMark
 
-Run CoreMark benchmark on ING918xx/ING916xx.
+Run CoreMark benchmark on different chip families.
 
 Tune compiler options and check the scores.
-

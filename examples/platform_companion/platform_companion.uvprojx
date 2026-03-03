@@ -374,7 +374,8 @@
             <ScatterFile></ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc>--keep=main.o(*) --keep=*.*(i.platform_*) --keep=*.*(i.hci*) --keep=*.*(i.gap_*)</Misc>
+            <Misc>--keep=main.o(*) --keep=*.*(i.platform_*) --keep=*.*(i.hci*) --keep=*.*(i.gap_*)
+--keep=*.*(i.ll_*)</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
@@ -408,13 +409,6 @@
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
-          <Files>
-            <File>
-              <FileName>eflash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../..\src\BSP\eflash.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>FWlib</GroupName>

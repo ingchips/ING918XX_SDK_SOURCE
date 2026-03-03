@@ -377,7 +377,6 @@ struct gatt_client_discoverer * gatt_client_sync_discover_all(struct btstack_syn
     return runner->discover_all.r;
 }
 
-
 int gatt_client_sync_read_value_of_characteristic(struct btstack_synced_runner *runner,
     hci_con_handle_t con_handle,
     uint16_t characteristic_value_handle, uint8_t *data, uint16_t *length)

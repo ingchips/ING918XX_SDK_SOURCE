@@ -4,9 +4,18 @@ This example creates a SIG Mesh light.
 
 ## Hardware Setup
 
-* ING918XX Dev-Board
+This is example uses 1 GPIO connected to a key for clearing flash information,
+and 1 GPIO connected to an LED to demonstrate a light. These options are
+used which can be customized by preprocessor symbols.
 
-Jumpers marked in below figure should be connected:
+|  Name             |   Default   | Note                            |
+|:-----------:|:-----------:|:---------------------------|
+|PIN_LED            | GIO_GPIO_17 | PIN connecting to an LED        |
+|LED_LEVEL_ON       | 1           | PIN level to turn the LED on    |
+|LED_LEVEL_OFF      | 0           | PIN level to turn the LED off   |
+|KB_KEY_RESET_PARAMS| 5           | PIN connecting to a key         |
+
+Note for ING918XX Dev-Board: this uses `0` to turn on the LED on.
 
 <img src="../../llsync_light/doc/img/hardware.png" width="50%" />
 
@@ -14,14 +23,9 @@ Jumpers marked in below figure should be connected:
 
 This example can be tested with following apps:
 
-* ING Mesh (WeChat mini program) - recommended
-* ING Mesh (iOS App) - recommended
-* nRF Mesh (iOS/Android)
+* ING Mesh (WeChat mini program)
 
 ## Software Setup
-
-### BOARD_ID setup
-* At present, In order to make LED work normally, please switch the project macro definition __BOARD_ID__ to the proper value according to the silkscreen of the IC on your board.
 
 ### Storage setup
 
@@ -30,7 +34,9 @@ This example can be tested with following apps:
   * __MAC address__ (gatt_adv_addr and non-connect_adv_addr)
   * __Adv UUID__
   * __Provisioning Information__
-* Press __KEY-2__ and then press __KEY-RESET__ to clear flash information of __Provisioning Information__, keep the others.
+
+* Press the __KEY__ connected to `KB_KEY_RESET_PARAMS` and then press __KEY-RESET__ to clear flash information of
+__Provisioning Information__, keep the others.
 
 * If you don't want to store any information in flash, you can disable the corresponding flash storage function by masking the following macro definitions:
   * __MESH_UUID_USE_FLASH__ : For Adv UUID

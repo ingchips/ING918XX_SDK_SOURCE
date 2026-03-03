@@ -486,6 +486,26 @@ static void copy_security_data(uint32_t dst, uintptr_t src, int word_len)
     }
 }
 
+static int check_security_data(uint32_t dst, uintptr_t src, int word_len)
+{
+    uint32_t buff[16];
+    while (word_len > 0)
+    {
+        int len = 0;
+        while ((word_len > 0) && (len < sizeof(buff) / sizeof(buff[0])))
+        {
+            buff[len] = read_flash_security(src);
+            len++;
+            word_len--;
+            src += 4;
+        }
+        if (memcmp((void *)dst, (void *)buff, len * sizeof(buff[0])))
+            return 1;
+        dst += len * sizeof(buff[0]);
+    }
+    return 0;
+}
+
 int flash_prepare_factory_data(void)
 {
     if (is_data_ready()) return 0;
@@ -506,11 +526,26 @@ int flash_prepare_factory_data(void)
         0x1100, sizeof(factory_calib_data_t) / 4);
     copy_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
         0x2000, EXTRA_DATA_LEN / 4);
+    if(check_security_data(FACTORY_DATA_LOC,
+        0x1000, sizeof(die_info_t) / 4))
+        goto check_failed;
+    if(check_security_data(FACTORY_DATA_LOC + sizeof(die_info_t),
+        0x1100, sizeof(factory_calib_data_t) / 4))
+        goto check_failed;
+    if(check_security_data(FACTORY_DATA_LOC + sizeof(factory_data_t),
+        0x2000, EXTRA_DATA_LEN / 4))
+        goto check_failed;
     write_ft_sum();
 
     flash_enable_write_protection(region, reverse_selection);
 
     return 0;
+
+check_failed:
+    erase_flash_sector(FACTORY_DATA_LOC);
+    flash_enable_write_protection(region, reverse_selection);
+    
+    return 3;
 }
 
 const die_info_t *flash_get_die_info(void)
@@ -706,6 +741,7 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
                 uint32_t remain = EFLASH_SECTOR_SIZE;
 
                 ROM_erase_flash_sector(dest_addr);
+                SYSCTRL_ICacheFlush();
 
                 while ((remain > 0) && (size > 0))
                 {

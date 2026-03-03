@@ -217,18 +217,11 @@ typedef int (* f_trace_puts)(const char *str);
  *
  * @param[in] f_puts        callback function for print strings (ending with '\n\0', w/o '\n' or '\r')
  * @param[in] sys_size      size for SYS RAM in KiB
- *                          For ING918: 64;
- *                          For ING916:
- *                              mini, noos_min: 56
- *                              others: 32
  * @param[in] share_size    size for SHARE RAM in KiB
- *                          For ING918: 64;
- *                          For ING916:
- *                              mini, noos_min: 8
- *                              others: 32
  *
- *                          These two sizes can be set to 0, then actual size is derived from chip family, which
- *                          may not work for ING916xx as shown above.
+ *                          These two sizes can be set to 0, then actual size is derived from
+ *                          chip family and bundle variant. When some blocks of SYS RAM are
+ *                          turned off, `sys_size` should be set manually.
  ****************************************************************************************
  */
 void trace_full_dump2(f_trace_puts f_puts, int sys_size, int share_size);

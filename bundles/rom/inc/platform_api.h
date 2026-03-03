@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include "ingsoc.h"
 #include "ll_api.h"
+#include "platform_def.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -968,8 +969,6 @@ typedef void (*f_platform_function)(void *user_data);
  */
 void platform_call_on_stack(f_platform_function f, void *user_data,
                             void *stack_start, uint32_t stack_size);
-
-#define PLATFORM_IN_ROM     1
 
 /**
  *****************************************************************************************

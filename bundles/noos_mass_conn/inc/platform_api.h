@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include "ingsoc.h"
 #include "ll_api.h"
+#include "platform_def.h"
 
 #ifdef __cplusplus
 extern "C" {

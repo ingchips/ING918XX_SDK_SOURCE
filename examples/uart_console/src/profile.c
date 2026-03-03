@@ -896,7 +896,7 @@ static const char *decode_version(int ver)
 {
     switch (ver)
     {
-        case 6: return "4.0";
+        case 6:  return "4.0";
         case 7:  return "4.1";
         case 8:  return "4.2";
         case 9:  return "5.0";
@@ -904,7 +904,9 @@ static const char *decode_version(int ver)
         case 11: return "5.2";
         case 12: return "5.3";
         case 13: return "5.4";
-        case 14: return "5.5";
+        case 14: return "6.0";
+        case 15: return "6.1";
+        case 16: return "6.2";
         default: return "??";
     }
 }

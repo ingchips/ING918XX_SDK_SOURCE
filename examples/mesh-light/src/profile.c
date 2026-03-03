@@ -11,11 +11,6 @@
 #include "app_debug.h"
 #include "mesh_debug.h"
 
-#ifdef ENABLE_LED_TEST
-#include "LED_TEST.h"
-#endif
-
-
 /*--------------------------------------------------------------------
  *----------------------------> MODEL <-------------------------------
  *------------------------------------------------------------------*/
@@ -42,26 +37,13 @@ static bt_mesh_cfg_srv_t cfg_srv = {
 
 };
 
+extern void led_set_state(uint8_t led_on);
+    
 static void light_update(struct light_state *a_light)
 {
-    uint8_t val;
-    if (!a_light->onoff[0]) { // Set led off.
-        val = 0;
-    } else { // Set led on, belongs to level value.
-        uint32_t lvl = a_light->level[0] + 32768; // 0~65535
-        lvl = ((lvl + 1) >> 8);     //0~256
-        if(lvl == 256) lvl = 255;   //0~255
-        val = (uint8_t)lvl;
-    }
-    app_log_info("gen set rgb val: %d\n",val);
-    set_rgb_led_color(val, val, val);
-
-#ifdef ENABLE_LED_TEST
-    if(val)
-        LED_ON(PIN_LED_9);
-    else
-        LED_OFF(PIN_LED_9);
-#endif
+    // DEMO only: we only handle ONOFF here.
+    app_log_info("set LED onoff: %d\n", a_light->onoff[0]);
+    led_set_state(a_light->onoff[0]);
 }
 
 #define get_light_state(model, srv_cb) (light_state_t *)((struct srv_cb *)model->user_data)->light_state
