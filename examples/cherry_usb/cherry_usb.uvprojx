@@ -79,7 +79,7 @@
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>fromelf.exe --bin -o cherry_usb.bin ./output/cherryusb_os_mini.axf</UserProg1Name>
+            <UserProg1Name>fromelf.exe --bin -o cherry_usb.bin ./output/cherry_usb.axf</UserProg1Name>
             <UserProg2Name/>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -639,7 +639,7 @@
             <File>
               <FileName>port.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\peripheral_console_freertos\FreeRTOS\portable\GCC\ARM_CM4F\port.c</FilePath>
+              <FilePath>..\peripheral_console_freertos\src\port.c</FilePath>
             </File>
           </Files>
         </Group>
