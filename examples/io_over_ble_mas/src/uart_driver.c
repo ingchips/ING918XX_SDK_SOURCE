@@ -8,8 +8,17 @@
 #include "queue.h"
 #include "platform_api.h"
 
+// UART_BUFF_SIZE must be 2^n
 #ifndef UART_BUFF_SIZE
-#define UART_BUFF_SIZE         (1024)  // must be 2^n
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define UART_BUFF_SIZE      (1024 * 16)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    #define UART_BUFF_SIZE      (1024 * 8)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    #define UART_BUFF_SIZE      (1024 * 8)
+#else
+    #error unknown or unsupported chip family
+#endif
 #endif
 
 #define UART_BUFF_SIZE_MASK    (UART_BUFF_SIZE - 1)
