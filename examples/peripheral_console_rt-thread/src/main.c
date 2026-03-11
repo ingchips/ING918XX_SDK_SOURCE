@@ -11,7 +11,7 @@
 #endif
 
 #if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
-#error WIP: Porting to other chips
+#error Update project files manually when changing series.
 #endif
 
 extern const gen_os_driver_t *os_impl_get_driver(void);

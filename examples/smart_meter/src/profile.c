@@ -40,6 +40,9 @@ static int  output_len = 0;
 static uint8_t is_initiating = 0;
 static TimerHandle_t app_timer = 0;
 
+void timer_disable(void);
+void timer_restart(void);
+
 bd_addr_t rand_addr = {0xC0,0xAA,0xAA,0xAA,0xAA,0xAA};
 
 typedef struct
@@ -80,7 +83,7 @@ void disable_timer_if_no_tpt(void)
             (peripheral_cfgs[index].tpt_enable))
             return;
     }
-    TMR_Disable(APB_TMR1);
+    timer_disable();
 }
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
@@ -125,8 +128,7 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         {
             ll_hint_on_ce_len(connection_handle, 30, 30);
             peripheral_cfgs[index].tpt_enable = 1;
-            TMR_Reload(APB_TMR1);
-            TMR_Enable(APB_TMR1);
+            timer_restart();
         }
         else
         {
