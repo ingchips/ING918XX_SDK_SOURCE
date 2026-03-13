@@ -48,7 +48,7 @@ void SPI_Write(uint8_t data)
     // clear dummy data
     apSSP_ReadFIFO(AHB_SSP0);
 }
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
 
 void SPI_Init(SSP_TypeDef * SPI_BASE)
 {
@@ -63,14 +63,16 @@ void SPI_Init(SSP_TypeDef * SPI_BASE)
                                       SPI_LSB_MOST_SIGNIFICANT_BIT_FIRST  << bsSPI_TRANSFMT_LSB |
                                       (data_uint_bits-1)                  << bsSPI_TRANSFMT_DATALEN |
                                       SPI_ADDRLEN_1_BYTE                  << bsSPI_TRANSFMT_ADDRLEN |
-                                      SPI_SLVMODE_MASTER_MODE             << bsSPI_TRANSFMT_SLVMODE);
+                                      SPI_SLVMODE_MASTER_MODE             << bsSPI_TRANSFMT_SLVMODE,
+                                      0, 32);
 
     apSSP_SetTransferControl(SPI_BASE, SPI_TRANSMODE_WRITE_ONLY           << bsSPI_TRANSCTRL_TRANSMODE |
                                       SPI_DUALQUAD_REGULAR_MODE           << bsSPI_TRANSCTRL_DUALQUAD |
                                       (data_len-1)                        << bsSPI_TRANSCTRL_WRTRANCNT |
                                       (data_len-1)                        << bsSPI_TRANSCTRL_RDTRANCNT |
                                       SPI_ADDREN_DISABLE                  << bsSPI_TRANSCTRL_ADDREN |
-                                      SPI_CMDEN_DISABLE                   << bsSPI_TRANSCTRL_CMDEN);
+                                      SPI_CMDEN_DISABLE                   << bsSPI_TRANSCTRL_CMDEN,
+                                      0, 32);
 
     apSSP_IntEnable(SPI_BASE, 1 << bsSPI_INTREN_ENDINTEN);
 }
@@ -86,11 +88,8 @@ void SPI_Delay(uint8_t t)
 void SPI_Write( uint8_t data)
 {
     // send data
-    uint32_t d[1] = {data};
-    apSSP_WriteFIFO(APB_SPI, d, 1);
+    apSSP_WriteFIFO(APB_SPI, data);
     // write dummy addr and cmd to trigger the writing
     apSSP_WriteCmd(APB_SPI,0x00,0x00);
 }
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-#error WIP
 #endif
