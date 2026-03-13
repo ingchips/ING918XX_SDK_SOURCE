@@ -10,8 +10,8 @@
 #error Sorry: feature DETECT_KEY not ported
 #endif
 
-#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
-#error Update project files manually when changing series.
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#error Update project to use libcpu files for m4 manually when changing to ING916.
 #endif
 
 extern const gen_os_driver_t *os_impl_get_driver(void);
@@ -25,6 +25,9 @@ int app_main()
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4500);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4500);
+    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 1845);
 #endif
 
     return (uintptr_t)os_impl_get_driver();

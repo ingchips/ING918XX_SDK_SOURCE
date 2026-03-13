@@ -134,6 +134,11 @@ uint32_t on_deep_sleep_wakeup(const platform_wakeup_call_info_t *info, void *use
         setup_peripherals();
     else
         GIO_EnableRetentionGroupA(0);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    if (PLATFORM_WAKEUP_REASON_NORMAL == info->reason)
+        setup_peripherals();
+    else
+        GIO_EnableRetentionGroupA(0);
 #endif
 #ifdef DETECT_KEY
     key_detector_start_on_demand();
