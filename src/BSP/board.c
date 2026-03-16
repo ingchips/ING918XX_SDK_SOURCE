@@ -14,6 +14,8 @@
 
 #define rand() platform_rand()
 
+#define ARRAY_LEN(x)    (sizeof(x) / sizeof(x[0]))
+
 #if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) || (BOARD_ID == BOARD_ING91881B_02_02_06))
 #if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
@@ -594,8 +596,6 @@ void set_buzzer_freq(uint16_t freq)
         GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
     };
 #endif
-
-#define ARRAY_LEN(x)    (sizeof(x) / sizeof(x[0]))
 
 void setup_keys()
 {
