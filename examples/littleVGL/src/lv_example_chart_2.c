@@ -111,6 +111,8 @@ void lv_example_chart_2(void)
     lv_label_set_text_fmt(title, "ING918");
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     lv_label_set_text_fmt(title, "ING916");
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    lv_label_set_text_fmt(title, "ING20");
 #else
     lv_label_set_text_fmt(title, "Family " expand_once(INGCHIPS_FAMILY));
 #endif

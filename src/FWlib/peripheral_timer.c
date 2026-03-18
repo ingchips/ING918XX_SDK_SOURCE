@@ -311,7 +311,7 @@ void TMR_WatchDogClearInt(void)
 #define bsRTMR_CTL_RELOAD                    1            // when set, timer counter clear zero.
 #define bwRTMR_CTL_RELOAD                    1
 #define bsRTMR_CTL_OP_MODE                   2
-#define bwRTMR_CTL_OP_MODE                   1
+#define bwRTMR_CTL_OP_MODE                   2
 
 #define bsRTMR_CTL_INT_EN                    4            // int enable
 #define bwRTMR_CTL_INT_EN                    1
@@ -353,8 +353,9 @@ void RTMR_Disable(RTMR_TypeDef *pRTMR)
 
 void RTMR_SetOpMode(RTMR_TypeDef *pRTMR, uint8_t mode)
 {
-    #define mask (2 << bsRTMR_CTL_OP_MODE)
-    pRTMR->CTL = (pRTMR->CTL & ~mask) | (mode << bsRTMR_CTL_OP_MODE);
+    #define mask (((1<<bwRTMR_CTL_OP_MODE) - 1) << bsRTMR_CTL_OP_MODE)
+    pRTMR->CTL &= ~mask;
+    pRTMR->CTL  |= (mode << bsRTMR_CTL_OP_MODE);
 }
 
 void RTMR_IntEnable(RTMR_TypeDef *pRTMR)

@@ -118,7 +118,7 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#include "platform_api.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include "eflash.h"

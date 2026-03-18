@@ -113,8 +113,37 @@ void setup_peripherals(void)
 	TMR_IntEnable(APB_TMR1);
 	TMR_Reload(APB_TMR1);
 	TMR_Enable(APB_TMR1);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #error WIP
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+    SYSCTRL_ClearClkGateMulti(    (1 << SYSCTRL_ITEM_AHB_SPI0)
+                                | (1 << SYSCTRL_ITEM_APB_PinCtrl)
+                                | (1 << SYSCTRL_ITEM_APB_GPIO0)
+                                | (1 << SYSCTRL_ITEM_APB_GPIO1)
+                                | (1 << SYSCTRL_ITEM_APB_TMR0));
+    #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    SYSCTRL_SelectSpiClk(SPI_PORT_0 ,SYSCTRL_CLK_SLOW);
+    #endif
+
+    config_uart(OSC_CLK_FREQ, 115200);
+
+	PINCTRL_SetPadMux(SPI_LCD_BL, IO_SOURCE_GPIO);
+	PINCTRL_SetPadMux(SPI_LCD_DC, IO_SOURCE_GPIO);
+	PINCTRL_SetPadMux(SPI_LCD_RST, IO_SOURCE_GPIO);
+	PINCTRL_SetPadMux(SPI_LCD_CS, IO_SOURCE_GPIO);
+    
+    PINCTRL_SelSpiIn(SPI_PORT_0, SPI_LCD_SCLK, IO_NOT_A_PIN, IO_NOT_A_PIN,
+                                IO_NOT_A_PIN, IO_NOT_A_PIN, SPI_LCD_MOSI);
+
+    GIO_SetDirection(SPI_LCD_BL, GIO_DIR_OUTPUT);
+	GIO_SetDirection(SPI_LCD_RST, GIO_DIR_OUTPUT);
+	GIO_SetDirection(SPI_LCD_CS, GIO_DIR_OUTPUT);
+	GIO_SetDirection(SPI_LCD_DC, GIO_DIR_OUTPUT);
+
+	SPI_Init();
+
+    TMR_SetOpMode(APB_TMR0, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_EXTERNAL, 0);
+    TMR_SetReload(APB_TMR0, 0, TMR_GetClk(APB_TMR0, 0)/1000);//1k hz , 1ms
+    TMR_IntEnable(APB_TMR0, 0, 0x1);
+    TMR_Enable(APB_TMR0, 0, 0x1);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -148,6 +177,7 @@ static void watchdog_task(void *pdata)
 
 trace_rtt_t trace_ctx = {0};
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 uint32_t timer1_isr(void *user_data)
 {
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
@@ -155,6 +185,21 @@ uint32_t timer1_isr(void *user_data)
 	lv_tick_inc(1);//lvgl 1ms heart beat
     return 0;
 }
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+uint32_t timer0_isr(void *user_data)
+{
+    uint8_t state;
+    (void) user_data;
+    BaseType_t xHigherPriorityTaskWoke = pdFALSE;
+
+    state = TMR_IntHappened (APB_TMR0, 0);
+    TMR_IntClr(APB_TMR0, 0, state);
+	lv_tick_inc(1);//lvgl 1ms heart beat
+    return 0;
+}
+#else
+    #error unknown or unsupported chip family
+#endif
 
 static void lvgl_task(void *pdata)
 {
@@ -164,7 +209,7 @@ static void lvgl_task(void *pdata)
 	lv_port_disp_init();
 	//show a chart here
 	lv_example_chart_2();
-
+    
     for (;;)
     {
     	lv_task_handler();
@@ -186,9 +231,14 @@ int app_main()
 
     setup_peripherals();
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer1_isr, NULL);
-
-	xTaskCreate(watchdog_task,
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+    platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER0, timer0_isr, NULL);
+#else
+    #error unknown or unsupported chip family
+#endif
+    xTaskCreate(watchdog_task,
            "w",
            configMINIMAL_STACK_SIZE,
            NULL,

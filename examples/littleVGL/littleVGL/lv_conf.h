@@ -49,7 +49,7 @@
 #define LV_MEM_CUSTOM 1
 #if LV_MEM_CUSTOM == 0
     /*Size of the memory available for `lv_mem_alloc()` in bytes (>= 2kB)*/
-    #define LV_MEM_SIZE (48U * 1024U)          /*[bytes]*/
+    #define LV_MEM_SIZE (2U * 1024U)          /*[bytes]*/
 
     /*Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too.*/
     #define LV_MEM_ADR 0     /*0: unused*/
@@ -60,10 +60,17 @@
     #endif
 
 #else       /*LV_MEM_CUSTOM*/
-    #define LV_MEM_CUSTOM_INCLUDE <stdlib.h>   /*Header for the dynamic memory function*/
-    #define LV_MEM_CUSTOM_ALLOC   malloc
-    #define LV_MEM_CUSTOM_FREE    free
-    #define LV_MEM_CUSTOM_REALLOC realloc
+//    #define LV_MEM_CUSTOM_INCLUDE <stdlib.h>   /*Header for the dynamic memory function*/
+//    #define LV_MEM_CUSTOM_ALLOC   malloc 
+//    #define LV_MEM_CUSTOM_FREE    free
+//    #define LV_MEM_CUSTOM_REALLOC realloc
+#include <stddef.h> 
+    
+    void* ll_realloc(void* ptr, size_t new_size);
+    #define LV_MEM_CUSTOM_INCLUDE <ll_api.h>   /*Header for the dynamic memory function*/
+    #define LV_MEM_CUSTOM_ALLOC   ll_malloc 
+    #define LV_MEM_CUSTOM_FREE    ll_free
+    #define LV_MEM_CUSTOM_REALLOC ll_realloc
 #endif     /*LV_MEM_CUSTOM*/
 
 /*Number of the intermediate memory buffer used during rendering and other internal processing mechanisms.
@@ -325,7 +332,7 @@
 
 /*Montserrat fonts with ASCII range and some symbols using bpp = 4
  *https://fonts.google.com/specimen/Montserrat*/
-#define LV_FONT_MONTSERRAT_8  1
+#define LV_FONT_MONTSERRAT_8  0
 #define LV_FONT_MONTSERRAT_10 0
 #define LV_FONT_MONTSERRAT_12 1
 #define LV_FONT_MONTSERRAT_14 0
