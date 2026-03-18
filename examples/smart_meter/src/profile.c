@@ -83,7 +83,12 @@ void disable_timer_if_no_tpt(void)
             (peripheral_cfgs[index].tpt_enable))
             return;
     }
-    timer_disable();
+    #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    TMR_Disable(APB_TMR1);
+    #elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+    TMR_Enable(APB_TMR0, 0, 0x0);
+    #endif
+    
 }
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
@@ -128,7 +133,13 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
         {
             ll_hint_on_ce_len(connection_handle, 30, 30);
             peripheral_cfgs[index].tpt_enable = 1;
-            timer_restart();
+            #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+            TMR_Reload(APB_TMR1);
+            TMR_Enable(APB_TMR1);
+            #elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+            TMR_Enable(APB_TMR0, 0, 0x0);
+            TMR_Enable(APB_TMR0, 0, 0x1);
+            #endif
         }
         else
         {

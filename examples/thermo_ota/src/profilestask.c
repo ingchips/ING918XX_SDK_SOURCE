@@ -327,7 +327,7 @@ void setup_peripherals_i2c_pin(void)
 void setup_peripherals_i2c(void)
 {
     setup_peripherals_i2c_pin();
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     //init I2C module
     I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,get_thermo_addr());
     I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);
