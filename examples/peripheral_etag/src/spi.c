@@ -48,7 +48,7 @@ void SPI_Write(uint8_t data)
     // clear dummy data
     apSSP_ReadFIFO(AHB_SSP0);
 }
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
 void SPI_Init(SSP_TypeDef * SPI_BASE)
 {
@@ -92,4 +92,6 @@ void SPI_Write( uint8_t data)
     // write dummy addr and cmd to trigger the writing
     apSSP_WriteCmd(APB_SPI,0x00,0x00);
 }
+#else 
+#error WIP
 #endif
