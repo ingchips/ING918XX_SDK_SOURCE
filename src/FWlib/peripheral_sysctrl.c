@@ -1634,22 +1634,14 @@ void SYSCTRL_TuneSlowRC(uint32_t tune)
     set_reg_bits((volatile uint32_t*)(AON1_CTRL_BASE + 0x3c), tune, 12, 4);
 }
 
-void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode)
+void SYSCTRL_SelectSpiClkDiv(spi_port_t port, SYSCTRL_ClkMode mode, uint8_t div)
 {
     switch (port)
     {
     case SPI_PORT_0:
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode == 0 ? 0 : 1, 21);
-        if (mode >= SYSCTRL_CLK_PLL_DIV_1)
-        {
-            set_reg_bits(APB_SYSCTRL->CguCfg, mode, 4, 20);
-            set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
-        }
-        else
-        {
-            set_reg_bits(APB_SYSCTRL->CguCfg, 1, 4, 20);
-            set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
-        }
+        set_reg_bits(APB_SYSCTRL->CguCfg, div, 4, 20);
+        set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 30);
         break;
     case SPI_PORT_1:
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode & 1, 22);

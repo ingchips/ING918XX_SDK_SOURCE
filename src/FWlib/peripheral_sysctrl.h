@@ -1209,6 +1209,7 @@ typedef enum
     SOURCE_SLOW_CLK,
     SOURCE_32K_CLK,
     SOURCE_PLL_CLK,
+    SOURCE_FAST_PER_CLK,
 } pre_clk_source_t;
 
 typedef enum
@@ -1343,7 +1344,8 @@ q * @param mode          clock mode
  * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
  *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_FAST_PER`.
  */
-void SYSCTRL_SelectSpiClk(spi_port_t port, SYSCTRL_ClkMode mode);
+#define SYSCTRL_SelectSpiClk(port, mode) SYSCTRL_SelectSpiClkDiv(port, mode,1)    
+void SYSCTRL_SelectSpiClkDiv(spi_port_t port, SYSCTRL_ClkMode mode, uint8_t div);
 
 /**
  * @brief Select UART clock mode
