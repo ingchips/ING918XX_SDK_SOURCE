@@ -15,6 +15,15 @@
     #define BOARD_USE_ACCEL
     #define BOARD_USE_BUZZER
     #define BOARD_USE_KEYS
+#elif   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#error "916 chip does not support this demo"
+#elif   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    #define BOARD_ID       BOARD_ING2086_DK
+    #define BOARD_USE_RGB_LED
+    #define BOARD_USE_THERMO
+    #define BOARD_USE_ACCEL
+    #define BOARD_USE_BUZZER
+    #define BOARD_USE_KEYS
 #endif
 
 #include "board.c"
@@ -123,6 +132,20 @@ const static uint8_t led_pins[] = {
 #define KEY_DOWN        0
 
 #define BUZZ_PIN        GIO_GPIO_13
+#define IIC_SCL_PIN     GIO_GPIO_15
+#define IIC_SDA_PIN     GIO_GPIO_16
+
+#elif (BOARD_ID == BOARD_ING2086_DK)
+
+const static uint8_t led_pins[] = {
+    GIO_GPIO_11, GIO_GPIO_14,
+};
+
+#define LED_ON          0
+#define LED_OFF         1
+
+#define KEY_DOWN        0
+
 #define IIC_SCL_PIN     GIO_GPIO_15
 #define IIC_SDA_PIN     GIO_GPIO_16
 
