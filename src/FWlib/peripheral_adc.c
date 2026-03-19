@@ -900,8 +900,8 @@ uint16_t ADC_GetData(const uint32_t data)
 void ADC_HardwareCalibration(void)
 {
     volatile uint32_t rwData;
-	  int i;
-	  uint32_t j;
+    int i;
+    uint32_t j;
     ADC_RegWr(SADC_CFG_0, 1, 17);
     ADC_RegWrBits(SADC_CFG_0, 1, 18, 4);
     ADC_RegClr(SADC_CFG_0, 9, 1);

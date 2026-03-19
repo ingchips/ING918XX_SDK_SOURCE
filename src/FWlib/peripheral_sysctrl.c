@@ -2048,12 +2048,12 @@ int SYSCTRL_Init(void)
     return 0;
 }
 
-void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode)
+void SYSCTRL_SelectI2sClkDiv(pre_clk_source_t source, uint8_t div)
 {
-    set_reg_bit(APB_SYSCTRL->CguCfg + 1, mode == 0 ? 0 : 1, 11);
-    if (mode >= SYSCTRL_CLK_PLL_DIV_1)
+    set_reg_bit(APB_SYSCTRL->CguCfg + 1, source == SOURCE_SLOW_CLK ? 0 : 1, 11);
+    if (div)
     {
-        set_reg_bits(APB_SYSCTRL->CguCfg + 1, mode, 4, 6);
+        set_reg_bits(APB_SYSCTRL->CguCfg + 1, div, 4, 6);
         set_reg_bit(APB_SYSCTRL->CguCfg + 1, 1, 10);
     }
 }

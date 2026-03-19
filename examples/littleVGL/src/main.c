@@ -191,7 +191,6 @@ uint32_t timer0_isr(void *user_data)
     uint8_t state;
     (void) user_data;
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
-
     state = TMR_IntHappened (APB_TMR0, 0);
     TMR_IntClr(APB_TMR0, 0, state);
 	lv_tick_inc(1);//lvgl 1ms heart beat

@@ -1303,10 +1303,11 @@ typedef enum
  * @brief Select clock mode of TIMER
  *
  * All timers share the same clock divider, which means that if timer K is
- * set to use (SYSCTRL_CLK_SLOW_DIV_X), all previously configures timers that
- * uses (SYSCTRL_CLK_SLOW_DIV_X) are overwritten by (SYSCTRL_CLK_SLOW_DIV_X).
+ * set to use (div), all previously configures timers that
+ * uses (div) are overwritten by (div).
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
+ * `source` should be `SOURCE_PLL_CLK`, or `SOURCE_32K_CLK`, or `SOURCE_SLOW_CLK`
+ * if `source` is `SOURCE_32K_CLK`, `div` not used.
  *
  * @param port          the timer
  * @param div           clock divider
@@ -1318,7 +1319,8 @@ void SYSCTRL_SelectTimerClk(timer_port_t port, uint8_t div, pre_clk_source_t sou
 /**
  * @brief Select clock mode of PWM
  *
- * `mode` should be `SYSCTRL_CLK_32k`, or `SYSCTRL_CLK_SLOW_DIV_N`, where N = 1..15;
+ * `source` should be `SOURCE_PLL_CLK`, or `SOURCE_32K_CLK`, or `SOURCE_SLOW_CLK`
+ * if `source` is `SOURCE_32K_CLK`, `div` not used.
  *
  * @param div           clock divider
  * @param source        clock source
@@ -1339,10 +1341,14 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
 /**
  * @brief Select SPI clock mode
  * @param port          the port
-q * @param mode          clock mode
+ * @param mode          clock mode
+ * @param div           clock divider
  *
- * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;
- *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_FAST_PER`.
+ * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_1`, div should be in [1..15];
+ *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_FAST_PER`, div is not used.
+ * 
+ * SOURCE_SLOW_CLK cannot set div if there are limitations using old interface.
+ * if use old interface, mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_[1..15]`.
  */
 #define SYSCTRL_SelectSpiClk(port, mode) SYSCTRL_SelectSpiClkDiv(port, mode,1)    
 void SYSCTRL_SelectSpiClkDiv(spi_port_t port, SYSCTRL_ClkMode mode, uint8_t div);
@@ -1358,9 +1364,14 @@ void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
  * @brief Select I2S clock mode
  * @param mode          clock mode
  *
- * Note: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_N`, where N = 1..15;.
+ * Note: mode should be `SOURCE_SLOW_CLK`, or `SOURCE_PLL_CLK`, div should be in [1..15].
+ * SOURCE_SLOW_CLK cannot set div if there are limitations using old interface.
+ * if use old interface, mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_[1..15]`.
  */
-void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode);
+#define SYSCTRL_SelectI2sClk(mode) \
+do { if (mode != SYSCTRL_CLK_SLOW) SYSCTRL_SelectI2sClkDiv(SOURCE_PLL_CLK, (uint8_t)mode); \
+    else SYSCTRL_SelectI2sClkDiv(SOURCE_SLOW_CLK, 1); } while (0)
+void SYSCTRL_SelectI2sClkDiv(pre_clk_source_t mode, uint8_t div);
 
 /**
  * @brief Get current PLL clock in Hz
