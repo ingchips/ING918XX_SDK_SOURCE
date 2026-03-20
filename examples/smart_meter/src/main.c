@@ -91,12 +91,11 @@ uint32_t uart_isr(void *user_data)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 921600);
-    #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     // timer 0 can be used as watchdog, so we use timer 1.
     // setup timer 1 to sampling rate
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 50);
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR1);
