@@ -421,8 +421,9 @@ void platform_switch_app(const uint32_t app_addr);
  * @brief Write value to the persistent register, of which the value is kept even
  *        in power saving mode.
  *
- * For ING918: the least FOUR significant bits of `value` are saved;
- * For ING916: the least FIVE significant bits of `value` are saved.
+ * For ING918: the least FOUR  significant bits of `value` are saved;
+ * For ING916: the least FIVE  significant bits of `value` are saved.
+ * For ING20 : the least THREE significant bits of `value` are saved.
  *
  * @param[in] value              value
  ****************************************************************************************
