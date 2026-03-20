@@ -118,7 +118,7 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-#include "platform_api.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include "eflash.h"
@@ -900,6 +900,8 @@ uint16_t ADC_GetData(const uint32_t data)
 void ADC_HardwareCalibration(void)
 {
     volatile uint32_t rwData;
+    int i;
+    uint32_t j;
     ADC_RegWr(SADC_CFG_0, 1, 17);
     ADC_RegWrBits(SADC_CFG_0, 1, 18, 4);
     ADC_RegClr(SADC_CFG_0, 9, 1);
@@ -908,10 +910,10 @@ void ADC_HardwareCalibration(void)
     ADC_RegWrBits(SADC_CFG_2, 1, 3, 12);
     ADC_RegWr(SADC_INT_MAKS, 1, 0);
     ADC_RegWr(SADC_CFG_0, 1, 1);
-    for (int i = 1; i < 8; i++)
+    for (i = 1; i < 8; i++)
     {
         ADC_RegWrBits(SADC_CFG_3, i, 16, 3);
-        for (uint32_t j = 0; j < 100; j++) __NOP();
+        for (j = 0; j < 100; j++) __NOP();
         rwData = APB_SADC->sadc_cfg3;
     }
     ADC_RegWr(SADC_CFG_2, 1, 2);
@@ -923,10 +925,10 @@ void ADC_HardwareCalibration(void)
 
     ADC_RegClr(SADC_CFG_0, 0, 1);
     ADC_RegWr(SADC_CFG_0, 1, 1);
-    for (int i = 1; i < 8; i++)
+    for (i = 1; i < 8; i++)
     {
         ADC_RegWrBits(SADC_CFG_3, i, 16, 3);
-        for (uint32_t j = 0; j < 100; j++) __NOP();
+        for (j = 0; j < 100; j++) __NOP();
         rwData = APB_SADC->sadc_cfg3;
     }
     ADC_RegClr(SADC_CFG_2, 3, 12);

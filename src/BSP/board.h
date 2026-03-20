@@ -8,6 +8,7 @@
 #define BOARD_ING91881B_02_02_06        3
 #define BOARD_DB682AC1A                 4
 #define BOARD_DB72C8K1A                 5
+#define BOARD_ING2086_DK                6
 
 #ifndef BOARD_ID
 #if   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
@@ -15,7 +16,7 @@
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define BOARD_ID       BOARD_DB682AC1A
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-    #define BOARD_ID       BOARD_DB682AC1A
+    #define BOARD_ID       BOARD_ING2086_DK
 #endif
 #endif
 

@@ -9,6 +9,7 @@
 /*********************
  *      INCLUDES
  *********************/
+#include <ll_api.h>
 #include "lv_port_disp.h"
 #include "lvgl.h"
 #include "lcd_config.h"
@@ -128,6 +129,30 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
     lv_disp_flush_ready(disp_drv);
+}
+
+void* ll_realloc(void* ptr, size_t new_size)
+{
+    if (ptr == NULL) {
+        return ll_malloc(new_size);
+    }
+
+    if (new_size == 0) {
+        ll_free(ptr);
+        return NULL;
+    }
+
+    void* new_ptr = ll_malloc(new_size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+
+    // NOTE: Directly copy new_size bytes, regardless of the actual size of the original memory! 
+    // Assume that the caller guarantees that ptr is at least new_size bytes valid (or does not care about out-of-bounds
+    memcpy(new_ptr, ptr, new_size);
+
+    ll_free(ptr);
+    return new_ptr;
 }
 
 #else /*Enable this file at the top*/

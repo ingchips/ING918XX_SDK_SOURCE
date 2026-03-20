@@ -184,6 +184,8 @@ uint16_t read_adc(uint8_t channel)
     return sample;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     ADC_Reset();
+    ADC_HardwareCalibration();
+    ADC_SetVref(VREF_LDO33_MODE);
     ADC_ConvCfg(CONTINUES_MODE, (SADC_channelId)channel, AVE_NUM, 0, LOOP_DELAY(ADC_CLK_MHZ, SAMPLERATE, ADC_CH_NUM));
     ADC_AveInit();
     ADC_Start(1);

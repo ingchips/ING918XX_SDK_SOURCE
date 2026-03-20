@@ -91,22 +91,22 @@ uint32_t uart_isr(void *user_data)
 void setup_peripherals(void)
 {
     config_uart(OSC_CLK_FREQ, 921600);
-    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     // timer 0 can be used as watchdog, so we use timer 1.
     // setup timer 1 to sampling rate
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_APB_TMR1));
     TMR_SetCMP(APB_TMR1, TMR_CLK_FREQ / 50);
 	TMR_SetOpMode(APB_TMR1, TMR_CTL_OP_MODE_WRAPPING);
     TMR_Reload(APB_TMR1);
-	TMR_IntEnable(APB_TMR1);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
-    TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
-    TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / 50);
-    TMR_IntEnable(APB_TMR1, 0, 0xf);
-#else
-    #error unknown or unsupported chip family
-#endif
+    TMR_IntEnable(APB_TMR1);
+    #elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+    SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ITEM_APB_TMR0));
+    TMR_SetOpMode(APB_TMR0, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_EXTERNAL, 0);
+    TMR_SetReload(APB_TMR0, 0, TMR_GetClk(APB_TMR0, 0)/1000);//1k hz , 1ms
+    TMR_IntEnable(APB_TMR0, 0, 0x1);
+    TMR_Enable(APB_TMR0, 0, 0x1);
+    #endif
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -151,14 +151,13 @@ void timer_restart(void)
 uint32_t timer_isr(void *user_data)
 {
     extern void trigger_tpt(void);
-
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR1);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
-    TMR_IntClr(APB_TMR1, 0, 0xf);
-#else
-    #error unknown or unsupported chip family
-#endif
+    #elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+    uint8_t state;
+    state = TMR_IntHappened (APB_TMR0, 0);
+    TMR_IntClr(APB_TMR0, 0, state);
+    #endif
     trigger_tpt();
 
     return 0;
@@ -186,9 +185,15 @@ int app_main()
     platform_set_irq_callback(PLATFORM_CB_IRQ_UART0, uart_isr, NULL);
 
     setup_peripherals();
-
+    
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer_isr, NULL);
-
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+    platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER0, timer_isr, NULL);
+#else
+    #error unknown or unsupported chip family
+#endif
+    
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0xff);

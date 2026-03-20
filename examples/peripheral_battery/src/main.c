@@ -238,6 +238,7 @@ void setup_peripherals(void)
 #ifndef SIMULATION
     // setup ADC
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_ADC);
+    SYSCTRL_EnableInternalVref(1);
     SYSCTRL_SetAdcClkDiv(4);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Reset();

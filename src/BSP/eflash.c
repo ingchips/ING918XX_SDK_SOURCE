@@ -719,53 +719,9 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
 {
-    int i;
-
-    if (block_num < 1) return -2;
-
-    for (i = 0; i < block_num; i++)
-    {
-        if (blocks[i].dest & (EFLASH_SECTOR_SIZE - 1)) return -1;
-    }
-
-    FLASH_PRE_OPS();
-    for (i = 0; i < block_num; i++)
-    {
-        {
-            uint32_t dest_addr = blocks[i].dest;
-            const uint8_t *buffer = (const uint8_t *)blocks[i].src;
-            int size = blocks[i].size;
-
-            while (size > 0)
-            {
-                uint32_t remain = EFLASH_SECTOR_SIZE;
-
-                ROM_erase_flash_sector(dest_addr);
-                SYSCTRL_ICacheFlush();
-
-                while ((remain > 0) && (size > 0))
-                {
-                    int j;
-                    uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
-                    cnt = cnt > remain ? remain : cnt;
-
-                    for (j = 0; j < cnt; j++)
-                        page_buffer[j] = buffer[j];
-
-                    ROM_FlashPageProgram(dest_addr, page_buffer, cnt);
-
-                    dest_addr += cnt;
-                    buffer += cnt;
-                    remain -= cnt;
-                    size -= cnt;
-                }
-            }
-        }
-    }
-    platform_reset();
-    FLASH_POST_OPS();
-
-    return 0;
+    int r = ROM_flash_do_update(block_num, blocks, page_buffer);
+    SYSCTRL_ICacheFlush();
+    return r;
 }
 
 #endif
