@@ -22,14 +22,6 @@ int app_main()
 {
     _app_main();
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4500);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-    platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4500);
-    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 1845);
-#endif
-
     return (uintptr_t)os_impl_get_driver();
 }
 

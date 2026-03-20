@@ -376,6 +376,9 @@ int erase_flash_sector(const uint32_t addr);
 /**
  * @brief do FOTA update
  *
+ * CAUTION: FOTA is not supported on test chips using flash that can't support
+ * continuous mode.
+ *
  * @param[in] block_num         number of blocks
  * @param[in] blocks            an array of `fota_update_block_t`
  * @param[in] ram_buffer        buffer large enough for holding `EFLASH_ERASABLE_SIZE` bytes of data

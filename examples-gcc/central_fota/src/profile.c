@@ -9,6 +9,7 @@
 #include "gatt_client.h"
 #include "ingsoc.h"
 #include "platform_util.h"
+#include "rom_tools.h"
 
 #include "ad_parser.h"
 #include "gatt_client_util.h"
@@ -29,52 +30,38 @@ DEF_UUID(uuid_ota_pubkey,   INGCHIPS_UUID_OTA_PUBKEY);
 #define TARGET_FAMILY       INGCHIPS_FAMILY_918
 #endif
 
-#if (TARGET_FAMILY == INGCHIPS_FAMILY_918)
-    #define ENTRY                   0x00004000
-    #define TARGET_STORAGE_START    0x00044000
-    #define PLATFORM_BIN_SIZE       0x00022000
-    #define APP_BIN_SIZE            0x00004000
+const uint32_t storage_platform_bin[INGCHIPS_FAMILY_20 + 1] =
+{
+    0x00044000,
+    0x02041000,
+    0x02041000,
+};
 
-#elif (TARGET_FAMILY == INGCHIPS_FAMILY_916)
-    #define ENTRY                   0x02002000
-    #define TARGET_STORAGE_START    0x02041000
-    #define PLATFORM_BIN_SIZE       0x00028000
-    #define APP_BIN_SIZE            0x00004000
+const uint32_t storage_app_bin[INGCHIPS_FAMILY_20 + 1] =
+{
+    0x00074000,
+    0x02071000,
+    0x02071000,
+};
 
-#elif (TARGET_FAMILY == INGCHIPS_FAMILY_20)
-    #define ENTRY                   0x02002000
-    #define TARGET_STORAGE_START    0x02031000
-    #define PLATFORM_BIN_SIZE       0x00028000
-    #define APP_BIN_SIZE            0x00004000
-#else
-    #error unknown or unsupported target chip family
-#endif
+const uint32_t entry_address[INGCHIPS_FAMILY_20 + 1] =
+{
+    0x00004000,
+    0x02002000,
+    0x02002000,
+};
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    #define LOCAL_STORAGE_START     0x00044000
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #define LOCAL_STORAGE_START     0x02041000
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-    #define LOCAL_STORAGE_START     0x02031000
-#else
-    #error unknown or unsupported chip family
-#endif
+// a little larger than the actual size of app
+#define APP_BIN_SIZE        0x6000
 
-const ota_item_t ota_items[] =
+static ota_item_t ota_items[] =
 {
     // platform.bin
     {
-        .local_storage_addr = LOCAL_STORAGE_START,
-        .target_storage_addr = TARGET_STORAGE_START,
-        .target_load_addr = ENTRY,
-        .size = PLATFORM_BIN_SIZE,
     },
     // app.bin
     {
-        .local_storage_addr = LOCAL_STORAGE_START + PLATFORM_BIN_SIZE,
-        .target_storage_addr = TARGET_STORAGE_START + PLATFORM_BIN_SIZE,
-        .target_load_addr = ENTRY + PLATFORM_BIN_SIZE,
-        .size = APP_BIN_SIZE,
+        .size                   = APP_BIN_SIZE,
     },
 };
 
@@ -135,8 +122,9 @@ static void fully_discovered(service_node_t *first, void *user_data, int err_cod
                             char_data->chara.value_handle,
                             char_pk->chara.value_handle,
                             2, ota_items,
-                            ENTRY,
+                            entry_address[TARGET_FAMILY],
                             fota_done,
+                            (f_crc_t)(ROM_FUNC_ADDR_CRC),
                             driver);
     }
     else
@@ -147,8 +135,9 @@ static void fully_discovered(service_node_t *first, void *user_data, int err_cod
                             0,
                             char_ver->chara.value_handle, char_ctrl->chara.value_handle, char_data->chara.value_handle,
                             2, ota_items,
-                            ENTRY,
-                            fota_done);
+                            entry_address[TARGET_FAMILY],
+                            fota_done,
+                            (f_crc_t)(ROM_FUNC_ADDR_CRC));
     }
 
     gatt_client_util_free(discoverer);
@@ -260,9 +249,27 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(user_packet_handler);
     gatt_client_register_handler(user_packet_handler);
 
-    const struct platform_info * v = platform_inspect2(LOCAL_STORAGE_START, TARGET_FAMILY);
+    const struct platform_info * v = platform_inspect2(storage_platform_bin[INGCHIPS_FAMILY], TARGET_FAMILY);
     ota_ver.platform.major = v->version.major;
     ota_ver.platform.minor = v->version.minor;
     ota_ver.platform.patch = v->version.patch;
+    ota_items[0].local_storage_addr     = storage_platform_bin[INGCHIPS_FAMILY];
+    ota_items[0].target_storage_addr    = storage_platform_bin[TARGET_FAMILY];
+    ota_items[0].target_load_addr       = entry_address[TARGET_FAMILY];
+    ota_items[1].local_storage_addr     = storage_app_bin[INGCHIPS_FAMILY];
+    ota_items[1].target_storage_addr    = storage_app_bin[TARGET_FAMILY];
+    ota_items[1].target_load_addr       = v->app_load_addr;
+    ota_items[0].size                   = ota_items[1].target_load_addr - ota_items[0].target_load_addr;
+
+    platform_printf("OTA Version:\n"
+                    "platform: v%d.%d.%d\n"
+                    "     app: v%d.%d.%d\n"
+                    "platform size: 0x%08x\n"
+                    "app load addr: 0x%08x\n"
+                    "\n",
+                    ota_ver.platform.major, ota_ver.platform.minor, ota_ver.platform.patch,
+                    ota_ver.app.major,      ota_ver.app.minor,      ota_ver.app.patch,
+                    ota_items[0].size,
+                    ota_items[1].target_load_addr);
     return 0;
 }

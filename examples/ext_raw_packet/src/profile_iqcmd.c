@@ -62,6 +62,19 @@ uint64_t start_time = 0;
 
 #define SCAN_WINDOW         (1000 * 1000)
 
+static int raw_packet_recv(struct ll_raw_packet *packet, uint64_t air_time)
+{
+    while (air_time + 30000 < start_time + SCAN_WINDOW)
+    {
+        if (ll_raw_packet_recv(raw_packet, air_time, start_time + SCAN_WINDOW - air_time) == 0)
+            return 0;
+        air_time += 370;
+    }
+
+    platform_printf("+ERR: Rx fail\n");
+    return 1;
+}
+
 void show_rx(struct ll_raw_packet *packet)
 {
     uint64_t air_time;
@@ -72,14 +85,8 @@ void show_rx(struct ll_raw_packet *packet)
 
     if (ll_raw_packet_get_rx_data(packet, &air_time, &header, data, &len, &rssi) != 0)
     {
-        air_time = platform_get_us_time();
-        if (air_time + 30000 < start_time + SCAN_WINDOW)
-        {
-            ll_raw_packet_recv(raw_packet, air_time + RX_DELAY, start_time + SCAN_WINDOW - air_time);
-            return;
-        }
-
-        platform_printf("+ERR: Rx fail\n");
+        air_time = platform_get_us_time() + RX_DELAY;
+        raw_packet_recv(packet, air_time);
         return;
     }
 
@@ -121,8 +128,8 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
                                   sizeof(pattern), // uint8_t switching_pattern_len,
                                   pattern, 12, 1);
         }
-        start_time = platform_get_us_time();
-        ll_raw_packet_recv(raw_packet, start_time + RX_DELAY, SCAN_WINDOW);
+        start_time = platform_get_us_time() + RX_DELAY;
+        raw_packet_recv(raw_packet, start_time);
         break;
     case USER_MSG_RAW_PACKET_DONE:
         show_rx(raw_packet);
@@ -210,4 +217,3 @@ uint32_t setup_profile(void *data, void *user_data)
     att_server_register_packet_handler(&user_packet_handler);
     return 0;
 }
-

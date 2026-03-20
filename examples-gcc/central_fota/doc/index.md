@@ -58,7 +58,7 @@ and test it using [_ING BLE_](https://github.com/ingchips/INGdemo/) and
     === UNSECURE FOTA ===
     device version:
     platform: 1.7.12
-        app: 1.1.0
+         app: 1.1.0
     update bitmap: 02
 
     start new item: 1
@@ -78,6 +78,6 @@ and test it using [_ING BLE_](https://github.com/ingchips/INGdemo/) and
     === UNSECURE FOTA ===
     device version:
     platform: 1.7.12
-        app: 1.2.0
+         app: 1.2.0
     fota_done: 1
     ```

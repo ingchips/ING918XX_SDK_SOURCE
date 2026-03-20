@@ -219,6 +219,29 @@ const platform_evt_cb_table_t evt_cb_table =
     }
 };
 
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+void config_core_clocks_like_ing916(void)
+{
+    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_SLOW);
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
+    SYSCTRL_ConfigPLLClk(5, 70, 1);
+    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
+    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_3);
+
+    // Flash: enable continuous mode
+    // this takes effect after 1st waking up
+    const uint32_t addr = AON1_CTRL_BASE + 0x14;
+    uint32_t t = io_read(addr);
+    if (((t >> 28) & 0x7) == 0x3)
+    {
+        t &= ~(0x7u << 28);
+        t |=   0x6  << 28;
+        io_write(addr, t);
+    }
+}
+#endif
+
 void _app_main()
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
@@ -238,7 +261,11 @@ void _app_main()
     platform_config(PLATFORM_CFG_RT_RC_EN, PLATFORM_CFG_DISABLE);
 #else
     platform_config(PLATFORM_CFG_RT_OSC_EN, PLATFORM_CFG_DISABLE);
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_20)
     platform_config(PLATFORM_CFG_RT_CLK_ACC, 500);
+#else
+    platform_config(PLATFORM_CFG_RT_CLK_ACC, 800);
+#endif
 #endif
 
     // setup handlers
@@ -255,4 +282,67 @@ void _app_main()
 #endif
 
     platform_config(PLATFORM_CFG_POWER_SAVING, PLATFORM_CFG_ENABLE);
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    // make sure that RAM does not exceed 0x20004000
+    // then, we can power off the unused blocks
+    SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#ifdef DETECT_KEY
+    // configure it only once
+    GIO_EnableDeepSleepWakeupSource(PIN_WAKEUP, 1, 1, PINCTRL_PULL_DOWN);
+#endif
+    #ifdef USE_SLOW_CLK_RC
+        #if (USE_SLOW_CLK_RC == 8)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_8M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 9000);
+        #elif (USE_SLOW_CLK_RC == 16)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_16M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 5000);
+        #elif (USE_SLOW_CLK_RC == 24)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_24M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 2500);
+        #elif (USE_SLOW_CLK_RC == 32)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_32M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 2000);
+        #elif (USE_SLOW_CLK_RC == 48)
+            SYSCTRL_EnableSlowRC(1, SYSCTRL_SLOW_RC_48M);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 1200);
+        #else
+            #error unsupported USE_SLOW_CLK_RC
+        #endif
+        SYSCTRL_AutoTuneSlowRC();
+        SYSCTRL_SelectFlashClk(SYSCTRL_CLK_SLOW);
+        SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
+        SYSCTRL_EnablePLL(0);
+        SYSCTRL_SelectSlowClk(SYSCTRL_SLOW_RC_CLK);
+    #else
+        #define HCLK_DIV 5
+
+        platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4000);
+        platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 245);
+
+        SYSCTRL_EnableConfigClocksAfterWakeup(1,
+            PLL_BOOT_DEF_LOOP,
+            HCLK_DIV,
+            SYSCTRL_CLK_PLL_DIV_2,
+            0);
+
+        SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
+        SYSCTRL_SelectHClk(HCLK_DIV);
+        SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
+    #endif
+
+    // make sure that RAM does not exceed 0x20004000
+    // then, we can power off the unused blocks
+    SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#ifdef DETECT_KEY
+    // configure it only once
+    GIO_EnableDeepSleepWakeupSource(PIN_WAKEUP, 1, 1, PINCTRL_PULL_DOWN);
+#endif
+    config_core_clocks_like_ing916();
+    platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 3800);
+    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 2045);
+#endif
 }

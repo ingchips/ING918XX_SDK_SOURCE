@@ -544,7 +544,7 @@ int flash_prepare_factory_data(void)
 check_failed:
     erase_flash_sector(FACTORY_DATA_LOC);
     flash_enable_write_protection(region, reverse_selection);
-    
+
     return 3;
 }
 
@@ -635,11 +635,13 @@ typedef uint16_t (*rom_FlashGetStatusReg)(void);
 #define ROM_FlashEnableContinuousMode       ((rom_void_void)0x00000601)
 #define ROM_FlashPageProgram                ((rom_FlashPageProgram)0x00000681)
 
+#define IS_CONTINUOUS_MODE()                ((io_read(0x40150004) & 0x1000000ul) != 0)
+
 #define FLASH_PRE_OPS()                         \
     uint32_t prim = __get_PRIMASK();            \
     uint8_t mode = 0;                           \
     __disable_irq();                            \
-    if((*(uint32_t*)0x40150004) & 0x1000000ul) {    \
+    if (IS_CONTINUOUS_MODE()) {                 \
         mode = 1;                               \
         ROM_FlashDisableContinuousMode();       \
     }
@@ -719,8 +721,17 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
 {
+    const uint8_t is_continuous = IS_CONTINUOUS_MODE();
+    if (0 == is_continuous)
+    {
+        ROM_FlashEnableContinuousMode();
+    }
     int r = ROM_flash_do_update(block_num, blocks, page_buffer);
     SYSCTRL_ICacheFlush();
+    if (0 == is_continuous)
+    {
+        ROM_FlashDisableContinuousMode();
+    }
     return r;
 }
 
