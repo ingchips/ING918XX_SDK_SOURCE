@@ -141,6 +141,7 @@ void PWM_SetDiedZoneThreshold(const uint8_t channel_index, const uint32_t thresh
 
 void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_index, const uint32_t threshold)
 {
+    (void)multi_duty_index;
     APB_PWM->Channels[channel_index].HighTh = threshold;
 }
 

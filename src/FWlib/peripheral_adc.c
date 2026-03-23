@@ -936,6 +936,7 @@ void ADC_HardwareCalibration(void)
     while (ADC_GetBusyStatus());
     ADC_RegClr(SADC_CFG_0, 1, 1);
     APB_SADC->sadc_int_mask = 0;
+    (void)rwData;
 }
 
 void ADC_Reset(void)

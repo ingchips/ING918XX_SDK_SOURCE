@@ -1299,6 +1299,22 @@ typedef enum
     SYSCTRL_RESET_POR = 0x3f,
 } SYSCTRL_ResetSource;
 
+typedef enum
+{
+    SYSCTRL_CPU_32k_CLK_EXT = 0,    // External 32K clock
+    SYSCTRL_CPU_32k_INTERNAL = 1,   // use the internal 32k clock source 32k RC
+} SYSCTRL_CPU32kMode;
+
+/**
+ * @brief Select clock of 32k for MCU
+ *
+ * Note: The default mode is `SYSCTRL_CPU_32k_INTERNAL`.
+ *
+ * @param mode          clock mode
+ *
+ */
+void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
+
 /**
  * @brief Select clock mode of TIMER
  *

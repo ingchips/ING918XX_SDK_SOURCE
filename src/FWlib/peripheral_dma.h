@@ -56,7 +56,7 @@ typedef enum
  * @return                      0 if no error else non-0
  */
 int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
-                       void *dst, void *src, int size,
+                       void *dst, void *src, uint32_t size,
                        DMA_AddressControl dst_addr_ctrl, DMA_AddressControl src_addr_ctrl,
                        uint32_t options);
 
@@ -72,7 +72,7 @@ int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
  * @return                      0 if no error else non-0
  */
 int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
-                              uint32_t *dst, SYSCTRL_DMA src, int size,
+                              uint32_t *dst, SYSCTRL_DMA src, uint32_t size,
                               DMA_AddressControl dst_addr_ctrl,
                               uint32_t options);
 
@@ -88,7 +88,7 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
  * @return                      0 if no error else non-0
  */
 int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
-                              SYSCTRL_DMA dst, uint32_t *src, int size,
+                              SYSCTRL_DMA dst, uint32_t *src, uint32_t size,
                               DMA_AddressControl src_addr_ctrl,
                               uint32_t options);
 
@@ -110,7 +110,7 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
  * so that src fifo will issue a dma req every 4bytes to trigger dma transaction.
  */
 int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
-                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
+                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, uint32_t size,
                                      uint32_t options, uint8_t *srcWidth, uint8_t *srcSize);
 /**
  * @brief Reset DMA peripheral
@@ -167,7 +167,7 @@ void DMA_AbortChannel(int channel_id);
  * @param[in] size              size in byte
  * @return                      0 if ok else non-0
  */
-int DMA_MemCopy(int channel_id, void *dst, void *src, int size);
+int DMA_MemCopy(int channel_id, void *dst, void *src, uint32_t size);
 
 typedef enum
 {
@@ -257,7 +257,7 @@ typedef enum
  * @return                      0 if no error else non-0
  */
 int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
-                       void *dst, void *src, int size,
+                       void *dst, void *src, uint32_t size,
                        DMA_AddressControl dst_addr_ctrl, DMA_AddressControl src_addr_ctrl,
                        uint32_t options);
 
@@ -273,7 +273,7 @@ int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
  * @return                      0 if no error else non-0
  */
 int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
-                              uint32_t *dst, SYSCTRL_DMA src, int size,
+                              uint32_t *dst, SYSCTRL_DMA src, uint32_t size,
                               DMA_AddressControl dst_addr_ctrl,
                               uint32_t options);
 
@@ -289,7 +289,7 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
  * @return                      0 if no error else non-0
  */
 int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
-                              SYSCTRL_DMA dst, uint32_t *src, int size,
+                              SYSCTRL_DMA dst, uint32_t *src, uint32_t size,
                               DMA_AddressControl src_addr_ctrl,
                               uint32_t options);
 
@@ -311,7 +311,7 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
  * so that src fifo will issue a dma req every 4bytes to trigger dma transaction.
  */
 int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
-                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
+                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, uint32_t size,
                                      uint32_t options, uint8_t *srcWidth, uint8_t *srcSize);
 /**
  * @brief Reset DMA peripheral
@@ -368,7 +368,7 @@ void DMA_AbortChannel(int channel_id);
  * @param[in] size              size in byte
  * @return                      0 if ok else non-0
  */
-int DMA_MemCopy(int channel_id, void *dst, void *src, int size);
+int DMA_MemCopy(int channel_id, void *dst, void *src, uint32_t size);
 
 typedef enum
 {

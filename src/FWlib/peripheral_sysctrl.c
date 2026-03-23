@@ -1840,6 +1840,13 @@ void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode)
     }
 }
 
+void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode)
+{
+    uint8_t enable = (mode == SYSCTRL_CPU_32k_CLK_EXT) ? 1 : 0; 
+    set_reg_bit((uint32_t*)AON1_CTRL_BASE, enable, 7);
+    set_reg_bit((uint32_t*)AON1_CTRL_BASE, enable, 5);
+}
+
 uint32_t SYSCTRL_GetCLK32k(void)
 {
     return RTC_CLK_FREQ;
