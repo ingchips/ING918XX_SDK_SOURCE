@@ -109,8 +109,7 @@ When each round of loopback test is done, round trip time & RSSI is reported aut
 ## Design Details
 
 After _Central_ starts, it scans for advertising containing `UUID_TPT` service, then it connects to
-that device, and discovers its service & characteristics. Once connected, _Central_ asks to change
-to 2M PHY.
+that device, and discovers its service & characteristics.
 
 Throughput from _Central_ to _Peripheral_ is got by accumulating number of completed packages in
 `HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS`.
