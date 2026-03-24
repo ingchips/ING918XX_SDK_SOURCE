@@ -1163,7 +1163,7 @@ __attribute__((weak)) const factory_calib_data_t *flash_get_factory_calib_data(v
 
 int SYSCTRL_Init(void)
 {
-    int i;
+    uint32_t i;
     const factory_calib_data_t *p = flash_get_factory_calib_data();
     if (!p) return 1;
     
@@ -1838,6 +1838,13 @@ void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode)
     default:
         break;
     }
+}
+
+void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode)
+{
+    uint8_t enable = (mode == SYSCTRL_CPU_32k_CLK_EXT) ? 1 : 0; 
+    set_reg_bit((uint32_t*)AON1_CTRL_BASE, enable, 7);
+    set_reg_bit((uint32_t*)AON1_CTRL_BASE, enable, 5);
 }
 
 uint32_t SYSCTRL_GetCLK32k(void)

@@ -352,9 +352,11 @@ void USB_GetSetupPacket(void)
   AHB_USB->UsbDOCtrl0  |= (0x1 << 15) | (1U << 31);
 }
 
-uint32_t USB_GetMaxTransferSize(void)
+int32_t USB_GetMaxTransferSize(void)
 {
-  return(1 << (((AHB_USB->UsbHConfig3)&0xf) + 11));
+    uint32_t shift = ((AHB_USB->UsbHConfig3) & 0xfU) + 11U;
+    uint32_t size = (1U << shift);
+    return (int32_t)size;
 }
 
 uint16_t USB_GetMaxPacketSize(void)
@@ -368,10 +370,10 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
     USB_TRANSFERT_T*      transfer;
     uint16_t              nbPacket;
     int32_t               size;
-    uint32_t               maxPacketSize;
+    int32_t               maxPacketSize;
     epNum = USB_EP_NUM(ep);
 
-    maxPacketSize = g_UsbVar.ep[epNum].maxpacket;
+    maxPacketSize = (int32_t)g_UsbVar.ep[epNum].maxpacket;
     if(USB_IS_EP_DIRECTION_IN(ep))
     {
       transfer = &g_UsbVar.InTransfer[epNum];
@@ -399,8 +401,7 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
 
           size = transfer->sizeRemaining;
           size = (size < USB_GetMaxTransferSize()) ? size : USB_GetMaxTransferSize();
-
-          nbPacket = (size <= maxPacketSize) ? 1 : ((size + (maxPacketSize - 1))/maxPacketSize);
+          nbPacket = (size <= maxPacketSize) ? 1 : ((size + maxPacketSize - 1)/(maxPacketSize));
 
           if(nbPacket > USB_GetMaxPacketSize())
           {
@@ -435,7 +436,7 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
           size = transfer->sizeRemaining;
           size = (size < USB_GetMaxTransferSize()) ? size : USB_GetMaxTransferSize();
 
-          nbPacket = (size <= maxPacketSize) ? 1 : ((size + (maxPacketSize - 1))/maxPacketSize);
+          nbPacket = (size <= maxPacketSize) ? 1 : ((size + maxPacketSize - 1)/(maxPacketSize));
           nbPacket = (nbPacket < USB_GetMaxPacketSize()) ? nbPacket : USB_GetMaxPacketSize();
 
           size = nbPacket * maxPacketSize;
@@ -1088,6 +1089,7 @@ void USB_HandleEp0(void)
 
 uint32_t USB_IrqHandler (void *user_data)
 {
+  (void)user_data;
   uint32_t status = AHB_USB->UsbIntStat,i;
   uint32_t statusEp = 0, ep_intr = 0;
   USB_EVNET_HANDLER_T event;

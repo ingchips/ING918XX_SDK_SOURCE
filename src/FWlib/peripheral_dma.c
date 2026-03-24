@@ -21,9 +21,10 @@ typedef enum
 } DMA_TransferWidth;
 
 static int DMA_GetCtrlConfigSrc(SYSCTRL_DMA src, DMA_TransferWidth src_width, DMA_TransferWidth *dst_width,
-                                 uint8_t *src_burst_size, int size, uint32_t addr)
+                                 uint8_t *src_burst_size, uint32_t size, uint32_t addr)
 {
     int status = 0;
+    (void)src;
     // init to default
     if ((!dst_width) || (!src_burst_size)) return 1;
     *dst_width = src_width;
@@ -55,9 +56,10 @@ static int DMA_GetCtrlConfigSrc(SYSCTRL_DMA src, DMA_TransferWidth src_width, DM
 }
 
 static int DMA_GetCtrlConfigDst(SYSCTRL_DMA dst, DMA_TransferWidth *src_width, DMA_TransferWidth dst_width,
-                                 uint8_t *src_burst_size, int size, uint32_t addr)
+                                 uint8_t *src_burst_size, uint32_t size, uint32_t addr)
 {
     int status = 0;
+    (void)dst;
     // init to default
     if ((!src_width) || (!src_burst_size)) return 1;
     *src_width = dst_width;
@@ -111,7 +113,7 @@ static int DMA_GetCtrlConfigDst(SYSCTRL_DMA dst, DMA_TransferWidth *src_width, D
 }
 
 static int DMA_GetCtrlConfigSrcDst(DMA_TransferWidth src_width, DMA_TransferWidth dst_width,
-                                  uint8_t *src_burst_size, int size)
+                                  uint8_t *src_burst_size, uint32_t size)
 {
     int status = 0;
     // init to default
@@ -143,7 +145,7 @@ static int DMA_GetCtrlConfigSrcDst(DMA_TransferWidth src_width, DMA_TransferWidt
 }
 
 int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
-                                 void *dst, void *src, int size,
+                                 void *dst, void *src, uint32_t size,
                                  DMA_AddressControl dst_addr_ctrl, DMA_AddressControl src_addr_ctrl,
                                  uint32_t options)
 {
@@ -271,10 +273,11 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
 }
 
 int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
-                                        uint32_t *dst, SYSCTRL_DMA src, int size,
+                                        uint32_t *dst, SYSCTRL_DMA src, uint32_t size,
                                         DMA_AddressControl dst_addr_ctrl,
                                         uint32_t options)
 {
+    (void)size;
     int status = 0;
     int req = SYSCTRL_GetDmaId(src);
     DMA_TransferWidth width = DMA_GetPeripheralWidth(src);
@@ -303,7 +306,7 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
 }
 
 int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
-                                        SYSCTRL_DMA dst, uint32_t *src, int size,
+                                        SYSCTRL_DMA dst, uint32_t *src, uint32_t size,
                                         DMA_AddressControl src_addr_ctrl,
                                         uint32_t options)
 {
@@ -335,7 +338,7 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
 }
 
 int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
-                                               SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
+                                               SYSCTRL_DMA dst, SYSCTRL_DMA src, uint32_t size,
                                                uint32_t options, uint8_t *srcWidth, uint8_t *srcSize)
 {
     int status = 0;
@@ -412,7 +415,7 @@ void DMA_ClearChannelIntState(int channel_id, uint32_t state)
     APB_DMA->IntStatus = v;
 }
 
-int DMA_MemCopy(int channel_id, void *dst, void *src, int size)
+int DMA_MemCopy(int channel_id, void *dst, void *src, uint32_t size)
 {
     DMA_Descriptor descriptor;
     uint32_t state;
@@ -458,8 +461,9 @@ typedef enum
 } DMA_TransferWidth;
 
 static int DMA_GetCtrlConfigSrc(SYSCTRL_DMA src, DMA_TransferWidth src_width, DMA_TransferWidth *dst_width,
-                                uint8_t *src_burst_size, int size, uint32_t addr)
+                                uint8_t *src_burst_size, uint32_t size, uint32_t addr)
 {
+    (void)src;
     int status = 0;
     // init to default
     if ((!dst_width) || (!src_burst_size)) return 1;
@@ -492,8 +496,9 @@ static int DMA_GetCtrlConfigSrc(SYSCTRL_DMA src, DMA_TransferWidth src_width, DM
 }
 
 static int DMA_GetCtrlConfigDst(SYSCTRL_DMA dst, DMA_TransferWidth *src_width, DMA_TransferWidth dst_width,
-                                uint8_t *src_burst_size, int size, uint32_t addr)
+                                uint8_t *src_burst_size, uint32_t size, uint32_t addr)
 {
+    (void)dst;
     int status = 0;
     // init to default
     if ((!src_width) || (!src_burst_size)) return 1;
@@ -548,7 +553,7 @@ static int DMA_GetCtrlConfigDst(SYSCTRL_DMA dst, DMA_TransferWidth *src_width, D
 }
 
 static int DMA_GetCtrlConfigSrcDst(DMA_TransferWidth src_width, DMA_TransferWidth dst_width,
-                                   uint8_t *src_burst_size, int size)
+                                   uint8_t *src_burst_size, uint32_t size)
 {
     int status = 0;
     // init to default
@@ -580,7 +585,7 @@ static int DMA_GetCtrlConfigSrcDst(DMA_TransferWidth src_width, DMA_TransferWidt
 }
 
 int DMA_PrepareMem2Mem(DMA_Descriptor *pDesc,
-                       void *dst, void *src, int size,
+                       void *dst, void *src, uint32_t size,
                        DMA_AddressControl dst_addr_ctrl, DMA_AddressControl src_addr_ctrl,
                        uint32_t options)
 {
@@ -621,6 +626,7 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_UART1_TX:
             return DMA_WIDTH_BYTE;
         case SYSCTRL_DMA_SADC:
+        case SYSCTRL_DMA_KeyScan:
             return DMA_WIDTH_16_BITS;
 
         case SYSCTRL_DMA_SPI0_TX:
@@ -634,7 +640,6 @@ static DMA_TransferWidth DMA_GetPeripheralWidth(SYSCTRL_DMA src)
         case SYSCTRL_DMA_PWM0:
         case SYSCTRL_DMA_PWM1:
         case SYSCTRL_DMA_PWM2:
-        case SYSCTRL_DMA_KeyScan:
         case SYSCTRL_DMA_QDEC0:
         case SYSCTRL_DMA_QDEC1:
         case SYSCTRL_DMA_QDEC2:
@@ -705,7 +710,7 @@ static volatile void *DMA_GetPeripheralDataAddr(SYSCTRL_DMA src)
 }
 
 int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
-                              uint32_t *dst, SYSCTRL_DMA src, int size,
+                              uint32_t *dst, SYSCTRL_DMA src, uint32_t size,
                               DMA_AddressControl dst_addr_ctrl,
                               uint32_t options)
 {
@@ -738,7 +743,7 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
 }
 
 int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
-                              SYSCTRL_DMA dst, uint32_t *src, int size,
+                              SYSCTRL_DMA dst, uint32_t *src, uint32_t size,
                               DMA_AddressControl src_addr_ctrl,
                               uint32_t options)
 {
@@ -770,7 +775,7 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
 }
 
 int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
-                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, int size,
+                                     SYSCTRL_DMA dst, SYSCTRL_DMA src, uint32_t size,
                                      uint32_t options, uint8_t *srcWidth, uint8_t *srcSize)
 {
     int status = 0;
@@ -847,7 +852,7 @@ void DMA_ClearChannelIntState(int channel_id, uint32_t state)
     APB_DMA->IntStatus = v;
 }
 
-int DMA_MemCopy(int channel_id, void *dst, void *src, int size)
+int DMA_MemCopy(int channel_id, void *dst, void *src, uint32_t size)
 {
     DMA_Descriptor descriptor;
     uint32_t state;

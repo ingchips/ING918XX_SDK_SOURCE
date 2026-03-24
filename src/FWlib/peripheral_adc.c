@@ -574,7 +574,7 @@ static void ADC_ftCalParaGet(void)
     else
         mbg = p_factoryCali->band_gap;
     if (mbg < 0xffffffff)
-        *(volatile uint32_t *)0x40102008 = *(volatile uint32_t *)0x40102008 & (~(0x3f << 4)) | (mbg & ADC_MK_MASK(6)) << 4;
+        *(volatile uint32_t *)0x40102008 = (*(volatile uint32_t *)0x40102008 & (~(0x3f << 4))) | (mbg & ADC_MK_MASK(6)) << 4;
     ftCalPara.Cin1 = ftCalPara.V_cal[0] * 16384 / ftCali->Vp;
     ftCalPara.Cin2 = ftCalPara.V_cal[1] / 10 * 16384 / (ftCali->Vp / 10);
     for (i = 0; i < 8; ++i) {
@@ -936,6 +936,7 @@ void ADC_HardwareCalibration(void)
     while (ADC_GetBusyStatus());
     ADC_RegClr(SADC_CFG_0, 1, 1);
     APB_SADC->sadc_int_mask = 0;
+    (void)rwData;
 }
 
 void ADC_Reset(void)

@@ -73,6 +73,7 @@ void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)
 
 void QDEC_TmrCfg(QDEC_CHX Channel, QDEC_TMR_UP_MODE TmrUpMode,QDEC_TMR_RELOAD_MODE TmrReloadMode)
 {
+    (void)TmrUpMode;
     QDEC_ChModeCfg(Channel,QDEC_TIMER);
     QDEC_SetChxCpcStopEn(Channel, QDEC_TMR_STOP);
     QDEC_SetChxCpcTrg(Channel, TmrReloadMode);
@@ -326,10 +327,6 @@ void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)
 
     {
     case QDEC_TIMER:
-//        *(uint32_t*)0x040009004UL |= (1<<15);
-        QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15);//Wave
-        QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);//Qdec        break;
-        QDEC_SetEtrg(Channel,1);//must use,becaues b cant get
     case QDEC_PWM:
         QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15);//Wave
         QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);//QdecEn
@@ -350,6 +347,7 @@ void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)
 
 void QDEC_TmrCfg(QDEC_CHX Channel, QDEC_TMR_UP_MODE TmrUpMode,QDEC_TMR_RELOAD_MODE TmrReloadMode)
 {
+    (void)TmrUpMode;
     QDEC_ChModeCfg(Channel,QDEC_TIMER);
     QDEC_SetChxCpcStopEn(Channel, QDEC_TMR_STOP);
     QDEC_SetChxCpcTrg(Channel, TmrReloadMode);

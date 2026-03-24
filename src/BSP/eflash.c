@@ -380,6 +380,8 @@ asm static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 #else
 __attribute__((naked)) static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 {
+    (void)addr;
+    (void)prog;
     __asm("ADD r1, r1, #1");
     __asm("BX  r1");
 }
@@ -468,12 +470,12 @@ static int is_data_ready(void)
     return 1;
 }
 
-static void copy_security_data(uint32_t dst, uintptr_t src, int word_len)
+static void copy_security_data(uint32_t dst, uintptr_t src, uint32_t word_len)
 {
     uint32_t buff[16];
     while (word_len > 0)
     {
-        int len = 0;
+        uint32_t len = 0;
         while ((word_len > 0) && (len < sizeof(buff) / sizeof(buff[0])))
         {
             buff[len] = read_flash_security(src);
@@ -486,12 +488,12 @@ static void copy_security_data(uint32_t dst, uintptr_t src, int word_len)
     }
 }
 
-static int check_security_data(uint32_t dst, uintptr_t src, int word_len)
+static int check_security_data(uint32_t dst, uintptr_t src, uint32_t word_len)
 {
     uint32_t buff[16];
     while (word_len > 0)
     {
-        int len = 0;
+        uint32_t len = 0;
         while ((word_len > 0) && (len < sizeof(buff) / sizeof(buff[0])))
         {
             buff[len] = read_flash_security(src);
