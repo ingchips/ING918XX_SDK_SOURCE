@@ -352,9 +352,11 @@ void USB_GetSetupPacket(void)
   AHB_USB->UsbDOCtrl0  |= (0x1 << 15) | (1U << 31);
 }
 
-uint32_t USB_GetMaxTransferSize(void)
+int32_t USB_GetMaxTransferSize(void)
 {
-  return(1 << (((AHB_USB->UsbHConfig3)&0xf) + 11));
+    uint32_t shift = ((AHB_USB->UsbHConfig3) & 0xfU) + 11U;
+    uint32_t size = (1U << shift);
+    return (int32_t)size;
 }
 
 uint16_t USB_GetMaxPacketSize(void)
@@ -368,10 +370,10 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
     USB_TRANSFERT_T*      transfer;
     uint16_t              nbPacket;
     int32_t               size;
-    uint32_t               maxPacketSize;
+    int32_t               maxPacketSize;
     epNum = USB_EP_NUM(ep);
 
-    maxPacketSize = g_UsbVar.ep[epNum].maxpacket;
+    maxPacketSize = (int32_t)g_UsbVar.ep[epNum].maxpacket;
     if(USB_IS_EP_DIRECTION_IN(ep))
     {
       transfer = &g_UsbVar.InTransfer[epNum];
@@ -385,7 +387,7 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
            *      exist ? 1 : 0)
            */
           size = transfer->sizeRemaining;
-          size = (size < (int32_t)maxPacketSize) ? size : (int32_t)maxPacketSize;
+          size = (size < maxPacketSize) ? size : maxPacketSize;
           nbPacket = 1;
         }
         break;
@@ -398,9 +400,8 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
               Otherwise, packet count[epnum] = n */
 
           size = transfer->sizeRemaining;
-          size = (size < (int32_t)USB_GetMaxTransferSize()) ? size : (int32_t)USB_GetMaxTransferSize();
-
-          nbPacket = (size <= (int32_t)maxPacketSize) ? 1 : ((size + (int32_t)maxPacketSize - 1)/(int32_t)maxPacketSize);
+          size = (size < USB_GetMaxTransferSize()) ? size : USB_GetMaxTransferSize();
+          nbPacket = (size <= maxPacketSize) ? 1 : ((size + maxPacketSize - 1)/(maxPacketSize));
 
           if(nbPacket > USB_GetMaxPacketSize())
           {
@@ -422,7 +423,7 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
            *      short_packet pktcnt = N + (short_packet
            *      exist ? 1 : 0)
            */
-          size = (int32_t)maxPacketSize;
+          size = maxPacketSize;
           nbPacket = 1;
         }
         break;
@@ -433,9 +434,9 @@ void USB_GetTransferSize(uint8_t ep, int32_t *size_p, uint16_t *nbPacket_p)
               of the maximum packet size of the endpoint, adjusted to the DWORD boundary. */
 
           size = transfer->sizeRemaining;
-          size = (size < (int32_t)USB_GetMaxTransferSize()) ? size : (int32_t)USB_GetMaxTransferSize();
+          size = (size < USB_GetMaxTransferSize()) ? size : USB_GetMaxTransferSize();
 
-          nbPacket = (size <= (int32_t)maxPacketSize) ? 1 : ((size + (int32_t)maxPacketSize - 1)/(int32_t)maxPacketSize);
+          nbPacket = (size <= maxPacketSize) ? 1 : ((size + maxPacketSize - 1)/(maxPacketSize));
           nbPacket = (nbPacket < USB_GetMaxPacketSize()) ? nbPacket : USB_GetMaxPacketSize();
 
           size = nbPacket * maxPacketSize;
