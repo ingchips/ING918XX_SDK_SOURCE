@@ -125,7 +125,6 @@ uint32_t TMR_GetClk(TMR_TypeDef *pTMR, uint8_t ch_id)
     SYSCTRL_Item item = SYSCTRL_ITEM_APB_TMR0;
     if (APB_TMR1 == pTMR) item = SYSCTRL_ITEM_APB_TMR1;
     else if (APB_TMR2 == pTMR) item = SYSCTRL_ITEM_APB_TMR2;
-    else;
     return pTMR->Channels[ch_id].Ctrl & 8 ? SYSCTRL_GetPClk() : SYSCTRL_GetClk(item);
 }
 

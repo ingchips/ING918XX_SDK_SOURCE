@@ -73,6 +73,7 @@ void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)
 
 void QDEC_TmrCfg(QDEC_CHX Channel, QDEC_TMR_UP_MODE TmrUpMode,QDEC_TMR_RELOAD_MODE TmrReloadMode)
 {
+    (void)TmrUpMode;
     QDEC_ChModeCfg(Channel,QDEC_TIMER);
     QDEC_SetChxCpcStopEn(Channel, QDEC_TMR_STOP);
     QDEC_SetChxCpcTrg(Channel, TmrReloadMode);

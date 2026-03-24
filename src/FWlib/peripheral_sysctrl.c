@@ -1163,7 +1163,7 @@ __attribute__((weak)) const factory_calib_data_t *flash_get_factory_calib_data(v
 
 int SYSCTRL_Init(void)
 {
-    int i;
+    uint32_t i;
     const factory_calib_data_t *p = flash_get_factory_calib_data();
     if (!p) return 1;
     
