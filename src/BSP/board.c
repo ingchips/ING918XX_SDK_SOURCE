@@ -21,7 +21,11 @@
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
 #endif
 #elif ((BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_DB72C8K1A))
-#if ((INGCHIPS_FAMILY != INGCHIPS_FAMILY_916) && (INGCHIPS_FAMILY != INGCHIPS_FAMILY_20))
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_916) 
+    #error INGCHIPS_FAMILY conflicts with BOARD_ID
+#endif
+#elif (BOARD_ID == BOARD_ING2086_DK)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_20) 
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
 #endif
 #endif
@@ -472,7 +476,7 @@ uint16_t get_thermo_addr()
     #define ACCEL_NAME          "bma2x2"
     #define VAL_BIT_WIDTH       14
 
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_ING2086_DK))
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
     #include "stk8ba58.c"
     #include "stk8ba58_support.c"
     typedef struct stk8ba58_accel_data accel_data_t;
@@ -482,6 +486,8 @@ uint16_t get_thermo_addr()
 
     #define ACCEL_NAME          "stk8ba58"
     #define VAL_BIT_WIDTH       12
+#elif (BOARD_ID == BOARD_ING2086_DK)
+#error The board has no pins to connect to the iic device
 #else
     #error unsupported BOARD_ID
 #endif
@@ -605,13 +611,18 @@ void set_buzzer_freq(uint16_t freq)
 #ifdef BOARD_USE_KEYS
 
 #if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) \
-|| (BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_ING2086_DK))
+|| (BOARD_ID == BOARD_ING91881B_02_02_06))
     const static GIO_Index_t key_pins[] = {
         GIO_GPIO_1, GIO_GPIO_5, GIO_GPIO_7, GIO_GPIO_4
     };
 #elif (BOARD_ID ==  BOARD_DB682AC1A)
     const static GIO_Index_t key_pins[] = {
         GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
+    };
+#elif (BOARD_ID ==  BOARD_ING2086_DK)
+#warning board is not have key3.
+    const static GIO_Index_t key_pins[] = {
+        GIO_GPIO_19, GIO_GPIO_8, GIO_GPIO_8, GIO_GPIO_7
     };
 #else
     const static GIO_Index_t key_pins[] = {

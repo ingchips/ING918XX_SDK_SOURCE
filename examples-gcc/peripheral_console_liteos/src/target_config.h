@@ -47,7 +47,7 @@ extern "C" {
                                         System clock module configuration
 =============================================================================*/
 #define OS_SYS_CLOCK                                        RTC_CLK_FREQ
-#if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if(INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #define LOSCFG_BASE_CORE_TICK_PER_SECOND                    (512UL)
 #elif(INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define LOSCFG_BASE_CORE_TICK_PER_SECOND                    (1000UL)

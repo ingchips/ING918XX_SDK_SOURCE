@@ -20,8 +20,6 @@
 #elif   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     #define BOARD_ID       BOARD_ING2086_DK
     #define BOARD_USE_RGB_LED
-    #define BOARD_USE_THERMO
-    #define BOARD_USE_ACCEL
     #define BOARD_USE_BUZZER
     #define BOARD_USE_KEYS
 #endif
