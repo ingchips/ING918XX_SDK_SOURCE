@@ -84,6 +84,16 @@ OS_FILES += $(LITEOS_BASE)/arch/arm/cortex-m3/gcc/los_mpu.c
 OS_FILES += $(LITEOS_BASE)/arch/arm/cortex-m3/gcc/los_timer.c
 
 OS_INC += -I $(LITEOS_BASE)/arch/arm/cortex-m3/gcc
+else ifeq ($(CHIP_FAMILY), $(CHIP_FAMILY_PREFIX)20)
+ASMS_SOURCES += $(LITEOS_BASE)/arch/arm/cortex-m3/gcc/los_dispatch.S
+ASMS_SOURCES += $(LITEOS_BASE)/arch/arm/cortex-m3/gcc/los_exc.S
+
+OS_FILES += $(LITEOS_BASE)/arch/arm/cortex-m3/gcc/los_context.c
+OS_FILES += $(LITEOS_BASE)/arch/arm/cortex-m3/gcc/los_interrupt.c
+OS_FILES += $(LITEOS_BASE)/arch/arm/cortex-m3/gcc/los_mpu.c
+OS_FILES += $(LITEOS_BASE)/arch/arm/cortex-m3/gcc/los_timer.c
+
+OS_INC += -I $(LITEOS_BASE)/arch/arm/cortex-m3/gcc
 else
 $(error unknown CHIP_FAMILY)
 endif
