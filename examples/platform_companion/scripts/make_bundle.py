@@ -12,14 +12,8 @@ PROJ_NAME = 'platform_companion'
 STACK_BIN = f'{OUTPUT_DIR}/platform.bin'
 map_fn = f'../listing/{PROJ_NAME}.map'
 
-added_api = ['platform_rom_hotfix', 'platform_rom_hotfix_using_fpb',
-            "adv_patch_set_interval",
-            "adv_patch_set_addr",
-            "adv_patch_enable",
-            "adv_patch_set_adv_data",
-            "adv_patch_set_rsp_data",
-            "is_adv_set_advertising",
-            "adv_get_last_terminated_adv_set",
+added_api = ['platform_rom_hotfix',
+             'platform_rom_hotfix_using_fpb',
 ]
 
 PAGE = 1024 * 4 # size of a sector

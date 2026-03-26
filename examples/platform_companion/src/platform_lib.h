@@ -25,6 +25,7 @@ void platform_init(void);
  * @param[in] flash_read_mode   flash reading mode:
  *                              - 3: 2-SPI
  *                              - 6: 2-SPI continuous
+ *                              - 7: 4-SPI continuous
  */
 void launch_platform(uint8_t flash_read_mode);
 
