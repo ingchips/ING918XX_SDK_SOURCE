@@ -380,8 +380,10 @@ asm static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 #else
 __attribute__((naked)) static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 {
+    #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
     (void)addr;
     (void)prog;
+    #endif
     __asm("ADD r1, r1, #1");
     __asm("BX  r1");
 }
