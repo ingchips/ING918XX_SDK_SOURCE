@@ -69,7 +69,14 @@ uint32_t ms_timer_isr(void *user_data)
 {
     extern void disk_timerproc (void);
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR1);
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
+    TMR_IntClr(APB_TMR1, 0, 0xf);
+#else
+    #error unknown or unsupported chip family
+#endif
+
     disk_timerproc();
     return 0;
 }
@@ -87,8 +94,11 @@ void setup_peripherals(void)
     TMR_Reload(APB_TMR1);
     TMR_IntEnable(APB_TMR1);
     TMR_Enable(APB_TMR1);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #error WIP
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
+    TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_APB, 0);
+    TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / 1000);
+    TMR_IntEnable(APB_TMR1, 0, 0xf);
+    TMR_Enable(APB_TMR1, 0, 0xf);
 #else
     #error unknown or unsupported chip family
 #endif
@@ -99,7 +109,6 @@ void setup_peripherals(void)
     {
         // Watchdog will timeout after ~30sec
         TMR_WatchDogEnable(TMR_CLK_FREQ * 15);
-        TMR0_LOCK();
     }
 }
 

@@ -4,4 +4,5 @@ This example demonstrates how to:
 
 * Create an RPC server for BLE.
 
-Note: This project can only be built by ArmClang.
+Note: This project can only be built by ArmClang. When building for ING916,
+adjust `Heap_Size`.

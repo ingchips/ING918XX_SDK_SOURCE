@@ -141,6 +141,27 @@ void recv_iq_report(const le_meta_connless_iq_report_t *report)
     platform_printf("\n");
 }
 
+static void handle_prd_adv_report(const void *data, int data_length, uint8_t data_status, int8_t rssi)
+{
+    if (prd_adv_data_offset + data_length <= sizeof(prd_adv_data_acc))
+    {
+        memcpy(prd_adv_data_acc + prd_adv_data_offset, data, data_length);
+        prd_adv_data_offset += data_length;
+    }
+    switch (data_status)
+    {
+    case HCI_PRD_ADV_DATA_STATUS_CML:
+        show_adv(rssi);
+        prd_adv_data_offset = 0;
+        break;
+    case HCI_PRD_ADV_DATA_STATUS_HAS_MORE:
+        break;
+    case HCI_PRD_ADV_DATA_STATUS_TRUNCED:
+        prd_adv_data_offset = 0;
+        break;
+    }
+}
+
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     uint8_t event = hci_event_packet_get_type(packet);
@@ -184,14 +205,22 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             }
             break;
         case HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED:
+        case HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED_V2:
             {
                 const le_meta_event_periodic_adv_sync_established_t *established =
                     decode_hci_le_meta_event(packet, le_meta_event_periodic_adv_sync_established_t);
-                platform_printf("established, %d\n", established->status);
+                prd_create_sync = 0;
+                if (established->status)
+                {
+                    platform_printf("failed to establish (%d), retry\n", established->status);
+                    break;
+                }
+
+                platform_printf("established.\n");
                 gap_set_ext_scan_enable(0, 0, 0, 0);
                 prd_adv_data_offset = 0;
                 {
-                    static const uint8_t ant_ids[] = {4, 5};                
+                    static const uint8_t ant_ids[] = {4, 5};
                     gap_set_connectionless_iq_sampling_enable(established->handle,
                                                           1,
                                                           CTE_SLOT_DURATION_2US,
@@ -209,23 +238,15 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             {
                 const le_meta_event_periodic_adv_report_t *report =
                     decode_hci_le_meta_event(packet, le_meta_event_periodic_adv_report_t);
-                if (prd_adv_data_offset + report->data_length <= sizeof(prd_adv_data_acc))
-                {
-                    memcpy(prd_adv_data_acc + prd_adv_data_offset, report->data, report->data_length);
-                    prd_adv_data_offset += report->data_length;
-                }
-                switch (report->data_status)
-                {
-                case HCI_PRD_ADV_DATA_STATUS_CML:
-                    show_adv(report->rssi);
-                    prd_adv_data_offset = 0;
-                    break;
-                case HCI_PRD_ADV_DATA_STATUS_HAS_MORE:
-                    break;
-                case HCI_PRD_ADV_DATA_STATUS_TRUNCED:
-                    prd_adv_data_offset = 0;
-                    break;
-                }
+                handle_prd_adv_report(report->data, report->data_length, report->data_status, report->rssi);
+            }
+            break;
+
+        case HCI_SUBEVENT_LE_PERIODIC_ADVERTISING_REPORT_V2:
+            {
+                const le_meta_event_periodic_adv_report_v2_t *report =
+                    decode_hci_le_meta_event(packet, le_meta_event_periodic_adv_report_v2_t);
+                handle_prd_adv_report(report->data, report->data_length, report->data_status, report->rssi);
             }
             break;
 
@@ -268,4 +289,3 @@ uint32_t setup_profile(void *data, void *user_data)
     gatt_client_register_handler(user_packet_handler);
     return 0;
 }
-

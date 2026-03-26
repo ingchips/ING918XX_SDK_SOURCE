@@ -508,11 +508,11 @@ uint8_t PTE_ConfigEvent(PTE_Module module, PTE_Event Event, PTE_Channel SetEvent
  */
 void GPIOTE_Configuration(GPIOTE_Channel channel, GPIOTE_Mode mode, uint8_t pin, uint8_t out_level);
 
+#endif
+
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
 #endif    /* __cplusplus */
-
-#endif
 
 #endif
 

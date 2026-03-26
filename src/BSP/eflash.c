@@ -380,6 +380,10 @@ asm static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 #else
 __attribute__((naked)) static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 {
+    #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
+    (void)addr;
+    (void)prog;
+    #endif
     __asm("ADD r1, r1, #1");
     __asm("BX  r1");
 }
@@ -468,12 +472,12 @@ static int is_data_ready(void)
     return 1;
 }
 
-static void copy_security_data(uint32_t dst, uintptr_t src, int word_len)
+static void copy_security_data(uint32_t dst, uintptr_t src, uint32_t word_len)
 {
     uint32_t buff[16];
     while (word_len > 0)
     {
-        int len = 0;
+        uint32_t len = 0;
         while ((word_len > 0) && (len < sizeof(buff) / sizeof(buff[0])))
         {
             buff[len] = read_flash_security(src);
@@ -486,12 +490,12 @@ static void copy_security_data(uint32_t dst, uintptr_t src, int word_len)
     }
 }
 
-static int check_security_data(uint32_t dst, uintptr_t src, int word_len)
+static int check_security_data(uint32_t dst, uintptr_t src, uint32_t word_len)
 {
     uint32_t buff[16];
     while (word_len > 0)
     {
-        int len = 0;
+        uint32_t len = 0;
         while ((word_len > 0) && (len < sizeof(buff) / sizeof(buff[0])))
         {
             buff[len] = read_flash_security(src);
@@ -544,7 +548,7 @@ int flash_prepare_factory_data(void)
 check_failed:
     erase_flash_sector(FACTORY_DATA_LOC);
     flash_enable_write_protection(region, reverse_selection);
-    
+
     return 3;
 }
 
@@ -635,11 +639,13 @@ typedef uint16_t (*rom_FlashGetStatusReg)(void);
 #define ROM_FlashEnableContinuousMode       ((rom_void_void)0x00000601)
 #define ROM_FlashPageProgram                ((rom_FlashPageProgram)0x00000681)
 
+#define IS_CONTINUOUS_MODE()                ((io_read(0x40150004) & 0x1000000ul) != 0)
+
 #define FLASH_PRE_OPS()                         \
     uint32_t prim = __get_PRIMASK();            \
     uint8_t mode = 0;                           \
     __disable_irq();                            \
-    if((*(uint32_t*)0x40150004) & 0x1000000ul) {    \
+    if (IS_CONTINUOUS_MODE()) {                 \
         mode = 1;                               \
         ROM_FlashDisableContinuousMode();       \
     }
@@ -719,53 +725,18 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
 
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *page_buffer)
 {
-    int i;
-
-    if (block_num < 1) return -2;
-
-    for (i = 0; i < block_num; i++)
+    const uint8_t is_continuous = IS_CONTINUOUS_MODE();
+    if (0 == is_continuous)
     {
-        if (blocks[i].dest & (EFLASH_SECTOR_SIZE - 1)) return -1;
+        ROM_FlashEnableContinuousMode();
     }
-
-    FLASH_PRE_OPS();
-    for (i = 0; i < block_num; i++)
+    int r = ROM_flash_do_update(block_num, blocks, page_buffer);
+    SYSCTRL_ICacheFlush();
+    if (0 == is_continuous)
     {
-        {
-            uint32_t dest_addr = blocks[i].dest;
-            const uint8_t *buffer = (const uint8_t *)blocks[i].src;
-            int size = blocks[i].size;
-
-            while (size > 0)
-            {
-                uint32_t remain = EFLASH_SECTOR_SIZE;
-
-                ROM_erase_flash_sector(dest_addr);
-                SYSCTRL_ICacheFlush();
-
-                while ((remain > 0) && (size > 0))
-                {
-                    int j;
-                    uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
-                    cnt = cnt > remain ? remain : cnt;
-
-                    for (j = 0; j < cnt; j++)
-                        page_buffer[j] = buffer[j];
-
-                    ROM_FlashPageProgram(dest_addr, page_buffer, cnt);
-
-                    dest_addr += cnt;
-                    buffer += cnt;
-                    remain -= cnt;
-                    size -= cnt;
-                }
-            }
-        }
+        ROM_FlashDisableContinuousMode();
     }
-    platform_reset();
-    FLASH_POST_OPS();
-
-    return 0;
+    return r;
 }
 
 #endif

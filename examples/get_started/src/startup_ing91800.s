@@ -34,8 +34,10 @@ __initial_sp
 
                 EXPORT  __heap_base
                 EXPORT  __heap_limit
-                
+
+	IF :LNOT::DEF:Heap_Size
 Heap_Size       EQU     10000
+	ENDIF
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base

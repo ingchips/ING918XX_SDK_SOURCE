@@ -8,7 +8,23 @@
 #include "container.h"
 #include "eflash.h"
 
-#include "board.h"
+#if   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define BOARD_ID       BOARD_ING91881B_02_02_05
+    #define BOARD_USE_RGB_LED
+    #define BOARD_USE_THERMO
+    #define BOARD_USE_ACCEL
+    #define BOARD_USE_BUZZER
+    #define BOARD_USE_KEYS
+#elif   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#error "916 chip does not support this demo"
+#elif   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    #define BOARD_ID       BOARD_ING2086_DK
+    #define BOARD_USE_RGB_LED
+    #define BOARD_USE_BUZZER
+    #define BOARD_USE_KEYS
+#endif
+
+#include "board.c"
 
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
@@ -70,18 +86,11 @@ void config_uart(uint32_t freq, uint32_t baud, uint32_t int_mask)
     apUART_Initialize(PRINT_PORT, &config, int_mask);
 }
 
-#define ARRAY_LEN(x)    (sizeof(x)/sizeof(x[0]))
-
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
 
 const static uint8_t led_pins[] = {
     GIO_GPIO_19, GIO_GPIO_18, GIO_GPIO_17, GIO_GPIO_16,
     GIO_GPIO_13, GIO_GPIO_12, GIO_GPIO_9, GIO_GPIO_6,
-};
-
-const static uint8_t key_pins[] = {
-    IO_NOT_A_PIN, GIO_GPIO_1, GIO_GPIO_5, GIO_GPIO_7,
-    GIO_GPIO_4
 };
 
 #define LED_ON          0
@@ -100,11 +109,6 @@ const static uint8_t led_pins[] = {
     GIO_GPIO_9, GIO_GPIO_6,
 };
 
-const static uint8_t key_pins[] = {
-    IO_NOT_A_PIN, GIO_GPIO_1, GIO_GPIO_5, GIO_GPIO_7,
-    GIO_GPIO_4
-};
-
 #define LED_ON          0
 #define LED_OFF         1
 
@@ -120,8 +124,19 @@ const static uint8_t led_pins[] = {
     GIO_GPIO_11, GIO_GPIO_14,
 };
 
-const static uint8_t key_pins[] = {
-    IO_NOT_A_PIN, GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
+#define LED_ON          0
+#define LED_OFF         1
+
+#define KEY_DOWN        0
+
+#define BUZZ_PIN        GIO_GPIO_13
+#define IIC_SCL_PIN     GIO_GPIO_15
+#define IIC_SDA_PIN     GIO_GPIO_16
+
+#elif (BOARD_ID == BOARD_ING2086_DK)
+
+const static uint8_t led_pins[] = {
+    GIO_GPIO_11, GIO_GPIO_14,
 };
 
 #define LED_ON          0
@@ -129,7 +144,6 @@ const static uint8_t key_pins[] = {
 
 #define KEY_DOWN        0
 
-#define BUZZ_PIN        GIO_GPIO_13
 #define IIC_SCL_PIN     GIO_GPIO_15
 #define IIC_SDA_PIN     GIO_GPIO_16
 
@@ -146,12 +160,13 @@ uint32_t gpio_isr(void *user_data)
     uint32_t status = GIO_GetAllIntStatus();
     GIO_ClearAllIntStatus();
 
+#ifdef BOARD_USE_KEYS
     for (i = 0; i < ARRAY_LEN(key_pins); i++)
     {
-        if (key_pins[i] == IO_NOT_A_PIN) continue;
         if (status & (1 << key_pins[i]))
-            on_key_changed(i, ((current >> key_pins[i]) & 1) == KEY_DOWN ? 1 : 0);
+            on_key_changed(i + 1, ((current >> key_pins[i]) & 1) == KEY_DOWN ? 1 : 0);
     }
+#endif
 
     return 0;
 }
@@ -222,6 +237,7 @@ void hsl_to_rgb(float H, float S, float L,
 
 void set_led_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
+#ifdef BOARD_USE_RGB_LED
     __disable_irq();
 #if (BOARD_ID == BOARD_ID_020205)
     set_rgb_led_color(r, g, b);
@@ -229,6 +245,7 @@ void set_led_rgb(uint8_t r, uint8_t g, uint8_t b)
     set_rgb_led_color(r, b, g);
 #endif
     __enable_irq();
+#endif
 }
 
 void set_led_hsl(float H, float S, float L)
@@ -288,7 +305,7 @@ void setup_peripherals(void)
                             | (1 << SYSCTRL_ClkGate_APB_TMR0)
 #if   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
                             | (1 << SYSCTRL_ClkGate_APB_GPIO)
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
                             | (1 << SYSCTRL_ClkGate_APB_GPIO0)
                             | (1 << SYSCTRL_ClkGate_APB_GPIO1)
 #endif
@@ -318,9 +335,7 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(IIC_SCL_PIN, IO_SOURCE_I2C0_SCL_OUT);
     PINCTRL_SetPadMux(IIC_SDA_PIN, IO_SOURCE_I2C0_SDA_OUT);
     PINCTRL_SelI2cSclIn(I2C_PORT, IIC_SCL_PIN);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    PINCTRL_SelI2cIn(I2C_PORT, IIC_SCL_PIN, IIC_SDA_PIN);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     PINCTRL_SelI2cIn(I2C_PORT, IIC_SCL_PIN, IIC_SDA_PIN);
 #else
     #error unknown or unsupported chip family
@@ -353,8 +368,13 @@ float read_adc(int channel)
 
     return voltage * (3.3f / 1024.f);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-    #warning WIP: 916 read_adc
+    #warning WIP: ING916 read_adc
     return (platform_rand() & 0xff) * 3.3f / 256.f;
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    #warning WIP: ING20 read_adc
+    return (platform_rand() & 0xff) * 3.3f / 256.f;
+#else
+    #error unknown or unsupported chip family
 #endif
 }
 

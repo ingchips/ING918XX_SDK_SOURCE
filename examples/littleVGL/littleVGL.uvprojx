@@ -7,14 +7,14 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6160000::V6.16::ARMCLANG</pCCUsed>
+      <pCCUsed>6230000::V6.23::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>ING91800</Device>
+          <Device>ing91800</Device>
           <Vendor>INGChips</Vendor>
           <PackID>INGChips.INGCHIPS_DeviceFamilyPack.0.9.0</PackID>
-          <PackURL>http://www.ingchips.com</PackURL>
+          <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
           <FlashUtilSpec/>
           <StartupFile/>
@@ -30,7 +30,7 @@
           <SLE66CMisc/>
           <SLE66AMisc/>
           <SLE66LinkerMisc/>
-          <SFDFile>$$Device:ING91800$SVD\ING91800.svd</SFDFile>
+          <SFDFile>$$Device:ing91800$SVD\ing91800.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath/>
@@ -183,6 +183,7 @@
             <RvdsVP>0</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -367,7 +368,7 @@
             <TextAddressRange>0x00000000</TextAddressRange>
             <DataAddressRange>0x00000000</DataAddressRange>
             <pXoBase/>
-            <ScatterFile/>
+            <ScatterFile>.\output\littleVGL.sct</ScatterFile>
             <IncludeLibs/>
             <IncludeLibsPath/>
             <Misc/>
@@ -408,7 +409,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>../..\bundles\typical\ING9187xx\symdefs.m</FilePath>
+              <FilePath>../..\bundles\typical\ING9188xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -452,6 +453,11 @@
               <FileName>peripheral_ssp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\FWlib\peripheral_ssp.c</FilePath>
+            </File>
+            <File>
+              <FileName>peripheral_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\FWlib\peripheral_dma.c</FilePath>
             </File>
           </Files>
         </Group>

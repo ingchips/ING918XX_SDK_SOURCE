@@ -14,12 +14,18 @@
 
 #define rand() platform_rand()
 
+#define ARRAY_LEN(x)    (sizeof(x) / sizeof(x[0]))
+
 #if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) || (BOARD_ID == BOARD_ING91881B_02_02_06))
 #if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_918)
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
 #endif
 #elif ((BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_DB72C8K1A))
-#if ((INGCHIPS_FAMILY != INGCHIPS_FAMILY_916) && (INGCHIPS_FAMILY != INGCHIPS_FAMILY_20))
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_916) 
+    #error INGCHIPS_FAMILY conflicts with BOARD_ID
+#endif
+#elif (BOARD_ID == BOARD_ING2086_DK)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_20) 
     #error INGCHIPS_FAMILY conflicts with BOARD_ID
 #endif
 #endif
@@ -44,6 +50,16 @@
 #elif (BOARD_ID == BOARD_DB72C8K1A)
 #ifndef PIN_RGB_LED
     #define PIN_RGB_LED   GIO_GPIO_5
+#endif
+#ifndef PWM_LED_CHANNEL
+    #define PWM_LED_CHANNEL     0
+#endif
+#ifndef PWM_IO_SOURCE
+    #define PWM_IO_SOURCE       IO_SOURCE_PWM0_B
+#endif
+#elif (BOARD_ID == BOARD_ING2086_DK)
+#ifndef PIN_RGB_LED
+    #define PIN_RGB_LED   GIO_GPIO_18
 #endif
 #ifndef PWM_LED_CHANNEL
     #define PWM_LED_CHANNEL     0
@@ -138,7 +154,7 @@ void set_rgb_led_color(uint8_t r, uint8_t g, uint8_t b)
     ws2881_write(cmd);
 }
 
-#elif (BOARD_ID == BOARD_DB72C8K1A)
+#elif (BOARD_ID == BOARD_DB72C8K1A) || (BOARD_ID == BOARD_ING2086_DK)
 
 static void PWM_SinglePulseInit(const uint8_t channel_index, uint8_t is_out_a)
 {
@@ -219,10 +235,16 @@ void setup_rgb_led()
                              | (1 << SYSCTRL_ClkGate_APB_PWM));
     SYSCTRL_SelectPWMClk(SYSCTRL_CLK_SLOW_DIV_1);
     PINCTRL_SetPadMux(PIN_RGB_LED, IO_SOURCE_PWM0_A);
-#elif(BOARD_ID == BOARD_DB72C8K1A)
+#elif(BOARD_ID == BOARD_DB72C8K1A) 
     SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                              | (1 << SYSCTRL_ClkGate_APB_PWM));
     SYSCTRL_SelectPWMClk(SYSCTRL_CLK_SLOW_DIV_1);
+    PINCTRL_SetPadMux(PIN_RGB_LED, PWM_IO_SOURCE);
+    PWM_SinglePulseInit(PWM_LED_CHANNEL, (PWM_IO_SOURCE==IO_SOURCE_PWM0_A) );
+#elif(BOARD_ID == BOARD_ING2086_DK) 
+    SYSCTRL_ClearClkGateMulti( (1 << SYSCTRL_ClkGate_APB_PinCtrl)
+                             | (1 << SYSCTRL_ClkGate_APB_PWM));
+    SYSCTRL_SelectPWMClk(1, SOURCE_SLOW_CLK);
     PINCTRL_SetPadMux(PIN_RGB_LED, PWM_IO_SOURCE);
     PWM_SinglePulseInit(PWM_LED_CHANNEL, (PWM_IO_SOURCE==IO_SOURCE_PWM0_A) );
 #else
@@ -311,7 +333,7 @@ struct bme280_dev bme280_data =
 
 static struct bme280_data comp_data;
 
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_ING2086_DK))
 
 #endif
 
@@ -332,7 +354,7 @@ void setup_env_sensor()
         bme280_set_sensor_mode(BME280_NORMAL_MODE, &bme280_data);
     }
 
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_ING2086_DK))
 
     printf("sensor MTS01B init...");
     printf("OK\n");
@@ -346,7 +368,7 @@ float get_temperature()
     if (bme280_get_sensor_data(BME280_ALL, &comp_data, &bme280_data) < 0)
         return 0.0;
     return comp_data.temperature;
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_ING2086_DK))
     #define MTS01B_OK           0
     #define MTS01B_E_COMM_FAIL  1
 
@@ -390,7 +412,7 @@ float get_humidity()
         return 0.0;
     return comp_data.humidity;
 
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_ING2086_DK))
     return 0.0;
 #endif
 }
@@ -402,7 +424,7 @@ float get_pressure()
         return 0.0;
     return comp_data.humidity;
 
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_ING2086_DK))
     return 0.0;
 #endif
 }
@@ -411,7 +433,7 @@ uint16_t get_thermo_addr()
 {
 #if (BOARD_ID == BOARD_ING91881B_02_02_05)
     return 0x76;
-#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A))
+#elif ((BOARD_ID == BOARD_ING91881B_02_02_06) || (BOARD_ID == BOARD_DB682AC1A) || (BOARD_ID == BOARD_ING2086_DK))
     return 0x44;
 #endif
 }
@@ -464,6 +486,8 @@ uint16_t get_thermo_addr()
 
     #define ACCEL_NAME          "stk8ba58"
     #define VAL_BIT_WIDTH       12
+#elif (BOARD_ID == BOARD_ING2086_DK)
+#error The board has no pins to connect to the iic device
 #else
     #error unsupported BOARD_ID
 #endif
@@ -545,6 +569,8 @@ void get_acc_xyz(float *x, float *y, float *z)
 #define BUZZ_PIN        GIO_GPIO_8
 #elif (BOARD_ID ==  BOARD_DB682AC1A)
 #define BUZZ_PIN        GIO_GPIO_13
+#elif (BOARD_ID ==  BOARD_ING2086_DK)
+#define BUZZ_PIN        GIO_GPIO_9
 #else
 #define BUZZ_PIN        GIO_GPIO_13
 #endif
@@ -555,8 +581,11 @@ void setup_buzzer()
     | (1 << SYSCTRL_ClkGate_APB_PWM));
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     PINCTRL_SetGeneralPadMode(BUZZ_PIN, IO_MODE_PWM, BUZZ_PWM_CH, 0);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     SYSCTRL_SelectPWMClk(SYSCTRL_CLK_32k);
+    PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM0_B);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    SYSCTRL_SelectPWMClk(1, SOURCE_32K_CLK);
     PINCTRL_SetPadMux(BUZZ_PIN, IO_SOURCE_PWM0_B);
 #else
     #error unknown or unsupported chip family
@@ -581,7 +610,8 @@ void set_buzzer_freq(uint16_t freq)
 //-------------------------------------------------key configuration-------------------------------------------------
 #ifdef BOARD_USE_KEYS
 
-#if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) || (BOARD_ID == BOARD_ING91881B_02_02_06))
+#if ((BOARD_ID == BOARD_ING91881B_02_02_04) || (BOARD_ID == BOARD_ING91881B_02_02_05) \
+|| (BOARD_ID == BOARD_ING91881B_02_02_06))
     const static GIO_Index_t key_pins[] = {
         GIO_GPIO_1, GIO_GPIO_5, GIO_GPIO_7, GIO_GPIO_4
     };
@@ -589,13 +619,16 @@ void set_buzzer_freq(uint16_t freq)
     const static GIO_Index_t key_pins[] = {
         GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
     };
+#elif (BOARD_ID ==  BOARD_ING2086_DK)
+#warning board is not have key3.
+    const static GIO_Index_t key_pins[] = {
+        GIO_GPIO_19, GIO_GPIO_8, GIO_GPIO_8, GIO_GPIO_7
+    };
 #else
     const static GIO_Index_t key_pins[] = {
         GIO_GPIO_6, GIO_GPIO_10, GIO_GPIO_11, GIO_GPIO_9
     };
 #endif
-
-#define ARRAY_LEN(x)    (sizeof(x) / sizeof(x[0]))
 
 void setup_keys()
 {

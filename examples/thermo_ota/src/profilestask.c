@@ -164,7 +164,7 @@ uint8_t *init_service(void);
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
     const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
-    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3f};    // TODO: random address generation
+    const static bd_addr_t rand_addr = {0xCD, 0xA3, 0x28, 0x11, 0x89, 0x3F};    // TODO: random address generation
     uint8_t event = hci_event_packet_get_type(packet);
     const btstack_user_msg_t *p_user_msg;
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -327,7 +327,7 @@ void setup_peripherals_i2c_pin(void)
 void setup_peripherals_i2c(void)
 {
     setup_peripherals_i2c_pin();
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
     //init I2C module
     I2C_Config(APB_I2C0,I2C_ROLE_MASTER,I2C_ADDRESSING_MODE_07BIT,get_thermo_addr());
     I2C_ConfigClkFrequency(APB_I2C0,I2C_CLOCKFREQUENY_STANDARD);

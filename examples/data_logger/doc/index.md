@@ -14,7 +14,7 @@ FAT or exFAT Filesystem. Log files are named as **XXXXX.TXT**, where `XXXXX` is 
 
 ## Hardware Setup
 
-See [profile.c](../src/profile.h) for default PIN definition. To run this app, an SD/TF module
+See [profile.h](../src/profile.h) for default PIN definition. To run this app, an SD/TF module
 with SPI interface, an SD or TF card, and a 3.3v power supply are needed.
 
 When using an ING918xx Dev-Board, the default setup looks like this:

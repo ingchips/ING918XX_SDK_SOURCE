@@ -8,7 +8,7 @@ const gatt = @import("gatt_client_async.zig");
 const print = ingble.platform_printf;
 const enable_print = ingble.print_info == 1;
 
-const rom_crc: ingble.f_crc_t = @intToPtr(ingble.f_crc_t, ingble.ROM_FUNC_ADDR_CRC);
+const f_crc_t = ingble.f_crc_t;
 
 fn same_version(a: *const ingble.prog_ver_t, b: * const ingble.prog_ver_t) bool {
     return (a.*.major == b.*.major) and (a.*.minor == b.*.minor) and (a.*.patch == b.*.patch);
@@ -48,6 +48,7 @@ const Client = struct {
     sig_meta: FullSigMeta = undefined,
     ecc_driver: ?*ingble.ecc_driver_t,
     ecc_keys: ?*EccKeys = null,
+    f_crc: f_crc_t,
 
     fn fota_make_bitmap(self: *Client, optional_latest: ?*const ingble.ota_ver_t) ?u16 {
         var bitmap: u16 = 0xffff;
@@ -125,7 +126,7 @@ const Client = struct {
             read = read + block;
             remain -= block;
         }
-        var crc_value = rom_crc.?(data, @intCast(u16, size));
+        var crc_value = self.f_crc.?(data, @intCast(u16, size));
         cmd[0] = ingble.OTA_CTRL_PAGE_END;
         cmd[1] = @intCast(u8, size & 0xff);
         cmd[2] = @intCast(u8, size >> 8);
@@ -218,7 +219,7 @@ const Client = struct {
         }
 
         p[0] = ingble.OTA_CTRL_METADATA;
-        self.sig_meta.crc_value = rom_crc.?(@ptrCast([*c] u8, &self.sig_meta.entry), @intCast(u16, cnt * 12 + 4));
+        self.sig_meta.crc_value = self.f_crc.?(@ptrCast([*c] u8, &self.sig_meta.entry), @intCast(u16, cnt * 12 + 4));
         _ = self.write_cmd2(@intCast(usize, total), p);
         if (check_meta) {
             return self.check_status();
@@ -232,6 +233,7 @@ const Client = struct {
                               handle_ver: u16, handle_ctrl: u16, handle_data: u16, handle_pk: u16,
                               item_cnt: c_int, items: [*c] const ingble.ota_item_t,
                               entry: u32,
+                              f_crc: f_crc_t,
                               driver: ?*ingble.ecc_driver_t) c_int {
         self.conn_handle = conn_handle;
         self.handle_ver = handle_ver;
@@ -239,6 +241,7 @@ const Client = struct {
         self.handle_data = handle_data;
         self.handle_pk = handle_pk;
         self.ecc_driver = driver;
+        self.f_crc = f_crc;
         if (item_cnt > ingble.MAX_UPDATE_BLOCKS) return -127;
         _ = ingble.gatt_client_get_mtu(conn_handle, &self.mtu);
         self.mtu -= 3;
@@ -292,10 +295,11 @@ fn fota_client_do_update_async(target_family: c_int, optional_latest: ?*const in
                               item_cnt: c_int, items: [*c] const ingble.ota_item_t,
                               entry: u32,
                               on_done: fn (err_code: c_int) callconv(.C) void,
+                              f_crc: f_crc_t,
                               driver: ?*ingble.ecc_driver_t) void {
     var client: Client = undefined;
     on_done(client.update(target_family, optional_latest, conn_handle, handle_ver, handle_ctrl, handle_data, handle_pk,
-                          item_cnt, items, entry, driver));
+                          item_cnt, items, entry, f_crc, driver));
 }
 
 var fota_frame: @Frame(fota_client_do_update_async) = undefined;
@@ -305,11 +309,12 @@ export fn fota_client_do_update(target_family: c_int, optional_latest: ?*const i
                               handle_ver: u16, handle_ctrl: u16, handle_data: u16,
                               item_cnt: c_int, items: [*c] const ingble.ota_item_t,
                               entry: u32,
-                              on_done: fn (err_code: c_int) callconv(.C) void) void {
+                              on_done: fn (err_code: c_int) callconv(.C) void,
+                              f_crc: f_crc_t) void {
     fota_frame = async fota_client_do_update_async(target_family, optional_latest, conn_handle,
                                                    handle_ver, handle_ctrl, handle_data, 0xffff,
                                                    item_cnt, items, entry, on_done,
-                                                   null);
+                                                   f_crc, null);
 }
 
 export fn secure_fota_client_do_update(target_family: c_int, optional_latest: ?*const ingble.ota_ver_t,
@@ -318,11 +323,12 @@ export fn secure_fota_client_do_update(target_family: c_int, optional_latest: ?*
                               item_cnt: c_int, items: [*c] const ingble.ota_item_t,
                               entry: u32,
                               on_done: fn (err_code: c_int) callconv(.C) void,
-                              driver: *ingble.ecc_driver_t) void {
+                              driver: *ingble.ecc_driver_t,
+                              f_crc: f_crc_t) void {
     fota_frame = async fota_client_do_update_async(target_family, optional_latest, conn_handle,
                                                    handle_ver, handle_ctrl, handle_data, handle_pk,
                                                    item_cnt, items, entry, on_done,
-                                                   driver);
+                                                   f_crc, driver);
 }
 
 pub fn panic(message: []const u8, stack_trace: ?*std.builtin.StackTrace) noreturn {

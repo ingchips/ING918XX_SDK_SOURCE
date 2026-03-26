@@ -636,7 +636,7 @@ int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 
 void PINCTRL_DisableAllInputs(void)
 {
-    int i;
+    uint32_t i;
     for (i = 0; i < sizeof(APB_PINCTRL->IN_CTRL) / sizeof(APB_PINCTRL->IN_CTRL[0]); i++)
         APB_PINCTRL->IN_CTRL[i] = (uint32_t)-1;
 }
@@ -692,7 +692,7 @@ void PINCTRL_EnableAnalog(const uint8_t io_index)
 
 int PINCTRL_SelClockOutput(const uint8_t io_index)
 {
-    const static struct
+    static const struct
     {
         uint8_t io_index;
         uint8_t sel_clk;
@@ -718,7 +718,7 @@ int PINCTRL_SelClockOutput(const uint8_t io_index)
         {.io_index = 26, .sel_data = 0x11, .swap = 0x8},
         {.io_index = 35, .sel_data = 0x11, .swap = 0x3},
     };
-    int i;
+    uint32_t i;
 
     if (IO_NOT_A_PIN == io_index)
     {
@@ -997,6 +997,7 @@ int PINCTRL_SelI2cIn(i2c_port_t port,
                       uint8_t io_pin_scl,
                       uint8_t io_pin_sda)
 {
+    (void)port;
     if (PINCTRL_SelInput(io_pin_scl, IO_SOURCE_I2C0_SCL_IN, 4, 5, 10)) return -1;
     if (PINCTRL_SelInput(io_pin_sda, IO_SOURCE_I2C0_SDA_IN, 4, 5, 15)) return -1;
     PINCTRL_SetPadMux(io_pin_scl, IO_SOURCE_I2C0_SCL_OUT);
@@ -1012,6 +1013,7 @@ int PINCTRL_SelI2cIn(i2c_port_t port,
 void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index)
 
 {
+    (void)port;
     PINCTRL_SelInput(io_pin_index, IO_SOURCE_I2C0_SCL_IN, 4, 5, 10);
 
 
@@ -1108,7 +1110,8 @@ int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
     if (io_pin_index == IO_NOT_A_PIN)
         return 0;
     int r = source_id_on_pin(io_pin_index, source);
-    if (r < 0) return r;
+    if (r < 0)
+        return r;
 
     if (io_pin_index <= 22)
         set_reg_bits(&APB_PINCTRL->OUT_CTRL[io_pin_index >> 2], (uint32_t)r, 7, 7 * (io_pin_index & 0x3));
@@ -1129,7 +1132,7 @@ int PINCTRL_SetPadMux(const uint8_t io_pin_index, const io_source_t source)
 
 void PINCTRL_DisableAllInputs(void)
 {
-    int i;
+    unsigned int i;
     for (i = 0; i < sizeof(APB_PINCTRL->IN_CTRL) / sizeof(APB_PINCTRL->IN_CTRL[0]); i++)
         APB_PINCTRL->IN_CTRL[i] = (uint32_t)-1;
 }
@@ -1183,7 +1186,7 @@ void PINCTRL_EnableAnalog(const uint8_t io_index)
 
 int PINCTRL_SelClockOutput(const uint8_t io_index)
 {
-    const static struct
+    static const struct
     {
         uint8_t io_index;
         uint8_t sel_clk;
@@ -1209,7 +1212,7 @@ int PINCTRL_SelClockOutput(const uint8_t io_index)
             {.io_index = 26, .sel_data = 0x11, .swap = 0x8},
             {.io_index = 35, .sel_data = 0x11, .swap = 0x3},
     };
-    int i;
+    unsigned int i;
 
     if (IO_NOT_A_PIN == io_index)
     {

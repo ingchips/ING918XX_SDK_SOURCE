@@ -550,11 +550,13 @@ void apSSP_SetTimingCs2Sclk(SSP_TypeDef *SPI_BASE, uint8_t cs2sclk)
 /*====================================================================*/
 uint8_t apSSP_GetTxFifoDepthWords(SSP_TypeDef *SPI_BASE)
 {
+    (void)SPI_BASE;
     return SPI_FIFO_DEPTH;//words
 }
 
 uint8_t apSSP_GetRxFifoDepthWords(SSP_TypeDef *SPI_BASE)
 {
+    (void)SPI_BASE;
     return SPI_FIFO_DEPTH;//words
 }
 

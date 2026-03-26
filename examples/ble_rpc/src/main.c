@@ -71,8 +71,6 @@ void setup_peripherals(void)
     PINCTRL_SetPadMux(PIN_UART1_TX, IO_SOURCE_UART1_TXD);
 
     config_uart(OSC_CLK_FREQ, 115200);
-
-    PINCTRL_EnableAllAntSelPins();
 }
 
 uint32_t on_deep_sleep_wakeup(void *dummy, void *user_data)
@@ -94,6 +92,8 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define DB_FLASH_ADDRESS  0x42000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define DB_FLASH_ADDRESS  0x2100000
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #define DB_FLASH_ADDRESS  0x2100000
 #else
 #error unknown or unsupported chip family

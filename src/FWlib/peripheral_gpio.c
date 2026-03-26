@@ -271,8 +271,8 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
         uint8_t mode, pinctrl_pull_mode_t pull)
 {
     if ((io_index <= 17)
-     || (21 <= io_index) && (io_index <= 25)
-     || (29 <= io_index) && (io_index <= 37))
+     || ((21 <= io_index) && (io_index <= 25))
+     || ((29 <= io_index) && (io_index <= 37)))
     {
         uint32_t v = mode >= 1 ? mode - 1 : 0;
 

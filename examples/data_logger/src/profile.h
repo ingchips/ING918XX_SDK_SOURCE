@@ -11,13 +11,23 @@ uint32_t setup_profile(void *data, void *user_data);
 
 #define PIN_UART_RX   GIO_GPIO_4
 
-#define SPI_CH	        SPI_PORT_0
-#define SPI_SSP         AHB_SSP0
+#define SPI_CH	      SPI_PORT_0
+#define SPI_SSP       AHB_SSP0
 
-#define SPI_PIN_CS      GIO_GPIO_16
-#define SPI_PIN_MOSI    GIO_GPIO_17
-#define SPI_PIN_SCK     GIO_GPIO_18
-#define SPI_PIN_MISO    GIO_GPIO_19
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+    #define SPI_PIN_CS      GIO_GPIO_16
+    #define SPI_PIN_MOSI    GIO_GPIO_17
+    #define SPI_PIN_SCK     GIO_GPIO_18
+    #define SPI_PIN_MISO    GIO_GPIO_19
+
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
+    #define SPI_PIN_CS      GIO_GPIO_9
+    #define SPI_PIN_MOSI    GIO_GPIO_10
+    #define SPI_PIN_SCK     GIO_GPIO_11
+    #define SPI_PIN_MISO    GIO_GPIO_12
+#else
+    #error unknown or unsupported chip family
+#endif
 
 #endif
 

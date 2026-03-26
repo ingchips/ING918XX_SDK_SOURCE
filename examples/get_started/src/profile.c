@@ -125,8 +125,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-#define I2C_PORT I2C_PORT_0
-
 uint32_t setup_profile(void *data, void *user_data)
 {
     platform_printf("setup profile\n");

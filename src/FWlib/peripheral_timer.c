@@ -125,7 +125,6 @@ uint32_t TMR_GetClk(TMR_TypeDef *pTMR, uint8_t ch_id)
     SYSCTRL_Item item = SYSCTRL_ITEM_APB_TMR0;
     if (APB_TMR1 == pTMR) item = SYSCTRL_ITEM_APB_TMR1;
     else if (APB_TMR2 == pTMR) item = SYSCTRL_ITEM_APB_TMR2;
-    else;
     return pTMR->Channels[ch_id].Ctrl & 8 ? SYSCTRL_GetPClk() : SYSCTRL_GetClk(item);
 }
 
@@ -225,13 +224,20 @@ uint32_t TMR_GetClk(TMR_TypeDef *pTMR, uint8_t ch_id)
 {
     SYSCTRL_Item item = SYSCTRL_ITEM_APB_TMR0;
     if (APB_TMR1 == pTMR) item = SYSCTRL_ITEM_APB_TMR1;
-    else;
+
     return pTMR->Channels[ch_id].Ctrl & 8 ? SYSCTRL_GetPClk() : SYSCTRL_GetClk(item);
 }
 
 void TMR_SetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint32_t value)
 {
     pTMR->Channels[ch_id].Reload = value;
+}
+
+void TMR_ResetReload(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask, uint32_t value)
+{
+    pTMR->ChEn &= ~(0xf << (ch_id * 4));
+    pTMR->Channels[ch_id].Reload = value;
+    pTMR->ChEn |= (mask & 0xf) << (ch_id * 4);
 }
 
 void TMR_Enable(TMR_TypeDef *pTMR, uint8_t ch_id, uint8_t mask)
@@ -311,7 +317,7 @@ void TMR_WatchDogClearInt(void)
 #define bsRTMR_CTL_RELOAD                    1            // when set, timer counter clear zero.
 #define bwRTMR_CTL_RELOAD                    1
 #define bsRTMR_CTL_OP_MODE                   2
-#define bwRTMR_CTL_OP_MODE                   1
+#define bwRTMR_CTL_OP_MODE                   2
 
 #define bsRTMR_CTL_INT_EN                    4            // int enable
 #define bwRTMR_CTL_INT_EN                    1
@@ -353,8 +359,9 @@ void RTMR_Disable(RTMR_TypeDef *pRTMR)
 
 void RTMR_SetOpMode(RTMR_TypeDef *pRTMR, uint8_t mode)
 {
-    #define mask (2 << bsRTMR_CTL_OP_MODE)
-    pRTMR->CTL = (pRTMR->CTL & ~mask) | (mode << bsRTMR_CTL_OP_MODE);
+    #define mask (((1<<bwRTMR_CTL_OP_MODE) - 1) << bsRTMR_CTL_OP_MODE)
+    pRTMR->CTL &= ~mask;
+    pRTMR->CTL  |= (mode << bsRTMR_CTL_OP_MODE);
 }
 
 void RTMR_IntEnable(RTMR_TypeDef *pRTMR)

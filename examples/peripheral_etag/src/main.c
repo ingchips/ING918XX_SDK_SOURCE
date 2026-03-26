@@ -75,6 +75,10 @@ void setup_peripherals(void)
     SPI_Init(AHB_SSP0);
 #elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_AHB_SPI0) | (1 << SYSCTRL_ClkGate_APB_GPIO0));
+    
+    #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    SYSCTRL_SelectSpiClk(SPI_PORT_0 ,SYSCTRL_CLK_SLOW);
+    #endif
 
     // for eTAG
     PINCTRL_SetPadMux(SPI_EPD_SDI, IO_SOURCE_SPI0_DO);
