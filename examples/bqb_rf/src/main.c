@@ -132,6 +132,9 @@ int app_main()
     trace_rtt_init(&trace_ctx);
     platform_set_evt_callback(PLATFORM_CB_EVT_TRACE, (f_platform_evt_cb)cb_trace_rtt, &trace_ctx);
     platform_config(PLATFORM_CFG_TRACE_MASK, 0);
+
+    // This flag is useful for self-testing, but cannot be used for tests in BQTF.
+    // platform_config(PLATFORM_CFG_LL_DBG_FLAGS, LL_FLAG_TX_TEST_RPT_PKT_NUM);
     return 0;
 }
 

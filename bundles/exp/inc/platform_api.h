@@ -461,12 +461,13 @@ void platform_shutdown(const uint32_t duration_cycles, const void *p_retention_d
 // These flags can be dynamically configured.
 typedef enum
 {
-    LL_FLAG_DISABLE_CTE_PREPROCESSING   = 1,    // disable internal CTE preprocessing
-    LL_FLAG_LEGACY_ONLY_INITIATING      = 4,    // only do initiating to legacy devices
-    LL_FLAG_LEGACY_ONLY_SCANNING        = 8,    // only do scanning for legacy devices
-    LL_FLAG_REDUCE_INSTANT_ERRORS       = 16,   // reduce report instance passed errors
-    LL_FLAG_DISABLE_RSSI_FILTER         = 64,   // disable internal RSSI filter
-    LL_FLAG_RSSI_AFTER_CRC              =128,   // only read RSSI from packages with correct CRC
+    LL_FLAG_DISABLE_CTE_PREPROCESSING   = 0x001,    // disable internal CTE preprocessing
+    LL_FLAG_LEGACY_ONLY_INITIATING      = 0x004,    // only do initiating to legacy devices
+    LL_FLAG_LEGACY_ONLY_SCANNING        = 0x008,    // only do scanning for legacy devices
+    LL_FLAG_REDUCE_INSTANT_ERRORS       = 0x010,    // reduce report instance passed errors
+    LL_FLAG_DISABLE_RSSI_FILTER         = 0x040,    // disable internal RSSI filter
+    LL_FLAG_RSSI_AFTER_CRC              = 0x080,    // only read RSSI from packages with correct CRC
+    LL_FLAG_TX_TEST_RPT_PKT_NUM         = 0x100,    // report tx packet number when tx test mode ends
 } ll_cfg_flag_t;
 
 typedef enum
