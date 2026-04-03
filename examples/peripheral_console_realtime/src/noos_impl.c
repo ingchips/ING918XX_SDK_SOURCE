@@ -162,9 +162,13 @@ static int queue_send_msg(gen_handle_t queue, void *msg)
 
 /* Constants required to manipulate the core.  Registers first... */
 #define portNVIC_SYSTICK_CTRL_REG			( * ( ( volatile uint32_t * ) 0xe000e010 ) )
+#define portNVIC_SYSTICK_LOAD_REG			( * ( ( volatile uint32_t * ) 0xe000e014 ) )
+#define portNVIC_SYSTICK_CURRENT_VALUE_REG	( * ( ( volatile uint32_t * ) 0xe000e018 ) )
+#define portNVIC_SYSPRI2_REG				( * ( ( volatile uint32_t * ) 0xe000ed20 ) )
 /* ...then bits in the registers. */
 #define portNVIC_SYSTICK_CLK_BIT	        ( 0UL << 2UL )
 #define portNVIC_SYSTICK_ENABLE_BIT			( 1UL << 0UL )
+#define portNVIC_SYSTICK_INT_BIT			( 1UL << 1UL )
 
 ADDITIONAL_ATTRIBUTE static void idle_process(void)
 {
@@ -203,8 +207,15 @@ ADDITIONAL_ATTRIBUTE static void dummy_event_set(gen_handle_t event) { }
 
 void noos_start(void)
 {
+#ifdef ENABLE_SYSTICK
+    // If app needs SysTick, it can be enabled like this:
+    portNVIC_SYSTICK_LOAD_REG = (RTC_CLK_FREQ / 1000) - 1;    // 1000Hz
+    portNVIC_SYSTICK_CURRENT_VALUE_REG = 0UL;
+    portNVIC_SYSTICK_CTRL_REG = portNVIC_SYSTICK_ENABLE_BIT | portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT;
+#else
     // let the SysTick run, but do NOT generate interrupt requests
     portNVIC_SYSTICK_CTRL_REG = portNVIC_SYSTICK_ENABLE_BIT | portNVIC_SYSTICK_CLK_BIT;
+#endif
     __enable_irq();
     platform_init_controller();
     host_entry(host_param);

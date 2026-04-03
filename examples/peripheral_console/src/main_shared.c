@@ -228,17 +228,6 @@ void config_core_clocks_like_ing916(void)
     SYSCTRL_ConfigPLLClk(5, 70, 1);
     SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
     SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_3);
-
-    // Flash: enable continuous mode
-    // this takes effect after 1st waking up
-    const uint32_t addr = AON1_CTRL_BASE + 0x14;
-    uint32_t t = io_read(addr);
-    if (((t >> 28) & 0x7) == 0x3)
-    {
-        t &= ~(0x7u << 28);
-        t |=   0x6  << 28;
-        io_write(addr, t);
-    }
 }
 #endif
 

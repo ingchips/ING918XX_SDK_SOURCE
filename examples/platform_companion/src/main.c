@@ -39,8 +39,6 @@ int main(void)
     SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_5);
     SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_3);
 
-    SYSCTRL_DisableSlowRC();
-
     platform_config(PLATFORM_CFG_RT_CLK, PLATFORM_RT_RC);
     platform_config(PLATFORM_CFG_RT_OSC_EN, 0);
 
