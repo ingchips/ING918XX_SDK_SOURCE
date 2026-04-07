@@ -37,6 +37,12 @@ typedef struct le_device_memory_db {
     // Signed Writes by us
     sm_key_t local_csrk;    // Connection Signature Resolving Key (CSRK) used to generate the signature on our device
     uint32_t local_counter; // Last used counter for the CSRK on our device
+
+#ifdef ROBUST_CACHING
+    // robust hash
+    uint8_t  client_features;
+    uint8_t  db_hash[16];
+#endif
 } le_device_memory_db_t;
 
 #pragma pack (pop)

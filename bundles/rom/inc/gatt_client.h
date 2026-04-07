@@ -119,6 +119,21 @@ typedef struct {
 
 #pragma pack(pop)
 
+#define MAX_NR_EATT_CHANNELS 5
+
+/**
+ * @brief Setup Enhanced LE Bearer with up to 5 channels on existing LE connection
+ * @param callback for GATT_EVENT_CONNECTED and GATT_EVENT_DISCONNECTED events
+ * @param con_handle
+ * @param num_channels
+ * @param storage_buffer for L2CAP connection
+ * @param storage_size - each channel requires (2 * ATT MTU) + 10 bytes
+ * @return
+ */
+// uint8_t gatt_client_le_enhanced_connect(btstack_packet_handler_t callback, hci_con_handle_t con_handle, uint8_t num_channels, uint8_t * storage_buffer, uint16_t storage_size);
+// WARNING: ^^^ this API is not available in this release
+
+
 /**
  * @brief Discovers all primary services. For each found service, an le_service_event_t with type set to GATT_EVENT_SERVICE_QUERY_RESULT will be generated and passed to the registered callback. The gatt_complete_event_t, with type set to GATT_EVENT_QUERY_COMPLETE, marks the end of discovery.
  * @param callback          Callback to discover primary services.
@@ -450,6 +465,22 @@ typedef struct gatt_client_notification {
 uint8_t gatt_client_get_mtu(hci_con_handle_t con_handle, uint16_t * mtu);
 
 /**
+ * @brief Exchange MTU request with customized size
+ *
+ * Generally, this API is NOT needed, and MTU negotiations is performed automatically.
+ * If developers DO need to control it, then,
+ *
+ * 1. set flag `STACK_GATT_CLIENT_DISABLE_MTU_EXCHANGE` by `btstack_config`;
+ * 1. call this ONCE on a connection.
+ *
+ * @param con_handle        connection handle
+ * @param mtu               requested MTU size (>= ATT_DEFAULT_MTU)
+ * @return                  0: successful
+ *                          Other error codes: BTSTACK_MEMORY_ALLOC_FAILED, GATT_CLIENT_IN_WRONG_STATE
+ */
+int gatt_client_exchange_mtu_request(hci_con_handle_t con_handle, uint16_t mtu);
+
+/**
  * @brief Returns if the GATT client is ready to receive a query. It is used with daemon.
  * @param con_handle        connection handle
  * @return                  1 if ready, 0 if not ready
@@ -614,6 +645,42 @@ static __INLINE hci_con_handle_t gatt_event_mtu_get_handle(const uint8_t * event
  */
 static __INLINE uint16_t gatt_event_mtu_get_mtu(const uint8_t * event) {
     return little_endian_read_16(event, 4);
+}
+
+/**
+ * @brief Get field `event_type` from event GATT_EVENT_UNHANDLED_SERVER_VALUE
+ * @param event packet
+ * @return `type` (GATT_EVENT_NOTIFICATION or GATT_EVENT_INDICATION)
+ */
+static __INLINE uint8_t gatt_event_unhandled_server_value_get_type(const uint8_t * event) {
+    return little_endian_read_16(event, 2);
+}
+
+/**
+ * @brief Get field `value_handle` from event GATT_EVENT_UNHANDLED_SERVER_VALUE
+ * @param event packet
+ * @return `value_handle`
+ */
+static __INLINE uint16_t gatt_event_unhandled_server_value_get_value_handle(const uint8_t * event) {
+    return little_endian_read_16(event, 3);
+}
+
+/**
+ * @brief Get field `size` from event GATT_EVENT_UNHANDLED_SERVER_VALUE
+ * @param event packet
+ * @return size of data
+ */
+static __INLINE uint16_t gatt_event_unhandled_server_value_get_size(const uint8_t * event) {
+    return little_endian_read_16(event, 5);
+}
+
+/**
+ * @brief Get field `data` from event GATT_EVENT_UNHANDLED_SERVER_VALUE
+ * @param event packet
+ * @return pointer of data
+ */
+static __INLINE const uint8_t * gatt_event_unhandled_server_value_get_data(const uint8_t * event) {
+    return (const uint8_t *)little_endian_read_32(event, 7);
 }
 
 /**

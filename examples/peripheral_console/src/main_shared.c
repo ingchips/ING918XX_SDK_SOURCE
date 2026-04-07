@@ -150,8 +150,10 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
-    if (IS_DEBUGGER_ATTACHED())
-        return 0;
+    // If power saving has to be disabled when debugging, un-comment these two lines:
+    // if (IS_DEBUGGER_ATTACHED())
+    //     return 0;
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #ifdef USE_POWER_LIB
     power_ctrl_before_deep_sleep();

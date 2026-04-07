@@ -349,7 +349,24 @@ enum sm_state_t
     SM_FINAL_FAIL_DISCONNECT,       // unexpected disconnection occurred
     SM_FINAL_FAIL_OUT_OF_STORAGE,   // device database runs out of storage
                                     // i.e. too many devices have been paired.
+    SM_FINAL_FAIL_ENCRYPTION,       // failed to start encryption
 };
+typedef void (*f_sm_cmac_done_handler)(void *user, uint8_t hash[16]);
+
+/**
+ * @brief Cipher-based Message Authentication Code (CMAC) using AES-
+ *        128 as the block cipher function, also known as AES-CMAC (RFC-4493)
+ *
+ * @param k             key (NULL for all 0 key)
+ * @param message_len   message length
+ * @param message       message itself (this buffer is not copied, so it must exists until `done_handler` is called)
+ * @param done_handle   callback function when CMAC is done
+ * @param user_data     user data for the callback function
+ */
+// void sm_generic_cmac_start(sm_key_t k, uint16_t message_len, const uint8_t * message,
+//                            f_sm_cmac_done_handler done_handler, void *user_data);
+// WARNING: ^^^ this API is not available in this release
+
 
 #ifdef __cplusplus
 }
