@@ -253,12 +253,10 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
  * @return                      0 if successful else non-0
  ****************************************************************************************
  */
-// int ll_get_conn_info(const uint16_t conn_handle,
-//                     uint32_t *access_addr,
-//                     uint32_t *crc_init,
-//                     uint8_t *hop_inc);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_get_conn_info(const uint16_t conn_handle,
+                    uint32_t *access_addr,
+                    uint32_t *crc_init,
+                    uint8_t *hop_inc);
 
 /**
  ****************************************************************************************
@@ -280,15 +278,13 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
  * @return                      0 if successful else non-0
  ****************************************************************************************
  */
-// int ll_get_conn_events_info(const uint16_t conn_handle,
-//                             int number,
-//                             uint64_t from_time,
-//                             uint32_t *interval,
-//                             uint32_t *time_offset,
-//                             uint16_t *event_count,
-//                             uint8_t *channel_ids);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_get_conn_events_info(const uint16_t conn_handle,
+                            int number,
+                            uint64_t from_time,
+                            uint32_t *interval,
+                            uint32_t *time_offset,
+                            uint16_t *event_count,
+                            uint8_t *channel_ids);
 
 /**
  ****************************************************************************************
@@ -300,9 +296,7 @@ void ll_set_conn_latency(uint16_t conn_handle, int latency);
  * @return                      0 if aborting is ongoing else non-0
  ****************************************************************************************
  */
-// int ll_conn_abort(uint16_t conn_handle);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_conn_abort(uint16_t conn_handle);
 
 /**
  ****************************************************************************************
@@ -437,9 +431,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @param[in]  packet      the packet
  ****************************************************************************************
  */
-// void ll_raw_packet_free(struct ll_raw_packet *packet);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_raw_packet_free(struct ll_raw_packet *packet);
 
 /**
  ****************************************************************************************
@@ -451,9 +443,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                  the new packet object (NULL if out of memory)
  ****************************************************************************************
  */
-// struct ll_raw_packet *ll_raw_packet_alloc(uint8_t for_tx, f_ll_raw_packet_done on_done, void *user_data);
-// WARNING: ^^^ this API is not available in this release
-
+struct ll_raw_packet *ll_raw_packet_alloc(uint8_t for_tx, f_ll_raw_packet_done on_done, void *user_data);
 
 /**
  ****************************************************************************************
@@ -470,14 +460,12 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_param(struct ll_raw_packet *packet,
-//                           int8_t tx_power,
-//                           int8_t rf_channel_id,
-//                           uint8_t phy,
-//                           uint32_t access_addr,
-//                           uint32_t crc_init);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_param(struct ll_raw_packet *packet,
+                          int8_t tx_power,
+                          int8_t rf_channel_id,
+                          uint8_t phy,
+                          uint32_t access_addr,
+                          uint32_t crc_init);
 
 /**
  ****************************************************************************************
@@ -530,12 +518,10 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_tx_data(struct ll_raw_packet *packet,
-//                                uint8_t header,
-//                                const void *data,
-//                                int size);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_tx_data(struct ll_raw_packet *packet,
+                               uint8_t header,
+                               const void *data,
+                               int size);
 
 /**
  ****************************************************************************************
@@ -548,10 +534,8 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *                                  * LL can't schedule RF activity at specifed time (too late, or busy).
  ****************************************************************************************
  */
-// int ll_raw_packet_send(struct ll_raw_packet *packet,
-//                        uint64_t when);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_send(struct ll_raw_packet *packet,
+                       uint64_t when);
 
 /**
  ****************************************************************************************
@@ -568,14 +552,12 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *                                        even if error code is not in {1, 2}.
  ****************************************************************************************
  */
-// int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
-//                                uint64_t *air_time,
-//                                uint8_t *header,
-//                                void *data,
-//                                int *size,
-//                                int *rssi);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_get_rx_data(struct ll_raw_packet *packet,
+                               uint64_t *air_time,
+                               uint8_t *header,
+                               void *data,
+                               int *size,
+                               int *rssi);
 
 /**
  ****************************************************************************************
@@ -591,15 +573,13 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_get_bare_rx_data(struct ll_raw_packet *packet,
-//                                uint64_t *air_time,
-//                                uint8_t *header,
-//                                void *data,
-//                                int *size,
-//                                int *rssi,
-//                                uint32_t *crc_value);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_get_bare_rx_data(struct ll_raw_packet *packet,
+                               uint64_t *air_time,
+                               uint8_t *header,
+                               void *data,
+                               int *size,
+                               int *rssi,
+                               uint32_t *crc_value);
 
 /**
  ****************************************************************************************
@@ -613,11 +593,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *                                  * LL can't schedule RF activity at specifed time (too late, or busy).
  ****************************************************************************************
  */
-// int ll_raw_packet_recv(struct ll_raw_packet *packet,
-//                         uint64_t when,
-//                         uint32_t rx_window);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_recv(struct ll_raw_packet *packet,
+                        uint64_t when,
+                        uint32_t rx_window);
 
 /**
  ****************************************************************************************
@@ -631,13 +609,11 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
-//                           uint8_t cte_type,
-//                           uint8_t cte_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *switching_pattern);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_tx_cte(struct ll_raw_packet *packet,
+                          uint8_t cte_type,
+                          uint8_t cte_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *switching_pattern);
 
 /**
  ****************************************************************************************
@@ -655,11 +631,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                              0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
-//                           uint8_t cte_type,
-//                           uint8_t cte_len);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_fake_cte_info(struct ll_raw_packet *packet,
+                          uint8_t cte_type,
+                          uint8_t cte_len);
 
 /**
  ****************************************************************************************
@@ -679,15 +653,13 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * (slot_sampling_offset + slot_sample_count) should be <= 24
  ****************************************************************************************
  */
-// int ll_raw_packet_set_rx_cte(struct ll_raw_packet *packet,
-//                           uint8_t cte_type,
-//                           uint8_t slot_len,
-//                           uint8_t switching_pattern_len,
-//                           const uint8_t *swiching_pattern,
-//                           uint8_t slot_sampling_offset,
-//                           uint8_t slot_sample_count);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_set_rx_cte(struct ll_raw_packet *packet,
+                          uint8_t cte_type,
+                          uint8_t slot_len,
+                          uint8_t switching_pattern_len,
+                          const uint8_t *swiching_pattern,
+                          uint8_t slot_sampling_offset,
+                          uint8_t slot_sample_count);
 
 /**
  ****************************************************************************************
@@ -705,12 +677,10 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          0 if successful else error code
  ****************************************************************************************
  */
-// int ll_raw_packet_get_iq_samples(struct ll_raw_packet *packet,
-//                                void *iq_samples,
-//                                int *iq_sample_cnt,
-//                                int preprocess);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_raw_packet_get_iq_samples(struct ll_raw_packet *packet,
+                               void *iq_samples,
+                               int *iq_sample_cnt,
+                               int preprocess);
 
 /**
  ****************************************************************************************
@@ -805,9 +775,7 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  * @return                          the new packet object (NULL if out of memory)
  ****************************************************************************************
  */
-// struct ll_raw_packet *ll_channel_monitor_alloc(int pdu_num, f_ll_raw_packet_done on_done, void *user_data);
-// WARNING: ^^^ this API is not available in this release
-
+struct ll_raw_packet *ll_channel_monitor_alloc(int pdu_num, f_ll_raw_packet_done on_done, void *user_data);
 
 /**
  ****************************************************************************************
@@ -821,11 +789,9 @@ typedef void (* f_ll_raw_packet_done)(struct ll_raw_packet *packet, void *user_d
  *                                  * LL can't schedule RF activity at specifed time (too late, or busy).
  ****************************************************************************************
  */
-// int ll_channel_monitor_run(struct ll_raw_packet *packet,
-//                         uint64_t when,
-//                         uint32_t window);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_channel_monitor_run(struct ll_raw_packet *packet,
+                        uint64_t when,
+                        uint32_t window);
 
 /**
  ****************************************************************************************
@@ -863,11 +829,9 @@ typedef void (* f_ll_channel_monitor_pdu_visitor)(int index, int status, uint8_t
  * @return                          number of successfully received PDUs
  ****************************************************************************************
  */
-// int ll_channel_monitor_check_each_pdu(struct ll_raw_packet *packet,
-//                                 f_ll_channel_monitor_pdu_visitor visitor,
-//                                 void *user_data);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_channel_monitor_check_each_pdu(struct ll_raw_packet *packet,
+                                f_ll_channel_monitor_pdu_visitor visitor,
+                                void *user_data);
 
 /**
  ****************************************************************************************
@@ -879,9 +843,7 @@ typedef void (* f_ll_channel_monitor_pdu_visitor)(int index, int status, uint8_t
  *                                  error conditions: 1) still running; 2) no PDU is received.
  ****************************************************************************************
  */
-// int ll_channel_monitor_get_1st_pdu_time(struct ll_raw_packet *packet, uint64_t *air_time);
-// WARNING: ^^^ this API is not available in this release
-
+int ll_channel_monitor_get_1st_pdu_time(struct ll_raw_packet *packet, uint64_t *air_time);
 
 /**
  * @brief Enumeration for Burst Transmission Order
@@ -1288,9 +1250,7 @@ typedef void (* f_ll_burst_pdu_visitor)(int index, uint8_t lane_id,
  * @param[in]   freq_mhz            channel frequency in MHz
  ****************************************************************************************
  */
-// void ll_lock_frequency(int freq_mhz);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_lock_frequency(int freq_mhz);
 
 /**
  ****************************************************************************************
@@ -1299,9 +1259,7 @@ typedef void (* f_ll_burst_pdu_visitor)(int index, uint8_t lane_id,
  * After unlocking, RF behaviors are back to normal again.
  ****************************************************************************************
  */
-// void ll_unlock_frequency(void);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_unlock_frequency(void);
 
 /**
  ****************************************************************************************
@@ -1455,9 +1413,7 @@ void ll_register_hci_conn_pdu_previewer(f_ll_hci_conn_pdu_preview preview);
  *                          For example, standard value for channel 37 is 0x53.
  ****************************************************************************************
  */
-// void ll_override_whitening_init_value(uint8_t override, uint8_t value);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_override_whitening_init_value(uint8_t override, uint8_t value);
 
 /**
  ****************************************************************************************
@@ -1467,9 +1423,7 @@ void ll_register_hci_conn_pdu_previewer(f_ll_hci_conn_pdu_preview preview);
  * @param[in]  type         nonstandard ADV TYPE
  ****************************************************************************************
  */
-// void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_allow_nonstandard_adv_type(uint8_t allowed, uint8_t type);
 
 /**
  ****************************************************************************************
@@ -1478,9 +1432,7 @@ void ll_register_hci_conn_pdu_previewer(f_ll_hci_conn_pdu_preview preview);
  * @param[in]  bit          CTE bit: 0/1 (default: 1)
  ****************************************************************************************
  */
-// void ll_set_cte_bit(uint8_t bit);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_set_cte_bit(uint8_t bit);
 
 /**
  ****************************************************************************************
