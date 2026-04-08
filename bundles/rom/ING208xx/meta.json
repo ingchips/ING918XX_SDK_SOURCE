@@ -8,7 +8,7 @@
     },
     "rom": {
         "base": 33562624,
-        "size": 5928
+        "size": 6152
     },
     "var": {
         "link_layer_features": {
@@ -18,6 +18,6 @@
     "version": [
         20,
         4,
-        43
+        44
     ]
 }

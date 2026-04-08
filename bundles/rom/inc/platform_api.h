@@ -1046,6 +1046,8 @@ void platform_call_on_stack(f_platform_function f, void *user_data,
  *
  * This function is provided by `Platform Companion` and must be called by app
  * in `app_main`.
+ *
+ * At present, this function does nothing.
  ****************************************************************************************
  */
 void platform_rom_hotfix(void);
@@ -1055,10 +1057,11 @@ void platform_rom_hotfix(void);
  * @brief Additional hotfix for platform.bin in ROM using FPB (Flash Patch and Breakpoints)
  *
  * This fixes following issue(s):
- * - occasional assertion in `ble50_ble.c`.
+ * - program might stuck in `wfi` when using `platform_set_timer`.
+ * - `COMMAND_COMPLETE` for `gap_create_connection_cancel` is reported before job is done.
  *
- * Note: this uses 1 literal comparator in FPB. Debugging or emulation with probe might be
- * affected.
+ * Note: this uses 1 instruction address address comparator and 1 literal comparator in FPB.
+ * Debugging or emulation with probe might be affected.
  ****************************************************************************************
  */
 void platform_rom_hotfix_using_fpb(void);
