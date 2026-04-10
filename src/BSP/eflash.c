@@ -615,7 +615,7 @@ void flash_read_uid(uint32_t uid[4])
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #include "peripheral_sysctrl.h"
-#include "platform_api.h"
+
 typedef void (* f_void)(void);
 typedef void (* f_prog_page)(uint32_t addr, const uint8_t data[256], uint32_t len);
 typedef int (* f_erase_flash_sector)(uint32_t addr);
@@ -624,20 +624,20 @@ typedef int (* f_write_flash)(const uint32_t dest_addr, const uint8_t *buffer, u
 typedef int (* f_flash_do_update)(const int block_num, const fota_update_block_t *blocks, uint8_t *ram_buffer);
 
 typedef void (*rom_void_void)(void);
-typedef void (*rom_FlashSectorErase)(uint32_t addr);
-typedef void (*rom_FlashPageProgram)(uint32_t addr, const uint8_t *data, uint32_t len);
+typedef void (*rom_FlashSectorErase)(uint8_t info, uint32_t addr);
+typedef void (*rom_FlashPageProgram)(uint8_t info, uint32_t addr, const uint8_t *data, uint32_t len);
 typedef void (*rom_FlashSetStatusReg)(uint16_t data);
 typedef uint16_t (*rom_FlashGetStatusReg)(void);
 
-#define ROM_erase_flash_sector              ((f_erase_flash_sector)0x000082b5)
-#define ROM_program_flash                   ((f_program_flash)0x00025751)
-#define ROM_write_flash                     ((f_write_flash)0x0002b785)
-#define ROM_flash_do_update                 ((f_flash_do_update)0x000087d9)
+#define ROM_erase_flash_sector              ((f_erase_flash_sector)0x00008977)
+#define ROM_program_flash                   ((f_program_flash)0x00025de5)
+#define ROM_write_flash                     ((f_write_flash)0x0002bbe9)
+#define ROM_flash_do_update                 ((f_flash_do_update)0x00008eb9)
 
-#define ROM_FlashSectorErase                ((rom_FlashSectorErase)0x000007cd)
-#define ROM_FlashDisableContinuousMode      ((rom_void_void)0x000005c5)
-#define ROM_FlashEnableContinuousMode       ((rom_void_void)0x00000601)
-#define ROM_FlashPageProgram                ((rom_FlashPageProgram)0x00000681)
+#define ROM_FlashSectorErase                ((rom_FlashSectorErase)0x000007a1)
+#define ROM_FlashDisableContinuousMode      ((rom_void_void)0x0000072d)
+#define ROM_FlashEnableContinuousMode       ((rom_void_void)0x0000077d)
+#define ROM_FlashPageProgram                ((rom_FlashPageProgram)0x000007c9)
 
 #define IS_CONTINUOUS_MODE()                ((io_read(0x40150004) & 0x1000000ul) != 0)
 
@@ -657,7 +657,16 @@ typedef uint16_t (*rom_FlashGetStatusReg)(void);
 int erase_flash_sector(const uint32_t addr)
 {
     FLASH_PRE_OPS();
-    ROM_FlashSectorErase(addr);
+    ROM_FlashSectorErase(0x20, addr);
+    SYSCTRL_ICacheFlush();
+    FLASH_POST_OPS();
+    return 0;
+}
+
+int erase_flash_page(const uint32_t addr)
+{
+    FLASH_PRE_OPS();
+    ROM_FlashSectorErase(0x81, addr);
     SYSCTRL_ICacheFlush();
     FLASH_POST_OPS();
     return 0;
@@ -673,13 +682,13 @@ int program_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
         {
             uint32_t remain = EFLASH_SECTOR_SIZE;
 
-            ROM_FlashSectorErase(dest_addr);
+            ROM_FlashSectorErase(0x20, dest_addr);
 
             while ((remain > 0) && (size > 0))
             {
                 uint32_t cnt = size > EFLASH_PAGE_SIZE ? EFLASH_PAGE_SIZE : size;
                 cnt = cnt > remain ? remain : cnt;
-                ROM_FlashPageProgram(dest_addr, buffer, cnt);
+                ROM_FlashPageProgram(0x02, dest_addr, buffer, cnt);
                 dest_addr += cnt;
                 buffer += cnt;
                 remain -= cnt;
@@ -710,7 +719,7 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
             uint32_t block = next_page - dest_addr;
             if (block >= size) block = size;
 
-            ROM_FlashPageProgram(dest_addr, buffer, block);
+            ROM_FlashPageProgram(0x02, dest_addr, buffer, block);
 
             dest_addr += block;
             buffer += block;

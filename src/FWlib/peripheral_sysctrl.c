@@ -2029,9 +2029,9 @@ int SYSCTRL_Init(void)
     typedef void    (*rom_PowerOnSeq)(uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
     typedef void    (*rom_PowerDownSeq)(void);
     typedef void    (*rom_PLLinUse)(uint8_t PLLEn, uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
-    #define ROM_PLLinUse    ((rom_PLLinUse)(0x00000e7d))
-    #define ROM_PowerOnSeq      ((rom_PowerOnSeq)(0x00000fa9))
-    #define ROM_PowerDownSeq    ((rom_PowerDownSeq)(0x00000ef1))
+    #define ROM_PLLinUse    ((rom_PLLinUse)(0x00000e21))
+    #define ROM_PowerOnSeq      ((rom_PowerOnSeq)(0x0000101d))
+    #define ROM_PowerDownSeq    ((rom_PowerDownSeq)(0x00000f05))
     ROM_PowerOnSeq(1, 1, 1);
     ROM_PowerDownSeq();
 
