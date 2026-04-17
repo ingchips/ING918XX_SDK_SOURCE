@@ -2040,6 +2040,13 @@ int SYSCTRL_Init(void)
     else
         ROM_PLLinUse(0, 0, 0, 0);
 
+//    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x38) |= 0x5<<15;
+//    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x30) |= (0x5<<28) | (0x1a<<5);
+//    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x34) |= 0x30<<14;
+
+//    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1d, 6, 16);
+////    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c), 150, 8, 24);
+    
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x38) |= 0x5<<15;
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x30) |= (0x5<<28) | (0x1a<<5);
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x34) |= 0x30<<14;

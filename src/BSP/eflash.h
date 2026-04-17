@@ -388,6 +388,229 @@ int erase_flash_sector(const uint32_t addr);
  */
 int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint8_t *ram_buffer);
 
+
+typedef enum
+{
+    FLASH_REGION_NONE       = 0x00,         // none         (        0KB)
+    FLASH_REGION_UPPER_1_8  = 0x01,         // upper 1/8    (upper  64KB)
+    FLASH_REGION_UPPER_1_4  = 0x02,         // upper 1/4    (upper 128KB)
+    FLASH_REGION_UPPER_1_2  = 0x03,         // upper 1/2    (upper 256KB)
+    FLASH_REGION_LOWER_1_8  = 0x09,         // lower 1/8    (lower  64KB)
+    FLASH_REGION_LOWER_1_4  = 0x0A,         // lower 1/4    (lower 128KB)
+    FLASH_REGION_LOWER_1_2  = 0x0B,         // lower 1/2    (lower 256KB)
+    FLASH_REGION_UPPER_1_128 = 0x11,        // upper 1/128  (upper   4KB)
+    FLASH_REGION_UPPER_1_64  = 0x12,        // upper 1/64   (upper   8KB)
+    FLASH_REGION_UPPER_1_32  = 0x13,        // upper 1/32   (upper  16KB)
+    FLASH_REGION_UPPER_1_16  = 0x14,        // upper 1/16   (upper  32KB)
+    FLASH_REGION_LOWER_1_128 = 0x19,        // lower 1/128  (lower   4KB)
+    FLASH_REGION_LOWER_1_64  = 0x1A,        // lower 1/64   (lower   8KB)
+    FLASH_REGION_LOWER_1_32  = 0x1B,        // lower 1/32   (lower  16KB)
+    FLASH_REGION_LOWER_1_16  = 0x1C,        // lower 1/16   (lower  32KB)
+    FLASH_REGION_ALL         = 0x1f,        // all          (      512KB)
+} flash_region_t;
+
+/**
+ * @brief Enable write protection on a selected region
+ *
+ * e.g.
+ *
+ * ```c
+ * // turn on write protection for the upper 1/8 of flash
+ * flash_enable_write_protection(FLASH_REGION_UPPER_1_8, 0);
+ *
+ * // turn on write protection for the lower 7/8 of flash,
+ * // i.e. reverse the selection of `FLASH_REGION_UPPER_1_8`
+ * flash_enable_write_protection(FLASH_REGION_UPPER_1_8, 1);
+ * ```
+ *
+ * Call this before doing write operations on flash if related region is write
+ * protected. Select NONE region will disable the protection completely:
+ *
+ * ```c
+ * flash_enable_write_protection(FLASH_REGION_NONE, 0);
+ * ```
+ *
+ * Note: Write protection is a global configuration for the flash. It is impossible
+ * to enable the protection for two separated region, such as `FLASH_REGION_UPPER_1_8`,
+ * `FLASH_REGION_LOWER_1_128` by invoking this API twice.
+ *
+ * @param[in] region                specify a region
+ * @param[in] reverse_selection     select `region` (0) or reverse the selection of `region` (1)
+ */
+void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection);
+
+
+#pragma pack (push, 1)
+typedef struct
+{
+    uint16_t version;
+    uint8_t metal_id;
+    uint8_t bin_number;
+    uint8_t chip_uuid[16];
+    uint16_t ate_version;
+    uint16_t dut_version;
+    uint8_t batch_number[16];
+    uint16_t info_crc16;
+    uint16_t trim_crc16;
+} die_info_t;
+
+typedef struct
+{
+    uint8_t version;
+    uint8_t v33_index;
+    uint8_t v33[16];
+    uint8_t vaon_index;
+    uint8_t vaon[16];
+    uint8_t vdc33_index;
+    uint8_t vdc33[32];
+    uint8_t vcore_index;
+    uint8_t vcore[32];
+}factory_calib_pmu_t;
+
+typedef struct {
+    uint8_t version;
+    uint16_t channel_mask;
+    uint16_t int_vbat33_ain0v3_ch0_8[9];
+    uint16_t int_vbat33_ain1v0_ch0_8[9];
+    uint16_t vbat33_flt_ain0v5_ch0_8[9];
+    uint16_t vbat33_flt_ain2v7_ch0_8[9];
+    uint16_t int_vbat33_int_ch9_11[3];
+    uint16_t vbat33_flt_int_ch9_11[3];
+    uint16_t vbat25_flt_int_ch9_11[3];
+} factory_calib_adc_t;
+
+typedef struct {
+    uint8_t version;
+    uint16_t verf;
+    uint16_t mic_bias_int;
+    uint16_t vp_2v0_vn0v0_int;
+    uint16_t vp_0v0_vn2v0_int;
+    uint16_t vp_1v5_int;
+    uint16_t vp_0v5_int;
+    uint16_t mic_bias_ext;
+    uint16_t vp_2v0_vn0v0_ext;
+    uint16_t vp_0v0_vn2v0_ext;
+    uint16_t vp_1v5_ext;
+    uint16_t vp_0v5_ext;
+} factory_calib_asdm_t;
+
+typedef struct
+{
+    factory_calib_pmu_t calib_pmu;
+    factory_calib_adc_t calib_adc;
+    factory_calib_asdm_t calib_asdm;
+} factory_calib_data_t;
+
+#define FACTORY_DATA_MAGIC_0    0x494E4743u
+#define FACTORY_DATA_MAGIC_1    0x48495053u
+
+typedef struct
+{
+    float k;
+    float b;
+} adc_linear_calib_t;
+
+typedef struct
+{
+    float k;
+    float b;
+} adc_vbat_calib_t;
+
+typedef struct
+{
+    uint32_t magic_0;
+    uint32_t magic_1;
+    uint16_t version;
+    uint16_t flags;
+    adc_linear_calib_t ch0_8_int_ref[9];
+    adc_linear_calib_t ch0_8_vbat_ref[9];
+    adc_vbat_calib_t ch9_vbat;
+    uint32_t reserved[10];
+} factory_clc_data_t;
+#pragma pack (pop)
+
+#define FACTORY_CLC_DATA_VERSION       0x0001u
+
+/**
+ * @brief Prepare factory data in flash
+ *
+ * This function copies factory data from security pages to normal
+ * pages in flash when needed.
+ *
+ * @return                      0 if succeeded else non-0
+ */
+int flash_prepare_factory_data(void);
+
+/**
+ * @brief Get die information from flash
+ *
+ * When such information does not exists, NULL is returned.
+ *
+ * This function uses `flash_prepare_factory_data()`.
+ *
+ * @return                      die information
+ */
+const die_info_t *flash_get_die_info(void);
+
+/**
+ * @brief Get factory calibration data from flash
+ *
+ * When such information does not exists, NULL is returned.
+ *
+ * This function uses `flash_prepare_factory_data()`.
+ *
+ * @return                      factory data
+ */
+const factory_calib_data_t *flash_get_factory_calib_data(void);
+
+/**
+ * @brief Get calculated calibration data from flash
+ *
+ * This function uses `flash_prepare_factory_data()`.
+ *
+ * @return                      cached calibration data
+ */
+const factory_clc_data_t *flash_get_factory_clc_data(void);
+
+/**
+ * @brief Store calculated calibration data to flash
+ *
+ * @param[in] data              calibration data to be stored
+ * @return                      0 if succeeded else non-0
+ */
+int flash_store_factory_clc_data(const factory_clc_data_t *data);
+
+/**
+ * @brief Build calculated ADC calibration data from factory FT data
+ *
+ * @param[in] src               source FT data
+ * @param[out] dst              calculated calibration data
+ */
+void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_data_t *dst);
+
+/**
+ * @brief Get ADC calibration data from flash
+ *
+ * Note: There are multiple versions of ADC calibration data,
+ *       so, here, a plain pointer is returned.
+ *
+ * This function uses `flash_prepare_factory_data()`.
+ *
+ * See `adc_calib_ver` in `factory_calib_data_t`.
+ *
+ * When such information does not exists, NULL is returned.
+ *
+ * @return                      ADC calibration data
+ */
+const void *flash_get_adc_calib_data(void);
+
+/**
+ * @brief Read UID of flash
+ *
+ * @param[out]  uid            128-bit UID
+ */
+void flash_read_uid(uint32_t uid[4]);
+
 #endif
 
 #ifdef __cplusplus

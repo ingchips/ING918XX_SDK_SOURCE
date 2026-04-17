@@ -1,7 +1,12 @@
 #include <stdint.h>
+#include <stddef.h>
 #include <string.h>
 
 #include "eflash.h"
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selection);
+#endif
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
@@ -576,31 +581,6 @@ const void *flash_get_adc_calib_data(void)
         return NULL;
 }
 
-static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selection)
-{
-    FLASH_PRE_OPS();
-    {
-        uint16_t status = ROM_FlashGetStatusReg();
-        *reverse_selection = ((status >> 14) & 1ul);
-        *region = (0x1ful & (status >> 2));
-    }
-    FLASH_POST_OPS();
-}
-
-void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
-{
-    FLASH_PRE_OPS();
-    {
-        uint16_t status = ROM_FlashGetStatusReg();
-        uint16_t old_status = status;
-        status &= ~((1ul << 14) | (0x1ful << 2));
-        status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
-        if (old_status != status)
-           ROM_FlashSetStatusReg(status);
-    }
-    FLASH_POST_OPS();
-}
-
 typedef void (* rom_FlashRUID)(uint32_t *UID);
 #define ROM_FlashRUID  ((rom_FlashRUID) (0x00000a41))
 
@@ -626,8 +606,9 @@ typedef int (* f_flash_do_update)(const int block_num, const fota_update_block_t
 typedef void (*rom_void_void)(void);
 typedef void (*rom_FlashSectorErase)(uint8_t info, uint32_t addr);
 typedef void (*rom_FlashPageProgram)(uint8_t info, uint32_t addr, const uint8_t *data, uint32_t len);
-typedef void (*rom_FlashSetStatusReg)(uint16_t data);
-typedef uint16_t (*rom_FlashGetStatusReg)(void);
+typedef void (*rom_FlashWriteStatusReg)(uint16_t data);
+typedef uint8_t (*rom_FlashReadReg)(uint8_t cmd);
+typedef uint32_t (*rom_FlashSecurityPageRead)(uint32_t addr);
 
 #define ROM_erase_flash_sector              ((f_erase_flash_sector)0x00008977)
 #define ROM_program_flash                   ((f_program_flash)0x00025de5)
@@ -640,6 +621,10 @@ typedef uint16_t (*rom_FlashGetStatusReg)(void);
 #define ROM_FlashPageProgram                ((rom_FlashPageProgram)0x000007c9)
 
 #define IS_CONTINUOUS_MODE()                ((io_read(0x40150004) & 0x1000000ul) != 0)
+
+#define ROM_FlashReadReg                    ((rom_FlashReadReg)(0x000009dd))
+#define ROM_FlashWriteStatusReg             ((rom_FlashWriteStatusReg)(0x00000b71))
+#define read_flash_security                 ((rom_FlashSecurityPageRead)(0x00000a4d))
 
 #define FLASH_PRE_OPS()                         \
     uint32_t prim = __get_PRIMASK();            \
@@ -748,4 +733,362 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
     return r;
 }
 
+uint16_t crc16(uint8_t *puchMsg, uint16_t usDataLen) {
+    uint16_t crc = 0xFFFF;
+    while (usDataLen--) {
+        crc ^= *puchMsg++;
+        for (int i = 0; i < 8; i++) {
+            if (crc & 0x0001) {
+                crc = (crc >> 1) ^ 0xA001;
+            } else {
+                crc >>= 1;
+            }
+        }
+    }
+    return ((crc & 0xFF) << 8) | (crc >> 8);
+}
+
+#define FACTORY_DATA_LOC    (0x02000000 + 0x1000)
+#define FACTORY_DIE_INFO_SRC_ADDR      (0x00000000u)
+#define FACTORY_CALIB_SRC_ADDR         (0x00000100u)
+#define FACTORY_DATA_DIE_INFO          (FACTORY_DATA_LOC)
+#define FACTORY_DATA_CALIB             (FACTORY_DATA_LOC + 0x100)
+#define FACTORY_DATA_CLC               (FACTORY_DATA_LOC + 0x200)
+#define ADC_CAL_CHANNEL_NUM            9
+#define ADC_PHY_INT_POINT0             0.3f
+#define ADC_PHY_INT_POINT1             1.0f
+#define ADC_PHY_VBAT_POINT0            0.5f
+#define ADC_PHY_VBAT_POINT1            2.7f
+#define ADC_PHY_VBAT_33                3.3f
+#define ADC_PHY_VBAT_25                2.5f
+
+
+static uint16_t calc_factory_info_crc16(const die_info_t *info)
+{
+    return crc16((uint8_t *)info, sizeof(die_info_t) - 4);
+}
+
+static uint16_t calc_factory_calib_crc16(const factory_calib_data_t *calib)
+{
+    return crc16((uint8_t *)calib, sizeof(factory_calib_data_t));
+}
+
+static void copy_security_bytes(uint8_t *dst, uint32_t src, uint32_t size)
+{
+    while (size >= 4U)
+    {
+        uint32_t word = read_flash_security(src);
+        memcpy(dst, &word, sizeof(word));
+        dst += sizeof(word);
+        src += sizeof(word);
+        size -= sizeof(word);
+    }
+
+    if (size > 0U)
+    {
+        uint32_t word = read_flash_security(src);
+        memcpy(dst, &word, size);
+    }
+}
+
+static int factory_data_ready(void)
+{
+    const factory_clc_data_t *factory = (const factory_clc_data_t *)FACTORY_DATA_CLC;
+
+    if ((factory->magic_0 != FACTORY_DATA_MAGIC_0) ||
+        (factory->magic_1 != FACTORY_DATA_MAGIC_1))
+        return 0;
+
+    return 1;
+}
+
+static int factory_clc_data_ready(const factory_clc_data_t *data)
+{
+    if (data == NULL)
+        return 0;
+
+    if ((data->magic_0 != FACTORY_DATA_MAGIC_0) ||
+        (data->magic_1 != FACTORY_DATA_MAGIC_1))
+        return 0;
+
+    return data->version == FACTORY_CLC_DATA_VERSION;
+}
+
+static void factory_set_linear_calib(adc_linear_calib_t *cal,
+                                     uint16_t raw0,
+                                     float phy0,
+                                     uint16_t raw1,
+                                     float phy1)
+{
+    if ((cal == NULL) || (raw0 == raw1))
+        return;
+
+    cal->k = (phy1 - phy0) / (float)((int32_t)raw1 - (int32_t)raw0);
+    cal->b = phy0 - cal->k * (float)raw0;
+}
+
+static void factory_set_vbat_calib(adc_vbat_calib_t *cal,
+                                   uint16_t raw_vbat33,
+                                   float vbat33,
+                                   uint16_t raw_vbat25,
+                                   float vbat25)
+{
+    const float x0 = (raw_vbat33 == 0U) ? 0.0f : (1.0f / (float)raw_vbat33);
+    const float x1 = (raw_vbat25 == 0U) ? 0.0f : (1.0f / (float)raw_vbat25);
+
+    if ((cal == NULL) || (x0 == x1))
+        return;
+
+    cal->k = (vbat25 - vbat33) / (x1 - x0);
+    cal->b = vbat33 - cal->k * x0;
+}
+
+void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_data_t *dst)
+{
+    int i;
+
+    if ((src == NULL) || (dst == NULL))
+        return;
+
+    memset(dst, 0xff, sizeof(*dst));
+    dst->magic_0 = FACTORY_DATA_MAGIC_0;
+    dst->magic_1 = FACTORY_DATA_MAGIC_1;
+    dst->version = FACTORY_CLC_DATA_VERSION;
+    dst->flags = 0;
+
+    for (i = 0; i < ADC_CAL_CHANNEL_NUM; ++i)
+    {
+        factory_set_linear_calib(&dst->ch0_8_int_ref[i],
+                                 src->calib_adc.int_vbat33_ain0v3_ch0_8[i],
+                                 ADC_PHY_INT_POINT0,
+                                 src->calib_adc.int_vbat33_ain1v0_ch0_8[i],
+                                 ADC_PHY_INT_POINT1);
+        factory_set_linear_calib(&dst->ch0_8_vbat_ref[i],
+                                 src->calib_adc.vbat33_flt_ain0v5_ch0_8[i],
+                                 ADC_PHY_VBAT_POINT0,
+                                 src->calib_adc.vbat33_flt_ain2v7_ch0_8[i],
+                                 ADC_PHY_VBAT_POINT1);
+    }
+
+    factory_set_vbat_calib(&dst->ch9_vbat,
+                           src->calib_adc.vbat33_flt_int_ch9_11[0],
+                           ADC_PHY_VBAT_33,
+                           src->calib_adc.vbat25_flt_int_ch9_11[0],
+                           ADC_PHY_VBAT_25);
+}
+
+int flash_prepare_factory_data(void)
+{
+    factory_calib_data_t calib;
+    die_info_t die_info;
+    uint8_t region;
+    uint8_t reverse_selection;
+
+    if (factory_data_ready())
+        return 0;
+    
+    flash_read_protection_status(&region, &reverse_selection);
+    flash_enable_write_protection(FLASH_REGION_NONE, 0);
+    
+    ROM_FlashSectorErase(0x20, FACTORY_DATA_LOC);
+
+    copy_security_bytes((uint8_t *)&die_info,
+                        FACTORY_DIE_INFO_SRC_ADDR,
+                        sizeof(die_info));
+    copy_security_bytes((uint8_t *)&calib,
+                        FACTORY_CALIB_SRC_ADDR,
+                        sizeof(calib));
+
+    uint16_t crc = calc_factory_info_crc16(&die_info);
+    if (crc != die_info.info_crc16)
+        return 1;
+    crc = calc_factory_calib_crc16(&calib);
+    if (crc != die_info.trim_crc16)
+        return 2;
+
+    if (write_flash(FACTORY_DATA_LOC,
+                    (const uint8_t *)&die_info,
+                    sizeof(die_info)) != 0)
+        goto check_failed;
+    if (write_flash(FACTORY_DATA_CALIB,
+                    (const uint8_t *)&calib,
+                    sizeof(calib)) != 0)
+        goto check_failed;
+
+    if (memcmp((const void *)((const uint8_t *)FACTORY_DATA_DIE_INFO),
+               (const void *)&die_info,
+               sizeof(die_info)) != 0)
+        goto check_failed;
+    if (memcmp((const void *)((const uint8_t *)FACTORY_DATA_CALIB),
+               (const void *)&calib,
+               sizeof(calib)) != 0)
+        goto check_failed;
+
+    {
+        uint32_t magic[2];
+
+        magic[0] = FACTORY_DATA_MAGIC_0;
+        magic[1] = FACTORY_DATA_MAGIC_1;
+        if (write_flash(FACTORY_DATA_CLC,
+                        (const uint8_t *)magic,
+                        sizeof(magic)) != 0)
+            goto check_failed;
+    }
+
+    flash_enable_write_protection(region, reverse_selection);
+    return 0;
+
+check_failed:
+    erase_flash_sector(FACTORY_DATA_LOC);
+    flash_enable_write_protection(region, reverse_selection);
+    return 3;
+}
+
+const die_info_t *flash_get_die_info(void)
+{
+    if (flash_prepare_factory_data() == 0)
+        return (const die_info_t *)FACTORY_DATA_DIE_INFO;
+
+    return NULL;
+}
+
+const factory_calib_data_t *flash_get_factory_calib_data(void)
+{
+    if (flash_prepare_factory_data() == 0)
+        return (const factory_calib_data_t *)FACTORY_DATA_CALIB;
+
+    return NULL;
+}
+
+const factory_clc_data_t *flash_get_factory_clc_data(void)
+{
+    const factory_clc_data_t *data;
+    const factory_calib_data_t *calib;
+    factory_clc_data_t generated;
+
+    if (flash_prepare_factory_data() != 0)
+        return NULL;
+
+    data = (const factory_clc_data_t *)FACTORY_DATA_CLC;
+    if (factory_clc_data_ready(data))
+        return data;
+
+    calib = flash_get_factory_calib_data();
+    if (calib == NULL)
+        return NULL;
+
+    flash_build_factory_clc_data(calib, &generated);
+    if (flash_store_factory_clc_data(&generated) != 0)
+        return NULL;
+
+    data = (const factory_clc_data_t *)FACTORY_DATA_CLC;
+    return factory_clc_data_ready(data) ? data : NULL;
+}
+
+int flash_store_factory_clc_data(const factory_clc_data_t *data)
+{
+    uint8_t region;
+    uint8_t reverse_selection;
+
+    if (data == NULL)
+        return 1;
+
+    flash_read_protection_status(&region, &reverse_selection);
+    flash_enable_write_protection(FLASH_REGION_NONE, 0);
+
+    erase_flash_page(FACTORY_DATA_CLC);
+    if (write_flash(FACTORY_DATA_CLC,
+                    (const uint8_t *)data,
+                    sizeof(*data)) != 0)
+        goto store_failed;
+    if (memcmp((const void *)FACTORY_DATA_CLC,
+               (const void *)data,
+               sizeof(*data)) != 0)
+        goto store_failed;
+
+    flash_enable_write_protection(region, reverse_selection);
+    return 0;
+
+store_failed:
+    flash_enable_write_protection(region, reverse_selection);
+    return 2;
+}
+
+typedef void (* rom_FlashRUID)(uint32_t *UID);
+#define ROM_FlashRUID  ((rom_FlashRUID) (0x00000989))
+
+void flash_read_uid(uint32_t uid[4])
+{
+    FLASH_PRE_OPS();
+    {
+        ROM_FlashRUID(uid);
+    }
+    FLASH_POST_OPS();
+}
+
+int get_vaon(int target)
+{
+    uint8_t i;
+    uint8_t vcc_index;
+    const factory_calib_data_t * calib_data = flash_get_factory_calib_data();
+    if (calib_data)
+    {
+        for (i = 0; i < 8; i++)
+        {
+            if (calib_data->calib_pmu.vaon[i] > target)
+            {
+                vcc_index =  i+calib_data->calib_pmu.vaon_index;
+                *(uint32_t*)(AON1_CTRL_BASE+0x30) |=(((vcc_index&0x3)|((~vcc_index)&0xc))&0xf)<<28;
+            }
+        }
+        for (i = 0; i < 16; i++)
+        {
+            if (calib_data->calib_pmu.vcore[i] > target)
+            {
+                vcc_index =  i+calib_data->calib_pmu.vcore_index;
+                *(uint32_t*)(AON1_CTRL_BASE+0x30) |=(((vcc_index&0xf)|((~vcc_index)&0x10))&0x1f)<<5;
+            }
+        }
+        for (i = 0; i < 16; i++)
+        {
+            if (calib_data->calib_pmu.vdc33[i] > target)
+            {
+                vcc_index =  i+calib_data->calib_pmu.vdc33_index;
+                *(uint32_t*)(AON1_CTRL_BASE+0x34) |=(vcc_index&0x3f)<<14;
+            }
+        }
+    }
+
+    return -1;
+}
+
+#endif
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+
+static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selection)
+{
+    FLASH_PRE_OPS();
+    {
+        uint16_t status = ROM_FlashReadReg(0x05) | (ROM_FlashReadReg(0x35)<<8);
+        *reverse_selection = ((status >> 14) & 1ul);
+        *region = (0x1ful & (status >> 2));
+    }
+    FLASH_POST_OPS();
+}
+
+void flash_enable_write_protection(flash_region_t region, uint8_t reverse_selection)
+{
+    FLASH_PRE_OPS();
+    {
+        uint8_t status = ROM_FlashReadReg(0x05) | (ROM_FlashReadReg(0x35)<<8);
+        uint16_t old_status = status;
+        status &= ~((1ul << 14) | (0x1ful << 2));
+        status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
+        if (old_status != status)
+            ROM_FlashWriteStatusReg(status);
+    }
+    FLASH_POST_OPS();
+}
 #endif
