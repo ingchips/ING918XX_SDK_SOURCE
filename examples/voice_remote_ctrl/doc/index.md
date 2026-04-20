@@ -25,7 +25,7 @@ The sample data files containing raw PCM samples needs to be downloaded to
 | ---         | ---                             | ---                           |
 |ING918       | itu_female_16k.bin              | [itu_female_16k.m](../data/itu_female_16k.m)   |
 |ING916       | itu_female_16k.bin              | [itu_female_16k.m](../data/itu_female_16k.m)   |
-|ING20        | itu_female_16k_short.bin        | [itu_female_16k_short.m](../data/itu_female_16k_short.m)   |
+|ING208       | itu_female_16k.bin              | [itu_female_16k.m](../data/itu_female_16k.m)   |
 
 ## Sample Rate
 
