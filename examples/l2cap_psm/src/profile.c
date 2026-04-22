@@ -166,7 +166,7 @@ static initiating_phy_config_t phy_configs[] =
     }
 };
 
-static const bd_addr_t rand_addr = { 0xc6, 0xc9, 0xc1, 0x49, 0x8b, 0xa1 };
+static const bd_addr_t rand_addr = { 0xCC, 0x11, 0xD8, 0x29, 0x81, 0x33 };
 
 void create_conn(void)
 {
