@@ -46,7 +46,6 @@ sm_persistent_t sm_persistent =
 
 #define MAX_ADVERTISERS     50
 bd_addr_t scaned_advertisers[MAX_ADVERTISERS] = {0};
-uint16_t  scaned_adv_props[MAX_ADVERTISERS] = {0};
 int advertiser_num = 0;
 int is_targeted_scan = 0;
 uint64_t last_seen = 0;
@@ -269,12 +268,10 @@ static initiating_phy_config_t phy_configs[] =
         .phy = PHY_2M,
         .conn_param = CONN_PARAM
     },
-#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
     {
         .phy = PHY_CODED,
         .conn_param = CONN_PARAM
     }
-#endif
 };
 
 static scan_phy_config_t scan_configs[] =
@@ -285,14 +282,12 @@ static scan_phy_config_t scan_configs[] =
         .interval = 200,
         .window = 50
     },
-#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
     {
         .phy = PHY_CODED,
         .type = SCAN_PASSIVE,
         .interval = 200,
         .window = 50
     }
-#endif
 };
 
 static const scan_phy_config_t scan_configs_lagecy[] =
@@ -812,23 +807,13 @@ void change_conn_param(int interval, int latency, int timeout)
             ce_len, ce_len);
 }
 
-int is_new_advertiser(const uint8_t *addr, uint8_t evt_type)
+int is_new_advertiser(const uint8_t *addr)
 {
     int i;
     for (i = 0; i < advertiser_num; i++)
     {
         if (memcmp(scaned_advertisers[i], addr, BD_ADDR_LEN) == 0)
-        {
-            if (scaned_adv_props[i] & (1 << evt_type))
-            {
-                return 0;
-            }
-            else
-            {
-                scaned_adv_props[i] |= 1 << evt_type;
-                return 1;
-            }
-        }
+            return 0;
     }
     if (i >= MAX_ADVERTISERS) return 0;
     memcpy(scaned_advertisers[i], addr, BD_ADDR_LEN);
@@ -1021,7 +1006,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 }
                 else
                 {
-                    if (!is_new_advertiser(report->address, report->evt_type & 0x1f)) break;
+                    if (!is_new_advertiser(report->address)) break;
                     platform_printf("No. %d:\n"
                                 "ADV %02X:%02X:%02X:%02X:%02X:%02X (%s) %ddBm\n"
                                 "Type: 0x%02x\n",

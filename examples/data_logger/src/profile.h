@@ -21,10 +21,10 @@ uint32_t setup_profile(void *data, void *user_data);
     #define SPI_PIN_MISO    GIO_GPIO_19
 
 #elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
-    #define SPI_PIN_CS      GIO_GPIO_10
-    #define SPI_PIN_MOSI    GIO_GPIO_11
-    #define SPI_PIN_SCK     GIO_GPIO_12
-    #define SPI_PIN_MISO    GIO_GPIO_13
+    #define SPI_PIN_CS      GIO_GPIO_9
+    #define SPI_PIN_MOSI    GIO_GPIO_10
+    #define SPI_PIN_SCK     GIO_GPIO_11
+    #define SPI_PIN_MISO    GIO_GPIO_12
 #else
     #error unknown or unsupported chip family
 #endif

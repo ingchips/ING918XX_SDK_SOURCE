@@ -127,17 +127,6 @@ static const platform_evt_cb_table_t evt_cb_table =
     }
 };
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-void config_core_clocks_like_ing916(void)
-{
-    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_SLOW);
-    SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
-    SYSCTRL_ConfigPLLClk(5, 70, 1);
-    SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
-    SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_3);
-}
-#endif
-
 int app_main()
 {
     cube_soc_init();
@@ -157,10 +146,6 @@ int app_main()
     trace_rtt_init(&trace_ctx);
     // TODO: config trace mask
     platform_config(PLATFORM_CFG_TRACE_MASK, 0);
-
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-    config_core_clocks_like_ing916();
-#endif
 
     return 0;
 }

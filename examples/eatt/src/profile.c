@@ -74,6 +74,9 @@ const uint8_t server_supported_features[1] =
     0x02,   // Enhanced ATT bearer supported
 };
 
+// GATT characteristic handles
+#include "../data/gatt.const"
+
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"
 };
@@ -393,13 +396,20 @@ static initiating_phy_config_t phy_configs[] =
         .phy = PHY_1M,
         .conn_param = CONN_PARAM
     },
+    {
+        .phy = PHY_2M,
+        .conn_param = CONN_PARAM
+    },
+    {
+        .phy = PHY_CODED,
+        .conn_param = CONN_PARAM
+    }
 };
 
 static void start_conn(void)
 {
     is_server_eatt_supported = true;
     memset(custom_char_handles, 0, sizeof(custom_char_handles));
-
     gap_ext_create_connection(INITIATING_ADVERTISER_FROM_PARAM,
                                 BD_ADDR_TYPE_LE_RANDOM,
                                 slave_sm_persistent.identity_addr_type,

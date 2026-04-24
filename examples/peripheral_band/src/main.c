@@ -101,20 +101,6 @@ void setup_peripherals(void)
 
     RTC_Enable(RTC_ENABLED);
     RTC_SetNextIntOffset(32768 * 10);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
-#ifndef SIMULATION
-    #error only `SIMULATION` mode is supported
-#endif
-    SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
-                              | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
-                              | (1 << SYSCTRL_ClkGate_APB_TMR1));
-
-    // setup timer 2: SAMPLING_CNT_32HZ
-    TMR_SetOpMode(APB_TMR1, 0, TMR_CTL_OP_MODE_32BIT_TIMER_x1, TMR_CLK_MODE_EXTERNAL, 0);
-    TMR_SetReload(APB_TMR1, 0, TMR_GetClk(APB_TMR1, 0) / SAMPLING_CNT_32HZ);
-    TMR_Enable(APB_TMR1, 0, 0xf);
-    TMR_IntEnable(APB_TMR1, 0, 0xf);
-
 #else
     #warning WIP
 #endif
@@ -140,8 +126,6 @@ uint32_t hr_timer_isr(void *user_data)
     BaseType_t xHigherPriorityTaskWoke = pdFALSE;
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR2);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
-    TMR_IntClr(APB_TMR1, 0, 0xf);
 #else
     #warning WIP
 #endif
@@ -154,12 +138,6 @@ uint32_t rtc_timer_isr(void *user_data)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     RTC_ClearInt();
     RTC_SetNextIntOffset(32768 * 10);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
-    static int sec_cnt = 0;
-    RTC_ClearIntState(RTC_GetIntState());
-    sec_cnt += 1;
-    if (sec_cnt < 10) return 0;
-        sec_cnt = 0;
 #else
     #warning WIP
 #endif
@@ -225,6 +203,8 @@ int app_main()
     platform_set_irq_callback(PLATFORM_CB_IRQ_RTC, rtc_timer_isr, NULL);
 
     TMR_Enable(APB_TMR1);
+#else
+    #warning WIP
 #endif
     return 0;
 }
@@ -239,5 +219,5 @@ void driver_delay_xms(uint32_t ms)
 */
 void BMA2x2_delay_msek(u32 msek)
 {
-    vTaskDelay(pdMS_TO_TICKS(msek));
+	vTaskDelay(pdMS_TO_TICKS(msek));
 }

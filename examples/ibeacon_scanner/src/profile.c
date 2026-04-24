@@ -19,7 +19,7 @@
 
 // GATT characteristic handles
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -32,7 +32,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -49,7 +49,7 @@ int8_t last_power = -50;
 
 void blink(const uint8_t led_id);
 
-static const scan_phy_config_t configs[] =
+static const scan_phy_config_t configs[2] =
 {
     {
         .phy = PHY_1M,
@@ -57,14 +57,12 @@ static const scan_phy_config_t configs[] =
         .interval = 200,
         .window = 50
     },
-#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
     {
         .phy = PHY_CODED,
         .type = SCAN_PASSIVE,
         .interval = 200,
         .window = 50
     }
-#endif
 };
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
@@ -82,7 +80,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
             break;
-
+        
         gap_set_random_device_address(rand_addr1);
 
         gap_set_ext_scan_para(BD_ADDR_TYPE_LE_RANDOM, SCAN_ACCEPT_ALL_EXCEPT_NOT_DIRECTED,
@@ -107,11 +105,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                     break;
                 blink(phy);
                 last_power = ((int8_t)report->rssi) / 2 + last_power / 2;
-                platform_printf(" [%02X:%02X:%02X:%02X:%02X:%02X] ",
-                        report->address[5], report->address[4], report->address[3],
-                        report->address[2], report->address[1], report->address[0]);
                 print_uuid(p_ibeacon->uuid);
-                platform_printf(" %04X,%04X, %.1fm, %ddBm\n",
+                platform_printf(" %04X,%04X, %.1fm, %ddBm\n", 
                         p_ibeacon->major, p_ibeacon->minor,
                         estimate_distance(p_ibeacon->ref_power, last_power), last_power);
             }
@@ -136,7 +131,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 }
 
 uint32_t setup_profile(void *data, void *user_data)
-{
+{   
     att_server_init(att_read_callback, att_write_callback);
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);

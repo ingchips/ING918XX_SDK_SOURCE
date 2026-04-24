@@ -312,12 +312,10 @@ static initiating_phy_config_t phy_configs[] =
         .phy = PHY_2M,
         .conn_param = CONN_PARAM
     },
-#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
     {
         .phy = PHY_CODED,
         .conn_param = CONN_PARAM
     }
-#endif
 };
 
 static bd_addr_t rand_addr = {0xC6, 0x2A, 0x35, 0xAD, 0xFC, 0x68};

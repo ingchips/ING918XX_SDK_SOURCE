@@ -22,12 +22,12 @@
 
 #include "../../peripheral_console/src/key_detector.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
-    #define USE_LL_PRIVACY      0
-#else
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #ifndef USE_LL_PRIVACY
         #define USE_LL_PRIVACY      1
     #endif
+#else
+    #define USE_LL_PRIVACY      0
 #endif
 
 enum

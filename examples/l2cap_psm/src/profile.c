@@ -68,50 +68,6 @@ static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_h
     }
 }
 
-int check_and_add_credits(void)
-{
-    uint32_t local_credits, peer_credits;
-    l2cap_get_le_credit_based_connection_credits(local_cid, &peer_credits, &local_credits);
-    iprintf("("
-            "local_credits = %u; "
-            "peer_credits = %u)\n", local_credits, peer_credits);
-
-    if (peer_credits < 5)
-        l2cap_le_send_flow_control_credit(local_cid, 10);
-
-    if (local_credits < 1)
-    {
-        iprintf("ERROR: run out of local_credits\n");
-        return 0;
-    }
-
-    return 1;
-}
-
-static void l2cap_send_timer(void);
-
-static void l2cap_send_ping(void *dummy, uint16_t _)
-{
-    iprintf("SENDING PING");
-    if (!check_and_add_credits()) return;
-    l2cap_credit_based_send(local_cid, (const uint8_t *)"PING", 4);
-    platform_set_timer(l2cap_send_timer, 500);
-}
-
-void l2cap_send_timer(void)
-{
-    btstack_push_user_runnable(l2cap_send_ping, NULL, 0);
-}
-
-void l2cap_send_response(void)
-{
-    iprintf("SENDING PONG");
-
-    if (!check_and_add_credits()) return;
-
-    l2cap_credit_based_send(local_cid, (const uint8_t *)"PONG", 4);
-}
-
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
     switch (msg_id)
@@ -162,6 +118,14 @@ static initiating_phy_config_t phy_configs[] =
 {
     {
         .phy = PHY_1M,
+        .conn_param = CONN_PARAM
+    },
+    {
+        .phy = PHY_2M,
+        .conn_param = CONN_PARAM
+    },
+    {
+        .phy = PHY_CODED,
         .conn_param = CONN_PARAM
     }
 };
@@ -223,13 +187,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
                 const le_meta_event_enh_create_conn_complete_t * complete =
                     decode_hci_le_meta_event(packet, le_meta_event_enh_create_conn_complete_t);
 
-                if (complete->status != 0)
-                {
-#if (APP_ROLE == CONST_MASTER)
-                    platform_reset();
-#endif
-                    break;
-                }
+                if (complete->status != 0) break;
                 conn_handle = complete->handle;
 
                 iprintf("CONNECTED\n");
@@ -249,7 +207,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         conn_handle = INVALID_HANDLE;
-		iprintf("DISCONNECTED\n");
 #if (APP_ROLE == CONST_MASTER)
         create_conn();
 #else
@@ -279,6 +236,46 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     default:
         break;
     }
+}
+
+int check_and_add_credits(void)
+{
+    uint32_t local_credits, peer_credits;
+    l2cap_get_le_credit_based_connection_credits(local_cid, &peer_credits, &local_credits);
+    iprintf("("
+            "local_credits = %u; "
+            "peer_credits = %u)\n", local_credits, peer_credits);
+
+    if (peer_credits < 5)
+        l2cap_le_send_flow_control_credit(local_cid, 10);
+
+    if (local_credits < 1)
+    {
+        iprintf("ERROR: run out of local_credits\n");
+        return 0;
+    }
+
+    return 1;
+}
+
+void l2cap_send_timer(void)
+{
+    iprintf("SENDING PING");
+
+    if (!check_and_add_credits()) return;
+
+    l2cap_credit_based_send(local_cid, (const uint8_t *)"PING", 4);
+
+    platform_set_timer(l2cap_send_timer, 500);
+}
+
+void l2cap_send_response(void)
+{
+    iprintf("SENDING PONG");
+
+    if (!check_and_add_credits()) return;
+
+    l2cap_credit_based_send(local_cid, (const uint8_t *)"PONG", 4);
 }
 
 static void l2cap_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)

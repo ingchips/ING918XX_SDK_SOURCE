@@ -33,7 +33,7 @@ const static uint8_t adv_data_weixin[] = {
 };
 */
 
-static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, 
                                   uint8_t * buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -46,7 +46,7 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
+static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, 
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
     switch (att_handle)
@@ -71,13 +71,13 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 
 bd_addr_t null_addr = {0};
 
-static void setup_adv_set(uint8_t adv_handle,
+static void setup_adv_set(uint8_t adv_handle, 
                           phy_type_t primary_phy,
-                          phy_type_t secondary_phy,
+                          phy_type_t secondary_phy, 
                           const uint8_t *adv_data, const uint8_t adv_data_len,
                           uint16_t properties)
 {
-    gap_set_ext_adv_para(adv_handle,
+    gap_set_ext_adv_para(adv_handle, 
                             properties,
                             0x003a1, 0x003a1,          // Primary_Advertising_Interval_Min, Primary_Advertising_Interval_Max
                             PRIMARY_ADV_ALL_CHANNELS,  // Primary_Advertising_Channel_Map
@@ -96,13 +96,13 @@ static void setup_adv_set(uint8_t adv_handle,
 
 static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
 {
-    // some chips may only support 2 adv sets
-    const static ext_adv_set_en_t adv_sets_en_set_1[] = {
+    // some chips may only support 3 adv sets
+    const static ext_adv_set_en_t adv_sets_en_0_3[] = {
         {.handle = 0, .duration = 0, .max_events = 0},
         {.handle = 1, .duration = 0, .max_events = 0},
-    };
-    const static ext_adv_set_en_t adv_sets_en_set_2[] = {
         {.handle = 2, .duration = 0, .max_events = 0},
+    };
+    const static ext_adv_set_en_t adv_sets_en_4[] = {
         {.handle = 3, .duration = 0, .max_events = 0},
         {.handle = 4, .duration = 0, .max_events = 0}
     };
@@ -126,11 +126,11 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         gap_set_adv_set_random_addr(2, rand_addr3);
         gap_set_adv_set_random_addr(3, rand_addr4);
         gap_set_adv_set_random_addr(4, rand_addr5);
-
+        
         setup_adv_set(0, PHY_1M, PHY_1M,
                          adv_data_1m, sizeof(adv_data_1m), 0);
         setup_adv_set(1, PHY_1M, PHY_2M,
-                         adv_data_2m, sizeof(adv_data_2m), 0);
+                         adv_data_2m, sizeof(adv_data_2m), 0);        
         setup_adv_set(2, PHY_CODED, PHY_CODED,
                          adv_data_coded125, sizeof(adv_data_coded125), 0);
         setup_adv_set(3, PHY_CODED, PHY_CODED,
@@ -138,8 +138,8 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         setup_adv_set(4, PHY_1M, PHY_1M,
                          eddystone_url, sizeof(eddystone_url), 0);
         ll_set_adv_coded_scheme(3, BLE_CODED_S2);
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en_set_1) / sizeof(adv_sets_en_set_1[0]), adv_sets_en_set_1);
-        gap_set_ext_adv_enable(1, sizeof(adv_sets_en_set_2) / sizeof(adv_sets_en_set_2[0]), adv_sets_en_set_2);
+        gap_set_ext_adv_enable(1, sizeof(adv_sets_en_0_3) / sizeof(adv_sets_en_0_3[0]), adv_sets_en_0_3);
+        gap_set_ext_adv_enable(1, sizeof(adv_sets_en_4) / sizeof(adv_sets_en_4[0]), adv_sets_en_4);
         break;
 
     case HCI_EVENT_LE_META:

@@ -17,7 +17,7 @@ extern "C" {	/* allow C++ to use these headers */
  * in ING916 is also provided, which can be enabled by compiling switch `SOFTWARE_RTC_DHMS`.
  *
  * For ING916, when `SOFTWARE_RTC_DHMS` is defined, the hardware based one is not used
- * any more. For ING20, only `SOFTWARE_RTC_DHMS` is supported.
+ * any more.
  *
  * Differences comparing to hardware implementation:
  *
@@ -427,113 +427,6 @@ void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data);
 #endif
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-
-typedef enum
-{
-    RTC_IRQ_ALARM = 0x04,
-    RTC_IRQ_DAY = 0x08,
-    RTC_IRQ_HOUR = 0x10,
-    RTC_IRQ_MINUTE = 0x20,
-    RTC_IRQ_SECOND = 0x40,
-    RTC_IRQ_HALF_SECOND = 0x80,
-} rtc_irq_t;
-
-typedef enum
-{
-    RTC_TRIM_SPEED_UP = 0x00,
-    RTC_TRIM_SLOW_DOWN = 0x01,
-}rtc_trim_direction_t;
-
-/**
- ****************************************************************************************
- * @brief Enable/Disable RTC
- *
- * RTC must be enabled before changing configurations.
- *
- * @param[in] enable            Enable(1)/Disable(0)
- ****************************************************************************************
- */
-void RTC_Enable(uint8_t enable);
-
-/**
- ****************************************************************************************
- * @brief Get current date time
- *
- *
- * @param[out] hour             Hour (0..23)
- * @param[out] minute           Minute (0..59)
- * @param[out] second           Second (0..59)
- * @return                      Days passed (5 bits, 0..31)
- ****************************************************************************************
- */
-uint16_t RTC_GetTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
-
-/**
- ****************************************************************************************
- * @brief Modify date time
- *
- * @param[in] day               days passed (check datasheet for max. value)
- * @param[in] hour              Hour (0..23)
- * @param[in] minute            Minute (0..59)
- * @param[in] second            Second (0..59)
- ****************************************************************************************
- */
-void RTC_ModifyTime(uint16_t day, uint8_t hour, uint8_t minute, uint8_t second);
-
-/**
- ****************************************************************************************
- * @brief Check if RTC modification is done or not
- *
- * This indicator becomes zero when any of RTC control registers (the Counter, Alarm and
- * Control registers) are updated, and returned to `1` after modications are synchronized
- * to the much slower RTC clock domain.
- *
- * @return                      if RTC modification is done (non-0) or not (0)
- ****************************************************************************************
- */
-int RTC_IsModificationDone(void);
-
-/**
- ****************************************************************************************
- * @brief Config alarm
- *
- * @param[in] hour              Hour (0..23)
- * @param[in] minute            Minute (0..59)
- * @param[in] second            Second (0..59)
- ****************************************************************************************
- */
-void RTC_ConfigAlarm(uint8_t hour, uint8_t minute, uint8_t second);
-
-/**
- ****************************************************************************************
- * @brief Enable/Disable IRQs
- *
- * An IQR is disabled if not in `mask`.
- *
- * @param[in] mask              combination of `rtc_irq_t`
- ****************************************************************************************
- */
-void RTC_EnableIRQ(uint32_t mask);
-
-/**
- ****************************************************************************************
- * @brief Get IRQs state
- *
- * @return                      combination of `rtc_irq_t`
- ****************************************************************************************
- */
-uint32_t RTC_GetIntState(void);
-
-/**
- ****************************************************************************************
- * @brief Clear IRQs state
- *
- * @param[in] state             combination of `rtc_irq_t`
- ****************************************************************************************
- */
-void RTC_ClearIntState(uint32_t state);
-
-void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data);
 
 #endif
 
