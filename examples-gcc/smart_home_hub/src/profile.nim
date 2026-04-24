@@ -18,8 +18,8 @@ defineProfile([Service(SIG_UUID_SERVICE_GENERIC_ACCESS),
               "profileData")
 
 const
-  SLAVE_NUMBER = 4
-  MASTER_NUMBER = 4
+  SLAVE_NUMBER {.intdefine: "SLAVE_NUMBER".}: int = 4
+  MASTER_NUMBER {.intdefine: "MASTER_NUMBER".}: int= 4
   INVALID_HANDLE = 0xffffu16
 
 type
@@ -54,26 +54,54 @@ type
     code: SmartHomeCmdCode
     RGBs: array[SLAVE_NUMBER, RGB]
 
-let
-  slaveAddreses: array[SLAVE_NUMBER, bdAddrT] = [
-    [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x00],
-    [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x01],
-    [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x02],
-    [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x03]]
+when SLAVE_NUMBER == 4:
+
+  let
+    slaveAddreses: array[SLAVE_NUMBER, bdAddrT] = [
+        [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x00],
+        [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x01],
+        [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x02],
+        [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x03]]
+
+  var
+    slaves: array[SLAVE_NUMBER, Slave] = [
+      Slave(id: 0, connHandle: INVALID_HANDLE),
+      Slave(id: 1, connHandle: INVALID_HANDLE),
+      Slave(id: 2, connHandle: INVALID_HANDLE),
+      Slave(id: 3, connHandle: INVALID_HANDLE)]
+
+elif SLAVE_NUMBER == 1:
+
+  let
+    slaveAddreses: array[SLAVE_NUMBER, bdAddrT] = [
+        [0xC2u8, 0x12, 0x35, 0x98, 0x67, 0x00]]
+
+  var
+    slaves: array[SLAVE_NUMBER, Slave] = [
+      Slave(id: 0, connHandle: INVALID_HANDLE)]
+
+else:
+  {.fatal: "unsupported `SLAVE_NUMBER`".}
+
+when MASTER_NUMBER == 4:
+
+  var
+    attServers: array[MASTER_NUMBER, AttServer] = [
+      AttServer(connHandle: INVALID_HANDLE),
+      AttServer(connHandle: INVALID_HANDLE),
+      AttServer(connHandle: INVALID_HANDLE),
+      AttServer(connHandle: INVALID_HANDLE)]
+
+elif MASTER_NUMBER == 1:
+
+  var
+    attServers: array[MASTER_NUMBER, AttServer] = [
+      AttServer(connHandle: INVALID_HANDLE)]
+
+else:
+  {.fatal: "unsupported `MASTER_NUMBER`".}
 
 var
-  attServers: array[MASTER_NUMBER, AttServer] = [
-    AttServer(connHandle: INVALID_HANDLE),
-    AttServer(connHandle: INVALID_HANDLE),
-    AttServer(connHandle: INVALID_HANDLE),
-    AttServer(connHandle: INVALID_HANDLE)]
-
-  slaves: array[SLAVE_NUMBER, Slave] = [
-    Slave(id: 0, connHandle: INVALID_HANDLE),
-    Slave(id: 1, connHandle: INVALID_HANDLE),
-    Slave(id: 2, connHandle: INVALID_HANDLE),
-    Slave(id: 3, connHandle: INVALID_HANDLE)]
-
   slaveInitiating: ptr Slave = nil
   initiatingTimer: TimerHandle_t = nil
 
@@ -138,8 +166,10 @@ proc status(slave: ptr Slave): uint8 =
   return cast[uint8](t)
 
 proc updateStatus(server: ptr AttServer) =
-  var packet: array[1 + SLAVE_NUMBER * 2, uint8] = [cast[uint8](ccDeviceStatus), 0, 0, 1, 0, 2, 0, 3, 0]
+  var packet: array[1 + SLAVE_NUMBER * 2, uint8]
+  packet[0] = cast[uint8](ccDeviceStatus)
   for i in 0 ..< slaves.len:
+    packet[1 + i * 2 + 0] = cast[uint8](i)
     packet[1 + i * 2 + 1] = status(addr slaves[i])
   if attServerIndicate(server.connHandle, HANDLE_SMART_HOME_STATUS, unsafeAddr packet[0], cast[uint16](len(packet))) != 0:
     incl(server.dirty, ccDeviceStatus)
@@ -509,7 +539,7 @@ proc userPacketHandler(packetType: uint8; channel: uint16; packet: ptr uint8; si
                                   cast [uint8](len(initPhyConfigs)),
                                   addr initPhyConfigs[0]);
             discard xTimerReset(initiatingTimer, portMAX_DELAY)
-        of HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE:
+        of HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE, HCI_SUBEVENT_LE_ENHANCED_CONNECTION_COMPLETE_V2:
           let connComplete = decodeHciLEMetaEvent(packet, leMetaEventCreateConnCompleteT)
           iPrintf("role = %d, handle = %d\n", connComplete.role, connComplete.handle)
           if connComplete.role == HCI_ROLE_SLAVE:
