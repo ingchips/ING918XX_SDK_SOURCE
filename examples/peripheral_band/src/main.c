@@ -105,6 +105,10 @@ void setup_peripherals(void)
 #ifndef SIMULATION
     #error only `SIMULATION` mode is supported
 #endif
+#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_20) && (!defined SOFTWARE_RTC_DHMS))
+    #error `SOFTWARE_RTC_DHMS` must be defined.
+#endif
+
     SYSCTRL_ClearClkGateMulti(  (1 << SYSCTRL_ClkGate_APB_GPIO0)
                               | (1 << SYSCTRL_ClkGate_APB_PinCtrl)
                               | (1 << SYSCTRL_ClkGate_APB_TMR1));

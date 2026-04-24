@@ -209,7 +209,11 @@ uint32_t setup_profile(void *data, void *user_data)
     extern uint32_t rtc_timer_isr(void *user_data);
     extern uint32_t hr_timer_isr(void *user_data);
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, hr_timer_isr, NULL);
+#ifdef SOFTWARE_RTC_DHMS
     RTC_SoftSetISR(rtc_timer_isr, NULL);
+#else
+    platform_set_irq_callback(PLATFORM_CB_IRQ_RTC, rtc_timer_isr, NULL);
+#endif
     RTC_EnableIRQ(RTC_IRQ_SECOND);
 #endif
 
