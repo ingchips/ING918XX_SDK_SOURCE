@@ -127,6 +127,10 @@ int ota_write_callback(uint16_t att_handle, uint16_t transaction_mode, uint16_t 
                 flash_do_update((s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
                                 meta->blocks,
                                 page_buffer);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+                flash_do_update((s - sizeof(ota_meta_t)) / sizeof(meta->blocks[0]),
+                                meta->blocks,
+                                page_buffer);
 #endif
             }
             else

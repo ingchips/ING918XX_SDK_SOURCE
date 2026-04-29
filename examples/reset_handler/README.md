@@ -7,3 +7,5 @@ This example demonstrates how to:
 Note:
     1. This example initializes Watchdog to reset every 2 seconds;
     2. Use "Patching Tool" to patch platform binaries.
+
+Note: This project is ING918 ONLY.
