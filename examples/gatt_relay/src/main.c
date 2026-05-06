@@ -116,7 +116,7 @@ static void watchdog_task(void *pdata)
 {
     for (;;)
     {
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(3000));
         TMR_WatchDogRestart();
     }
 }

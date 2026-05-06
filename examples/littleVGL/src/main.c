@@ -113,7 +113,7 @@ void setup_peripherals(void)
 	TMR_IntEnable(APB_TMR1);
 	TMR_Reload(APB_TMR1);
 	TMR_Enable(APB_TMR1);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     SYSCTRL_ClearClkGateMulti(    (1 << SYSCTRL_ITEM_AHB_SPI0)
                                 | (1 << SYSCTRL_ITEM_APB_PinCtrl)
                                 | (1 << SYSCTRL_ITEM_APB_GPIO0)
@@ -129,7 +129,7 @@ void setup_peripherals(void)
 	PINCTRL_SetPadMux(SPI_LCD_DC, IO_SOURCE_GPIO);
 	PINCTRL_SetPadMux(SPI_LCD_RST, IO_SOURCE_GPIO);
 	PINCTRL_SetPadMux(SPI_LCD_CS, IO_SOURCE_GPIO);
-    
+
     PINCTRL_SelSpiIn(SPI_PORT_0, SPI_LCD_SCLK, IO_NOT_A_PIN, IO_NOT_A_PIN,
                                 IO_NOT_A_PIN, IO_NOT_A_PIN, SPI_LCD_MOSI);
 
@@ -169,7 +169,7 @@ static void watchdog_task(void *pdata)
 {
     for (;;)
     {
-        vTaskDelay(pdMS_TO_TICKS(9000));
+        vTaskDelay(pdMS_TO_TICKS(3000));
         if (IS_DEBUGGER_ATTACHED()) continue;
         TMR_WatchDogRestart();
     }
@@ -185,7 +185,7 @@ uint32_t timer1_isr(void *user_data)
 	lv_tick_inc(1);//lvgl 1ms heart beat
     return 0;
 }
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
 uint32_t timer0_isr(void *user_data)
 {
     uint8_t state;
@@ -208,7 +208,7 @@ static void lvgl_task(void *pdata)
 	lv_port_disp_init();
 	//show a chart here
 	lv_example_chart_2();
-    
+
     for (;;)
     {
     	lv_task_handler();
@@ -232,7 +232,7 @@ int app_main()
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, timer1_isr, NULL);
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)) 
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) ||(INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER0, timer0_isr, NULL);
 #else
     #error unknown or unsupported chip family
