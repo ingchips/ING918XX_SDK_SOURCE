@@ -2124,6 +2124,12 @@ uint32_t SYSCTRL_RC2MTune(uint32_t freq)
     return Freq;
 }
 
+__attribute__((weak)) int Vcore_calib(void)
+{
+    // add `eflash.c` to the project!
+    return -1;
+}
+
 int SYSCTRL_Init(void)
 {
     typedef void    (*rom_PowerOnSeq)(uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
