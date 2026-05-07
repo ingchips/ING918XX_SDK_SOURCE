@@ -724,16 +724,13 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
 void ADC_HardwareCalibration(void);
 
 /**
- * @brief Initialize ADC calibration parameters from flash
- *
- * @return                      0 if cached or freshly calculated data is ready else non-0
- */
-int ADC_InitCalibration(void);
-
-/**
  * @brief Convert raw ADC code to calibrated physical value
  *
- * For CH0-CH8 the return value is input voltage in V.
+ * @note
+ * When using VBAT as the standard VREF, if VBAT is not 3.3 V,
+ * Use 'ADC_GetCalibValueVRefVBat'
+ *
+ * For CH0-CH8 the return value. rand in 0-4096.
  * For CH9 under VBAT reference the return value is VBAT voltage in V.
  * For CH10-CH11 the raw code is returned as float.
  *
@@ -744,11 +741,26 @@ int ADC_InitCalibration(void);
 float ADC_GetCalibratedValue(SADC_channelId ch, uint16_t raw);
 
 /**
+ * @brief Convert raw ADC code to calibrated physical value,
+ * When using VBAT as the standard VREF, if VBAT is not 3.3 V,
+ * you must use this interface to obtain the calibrated value.
+ *
+ * Only CH0-CH8 the return value. rand in 0-4096.
+ *
+ * @param[in] ch                ADC channel
+ * @param[in] raw               raw ADC code
+ * @param[in] vbat              now Vbat value
+ * @return                      calibrated value
+ */
+float ADC_GetCalibValueVRefVBat(SADC_channelId ch, uint16_t raw, float vbat);
+
+/**
  * @brief Read VBAT voltage using CH9 calibration
  *
+ * @param[in] raw               CH9 raw adc vale
  * @return                      VBAT voltage in V
  */
-float ADC_GetVBatVoltage(void);
+float ADC_GetVBatVoltage(uint16_t raw);
 
 
 #endif

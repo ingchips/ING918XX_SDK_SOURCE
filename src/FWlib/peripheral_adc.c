@@ -756,7 +756,6 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
     ADC_EnableCtrlSignal();
 }
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-//#include "platform_api.h"
 #include <stdlib.h>
 #include <string.h>
 #include "eflash.h"
@@ -909,9 +908,6 @@ uint16_t ADC_ReadChannelData(const uint8_t channel_id)
 
 void ADC_HardwareCalibration(void)
 {
-    volatile uint32_t rwData;
-    int i;
-    uint32_t j;
     ADC_RegWr(SADC_CFG_0, 1, 17);
     ADC_RegWrBits(SADC_CFG_0, 1, 18, 4);
     ADC_RegClr(SADC_CFG_0, 9, 1);
@@ -920,33 +916,15 @@ void ADC_HardwareCalibration(void)
     ADC_RegWrBits(SADC_CFG_2, 1, 3, 12);
     ADC_RegWr(SADC_INT_MAKS, 1, 0);
     ADC_RegWr(SADC_CFG_0, 1, 1);
-    for (i = 1; i < 8; i++)
-    {
-        ADC_RegWrBits(SADC_CFG_3, i, 16, 3);
-        for (j = 0; j < 100; j++) __NOP();
-        rwData = APB_SADC->sadc_cfg3;
-    }
     ADC_RegWr(SADC_CFG_2, 1, 2);
     while (APB_SADC->sadc_int & 0x1);
-    rwData = APB_SADC->sadc_data;
-    ADC_RegClr(SADC_CFG_0, 1, 1);
-    ADC_RegClr(SADC_CFG_2, 2, 1);
-    ADC_RegWr(SADC_STATUS, 1, 22);
-
-    ADC_RegClr(SADC_CFG_0, 0, 1);
-    ADC_RegWr(SADC_CFG_0, 1, 1);
-    for (i = 1; i < 8; i++)
-    {
-        ADC_RegWrBits(SADC_CFG_3, i, 16, 3);
-        for (j = 0; j < 100; j++) __NOP();
-        rwData = APB_SADC->sadc_cfg3;
-    }
     ADC_RegClr(SADC_CFG_2, 3, 12);
     ADC_RegClr(SADC_CFG_2, 0, 1);
     while (ADC_GetBusyStatus());
     ADC_RegClr(SADC_CFG_0, 1, 1);
+    ADC_RegClr(SADC_CFG_0, 9, 1);
+    ADC_RegClr(SADC_CFG_2, 2, 1);
     APB_SADC->sadc_int_mask = 0;
-    (void)rwData;
 }
 
 void ADC_Reset(void)
@@ -964,6 +942,7 @@ void ADC_Reset(void)
     ADC_RegClr(SADC_CFG_2, 0, 1);
     while (ADC_GetBusyStatus());
     ADC_RegClr(SADC_CFG_0, 1, 1);
+    ADC_RegClr(SADC_CFG_2, 2, 1);
     APB_SADC->sadc_int_mask = 0;
 }
 
@@ -984,12 +963,18 @@ void ADC_SetVref(SADC_Vref vref)
     switch (vref)
     {
         case VREF_IN_MODE:
+            ADC_RegClr(SADC_CFG_0, 29, 1);
+            ADC_RegClr(SADC_CFG_0, 7, 1);
             ADC_RegWr(SADC_CFG_0, 1, 3);
         break;
         case VREF_OUT_MODE:
+            ADC_RegClr(SADC_CFG_0, 3, 1);
+            ADC_RegClr(SADC_CFG_0, 7, 1);
             ADC_RegWr(SADC_CFG_0, 1, 29);
         break;
         case VREF_LDO33_MODE:
+            ADC_RegClr(SADC_CFG_0, 29, 1);
+            ADC_RegClr(SADC_CFG_0, 3, 1);
             ADC_RegWr(SADC_CFG_0, 1, 7);
         break;
         default:
@@ -1009,7 +994,7 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
     if (enNum) {
         ADC_IntEnable(1);
         ADC_SetIntTrig(enNum);
-    } else if (dmaEnNum) { 
+    } else if (dmaEnNum) {
         ADC_DmaEnable(1);
         ADC_SetDmaTrig(dmaEnNum);
     }
@@ -1031,38 +1016,33 @@ static SADC_Vref ADC_GetCurrentVref(void)
 
 static float ADC_ApplyLinearCalib(const adc_linear_calib_t *cal, uint16_t raw)
 {
-    if (cal == NULL)
-        return 0.0f;
+    if (cal == 0)
+        return 1.0f;
 
     return cal->k * (float)raw + cal->b;
 }
 
 static float ADC_ApplyVBatCalib(const adc_vbat_calib_t *cal, uint16_t raw)
 {
-    if ((cal == NULL) || (raw == 0U))
+    if ((cal == 0) || (raw == 0U))
         return 0.0f;
 
-    return cal->k / (float)raw + cal->b;
+    return cal->k *(1.0f / (float)raw)  + cal->b;
 }
 
 static const factory_clc_data_t *ADC_GetCalibrationData(void)
 {
     const factory_clc_data_t *stored = flash_get_factory_clc_data();
 
-    if (stored == NULL)
-        return NULL;
+    if (stored == 0)
+        return 0;
 
     if ((stored->magic_0 != FACTORY_DATA_MAGIC_0) ||
         (stored->magic_1 != FACTORY_DATA_MAGIC_1) ||
         (stored->version != FACTORY_CLC_DATA_VERSION))
-        return NULL;
+        return 0;
 
     return stored;
-}
-
-int ADC_InitCalibration(void)
-{
-    return (ADC_GetCalibrationData() != NULL) ? 0 : 2;
 }
 
 float ADC_GetCalibratedValue(SADC_channelId ch, uint16_t raw)
@@ -1085,7 +1065,7 @@ float ADC_GetCalibratedValue(SADC_channelId ch, uint16_t raw)
     if (ch == ADC_CH_9)
     {
         if (ADC_GetCurrentVref() == VREF_IN_MODE)
-            return 1.2f;
+            return 1.8f;
 
         return ADC_ApplyVBatCalib(&cal->ch9_vbat, raw);
     }
@@ -1093,13 +1073,28 @@ float ADC_GetCalibratedValue(SADC_channelId ch, uint16_t raw)
     return (float)raw;
 }
 
-float ADC_GetVBatVoltage(void)
+float ADC_GetCalibValueVRefVBat(SADC_channelId ch, uint16_t raw, float vbat)
 {
-    return ADC_GetCalibratedValue(ADC_CH_9, ADC_ReadChannelData(ADC_CH_9));
+    const factory_clc_data_t *cal;
+    adc_linear_calib_t linear_data;
+
+    cal = ADC_GetCalibrationData();
+    if (cal == NULL)
+        return (float)raw;
+
+    if (ch <= ADC_CH_8)
+    {
+        memcpy(&linear_data, &cal->ch0_8_vbat_ref[ch], sizeof(adc_linear_calib_t));
+        linear_data.k = linear_data.k*(vbat/3.3f);
+        return ADC_ApplyLinearCalib(&linear_data, raw);
+    }
+
+    return (float)raw;
 }
 
-void ADC_ClcCalibration(void)
+float ADC_GetVBatVoltage(uint16_t raw)
 {
-    (void)ADC_InitCalibration();
+    return ADC_GetCalibratedValue(ADC_CH_9, raw);
 }
+
 #endif

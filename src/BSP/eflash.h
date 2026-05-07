@@ -9,10 +9,35 @@
 extern "C" {
 #endif
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+/**
+ * @note
+ * For the ING20, when FLASH_PROGRAM_WITH_DMA is set to 0, it is recommended that the size of a single write
+ * operation not exceed 32 bytes. Any data exceeding 32 bytes will be split into multiple write operations,
+ * increasing the number of flash write operations.
+ *
+ * When FLASH_PROGRAM_WITH_DMA is set to 1, the interface will use DMA Channel 0 to operate the flash.
+ * Note that DMA Channel 0 must not be used for other applications;
+ * otherwise, the interface will modify the configuration of Channel 0, causing DMA transfer errors. Additionally,
+ * when using DMA transfers, the interface will set the flash frequency to 24 MHz. At higher FLASH frequencies,
+ * programming more than 32 bytes of data may result in an error, manifesting as only 16 bytes being successfully programmed.
+ */
+#ifndef FLASH_PROGRAM_WITH_DMA
+#define FLASH_PROGRAM_WITH_DMA      0
+#endif
+
+#endif
+
 /**
  * @brief Erase a block of data in flash then write data.
  *
- * Note: For ING916, `buffer` must not be in Flash.
+ * Note: For ING916 or ING20, `buffer` must not be in Flash.
+ *
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * For ING20.
+ * Please refer to the description of the FLASH_PROGRAM_WITH_DMA macro.
+ * It is recommended that a single write operation not exceed 32 bytes.
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *
  * @param[in] dest_addr         target address (unified address, aligned at EFLASH_ERASABLE_SIZE) in flash
  * @param[in] buffer            buffer to be written
@@ -27,13 +52,19 @@ int program_flash(const uint32_t dest_addr, const uint8_t *buffer, uint32_t size
  * Note: `dest_addr` must points to a block of flash that has been erased, otherwise,
  *        data can't be written into it.
  *
- * For ING916:
+ * For ING916 ING20:
  *      * `buffer` must be in RAM. In order to copy data within flash, it must be copied to RAM
  *          firstly, then write this piece of RAM to flash.
  *
  * For ING918:
  *      * `dest_addr` must be 32-bit aligned
  *      * `size` must be multiple of 4 bytes.
+ *
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * For ING20.
+ * Please refer to the description of the FLASH_PROGRAM_WITH_DMA macro.
+ * It is recommended that a single write operation not exceed 32 bytes.
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *
  * @param[in] dest_addr         target address (unified address) in flash
  * @param[in] buffer            buffer to be written
@@ -458,22 +489,20 @@ typedef struct
 {
     uint8_t version;
     uint8_t v33_index;
-    uint8_t v33[16];
+    uint16_t v33[8];
     uint8_t vaon_index;
-    uint8_t vaon[16];
+    uint16_t vaon[8];
     uint8_t vdc33_index;
-    uint8_t vdc33[32];
+    uint16_t vdc33[16];
     uint8_t vcore_index;
-    uint8_t vcore[32];
+    uint16_t vcore[16];
 }factory_calib_pmu_t;
 
 typedef struct {
     uint8_t version;
     uint16_t channel_mask;
-    uint16_t int_vbat33_ain0v3_ch0_8[9];
-    uint16_t int_vbat33_ain1v0_ch0_8[9];
-    uint16_t vbat33_flt_ain0v5_ch0_8[9];
-    uint16_t vbat33_flt_ain2v7_ch0_8[9];
+    uint16_t int_vbat33_ain_ch0_8[9][2];
+    uint16_t vbat33_flt_ain_ch0_8[9][2];
     uint16_t int_vbat33_int_ch9_11[3];
     uint16_t vbat33_flt_int_ch9_11[3];
     uint16_t vbat25_flt_int_ch9_11[3];
@@ -518,14 +547,14 @@ typedef struct
 
 typedef struct
 {
-    uint32_t magic_0;
-    uint32_t magic_1;
     uint16_t version;
     uint16_t flags;
     adc_linear_calib_t ch0_8_int_ref[9];
     adc_linear_calib_t ch0_8_vbat_ref[9];
     adc_vbat_calib_t ch9_vbat;
     uint32_t reserved[10];
+    uint32_t magic_0;
+    uint32_t magic_1;
 } factory_clc_data_t;
 #pragma pack (pop)
 
@@ -573,14 +602,6 @@ const factory_calib_data_t *flash_get_factory_calib_data(void);
 const factory_clc_data_t *flash_get_factory_clc_data(void);
 
 /**
- * @brief Store calculated calibration data to flash
- *
- * @param[in] data              calibration data to be stored
- * @return                      0 if succeeded else non-0
- */
-int flash_store_factory_clc_data(const factory_clc_data_t *data);
-
-/**
  * @brief Build calculated ADC calibration data from factory FT data
  *
  * @param[in] src               source FT data
@@ -589,20 +610,10 @@ int flash_store_factory_clc_data(const factory_clc_data_t *data);
 void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_data_t *dst);
 
 /**
- * @brief Get ADC calibration data from flash
+ * @brief Set Vcore value from FT data;
  *
- * Note: There are multiple versions of ADC calibration data,
- *       so, here, a plain pointer is returned.
- *
- * This function uses `flash_prepare_factory_data()`.
- *
- * See `adc_calib_ver` in `factory_calib_data_t`.
- *
- * When such information does not exists, NULL is returned.
- *
- * @return                      ADC calibration data
  */
-const void *flash_get_adc_calib_data(void);
+int Vcore_calib(void);
 
 /**
  * @brief Read UID of flash
