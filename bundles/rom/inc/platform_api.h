@@ -1059,8 +1059,9 @@ void platform_rom_hotfix(void);
  * This fixes following issue(s):
  * - program might stuck in `wfi` when using `platform_set_timer`.
  * - `COMMAND_COMPLETE` for `gap_create_connection_cancel` is reported before job is done.
+ * - unexpected `L2CAP_EVENT_CHANNEL_CLOSED` event when SDU payload is shorter than 8 bytes.
  *
- * Note: this uses 1 instruction address address comparator and 1 literal comparator in FPB.
+ * Note: this uses 2 instruction address address comparators and 1 literal comparator in FPB.
  * Debugging or emulation with probe might be affected.
  ****************************************************************************************
  */

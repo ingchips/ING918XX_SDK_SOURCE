@@ -32,6 +32,8 @@ APIs for on board peripherals, such as keys, LED, sensors, etc.
 Each time the program gets reset, a new random address is generated. If this
 behavior is not preferable, developers can configure a fixed address in [`playground.cpp`](../playground/playground.cpp).
 
+:exclamation:**IMPORTANT:** `boot.bin` is only for ING918.
+
 ## Other Resources
 
 1. https://ingchips.github.io/docs/getting-started/playground/

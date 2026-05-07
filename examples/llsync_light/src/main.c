@@ -219,7 +219,7 @@ static void watchdog_task(void *pdata)
 {
     for (;;)
     {
-        vTaskDelay(pdMS_TO_TICKS(9000));
+        vTaskDelay(pdMS_TO_TICKS(3000));
         if (!IS_DEBUGGER_ATTACHED())
             TMR_WatchDogRestart();
     }
