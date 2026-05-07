@@ -2040,7 +2040,7 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_PWM);
     set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 1, 0);
     set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 1, 3);
-    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x3C) &= ~(0xff<<24);
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x3C) &= ~(0xfful<<24);
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x3C) |= clc<<24;
 
     APB_SYSCTRL->DmaCtrl[1] = 0x8 | (0x9<<4);
@@ -2325,7 +2325,7 @@ SYSCTRL_ResetSource SYSCTRL_GetResetSource(void)
     uint32_t val;
     val = *(volatile uint32_t*)(APB_SYSCTRL_BASE + 0x218);
 
-    return (val>>1)&0x3f;
+    return (SYSCTRL_ResetSource)((val>>1)&0x3f);
 }
 
 #endif

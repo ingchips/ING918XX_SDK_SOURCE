@@ -740,7 +740,7 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
         ROM_FlashEnableContinuousMode();
     }
     
-    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)&=~(0x1<<31);
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)&=~(0x1ul<<31);
     
     int r = ROM_flash_do_update(block_num, blocks, page_buffer);
     SYSCTRL_ICacheFlush();
@@ -753,9 +753,10 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
 
 static uint16_t crc16(uint8_t *puchMsg, uint16_t usDataLen) {
     uint16_t crc = 0xFFFF;
+	  int i;
     while (usDataLen--) {
         crc ^= *puchMsg++;
-        for (int i = 0; i < 8; i++) {
+        for (i = 0; i < 8; i++) {
             if (crc & 0x0001) {
                 crc = (crc >> 1) ^ 0xA001;
             } else {
@@ -916,7 +917,7 @@ int flash_prepare_factory_data(void)
     if (factory_data_ready())
         return 0;
 
-    reg_state = (*(volatile uint32_t *)(AON1_CTRL_BASE + 0x18))&(0x1<<31);
+    reg_state = (*(volatile uint32_t *)(AON1_CTRL_BASE + 0x18))&(0x1ul<<31);
     
     flash_read_protection_status(&region, &reverse_selection);
     flash_enable_write_protection(FLASH_REGION_NONE, 0);
@@ -957,12 +958,12 @@ int flash_prepare_factory_data(void)
 
     flash_build_factory_clc_data(&calib, &generated);
 
-    if(reg_state) *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)&=~(0x1<<31);
+    if(reg_state) *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)&=~(0x1ul<<31);
     if (write_flash(FACTORY_DATA_CLC,
                     (const uint8_t *)&generated,
                     sizeof(generated) - 8) != 0)
         goto check_failed;
-    if(reg_state) *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)|=(0x1<<31);
+    if(reg_state) *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)|=(0x1ul<<31);
     if (memcmp((const void *)((const uint8_t *)FACTORY_DATA_CLC),
                (const void *)&generated,
                sizeof(generated) - 8) != 0)
@@ -972,13 +973,13 @@ int flash_prepare_factory_data(void)
                     8) != 0)
         goto check_failed;
 
-    flash_enable_write_protection(region, reverse_selection);
+    flash_enable_write_protection((flash_region_t)region, reverse_selection);
     return 0;
 
 check_failed:
-    if(reg_state) *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)|=(0x1<<31);
+    if(reg_state) *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)|=(0x1ul<<31);
     erase_flash_sector(FACTORY_DATA_LOC);
-    flash_enable_write_protection(region, reverse_selection);
+    flash_enable_write_protection((flash_region_t)region, reverse_selection);
     
     return 3;
 }
@@ -1025,7 +1026,7 @@ int Vcore_calib(void)
             {
                 vcc_index =  i+calib_data->calib_pmu.vaon_index;
                 reg_data = *(uint32_t*)(AON1_CTRL_BASE+0x30);
-                reg_data &= ~(0xf<<28);
+                reg_data &= ~(0xful<<28);
                 reg_data |=(((vcc_index&0x3)|((~vcc_index)&0xc))&0xf)<<28;
                 *(uint32_t*)(AON1_CTRL_BASE+0x30) = reg_data;
                 
