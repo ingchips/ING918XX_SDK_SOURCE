@@ -788,9 +788,10 @@ static uint16_t calc_factory_calib_crc16(const factory_calib_data_t *calib)
 
 static void copy_security_bytes(uint8_t *dst, uint32_t src, uint32_t size)
 {
+    uint32_t word;
     while (size >= 4U)
     {
-        uint32_t word = read_flash_security(src);
+        word = read_flash_security(src);
         memcpy(dst, &word, sizeof(word));
         dst += sizeof(word);
         src += sizeof(word);
@@ -799,7 +800,7 @@ static void copy_security_bytes(uint8_t *dst, uint32_t src, uint32_t size)
 
     if (size > 0U)
     {
-        uint32_t word = read_flash_security(src);
+        word = read_flash_security(src);
         memcpy(dst, &word, size);
     }
 }
@@ -921,8 +922,13 @@ int flash_prepare_factory_data(void)
     
     flash_read_protection_status(&region, &reverse_selection);
     flash_enable_write_protection(FLASH_REGION_NONE, 0);
-    
-    erase_flash_sector(FACTORY_DATA_LOC);
+
+    if(read_flash_security(FACTORY_DIE_INFO_SRC_ADDR) == 0xfffffffful)
+    {
+        // no ft data;
+        flash_enable_write_protection((flash_region_t)region, reverse_selection);
+        return 1;
+    }
 
     copy_security_bytes((uint8_t *)&die_info,
                         FACTORY_DIE_INFO_SRC_ADDR,
@@ -933,10 +939,11 @@ int flash_prepare_factory_data(void)
 
     uint16_t crc = calc_factory_info_crc16(&die_info);
     if (crc != die_info.info_crc16)
-        return 1;
+        goto check_failed;
     crc = calc_factory_calib_crc16(&calib);
     if (crc != die_info.trim_crc16)
-        return 2;
+        goto check_failed;
+    erase_flash_sector(FACTORY_DATA_LOC);
 
     if (write_flash(FACTORY_DATA_LOC,
                     (const uint8_t *)&die_info,
