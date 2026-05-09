@@ -293,18 +293,36 @@ uint32_t RTC_Current(void)
 void RTC_EnableFreeRun(uint8_t enable)
 {
     #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE
-    #define AON1_REG3   (volatile uint32_t *)(AON1_CTRL_BASE + 0XC)
-
     if (enable)
-    {
-        *AON1_REG0 |= 1u << 3;
-        *AON1_REG3 |= 1u << 4;
-    }
+        *AON1_REG0 |= 1u << 6;
     else
-    {
-        *AON1_REG0 &= ~(1u << 3);
-        *AON1_REG3 &= ~(1u << 4);
-    }
+        *AON1_REG0 &= ~(1u << 6);
+}
+
+void RTC_ClearFreeRun(void)
+{
+    #define AON1_REG3   (volatile uint32_t *)(AON1_CTRL_BASE + 0XC)
+    *AON1_REG3 &= ~(1u << 4);
+    *AON1_REG3 |= 1u << 4;
+}
+
+#define AON1_REG_RTC (volatile uint32_t *)(AON1_CTRL_BASE + 0x1c)
+void RTC_EnableInterrupt(uint8_t enable)
+{
+    if (enable)
+        *AON1_REG_RTC |= 0x5ul;
+    else
+        *AON1_REG_RTC &= ~0x5ul;
+}
+
+void RTC_ClearInterrupt(void)
+{
+    *AON1_REG_RTC |= 1ul<<1;
+}
+
+uint8_t RTC_GetStatus(void)
+{
+    return *AON1_REG_RTC & 0x8ul;
 }
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
@@ -327,13 +345,36 @@ void RTC_EnableFreeRun(uint8_t enable)
     #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE
 
     if (enable)
-    {
         *AON1_REG0 |= 1ul << 6;
-    }
     else
-    {
         *AON1_REG0 &= ~(1ul << 6);
-    }
+}
+
+void RTC_ClearFreeRun(void)
+{
+    #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE
+
+    *AON1_REG0 &= ~(1ul << 29);
+    *AON1_REG0 |= 1ul << 29;
+}
+
+#define AON1_REG_RTC (volatile uint32_t *)(AON1_CTRL_BASE + 0x1c)
+void RTC_EnableInterrupt(uint8_t enable)
+{
+    if (enable)
+        *AON1_REG_RTC |= 0x5ul;
+    else
+        *AON1_REG_RTC &= ~0x5ul;
+}
+
+void RTC_ClearInterrupt(void)
+{
+    *AON1_REG_RTC |= 1ul<<1;
+}
+
+uint8_t RTC_GetStatus(void)
+{
+    return *AON1_REG_RTC & 0x8ul;
 }
 
 #endif
