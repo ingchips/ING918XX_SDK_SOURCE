@@ -2024,34 +2024,139 @@ void SYSCTRL_ICacheFlush(void)
     SYSCTRL_CacheFlush(IC_BASE);
 }
 
+uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
+{
+    uint32_t pcap[4];
+    uint32_t mode;
+    uint32_t hclk_select;
+    float freq;
+    DMA_Descriptor descriptor __attribute__((aligned(8)));
+    uint8_t enabled = io_read(AON1_CTRL_BASE + 0x28) & 1;
+    if (!enabled) SYSCTRL_EnablePLL(1);
+    hclk_select = (*(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)>>31)&0x1;
+    mode = (*(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)>>20)&0XFF;
+    if ((mode!=SYSCTRL_CLK_PLL_DIV_3) || (!hclk_select)) SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_3);
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_DMA);
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_PWM);
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 1, 0);
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 1, 3);
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x3C) &= ~(0xfful<<24);
+    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x3C) |= clc<<24;
+
+    APB_SYSCTRL->DmaCtrl[1] = 0x8 | (0x9<<4);
+    APB_DMA->Channels[0].Descriptor.Ctrl = (0x8<<8)|(0x2<<14)|(0x0<<16)|(0x1<<17)|(0x2<<18)|(0x2<<21)|(0x1<<24) ;
+    APB_DMA->Channels[0].Descriptor.SrcAddr = (uint32_t)(&APB_PWM->PCAPChannels[0].Ctrl1);
+    APB_DMA->Channels[0].Descriptor.DstAddr = (uint32_t)pcap;
+    APB_DMA->Channels[0].Descriptor.TranSize = 2;
+    APB_DMA->Channels[0].Descriptor.Next = &descriptor;
+    descriptor.Ctrl = (0x0<<4)|(0x8<<8)|(0x2<<12)|(0x2<<14)|(0x0<<16)|(0x1<<17)|(0x2<<18)|(0x2<<21)|(0x1<<24) ;
+    descriptor.SrcAddr = (uint32_t)(&APB_PWM->PCAPChannels[0].Ctrl1);
+    descriptor.DstAddr = (uint32_t)&pcap[2];
+    descriptor.TranSize = 1000*2-1;
+    descriptor.Next = 0;
+    APB_DMA->Channels[0].Descriptor.Ctrl |= 0x1;
+    APB_PWM->Channels[0].Ctrl0 = (0x6<<7)|(0x1<<21)|(0x1<<20);
+    APB_PWM->PCAPChannels[0].Ctrl0 |= 0x1;
+    APB_PWM->CapCntEn = 0x1;
+    APB_PWM->Channels[0].Ctrl0 |= 0x1<<6;
+    while (!(APB_DMA->IntStatus & (0x1<<16)));
+    APB_DMA->IntStatus = 0xffffffff;
+    APB_PWM->Channels[0].Ctrl0 &= ~(0x1<<6);
+    APB_PWM->Channels[0].Ctrl0 &= ~(0x1<<20);
+    APB_PWM->Channels[0].Ctrl0 |= 0x1<<15;
+    freq = (float)(1000UL*24000UL)/((float)pcap[2] - (float)pcap[0]);
+    APB_SYSCTRL->DmaCtrl[1] = 0x76543210;
+
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 0, 0);
+    set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 0, 3);
+    SYSCTRL_SetClkGate(SYSCTRL_ITEM_APB_DMA);
+    SYSCTRL_SetClkGate(SYSCTRL_ITEM_APB_PWM);
+
+    if (!enabled) SYSCTRL_EnablePLL(0);
+    if (!hclk_select) SYSCTRL_SelectHClk(SYSCTRL_CLK_SLOW);
+    else if (mode!=SYSCTRL_CLK_PLL_DIV_3) SYSCTRL_SelectHClk((SYSCTRL_ClkMode)mode);
+
+    return (uint32_t)(freq*1000);
+}
+
+uint32_t SYSCTRL_RC2MTune(uint32_t freq)
+{
+    uint32_t start;
+    uint32_t end;
+    uint32_t mid;
+
+    uint32_t min;
+    uint32_t max;
+
+    uint32_t Freq;
+
+    min = 0;
+    max = 0xff;
+
+    start = min;
+    end = max;
+
+    while(start < end){
+        mid = (start + end) / 2;
+        Freq = SYSCTRL_RC2MCalib(mid);
+        if(Freq == freq){
+            break;
+        }
+        else if(Freq < freq){
+            start = mid + 1;
+        }
+        else{
+            end = mid - 1;
+        }
+    }
+    if(end < min){
+        end = min;
+    }
+    if(start > max){
+        start = max;
+    }
+
+    Freq = SYSCTRL_RC2MCalib(end);
+    if(Freq > freq){
+        Freq = SYSCTRL_RC2MCalib(start);
+    }
+
+    return Freq;
+}
+
+__attribute__((weak)) int Vcore_calib(void)
+{
+    // add `eflash.c` to the project!
+    return -1;
+}
+
 int SYSCTRL_Init(void)
 {
     typedef void    (*rom_PowerOnSeq)(uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
     typedef void    (*rom_PowerDownSeq)(void);
     typedef void    (*rom_PLLinUse)(uint8_t PLLEn, uint8_t XOMode, uint8_t XOModeFast, uint8_t SeqFastMode);
+    typedef void       (*rom_PowerDownSeqPatch             )(void);
+
     #define ROM_PLLinUse    ((rom_PLLinUse)(0x00000e21))
-    #define ROM_PowerOnSeq      ((rom_PowerOnSeq)(0x0000101d))
-    #define ROM_PowerDownSeq    ((rom_PowerDownSeq)(0x00000f05))
+    #define ROM_PowerOnSeq          ((rom_PowerOnSeq)(0x0000101d))
+    #define ROM_PowerDownSeq        ((rom_PowerDownSeq)(0x00000f05))
+    #define ROM_PowerDownSeqPatch   ((rom_PowerDownSeqPatch)(0x00001001))
+    SYSCTRL_RC2MTune(1500000);
     ROM_PowerOnSeq(1, 1, 1);
     ROM_PowerDownSeq();
+    ROM_PowerDownSeqPatch();
 
     if (io_read(AON1_CTRL_BASE + 0x28) & 1)
         ROM_PLLinUse(1, 1, 1, 1);
     else
         ROM_PLLinUse(0, 0, 0, 0);
 
-    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x38) |= 0x5<<15;
-    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x30) |= (0x5<<28) | (0x1a<<5);
-    *(volatile uint32_t *)(AON1_CTRL_BASE + 0x34) |= 0x30<<14;
-
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1d, 6, 16);
-    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c), 150, 8, 24);
-
     set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),0,18);
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x14),0,26);
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10),0,10);
 
-    // TODO:
+    Vcore_calib();
     return 0;
 }
 
@@ -2220,7 +2325,7 @@ SYSCTRL_ResetSource SYSCTRL_GetResetSource(void)
     uint32_t val;
     val = *(volatile uint32_t*)(APB_SYSCTRL_BASE + 0x218);
 
-    return (val>>1)&0x3f;
+    return (SYSCTRL_ResetSource)((val>>1)&0x3f);
 }
 
 #endif

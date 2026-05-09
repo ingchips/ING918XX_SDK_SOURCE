@@ -242,6 +242,8 @@ void setup_peripherals(void)
     SYSCTRL_SetAdcClkDiv(4);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Reset();
+    ADC_HardwareCalibration();
+    ADC_SetVref(VREF_OUT_MODE);
 #endif
 #else
     #error unknown or unsupported chip family
@@ -255,7 +257,6 @@ uint32_t timer_isr(void *user_data);
 void ADC_ClearChannelDataValid(const uint8_t channel_id) { }
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 void ADC_ClearChannelDataValid(const uint8_t channel_id) { }
-uint16_t ADC_ReadChannelData(const uint8_t channel_id) { return 0;}
 #endif
 
 const platform_evt_cb_table_t evt_cb_table =
