@@ -317,6 +317,15 @@ void RTC_ClearFreeRun(void);
 
 /**
  ****************************************************************************************
+ * @brief Set RTC interrupt target
+ *
+ * @param[in] target           RTC interrupt target value
+ ****************************************************************************************
+ */
+void RTC_SetInterruptTarget(uint32_t target);
+
+/**
+ ****************************************************************************************
  * @brief Enable/Disable RTC interrupt
  *
  * @param[in] enable            Enable(1)/Disable(0)
@@ -569,6 +578,15 @@ void RTC_ClearIntState(uint32_t state);
  ****************************************************************************************
  */
 void RTC_ClearFreeRun(void);
+
+/**
+ ****************************************************************************************
+ * @brief Set RTC interrupt target
+ *
+ * @param[in] target           RTC interrupt target value
+ ****************************************************************************************
+ */
+void RTC_SetInterruptTarget(uint32_t target);
 
 /**
  ****************************************************************************************

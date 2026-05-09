@@ -306,6 +306,12 @@ void RTC_ClearFreeRun(void)
     *AON1_REG3 |= 1u << 4;
 }
 
+void RTC_SetInterruptTarget(uint32_t target)
+{
+#define AON1_REG1   (volatile uint32_t *)(AON1_CTRL_BASE + 0x4)
+    *AON1_REG1 = target;
+}
+
 #define AON1_REG_RTC (volatile uint32_t *)(AON1_CTRL_BASE + 0x1c)
 void RTC_EnableInterrupt(uint8_t enable)
 {
@@ -356,6 +362,12 @@ void RTC_ClearFreeRun(void)
 
     *AON1_REG0 &= ~(1ul << 29);
     *AON1_REG0 |= 1ul << 29;
+}
+
+void RTC_SetInterruptTarget(uint32_t target)
+{
+    #define AON1_REG1   (volatile uint32_t *)(AON1_CTRL_BASE + 0x4)
+    *AON1_REG1 = target;
 }
 
 #define AON1_REG_RTC (volatile uint32_t *)(AON1_CTRL_BASE + 0x1c)
