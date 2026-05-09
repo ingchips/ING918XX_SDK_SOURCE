@@ -153,7 +153,9 @@ void TMR0_LOCK(void);
 void TMR0_UNLOCK(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-
+#ifndef TMR_CLK_FREQ
+#define TMR_CLK_FREQ                        (OSC_CLK_FREQ/2)
+#endif
 typedef enum
 {
     WDT_INTTIME_INTERVAL_2MS          = 0,    //0.001953125s
@@ -438,7 +440,9 @@ void TMR_WatchDogClearInt(void);
 void TMR_WatchDogDisable(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-
+#ifndef TMR_CLK_FREQ
+#define TMR_CLK_FREQ                        (OSC_CLK_FREQ/2)
+#endif
 typedef enum
 {
     WDT_INTTIME_INTERVAL_2MS          = 0,    //0.001953125s
