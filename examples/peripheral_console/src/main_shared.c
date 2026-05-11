@@ -235,6 +235,8 @@ void config_core_clocks_like_ing916(void)
 
 void _app_main()
 {
+    SYSCTRL_Init();
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #ifdef USE_POWER_LIB
         power_ctrl_init(POWER_CTRL_MODE_BALANCED);

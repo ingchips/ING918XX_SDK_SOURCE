@@ -33,16 +33,14 @@ static int temperture_indicate_enable=0;
 
 static void read_temperature(void)
 {
-    float temp;
 #ifndef SIMULATION
-    if ((temp = get_temperature()) < 0)
-        return;
+    float temp = get_temperature();
 #ifdef PRINT_ALL
-    platform_printf("T: %04d * 0.01 Deg\n", temp);
+    platform_printf("T: %.2f Deg\n", temp / 100);
     platform_printf("H: %04d / 1024 %%\n", get_humidity());
     platform_printf("P: %08d Pascal \n", get_pressure());
 #endif
-    int32_t sensor_temperature = temp;
+    int32_t sensor_temperature = (int32_t)(temp);
     temperature_value[3]=(uint8_t)(sensor_temperature>>16);
     temperature_value[2]=(uint8_t)(sensor_temperature>>8);
     temperature_value[1]=(uint8_t)sensor_temperature;
