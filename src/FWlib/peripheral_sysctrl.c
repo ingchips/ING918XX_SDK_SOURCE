@@ -1158,7 +1158,7 @@ void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_c
 __attribute__((weak)) const factory_calib_data_t *flash_get_factory_calib_data(void)
 {
     // add `eflash.c` to the project!
-    return NULL;
+    return 0;
 }
 
 int SYSCTRL_Init(void)
