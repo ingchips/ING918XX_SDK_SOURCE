@@ -153,7 +153,6 @@ void TMR0_LOCK(void);
 void TMR0_UNLOCK(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-
 typedef enum
 {
     WDT_INTTIME_INTERVAL_2MS          = 0,    //0.001953125s
@@ -405,14 +404,30 @@ void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interva
  * @brief Enable watchdog.
  *
  * This macro tries to provide similar interface as the one in ING918xx.
+ * It selects the smallest supported interval that is not smaller than `timeout`.
  *
  * Please use `TMR_WatchDogEnable3` instead for ING916xx.
+*
+ * @note For the ING916/ING820 series SoCs, precise timing ticks should be referenced
+ * in the 'wdt_inttime_interval_t' interface description.
+ *
+ * When using this interface to configure the Watchdog (WDT) timeout period,
+ * the system defaults to rounding up the input value.
+ *
+ * Example: a requested 20s interval may result in an actual duration of 1m 4s due to internal scaling and clock alignment.
+ *
+ * To achieve higher precision for WDT timeouts and reset intervals:
+ * - Internal RC 32k: If using the internal RC 32k oscillator,
+ *   you must invoke the calibration interface to tune the RC clock to a true 32k;
+ *   otherwise, significant deviations in timeout duration will occur.
+ * - External OSC 32k: Alternatively, utilize an external 32k crystal oscillator (OSC)
+ *   as the clock source to ensure maximum accuracy for reset timing.
  *
  * @param[in] timeout              see `TMR_WatchDogEnable` in ING918xx
  ****************************************************************************************
  */
-#define TMR_WatchDogEnable(timeout) do { uint64_t TMR_CLK_FREQ = OSC_CLK_FREQ;uint32_t cnt = (uint64_t)(timeout) / OSC_CLK_FREQ;uint8_t mode = 7; uint8_t i; \
-                                            for (i = 1; i < 10; i++,mode++) { if (cnt < (1UL << (i * 2))) {break;}} \
+#define TMR_WatchDogEnable(timeout) do {uint64_t TMR_CLK_FREQ = OSC_CLK_FREQ; uint64_t __wdt_timeout = (uint64_t)(timeout); uint64_t __wdt_threshold = OSC_CLK_FREQ; uint8_t mode = 7; \
+                                            while ((mode < 15) && (__wdt_timeout > __wdt_threshold)) { __wdt_threshold <<= 2; mode++; } \
                                             TMR_WatchDogEnable3((wdt_inttime_interval_t)mode, WDT_RSTTIME_INTERVAL_500MS, 1); } while (0)   \
 
 /**
@@ -437,7 +452,6 @@ void TMR_WatchDogClearInt(void);
 void TMR_WatchDogDisable(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-
 typedef enum
 {
     WDT_INTTIME_INTERVAL_2MS          = 0,    //0.001953125s
@@ -689,15 +703,30 @@ void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interva
  * @brief Enable watchdog.
  *
  * This macro tries to provide similar interface as the one in ING918xx.
+ * It selects the smallest supported interval that is not smaller than `timeout`.
  *
  * Please use `TMR_WatchDogEnable3` instead for ING916xx.
+ *
+ * @note For the ING916/ING820 series SoCs, precise timing ticks should be referenced
+ * in the 'wdt_inttime_interval_t' interface description.
+ *
+ * When using this interface to configure the Watchdog (WDT) timeout period,
+ * the system defaults to rounding up the input value.
+ *
+ * Example: a requested 20s interval may result in an actual duration of 1m 4s due to internal scaling and clock alignment.
+ *
+ * To achieve higher precision for WDT timeouts and reset intervals:
+ * - Internal RC 32k: If using the internal RC 32k oscillator,
+ *   you must invoke the calibration interface to tune the RC clock to a true 32k;
+ *   otherwise, significant deviations in timeout duration will occur.
+ * - External OSC 32k: Alternatively, utilize an external 32k crystal oscillator (OSC)
+ *   as the clock source to ensure maximum accuracy for reset timing.
  *
  * @param[in] timeout              see `TMR_WatchDogEnable` in ING918xx
  ****************************************************************************************
  */
-#define TMR_WatchDogEnable(timeout) do { uint64_t TMR_CLK_FREQ = OSC_CLK_FREQ;uint32_t cnt = (uint64_t)(timeout) / OSC_CLK_FREQ;uint8_t mode = 7; \
-                                            uint8_t i; \
-                                            for (i = 1; i < 10; i++,mode++) { if (cnt < (1UL << (i * 2))) {break;}} \
+#define TMR_WatchDogEnable(timeout) do {uint64_t TMR_CLK_FREQ = OSC_CLK_FREQ; uint64_t __wdt_timeout = (uint64_t)(timeout); uint64_t __wdt_threshold = OSC_CLK_FREQ; uint8_t mode = 7; \
+                                            while ((mode < 15) && (__wdt_timeout > __wdt_threshold)) { __wdt_threshold <<= 2; mode++; } \
                                             TMR_WatchDogEnable3(mode, WDT_RSTTIME_INTERVAL_500MS, 1); } while (0)   \
 
 /**
