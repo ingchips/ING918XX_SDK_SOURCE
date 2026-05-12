@@ -142,6 +142,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 void ADC_AveInit(void);
 uint16_t read_adc(uint8_t channel)
 {
+#ifndef SIMULATION
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     SYSCTRL_WaitForLDO();
 
@@ -199,35 +200,45 @@ uint16_t read_adc(uint8_t channel)
     ADC_AveDisable();
     return sample;
 #endif
+#else
+    return 800 + rand() % 200;
+#endif
 }
 
 uint8_t *battery_level = NULL;
 
 #define ADC_CHANNEL    4
 
+static void update_battery_status(void)
+{
+    uint16_t voltage = read_adc(ADC_CHANNEL);
+    printf("U = %d", voltage);
+    // level is reported by comparing max & min voltage
+    // for DEMO only
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
+#define MAX_VOLT       1023
+#define MIN_VOLT       800
+#else
+#define MAX_VOLT       0xFFF
+#define MIN_VOLT       0
+#endif
+
+    if (voltage > MIN_VOLT)
+        *battery_level = (uint32_t)(voltage - MIN_VOLT) * 100 / (MAX_VOLT - MIN_VOLT);
+    else
+        *battery_level = 0;
+}
+
 #ifdef DEMO_TASK_DELAY_UNTIL
 
 static void battery_task(void *pdata)
 {
-    uint16_t voltage;
     TickType_t xPreviousWakeTime = xTaskGetTickCount();
     for (;;)
     {
         vTaskDelayUntil(&xPreviousWakeTime, AccurateMS_TO_TICKS(900));
 
-#ifndef SIMULATION
-        printf("U = %d", read_adc(ADC_CHANNEL));
-#else
-        voltage = 800 + rand() % 200;
-#endif
-        // level is reported by comparing max & min voltage
-        // for DEMO only
-#define MAX_VOLT       1023
-#define MIN_VOLT       800
-        if (voltage > MIN_VOLT)
-            *battery_level = (uint32_t)(voltage - MIN_VOLT) * 100 / (MAX_VOLT - MIN_VOLT);
-        else
-            *battery_level = 0;
+        update_battery_status();
 
         // add a random delay. see how ADC is sampled at fixed intervals.
         vTaskDelay(pdMS_TO_TICKS(100 + (platform_rand() & 0xf) * 10));
@@ -236,7 +247,15 @@ static void battery_task(void *pdata)
 
 uint32_t timer_isr(void *user_data)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     TMR_IntClr(APB_TMR1);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    TMR_IntClr(APB_TMR1, 0, 0xf);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    TMR_IntClr(APB_TMR1, 0, 0xf);
+#else
+    #error unknown or unsupported chip family
+#endif
     return 0;
 }
 
@@ -246,26 +265,13 @@ static SemaphoreHandle_t sem_battery = NULL;
 
 static void battery_task(void *pdata)
 {
-    uint16_t voltage;
     for (;;)
     {
         BaseType_t r = xSemaphoreTake(sem_battery,  portMAX_DELAY);
         if (r != pdTRUE)
             continue;
 
-#ifndef SIMULATION
-        printf("U = %d\n", read_adc(ADC_CHANNEL));
-#else
-        voltage = 800 + rand() % 200;
-#endif
-        // level is reported by comparing max & min voltage
-        // for DEMO only
-#define MAX_VOLT       1023
-#define MIN_VOLT       800
-        if (voltage > MIN_VOLT)
-            *battery_level = (uint32_t)(voltage - MIN_VOLT) * 100 / (MAX_VOLT - MIN_VOLT);
-        else
-            *battery_level = 0;
+        update_battery_status();
     }
 }
 
