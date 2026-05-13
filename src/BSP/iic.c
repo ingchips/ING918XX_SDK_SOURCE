@@ -187,6 +187,7 @@ int I2C_MasterWrite(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint16_t
     int timeout = I2C_HW_TIME_OUT;
 
     I2C_Config(I2C_BASE, I2C_ROLE_MASTER, AddrMode, Addr);
+    I2C_BASE->Cmd = I2C_COMMAND_CLEAR_FIFO;
 
     I2C_BASE->Ctrl = DataCnt
                     | (I2C_TRANSACTION_MASTER2SLAVE << bsI2C_CTRL_TRANSACTION_DIR)
@@ -194,12 +195,21 @@ int I2C_MasterWrite(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint16_t
 
     I2C_BASE->IntEn = (1 << I2C_INT_CMPL) | (1 << I2C_INT_FIFO_EMPTY);
 
-    I2C_BASE->Cmd = 0x1;
-
-    for (i = 0; i < DataCnt; i++) {
-        while_with_timeout(I2C_FifoFull(I2C_BASE)) ;
-        I2C_BASE->Data = Data[i];
+    if(I2C_FIFO_DEPTH > DataCnt) {
+        for (i = 0; i < DataCnt; i++) 
+            I2C_BASE->Data = Data[i];
+        I2C_BASE->Cmd = 0x1;
     }
+    else {
+        for (i = 0; i < I2C_FIFO_DEPTH/2; i++) 
+            I2C_BASE->Data = Data[i];
+        I2C_BASE->Cmd = 0x1;
+        for (; i < DataCnt; i++) {
+            while_with_timeout(I2C_FifoFull(I2C_BASE)) ;
+            I2C_BASE->Data = Data[i];
+        }
+    }
+    
     I2C_BASE->IntEn = (1 << I2C_INT_CMPL);
     while_with_timeout(I2C_TransactionComplete(I2C_BASE) == 0);
     I2C_BASE->IntEn = 0;
@@ -212,6 +222,7 @@ int I2C_MasterRead(I2C_TypeDef *I2C_BASE, I2C_AddressingMode AddrMode, uint16_t 
     uint8_t i;
     int timeout = I2C_HW_TIME_OUT;
     I2C_Config(I2C_BASE, I2C_ROLE_MASTER, AddrMode, Addr);
+    I2C_BASE->Cmd = I2C_COMMAND_CLEAR_FIFO;
 
     I2C_BASE->Ctrl = DataCnt
                     | (I2C_TRANSACTION_SLAVE2MASTER << bsI2C_CTRL_TRANSACTION_DIR)

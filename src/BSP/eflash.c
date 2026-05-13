@@ -753,7 +753,7 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
 
 static uint16_t crc16(uint8_t *puchMsg, uint16_t usDataLen) {
     uint16_t crc = 0xFFFF;
-	  int i;
+    int i;
     while (usDataLen--) {
         crc ^= *puchMsg++;
         for (i = 0; i < 8; i++) {
@@ -789,6 +789,7 @@ static uint16_t calc_factory_calib_crc16(const factory_calib_data_t *calib)
 static void copy_security_bytes(uint8_t *dst, uint32_t src, uint32_t size)
 {
     uint32_t word;
+    FLASH_PRE_OPS()
     while (size >= 4U)
     {
         word = read_flash_security(src);
@@ -803,6 +804,7 @@ static void copy_security_bytes(uint8_t *dst, uint32_t src, uint32_t size)
         word = read_flash_security(src);
         memcpy(dst, &word, size);
     }
+    FLASH_POST_OPS();
 }
 
 static int factory_data_ready(void)
@@ -923,12 +925,16 @@ int flash_prepare_factory_data(void)
     flash_read_protection_status(&region, &reverse_selection);
     flash_enable_write_protection(FLASH_REGION_NONE, 0);
 
+    FLASH_PRE_OPS();
+
     if(read_flash_security(FACTORY_DIE_INFO_SRC_ADDR) == 0xfffffffful)
     {
         // no ft data;
         flash_enable_write_protection((flash_region_t)region, reverse_selection);
+        FLASH_POST_OPS();
         return 1;
     }
+    FLASH_POST_OPS();
 
     copy_security_bytes((uint8_t *)&die_info,
                         FACTORY_DIE_INFO_SRC_ADDR,
