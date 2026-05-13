@@ -12,11 +12,7 @@
 #error "only 16kHz is supported"
 #endif
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-    #define NUM_OF_SAMPLES  57190
-#else
-    #define NUM_OF_SAMPLES  30501
-#endif
+#define NUM_OF_SAMPLES  57190
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #define SAMPLES_LOCATION        0x00044000

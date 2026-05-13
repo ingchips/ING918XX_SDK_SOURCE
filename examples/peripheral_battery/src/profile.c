@@ -218,7 +218,10 @@ static void update_battery_status(void)
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #define MAX_VOLT       1023
 #define MIN_VOLT       800
-#else
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+#define MAX_VOLT       0x3FFF
+#define MIN_VOLT       0
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #define MAX_VOLT       0xFFF
 #define MIN_VOLT       0
 #endif
