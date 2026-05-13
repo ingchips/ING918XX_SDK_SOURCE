@@ -92,5 +92,5 @@ void Delay(void);
 }
 #endif
 
-#endif // __TEST_SPI_FLASH_H__
+#endif
 

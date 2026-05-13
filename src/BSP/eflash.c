@@ -930,8 +930,8 @@ int flash_prepare_factory_data(void)
     if(read_flash_security(FACTORY_DIE_INFO_SRC_ADDR) == 0xfffffffful)
     {
         // no ft data;
-        flash_enable_write_protection((flash_region_t)region, reverse_selection);
         FLASH_POST_OPS();
+        flash_enable_write_protection((flash_region_t)region, reverse_selection);
         return 1;
     }
     FLASH_POST_OPS();

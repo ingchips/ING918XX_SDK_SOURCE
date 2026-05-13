@@ -367,12 +367,6 @@ void GIO_ClearBits(const uint64_t index_mask);
  *
  */
 void GIO_ToggleBits(const uint64_t index_mask);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-typedef enum
-{
-    GIO_DB_CLK_32K,
-    GIO_DB_CLK_PCLK,
-} GIO_DbClk_t;
 
 #endif
 
