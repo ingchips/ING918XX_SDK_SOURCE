@@ -758,11 +758,8 @@ static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, 
 #ifndef PINCTRL_USE_ROM_IO_OUTPUT_SOURCE_MAP
 #define PINCTRL_USE_ROM_IO_OUTPUT_SOURCE_MAP       1
 #endif
-#ifndef PINCTRL_ENABLE_IO_MAP_REGRESSION_TEST
-#define PINCTRL_ENABLE_IO_MAP_REGRESSION_TEST      1
-#endif
 
-#if (!PINCTRL_USE_ROM_IO_OUTPUT_SOURCE_MAP) || PINCTRL_ENABLE_IO_MAP_REGRESSION_TEST
+#if (!PINCTRL_USE_ROM_IO_OUTPUT_SOURCE_MAP)
 const uint8_t io_output_source_map[IO_PIN_NUMBER][20] =
 {
     {0xdf,0xff,0xff,0xaa,0xaa,0x48,0x80,0x80,0x08,0x02,0x0a,0x7f,0xff,0xfe,0x00,0x20,0x08,0x0e,0x1f,0x90},
