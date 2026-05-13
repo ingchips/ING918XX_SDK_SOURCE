@@ -21,5 +21,10 @@ uintptr_t app_main()
 {
     _app_main();
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4500);
+    platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 700);
+#endif
+
     return (uintptr_t)os_impl_get_driver();
 }

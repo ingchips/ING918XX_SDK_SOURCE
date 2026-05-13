@@ -1158,7 +1158,7 @@ void SYSCTRL_CacheControl(SYSCTRL_CacheMemCtrl i_cache, SYSCTRL_CacheMemCtrl d_c
 __attribute__((weak)) const factory_calib_data_t *flash_get_factory_calib_data(void)
 {
     // add `eflash.c` to the project!
-    while (1);
+    return 0;
 }
 
 int SYSCTRL_Init(void)
@@ -1166,7 +1166,7 @@ int SYSCTRL_Init(void)
     uint32_t i;
     const factory_calib_data_t *p = flash_get_factory_calib_data();
     if (!p) return 1;
-    
+
     if(p->band_gap<0x7f)
         set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x8), p->band_gap, 7, 4);
     set_reg_bits(APB_SYSCTRL->CguCfg + 7, 750, 12, 20);
@@ -1842,7 +1842,7 @@ void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode)
 
 void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode)
 {
-    uint8_t enable = (mode == SYSCTRL_CPU_32k_CLK_EXT) ? 1 : 0; 
+    uint8_t enable = (mode == SYSCTRL_CPU_32k_CLK_EXT) ? 1 : 0;
     set_reg_bit((uint32_t*)AON1_CTRL_BASE, enable, 7);
     set_reg_bit((uint32_t*)AON1_CTRL_BASE, enable, 5);
 }
@@ -1909,7 +1909,7 @@ uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
             return SYSCTRL_GetPLLClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
         else
             return SYSCTRL_GetSlowClk() / get_safe_divider((uint32_t)APB_SYSCTRL->CguCfg8, 20, 4);
-            
+
     case SYSCTRL_ITEM_APB_PWM:
         if ((APB_SYSCTRL->CguCfg[1] & (1 << 23)))
             return SYSCTRL_GetCLK32k();

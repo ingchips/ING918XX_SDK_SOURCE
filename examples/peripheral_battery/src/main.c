@@ -243,7 +243,7 @@ void setup_peripherals(void)
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_ADC);
     ADC_Reset();
     ADC_HardwareCalibration();
-    ADC_SetVref(VREF_OUT_MODE);
+    ADC_SetVref(VREF_LDO33_MODE);
 #endif
 #else
     #error unknown or unsupported chip family

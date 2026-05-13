@@ -17,6 +17,12 @@ int app_main()
 {
     _app_main();
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    // make sure that RAM does not exceed 0x20004000
+    // then, we can power off the unused blocks
+    SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
+#endif
+
     return 0;
 }
 
