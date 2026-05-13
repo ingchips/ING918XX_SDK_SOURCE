@@ -186,8 +186,6 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
             platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4100 - 400);
             platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 155);
     #else
-            platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 5200);
-            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 280);
     #endif
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
             platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4200);
