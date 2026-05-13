@@ -278,6 +278,9 @@ void reboot_i2c_module()
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_I2C0);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_I2C0);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_I2C0);
+    SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_I2C0);
 #endif
     i2c_init(I2C_PORT);
 }
