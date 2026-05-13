@@ -315,25 +315,26 @@ void _app_main()
         #ifdef OPT_RAM_CODE
             platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4100 - 400);
             platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 165);
+            SYSCTRL_EnableConfigClocksAfterWakeup(1,
+                PLL_HW_DEF_LOOP,
+                HCLK_DIV,
+                SYSCTRL_CLK_PLL_DIV_2,
+                0);
         #else
             platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4000);
             platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 245);
+            SYSCTRL_EnableConfigClocksAfterWakeup(1,
+                PLL_BOOT_DEF_LOOP,
+                HCLK_DIV,
+                SYSCTRL_CLK_PLL_DIV_2,
+                0);
         #endif
 
-        SYSCTRL_EnableConfigClocksAfterWakeup(1,
-            PLL_HW_DEF_LOOP,
-            HCLK_DIV,
-            SYSCTRL_CLK_PLL_DIV_2,
-            0);
 
         SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
         SYSCTRL_SelectHClk(HCLK_DIV);
         SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
     #endif
-
-    // make sure that RAM does not exceed 0x20004000
-    // then, we can power off the unused blocks
-    SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #ifdef DETECT_KEY
     // configure it only once
