@@ -5,7 +5,7 @@ on:
   push:
     branches: [ "develop", "action" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "develop"， "action" ]
 
 env:
   ARM_GCC_VERSION: 13.3.rel1
