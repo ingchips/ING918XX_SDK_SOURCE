@@ -3,7 +3,7 @@ name: C/C++ CI
 on:
   workflow_dispatch:
   push:
-    branches: [ "develop", "action" ]
+    branches: [ "develop" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -19,12 +19,12 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Cache ARM GCC Toolchain
       - name: Cache ARM GCC Toolchain
         id: cache-arm-gcc
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /opt/arm-gcc
           key: arm-gcc-${{ env.ARM_GCC_VERSION }}
@@ -44,7 +44,7 @@ jobs:
       # Cache Nim
       - name: Cache Nim
         id: cache-nim
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/nim
           key: nim-${{ env.NIM_VERSION }}
@@ -63,7 +63,7 @@ jobs:
       # Cache Nimble packages
       - name: Cache Nimble Packages
         id: cache-nimble
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nimble
           key: nimble-malebolgia
@@ -80,7 +80,7 @@ jobs:
       # Cache Zig
       - name: Cache Zig
         id: cache-zig
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /usr/local/zig
           key: zig-${{ env.ZIG_VERSION }}
@@ -96,7 +96,7 @@ jobs:
       # Cache CMSIS
       - name: Cache CMSIS
         id: cache-cmsis
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ github.workspace }}/cmsis
           key: cmsis-${{ env.CMSIS_VERSION }}
@@ -175,7 +175,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-output
           path: |
