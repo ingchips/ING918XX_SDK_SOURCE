@@ -3,11 +3,11 @@
   "var": {
    "link_layer_features": {
     "value": "3ff9ff0700000000",
-    "addr": 163196
+    "addr": 163252
    }
   },
   "rom": {
-   "size": 152316,
+   "size": 152372,
    "base": 16384
   },
   "ram": {
@@ -18,7 +18,7 @@
    "base": 172032
   },
   "version": [
-   1,10,44]
+   1,13,0]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "ide_ver": "5",
