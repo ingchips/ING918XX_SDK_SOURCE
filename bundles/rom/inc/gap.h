@@ -1751,6 +1751,54 @@ typedef enum {
 } gap_security_level_t;
 
 /**
+ * @brief gap connection parameter update reply
+ * @note This function is used when STACK_CONNECTION_UPDATE_PARAMETER_REPLY_USER is set,
+ *       and when `HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST` is received.
+ * @param handle                The connection handle.
+ *                              Range 0x0000 to 0x0EFF
+ * @param min_interval          Minimum connection interval.
+ *                              Minimum value of the connection interval.
+ *                              Range: 0x0006 to 0x0C80
+ *                              Time = N × 1.25 ms
+ *                              Time Range: 7.5 ms to 4 s
+ * @param max_interval          Maximum connection interval.
+ *                              Maximum value of the connection interval.
+ *                              Range: 0x0006 to 0x0C80
+ *                              Time = N × 1.25 ms
+ *                              Time Range: 7.5 ms to 4 s
+ * @param latency               Peripheral latency.
+ *                              Maximum allowed Peripheral latency for the connection specified as the number of subrated connection events.
+ *                              Range: 0x0000 to 0x01F3 (499)
+ * @param timeout               Supervision timeout for the connection requested by the remote device.
+ *                              Range: 0x000A to 0x0C80
+ *                              Time = N × 10 ms
+ *                              Time Range: 100 ms to 32 s
+ * @param min_ce_len            Information parameter about the minimum length of connection event needed for this LE connection
+ *                              Range: 0x0000 to 0xFFFF
+ *                              Time = N × 0.625 ms
+*                               Time Range: 0 ms to 40.9 s
+ * @param max_ce_len            Information parameter about the maximum length of connection event needed for this LE connection
+ *                              Range: 0x0000 to 0xFFFF
+ *                              Time = N × 0.625 ms
+*                               Time Range: 0 ms to 40.9 s
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_connection_parameter_update_reply(hci_con_handle_t handle, uint16_t min_interval, uint16_t max_interval,
+    uint16_t latency, uint16_t timeout, uint16_t min_ce_len, uint16_t max_ce_len);
+
+/**
+ * @brief gap connection parameter update negative reply
+ * @note This function is used when STACK_CONNECTION_UPDATE_PARAMETER_REPLY_USER is set,
+ *       and when `HCI_SUBEVENT_LE_REMOTE_CONNECTION_PARAMETER_REQUEST` is received.
+ * @param handle                The connection handle.
+ *                              Range 0x0000 to 0x0EFF
+ * @param error_code            The error code for rejecting the connection parameter update request.
+ *                              for example ERROR_CODE_UNACCEPTABLE_CONNECTION_PARAMETERS
+ * @return                      0: Message is sent out; Other: Message is not sent out
+ */
+uint8_t gap_connection_parameter_update_negative_reply(hci_con_handle_t handle, uint8_t error_code);
+
+/**
  * @}
  */
 #ifdef __cplusplus

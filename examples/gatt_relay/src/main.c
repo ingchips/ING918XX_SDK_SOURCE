@@ -89,7 +89,7 @@ void setup_peripherals(void)
     SYSCTRL_ClearClkGateMulti(0
                             | (1 << SYSCTRL_ClkGate_APB_WDT));
     config_uart(OSC_CLK_FREQ, 115200);
-    
+
     setup_rgb_led();
 
     // Watchdog will timeout after 20sec
@@ -116,7 +116,7 @@ static void watchdog_task(void *pdata)
 {
     for (;;)
     {
-        vTaskDelay(pdMS_TO_TICKS(9000));
+        vTaskDelay(pdMS_TO_TICKS(3000));
         TMR_WatchDogRestart();
     }
 }

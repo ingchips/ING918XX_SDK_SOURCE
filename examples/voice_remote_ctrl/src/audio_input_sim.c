@@ -12,18 +12,14 @@
 #error "only 16kHz is supported"
 #endif
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-    #define NUM_OF_SAMPLES  57190
-#else
-    #define NUM_OF_SAMPLES  30501
-#endif
+#define NUM_OF_SAMPLES  57190
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #define SAMPLES_LOCATION        0x00044000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     #define SAMPLES_LOCATION        0x02041000
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-    #define SAMPLES_LOCATION        0x02030000
+    #define SAMPLES_LOCATION        0x02041000
 #else
     #error unknown or unsupport chip family
 #endif

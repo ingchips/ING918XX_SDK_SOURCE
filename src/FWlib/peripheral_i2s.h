@@ -5,8 +5,8 @@
 #include "ingsoc.h"
 
 #ifdef	__cplusplus
-extern "C" {	/* allow C++ to use these headers */
-#endif	/* __cplusplus */
+extern "C" {    /* allow C++ to use these headers */
+#endif  /* __cplusplus */
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
@@ -194,7 +194,7 @@ void I2S_DataFromPDM(uint8_t enable);
 
 #endif
 
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 }
-#endif	/* __cplusplus */
+#endif  /* __cplusplus */
 #endif

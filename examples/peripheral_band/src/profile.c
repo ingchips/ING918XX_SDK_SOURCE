@@ -194,6 +194,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 uint32_t setup_profile(void *data, void *user_data)
 {
+    platform_rt_rc_auto_tune();
     app_timer = xTimerCreate("t1",
                             pdMS_TO_TICKS(2000),
                             pdTRUE,
@@ -203,6 +204,19 @@ uint32_t setup_profile(void *data, void *user_data)
     hci_event_callback_registration.callback = &user_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
     att_server_register_packet_handler(&user_packet_handler);
+
+#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
+    extern uint32_t rtc_timer_isr(void *user_data);
+    extern uint32_t hr_timer_isr(void *user_data);
+    platform_set_irq_callback(PLATFORM_CB_IRQ_TIMER1, hr_timer_isr, NULL);
+#ifdef SOFTWARE_RTC_DHMS
+    RTC_SoftSetISR(rtc_timer_isr, NULL);
+#else
+    platform_set_irq_callback(PLATFORM_CB_IRQ_RTC, rtc_timer_isr, NULL);
+#endif
+    RTC_EnableIRQ(RTC_IRQ_SECOND);
+#endif
+
     return 0;
 }
 

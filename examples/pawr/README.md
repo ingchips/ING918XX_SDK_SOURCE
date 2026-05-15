@@ -7,4 +7,4 @@ This example demonstrates how to use PAwR API to:
 * Respond to subevents;
 * Create connection from PAwR.
 
-Note: ING916xx ONLY.
+Note: ING918 is not supported.

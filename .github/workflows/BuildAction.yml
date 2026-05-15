@@ -7,33 +7,66 @@ on:
   pull_request:
     branches: [ "develop" ]
 
+env:
+  ARM_GCC_VERSION: 13.3.rel1
+  NIM_VERSION: 2.2.4
+  ZIG_VERSION: 0.8.1
+  CMSIS_VERSION: 5.9.0
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup ARM GCC Toolchain
-        run: |
-          wget https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz -O arm-gcc.tar.xz
-          sudo tar -xJf arm-gcc.tar.xz -C /usr/local/
-          GCC_DIR=$(tar -tJf arm-gcc.tar.xz | head -n 1 | cut -d '/' -f1)
-          sudo ln -s /usr/local/${GCC_DIR}/bin/arm-none-eabi-* /usr/local/bin/
-          arm-none-eabi-gcc --version
-
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      # Cache ARM GCC Toolchain
+      - name: Cache ARM GCC Toolchain
+        id: cache-arm-gcc
+        uses: actions/cache@v5
+        with:
+          path: /opt/arm-gcc
+          key: arm-gcc-${{ env.ARM_GCC_VERSION }}
+
+      - name: Setup ARM GCC Toolchain
+        if: steps.cache-arm-gcc.outputs.cache-hit != 'true'
+        run: |
+          sudo mkdir -p /opt/arm-gcc
+          wget https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_GCC_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_GCC_VERSION }}-x86_64-arm-none-eabi.tar.xz -O /tmp/arm-gcc.tar.xz
+          sudo tar -xJf /tmp/arm-gcc.tar.xz -C /opt/arm-gcc --strip-components=1
+          echo "ARM GCC installed at /opt/arm-gcc"
+          /opt/arm-gcc/bin/arm-none-eabi-gcc --version
+
+      - name: Add ARM GCC to PATH
+        run: echo "/opt/arm-gcc/bin" >> $GITHUB_PATH
+
+      # Cache Nim
+      - name: Cache Nim
+        id: cache-nim
+        uses: actions/cache@v5
+        with:
+          path: ~/nim
+          key: nim-${{ env.NIM_VERSION }}
 
       - name: Install Nim
+        if: steps.cache-nim.outputs.cache-hit != 'true'
         run: |
-          mkdir ~/nim
-          cd ~/nim
-          pwd
-          wget https://nim-lang.org/download/nim-2.2.4-linux_x32.tar.xz -O nim.tar.xz
-          tar -Jxvf nim.tar.xz
-          mv nim-2.2.4 nim_x32
-          wget https://nim-lang.org/download/nim-2.2.4-linux_x64.tar.xz -O nim.tar.xz
-          tar -Jxvf nim.tar.xz
-          mv nim-2.2.4 nim_x64
+          mkdir -p ~/nim
+          wget https://nim-lang.org/download/nim-${{ env.NIM_VERSION }}-linux_x32.tar.xz -O /tmp/nim_x32.tar.xz
+          tar -Jxvf /tmp/nim_x32.tar.xz -C ~/nim
+          mv ~/nim/nim-${{ env.NIM_VERSION }} ~/nim/nim_x32
+          wget https://nim-lang.org/download/nim-${{ env.NIM_VERSION }}-linux_x64.tar.xz -O /tmp/nim_x64.tar.xz
+          tar -Jxvf /tmp/nim_x64.tar.xz -C ~/nim
+          mv ~/nim/nim-${{ env.NIM_VERSION }} ~/nim/nim_x64
+
+      # Cache Nimble packages
+      - name: Cache Nimble Packages
+        id: cache-nimble
+        uses: actions/cache@v5
+        with:
+          path: ~/.nimble
+          key: nimble-malebolgia
 
       - name: Build gen_files.nim
         working-directory: ${{ github.workspace }}/tools
@@ -44,28 +77,45 @@ jobs:
           nim -d:release c gen_files.nim
           ${{ github.workspace }}/tools/gen_files ${{ github.workspace }}/bundles
 
+      # Cache Zig
+      - name: Cache Zig
+        id: cache-zig
+        uses: actions/cache@v5
+        with:
+          path: /usr/local/zig
+          key: zig-${{ env.ZIG_VERSION }}
+
       - name: Install Zig
+        if: steps.cache-zig.outputs.cache-hit != 'true'
         run: |
-          ZIG_VERSION=0.8.1
-          wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -Jxvf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION} /usr/local/zig
-          sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
+          wget https://ziglang.org/download/${{ env.ZIG_VERSION }}/zig-linux-x86_64-${{ env.ZIG_VERSION }}.tar.xz -O /tmp/zig.tar.xz
+          sudo tar -Jxvf /tmp/zig.tar.xz -C /usr/local/
+          sudo mv /usr/local/zig-linux-x86_64-${{ env.ZIG_VERSION }} /usr/local/zig
+          sudo ln -sf /usr/local/zig/zig /usr/local/bin/zig
+
+      # Cache CMSIS
+      - name: Cache CMSIS
+        id: cache-cmsis
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/cmsis
+          key: cmsis-${{ env.CMSIS_VERSION }}
 
       - name: Download CMSIS
+        if: steps.cache-cmsis.outputs.cache-hit != 'true'
         run: |
-          wget https://github.com/ARM-software/CMSIS_5/archive/refs/tags/5.9.0.zip  -O cmsis.zip
-          mkdir ${{ github.workspace }}/cmsis
-          unzip cmsis.zip -d ${{ github.workspace }}/cmsis
+          wget https://github.com/ARM-software/CMSIS_5/archive/refs/tags/${{ env.CMSIS_VERSION }}.zip -O /tmp/cmsis.zip
+          mkdir -p ${{ github.workspace }}/cmsis
+          unzip /tmp/cmsis.zip -d ${{ github.workspace }}/cmsis
           ls ${{ github.workspace }}
           ls ${{ github.workspace }}/cmsis
-          ls ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0
-          ls ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS
-          ls ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+          ls ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}
+          ls ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS
+          ls ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
 
       - name: Build central_fota
         env:
-          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
         run: |
           set -e
           set -o pipefail
@@ -77,7 +127,7 @@ jobs:
 
       - name: Build get_started
         env:
-          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
         run: |
           set -e
           set -o pipefail
@@ -89,7 +139,7 @@ jobs:
 
       - name: Build peripheral_console_liteos
         env:
-          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
         run: |
           set -e
           set -o pipefail
@@ -101,7 +151,7 @@ jobs:
 
       - name: Build peripheral_ibeacon
         env:
-          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
         run: |
           set -e
           set -o pipefail
@@ -113,7 +163,7 @@ jobs:
 
       - name: Build smart_home_hub
         env:
-          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-5.9.0/CMSIS/Core
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
         run: |
           export NIM_PATH=~/nim/nim_x32/bin
           export PATH=~/nim/nim_x32/bin:$PATH
@@ -125,7 +175,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-output
           path: |

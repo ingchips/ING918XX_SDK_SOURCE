@@ -243,7 +243,7 @@ void PWM_SetStepCnt(const uint8_t channel,uint32_t cnt)
 void PWM_SetStepTarget(const uint8_t channel,uint32_t target)
 {
     uint32_t mask = APB_PWM->STEPChannels[channel].step1 & ~(0xFFFFFUL);
-    APB_PWM->STEPChannels[channel].step0 = mask | target;
+    APB_PWM->STEPChannels[channel].step1 = mask | target;
 }
 
 void IR_CycleCarrierSetup(uint8_t channel, uint8_t carry_channel, uint32_t frequency, uint32_t duty)

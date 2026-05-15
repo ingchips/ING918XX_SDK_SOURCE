@@ -26,8 +26,8 @@
 ;*/
 
 VER_MAJOR   EQU  20
-VER_MINOR   EQU  3
-VER_PATCH   EQU  67
+VER_MINOR   EQU  4
+VER_PATCH   EQU  45
 
 Stack_Size      EQU     0x00000200
 
@@ -157,6 +157,9 @@ __Vectors_Size  EQU     __Vectors_End - __Vectors
 
 __PLATFORM_VER  DCD     (VER_MAJOR << 0) + (VER_MINOR << 16) + (VER_PATCH << 24)  ; Version
 __APP_LOAD_ADD  DCD     0x02004000
+__APP_RAM_BASE  DCD     0xffffffff
+__PLATFORM_SIZE DCD     0xffffffff
+__PLATFORM_BDL  DCD     0x00010002
 __PATCH_ADD     DCD     platform_patches
                 DCD     0xffffffff
                 DCD     0xffffffff

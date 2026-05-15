@@ -1,8 +1,6 @@
-#if (AUDIO_CODEC_ALG == 1)
+#include "app_cfg.h"
 
 #include "audio_sbc.h"
-
-#include "app_cfg.h"
 
 #include "../libsbc/src/bits.c"
 #include "../libsbc/src/sbc.c"
@@ -36,5 +34,3 @@ void sbc_enc_init(sbc_enc_ctx_t *sbc, sbc_encode_output_cb_f callback, void *par
     sbc->callback = callback;
     sbc->param = param;
 }
-
-#endif

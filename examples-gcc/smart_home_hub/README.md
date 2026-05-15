@@ -18,5 +18,3 @@ Note:
 1. This demo searches for peripherals with specific addresses;
 1. Peripherals should support SIG Health Thermometer and/or
    INGChips LED service;
-1. This demo only support ING918xx.
-

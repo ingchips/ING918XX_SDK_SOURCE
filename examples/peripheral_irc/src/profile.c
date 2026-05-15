@@ -10,7 +10,11 @@
 #include "../data/gatt.const"
 
 #define INVALID_SET_ID  0xff
+#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
 #define PROFILE_NUM     4
+#else
+#define PROFILE_NUM     2
+#endif
 
 const static uint8_t adv_data0[] = {
     #include "../data/advertising.adv"
@@ -57,7 +61,16 @@ typedef struct profile_cfg
     str_buf_t spoken;
 } profile_cfg_t;
 
-profile_cfg_t profile_cfgs[PROFILE_NUM] = {{.adv_handle = INVALID_SET_ID}, {.adv_handle = INVALID_SET_ID}, {.adv_handle = INVALID_SET_ID}, {.adv_handle = INVALID_SET_ID}};
+profile_cfg_t profile_cfgs[PROFILE_NUM] = {
+    {.adv_handle = INVALID_SET_ID},
+    {.adv_handle = INVALID_SET_ID},
+#if (PROFILE_NUM >= 3)
+    {.adv_handle = INVALID_SET_ID},
+#endif
+#if (PROFILE_NUM >= 4)
+    {.adv_handle = INVALID_SET_ID}
+#endif
+};
 
 static void send(uint8_t i)
 {
@@ -196,8 +209,13 @@ static void adv_enable_all()
 {
     ext_adv_set_en_t adv_sets_en[] = { {.handle = 0, .duration = 0, .max_events = 0},
                                        {.handle = 1, .duration = 0, .max_events = 0},
+#if (PROFILE_NUM >= 3)
                                        {.handle = 2, .duration = 0, .max_events = 0},
-                                       {.handle = 3, .duration = 0, .max_events = 0} };
+#endif
+#if (PROFILE_NUM >= 4)
+                                       {.handle = 3, .duration = 0, .max_events = 0}
+#endif
+    };
     gap_set_ext_adv_enable(1, sizeof(adv_sets_en) / sizeof(adv_sets_en[0]), adv_sets_en);
 }
 
@@ -236,8 +254,12 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
         setup_adv(0, adv_data0, sizeof(adv_data0), rand_addr0);
         setup_adv(1, adv_data1, sizeof(adv_data1), rand_addr1);
+#if (PROFILE_NUM >= 3)
         setup_adv(2, adv_data2, sizeof(adv_data2), rand_addr2);
+#endif
+#if (PROFILE_NUM >= 4)
         setup_adv(3, adv_data3, sizeof(adv_data3), rand_addr3);
+#endif
         adv_enable_all();
         break;
 

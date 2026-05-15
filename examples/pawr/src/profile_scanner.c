@@ -58,19 +58,13 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
     }
 }
 
-static const scan_phy_config_t configs[2] =
+static const scan_phy_config_t configs[] =
 {
     {
         .phy = PHY_1M,
         .type = SCAN_PASSIVE,
         .interval = 200,
-        .window = 100
-    },
-    {
-        .phy = PHY_CODED,
-        .type = SCAN_PASSIVE,
-        .interval = 200,
-        .window = 100
+        .window = 180
     }
 };
 

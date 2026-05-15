@@ -30,12 +30,22 @@ uint32_t cb_putc(char *c, void *dummy)
     UART_SendData(PRINT_PORT, (uint8_t)*c);
     return 0;
 }
-
+#if defined (__CC_ARM) || defined (__ICCARM__) || (defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050))
 int fputc(int ch, FILE *f)
 {
     cb_putc((char *)&ch, NULL);
     return ch;
 }
+#elif defined (__GNUC__)
+int _write(int fd, char *ptr, int len)
+{
+    int i;
+    for (i = 0; i < len; i++)
+        cb_putc(ptr + i, NULL);
+
+    return len;
+}
+#endif
 
 void config_uart(uint32_t freq, uint32_t baud)
 {
@@ -150,8 +160,10 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
 {
     (void)(dummy);
     (void)(user_data);
-    if (IS_DEBUGGER_ATTACHED())
-        return 0;
+    // If power saving has to be disabled when debugging, un-comment these two lines:
+    // if (IS_DEBUGGER_ATTACHED())
+    //     return 0;
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 #ifdef USE_POWER_LIB
     power_ctrl_before_deep_sleep();
@@ -228,22 +240,13 @@ void config_core_clocks_like_ing916(void)
     SYSCTRL_ConfigPLLClk(5, 70, 1);
     SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
     SYSCTRL_SelectHClk(SYSCTRL_CLK_PLL_DIV_3);
-
-    // Flash: enable continuous mode
-    // this takes effect after 1st waking up
-    const uint32_t addr = AON1_CTRL_BASE + 0x14;
-    uint32_t t = io_read(addr);
-    if (((t >> 28) & 0x7) == 0x3)
-    {
-        t &= ~(0x7u << 28);
-        t |=   0x6  << 28;
-        io_write(addr, t);
-    }
 }
 #endif
 
 void _app_main()
 {
+    SYSCTRL_Init();
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
     #ifdef USE_POWER_LIB
         power_ctrl_init(POWER_CTRL_MODE_BALANCED);
@@ -317,25 +320,31 @@ void _app_main()
         SYSCTRL_EnablePLL(0);
         SYSCTRL_SelectSlowClk(SYSCTRL_SLOW_RC_CLK);
     #else
-        #define HCLK_DIV 5
+        #define HCLK_DIV SYSCTRL_CLK_PLL_DIV_5
 
-        platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4000);
-        platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 245);
+        #ifdef OPT_RAM_CODE
+            platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4100 - 400);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 165);
+            SYSCTRL_EnableConfigClocksAfterWakeup(1,
+                PLL_HW_DEF_LOOP,
+                HCLK_DIV,
+                SYSCTRL_CLK_PLL_DIV_2,
+                0);
+        #else
+            platform_config(PLATFORM_CFG_DEEP_SLEEP_TIME_REDUCTION, 4000);
+            platform_config(PLATFORM_CFG_LL_DELAY_COMPENSATION, 245);
+            SYSCTRL_EnableConfigClocksAfterWakeup(1,
+                PLL_BOOT_DEF_LOOP,
+                HCLK_DIV,
+                SYSCTRL_CLK_PLL_DIV_2,
+                0);
+        #endif
 
-        SYSCTRL_EnableConfigClocksAfterWakeup(1,
-            PLL_BOOT_DEF_LOOP,
-            HCLK_DIV,
-            SYSCTRL_CLK_PLL_DIV_2,
-            0);
 
         SYSCTRL_EnableSlowRC(0, SYSCTRL_SLOW_RC_24M);
         SYSCTRL_SelectHClk(HCLK_DIV);
         SYSCTRL_SelectFlashClk(SYSCTRL_CLK_PLL_DIV_2);
     #endif
-
-    // make sure that RAM does not exceed 0x20004000
-    // then, we can power off the unused blocks
-    SYSCTRL_SelectMemoryBlocks(SYSCTRL_RESERVED_MEM_BLOCKS);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #ifdef DETECT_KEY
     // configure it only once

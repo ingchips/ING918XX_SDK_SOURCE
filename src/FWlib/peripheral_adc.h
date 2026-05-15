@@ -137,6 +137,25 @@ typedef enum {
 
 typedef struct
 {
+    float k;
+    float b;
+} ADC_LinearCalib_t;
+
+typedef struct
+{
+    float k;
+    float b;
+} ADC_VBatCalib_t;
+
+typedef struct
+{
+    ADC_LinearCalib_t ch0_8_int_ref[9];
+    ADC_LinearCalib_t ch0_8_vbat_ref[9];
+    ADC_VBatCalib_t ch9_vbat;
+} ADC_CalibrationData_t;
+
+typedef struct
+{
     float vref_P;
     float vref_N;
     float (*cb)(const uint16_t);
@@ -647,6 +666,14 @@ SADC_channelId ADC_GetDataChannel(const uint32_t data);
 uint16_t ADC_GetData(const uint32_t data);
 
 /**
+ * @brief Read ADC data in specified channel
+ *
+ * @param[in] channel_id       channel ID
+ * @return                     calibrated ADC data when channel matches else 0
+ */
+uint16_t ADC_ReadChannelData(const uint8_t channel_id);
+
+/**
  * @brief Get ADC-Channel's enabled status
  * Example:
  * 1.single-mode with CH0/CH4/CH6 are enabled, it returns 0x51.
@@ -695,6 +722,45 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
  * @brief ADC hardware calibration
  * */
 void ADC_HardwareCalibration(void);
+
+/**
+ * @brief Convert raw ADC code to calibrated physical value
+ *
+ * @note
+ * When using VBAT as the standard VREF, if VBAT is not 3.3 V,
+ * Use 'ADC_GetCalibValueVRefVBat'
+ *
+ * For CH0-CH8 the return value. rand in 0-4096.
+ * For CH9 under VBAT reference the return value is VBAT voltage in V.
+ * For CH10-CH11 the raw code is returned as float.
+ *
+ * @param[in] ch                ADC channel
+ * @param[in] raw               raw ADC code
+ * @return                      calibrated value
+ */
+float ADC_GetCalibratedValue(SADC_channelId ch, uint16_t raw);
+
+/**
+ * @brief Convert raw ADC code to calibrated physical value,
+ * When using VBAT as the standard VREF, if VBAT is not 3.3 V,
+ * you must use this interface to obtain the calibrated value.
+ *
+ * Only CH0-CH8 the return value. rand in 0-4096.
+ *
+ * @param[in] ch                ADC channel
+ * @param[in] raw               raw ADC code
+ * @param[in] vbat              now Vbat value
+ * @return                      calibrated value
+ */
+float ADC_GetCalibValueVRefVBat(SADC_channelId ch, uint16_t raw, float vbat);
+
+/**
+ * @brief Read VBAT voltage using CH9 calibration
+ *
+ * @param[in] raw               CH9 raw adc vale
+ * @return                      VBAT voltage in V
+ */
+float ADC_GetVBatVoltage(uint16_t raw);
 
 
 #endif
