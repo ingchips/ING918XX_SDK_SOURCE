@@ -8,6 +8,7 @@ extern "C" {	/* allow C++ to use these headers */
 #include "ingsoc.h"
 #include "peripheral_pinctrl.h"
 #include "eflash.h"
+#include <string.h>
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 

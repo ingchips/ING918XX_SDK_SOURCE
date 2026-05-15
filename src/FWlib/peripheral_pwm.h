@@ -5,9 +5,9 @@
 #include "ingsoc.h"
 #include "peripheral_sysctrl.h"
 
-#ifdef	__cplusplus
-extern "C" {	/* allow C++ to use these headers */
-#endif	/* __cplusplus */
+#ifdef  __cplusplus
+extern "C" {    /* allow C++ to use these headers */
+#endif  /* __cplusplus */
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
@@ -327,7 +327,7 @@ uint8_t IR_BusyState(uint8_t channel);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
-#endif	/* __cplusplus */
+#endif  /* __cplusplus */
 
 #endif
 

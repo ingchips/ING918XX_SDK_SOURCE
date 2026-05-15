@@ -753,6 +753,13 @@ static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, 
     *reg = (*reg & mask) | ((v & mask1) << bit_offset);
 }
 
+#define IO_OUTPUT_SOURCE_MAP_COLS                  20u
+#define IO_OUTPUT_SOURCE_MAP_ROM_ADDR              ((const uint8_t *)0x0002d2bdu)
+#ifndef PINCTRL_USE_ROM_IO_OUTPUT_SOURCE_MAP
+#define PINCTRL_USE_ROM_IO_OUTPUT_SOURCE_MAP       1
+#endif
+
+#if (!PINCTRL_USE_ROM_IO_OUTPUT_SOURCE_MAP)
 const uint8_t io_output_source_map[IO_PIN_NUMBER][20] =
 {
     {0xdf,0xff,0xff,0xaa,0xaa,0x48,0x80,0x80,0x08,0x02,0x0a,0x7f,0xff,0xfe,0x00,0x20,0x08,0x0e,0x1f,0x90},
@@ -798,15 +805,27 @@ const uint8_t io_output_source_map[IO_PIN_NUMBER][20] =
     {0xc1,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
     {0xc0,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
 };
+#endif
+
+static const uint8_t *pinctrl_get_io_output_source_map_row(uint8_t io_pin_index)
+{
+#if PINCTRL_USE_ROM_IO_OUTPUT_SOURCE_MAP
+    return &IO_OUTPUT_SOURCE_MAP_ROM_ADDR[(uint32_t)io_pin_index * IO_OUTPUT_SOURCE_MAP_COLS];
+#else
+    return io_output_source_map[io_pin_index];
+#endif
+}
 
 static int source_id_on_pin(uint8_t io_pin_index, io_source_t source)
 {
+    int src = (int)source;
     if (io_pin_index >= IO_PIN_NUMBER) return -1;
+    if ((src < 0) || (src >= (int)(IO_OUTPUT_SOURCE_MAP_COLS * 8u))) return -1;
 
-    const uint8_t *map = io_output_source_map[io_pin_index];
+    const uint8_t *map = pinctrl_get_io_output_source_map_row(io_pin_index);
     int r = 0;
-    int i = source - 1;
-    if ((map[source / 8] & (0x80 >> (source & 7))) == 0) return -1;
+    int i = src - 1;
+    if ((map[src / 8] & (0x80 >> (src & 7))) == 0) return -1;
 
     for (; i >= 0; i--)
     {
@@ -818,16 +837,19 @@ static int source_id_on_pin(uint8_t io_pin_index, io_source_t source)
 
 static int pin_id_for_input_source(int source, uint8_t io_pin_index)
 {
+    if (io_pin_index >= IO_PIN_NUMBER) return -1;
+    if ((source < 0) || (source >= (int)(IO_OUTPUT_SOURCE_MAP_COLS * 8u))) return -1;
+
     int byte_n = source / 8;
     int bit_mask = (0x80 >> (source & 7));
     int r = 0;
     int i = (int)io_pin_index - 1;
-    const uint8_t *map = io_output_source_map[io_pin_index];
+    const uint8_t *map = pinctrl_get_io_output_source_map_row(io_pin_index);
     if ((map[byte_n] & bit_mask) == 0) return -1;
 
     for (; i >= 0; i--)
     {
-        map = io_output_source_map[i];
+        map = pinctrl_get_io_output_source_map_row((uint8_t)i);
         if (map[byte_n] & bit_mask)
             r++;
     }

@@ -2030,7 +2030,7 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
     uint32_t mode;
     uint32_t hclk_select;
     float freq;
-    DMA_Descriptor descriptor __attribute__((aligned(8)));
+    volatile DMA_Descriptor descriptor __attribute__((aligned(8)));
     uint8_t enabled = io_read(AON1_CTRL_BASE + 0x28) & 1;
     if (!enabled) SYSCTRL_EnablePLL(1);
     hclk_select = (*(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)>>31)&0x1;
@@ -2048,7 +2048,8 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
     APB_DMA->Channels[0].Descriptor.SrcAddr = (uint32_t)(&APB_PWM->PCAPChannels[0].Ctrl1);
     APB_DMA->Channels[0].Descriptor.DstAddr = (uint32_t)pcap;
     APB_DMA->Channels[0].Descriptor.TranSize = 2;
-    APB_DMA->Channels[0].Descriptor.Next = &descriptor;
+    APB_DMA->Channels[0].Descriptor.Next = (DMA_Descriptor*)&descriptor;
+    memset((void*)&descriptor, 0, sizeof(descriptor));
     descriptor.Ctrl = (0x0<<4)|(0x8<<8)|(0x2<<12)|(0x2<<14)|(0x0<<16)|(0x1<<17)|(0x2<<18)|(0x2<<21)|(0x1<<24) ;
     descriptor.SrcAddr = (uint32_t)(&APB_PWM->PCAPChannels[0].Ctrl1);
     descriptor.DstAddr = (uint32_t)&pcap[2];

@@ -30,12 +30,22 @@ uint32_t cb_putc(char *c, void *dummy)
     UART_SendData(PRINT_PORT, (uint8_t)*c);
     return 0;
 }
-
+#if defined (__CC_ARM) || defined (__ICCARM__) || (defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050))
 int fputc(int ch, FILE *f)
 {
     cb_putc((char *)&ch, NULL);
     return ch;
 }
+#elif defined (__GNUC__)
+int _write(int fd, char *ptr, int len)
+{
+    int i;
+    for (i = 0; i < len; i++)
+        cb_putc(ptr + i, NULL);
+
+    return len;
+}
+#endif
 
 void config_uart(uint32_t freq, uint32_t baud)
 {

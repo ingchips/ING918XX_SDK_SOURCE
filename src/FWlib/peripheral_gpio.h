@@ -303,9 +303,11 @@ void GIO_EnableHighZGroupB(uint8_t enable);
 
 #define GIO_WAKEUP_MODE_LOW_LEVEL       0   // wake up by low level
 #define GIO_WAKEUP_MODE_HIGH_LEVEL      1   // wake up by high level
+#if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
 #define GIO_WAKEUP_MODE_RISING_EDGE     2   // wake up by rising edge
 #define GIO_WAKEUP_MODE_FALLING_EDGE    3   // wake up by falling edge
 #define GIO_WAKEUP_MODE_ANY_EDGE        4   // wake up by rising or falling edge
+#endif
 
 /**
  * @brief Enable a GPIO as wakeup source from DEEP SLEEP mode
@@ -367,12 +369,6 @@ void GIO_ClearBits(const uint64_t index_mask);
  *
  */
 void GIO_ToggleBits(const uint64_t index_mask);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
-typedef enum
-{
-    GIO_DB_CLK_32K,
-    GIO_DB_CLK_PCLK,
-} GIO_DbClk_t;
 
 #endif
 
