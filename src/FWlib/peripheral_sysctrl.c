@@ -2142,7 +2142,7 @@ int SYSCTRL_Init(void)
     #define ROM_PowerOnSeq          ((rom_PowerOnSeq)(0x0000101d))
     #define ROM_PowerDownSeq        ((rom_PowerDownSeq)(0x00000f05))
     #define ROM_PowerDownSeqPatch   ((rom_PowerDownSeqPatch)(0x00001001))
-    // SYSCTRL_RC2MTune(1500000);
+    SYSCTRL_RC2MTune(1500000);
     ROM_PowerOnSeq(1, 1, 1);
     ROM_PowerDownSeq();
     ROM_PowerDownSeqPatch();

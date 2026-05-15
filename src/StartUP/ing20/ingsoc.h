@@ -250,13 +250,13 @@ typedef struct
 
 typedef struct tagDMA_Descriptor
 {
-    uint32_t Ctrl;                  // +0x00
-    uint32_t TranSize;              // +0x04
-    uint32_t SrcAddr;               // +0x08
-    uint32_t Reserved1;
-    uint32_t DstAddr;               // +0x10
-    uint32_t Reserved2;
-    struct tagDMA_Descriptor *Next; // +0x18    (8-bytes aligned address)
+    __IO uint32_t Ctrl;                  // +0x00
+    __IO uint32_t TranSize;              // +0x04
+    __IO uint32_t SrcAddr;               // +0x08
+    __IO uint32_t Reserved1;
+    __IO uint32_t DstAddr;               // +0x10
+    __IO uint32_t Reserved2;
+    __IO struct tagDMA_Descriptor *Next; // +0x18    (8-bytes aligned address)
 } DMA_Descriptor;
 
 typedef struct
