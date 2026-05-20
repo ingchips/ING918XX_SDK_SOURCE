@@ -22,9 +22,7 @@ This example is designed for all series development boards and demonstrates the 
 
 1. Build and flash the example firmware onto two development boards. One board acts as the Master, and the other acts as the Slave.
 2. After booting, the Slave starts advertising.
-3. On the Master board, use the following command to initiate a connection to the Slave:`sconn xx xx xx xx xx xx`
-4. Once the connection is established, the devices complete pairing and bonding, and EATT (Enhanced ATT) channels are successfully created.
-5. On the Master, perform GATT service and characteristic discovery using commands such as `discover`
-6. The Master reads characteristics value using a command like `read 3 6 `,3 is attribute handle, 6 is the second one.
-7. At this point, you can observe that many characteristics read are executed successfully.
-8. If use only gatt without eatt , the second characteristic read will return error .
+3. The Master will initiate connection automatically after startup.
+4. Once the connection is established, the devices complete pairing and bonding, then EATT bearers are created.
+5. Use UART commands such as `r`, `w`, `wn`, `n`, and `i` to verify concurrent read/write/notify/indicate behavior.
+6. If EATT is unavailable and the stack falls back to UATT, concurrent indication behavior is limited by single outstanding confirmation.

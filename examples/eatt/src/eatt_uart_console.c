@@ -9,8 +9,7 @@
 #include "platform_api.h"
 #include "bluetooth.h"
 #include "sm.h"
-
-//#include "btstack_mt.h"
+#include "profile.h"
 
 #define GEN_OS          ((const gen_os_driver_t *)platform_get_gen_os_driver())
 
@@ -20,86 +19,49 @@
 
 typedef void (*f_cmd_handler)(const char *param);
 
-int adv_tx_power = 100;
-
 typedef struct
 {
     const char *cmd;
     f_cmd_handler handler;
 } cmd_t;
 
-const static char error[] = "error";
-static char buffer[100] = {0};
-
 static void tx_data(const char *d, const uint16_t len);
-static int parse_handle_value(int *handle, const char *param);
 static const char help[] =  "commands:\n"
                             "h/?                                 show this\n"
-                            "sconn  xx:xx:xx:xx:xx:xx            connect to dev using synced API\n"
-                            "discover                            start discovery\n"
-                            "read_several_char   value_handle1  value_handle2 ...              read several characteristics\n"
+                            "r                                   read custom characteristics\n"
+                            "w                                   write custom characteristics\n"
+                            "n                                   trigger notify test\n"
+                            "i                                   trigger indicate test\n"
+                            "adv                                 start advertising (slave)\n"
                             ;
 
 void cmd_help(const char *param)
 {
     tx_data(help, strlen(help) + 1);
 }
-
-extern uint8_t slave_addr[];
-extern bd_addr_type_t slave_addr_type;
-
-void sync_conn_to_slave(void);
-void read_value_of_char(int handle);
-int parse_addr(uint8_t *output, const char *param)
+void cmd_read(const char *param)
 {
-    unsigned int addr[6];
-    int i = sscanf(param, "%2x:%2x:%2x:%2x:%2x:%2x", &addr[0], &addr[1], &addr[2], &addr[3], &addr[4], &addr[5]);
-
-    if (i != 6)
-    {
-        if (i > 0)
-            tx_data(error, strlen(error) + 1);
-        return -1;
-    }
-    for (i = 0; i < 6; i++) output[i] = addr[i];
-    return 0;
+    btstack_push_user_msg(USER_MSG_READ_CHAR, NULL, 0);
 }
-
-void cmd_sconn(const char *param)
+static void cmd_write(const char *param)
 {
-    if (0 == parse_addr(slave_addr, param))
-        sync_conn_to_slave();
+    btstack_push_user_msg(USER_MSG_WRITE_CHAR, NULL, 0);
 }
-void cmd_read_several_char(const char *param)
+static void cmd_write_no_rsp(const char *param)
 {
-    const char *p = param;
-    const char *end = param + strlen(param);
-    int handle = 0;
-    while (p < end) {
-
-        while (p < end && *p == ' ') {
-            p++;
-        }
-
-        if (p >= end || *p == '\n') {
-            break;
-        }
-
-        if (sscanf(p, "%d", &handle) == 1) {
-            platform_printf("read char handle: 0x%d\n", handle);
-            read_value_of_char(handle);
-        }
-
-        while (p < end && *p != ' ' && *p != '\n') {
-            p++;
-        }
-    }
+    btstack_push_user_msg(USER_MSG_WRITE_NO_RSP_CHAR, NULL, 0);
 }
-
-static void cmd_discover(const char *param)
+static void cmd_notify(const char *param)
 {
-    extern void discover_services(void);
-    discover_services();
+    btstack_push_user_msg(USER_MSG_NOTIFY_CHAR, NULL, 0);
+}
+static void cmd_indicate(const char *param)
+{
+    btstack_push_user_msg(USER_MSG_INDICATE_CHAR, NULL, 0);
+}
+static void cmd_start_adv(const char *param)
+{
+    btstack_push_user_msg(USER_MSG_START_ADV, NULL, 0);
 }
 
 static cmd_t cmds[] =
@@ -113,16 +75,28 @@ static cmd_t cmds[] =
         .handler = cmd_help
     },
     {
-        .cmd = "sconn",
-        .handler = cmd_sconn
+        .cmd = "r",
+        .handler = cmd_read
     },
     {
-        .cmd = "read_several_char",
-        .handler = cmd_read_several_char
+        .cmd = "w",
+        .handler = cmd_write
     },
     {
-        .cmd = "discover",
-        .handler = cmd_discover
+        .cmd = "wn",
+        .handler = cmd_write_no_rsp
+    },
+    {
+        .cmd = "n",
+        .handler = cmd_notify
+    },
+    {
+        .cmd = "i",
+        .handler = cmd_indicate
+    },
+    {
+        .cmd = "adv",
+        .handler = cmd_start_adv
     },
 };
 
@@ -197,6 +171,12 @@ static void console_task_entry(void *_)
 
 void uart_console_start(void)
 {
+    if (GEN_OS == NULL) {
+        // platform_raise_assertion(__FILE__, __LINE__);
+         printf("No OS, console disabled.\n");
+        return;
+    }
+
     cmd_event = GEN_OS->event_create();
     GEN_OS->task_create("console",
         console_task_entry,
