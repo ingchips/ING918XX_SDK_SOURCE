@@ -13,7 +13,7 @@
     #error unknown or unsupported chip family
 #endif
 
-static uint8_t ring_buff_storage[RX_BUFFER_SIZE];
+static uint32_t ring_buff_storage[RX_BUFFER_SIZE / sizeof(uint32_t)];
 static struct ring_buf *ring_buffer;
 
 extern void show_state(const io_state_t state);
