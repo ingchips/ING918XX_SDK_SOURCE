@@ -19,14 +19,24 @@
 #include "sig_uuid.h"
 #include "att_db_util.h"
 #include "btstack_sync.h"
-
 #include "gatt_client_util.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
-
 #include "../data/advertising.const"
+const static uint8_t profile_data[] = {
+    #include "../data/gatt.profile"
+};
+#ifndef iprintf
+#define iprintf(...)    platform_printf(__VA_ARGS__)
+#endif
+#ifndef SIG_UUID_CHARACT_CLIENT_SUPPORTED_FEATURES              
+#define SIG_UUID_CHARACT_CLIENT_SUPPORTED_FEATURES 0x2B29
+#endif
+#ifndef SIG_UUID_CHARACT_SERVER_SUPPORTED_FEATURES
+#define SIG_UUID_CHARACT_SERVER_SUPPORTED_FEATURES 0x2B3A
+#endif
 
 #define CONST_MASTER    0
 #define CONST_SLAVE     1
@@ -36,6 +46,7 @@
 
 #ifndef APP_ROLE
 #define APP_ROLE        CONST_MASTER
+// #define APP_ROLE        CONST_SLAVE
 #endif
 
 #define UUID_CUSTOM_SERVICE     0xFF00
@@ -66,13 +77,13 @@ static uint8_t eatt_server_buffer[STORAGE_SIZE] = {0};
 static uint8_t client_supported_features[1] = {0};
 static uint16_t handle_client_supported_features = 0;
 
-static char custom_char_value[80] = {0};
-static uint16_t custom_char_value_len = 0;
-
-const uint8_t server_supported_features[1] =
+const uint8_t server_supported_features[1] = 
 {
     0x02,   // Enhanced ATT bearer supported
-};
+};  
+
+// GATT characteristic handles
+#include "../data/gatt.const"
 
 const static uint8_t adv_data[] = {
     #include "../data/advertising.adv"
@@ -91,11 +102,14 @@ struct btstack_synced_runner  *synced_runner = NULL;
 #define find_char_16(uuid)   gatt_client_util_find_char_uuid16(discoverer, uuid)
 
 static void gatt_event_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size);
-static void read_characteristic_value_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size);
+static void read_characteristic_value_callback(uint8_t packet_type, uint16_t _, const uint8_t *packet, uint16_t size);    
 #endif
 
 #define INVALID_HANDLE  0xffff
 uint16_t conn_handle = INVALID_HANDLE;
+
+static char custom_char_value[80] = {0};
+static uint16_t custom_char_value_len = 0;
 
 static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset,
                                   uint8_t * buffer, uint16_t buffer_size)
@@ -120,40 +134,78 @@ static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
         memcpy(buffer, custom_char_value, custom_char_value_len);
         return custom_char_value_len;
     }
-    else;
 #endif
     return 0;
 }
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
+void print_fun(const char *s)
+{
+    printf("%s\n", s);
+}
+
 static int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode,
                               uint16_t offset, const uint8_t *buffer, uint16_t buffer_size)
 {
+    iprintf("att_write_callback: handle %d, transaction_mode %d, offset %d, buffer_size %d\n", att_handle, transaction_mode, offset, buffer_size);
 #if (APP_ROLE == CONST_SLAVE)
     if (att_handle == handle_client_supported_features)
     {
         buffer_size = buffer_size <= sizeof(client_supported_features) ? buffer_size : sizeof(client_supported_features);
         memcpy(client_supported_features, buffer, buffer_size);
         return 0;
+    } else if (att_handle >= custom_char_handles[0])
+    {
+        memset(custom_char_value, 0, sizeof(custom_char_value));
+        memcpy(custom_char_value, buffer, buffer_size);
+        custom_char_value_len = buffer_size;
+        iprintf("conn %d write to handle %d, value:\n", connection_handle, att_handle);
+        print_hex_table(custom_char_value, custom_char_value_len, print_fun);
+        return 0;
     }
 #endif
     return 0;
 }
 
-void print_fun(const char *s)
-{
-    printf("%s\n", s);
-}
 
-#define USER_MSG_START_EATT_CLIENT  1
-#define USER_MSG_READ_CHAR          2
+
+
+const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
+
+#define CONN_PARAM  {                   \
+            .scan_int = 200,            \
+            .scan_win = 100,            \
+            .interval_min = 50,         \
+            .interval_max = 50,         \
+            .latency = 0,               \
+            .supervision_timeout = 100, \
+            .min_ce_len = 90,           \
+            .max_ce_len = 90            \
+    }
+
+static initiating_phy_config_t phy_configs[] =
+{
+    {
+        .phy = PHY_1M,
+        .conn_param = CONN_PARAM
+    },
+    {
+        .phy = PHY_2M,
+        .conn_param = CONN_PARAM
+    },
+    {
+        .phy = PHY_CODED,
+        .conn_param = CONN_PARAM
+    }
+};
 
 static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 {
+    int i;
     switch (msg_id)
     {
-#if (APP_ROLE == ROLE_MASTER)
+#if (APP_ROLE == CONST_MASTER)
     case USER_MSG_START_EATT_CLIENT:
         {
             uint8_t status = gatt_client_le_enhanced_connect(
@@ -172,7 +224,6 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
         break;
     case USER_MSG_READ_CHAR:
         {
-            int i;
             iprintf("Try to read multiple characteristics simultaneously:\n");
             for (i = 0; i < NUM_EATT_BEARERS; i++)
             {
@@ -187,6 +238,78 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
             iprintf("=====================\n");
         }
         break;
+    case USER_MSG_WRITE_CHAR:
+        {
+            iprintf("Try to write multiple characteristics simultaneously:\n");
+            for (i = 0; i < NUM_EATT_BEARERS; i++)
+            {
+                if (custom_char_handles[i] == 0) break;
+
+                sprintf(custom_char_value, "write H:%d, t = %llu", custom_char_handles[i], platform_get_us_time());
+                custom_char_value_len = strlen(custom_char_value);
+                uint8_t err = gatt_client_write_value_of_characteristic(
+                    NULL,
+                    conn_handle,
+                    custom_char_handles[i],
+                    custom_char_value_len,
+                    (uint8_t *)custom_char_value);
+                iprintf("* start write %d status %d\n", custom_char_handles[i], err);
+                if (err) break;
+            }
+            iprintf("=====================\n");
+        }
+        break;
+    case USER_MSG_WRITE_NO_RSP_CHAR:
+        {
+            iprintf("Try to write multiple characteristics simultaneously:\n");
+            for (i = 0; i < NUM_EATT_BEARERS; i++)
+            {
+                if (custom_char_handles[i] == 0) break;
+
+                sprintf(custom_char_value, "write no resp H:%d, t = %llu", custom_char_handles[i], platform_get_us_time());
+                custom_char_value_len = strlen(custom_char_value);
+                uint8_t err = gatt_client_write_value_of_characteristic_without_response(
+                    conn_handle,
+                    custom_char_handles[i],
+                    custom_char_value_len,
+                    (uint8_t *)custom_char_value);
+                iprintf("* start write %d status %d\n", custom_char_handles[i], err);
+                if (err) break;
+            }
+            iprintf("=====================\n");
+        }
+        break;
+#endif
+#if (APP_ROLE == CONST_SLAVE)
+    case USER_MSG_NOTIFY_CHAR:
+        {
+            iprintf("Try to notify multiple characteristics simultaneously:\n");
+
+            for(i = 0; i < NUM_EATT_BEARERS; i++)
+            {
+                memset(custom_char_value, 0, sizeof(custom_char_value));
+                sprintf(custom_char_value, "notify Id:%d, t = %llu", custom_char_handles[i], platform_get_us_time());
+                custom_char_value_len = strlen(custom_char_value);
+                if (custom_char_handles[i] == 0) break;
+                int ret =att_server_notify(conn_handle, custom_char_handles[i], (uint8_t *)custom_char_value, custom_char_value_len);
+                iprintf("notify char %d, ret = %02x\n", custom_char_handles[i], ret);
+            }
+        }
+        break;
+    case USER_MSG_INDICATE_CHAR:
+        {
+            iprintf("Try to indicate multiple characteristics simultaneously:\n");
+            for(i = 0; i < NUM_EATT_BEARERS; i++)
+            {
+                memset(custom_char_value, 0, sizeof(custom_char_value));
+                sprintf(custom_char_value, "indicate Id:%d, t = %llu", custom_char_handles[i], platform_get_us_time());
+                custom_char_value_len = strlen(custom_char_value);
+                if (custom_char_handles[i] == 0) break;
+                int ret = att_server_indicate(conn_handle, custom_char_handles[i], (uint8_t *)custom_char_value, custom_char_value_len);
+                iprintf("indicate char %d, ret = %02x\n", custom_char_handles[i], ret);
+            }
+        }
+        break;
 #endif
     default:
         break;
@@ -194,8 +317,6 @@ static void user_msg_handler(uint32_t msg_id, void *data, uint16_t size)
 }
 
 #if (APP_ROLE == CONST_SLAVE)
-
-const static ext_adv_set_en_t adv_sets_en[] = {{.handle = 0, .duration = 0, .max_events = 0}};
 
 void start_adv()
 {
@@ -230,21 +351,21 @@ uint8_t *init_service()
 
     att_db_util_add_service_uuid16(SIG_UUID_SERVICE_GENERIC_ACCESS);
         att_db_util_add_characteristic_uuid16(GAP_DEVICE_NAME_UUID, ATT_PROPERTY_READ, (uint8_t *)dev_name, sizeof(dev_name) - 1);
-
-    att_db_util_add_service_uuid16(SIG_UUID_SERVICE_GENERIC_ATTRIBUTE);
-        handle_client_supported_features = att_db_util_add_characteristic_uuid16(SIG_UUID_CHARACT_CLIENT_SUPPORTED_FEATURES,
+    
+    att_db_util_add_service_uuid16(SIG_UUID_SERVICE_GENERIC_ATTRIBUTE);    
+        handle_client_supported_features = att_db_util_add_characteristic_uuid16(SIG_UUID_CHARACT_CLIENT_SUPPORTED_FEATURES, 
             ATT_PROPERTY_READ | ATT_PROPERTY_WRITE | ATT_PROPERTY_DYNAMIC, NULL, 0);
-        att_db_util_add_characteristic_uuid16(SIG_UUID_CHARACT_SERVER_SUPPORTED_FEATURES,
+        att_db_util_add_characteristic_uuid16(SIG_UUID_CHARACT_SERVER_SUPPORTED_FEATURES, 
             ATT_PROPERTY_READ, server_supported_features, sizeof(server_supported_features));
 
     att_db_util_add_service_uuid16(UUID_CUSTOM_SERVICE);
     for (i = 0; i < NUM_EATT_BEARERS; i++)
     {
-        custom_char_handles[i] = att_db_util_add_characteristic_uuid16(UUID_CUSTOM_CHARACT + i,
-            ATT_PROPERTY_READ | ATT_PROPERTY_DYNAMIC,
+        custom_char_handles[i] = att_db_util_add_characteristic_uuid16(UUID_CUSTOM_CHARACT + i, 
+            ATT_PROPERTY_READ |ATT_PROPERTY_WRITE_WITHOUT_RESPONSE| ATT_PROPERTY_WRITE | ATT_PROPERTY_DYNAMIC,
             NULL, 0);
     }
-
+    
     return att_db_util_get_address();
 }
 
@@ -280,7 +401,7 @@ void read_characteristic_value_callback(uint8_t packet_type, uint16_t _, const u
 static void timer_read_value(void)
 {
     btstack_push_user_msg(USER_MSG_READ_CHAR, NULL, 0);
-    platform_set_timer(timer_read_value, 16 * 139);
+    platform_set_timer(timer_read_value, 16 * 150);
 }
 
 static void gatt_event_handler(uint8_t packet_type, uint16_t channel, const uint8_t *packet, uint16_t size)
@@ -295,6 +416,16 @@ static void gatt_event_handler(uint8_t packet_type, uint16_t channel, const uint
                 gatt_event_characteristic_value_query_result_parse(packet, size, &value_size);
             iprintf("Value of %d:\n", value->handle);
             print_hex_table(value->value, value_size, print_fun);
+        }
+        break;
+    case ATT_HANDLE_VALUE_NOTIFICATION:
+    case ATT_HANDLE_VALUE_INDICATION:
+        {
+            uint16_t att_handle = little_endian_read_16(packet, 1);
+            uint16_t value_len = size - 3;
+            iprintf("[GATT] %s: handle=0x%04X, len=%d\n", 
+                packet_type == ATT_HANDLE_VALUE_NOTIFICATION ? "NOTIFY" : "INDICATE", att_handle, value_len);
+            print_hex_table(packet + 3, value_len, print_fun);
         }
         break;
     }
@@ -315,21 +446,20 @@ void discover_and_check_eatt(struct btstack_synced_runner * runner, void *user_d
 {
     static uint8_t value[251];
     uint16_t length = 0;
-
+    
     int err_code = 0;
     int i;
-    char_node_t *ch = NULL;
-    struct gatt_client_discoverer *discoverer =
+    struct gatt_client_discoverer *discoverer = 
         gatt_client_sync_discover_all(synced_runner, conn_handle, &err_code);
     if (err_code != 0)
     {
         iprintf("error occurred during discovering: %d", err_code);
         goto clean_up;
     }
-
+    
     gatt_client_util_dump_profile(gatt_client_util_get_first_service(discoverer), NULL, err_code);
 
-    ch = find_char_16(SIG_UUID_CHARACT_SERVER_SUPPORTED_FEATURES);
+    char_node_t *ch = find_char_16(SIG_UUID_CHARACT_SERVER_SUPPORTED_FEATURES);
     if (NULL == ch)
     {
         iprintf("SERVER_SUPPORTED_FEATURES not found.\n");
@@ -343,11 +473,11 @@ void discover_and_check_eatt(struct btstack_synced_runner * runner, void *user_d
         iprintf("failed to read SERVER_SUPPORTED_FEATURES.\n");
         goto clean_up;
     }
-
+    
     check_server_supported_features(value);
     if (is_server_eatt_supported == 0) goto clean_up;
-
-    ch = find_char_16(SIG_UUID_CHARACT_CLIENT_SUPPORTED_FEATURES);
+    
+    ch = find_char_16(SIG_UUID_CHARACT_CLIENT_SUPPORTED_FEATURES);    
     if (NULL == ch)
     {
         iprintf("CLIENT_SUPPORTED_FEATURES not found.\n");
@@ -355,13 +485,13 @@ void discover_and_check_eatt(struct btstack_synced_runner * runner, void *user_d
     }
     value[0] = CLIENT_SUPPORT_EATT_BEARER;
     length = 1;
-    if (gatt_client_sync_write_value_of_characteristic(synced_runner, conn_handle, ch->chara.value_handle,
+    if (gatt_client_sync_write_value_of_characteristic(synced_runner, conn_handle, ch->chara.value_handle, 
         value, 1) != 0)
     {
         iprintf("CLIENT_SUPPORTED_FEATURES not found.\n");
         goto clean_up;
     }
-
+    
     for (i = 0; i < NUM_EATT_BEARERS; i++)
     {
         ch = find_char_16(UUID_CUSTOM_CHARACT + i);
@@ -370,36 +500,16 @@ void discover_and_check_eatt(struct btstack_synced_runner * runner, void *user_d
         custom_char_handles[i] = ch->chara.value_handle;
     }
     btstack_push_user_msg(USER_MSG_START_EATT_CLIENT, NULL, 0);
-    platform_set_timer(timer_read_value, 16 * 150);
+    //platform_set_timer(timer_read_value, 16 * 150);
 
-clean_up:
+clean_up:    
     gatt_client_util_free(discoverer);
 }
-
-#define CONN_PARAM  {                   \
-            .scan_int = 200,            \
-            .scan_win = 100,            \
-            .interval_min = 50,         \
-            .interval_max = 50,         \
-            .latency = 0,               \
-            .supervision_timeout = 100, \
-            .min_ce_len = 90,           \
-            .max_ce_len = 90            \
-    }
-
-static initiating_phy_config_t phy_configs[] =
-{
-    {
-        .phy = PHY_1M,
-        .conn_param = CONN_PARAM
-    },
-};
 
 static void start_conn(void)
 {
     is_server_eatt_supported = true;
     memset(custom_char_handles, 0, sizeof(custom_char_handles));
-
     gap_ext_create_connection(INITIATING_ADVERTISER_FROM_PARAM,
                                 BD_ADDR_TYPE_LE_RANDOM,
                                 slave_sm_persistent.identity_addr_type,
@@ -419,7 +529,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
     {
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING)
-            break;
+            break;        
 #if (APP_ROLE == CONST_SLAVE)
         gap_set_adv_set_random_addr(0, slave_sm_persistent.identity_addr);
         start_adv();
@@ -448,6 +558,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
 
 #if (APP_ROLE == CONST_SLAVE)
                 att_set_db(conn_handle, att_db_storage);
+                // att_set_db(conn_handle, profile_data);
                 sm_request_pairing(conn_handle);
 #endif
             }
@@ -459,6 +570,7 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         break;
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         {
+            const event_disconn_complete_t *complete = decode_hci_event_disconn_complete(packet);
             iprintf("disconnected\n");
 #if (APP_ROLE == CONST_SLAVE)
             start_adv();
@@ -471,6 +583,17 @@ static void user_packet_handler(uint8_t packet_type, uint16_t channel, const uin
         // add your code
         break;
 
+    case GATT_EVENT_UNHANDLED_SERVER_VALUE:
+        {
+            iprintf("GATT unhandled server %s: conn = %d, handle = %d\n\t",
+                gatt_event_unhandled_server_value_get_type(packet) == GATT_EVENT_NOTIFICATION ? "notification" : "indication",
+                channel,
+            gatt_event_unhandled_server_value_get_value_handle(packet));
+            iprintf("VALUE of %d:\n", gatt_event_unhandled_server_value_get_value_handle(packet));
+            print_hex_table(gatt_event_unhandled_server_value_get_data(packet), gatt_event_unhandled_server_value_get_size(packet), print_fun);
+            iprintf("\n");
+        }
+        break;
     case BTSTACK_EVENT_USER_MSG:
         p_user_msg = hci_event_packet_get_user_msg(packet);
         user_msg_handler(p_user_msg->msg_id, p_user_msg->data, p_user_msg->len);
@@ -523,7 +646,7 @@ static void sm_packet_handler(uint8_t packet_type, uint16_t channel, const uint8
                     break;
                 case SM_FINAL_PAIRED:
                     platform_printf("SM: PAIRED\n");
-#if (APP_ROLE == CONST_MASTER)
+#if (APP_ROLE == CONST_MASTER)                    
                     btstack_sync_run(synced_runner, discover_and_check_eatt, NULL);
 #endif
                     break;

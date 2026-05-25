@@ -1,25 +1,28 @@
-# Enhanced ATT (EATT)
+# EATT Example: UART GATT Console
 
 ## Overview
 
 This example demonstrates how to use EATT (Enhanced Attribute Protocol) to perform GATT operations over multiple ATT bearers,
 
 ## Key Features
-
-- GATT Client Operations over EATT
+- **GATT Operations**: 
+- GATT Client Operations over EATT: 
 - Service and characteristic discovery
 - Characteristic read
 
-## Test
+## Command Interface
 
-1. Build and flash the example firmware onto two development boards. One board acts as the Master (defining `APP_ROLE=0`), and the other acts as the Slave (defining `APP_ROLE=1`).
-1. After booting, the Slave starts advertising.
-1. Once the connection is established, the devices complete pairing and bonding, and EATT (Enhanced ATT) channels are successfully created.
-1. Master performs GATT service and characteristic discovery.
-1. Master sets up a timer
-1. When the timer times out, Master reads value from multiple characteristics value simultaneously.
+The example provides a UART-based command line interface for controlling BLE operations. Commands cover advertising, connection establishment, EATT client operations
 
-From Tracer, we can see that all 5 ATT read requests can be sent out within a single connection event, and all 5 responses
-can be received in the next connection event:
+## Supported Platforms
 
-![gatt read](gatt_read.png)
+This example is designed for all series development boards and demonstrates the capabilities of ING916XX ING918XX ING20.
+
+## Getting Started
+
+1. Build and flash the example firmware onto two development boards. One board acts as the Master, and the other acts as the Slave.
+2. After booting, the Slave starts advertising.
+3. The Master will initiate connection automatically after startup.
+4. Once the connection is established, the devices complete pairing and bonding, then EATT bearers are created.
+5. Use UART commands such as `r`, `w`, `wn`, `n`, and `i` to verify concurrent read/write/notify/indicate behavior.
+6. If EATT is unavailable and the stack falls back to UATT, concurrent indication behavior is limited by single outstanding confirmation.

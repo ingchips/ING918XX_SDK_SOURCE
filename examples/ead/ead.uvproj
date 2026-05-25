@@ -41,7 +41,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\output\</OutputDirectory>
-          <OutputName>eatt</OutputName>
+          <OutputName>EAD</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -72,7 +72,7 @@
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>fromelf.exe --bin -o eatt.bin ./output/eatt.axf</UserProg1Name>
+            <UserProg1Name>fromelf.exe --bin -o EAD.bin ./output/EAD.axf</UserProg1Name>
             <UserProg2Name/>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -412,7 +412,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>../..\bundles\exp\ING9188xx\symdefs.m</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\bundles\exp\ING9188xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -422,7 +422,7 @@
             <File>
               <FileName>eflash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\BSP\eflash.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\BSP\eflash.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -432,52 +432,52 @@
             <File>
               <FileName>peripheral_adc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_adc.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_adc.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_gpio.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_gpio.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_i2c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_i2c.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_i2c.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_pinctrl.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_pinctrl.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_pwm.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_pwm.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_pwm.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_rtc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_rtc.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_rtc.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_ssp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_ssp.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_ssp.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_sysctrl.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_timer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_timer.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_uart.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_uart.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -487,7 +487,7 @@
             <File>
               <FileName>trace.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\Tools\trace.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\Tools\trace.c</FilePath>
             </File>
           </Files>
         </Group>

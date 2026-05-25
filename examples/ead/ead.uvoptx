@@ -120,12 +120,12 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>CMSIS_AGDI</Key>
-          <Name>-X"" -O206 -S0 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO10 -FD20000000 -FC8000 -FN1 -FF0ING91800.flm -FS04000 -FL084000 -FP0($$Device:ING91800$Flash\ING91800.flm)</Name>
+          <Name>-X"" -O206 -S0 -C0 -P00000000 -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO10 -FD20000000 -FC8000 -FN1 -FF0ING91800.flm -FS04000 -FL084000 -FP0($$Device:ING91800$Flash\ING91800.flm)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name></Name>
+          <Name>d</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -153,24 +153,7 @@
           <Name>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0NEW_DEVICE -FS00 -FL040000 -FP0($$Device:ARMCM3$Device\ARM\Flash\NEW_DEVICE.FLM))</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint>
-        <Bp>
-          <Number>0</Number>
-          <Type>0</Type>
-          <LineNumber>85</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\src\eatt_uart_console.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-      </Breakpoint>
+      <Breakpoint/>
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>
@@ -246,29 +229,17 @@
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
-    <File>
-      <GroupNumber>1</GroupNumber>
-      <FileNumber>3</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>.\src\eatt_uart_console.c</PathWithFileName>
-      <FilenameWithoutPath>eatt_uart_console.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
   </Group>
 
   <Group>
     <GroupName>StartUP</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>2</GroupNumber>
-      <FileNumber>4</FileNumber>
+      <FileNumber>3</FileNumber>
       <FileType>2</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -280,12 +251,12 @@
     </File>
     <File>
       <GroupNumber>2</GroupNumber>
-      <FileNumber>5</FileNumber>
+      <FileNumber>4</FileNumber>
       <FileType>3</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\bundles\exp\ING9188xx\symdefs.m</PathWithFileName>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\bundles\exp\ING9188xx\symdefs.m</PathWithFileName>
       <FilenameWithoutPath>symdefs.m</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -300,12 +271,12 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>3</GroupNumber>
-      <FileNumber>6</FileNumber>
+      <FileNumber>5</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\BSP\eflash.c</PathWithFileName>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\BSP\eflash.c</PathWithFileName>
       <FilenameWithoutPath>eflash.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -320,13 +291,25 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>4</GroupNumber>
+      <FileNumber>6</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_adc.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_adc.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>4</GroupNumber>
       <FileNumber>7</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_adc.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_adc.c</FilenameWithoutPath>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_gpio.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_gpio.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -337,8 +320,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_gpio.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_gpio.c</FilenameWithoutPath>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_i2c.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_i2c.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -349,8 +332,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_i2c.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_i2c.c</FilenameWithoutPath>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_pinctrl.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_pinctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -361,8 +344,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_pinctrl.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_pinctrl.c</FilenameWithoutPath>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_pwm.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_pwm.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -373,8 +356,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_pwm.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_pwm.c</FilenameWithoutPath>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_rtc.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_rtc.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -385,8 +368,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_rtc.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_rtc.c</FilenameWithoutPath>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_ssp.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_ssp.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -397,8 +380,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_ssp.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_ssp.c</FilenameWithoutPath>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_sysctrl.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_sysctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -409,8 +392,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_sysctrl.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_sysctrl.c</FilenameWithoutPath>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_timer.c</PathWithFileName>
+      <FilenameWithoutPath>peripheral_timer.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -421,19 +404,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_timer.c</PathWithFileName>
-      <FilenameWithoutPath>peripheral_timer.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>4</GroupNumber>
-      <FileNumber>16</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\FWlib\peripheral_uart.c</PathWithFileName>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_uart.c</PathWithFileName>
       <FilenameWithoutPath>peripheral_uart.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -442,103 +413,19 @@
 
   <Group>
     <GroupName>Tools</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>17</FileNumber>
+      <FileNumber>16</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../..\src\Tools\trace.c</PathWithFileName>
+      <PathWithFileName>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\Tools\trace.c</PathWithFileName>
       <FilenameWithoutPath>trace.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>18</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\Tools\att_db_util.c</PathWithFileName>
-      <FilenameWithoutPath>att_db_util.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>19</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\Tools\gatt_client_util.c</PathWithFileName>
-      <FilenameWithoutPath>gatt_client_util.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>20</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\Tools\platform_util.c</PathWithFileName>
-      <FilenameWithoutPath>platform_util.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>21</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\Tools\rf_util.c</PathWithFileName>
-      <FilenameWithoutPath>rf_util.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>22</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\Tools\str_util.c</PathWithFileName>
-      <FilenameWithoutPath>str_util.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>23</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\Tools\btstack_mt.c</PathWithFileName>
-      <FilenameWithoutPath>btstack_mt.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>24</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\src\Tools\btstack_sync.c</PathWithFileName>
-      <FilenameWithoutPath>btstack_sync.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
