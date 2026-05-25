@@ -394,11 +394,6 @@
               <FileType>1</FileType>
               <FilePath>.\src\profile.c</FilePath>
             </File>
-            <File>
-              <FileName>aes_ccm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\aes_ccm.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

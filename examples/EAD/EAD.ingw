@@ -4,22 +4,22 @@
   "var": {
    "link_layer_features": {
     "value": "3f79ff07fe000000",
-    "addr": 183664
+    "addr": 189776
    }
   },
   "rom": {
-   "size": 173516,
+   "size": 179636,
    "base": 16384
   },
   "ram": {
-   "size": 30276,
+   "size": 30284,
    "base": 536870912
   },
   "app": {
    "base": 196608
   },
   "version": [
-   1,10,31]
+   1,10,38]
  },
  "tc_dir": "D:\/Users\/yuxiz\/AppData\/Local\/Keil_v5\/uv4",
  "eflash_addr": "0x42000",
@@ -42,7 +42,7 @@
  "key_incode": true,
  "series": "ING9188xx",
  "proj_name": "EAD",
- "sdk_release_path": "..\/..\/..\/..\/..\/Users\/yuxiz\/AppData\/Roaming\/Local\/Program\/ING_SDK\/sdk",
+ "sdk_release_path": "..\/..",
  "printf_port": "uart0",
  "security": false,
  "legacy_adv": true,
@@ -76,10 +76,10 @@
   "proxy": true
  },
  "keil": true,
- "cmsis": "D:\/Users\/yuxiz\/AppData\/Roaming\/Local\/Program\/ING_SDK\/wizard\/CMSIS",
+ "cmsis": "",
  "cube": true,
- "app_ram_size": 35256,
- "app_ram_addr": 536901192,
+ "app_ram_size": 35248,
+ "app_ram_addr": 536901200,
  "k5_cc_ver": "6",
  "printf_enable": true,
  "ota_ver_patch": "0",
