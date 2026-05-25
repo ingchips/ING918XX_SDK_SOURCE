@@ -215,6 +215,10 @@ static void init_spi (void)
 
     PINCTRL_SelSpiPins(SPI_CH, SPI_PIN_SCK, IO_NOT_A_PIN, IO_NOT_A_PIN,
         IO_NOT_A_PIN, SPI_PIN_MISO, SPI_PIN_MOSI);
+    
+    #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    SYSCTRL_SelectSpiClkDiv(SPI_CH, SYSCTRL_CLK_SLOW, 1);
+    #endif
 
     SET_DATA_SIZE(8);
 
@@ -320,8 +324,9 @@ static int wait_ready (	/* 1:Ready, 0:Timeout */
 static void deselect (void)
 {
     CS_HIGH();		/* Set CS# high */
+    #if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
     xchg_spi(0xFF);	/* Dummy clock (force DO hi-z for multiple slave SPI) */
-
+    #endif
 }
 
 
