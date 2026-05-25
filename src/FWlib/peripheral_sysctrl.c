@@ -2044,17 +2044,18 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x3C) |= clc<<24;
 
     APB_SYSCTRL->DmaCtrl[1] = 0x8 | (0x9<<4);
-    APB_DMA->Channels[0].Descriptor.Ctrl = (0x8<<8)|(0x2<<14)|(0x0<<16)|(0x1<<17)|(0x2<<18)|(0x2<<21)|(0x1<<24) ;
-    APB_DMA->Channels[0].Descriptor.SrcAddr = (uint32_t)(&APB_PWM->PCAPChannels[0].Ctrl1);
-    APB_DMA->Channels[0].Descriptor.DstAddr = (uint32_t)pcap;
-    APB_DMA->Channels[0].Descriptor.TranSize = 2;
-    APB_DMA->Channels[0].Descriptor.Next = (DMA_Descriptor*)&descriptor;
     memset((void*)&descriptor, 0, sizeof(descriptor));
     descriptor.Ctrl = (0x0<<4)|(0x8<<8)|(0x2<<12)|(0x2<<14)|(0x0<<16)|(0x1<<17)|(0x2<<18)|(0x2<<21)|(0x1<<24) ;
     descriptor.SrcAddr = (uint32_t)(&APB_PWM->PCAPChannels[0].Ctrl1);
     descriptor.DstAddr = (uint32_t)&pcap[2];
     descriptor.TranSize = 1000*2-1;
     descriptor.Next = 0;
+    APB_DMA->Channels[0].Descriptor.Ctrl = (0x8<<8)|(0x2<<14)|(0x0<<16)|(0x1<<17)|(0x2<<18)|(0x2<<21)|(0x1<<24) ;
+    APB_DMA->Channels[0].Descriptor.SrcAddr = (uint32_t)(&APB_PWM->PCAPChannels[0].Ctrl1);
+    APB_DMA->Channels[0].Descriptor.DstAddr = (uint32_t)pcap;
+    APB_DMA->Channels[0].Descriptor.TranSize = 2;
+    APB_DMA->Channels[0].Descriptor.Next = (DMA_Descriptor*)&descriptor;
+    __DSB();
     APB_DMA->Channels[0].Descriptor.Ctrl |= 0x1;
     APB_PWM->Channels[0].Ctrl0 = (0x6<<7)|(0x1<<21)|(0x1<<20);
     APB_PWM->PCAPChannels[0].Ctrl0 |= 0x1;

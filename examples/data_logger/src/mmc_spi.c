@@ -189,8 +189,8 @@ void reinit_spi(void)
         .eMasterSlaveMode = SPI_SLVMODE_MASTER_MODE,
         .eReadWriteMode = SPI_TRANSMODE_WRITE_READ_SAME_TIME,
         .eQuadMode = SPI_DUALQUAD_REGULAR_MODE,
-        .eWriteTransCnt = 1,
-        .eReadTransCnt = 1,
+        .eWriteTransCnt = 0,
+        .eReadTransCnt = 0,
         .eAddrEn = SPI_ADDREN_DISABLE,
         .eCmdEn = SPI_CMDEN_DISABLE,
         .SlaveDataOnly = SPI_SLVDATAONLY_DISABLE,
@@ -232,23 +232,17 @@ static void rcvr_spi_multi (
     DWORD d;
 
     SET_DATA_SIZE(16);
-
-    apSSP_WriteFIFO(SPI_SSP, 0xffff);
+    apSSP_SetTransMode(SPI_SSP, SPI_TRANSMODE_READ_ONLY);
+    apSSP_SetTransferControlRdTranCnt(SPI_SSP, btr/2);
     apSSP_WriteCmd(SPI_SSP, 0, 0);
-
-    btr -= 2;
+    
     do {					/* Receive the data block into buffer */
         while (apSSP_RxFifoEmpty(SPI_SSP)) ;
         apSSP_ReadFIFO(SPI_SSP, &d);
-        apSSP_WriteFIFO(SPI_SSP, 0xffff);
-        apSSP_WriteCmd(SPI_SSP, 0, 0);
         buff[1] = d; buff[0] = d >> 8;
         buff += 2;
     } while (btr -= 2);
-    while (apSSP_RxFifoEmpty(SPI_SSP)) ;
-    apSSP_ReadFIFO(SPI_SSP, &d);
-    buff[1] = d; buff[0] = d >> 8;			/* Store it */
-
+    
     SET_DATA_SIZE(8);
 }
 
@@ -261,22 +255,17 @@ static void xmit_spi_multi (
 {
     WORD d;
     DWORD t;
-
     SET_DATA_SIZE(16);
-
-    d = buff[0] << 8 | buff[1]; buff += 2;
-    apSSP_WriteFIFO(SPI_SSP, d);
+    
+    apSSP_SetTransMode(SPI_SSP, SPI_TRANSMODE_WRITE_ONLY);
+    apSSP_SetTransferControlWrTranCnt(SPI_SSP, btx/2);
     apSSP_WriteCmd(SPI_SSP, 0, 0);
-    btx -= 2;
     do {
         d = buff[0] << 8 | buff[1]; buff += 2;	/* Word to send next */
         while (apSSP_RxFifoEmpty(SPI_SSP)) ;
-        apSSP_ReadFIFO(SPI_SSP, &t);
         apSSP_WriteFIFO(SPI_SSP, d);
         apSSP_WriteCmd(SPI_SSP, 0, 0);
     } while (btx -= 2);
-    while (apSSP_RxFifoEmpty(SPI_SSP)) ;
-    apSSP_ReadFIFO(SPI_SSP, &t);
 
     SET_DATA_SIZE(8);
 }
@@ -288,9 +277,10 @@ static BYTE xchg_spi (
 )
 {
     DWORD t;
-
-    apSSP_WriteFIFO(SPI_SSP, dat);
+    apSSP_SetTransferControlWrTranCnt(SPI_SSP, 1);
+    apSSP_SetTransferControlRdTranCnt(SPI_SSP, 1);
     apSSP_WriteCmd(SPI_SSP, 0, 0);
+    apSSP_WriteFIFO(SPI_SSP, dat);
     while (apSSP_RxFifoEmpty(SPI_SSP)) ;
     apSSP_ReadFIFO(SPI_SSP, &t);
     return t;

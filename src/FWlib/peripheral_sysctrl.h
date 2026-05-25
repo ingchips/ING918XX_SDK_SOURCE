@@ -2088,7 +2088,7 @@ void SYSCTRL_SetFastPreDiv(uint8_t div);
 uint32_t SYSCTRL_GetFastPreCLK(void);
 
 /**
- * @brief Set Qdec pclk divider
+ * @brief Set Qdec pclk divider. value range 0-0xf
  * @param[in]   div             divider
  */
 void SYSCTRL_UpdateQdecClk(uint32_t div);

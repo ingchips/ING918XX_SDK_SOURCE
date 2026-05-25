@@ -228,10 +228,7 @@ void apSSP_WriteFIFO(SSP_TypeDef * SSP_Ptr, uint16_t data)
 /*====================================================================*/
 uint16_t apSSP_ReadFIFO(SSP_TypeDef * SSP_Ptr)
 {
-	uint16_t data;
-	data = SSP_Ptr->DataRegister;
-    __DSB();
-	return data;
+	return SSP_Ptr->DataRegister;
 }
 
 /*====================================================================*/
@@ -372,7 +369,6 @@ void apSSP_WriteCmd(SSP_TypeDef *SPI_BASE, uint32_t Addr, uint32_t Cmd)
 void apSSP_ReadFIFO(SSP_TypeDef *SPI_BASE, uint32_t *Data)
 {
     *Data = SPI_BASE->Data;
-    __DSB();
 }
 
 /*====================================================================*/
