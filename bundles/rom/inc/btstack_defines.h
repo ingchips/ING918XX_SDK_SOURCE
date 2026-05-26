@@ -15,7 +15,6 @@
 
 #include <stdint.h>
 
-
 // DEFINES
 
 // L2CAP data
@@ -35,17 +34,6 @@
 #define BTSTACK_LE_CHANNEL_NOT_EXIST                       0x59
 
 // l2cap errors - enumeration by the command that created them
-#define L2CAP_COMMAND_REJECT_REASON_COMMAND_NOT_UNDERSTOOD 0x60
-#define L2CAP_COMMAND_REJECT_REASON_SIGNALING_MTU_EXCEEDED 0x61
-#define L2CAP_COMMAND_REJECT_REASON_INVALID_CID_IN_REQUEST 0x62
-#define L2CAP_CONNECTION_RESPONSE_RESULT_SUCCESSFUL        0x63
-#define L2CAP_CONNECTION_RESPONSE_RESULT_PENDING           0x64
-#define L2CAP_CONNECTION_RESPONSE_RESULT_REFUSED_PSM       0x65
-#define L2CAP_CONNECTION_RESPONSE_RESULT_REFUSED_SECURITY  0x66
-#define L2CAP_CONNECTION_RESPONSE_RESULT_REFUSED_RESOURCES 0x67
-#define L2CAP_CONNECTION_RESPONSE_RESULT_RTX_TIMEOUT       0x68
-#define L2CAP_SERVICE_ALREADY_REGISTERED                   0x69
-#define L2CAP_DATA_LEN_EXCEEDS_REMOTE_MTU                  0x6A
 #define L2CAP_SERVICE_NOT_REGISTERED                       0x6B
 #define L2CAP_CONNECTION_INSUFFICIENT_SECURITY             0x6C
 
@@ -61,6 +49,9 @@
 #define GATT_CLIENT_VALUE_TOO_LONG                         0x97
 #define GATT_CLIENT_CHARACTERISTIC_NOTIFICATION_NOT_SUPPORTED 0x98
 #define GATT_CLIENT_CHARACTERISTIC_INDICATION_NOT_SUPPORTED   0x99
+
+#define EATT_BEARER_NOT_FOUND                              0xA0
+#define EATT_BEARER_TYPE_NOT_SUPPORTED                     0xA1
 
 // hci con handles (12 bit): 0x0000..0x0fff
 #define HCI_CON_HANDLE_INVALID 0xffff
@@ -159,6 +150,93 @@
  * @ref `l2cap_event_fragment_sdu_t`
 */
 #define L2CAP_EVENT_FRAGMENT_SDU_PACKET                    0x7B
+
+/*
+ * @format 2
+ * @param local_cid
+ */
+// #define L2CAP_EVENT_ERTM_BUFFER_RELEASED                   0x7bu
+
+// L2CAP Channel in LE Credit-based Flow-Control Mode (CBM)
+
+/**
+ * @format 1BH2222
+ * @param address_type
+ * @param address
+ * @param handle
+ * @param psm
+ * @param local_cid
+ * @param remote_cid
+ * @param remote_mtu
+ */
+#define L2CAP_EVENT_CBM_INCOMING_CONNECTION                 0x7cu
+
+/**
+ * @format 11BH122222
+ * @param status
+ * @param address_type
+ * @param address
+ * @param handle
+ * @param incoming
+ * @param psm
+ * @param local_cid
+ * @param remote_cid
+ * @param local_mtu
+ * @param remote_mtu
+ */
+#define L2CAP_EVENT_CBM_CHANNEL_OPENED                      0x7du
+
+/*
+ * @format
+ */
+#define L2CAP_EVENT_TRIGGER_RUN                             0x7eu
+
+/**
+ * @format 1BH212
+ * @param address_type
+ * @param address
+ * @param handle
+ * @param psm
+ * @param num_channels
+ * @param local_cid first new cid
+ */
+#define L2CAP_EVENT_ECBM_INCOMING_CONNECTION               0x7fu
+
+/**
+ * @format 11BH122222
+ * @param status
+ * @param address_type
+ * @param address
+ * @param handle
+ * @param incoming
+ * @param psm
+ * @param local_cid
+ * @param remote_cid
+ * @param local_mtu
+ * @param remote_mtu
+ */
+#define L2CAP_EVENT_ECBM_CHANNEL_OPENED              0x8au
+
+/*
+ * @format 222
+ * @param remote_cid
+ * @param mtu
+ * @param mps
+ */
+#define L2CAP_EVENT_ECBM_RECONFIGURED                0x8bu
+
+/*
+ * @format 22
+ * @param local_cid
+ * @param reconfigure_result
+ */
+#define L2CAP_EVENT_ECBM_RECONFIGURATION_COMPLETE    0x8cu
+
+/*
+ * @format 2
+ * @param local_cid
+ */
+#define L2CAP_EVENT_PACKET_SENT                            0x8du//0x7au btstack value
 
 /**
  * @format H1
@@ -267,6 +345,21 @@
 #define GATT_EVENT_UNHANDLED_SERVER_VALUE                         0xAC
 
 /**
+ * @format 11BH
+ * @param status
+ * @param address_type
+ * @param address
+ * @param handle
+ */
+ #define GATT_EVENT_CONNECTED                                     0xAD
+
+ /**
+ * @format H
+ * @param handle
+ */
+ #define GATT_EVENT_DISCONNECTED                                  0xAE
+
+ /**
  * @format H2
  * @param handle
  * @param MTU
