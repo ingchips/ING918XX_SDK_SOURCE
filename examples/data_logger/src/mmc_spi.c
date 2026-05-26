@@ -246,7 +246,6 @@ static void rcvr_spi_multi (
         buff[1] = d; buff[0] = d >> 8;
         buff += 2;
     } while (btr -= 2);
-    
     SET_DATA_SIZE(8);
 }
 
@@ -266,11 +265,10 @@ static void xmit_spi_multi (
     apSSP_WriteCmd(SPI_SSP, 0, 0);
     do {
         d = buff[0] << 8 | buff[1]; buff += 2;	/* Word to send next */
-        while (apSSP_RxFifoEmpty(SPI_SSP)) ;
+        while (apSSP_TxFifoFull(SPI_SSP)) ;
         apSSP_WriteFIFO(SPI_SSP, d);
-        apSSP_WriteCmd(SPI_SSP, 0, 0);
     } while (btx -= 2);
-
+    while (!apSSP_TxFifoEmpty(SPI_SSP)) __NOP();
     SET_DATA_SIZE(8);
 }
 #endif
