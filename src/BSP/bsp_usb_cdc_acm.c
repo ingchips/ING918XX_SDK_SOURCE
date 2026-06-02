@@ -10,23 +10,23 @@
 #define RX_BUFFER_SIZE      (1024)
 #endif
 
-static uint8_t ring_buff_storage_tx[RX_BUFFER_SIZE];
+static uint32_t ring_buff_storage_tx[RX_BUFFER_SIZE / sizeof(uint32_t)];
 static struct ring_buf *ring_buffer_tx;
 static int cb_ring_buf_peek_data_tx(const void *data, int len, int has_more, void *extra);
 
 /* variables and functions area */
 const USB_DEVICE_DESCRIPTOR_REAL_T DeviceDescriptor __attribute__ ((aligned (4))) = USB_DEVICE_DESCRIPTOR;
 
-const BSP_USB_DESC_STRUCTURE_T ConfigDescriptor __attribute__ ((aligned (4))) = { 
-    USB_CONFIG_DESCRIPTOR, 
-    USB_INTERFACE_0_DESCRIPTOR, 
-    USB_HEADER_FUNCTIONAL_DESCRIPTOR, 
-    USB_CALL_MANAGEMENT_FUNCTIONAL_DESCRIPTOR, 
+const BSP_USB_DESC_STRUCTURE_T ConfigDescriptor __attribute__ ((aligned (4))) = {
+    USB_CONFIG_DESCRIPTOR,
+    USB_INTERFACE_0_DESCRIPTOR,
+    USB_HEADER_FUNCTIONAL_DESCRIPTOR,
+    USB_CALL_MANAGEMENT_FUNCTIONAL_DESCRIPTOR,
     USB_ABSTRACT_CONTROL_MANAGEMENT_FUNCTIONAL_DESCRIPTOR,
     USB_UNION_DESCRIPTOR_FUNCTIONAL_DESCRIPTOR,
     USB_EP_CDC_INI_DESCRIPTOR,
     USB_INTERFACE_1_DESCRIPTOR,
-    USB_EP_CDC_BULK_OUT_DESCRIPTOR, 
+    USB_EP_CDC_BULK_OUT_DESCRIPTOR,
     USB_EP_CDC_BULK_IN_DESCRIPTOR
 };
 
@@ -382,7 +382,7 @@ static uint32_t bsp_usb_event_handler(USB_EVNET_HANDLER_T *event)
               if(USB_CDC_Var.cmdSetLineCoding)
               {
                 bsp_cdc_acm_setlinecoding();
-                USB_CDC_Var.cmdSetLineCoding = 0;                
+                USB_CDC_Var.cmdSetLineCoding = 0;
               }
               break;
               case EP_CDC_BULK_OUT:

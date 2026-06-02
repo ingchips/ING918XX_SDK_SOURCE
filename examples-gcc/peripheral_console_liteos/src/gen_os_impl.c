@@ -43,7 +43,7 @@ gen_handle_t port_timer_create(
     void (*timer_cb)(void *))
 {
     UINT32 *id = (UINT32 *)port_malloc(sizeof(UINT32));
-    LOS_SwtmrCreate(LOS_MS2Tick(timeout_in_ms), LOS_SWTMR_MODE_NO_SELFDELETE, (SWTMR_PROC_FUNC)timer_cb, id, *(UINT32 *)user_data);
+    LOS_SwtmrCreate(LOS_MS2Tick(timeout_in_ms), LOS_SWTMR_MODE_NO_SELFDELETE, (SWTMR_PROC_FUNC)timer_cb, id, (UINTPTR)user_data);
     return (gen_handle_t)id;
 }
 
@@ -269,7 +269,7 @@ const gen_os_driver_t *os_impl_get_driver(void)
     return &gen_os_driver;
 }
 
-#define _SYSTICK_PRI (*(uint8_t *)(0xE000ED23UL))
+#define _SYSTICK_PRI (*(volatile uint8_t *)(0xE000ED23UL))
 
 /* Constants required to manipulate the core.  Registers first... */
 #define portNVIC_SYSTICK_CTRL_REG               (*((volatile uint32_t *)0xe000e010))
