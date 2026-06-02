@@ -167,6 +167,8 @@ uint16_t read_adc(uint8_t channel)
 
     return adc_calibrate(ADC_SAMPLE_MODE_SLOW, channel, voltage);
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    uint32_t data;
+    uint16_t sample;
     ADC_ConvCfg(CONTINUES_MODE, PGA_PARA_1, 1, (SADC_channelId)channel, AVE_NUM, 0,
         SINGLE_END_MODE, LOOP_DELAY(ADC_CLK_MHZ, SAMPLERATE, ADC_CH_NUM));
     ADC_AveInit();
@@ -175,8 +177,7 @@ uint16_t read_adc(uint8_t channel)
     ADC_Start(0);
     ADC_EnableChannel((SADC_channelId)channel, 0);
     ADC_IntEnable(0);
-    uint32_t data;
-    uint16_t sample;
+    
     while (!ADC_GetFifoEmpty()) {
         data = ADC_PopFifoData();
         sample = ADC_GetAveData(data);
@@ -184,6 +185,8 @@ uint16_t read_adc(uint8_t channel)
     ADC_AveDisable();
     return sample;
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    uint32_t data;
+    uint16_t sample;
     ADC_ConvCfg(CONTINUES_MODE, (SADC_channelId)channel, AVE_NUM, 0, LOOP_DELAY(ADC_CLK_MHZ, SAMPLERATE, ADC_CH_NUM));
     ADC_AveInit();
     ADC_Start(1);
@@ -191,8 +194,7 @@ uint16_t read_adc(uint8_t channel)
     ADC_Start(0);
     ADC_EnableChannel((SADC_channelId)channel, 0);
     ADC_IntEnable(0);
-    uint32_t data;
-    uint16_t sample;
+    
     while (!ADC_GetFifoEmpty()) {
         data = ADC_PopFifoData();
         sample = ADC_GetAveData(data);
@@ -205,14 +207,14 @@ uint16_t read_adc(uint8_t channel)
 #endif
 }
 
-uint8_t *battery_level = NULL;
+volatile uint8_t *battery_level = NULL;
 
 #define ADC_CHANNEL    4
 
 static void update_battery_status(void)
 {
     uint16_t voltage = read_adc(ADC_CHANNEL);
-    printf("U = %d", voltage);
+    platform_printf("U = %d", voltage);
     // level is reported by comparing max & min voltage
     // for DEMO only
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
