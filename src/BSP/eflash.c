@@ -595,6 +595,7 @@ void flash_read_uid(uint32_t uid[4])
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #include "peripheral_sysctrl.h"
+#include "eflash_security.h"
 
 typedef void (* f_void)(void);
 typedef void (* f_prog_page)(uint32_t addr, const uint8_t data[256], uint32_t len);
@@ -846,21 +847,22 @@ static void factory_set_vbat_calib(adc_vbat_calib_t *cal,
                                    uint16_t raw_vbat33,
                                    float vbat33,
                                    uint16_t raw_vbat25,
-                                   float vbat25)
+                                   float vbat25, float vref)
 {
-    const float x0 = (raw_vbat33 == 0U) ? 0.0f : (1.0f / (float)raw_vbat33);
-    const float x1 = (raw_vbat25 == 0U) ? 0.0f : (1.0f / (float)raw_vbat25);
+    float x0 = 1.01f / (float)raw_vbat33;
+    float x1 = 1.01f / (float)raw_vbat25;
 
     if ((cal == 0) || (raw_vbat33 == 0) || (raw_vbat25 == 0))
         return;
 
-    cal->k = (vbat25 - vbat33) / (x1 - x0);
+    cal->k = ((vbat25 - vbat33) / (x1 - x0));
     cal->b = vbat33 - cal->k * x0;
 }
 
 void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_data_t *dst)
 {
     int i;
+    float vref;
 
     if ((src == 0) || (dst == 0))
         return;
@@ -900,12 +902,39 @@ void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_d
                                      3351.2727f);
         }
     }
+    if(src->calib_adc.version == 0x10)
+    {
+        for (i = 0; i < 8; i++)
+        {
+            if (src->calib_pmu.vaon[i] > 1010u)
+            {
+                vref = (float)src->calib_pmu.vaon[i] / 1000.0f;  
+            }
+            else
+                vref = 1.01f;
+            
+        }
+    }
+    else if(src->calib_adc.version == 0x11)
+    {
+        for (i = 0; i < 16; i++)
+        {
+            if (src->calib_pmu.vcore[i] > 1170)
+            {
+                vref = (float)src->calib_pmu.vaon[i] / 1000.0f;
+            }
+            else
+                vref = 1.171f;
+        }
+    }
+    else
+        vref = 1.01f;
 
     factory_set_vbat_calib(&dst->ch9_vbat,
                            src->calib_adc.vbat33_flt_int_ch9_11[0],
                            3.3f,
                            src->calib_adc.vbat25_flt_int_ch9_11[0],
-                           2.5f);
+                           2.5f, vref);
 }
 
 int flash_prepare_factory_data(void)
@@ -1125,7 +1154,7 @@ void flash_enable_write_protection(flash_region_t region, uint8_t reverse_select
 {
     FLASH_PRE_OPS();
     {
-        uint8_t status = ROM_FlashReadReg(0x05) | (ROM_FlashReadReg(0x35)<<8);
+        uint16_t status = ROM_FlashReadReg(0x05) | (ROM_FlashReadReg(0x35)<<8);
         uint16_t old_status = status;
         status &= ~((1ul << 14) | (0x1ful << 2));
         status |= (uint16_t)reverse_selection << 14 | ((uint16_t)region << 2);
