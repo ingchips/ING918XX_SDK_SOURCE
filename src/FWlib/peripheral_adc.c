@@ -1024,10 +1024,19 @@ static float ADC_ApplyLinearCalib(const adc_linear_calib_t *cal, uint16_t raw)
 
 static float ADC_ApplyVBatCalib(const adc_vbat_calib_t *cal, uint16_t raw)
 {
+    int i;
+    uint32_t temp = raw *1000;
+    const factory_calib_data_t * calib_data = flash_get_factory_calib_data();
     if ((cal == 0) || (raw == 0U))
         return 0.0f;
-
-    return cal->k *(1.0f / (float)raw)  + cal->b;
+    for (i = 0; i < 16; i++)
+    {
+        if (calib_data->calib_pmu.vcore[i] > 1170)
+        {
+            return cal->k*((float)calib_data->calib_pmu.vcore[i] / (float)temp)  + cal->b;
+        }
+    }
+    return cal->k*(1.171f / (float)raw)  + cal->b;
 }
 
 static const factory_clc_data_t *ADC_GetCalibrationData(void)
