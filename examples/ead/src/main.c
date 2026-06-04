@@ -7,6 +7,7 @@
 #include "task.h"
 #include "trace.h"
 #include "../data/setup_soc.cgen"
+
 static uint32_t cb_hard_fault(hard_fault_info_t *info, void *_)
 {
     platform_printf("HARDFAULT:\nPC : 0x%08X\nLR : 0x%08X\nPSR: 0x%08X\n"
@@ -120,6 +121,14 @@ static const platform_evt_cb_table_t evt_cb_table =
         },
     }
 };
+
+static const platform_irq_cb_table_t irq_cb_table =
+{
+    .callbacks = {
+
+    }
+};
+
 uintptr_t app_main()
 {
 #ifdef PLATFORM_IN_ROM
@@ -131,13 +140,14 @@ uintptr_t app_main()
 
     // setup event handlers
     platform_set_evt_callback_table(&evt_cb_table);
+    platform_set_irq_callback_table(&irq_cb_table);
+
     setup_peripherals();
     xTaskCreate(watchdog_task, "w", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     trace_rtt_init(&trace_ctx);
     // TODO: config trace mask
-    platform_printf("eatt example build @ %s \n", __TIME__);
-    platform_config(PLATFORM_CFG_TRACE_MASK, 0x1ff);
+    platform_config(PLATFORM_CFG_TRACE_MASK, 0);
 
     return 0;
 }

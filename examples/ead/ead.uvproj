@@ -1,46 +1,38 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
-
-  <SchemaVersion>2.1</SchemaVersion>
-
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_proj.xsd">
+  <SchemaVersion>1.1</SchemaVersion>
   <Header>### uVision Project, (C) Keil Software</Header>
-
   <Targets>
     <Target>
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6220000::V6.22::ARMCLANG</pCCUsed>
-      <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
+          <Vendor>INGCHIPS</Vendor>
           <Device>ING91800</Device>
-          <Vendor>INGChips</Vendor>
-          <PackID>INGChips.INGCHIPS_DeviceFamilyPack.0.9.0</PackID>
-          <PackURL>http://www.ingchips.com</PackURL>
           <Cpu>CLOCK(32000000) CPUTYPE("Cortex-M3") ELITTLE IROM(0x4000-0x43fff) IRAM(0x20000000-0x2000ffff)</Cpu>
-          <FlashUtilSpec></FlashUtilSpec>
-          <StartupFile></StartupFile>
-          <FlashDriverDll></FlashDriverDll>
+          <FlashUtilSpec/>
+          <StartupFile/>
+          <FlashDriverDll/>
           <DeviceId>0</DeviceId>
-          <RegisterFile></RegisterFile>
-          <MemoryEnv></MemoryEnv>
-          <Cmp></Cmp>
-          <Asm></Asm>
-          <Linker></Linker>
-          <OHString></OHString>
-          <InfinionOptionDll></InfinionOptionDll>
-          <SLE66CMisc></SLE66CMisc>
-          <SLE66AMisc></SLE66AMisc>
-          <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:ING91800$SVD\ING91800.svd</SFDFile>
-          <bCustSvd>0</bCustSvd>
+          <RegisterFile/>
+          <MemoryEnv/>
+          <Cmp/>
+          <Asm/>
+          <Linker/>
+          <OHString/>
+          <InfinionOptionDll/>
+          <SLE66CMisc/>
+          <SLE66AMisc/>
+          <SLE66LinkerMisc/>
+          <SFDFile/>
           <UseEnv>0</UseEnv>
-          <BinPath></BinPath>
-          <IncludePath></IncludePath>
-          <LibPath></LibPath>
-          <RegisterFilePath></RegisterFilePath>
-          <DBRegisterFilePath></DBRegisterFilePath>
+          <BinPath/>
+          <IncludePath/>
+          <LibPath/>
+          <RegisterFilePath/>
+          <DBRegisterFilePath/>
           <TargetStatus>
             <Error>0</Error>
             <ExitCodeStop>0</ExitCodeStop>
@@ -49,7 +41,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\output\</OutputDirectory>
-          <OutputName>eatt</OutputName>
+          <OutputName>EAD</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -62,8 +54,8 @@
           <BeforeCompile>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
-            <UserProg2Name></UserProg2Name>
+            <UserProg1Name/>
+            <UserProg2Name/>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopU1X>0</nStopU1X>
@@ -72,25 +64,21 @@
           <BeforeMake>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
-            <UserProg2Name></UserProg2Name>
+            <UserProg1Name/>
+            <UserProg2Name/>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
-            <nStopB1X>0</nStopB1X>
-            <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>fromelf.exe --bin -o eatt.bin ./output/eatt.axf</UserProg1Name>
-            <UserProg2Name></UserProg2Name>
+            <UserProg1Name>fromelf.exe --bin -o EAD.bin ./output/EAD.axf</UserProg1Name>
+            <UserProg2Name/>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
-            <nStopA1X>0</nStopA1X>
-            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
-          <SVCSIdString></SVCSIdString>
+          <SVCSIdString/>
         </TargetCommonOption>
         <CommonProperty>
           <UseCPPCompiler>0</UseCPPCompiler>
@@ -104,17 +92,16 @@
           <AssembleAssemblyFile>0</AssembleAssemblyFile>
           <PublicsOnly>0</PublicsOnly>
           <StopOnExitCode>3</StopOnExitCode>
-          <CustomArgument></CustomArgument>
-          <IncludeLibraryModules></IncludeLibraryModules>
-          <ComprImg>1</ComprImg>
+          <CustomArgument/>
+          <IncludeLibraryModules/>
         </CommonProperty>
         <DllOption>
           <SimDllName>SARMCM3.DLL</SimDllName>
-          <SimDllArguments>-MPU</SimDllArguments>
+          <SimDllArguments/>
           <SimDlgDll>DCM.DLL</SimDlgDll>
           <SimDlgDllArguments>-pCM3</SimDlgDllArguments>
           <TargetDllName>SARMCM3.DLL</TargetDllName>
-          <TargetDllArguments>-MPU</TargetDllArguments>
+          <TargetDllArguments/>
           <TargetDlgDll>TCM.DLL</TargetDlgDll>
           <TargetDlgDllArguments>-pCM3</TargetDlgDllArguments>
         </DllOption>
@@ -126,6 +113,45 @@
             <HexOffset>0</HexOffset>
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
+          <Simulator>
+            <UseSimulator>0</UseSimulator>
+            <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
+            <RunToMain>1</RunToMain>
+            <RestoreBreakpoints>1</RestoreBreakpoints>
+            <RestoreWatchpoints>1</RestoreWatchpoints>
+            <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
+            <RestoreFunctions>1</RestoreFunctions>
+            <RestoreToolbox>1</RestoreToolbox>
+            <LimitSpeedToRealTime>0</LimitSpeedToRealTime>
+          </Simulator>
+          <Target>
+            <UseTarget>1</UseTarget>
+            <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
+            <RunToMain>0</RunToMain>
+            <RestoreBreakpoints>1</RestoreBreakpoints>
+            <RestoreWatchpoints>1</RestoreWatchpoints>
+            <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
+            <RestoreFunctions>0</RestoreFunctions>
+            <RestoreToolbox>1</RestoreToolbox>
+            <RestoreTracepoints>1</RestoreTracepoints>
+          </Target>
+          <RunDebugAfterBuild>0</RunDebugAfterBuild>
+          <TargetSelection>1</TargetSelection>
+          <SimDlls>
+            <CpuDll/>
+            <CpuDllArguments/>
+            <PeripheralDll/>
+            <PeripheralDllArguments/>
+            <InitializationFile>.\init.ini</InitializationFile>
+          </SimDlls>
+          <TargetDlls>
+            <CpuDll/>
+            <CpuDllArguments/>
+            <PeripheralDll/>
+            <PeripheralDllArguments/>
+            <InitializationFile>.\init.ini</InitializationFile>
+            <Driver>BIN\UL2CM3.DLL</Driver>
+          </TargetDlls>
         </DebugOption>
         <Utilities>
           <Flash1>
@@ -139,11 +165,7 @@
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
           <Flash3>"" ()</Flash3>
-          <Flash4></Flash4>
-          <pFcarmOut></pFcarmOut>
-          <pFcarmGrp></pFcarmGrp>
-          <pFcArmRoot></pFcArmRoot>
-          <FcArmLst>0</FcArmLst>
+          <Flash4/>
         </Utilities>
         <TargetArmAds>
           <ArmAdsMisc>
@@ -175,7 +197,7 @@
             <RvctClst>0</RvctClst>
             <GenPPlst>0</GenPPlst>
             <AdsCpuType>"Cortex-M3"</AdsCpuType>
-            <RvctDeviceName></RvctDeviceName>
+            <RvctDeviceName/>
             <mOS>0</mOS>
             <uocRom>0</uocRom>
             <uocRam>0</uocRam>
@@ -184,16 +206,12 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>0</RvdsVP>
-            <RvdsMve>0</RvdsMve>
-            <RvdsCdeCp>0</RvdsCdeCp>
-            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
             <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
-            <nSecure>0</nSecure>
             <RoSelD>3</RoSelD>
             <RwSelD>5</RwSelD>
             <CodeSel>0</CodeSel>
@@ -276,8 +294,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>0x30000</StartAddress>
-                <Size>0x54000</Size>
+                <StartAddress>196608</StartAddress>
+                <Size>344064</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -301,8 +319,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>0x20007658</StartAddress>
-                <Size>0x89a8</Size>
+                <StartAddress>536901208</StartAddress>
+                <Size>35240</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -310,7 +328,7 @@
                 <Size>0x0</Size>
               </OCR_RVCT10>
             </OnChipMemories>
-            <RvctStartVector></RvctStartVector>
+            <RvctStartVector/>
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
@@ -323,23 +341,13 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>3</wLevel>
+            <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
-            <uGnu>0</uGnu>
-            <useXO>0</useXO>
-            <v6Lang>3</v6Lang>
-            <v6LangP>3</v6LangP>
-            <vShortEn>1</vShortEn>
-            <vShortWch>1</vShortWch>
-            <v6Lto>0</v6Lto>
-            <v6WtE>0</v6WtE>
-            <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
-              <Undefine></Undefine>
+              <Undefine/>
               <IncludePath>../../bundles/exp/inc;../../bundles/exp/inc/os;../../src/BSP;../../src/FWlib;../../src/StartUP/ing918;../../src/Tools;../../src</IncludePath>
             </VariousControls>
           </Cads>
@@ -352,13 +360,11 @@
             <SwStkChk>0</SwStkChk>
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
-            <useXO>0</useXO>
-            <ClangAsOpt>4</ClangAsOpt>
             <VariousControls>
-              <MiscControls></MiscControls>
-              <Define></Define>
-              <Undefine></Undefine>
-              <IncludePath></IncludePath>
+              <MiscControls/>
+              <Define/>
+              <Undefine/>
+              <IncludePath/>
             </VariousControls>
           </Aads>
           <LDads>
@@ -370,13 +376,12 @@
             <useFile>0</useFile>
             <TextAddressRange>0x00000000</TextAddressRange>
             <DataAddressRange>0x00000000</DataAddressRange>
-            <pXoBase></pXoBase>
-            <ScatterFile></ScatterFile>
-            <IncludeLibs></IncludeLibs>
-            <IncludeLibsPath></IncludeLibsPath>
-            <Misc></Misc>
-            <LinkerInputFile></LinkerInputFile>
-            <DisabledWarnings></DisabledWarnings>
+            <ScatterFile/>
+            <IncludeLibs/>
+            <IncludeLibsPath/>
+            <Misc/>
+            <LinkerInputFile/>
+            <DisabledWarnings/>
           </LDads>
         </TargetArmAds>
       </TargetOption>
@@ -407,7 +412,7 @@
             <File>
               <FileName>symdefs.m</FileName>
               <FileType>3</FileType>
-              <FilePath>../..\bundles\exp\ING9188xx\symdefs.m</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\bundles\exp\ING9188xx\symdefs.m</FilePath>
             </File>
           </Files>
         </Group>
@@ -417,7 +422,7 @@
             <File>
               <FileName>eflash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\BSP\eflash.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\BSP\eflash.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -427,52 +432,52 @@
             <File>
               <FileName>peripheral_adc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_adc.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_adc.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_gpio.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_gpio.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_i2c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_i2c.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_i2c.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_pinctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_pinctrl.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_pinctrl.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_pwm.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_pwm.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_pwm.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_rtc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_rtc.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_rtc.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_ssp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_ssp.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_ssp.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_sysctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_sysctrl.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_sysctrl.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_timer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_timer.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_timer.c</FilePath>
             </File>
             <File>
               <FileName>peripheral_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\FWlib\peripheral_uart.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\FWlib\peripheral_uart.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -482,63 +487,11 @@
             <File>
               <FileName>trace.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../..\src\Tools\trace.c</FilePath>
-            </File>
-            <File>
-              <FileName>att_db_util.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\att_db_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>gatt_client_util.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\gatt_client_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>platform_util.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\platform_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>rf_util.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\rf_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>str_util.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\str_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>btstack_mt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\btstack_mt.c</FilePath>
-            </File>
-            <File>
-              <FileName>btstack_sync.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\Tools\btstack_sync.c</FilePath>
+              <FilePath>../../../../../Users/yuxiz/AppData/Roaming/Local/Program/ING_SDK/sdk\src\Tools\trace.c</FilePath>
             </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>
   </Targets>
-
-  <RTE>
-    <apis/>
-    <components>
-      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="4.3.0" condition="Cortex-M Device">
-        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
-        <targetInfos>
-          <targetInfo name="Target 1"/>
-        </targetInfos>
-      </component>
-    </components>
-    <files/>
-  </RTE>
-
 </Project>
