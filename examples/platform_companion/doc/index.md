@@ -42,3 +42,9 @@ If the companion gets updated, steps 5 & 6 shall be repeated.
 
 Note: Platform version is defined in the companion. It must be defined properly,
 otherwise it can bring issues to firmware update, version management, debugging, etc.
+
+## Using customized RTOS
+
+Data layout in platform binary has been designed to ease the development of secondary bootloader.
+One shortcoming is that top of stack is fixed to 0x0, therefore customized RTOS can't be used.
+[Another script](../scripts/update_for_rtos.py) is provided to make it work.
