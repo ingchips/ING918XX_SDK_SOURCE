@@ -27,7 +27,7 @@
 
 VER_MAJOR   EQU  20
 VER_MINOR   EQU  4
-VER_PATCH   EQU  45
+VER_PATCH   EQU  46
 
 Stack_Size      EQU     0x00000200
 

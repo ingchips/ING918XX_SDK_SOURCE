@@ -2028,7 +2028,6 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
 {
     static volatile uint32_t pcap[2];
     uint32_t diff;
-    uint32_t i;
     
     uint32_t freq;
     volatile DMA_Descriptor descriptor __attribute__((aligned(8)));
