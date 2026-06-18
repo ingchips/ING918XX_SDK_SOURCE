@@ -1,4 +1,4 @@
-# Enhanced ATT (EATT)
+# Enhanced ATT (EATT) Example
 
 This example demonstrates how to:
 
