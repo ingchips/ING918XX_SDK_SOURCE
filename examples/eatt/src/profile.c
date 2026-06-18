@@ -216,10 +216,6 @@ static initiating_phy_config_t phy_configs[] =
     {
         .phy = PHY_2M,
         .conn_param = CONN_PARAM
-    },
-    {
-        .phy = PHY_CODED,
-        .conn_param = CONN_PARAM
     }
 };
 
