@@ -40,19 +40,13 @@ static uint32_t counter = 0;
 #ifndef APP_ROLE
 #define APP_ROLE APP_ROLE_RX
 #endif
-static const scan_phy_config_t configs[2] =
+static const scan_phy_config_t configs[] =
 {
     {
         .phy = PHY_1M,
-        .type = SCAN_PASSIVE,
-        .interval = 200,
-        .window = 100
-    },
-    {
-        .phy = PHY_CODED,
-        .type = SCAN_PASSIVE,
-        .interval = 200,
-        .window = 100
+        .type = SCAN_ACTIVE,
+        .interval = 0x0010,
+        .window = 0x0010
     }
 };
 static const bd_addr_t rand_addr_adv = { 0xFC, 0x4A, 0x85, 0xDF, 0xDA, 0x72 };
