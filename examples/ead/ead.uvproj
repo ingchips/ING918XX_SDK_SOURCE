@@ -520,6 +520,11 @@
               <FileType>1</FileType>
               <FilePath>../..\src\Tools\trace.c</FilePath>
             </File>
+            <File>
+              <FileName>ad_parser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\src\Tools\ad_parser.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
