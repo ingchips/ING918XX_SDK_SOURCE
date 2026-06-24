@@ -1,6 +1,7 @@
 #include "ring_buf.h"
 #include <string.h>
 
+#pragma pack (push, 1)
 struct ring_buf
 {
     void (*highwater_cb)(struct ring_buf *buf);
@@ -12,6 +13,7 @@ struct ring_buf
     uint8_t           watermark_event;
     uint8_t           buffer[1];
 };
+#pragma pack (pop)
 
 struct ring_buf *ring_buf_init(void *buf, int total_size, void (*highwater_cb)(struct ring_buf *buf))
 {
@@ -49,7 +51,7 @@ static int ring_buf_add_buffer(struct ring_buf *buf, const void *buffer, int siz
 
 int ring_buf_peek_data(struct ring_buf *buf, f_ring_peek_data peek_data, void *extra)
 {
-    int r = 0;    
+    int r = 0;
     uint32_t read_next = buf->read_next;
     const uint32_t write_next = buf->write_next;
     while (read_next != write_next)
@@ -97,7 +99,7 @@ int ring_buf_write_data(struct ring_buf *buf, const void *data, int len)
 
     next = ring_buf_add_buffer(buf, data, len, next);
     buf->write_next = next < buf->total_size ? next : 0;
-    
+
     ring_buf_rpt_event(buf, free_size - len);
 
     return len;

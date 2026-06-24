@@ -622,6 +622,47 @@ int Vcore_calib(void);
  */
 void flash_read_uid(uint32_t uid[4]);
 
+
+/**
+ * @brief OTP (One-Time Programmable) Flash API Definitions
+ * * @note The OTP memory region is limited to 256 bytes total capacity.
+ * * Restrictions:
+ * - Programming: Only supports data write operations. Erase operations are NOT supported.
+ * - Lock Mechanism: The flash_otp_enable function permanently locks the entire 
+ * OTP region. Once called, the memory becomes read-only and cannot be modified.
+ */
+ 
+extern const unsigned char flash_api_bin[320];
+/**
+ * @brief Program data into the OTP region
+ * @param[in] addr Target address within the OTP area (0 to 255)
+ * @param[in] data Pointer to the buffer containing data to be written
+ * @param[in] len  Number of bytes to write
+ *
+ * @return 0 on success, non-zero value if parameters are invalid or operation fails
+ */
+typedef int (*Func_FlashProgram)(uint32_t addr, void* data, uint32_t size);
+#define flash_otp_program           ((Func_FlashProgram)(flash_api_bin + 0x01))
+
+/**
+ * @brief Read data from the OTP region
+ * @param[in]  addr Target address within the OTP area (0 to 255)
+ * @param[out] data Pointer to the buffer where read data will be stored
+ * @param[in]  len  Number of bytes to read
+ *
+ * @return 0 on success, non-zero value if parameters are invalid or operation fails
+ */
+typedef int (*Func_FlashRead)(uint32_t addr, void* data, uint32_t size);
+#define flash_otp_read              ((Func_FlashRead)(flash_api_bin + 0x65))
+
+/**
+ * @brief Permanently lock the OTP region
+ * @warning Irreversible operation. Once called, the OTP area is hardware-locked
+ * and cannot be modified again.
+ */
+typedef void (*Func_FlashOTP)(void);
+#define flash_otp_enable            ((Func_FlashOTP)(flash_api_bin + 0xFD))
+
 #endif
 
 #ifdef __cplusplus

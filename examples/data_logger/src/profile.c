@@ -23,7 +23,7 @@
 #define RING_BUF_SIZE  (1024 * 4)
 #define INVALID_HANDLE 0xffff
 
-static uint8_t the_ring_buf[RING_BUF_SIZE];
+static uint32_t the_ring_buf[RING_BUF_SIZE / sizeof(uint32_t)];
 struct ring_buf *ring_buf_obj;
 
 enum

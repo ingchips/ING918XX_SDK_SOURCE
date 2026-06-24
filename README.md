@@ -28,16 +28,7 @@ but also GUI tools and documentation.
 
 1. [Download](releases) setup file & install our SDK package;
 1. Fork/Clone this repository;
-1. Edit _/path/to/sdk/wizard/cfg/settings.json_ while _Wizard_ is closed:
-   change _sdk_ to the path of the cloned repository:
-
-    ```json
-    {
-        "sdk": "path/to/cloned/repository",
-    }
-    ```
-
-1. Start _Wizard_;
+1. Start _Wizard_ with additional parameter `--sdk-root path/to/cloned/repository`;
 1. Click menu item Tools -> "Re-generate bundle files" in _Wizard_.
 
 ## Branches

@@ -228,9 +228,7 @@ void apSSP_WriteFIFO(SSP_TypeDef * SSP_Ptr, uint16_t data)
 /*====================================================================*/
 uint16_t apSSP_ReadFIFO(SSP_TypeDef * SSP_Ptr)
 {
-	uint16_t data;
-	data = SSP_Ptr->DataRegister;
-	return data;
+	return SSP_Ptr->DataRegister;
 }
 
 /*====================================================================*/

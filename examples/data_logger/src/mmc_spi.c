@@ -209,12 +209,15 @@ static void init_spi (void)
     SYSCTRL_ClearClkGateMulti((1 << SYSCTRL_ClkGate_AHB_SPI0)
                             | (1 << SYSCTRL_ClkGate_APB_GPIO0)
                             | (1 << SYSCTRL_ITEM_APB_PinCtrl));
-
     PINCTRL_SetPadMux(SPI_PIN_CS, IO_SOURCE_GPIO);
     GIO_SetDirection(SPI_PIN_CS, GIO_DIR_OUTPUT);      // set CS output
 
     PINCTRL_SelSpiPins(SPI_CH, SPI_PIN_SCK, IO_NOT_A_PIN, IO_NOT_A_PIN,
         IO_NOT_A_PIN, SPI_PIN_MISO, SPI_PIN_MOSI);
+    
+    #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    SYSCTRL_SelectSpiClkDiv(SPI_CH, SYSCTRL_CLK_SLOW, 1);
+    #endif
 
     SET_DATA_SIZE(8);
 
@@ -230,25 +233,27 @@ static void rcvr_spi_multi (
 )
 {
     DWORD d;
-
+    DWORD i;
+    UINT tx_words = btr / 2; 
+    UINT rx_words = btr / 2; 
+    
     SET_DATA_SIZE(16);
-
-    apSSP_WriteFIFO(SPI_SSP, 0xffff);
+    apSSP_SetTransferControlWrTranCnt(SPI_SSP, tx_words);
+    apSSP_SetTransferControlRdTranCnt(SPI_SSP, rx_words);
     apSSP_WriteCmd(SPI_SSP, 0, 0);
-
-    btr -= 2;
-    do {					/* Receive the data block into buffer */
-        while (apSSP_RxFifoEmpty(SPI_SSP)) ;
-        apSSP_ReadFIFO(SPI_SSP, &d);
-        apSSP_WriteFIFO(SPI_SSP, 0xffff);
-        apSSP_WriteCmd(SPI_SSP, 0, 0);
-        buff[1] = d; buff[0] = d >> 8;
-        buff += 2;
-    } while (btr -= 2);
-    while (apSSP_RxFifoEmpty(SPI_SSP)) ;
-    apSSP_ReadFIFO(SPI_SSP, &d);
-    buff[1] = d; buff[0] = d >> 8;			/* Store it */
-
+    while (tx_words > 0 || rx_words > 0) {
+        
+        while (!apSSP_TxFifoFull(SPI_SSP) && tx_words > 0) {
+            apSSP_WriteFIFO(SPI_SSP, 0xffff);
+            tx_words--;
+        }
+        while (!apSSP_RxFifoEmpty(SPI_SSP) && rx_words > 0) {
+            apSSP_ReadFIFO(SPI_SSP, &d);
+            buff[1] = d; buff[0] = d >> 8; 
+            buff += 2;
+            rx_words--;
+        }
+    }
     SET_DATA_SIZE(8);
 }
 
@@ -261,23 +266,26 @@ static void xmit_spi_multi (
 {
     WORD d;
     DWORD t;
+    UINT tx_words = btx / 2;
+    UINT rx_words = btx / 2; 
 
     SET_DATA_SIZE(16);
-
-    d = buff[0] << 8 | buff[1]; buff += 2;
-    apSSP_WriteFIFO(SPI_SSP, d);
+    apSSP_SetTransferControlWrTranCnt(SPI_SSP, tx_words);
+    apSSP_SetTransferControlRdTranCnt(SPI_SSP, rx_words);
     apSSP_WriteCmd(SPI_SSP, 0, 0);
-    btx -= 2;
-    do {
-        d = buff[0] << 8 | buff[1]; buff += 2;	/* Word to send next */
-        while (apSSP_RxFifoEmpty(SPI_SSP)) ;
-        apSSP_ReadFIFO(SPI_SSP, &t);
-        apSSP_WriteFIFO(SPI_SSP, d);
-        apSSP_WriteCmd(SPI_SSP, 0, 0);
-    } while (btx -= 2);
-    while (apSSP_RxFifoEmpty(SPI_SSP)) ;
-    apSSP_ReadFIFO(SPI_SSP, &t);
-
+    while (tx_words > 0 || rx_words > 0) {
+        while (!apSSP_TxFifoFull(SPI_SSP) && tx_words > 0) {
+            d = buff[0] << 8 | buff[1]; 
+            buff += 2;
+            apSSP_WriteFIFO(SPI_SSP, d);
+            tx_words--;
+        }
+        while (!apSSP_RxFifoEmpty(SPI_SSP) && rx_words > 0) {
+            apSSP_ReadFIFO(SPI_SSP, &t);
+            rx_words--;
+        }
+    }
+    
     SET_DATA_SIZE(8);
 }
 #endif
@@ -288,7 +296,8 @@ static BYTE xchg_spi (
 )
 {
     DWORD t;
-
+    apSSP_SetTransferControlWrTranCnt(SPI_SSP, 1);
+    apSSP_SetTransferControlRdTranCnt(SPI_SSP, 1);
     apSSP_WriteFIFO(SPI_SSP, dat);
     apSSP_WriteCmd(SPI_SSP, 0, 0);
     while (apSSP_RxFifoEmpty(SPI_SSP)) ;
@@ -551,7 +560,6 @@ DRESULT disk_read (
     if (Stat & STA_NOINIT) return RES_NOTRDY;	/* Check if drive is ready */
 
     if (!(CardType & CT_BLOCK)) sect *= 512;	/* LBA ot BA conversion (byte addressing cards) */
-
     if (count == 1) {	/* Single sector read */
         if ((send_cmd(CMD17, sect) == 0)	/* READ_SINGLE_BLOCK */
             && rcvr_datablock(buff, 512)) {
