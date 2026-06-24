@@ -19,7 +19,7 @@
    "base": 147456
   },
   "version": [
-   1,13,0]
+   1,14,0]
  },
  "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",

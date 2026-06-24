@@ -4,11 +4,11 @@
   "var": {
    "link_layer_features": {
     "value": "3f79ff07fe000000",
-    "addr": 190036
+    "addr": 190128
    }
   },
   "rom": {
-   "size": 179904,
+   "size": 179996,
    "base": 16384
   },
   "ram": {
@@ -19,12 +19,12 @@
    "base": 196608
   },
   "version": [
-   1,13,0]
+   1,14,0]
  },
- "tc_dir": "D:\/Users\/yuxiz\/AppData\/Local\/Keil_v5\/uv4",
+ "tc_dir": "C:\\Keil_v5\\UV4",
  "eflash_addr": "0x42000",
  "ide_ver": "5",
- "ide_exe": "D:\/Users\/yuxiz\/AppData\/Local\/Keil_v5\/uv4\/uv4.exe",
+ "ide_exe": "C:\\Keil_v5\\UV4\\UV4.exe",
  "use_uart_trace": false,
  "ota": false,
  "ide": "keil",
@@ -55,7 +55,7 @@
  "is_sdk_path_rel": true,
  "pb_gatt": true,
  "deep_sleep": true,
- "proj_dir": "D:\/workspace\/ingchips\/ING918XX_SDK_SOURCE\/examples\\eatt",
+ "proj_dir": "C:\/projects\/ingchips\/SDK_Release\/examples\\eatt",
  "heap_size": 0,
  "power_saving": false,
  "secondary": false,
