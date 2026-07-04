@@ -2152,12 +2152,13 @@ int SYSCTRL_Init(void)
     if (io_read(AON1_CTRL_BASE + 0x28) & 1)
         ROM_PLLinUse(1, 1, 1, 1);
     else
-        ROM_PLLinUse(0, 0, 0, 0);
+        ROM_PLLinUse(0, 1, 1, 1);
 
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1d, 6, 16);
     set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),0,18);
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x14),0,26);
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10),0,10);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10),0,7);
 
     Vcore_calib();
     return 0;
