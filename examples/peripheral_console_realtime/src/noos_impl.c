@@ -14,7 +14,6 @@
 
 typedef void (*f_task_entry)(void *);
 typedef void (*f_timer_cb)(void *);
-typedef void (*f_plt_timer)(void);
 
 static f_task_entry host_entry = NULL;
 static void *host_param = NULL;
@@ -42,88 +41,55 @@ struct simple_queue
     uint8_t data[0];
 };
 
-#define SW_TIMER_NUMBER     8
-
-#define SW_TIMER_CB_OF(id) timer_cb_##id
-
-static void timer_cb(int id);
-
-#define DEF_SW_TIMER(id)    static void SW_TIMER_CB_OF(id)(void) { timer_cb(id); }
-
-DEF_SW_TIMER(0)
-DEF_SW_TIMER(1)
-DEF_SW_TIMER(2)
-DEF_SW_TIMER(3)
-DEF_SW_TIMER(4)
-DEF_SW_TIMER(5)
-DEF_SW_TIMER(6)
-DEF_SW_TIMER(7)
+typedef void (* f_os_timer_cb)(void *);
 
 struct sw_timer
 {
-    f_plt_timer plt_cb;
-    f_timer_cb cb;
-    void *user_data;
-    uint32_t timeout_in_625us;
-    uint8_t used;
-} sw_timers[SW_TIMER_NUMBER] = {
-    { .plt_cb = SW_TIMER_CB_OF(0) },
-    { .plt_cb = SW_TIMER_CB_OF(1) },
-    { .plt_cb = SW_TIMER_CB_OF(2) },
-    { .plt_cb = SW_TIMER_CB_OF(3) },
-    { .plt_cb = SW_TIMER_CB_OF(4) },
-    { .plt_cb = SW_TIMER_CB_OF(5) },
-    { .plt_cb = SW_TIMER_CB_OF(6) },
-    { .plt_cb = SW_TIMER_CB_OF(7) },
+    f_os_timer_cb   cb;
+    void           *user_data;
+    uint32_t        timeout_in_625us;
+    platform_625us_timer_handle_t plt_timer_handle;
 };
-
-static void timer_cb(int id)
-{
-    if ((id < 0) || (id >= SW_TIMER_NUMBER) || (sw_timers[id].used == 0)) return;
-    sw_timers[id].cb(sw_timers[id].user_data);
-}
 
 static gen_handle_t timer_create(
         uint32_t timeout_in_ms,
         void *user_data,
         void (* timer_cb)(void *))
 {
-    // find an unused timer context
-    int id;
-    for (id = 0; id < SW_TIMER_NUMBER; id++)
-        if (sw_timers[id].used == 0) break;
-    if (id >= SW_TIMER_NUMBER)
-    {
-        platform_raise_assertion("noos_impl.c", __LINE__);
-        return (gen_handle_t)0;
-    }
+    struct sw_timer *timer = malloc(sizeof(struct sw_timer));
 
-    sw_timers[id].cb = timer_cb;
-    sw_timers[id].user_data = user_data;
-    sw_timers[id].timeout_in_625us = timeout_in_ms + timeout_in_ms / 2 + timeout_in_ms / 10;
-    sw_timers[id].used = 1;
+    timer->timeout_in_625us = (uint32_t)(((uint64_t)timeout_in_ms) * 1000 / 625);
+    timer->cb               = timer_cb;
+    timer->user_data        = user_data;
+    timer->plt_timer_handle = NULL;
 
     // avoid returning 0
-    return (gen_handle_t)(&sw_timers[id]);
-}
-
-static void timer_start(gen_handle_t timer)
-{
-    struct sw_timer *p = (struct sw_timer *)timer;
-    platform_set_timer(p->plt_cb, p->timeout_in_625us);
+    return (gen_handle_t)(timer);
 }
 
 static void timer_stop(gen_handle_t timer)
 {
     struct sw_timer *p = (struct sw_timer *)timer;
-    platform_set_timer(p->plt_cb, 0);
+    if (p->plt_timer_handle)
+    {
+        platform_delete_625us_timer(p->plt_timer_handle);
+        p->plt_timer_handle = NULL;
+    }
+}
+
+static void timer_start(gen_handle_t timer)
+{
+    struct sw_timer *p = (struct sw_timer *)timer;
+    timer_stop(timer);
+    // Note: for ARM ABI, casting to `f_platform_625us_timer_callback` is ok.
+    p->plt_timer_handle = platform_create_625us_timer((f_platform_625us_timer_callback)(p->cb), p->user_data, p->timeout_in_625us);
 }
 
 static void timer_delete(gen_handle_t timer)
 {
     struct sw_timer *p = (struct sw_timer *)timer;
-    platform_set_timer(p->plt_cb, 0);
-    p->used = 0;
+    timer_stop(timer);
+    free(p);
 }
 
 static gen_handle_t task_create(
