@@ -41,6 +41,98 @@ struct simple_queue
     uint8_t data[0];
 };
 
+#if (PLATFORM_BUNDLE_VARIANT == PLATFORM_BUNDLE_VARIANT_ROM)
+
+// `platform_create_625us_timer` is unavailable in ROM bundles.
+
+typedef void (*f_plt_timer)(void);
+
+#define SW_TIMER_NUMBER     8
+
+#define SW_TIMER_CB_OF(id) timer_cb_##id
+
+static void timer_cb(int id);
+
+#define DEF_SW_TIMER(id)    static void SW_TIMER_CB_OF(id)(void) { timer_cb(id); }
+
+DEF_SW_TIMER(0)
+DEF_SW_TIMER(1)
+DEF_SW_TIMER(2)
+DEF_SW_TIMER(3)
+DEF_SW_TIMER(4)
+DEF_SW_TIMER(5)
+DEF_SW_TIMER(6)
+DEF_SW_TIMER(7)
+
+struct sw_timer
+{
+    f_plt_timer plt_cb;
+    f_timer_cb cb;
+    void *user_data;
+    uint32_t timeout_in_625us;
+    uint8_t used;
+} sw_timers[SW_TIMER_NUMBER] = {
+    { .plt_cb = SW_TIMER_CB_OF(0) },
+    { .plt_cb = SW_TIMER_CB_OF(1) },
+    { .plt_cb = SW_TIMER_CB_OF(2) },
+    { .plt_cb = SW_TIMER_CB_OF(3) },
+    { .plt_cb = SW_TIMER_CB_OF(4) },
+    { .plt_cb = SW_TIMER_CB_OF(5) },
+    { .plt_cb = SW_TIMER_CB_OF(6) },
+    { .plt_cb = SW_TIMER_CB_OF(7) },
+};
+
+static void timer_cb(int id)
+{
+    if ((id < 0) || (id >= SW_TIMER_NUMBER) || (sw_timers[id].used == 0)) return;
+    sw_timers[id].cb(sw_timers[id].user_data);
+}
+
+static gen_handle_t timer_create(
+        uint32_t timeout_in_ms,
+        void *user_data,
+        void (* timer_cb)(void *))
+{
+    // find an unused timer context
+    int id;
+    for (id = 0; id < SW_TIMER_NUMBER; id++)
+        if (sw_timers[id].used == 0) break;
+    if (id >= SW_TIMER_NUMBER)
+    {
+        platform_raise_assertion("noos_impl.c", __LINE__);
+        return (gen_handle_t)0;
+    }
+
+    sw_timers[id].cb = timer_cb;
+    sw_timers[id].user_data = user_data;
+    sw_timers[id].timeout_in_625us = timeout_in_ms + timeout_in_ms / 2 + timeout_in_ms / 10;
+    sw_timers[id].used = 1;
+
+    // avoid returning 0
+    return (gen_handle_t)(&sw_timers[id]);
+}
+
+static void timer_start(gen_handle_t timer)
+{
+    struct sw_timer *p = (struct sw_timer *)timer;
+    platform_set_timer(p->plt_cb, p->timeout_in_625us);
+}
+
+static void timer_stop(gen_handle_t timer)
+{
+    struct sw_timer *p = (struct sw_timer *)timer;
+    platform_set_timer(p->plt_cb, 0);
+}
+
+static void timer_delete(gen_handle_t timer)
+{
+    struct sw_timer *p = (struct sw_timer *)timer;
+    platform_set_timer(p->plt_cb, 0);
+    p->used = 0;
+}
+
+#else
+
 typedef void (* f_os_timer_cb)(void *);
 
 struct sw_timer
@@ -91,6 +183,8 @@ static void timer_delete(gen_handle_t timer)
     timer_stop(timer);
     free(p);
 }
+
+#endif
 
 static gen_handle_t task_create(
         const char *name,

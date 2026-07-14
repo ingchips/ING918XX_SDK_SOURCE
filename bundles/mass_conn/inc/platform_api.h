@@ -378,7 +378,7 @@ void *platform_get_rtos_heap_mem(int *size);
  * @brief Install a new stack for ISR
  *
  * In case apps need a much larger stack than the default one in ISR, a new stack can be
- * installed to repleace the default one.
+ * installed to replace the default one.
  *
  * This function is only allowed to be called in `app_main`. The new stack is put into
  * use after `app_main` returns.
