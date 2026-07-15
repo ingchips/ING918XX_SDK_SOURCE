@@ -432,6 +432,26 @@ void I2C_DEBUG0_TOG(I2C_TypeDef *I2C_BASE, uint32_t data);
 
 uint8_t GET_I2C_DEBUG0_DMAREQ(I2C_TypeDef *I2C_BASE);
 
+typedef enum
+{
+    I2C_CLOCKFREQUENCY_STANDARD,//100kbit/s
+    I2C_CLOCKFREQUENCY_FASTMODE,//400kbit/s
+} I2C_ClockFrequencyOptions;
+
+/**
+ * @brief Set clk frequency for controller.
+ *
+ * Default clock frequency: I2C_CLOCKFREQUENCY_STANDARD.
+ *
+ * Pre-condition: `I2C_CTRL0_CLKGATE` has been cleared.
+ *
+ * @param[in] I2C_BASE              base address
+ * @param[in] option                see I2C_ClockFrequencyOptions
+ *
+ * @return                          always 0, which means success.
+ */
+uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOptions option);
+
 #endif
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
@@ -500,14 +520,19 @@ typedef enum
 
 typedef enum
 {
-    I2C_CLOCKFREQUENY_NULL,
-    I2C_CLOCKFREQUENY_STANDARD,//100kbit/s
-    I2C_CLOCKFREQUENY_FASTMODE,//400kbit/s
-    I2C_CLOCKFREQUENY_FASTMODE_PLUS,//1Mbit/s
-    I2C_CLOCKFREQUENY_MANUAL
+    I2C_CLOCKFREQUENCY_NULL,
+    I2C_CLOCKFREQUENCY_STANDARD,//100kbit/s
+    I2C_CLOCKFREQUENCY_FASTMODE,//400kbit/s
+    I2C_CLOCKFREQUENCY_FASTMODE_PLUS,//1Mbit/s
+    I2C_CLOCKFREQUENCY_MANUAL
 } I2C_ClockFrequencyOptions;
 
 #define I2C_ClockFrequenyOptions    I2C_ClockFrequencyOptions
+#define I2C_CLOCKFREQUENY_NULL      I2C_CLOCKFREQUENCY_NULL
+#define I2C_CLOCKFREQUENY_STANDARD  I2C_CLOCKFREQUENCY_STANDARD
+#define I2C_CLOCKFREQUENY_FASTMODE  I2C_CLOCKFREQUENCY_FASTMODE
+#define I2C_CLOCKFREQUENY_FASTMODE_PLUS     I2C_CLOCKFREQUENCY_FASTMODE_PLUS
+#define I2C_CLOCKFREQUENY_MANUAL            I2C_CLOCKFREQUENCY_MANUAL
 
 #define bsI2C_CTRL_TRANSACTION_DIR               8
 #define bsI2C_CTRL_MASTER_PRE_SEND_START         12
