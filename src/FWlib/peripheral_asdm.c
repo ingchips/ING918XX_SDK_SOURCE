@@ -31,7 +31,7 @@ int ASDM_Config(ASDM_TypeDef *base, ASDM_ConfigTypeDef* pParam)
         return ret;
     base->asdm_ana_ctrl0 = 0x1fff;
     base->asdm_pga_en_ibias = 0x1;
-    base->pga_l_ctrl = 0x343 | (pParam->Analog_mode<<6);
+    base->pga_l_ctrl = 0x303 | (pParam->Analog_mode<<6);
     base->micbias_ctrl = 0xf;
     base->fifo_addr = 0x4|(pParam->Fifo_Enable<<3)|(pParam->FifoIntMask <<16)|(pParam->Fifo_DmaTrigNum<<19) ;
     return 0;
