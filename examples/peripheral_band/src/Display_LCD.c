@@ -762,7 +762,7 @@ uint8_t OLED_Display_sensor(uint8_t Hr,uint32_t step)
 		return 0; 
 	}
 	 
-	if(30<Hr<110)
+	if((30<Hr) && (Hr<110))
 	{ 
 		//Ó¢ÎÄ×Ö·û´®ÏÔÊ¾
 		OLED_ClrScr(0xff);			//ÇåÆÁ
@@ -785,7 +785,7 @@ uint8_t OLED_Display_sensor(uint8_t Hr,uint32_t step)
 		} 
 	}
 	
-	if(0<step<15000)
+	if((0<step) && (step<15000))
 	{ 
 		OLED_DispStrs(55,1,str_steps,10); 
 		if((step>=10000)&&(step<99999)) 
