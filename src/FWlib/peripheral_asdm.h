@@ -62,11 +62,31 @@ typedef enum
     ASDM_AgcCustom,
 } ASDM_AgcMode;
 
+/**
+ * @brief Enumeration of input modes for ASDM (Analog vs. Digital Microphone)
+ *
+ * @note
+ * - ASDM_AMIC: Analog microphone input mode (uses analog ADC path)
+ * - ASDM_PDM:  Digital microphone input mode (uses PDM data and clock interface)
+ */
 typedef enum
 {
     ASDM_AMIC = 0,
     ASDM_PDM,
 } ASDM_Mode;
+
+/**
+ * @brief Enumeration of analog operation modes for ASDM
+ *
+ * @note
+ * - ASDM_DIFF_MODE:   Differential input mode (uses positive and negative differential signals)
+ * - ASDM_SINGLE_MODE: Single-ended input mode (uses single signal line relative to ground)
+ */
+typedef enum
+{
+    ASDM_DIFF_MODE = 0,
+    ASDM_SINGLE_MODE,
+} ASDM_AnalogModeTypeDef;
 
 /**
  * @bref Structure for configuring AGC settings for ASDM
@@ -107,37 +127,46 @@ typedef struct
  * @brief ASDM configuration structure definition
  *
  * @note
- * volume: width [0:13] Configures the volume of the ASDM.
- *          The volume control for the ASDM. format : (2.12) unsigned data.
- *          example: 0x0:0, 0x1:-72.25dB 0x2: -66.23dB .... 0x1000: 0dB ... 0x3fff 12dB
- * Asdm_Mode: width [1] Configures the mode of the ASDM. pointer to `ASDM_Mode`.
+ * volume:          Width [13:0] Configures the volume of the ASDM.
+ *                  Format: (2.12) unsigned data.
+ *                  Example: 0x0: 0, 0x1: -72.25dB, 0x2: -66.23dB ... 0x1000: 0dB ... 0x3FFF: 12dB.
  *
- * Sample_rate: width [0:8] Configures the sample rate of the ASDM. enumeration value is defined in `ASDM_SampleRate`.
- * @note Requires external sampling clock source of either:
- *       - 12.288 MHz
- *       - 11.2896 MHz
- * @recommend Set PLL output to 384 MHz to ensure accurate sample rates
- * @warning Deviation may cause sampling rate inaccuracy
+ * Asdm_Mode:       Configures the input source mode of the ASDM.
+ *                  Enumeration value is defined in `ASDM_Mode` (AMIC / PDM).
  *
- * Agc_mode: width [1] Configures the AGC mode of the ASDM. enumeration value is defined in `ASDM_AgcMode`.
- * Agc_config: Configures the AGC configuration of the ASDM. pointer to `ASDM_AgcConfigTypeDef`.
- *              if Agc_mode is 0, this parameter is invalid.
+ * Sample_rate:     Configures the sample rate of the ASDM.
+ *                  Enumeration value is defined in `ASDM_SampleRate`.
+ *                  @note Requires external sampling clock source of either:
+ *                        - 12.288 MHz
+ *                        - 11.2896 MHz
+ *                  @recommend Set PLL output to 384 MHz to ensure accurate sample rates.
+ *                  @warning Deviation may cause sampling rate inaccuracy.
  *
- *              if Agc_mode is ASDM_AgcCustom, this parameter is required.
- *              User must pass Agc_config struct pointer to configure AGC parameters
+ * Agc_mode:        Configures the AGC mode of the ASDM.
+ *                  Enumeration value is defined in `ASDM_AgcMode`.
  *
- *              Other mode: get_config Optional pointer to store preset configs (may be NULL)
- *              - NULL: Use preset parameters (for typical modes)
- *              - Valid pointer: Get custom config.
- *              WARNING: Wild pointers will cause undefined behavior.
- * Fifo_Enable: 1: enable  Set true to enable FIFO (data buffering),
- *              0: false to bypass. Disabling causes overflow data loss.
- *              fifo depth 8.
+ * Agc_config:      Configures the AGC configuration of the ASDM. Pointer to `ASDM_AgcConfigTypeDef`.
+ *                  - If Agc_mode is ASDM_AgcOff (0), this parameter is ignored.
+ *                  - If Agc_mode is ASDM_AgcCustom, this parameter is required.
+ *                    User must pass Agc_config struct pointer to configure AGC parameters.
+ *                  - Other preset modes: Optional pointer to get/store active configs (may be NULL).
+ *                    - NULL: Use preset parameters directly.
+ *                    - Valid pointer: Retrieve current active preset configs.
+ *                  WARNING: Wild pointers will cause undefined behavior.
  *
- * Fifo_DmaTrigNum : width [0:2] Configures the DMA trigger number for FIFO. range [0:7]
+ * Analog_mode:     Configures the analog input mode (only relevant when Asdm_Mode is AMIC).
+ *                  Enumeration value is defined in `ASDM_AnalogModeTypeDef`.
+ *                  - ASDM_DIFF_MODE: Differential input mode.
+ *                  - ASDM_SINGLE_MODE: Single-ended input mode.
  *
- * FifoIntMask: width [0:1] Configures the FIFO interrupt mask. enumeration value is defined in `ASDM_FifoMask`.
+ * Fifo_Enable:     Controls FIFO buffer operation:
+ *                  - 1 (True): Enable FIFO (data buffering, FIFO depth is 8).
+ *                  - 0 (False): Bypass FIFO. Disabling may cause overflow data loss.
  *
+ * Fifo_DmaTrigNum: Width [2:0] Configures the DMA trigger threshold level for FIFO. Range: [0:7].
+ *
+ * FifoIntMask:     Configures the FIFO interrupt mask bitfield.
+ *                  Enumeration value is defined in `ASDM_FifoMask`.
  */
 typedef struct
 {
@@ -146,6 +175,7 @@ typedef struct
     ASDM_SampleRate Sample_rate;
     ASDM_AgcMode Agc_mode;
     ASDM_AgcConfigTypeDef *Agc_config;
+    ASDM_AnalogModeTypeDef Analog_mode; 
     uint8_t Fifo_Enable;
     uint8_t Fifo_DmaTrigNum;
     uint8_t FifoIntMask;

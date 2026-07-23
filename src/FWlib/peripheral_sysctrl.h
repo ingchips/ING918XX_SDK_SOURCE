@@ -2062,9 +2062,14 @@ void SYSCTRL_EnableAsdmVrefOutput(uint8_t enable);
 
 /**
  * @brief Set ADC reference voltage selection
- * @param val [in]
+ * @param val [in] VREF selection value, range 0x0-0xF
+ *
+ * Adjusts ASDM module internal VREF voltage output from 0.75V to 1.5V in 50mV steps.
+ * MICBIAS voltage is generated based on this VREF, output range 2.67V-1.29V,
+ * adjustment approximately 0.9V per step.
+ *
+ * Note: Adjusting MICBIAS output will also adjust ASDM internal VREF standard voltage.
  */
-//TODO
 void SYSCTRL_SetAdcVrefSel(uint8_t val);
 
 /**
