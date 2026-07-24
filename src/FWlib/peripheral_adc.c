@@ -914,7 +914,6 @@ void ADC_HardwareCalibration(void)
     ADC_RegWr(SADC_CFG_0, 1, 0);
     ADC_RegWr(SADC_CFG_2, 1, 0);
     ADC_RegWrBits(SADC_CFG_2, 1, 3, 12);
-    ADC_RegWr(SADC_INT_MAKS, 1, 0);
     ADC_RegWr(SADC_CFG_0, 1, 1);
     ADC_RegWr(SADC_CFG_2, 1, 2);
     while (APB_SADC->sadc_int & 0x1);
@@ -924,7 +923,6 @@ void ADC_HardwareCalibration(void)
     ADC_RegClr(SADC_CFG_0, 1, 1);
     ADC_RegClr(SADC_CFG_0, 9, 1);
     ADC_RegClr(SADC_CFG_2, 2, 1);
-    APB_SADC->sadc_int_mask = 0;
 }
 
 void ADC_Reset(void)
