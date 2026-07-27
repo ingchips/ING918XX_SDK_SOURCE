@@ -923,6 +923,7 @@ void ADC_HardwareCalibration(void)
     ADC_RegClr(SADC_CFG_0, 1, 1);
     ADC_RegClr(SADC_CFG_0, 9, 1);
     ADC_RegClr(SADC_CFG_2, 2, 1);
+    APB_SADC->sadc_int_mask = 0;
 }
 
 void ADC_Reset(void)
