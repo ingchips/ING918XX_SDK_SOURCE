@@ -382,7 +382,7 @@ typedef struct
  * @brief Install a new stack for ISR
  *
  * In case apps need a much larger stack than the default one in ISR, a new stack can be
- * installed to repleace the default one.
+ * installed to replace the default one.
  *
  * This function is only allowed to be called in `app_main`. The new stack is put into
  * use after `app_main` returns.
@@ -798,6 +798,8 @@ typedef void (* f_platform_timer_callback)(void);
  ****************************************************************************************
  * @brief Setup a single-shot platform timer
  *
+ * @see `platform_create_625us_timer` which is more flexible.
+ *
  * Note: 1. Comparing to hardware timers, this timer can be thought as "running" during
  *          power saving;
  *       1. Comparing to RTOS software timers, this timer is software + hardware too,
@@ -848,6 +850,8 @@ uint32_t platform_get_timer_counter(void);
  ****************************************************************************************
  * @brief Setup a single-shot platform timer triggered at an absolute time
  *
+ * @see `platform_create_abs_625us_timer` which is more flexible.
+ *
  * @param[in]  callback         the callback function when the timer expired, and is
  *                              called in a RTOS task (if existing) not an ISR
  * @param[in]  abs_time         when `platform_get_timer_counter() == abs_time`, callback is invoked.
@@ -864,6 +868,55 @@ void platform_set_abs_timer(f_platform_timer_callback callback, uint32_t abs_tim
  ****************************************************************************************
  */
 void platform_delete_timer(f_platform_timer_callback callback);
+
+typedef void * platform_625us_timer_handle_t;
+typedef void (* f_platform_625us_timer_callback)(void *user_data, platform_625us_timer_handle_t handle);
+
+/**
+ ****************************************************************************************
+ * @brief Created a single-shot 625us resolution platform timer
+ *
+ * Note: 1. Comparing to hardware timers, this timer can be thought as "running" during
+ *          power saving;
+ *       1. Comparing to RTOS software timers, this timer is software + hardware too,
+ *       1. Comparing to RTOS software timers, this timer may be more accurate in some
+ *          circumstance;
+ *       1. Comparsing to `platform_set_timer`, the callback function is more flexible;
+ *       1. This depends on `malloc` of `gen_os_driver_t`. For projects using customized
+ *          RTOS, **DO NOT** call this in `app_main`.
+ *       1. `platform_delete_625us_timer` must be used to free the memory.
+ *
+ * @param[in]  callback         the callback function when the timer expired, and is
+ *                              called in a RTOS task (if existing) not an ISR
+ * @param[in]  user_data        user data to be passed to the callback
+ * @param[in]  abs_time         when `platform_get_timer_counter() == abs_time`, callback is invoked.
+ *                              Range for "future": platform_get_timer_counter() + [1~0x7fffffff]
+ *                              Other values are treated as "passed" and `callback`
+ *                              will be invoked as soon as possible.
+ * @return                      handle of the timer.
+ *                              When the timer can't be created, `NULL` is returned.
+ ****************************************************************************************
+ */
+platform_625us_timer_handle_t platform_create_abs_625us_timer(f_platform_625us_timer_callback callback, void *user_data, uint32_t abs_time);
+
+#define platform_create_625us_timer(callback, param, delay)   platform_create_abs_625us_timer((callback), (param), platform_get_timer_counter() + (delay))
+
+/**
+ ****************************************************************************************
+ * @brief Delete a previously created 625us resolution timer
+ *
+ * The timer to be deleted can timed out or not.
+ * This function can be used in the `callback` of the timer.
+ *
+ * CAUTION: `platform_create_abs_625us_timer` and `platform_delete_625us_timer` are
+ * represented by messages internally. These messages are processed by internal timer
+ * module, which is part of Controller. It is possible that `callback` is _still_ invoked
+ * _after_ its handle is already deleted by this function.
+ *
+ * @param[in]  timer_handle     handle of the timer
+ ****************************************************************************************
+ */
+void platform_delete_625us_timer(platform_625us_timer_handle_t timer_handle);
 
 typedef void * platform_us_timer_handle_t;
 
