@@ -924,6 +924,45 @@ void ADC_HardwareCalibration(void)
     ADC_RegClr(SADC_CFG_0, 9, 1);
     ADC_RegClr(SADC_CFG_2, 2, 1);
     APB_SADC->sadc_int_mask = 0;
+    APB_SADC->sadc_status |= 1 << 22;
+}
+
+void ADC_GetHardwareCalibData(uint8_t Data[7])
+{
+    uint8_t i;
+    ADC_HardwareCalibration();
+    for (i = 0; i < 7; i++)
+    {
+        APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
+        APB_SADC->sadc_cfg3 |= ((i + 1) << 16);
+        Data[i] = (APB_SADC->sadc_cfg3 >> 8) & 0xff;
+    }
+    APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
+}
+
+void ADC_SetHardwareCalibData(uint8_t Data[7])
+{
+    uint8_t i, data;
+
+    ADC_RegWr(SADC_CFG_0, 1, 1);
+    ADC_RegClr(SADC_CFG_0, 28, 1);
+    ADC_RegWr(SADC_CFG_0, 1, 28);
+    for (i = 0; i < 7; i++)
+    {
+        APB_SADC->sadc_cfg3 &= ~(0xff);
+        APB_SADC->sadc_cfg3 |= Data[i] & 0xff;
+        APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
+        APB_SADC->sadc_cfg3 |= ((i + 1) << 16);
+        APB_SADC->sadc_cfg3 |= 1 << 19;
+        do
+        {
+            data = (APB_SADC->sadc_cfg3 >> 8) & 0xff;
+        }
+        while (data != Data[i]);
+    }
+    APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
+    APB_SADC->sadc_cfg3 &= ~(0xff);
+    ADC_RegClr(SADC_CFG_0, 1, 1);
 }
 
 void ADC_Reset(void)
@@ -933,7 +972,7 @@ void ADC_Reset(void)
     ADC_RegWrBits(SADC_CFG_1, 0x100, 0, 32);
     ADC_RegWrBits(SADC_CFG_2, 4 << 16 | 4 << 20 | 0xa << 24, 0, 32);
     ADC_ClrFifo();
-    ADC_RegClr(SADC_STATUS  , 0, 32);
+    ADC_RegClr(SADC_STATUS, 0, 32);
     ADC_RegClr(SADC_INT_MAKS, 0, 32);
 
     ADC_RegWr(SADC_CFG_0, 1, 28);
@@ -947,11 +986,17 @@ void ADC_Reset(void)
 
 void ADC_Start(uint8_t start)
 {
-    if (start) {
-        ADC_RegWr(SADC_CFG_2, 1, 2);
+    if (start)
+    {
         ADC_RegWr(SADC_CFG_0, 1, 1);
-    } else {
+        ADC_RegClr(SADC_CFG_0, 28, 1);
+        ADC_RegWr(SADC_CFG_0, 1, 28);
+        ADC_RegWr(SADC_CFG_2, 1, 2);
+    }
+    else
+    {
         ADC_RegClr(SADC_CFG_2, 2, 1);
+        ADC_RegClr(SADC_CFG_0, 1, 1);
         while (ADC_GetBusyStatus());
     }
 }
@@ -988,6 +1033,9 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
                  uint32_t loopDelay)
 {
     ADC_SetAdcMode(CONVERSION_MODE);
+    ADC_RegWr(SADC_CFG_0, 1, 17);
+    ADC_RegWr(SADC_CFG_0, 1, 18);
+    ADC_RegClr(SADC_CFG_0, 9, 1);
     ADC_SetAdcCtrlMode(ctrlMode);
     ADC_EnableChannel(ch, 1);
     if (enNum) {
