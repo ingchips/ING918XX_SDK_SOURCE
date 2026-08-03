@@ -996,8 +996,8 @@ void ADC_Start(uint8_t start)
     else
     {
         ADC_RegClr(SADC_CFG_2, 2, 1);
-        ADC_RegClr(SADC_CFG_0, 1, 1);
         while (ADC_GetBusyStatus());
+        ADC_RegClr(SADC_CFG_0, 1, 1);
     }
 }
 
