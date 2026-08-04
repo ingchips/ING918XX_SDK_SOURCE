@@ -12,13 +12,13 @@
     },
     "var": {
         "link_layer_features": {
-            "addr": 148048,
+            "addr": 147964,
             "value": "3ff9ff0700000000"
         }
     },
     "version": [
         1,
-        15,
+        16,
         0
     ]
 }
