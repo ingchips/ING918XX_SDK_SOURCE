@@ -713,7 +713,7 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
         if ((*(const uint8_t *)(dest_addr + i) & buffer[i]) != buffer[i])
             return 1;
     }
-    
+
     FLASH_PRE_OPS();
 
     while (size > 0)
@@ -727,7 +727,7 @@ int write_flash(uint32_t dest_addr, const uint8_t *buffer, uint32_t size)
         size -= block;
         next_page += EFLASH_PAGE_SIZE;
     }
-    
+
     SYSCTRL_ICacheFlush();
     FLASH_POST_OPS();
     return 0;
@@ -740,9 +740,9 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
     {
         ROM_FlashEnableContinuousMode();
     }
-    
+
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)&=~(0x1ul<<31);
-    
+
     int r = ROM_flash_do_update(block_num, blocks, page_buffer);
     SYSCTRL_ICacheFlush();
     if (0 == is_continuous)
@@ -777,14 +777,14 @@ static uint16_t crc16(uint8_t *puchMsg, uint16_t usDataLen) {
 #define ADC_CAL_CHANNEL_NUM            9
 
 
-static uint16_t calc_factory_info_crc16(const die_info_t *info)
+static uint16_t calc_factory_info_crc16(const die_info_t *info,  uint32_t len)
 {
-    return crc16((uint8_t *)info, sizeof(die_info_t) - 4);
+    return crc16((uint8_t *)info, len - 4);
 }
 
-static uint16_t calc_factory_calib_crc16(const factory_calib_data_t *calib)
+static uint16_t calc_factory_calib_crc16(const factory_calib_data_t *calib, uint32_t len)
 {
-    return crc16((uint8_t *)calib, sizeof(factory_calib_data_t));
+    return crc16((uint8_t *)calib, len);
 }
 
 static void copy_security_bytes(uint8_t *dst, uint32_t src, uint32_t size)
@@ -908,11 +908,11 @@ void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_d
         {
             if (src->calib_pmu.vaon[i] > 1010u)
             {
-                vref = (float)src->calib_pmu.vaon[i] / 1000.0f;  
+                vref = (float)src->calib_pmu.vaon[i] / 1000.0f;
             }
             else
                 vref = 1.01f;
-            
+
         }
     }
     else if(src->calib_adc.version == 0x11)
@@ -950,7 +950,7 @@ int flash_prepare_factory_data(void)
         return 0;
 
     reg_state = (*(volatile uint32_t *)(AON1_CTRL_BASE + 0x18))&(0x1ul<<31);
-    
+
     flash_read_protection_status(&region, &reverse_selection);
     flash_enable_write_protection(FLASH_REGION_NONE, 0);
 
@@ -972,10 +972,13 @@ int flash_prepare_factory_data(void)
                         FACTORY_CALIB_SRC_ADDR,
                         sizeof(calib));
 
-    uint16_t crc = calc_factory_info_crc16(&die_info);
+    uint16_t crc = calc_factory_info_crc16(&die_info, sizeof(die_info));
     if (crc != die_info.info_crc16)
         goto check_failed;
-    crc = calc_factory_calib_crc16(&calib);
+    if(die_info.version == 0x100)
+        crc = calc_factory_calib_crc16(&calib, sizeof(calib) - sizeof(factory_calib_bor_t));
+    else
+        crc = calc_factory_calib_crc16(&calib, sizeof(calib));
     if (crc != die_info.trim_crc16)
         goto check_failed;
     erase_flash_sector(FACTORY_DATA_LOC);
@@ -1022,7 +1025,7 @@ check_failed:
     if(reg_state) *(volatile uint32_t *)(AON1_CTRL_BASE + 0x18)|=(0x1ul<<31);
     erase_flash_sector(FACTORY_DATA_LOC);
     flash_enable_write_protection((flash_region_t)region, reverse_selection);
-    
+
     return 3;
 }
 
@@ -1057,7 +1060,7 @@ void flash_read_uid(uint32_t uid[4])
 int Vcore_calib(void)
 {
     int i;
-    uint8_t vcc_index;
+    uint8_t vcc_index, lvd_sel;
     uint32_t reg_data;
     const factory_calib_data_t * calib_data = flash_get_factory_calib_data();
     if (calib_data)
@@ -1071,7 +1074,7 @@ int Vcore_calib(void)
                 reg_data &= ~(0xful<<28);
                 reg_data |=(((vcc_index&0x3)|((~vcc_index)&0xc))&0xf)<<28;
                 *(uint32_t*)(AON1_CTRL_BASE+0x30) = reg_data;
-                
+
                 reg_data = *(uint32_t*)(AON1_CTRL_BASE+0x38);
                 reg_data &= ~(0xf<<15);
                 reg_data |= (((vcc_index&0x3)|((~vcc_index)&0xc))&0xf)<<15;
@@ -1103,6 +1106,14 @@ int Vcore_calib(void)
                 break;
             }
         }
+        if (calib_data->calib_bor.version == 0x10)
+        {
+            lvd_sel = calib_data->calib_bor.lvd_value;
+            if (lvd_sel > 7)
+                lvd_sel = 7;
+            *(uint32_t *)(AON1_CTRL_BASE + 0x30) &= ~(0x7 << 18);
+            *(uint32_t *)(AON1_CTRL_BASE + 0x30) |= lvd_sel << 18;
+        }
         return 0;
     }
     return -1;
@@ -1110,7 +1121,7 @@ int Vcore_calib(void)
 
 #endif
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
 static void flash_read_protection_status(uint8_t *region, uint8_t *reverse_selection)
 {
