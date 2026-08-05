@@ -1,0 +1,93 @@
+name: clang-format
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  clang-format:
+    name: FWlib changed lines
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes clang-format-18
+          sudo ln -sf /usr/bin/clang-format-18 /usr/local/bin/clang-format
+          sudo ln -sf /usr/bin/git-clang-format-18 /usr/local/bin/git-clang-format
+          clang-format --version
+
+      - name: Check new files and changed lines
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || 'origin/develop' }}
+          CHECK_PATHS: "src examples" 
+        run: |
+          format_status=0
+          format_diff="$(
+            git clang-format \
+              --diff \
+              --binary clang-format \
+              "$BASE_SHA" \
+              HEAD \
+              -- \
+              $CHECK_PATHS
+          )" || format_status=$?
+
+          if (( format_status > 1 )); then
+            echo "::error title=clang-format::git clang-format failed with exit code $format_status."
+            exit "$format_status"
+          fi
+
+          printf '%s\n' "$format_diff"
+
+          if grep -q '^diff --git ' <<< "$format_diff"; then
+            {
+              echo "## clang-format check failed"
+              echo
+              echo "The changed FWlib lines do not match \`.clang-format\`."
+              echo
+              echo '```diff'
+              printf '%s\n' "$format_diff"
+              echo '```'
+              echo
+              echo "Run \`git clang-format origin/develop\` locally and commit the result."
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            current_file=""
+            annotation_count=0
+            while IFS= read -r line; do
+              case "$line" in
+                "+++ "*)
+                  current_file="${line#+++ }"
+                  current_file="${current_file#b/}"
+                  if [[ "$current_file" == "/dev/null" ]]; then
+                    current_file=""
+                  fi
+                  ;;
+                "@@ "*)
+                  if [[ -n "$current_file" && "$line" =~ \+([0-9]+)(,([0-9]+))? ]]; then
+                    line_number="${BASH_REMATCH[1]}"
+                    if (( line_number < 1 )); then
+                      line_number=1
+                    fi
+                    echo "::error file=$current_file,line=$line_number,title=clang-format::This changed hunk does not match .clang-format. Run 'git clang-format origin/develop', commit the result, or open the job summary to view the suggested patch."
+                    annotation_count=$((annotation_count + 1))
+                  fi
+                  ;;
+              esac
+            done <<< "$format_diff"
+
+            if (( annotation_count == 0 )); then
+              echo "::error title=clang-format::Changed FWlib lines do not match .clang-format. Open the job summary to view the suggested patch."
+            fi
+            exit 1
+          fi
