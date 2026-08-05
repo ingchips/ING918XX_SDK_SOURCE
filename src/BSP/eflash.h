@@ -523,11 +523,20 @@ typedef struct {
     uint16_t vp_0v5_ext;
 } factory_calib_asdm_t;
 
+typedef struct {
+    uint8_t version;
+    uint16_t rest_voltage;
+    uint16_t power_voltage;
+    uint8_t bor_value;
+    uint8_t lvd_value;
+} factory_calib_bor_t;
+
 typedef struct
 {
     factory_calib_pmu_t calib_pmu;
     factory_calib_adc_t calib_adc;
     factory_calib_asdm_t calib_asdm;
+    factory_calib_bor_t calib_bor;
 } factory_calib_data_t;
 
 #define FACTORY_DATA_MAGIC_0    0x494E4743u
@@ -628,10 +637,10 @@ void flash_read_uid(uint32_t uid[4]);
  * * @note The OTP memory region is limited to 256 bytes total capacity.
  * * Restrictions:
  * - Programming: Only supports data write operations. Erase operations are NOT supported.
- * - Lock Mechanism: The flash_otp_enable function permanently locks the entire 
+ * - Lock Mechanism: The flash_otp_enable function permanently locks the entire
  * OTP region. Once called, the memory becomes read-only and cannot be modified.
  */
- 
+
 extern const unsigned char flash_api_bin[320];
 /**
  * @brief Program data into the OTP region
@@ -670,4 +679,3 @@ typedef void (*Func_FlashOTP)(void);
 #endif
 
 #endif
-
