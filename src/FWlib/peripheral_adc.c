@@ -942,7 +942,7 @@ void ADC_GetHardwareCalibData(uint8_t Data[7])
 
 void ADC_SetHardwareCalibData(uint8_t Data[7])
 {
-    uint8_t i, data;
+    uint8_t i, read_calib;
 
     ADC_RegWr(SADC_CFG_0, 1, 1);
     ADC_RegClr(SADC_CFG_0, 28, 1);
@@ -956,9 +956,9 @@ void ADC_SetHardwareCalibData(uint8_t Data[7])
         APB_SADC->sadc_cfg3 |= 1 << 19;
         do
         {
-            data = (APB_SADC->sadc_cfg3 >> 8) & 0xff;
+            read_calib = (APB_SADC->sadc_cfg3 >> 8) & 0xff;
         }
-        while (data != Data[i]);
+        while (read_calib != Data[i]);
     }
     APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
     APB_SADC->sadc_cfg3 &= ~(0xff);
