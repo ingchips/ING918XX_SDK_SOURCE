@@ -1364,11 +1364,11 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
  *
  * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_1`, div should be in [1..15];
  *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_FAST_PER`, div is not used.
- * 
+ *
  * SOURCE_SLOW_CLK cannot set div if there are limitations using old interface.
  * if use old interface, mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_[1..15]`.
  */
-#define SYSCTRL_SelectSpiClk(port, mode) SYSCTRL_SelectSpiClkDiv(port, mode,1)    
+#define SYSCTRL_SelectSpiClk(port, mode) SYSCTRL_SelectSpiClkDiv(port, mode,1)
 void SYSCTRL_SelectSpiClkDiv(spi_port_t port, SYSCTRL_ClkMode mode, uint8_t div);
 
 /**
@@ -1770,13 +1770,13 @@ typedef enum
  */
 typedef enum
 {
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0x3f, // 1.2V
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 0x35,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 0x2a,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V500 = 0x20,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V600 = 0x15,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V700 = 0xb,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V800 = 0,// 1.8V
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0x34, // 1.2V
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 0x22,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 0x17,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V500 = 0xf,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V600 = 0x9,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V700 = 0x4,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V800 = 0x0,// 1.8V
 } SYSCTRL_BuckDCDCOutput;
 
 /**
@@ -1789,6 +1789,10 @@ typedef enum
  * The DCDC output range is 1.2 V to 1.8 V, adjustable in approximately 95 mV steps.
  * The enumeration (SYSCTRL_BuckDCDCOutput) lists typical values in 100 mV increments.
  * A trim value of zero corresponds to the maximum output voltage (1.8 V).
+ *
+ * @note
+ * Using this interface to adjust the DCDC power supply will affect the default dcdc
+ * voltage value configured by the "int Vcore_calib(void)" interface. about 1.42V.
  */
 void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
 
@@ -1797,7 +1801,9 @@ void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
  *
  * Default: Enabled.
  *
- * @param[in] enable        enable(1)/disable(0)
+ * .3
+ *
+ * @param[in] enable        enable(1)/disable(0)wsl
  */
 void SYSCTRL_EnableBuckDCDC(uint8_t enable);
 

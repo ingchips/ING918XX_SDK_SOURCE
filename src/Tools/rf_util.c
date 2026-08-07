@@ -53,6 +53,8 @@ static const uint32_t rf_data[] = {
 #include "rf_powerboost_916.dat"
 };
 
+#define USE_DCDC_MODE 1
+
 static const int16_t power_mapping[] = {
 -6337, -2533, -1978, -1633, -1378, -1200, -1033, -941, -837, -733, -651, -573, \
 -498, -430, -372, -316, -261, -212, -167, -123, -78, -44, -12, 23, 57, \
@@ -65,7 +67,13 @@ void rf_enable_powerboost(void)
     platform_set_rf_init_data(rf_data);
     platform_set_rf_power_mapping(power_mapping);
 
+#if USE_DCDC_MODE
+    SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BUCK_DCDC_OUTPUT_1V800);
+    SYSCTRL_EnableBuckDCDC(1);
+    SYSCTRL_EnableDCDCMode(1);
+#else
     SYSCTRL_EnableDCDCMode(0);
+#endif
 }
 
 #endif

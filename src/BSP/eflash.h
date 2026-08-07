@@ -621,6 +621,11 @@ void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_d
 /**
  * @brief Set Vcore value from FT data;
  *
+ * @note
+ * If there is no ft data, the interface will set the default voltage value.
+ * Vaon: 1.05V
+ * Vcore: 1.18V
+ * VDCDC: 1.33V
  */
 int Vcore_calib(void);
 

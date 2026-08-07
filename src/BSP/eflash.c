@@ -875,32 +875,16 @@ void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_d
 
     for (i = 0; i < ADC_CAL_CHANNEL_NUM; ++i)
     {
-        if (i<2)
-        {
-            factory_set_linear_calib(&dst->ch0_8_int_ref[i],
-                                 src->calib_adc.int_vbat33_ain_ch0_8[i][0],
-                                 341.3333f,
-                                 src->calib_adc.int_vbat33_ain_ch0_8[i][1],
-                                 1137.7778f);
-            factory_set_linear_calib(&dst->ch0_8_vbat_ref[i],
-                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][0],
-                                     310.3030f,
-                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][1],
-                                     1675.6364f);
-        }
-        else
-        {
-            factory_set_linear_calib(&dst->ch0_8_int_ref[i],
-                                     src->calib_adc.int_vbat33_ain_ch0_8[i][0],
-                                     682.6667f,
-                                     src->calib_adc.int_vbat33_ain_ch0_8[i][1],
-                                     2275.5556f);
-            factory_set_linear_calib(&dst->ch0_8_vbat_ref[i],
-                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][0],
-                                     620.6060f,
-                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][1],
-                                     3351.2727f);
-        }
+        factory_set_linear_calib(&dst->ch0_8_int_ref[i],
+                                    src->calib_adc.int_vbat33_ain_ch0_8[i][0],
+                                    682.6667f,
+                                    src->calib_adc.int_vbat33_ain_ch0_8[i][1],
+                                    2275.5556f);
+        factory_set_linear_calib(&dst->ch0_8_vbat_ref[i],
+                                    src->calib_adc.vbat33_flt_ain_ch0_8[i][0],
+                                    620.6060f,
+                                    src->calib_adc.vbat33_flt_ain_ch0_8[i][1],
+                                    3351.2727f);
     }
     if(src->calib_adc.version == 0x10)
     {
@@ -1062,23 +1046,23 @@ int Vcore_calib(void)
     int i;
     uint8_t vcc_index, lvd_sel;
     uint32_t reg_data;
-    const factory_calib_data_t * calib_data = flash_get_factory_calib_data();
+    const factory_calib_data_t *calib_data = flash_get_factory_calib_data();
     if (calib_data)
     {
         for (i = 0; i < 8; i++)
         {
             if (calib_data->calib_pmu.vaon[i] > 1010)
             {
-                vcc_index =  i+calib_data->calib_pmu.vaon_index;
-                reg_data = *(uint32_t*)(AON1_CTRL_BASE+0x30);
-                reg_data &= ~(0xful<<28);
-                reg_data |=(((vcc_index&0x3)|((~vcc_index)&0xc))&0xf)<<28;
-                *(uint32_t*)(AON1_CTRL_BASE+0x30) = reg_data;
+                vcc_index = i + calib_data->calib_pmu.vaon_index;
+                reg_data = *(uint32_t *)(AON1_CTRL_BASE + 0x30);
+                reg_data &= ~(0xful << 28);
+                reg_data |= (((vcc_index & 0x3) | ((~vcc_index) & 0xc)) & 0xf) << 28;
+                *(uint32_t *)(AON1_CTRL_BASE + 0x30) = reg_data;
 
-                reg_data = *(uint32_t*)(AON1_CTRL_BASE+0x38);
-                reg_data &= ~(0xf<<15);
-                reg_data |= (((vcc_index&0x3)|((~vcc_index)&0xc))&0xf)<<15;
-                *(uint32_t*)(AON1_CTRL_BASE+0x38) = reg_data;
+                reg_data = *(uint32_t *)(AON1_CTRL_BASE + 0x38);
+                reg_data &= ~(0xf << 15);
+                reg_data |= (((vcc_index & 0x3) | ((~vcc_index) & 0xc)) & 0xf) << 15;
+                *(uint32_t *)(AON1_CTRL_BASE + 0x38) = reg_data;
                 break;
             }
         }
@@ -1086,11 +1070,11 @@ int Vcore_calib(void)
         {
             if (calib_data->calib_pmu.vcore[i] > 1170)
             {
-                vcc_index =  i+calib_data->calib_pmu.vcore_index;
-                reg_data = *(uint32_t*)(AON1_CTRL_BASE+0x30);
-                reg_data &= ~(0x1f<<5);
-                reg_data |=(((vcc_index&0xf)|((~vcc_index)&0x10))&0x1f)<<5;
-                *(uint32_t*)(AON1_CTRL_BASE+0x30) = reg_data;
+                vcc_index = i + calib_data->calib_pmu.vcore_index;
+                reg_data = *(uint32_t *)(AON1_CTRL_BASE + 0x30);
+                reg_data &= ~(0x1f << 5);
+                reg_data |= (((vcc_index & 0xf) | ((~vcc_index) & 0x10)) & 0x1f) << 5;
+                *(uint32_t *)(AON1_CTRL_BASE + 0x30) = reg_data;
                 break;
             }
         }
@@ -1098,11 +1082,11 @@ int Vcore_calib(void)
         {
             if (calib_data->calib_pmu.vdc33[i] > 1470)
             {
-                vcc_index =  i+calib_data->calib_pmu.vdc33_index;
-                reg_data = *(uint32_t*)(AON1_CTRL_BASE+0x34);
-                reg_data &= ~(0x3f<<14);
-                reg_data |=(vcc_index&0x3f)<<14;
-                *(uint32_t*)(AON1_CTRL_BASE+0x34) = reg_data;
+                vcc_index = i + calib_data->calib_pmu.vdc33_index;
+                reg_data = *(uint32_t *)(AON1_CTRL_BASE + 0x34);
+                reg_data &= ~(0x3f << 14);
+                reg_data |= (vcc_index & 0x3f) << 14;
+                *(uint32_t *)(AON1_CTRL_BASE + 0x34) = reg_data;
                 break;
             }
         }
@@ -1115,6 +1099,30 @@ int Vcore_calib(void)
             *(uint32_t *)(AON1_CTRL_BASE + 0x30) |= lvd_sel << 18;
         }
         return 0;
+    }
+    else
+    {
+        reg_data = *(uint32_t *)(AON1_CTRL_BASE + 0x30);
+        reg_data &= ~(0xful << 28);
+        reg_data |= (((6 & 0x3) | ((~6) & 0xc)) & 0xf) << 28;
+        *(uint32_t *)(AON1_CTRL_BASE + 0x30) = reg_data;
+        reg_data = *(uint32_t *)(AON1_CTRL_BASE + 0x38);
+        reg_data &= ~(0xf << 15);
+        reg_data |= (((6 & 0x3) | ((~6) & 0xc)) & 0xf) << 15;
+        *(uint32_t *)(AON1_CTRL_BASE + 0x38) = reg_data;
+
+        reg_data = *(uint32_t *)(AON1_CTRL_BASE + 0x30);
+        reg_data &= ~(0x1f << 5);
+        reg_data |= (((6 & 0xf) | ((~6) & 0x10)) & 0x1f) << 5;
+        *(uint32_t *)(AON1_CTRL_BASE + 0x30) = reg_data;
+
+        reg_data = *(uint32_t *)(AON1_CTRL_BASE + 0x34);
+        reg_data &= ~(0x3f << 14);
+        reg_data |= 0x1f << 14;
+        *(uint32_t *)(AON1_CTRL_BASE + 0x34) = reg_data;
+
+        *(uint32_t *)(AON1_CTRL_BASE + 0x30) &= ~(0x7 << 18);
+        *(uint32_t *)(AON1_CTRL_BASE + 0x30) |= 6 << 18;
     }
     return -1;
 }
