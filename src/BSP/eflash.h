@@ -496,9 +496,10 @@ typedef struct
     uint16_t vdc33[16];
     uint8_t vcore_index;
     uint16_t vcore[16];
-}factory_calib_pmu_t;
+} factory_calib_pmu_t;
 
-typedef struct {
+typedef struct
+{
     uint8_t version;
     uint16_t channel_mask;
     uint16_t int_vbat33_ain_ch0_8[9][2];
@@ -508,7 +509,8 @@ typedef struct {
     uint16_t vbat25_flt_int_ch9_11[3];
 } factory_calib_adc_t;
 
-typedef struct {
+typedef struct
+{
     uint8_t version;
     uint16_t verf;
     uint16_t mic_bias_int;
@@ -523,7 +525,8 @@ typedef struct {
     uint16_t vp_0v5_ext;
 } factory_calib_asdm_t;
 
-typedef struct {
+typedef struct
+{
     uint8_t version;
     uint16_t rest_voltage;
     uint16_t power_voltage;

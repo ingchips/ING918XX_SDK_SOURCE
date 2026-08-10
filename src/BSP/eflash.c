@@ -752,15 +752,21 @@ int flash_do_update(const int block_num, const fota_update_block_t *blocks, uint
     return r;
 }
 
-static uint16_t crc16(uint8_t *puchMsg, uint16_t usDataLen) {
+static uint16_t crc16(uint8_t *puchMsg, uint16_t usDataLen)
+{
     uint16_t crc = 0xFFFF;
     int i;
-    while (usDataLen--) {
+    while (usDataLen--)
+    {
         crc ^= *puchMsg++;
-        for (i = 0; i < 8; i++) {
-            if (crc & 0x0001) {
+        for (i = 0; i < 8; i++)
+        {
+            if (crc & 0x0001)
+            {
                 crc = (crc >> 1) ^ 0xA001;
-            } else {
+            }
+            else
+            {
                 crc >>= 1;
             }
         }
@@ -768,16 +774,16 @@ static uint16_t crc16(uint8_t *puchMsg, uint16_t usDataLen) {
     return ((crc & 0xFF) << 8) | (crc >> 8);
 }
 
-#define FACTORY_DATA_LOC    (0x02000000 + 0x1000)
-#define FACTORY_DIE_INFO_SRC_ADDR      (0x00000000u)
-#define FACTORY_CALIB_SRC_ADDR         (0x00000100u)
-#define FACTORY_DATA_DIE_INFO          (FACTORY_DATA_LOC)
-#define FACTORY_DATA_CALIB             (FACTORY_DATA_LOC + 0x100)
-#define FACTORY_DATA_CLC               (FACTORY_DATA_LOC + 0x200)
-#define ADC_CAL_CHANNEL_NUM            9
+#define FACTORY_DATA_LOC          (0x02000000 + 0x1000)
+#define FACTORY_DIE_INFO_SRC_ADDR (0x00000000u)
+#define FACTORY_CALIB_SRC_ADDR    (0x00000100u)
+#define FACTORY_DATA_DIE_INFO     (FACTORY_DATA_LOC)
+#define FACTORY_DATA_CALIB        (FACTORY_DATA_LOC + 0x100)
+#define FACTORY_DATA_CLC          (FACTORY_DATA_LOC + 0x200)
+#define ADC_CAL_CHANNEL_NUM       9
 
 
-static uint16_t calc_factory_info_crc16(const die_info_t *info,  uint32_t len)
+static uint16_t calc_factory_info_crc16(const die_info_t *info, uint32_t len)
 {
     return crc16((uint8_t *)info, len - 4);
 }
@@ -875,34 +881,22 @@ void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_d
 
     for (i = 0; i < ADC_CAL_CHANNEL_NUM; ++i)
     {
-        if (i<2)
+        if (i < 2)
         {
-            factory_set_linear_calib(&dst->ch0_8_int_ref[i],
-                                 src->calib_adc.int_vbat33_ain_ch0_8[i][0],
-                                 341.3333f,
-                                 src->calib_adc.int_vbat33_ain_ch0_8[i][1],
-                                 1137.7778f);
-            factory_set_linear_calib(&dst->ch0_8_vbat_ref[i],
-                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][0],
-                                     310.3030f,
-                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][1],
-                                     1675.6364f);
+            factory_set_linear_calib(&dst->ch0_8_int_ref[i], src->calib_adc.int_vbat33_ain_ch0_8[i][0], 341.3333f,
+                                     src->calib_adc.int_vbat33_ain_ch0_8[i][1], 1137.7778f);
+            factory_set_linear_calib(&dst->ch0_8_vbat_ref[i], src->calib_adc.vbat33_flt_ain_ch0_8[i][0], 310.3030f,
+                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][1], 1675.6364f);
         }
         else
         {
-            factory_set_linear_calib(&dst->ch0_8_int_ref[i],
-                                     src->calib_adc.int_vbat33_ain_ch0_8[i][0],
-                                     682.6667f,
-                                     src->calib_adc.int_vbat33_ain_ch0_8[i][1],
-                                     2275.5556f);
-            factory_set_linear_calib(&dst->ch0_8_vbat_ref[i],
-                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][0],
-                                     620.6060f,
-                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][1],
-                                     3351.2727f);
+            factory_set_linear_calib(&dst->ch0_8_int_ref[i], src->calib_adc.int_vbat33_ain_ch0_8[i][0], 682.6667f,
+                                     src->calib_adc.int_vbat33_ain_ch0_8[i][1], 2275.5556f);
+            factory_set_linear_calib(&dst->ch0_8_vbat_ref[i], src->calib_adc.vbat33_flt_ain_ch0_8[i][0], 620.6060f,
+                                     src->calib_adc.vbat33_flt_ain_ch0_8[i][1], 3351.2727f);
         }
     }
-    if(src->calib_adc.version == 0x10)
+    if (src->calib_adc.version == 0x10)
     {
         for (i = 0; i < 8; i++)
         {
@@ -912,10 +906,9 @@ void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_d
             }
             else
                 vref = 1.01f;
-
         }
     }
-    else if(src->calib_adc.version == 0x11)
+    else if (src->calib_adc.version == 0x11)
     {
         for (i = 0; i < 16; i++)
         {
@@ -930,11 +923,8 @@ void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_d
     else
         vref = 1.01f;
 
-    factory_set_vbat_calib(&dst->ch9_vbat,
-                           src->calib_adc.vbat33_flt_int_ch9_11[0],
-                           3.3f,
-                           src->calib_adc.vbat25_flt_int_ch9_11[0],
-                           2.5f, vref);
+    factory_set_vbat_calib(&dst->ch9_vbat, src->calib_adc.vbat33_flt_int_ch9_11[0], 3.3f,
+                           src->calib_adc.vbat25_flt_int_ch9_11[0], 2.5f, vref);
 }
 
 int flash_prepare_factory_data(void)
@@ -975,7 +965,7 @@ int flash_prepare_factory_data(void)
     uint16_t crc = calc_factory_info_crc16(&die_info, sizeof(die_info));
     if (crc != die_info.info_crc16)
         goto check_failed;
-    if(die_info.version == 0x100)
+    if (die_info.version == 0x100)
         crc = calc_factory_calib_crc16(&calib, sizeof(calib) - sizeof(factory_calib_bor_t));
     else
         crc = calc_factory_calib_crc16(&calib, sizeof(calib));
