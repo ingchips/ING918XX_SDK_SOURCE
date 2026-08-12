@@ -379,7 +379,8 @@ static const uint8_t prog_security_page_read[] = {
 #if ((defined __ARMCC_VERSION) && (__ARMCC_VERSION < 6000000))
 asm static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 {
-    ADD r1, r1, #1 BX r1
+    ADD r1, r1, #1 
+    BX r1
 }
 #else
 __attribute__((naked)) static uint32_t security_page_read(uint32_t addr, uint32_t prog)
