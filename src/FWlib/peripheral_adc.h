@@ -724,6 +724,33 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
 void ADC_HardwareCalibration(void);
 
 /**
+ * @brief Get hardware calibration data from ADC module
+ *
+ * @note
+ * This function is intended to be called once after power-up to retrieve
+ * the current hardware calibration parameters.
+ * The retrieved data can be stored and later used by 'ADC_SetHardwareCalibData'
+ * to restore calibration without re-running the hardware calibration process.
+ *
+ * @param[out] Data             Buffer to store 7 bytes of calibration data
+ */
+void ADC_GetHardwareCalibData(uint8_t Data[7]);
+
+/**
+ * @brief Set hardware calibration data to ADC module
+ *
+ * @note
+ * Use this function to restore previously saved calibration data after
+ * resetting or restarting the ADC module.
+ * It bypasses the hardware calibration procedure, significantly reducing
+ * initialization time compared to running a full recalibration.
+ * The data should be obtained from 'ADC_GetHardwareCalibData'.
+ *
+ * @param[in] Data              7 bytes of calibration data to be written
+ */
+void ADC_SetHardwareCalibData(uint8_t Data[7]);
+
+/**
  * @brief Convert raw ADC code to calibrated physical value
  *
  * @note

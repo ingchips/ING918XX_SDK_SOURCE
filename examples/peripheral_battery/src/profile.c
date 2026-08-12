@@ -214,7 +214,7 @@ volatile uint8_t *battery_level = NULL;
 static void update_battery_status(void)
 {
     uint16_t voltage = read_adc(ADC_CHANNEL);
-    platform_printf("U = %d", voltage);
+    platform_printf("U = %d\n", voltage);
     // level is reported by comparing max & min voltage
     // for DEMO only
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
