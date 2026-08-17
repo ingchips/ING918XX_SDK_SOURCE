@@ -1105,6 +1105,8 @@ float ADC_GetCalibratedValue(SADC_channelId ch, uint16_t raw)
     const adc_linear_calib_t *linear;
 
     cal = ADC_GetCalibrationData();
+    if (!raw)
+        return (float)raw;
     if (cal == NULL)
     {
         if (ch <= ADC_CH_1)
