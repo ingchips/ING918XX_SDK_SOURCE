@@ -2028,10 +2028,10 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
 {
     static volatile uint32_t pcap[2];
     uint32_t diff;
-    
+
     uint32_t freq;
     volatile DMA_Descriptor descriptor __attribute__((aligned(8)));
-    
+
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x3C) &= ~(0xfful<<24);
     *(volatile uint32_t *)(AON1_CTRL_BASE + 0x3C) |= (clc&0xff)<<24;
     APB_PWM->Channels[0].Ctrl0 = (0x6<<7)|(0x1<<21)|(0x1<<20);
@@ -2043,7 +2043,7 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
     descriptor.DstAddr = (uint32_t)&pcap[1];
     descriptor.TranSize = 1000*2-1;
     descriptor.Next = 0;
-    
+
     APB_DMA->Channels[0].Descriptor.Ctrl = 0x0|(0x8<<8)|(0x2<<14)|(0x0<<16)|(0x1<<17)|(0x2<<18)|(0x2<<21)|(0x1<<24) ;
     APB_DMA->Channels[0].Descriptor.SrcAddr = (uint32_t)(&APB_PWM->PCAPChannels[0].Ctrl1);
     APB_DMA->Channels[0].Descriptor.DstAddr = (uint32_t)pcap;
@@ -2052,7 +2052,7 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
     __DSB();
     APB_DMA->Channels[0].Descriptor.Ctrl |= 0x1;
     APB_PWM->Channels[0].Ctrl0 |= 0x1<<6;
-    
+
     while (!(APB_DMA->IntStatus & (0x1<<16)));
     APB_DMA->IntStatus = 0xffffffff;
     __DSB();
@@ -2060,7 +2060,7 @@ uint32_t SYSCTRL_RC2MCalib(uint32_t clc)
 
     diff = pcap[1] - pcap[0];
     freq = (1000UL * 24000UL) / diff;
-    
+
     SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB_PWM);
     SYSCTRL_ReleaseBlock(SYSCTRL_ITEM_APB_PWM);
     return (uint32_t)(freq*1000);
@@ -2076,13 +2076,13 @@ uint32_t SYSCTRL_RC2MTune(uint32_t freq)
     uint32_t max;
 
     uint32_t Freq;
-    
+
     uint8_t enabled = io_read(AON1_CTRL_BASE + 0x28) & 1;
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_DMA);
     SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB_PWM);
     set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 1, 0);
     set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 1, 3);
-    
+
     APB_SYSCTRL->DmaCtrl[1] = 0x8 | (0x9<<4);
 
     min = 0;
@@ -2115,7 +2115,7 @@ uint32_t SYSCTRL_RC2MTune(uint32_t freq)
     if(Freq > freq){
         Freq = SYSCTRL_RC2MCalib(start);
     }
-    
+
     APB_PWM->Channels[0].Ctrl0 &= ~(0x1<<20);
     APB_PWM->PCAPChannels[0].Ctrl0 = 0;
     set_reg_bit((volatile uint32_t *)(APB_SYSCTRL_BASE + 0x70), 0, 0);
@@ -2152,12 +2152,13 @@ int SYSCTRL_Init(void)
     if (io_read(AON1_CTRL_BASE + 0x28) & 1)
         ROM_PLLinUse(1, 1, 1, 1);
     else
-        ROM_PLLinUse(0, 0, 0, 0);
+        ROM_PLLinUse(0, 1, 1, 1);
 
     set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), 0x1d, 6, 16);
     set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x4),0,18);
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x14),0,26);
     set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10),0,10);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10),0,7);
 
     Vcore_calib();
     return 0;

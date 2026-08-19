@@ -14,7 +14,6 @@
 
 typedef void (*f_task_entry)(void *);
 typedef void (*f_timer_cb)(void *);
-typedef void (*f_plt_timer)(void);
 
 static f_task_entry host_entry = NULL;
 static void *host_param = NULL;
@@ -41,6 +40,12 @@ struct simple_queue
     int msg_cnt;
     uint8_t data[0];
 };
+
+#if (PLATFORM_BUNDLE_VARIANT == PLATFORM_BUNDLE_VARIANT_ROM)
+
+// `platform_create_625us_timer` is unavailable in ROM bundles.
+
+typedef void (*f_plt_timer)(void);
 
 #define SW_TIMER_NUMBER     8
 
@@ -125,6 +130,61 @@ static void timer_delete(gen_handle_t timer)
     platform_set_timer(p->plt_cb, 0);
     p->used = 0;
 }
+
+#else
+
+typedef void (* f_os_timer_cb)(void *);
+
+struct sw_timer
+{
+    f_os_timer_cb   cb;
+    void           *user_data;
+    uint32_t        timeout_in_625us;
+    platform_625us_timer_handle_t plt_timer_handle;
+};
+
+static gen_handle_t timer_create(
+        uint32_t timeout_in_ms,
+        void *user_data,
+        void (* timer_cb)(void *))
+{
+    struct sw_timer *timer = malloc(sizeof(struct sw_timer));
+
+    timer->timeout_in_625us = (uint32_t)(((uint64_t)timeout_in_ms) * 1000 / 625);
+    timer->cb               = timer_cb;
+    timer->user_data        = user_data;
+    timer->plt_timer_handle = NULL;
+
+    // avoid returning 0
+    return (gen_handle_t)(timer);
+}
+
+static void timer_stop(gen_handle_t timer)
+{
+    struct sw_timer *p = (struct sw_timer *)timer;
+    if (p->plt_timer_handle)
+    {
+        platform_delete_625us_timer(p->plt_timer_handle);
+        p->plt_timer_handle = NULL;
+    }
+}
+
+static void timer_start(gen_handle_t timer)
+{
+    struct sw_timer *p = (struct sw_timer *)timer;
+    timer_stop(timer);
+    // Note: for ARM ABI, casting to `f_platform_625us_timer_callback` is ok.
+    p->plt_timer_handle = platform_create_625us_timer((f_platform_625us_timer_callback)(p->cb), p->user_data, p->timeout_in_625us);
+}
+
+static void timer_delete(gen_handle_t timer)
+{
+    struct sw_timer *p = (struct sw_timer *)timer;
+    timer_stop(timer);
+    free(p);
+}
+
+#endif
 
 static gen_handle_t task_create(
         const char *name,

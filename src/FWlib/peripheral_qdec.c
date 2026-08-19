@@ -258,10 +258,10 @@ void QDEC_IntClear(void)
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
-#define NOP_NUME    2
+#define NOP_NUME    4
 __IO uint32_t nop_vale = NOP_NUME;
 
-void Qdec_Nop(uint32_t vale)
+void Qdec_Nop(__IO uint32_t vale)
 {
     while(vale--)
     {

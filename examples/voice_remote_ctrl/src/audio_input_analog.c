@@ -131,7 +131,7 @@ static uint32_t DMA_cb_isr(void *user_data)
     uint32_t *rr = DMA_PingPongIntProc(&PingPong, CHANNEL_ID);
     uint32_t transSize = DMA_PingPongGetTransSize(&PingPong);
     while (transSize--) {
-        audio_rx_sample((pcm_sample_t)(rr[cnt] & 0xff));
+        audio_rx_sample((pcm_sample_t)(rr[cnt] & 0xffff));
         audio_rx_sample((pcm_sample_t)(rr[cnt] >> 16));
         cnt++;
     }

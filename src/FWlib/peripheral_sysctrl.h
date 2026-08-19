@@ -1,9 +1,9 @@
 #ifndef __PERIPHERAL_SYSCTRL_H__
 #define __PERIPHERAL_SYSCTRL_H__
 
-#ifdef	__cplusplus
-extern "C" {	/* allow C++ to use these headers */
-#endif	/* __cplusplus */
+#ifdef __cplusplus
+extern "C" { /* allow C++ to use these headers */
+#endif       /* __cplusplus */
 
 #include "ingsoc.h"
 #include "peripheral_pinctrl.h"
@@ -14,64 +14,64 @@ extern "C" {	/* allow C++ to use these headers */
 
 typedef enum
 {
-    SYSCTRL_ClkGate_APB_I2C0                =  4,
-    SYSCTRL_ClkGate_APB_SPI1                =  5,
-    SYSCTRL_ClkGate_APB_TMR0                =  6,
-    SYSCTRL_ClkGate_APB_TMR1                =  7,
-    SYSCTRL_ClkGate_APB_TMR2                =  8,
-    SYSCTRL_ClkGate_APB_UART0               =  9,
-    SYSCTRL_ClkGate_APB_UART1               = 10,
-    SYSCTRL_ClkGate_APB_GPIO                = 13,
-    SYSCTRL_ClkGate_APB_PWM                 = 16,
-    SYSCTRL_ClkGate_AHB_SPI0                = 17,
-    SYSCTRL_ClkGate_APB_PinCtrl             = 18,
-    SYSCTRL_ClkGate_APB_I2C1                = 19
+    SYSCTRL_ClkGate_APB_I2C0 = 4,
+    SYSCTRL_ClkGate_APB_SPI1 = 5,
+    SYSCTRL_ClkGate_APB_TMR0 = 6,
+    SYSCTRL_ClkGate_APB_TMR1 = 7,
+    SYSCTRL_ClkGate_APB_TMR2 = 8,
+    SYSCTRL_ClkGate_APB_UART0 = 9,
+    SYSCTRL_ClkGate_APB_UART1 = 10,
+    SYSCTRL_ClkGate_APB_GPIO = 13,
+    SYSCTRL_ClkGate_APB_PWM = 16,
+    SYSCTRL_ClkGate_AHB_SPI0 = 17,
+    SYSCTRL_ClkGate_APB_PinCtrl = 18,
+    SYSCTRL_ClkGate_APB_I2C1 = 19
 } SYSCTRL_ClkGateItem;
 
 // compatible definitions with ING916xx
-#define SYSCTRL_ClkGate_APB_GPIO0           SYSCTRL_ClkGate_APB_GPIO
-#define SYSCTRL_ClkGate_APB_GPIO1           SYSCTRL_ClkGate_APB_GPIO
-#define SYSCTRL_ClkGate_APB_WDT             SYSCTRL_ClkGate_APB_TMR0
+#define SYSCTRL_ClkGate_APB_GPIO0 SYSCTRL_ClkGate_APB_GPIO
+#define SYSCTRL_ClkGate_APB_GPIO1 SYSCTRL_ClkGate_APB_GPIO
+#define SYSCTRL_ClkGate_APB_WDT   SYSCTRL_ClkGate_APB_TMR0
 
 typedef enum
 {
-    SYSCTRL_Reset_AHB_LLE                 =  1,
-    SYSCTRL_Reset_AHB_IOC                 =  2,
-    SYSCTRL_Reset_APB_I2C0                =  3,
-    SYSCTRL_Reset_APB_SPI1                =  4,
-    SYSCTRL_Reset_APB_TMR0                =  5,
-    SYSCTRL_Reset_APB_TMR1                =  6,
-    SYSCTRL_Reset_APB_TMR2                =  7,
-    SYSCTRL_Reset_APB_SCI0                =  8,
-    SYSCTRL_Reset_APB_SCI1                =  9,
-    SYSCTRL_Reset_APB_ISOL                = 10,
-    SYSCTRL_Reset_RtcClk                  = 11,
-    SYSCTRL_Reset_APB_GPIOA               = 12,
-    SYSCTRL_Reset_APB_GPIOB               = 13,
-    SYSCTRL_Reset_APB_GPIOC               = 14,
-    SYSCTRL_Reset_APB_PWM                 = 15,
-    SYSCTRL_Reset_AHB_SPI0                = 16,
-    SYSCTRL_Reset_APB_PinCtrl             = 17,
-    SYSCTRL_Reset_APB_I2C1                = 18,
-    SYSCTRL_Reset_RF                      = 19,
-    SYSCTRL_Reset_LLE_RFCtrl              = 20,
-    SYSCTRL_Reset_APB_TRNG                = 21
+    SYSCTRL_Reset_AHB_LLE = 1,
+    SYSCTRL_Reset_AHB_IOC = 2,
+    SYSCTRL_Reset_APB_I2C0 = 3,
+    SYSCTRL_Reset_APB_SPI1 = 4,
+    SYSCTRL_Reset_APB_TMR0 = 5,
+    SYSCTRL_Reset_APB_TMR1 = 6,
+    SYSCTRL_Reset_APB_TMR2 = 7,
+    SYSCTRL_Reset_APB_SCI0 = 8,
+    SYSCTRL_Reset_APB_SCI1 = 9,
+    SYSCTRL_Reset_APB_ISOL = 10,
+    SYSCTRL_Reset_RtcClk = 11,
+    SYSCTRL_Reset_APB_GPIOA = 12,
+    SYSCTRL_Reset_APB_GPIOB = 13,
+    SYSCTRL_Reset_APB_GPIOC = 14,
+    SYSCTRL_Reset_APB_PWM = 15,
+    SYSCTRL_Reset_AHB_SPI0 = 16,
+    SYSCTRL_Reset_APB_PinCtrl = 17,
+    SYSCTRL_Reset_APB_I2C1 = 18,
+    SYSCTRL_Reset_RF = 19,
+    SYSCTRL_Reset_LLE_RFCtrl = 20,
+    SYSCTRL_Reset_APB_TRNG = 21
 } SYSCTRL_ResetItem;
 
 typedef enum
 {
-    SYSCTRL_LDO_OUPUT_1V60 = 0x13,  // Recommended for Vbat = 1.8V
-    SYSCTRL_LDO_OUPUT_1V80 = 0x16,  // Recommended for Vbat = 2.5V
-    SYSCTRL_LDO_OUPUT_2V50 = 0x1f,  // Recommended for Vbat = 3.3V
-}SYSCTRL_LDOOutputCore;
+    SYSCTRL_LDO_OUPUT_1V60 = 0x13, // Recommended for Vbat = 1.8V
+    SYSCTRL_LDO_OUPUT_1V80 = 0x16, // Recommended for Vbat = 2.5V
+    SYSCTRL_LDO_OUPUT_2V50 = 0x1f, // Recommended for Vbat = 3.3V
+} SYSCTRL_LDOOutputCore;
 
 enum
 {
-    SYSCTRL_BOR_0V85 = 0x06,        // BOR Vdd threshold = 0.85V
-    SYSCTRL_BOR_0V90 = 0x07,        // BOR Vdd threshold = 0.90V
-    SYSCTRL_BOR_0V95 = 0x08,        // BOR Vdd threshold = 0.95V
-    SYSCTRL_BOR_1V00 = 0x09,        // BOR Vdd threshold = 1.00V
-    SYSCTRL_BOR_1V05 = 0x0A,        // BOR Vdd threshold = 1.05V
+    SYSCTRL_BOR_0V85 = 0x06, // BOR Vdd threshold = 0.85V
+    SYSCTRL_BOR_0V90 = 0x07, // BOR Vdd threshold = 0.90V
+    SYSCTRL_BOR_0V95 = 0x08, // BOR Vdd threshold = 0.95V
+    SYSCTRL_BOR_1V00 = 0x09, // BOR Vdd threshold = 1.00V
+    SYSCTRL_BOR_1V05 = 0x0A, // BOR Vdd threshold = 1.05V
 };
 
 /**
@@ -90,26 +90,26 @@ uint32_t SYSCTRL_ReadClkGate(void);
  * @brief Reset/Release control of all components
  * @param data      Reset/Release control of each component
  */
-void SYSCTRL_WriteBlockRst(uint32_t data) ;
+void SYSCTRL_WriteBlockRst(uint32_t data);
 
 /**
  * @brief Get Reset/Release state of all components
  * @return Reset/Release state of each components
  */
-uint32_t SYSCTRL_ReadBlockRst(void) ;
+uint32_t SYSCTRL_ReadBlockRst(void);
 
 typedef enum
 {
-    SYSCTRL_MEM_BLOCK_0 = 0x20,     // block 0 is  8KiB starting from 0x20000000
-    SYSCTRL_MEM_BLOCK_1 = 0x40,     // block 1 is  8KiB following block 0
-    SYSCTRL_MEM_BLOCK_2 = 0x80,     // block 2 is 16KiB following block 1
-    SYSCTRL_MEM_BLOCK_3 = 0x100,    // block 3 is 16KiB following block 2
-    SYSCTRL_MEM_BLOCK_4 = 0x200,    // block 4 is 16KiB following block 3
-    SYSCTRL_SHARE_BLOCK_0 = 0x1,    // share memory block 0 is  8KiB starting from 0x400A0000
-    SYSCTRL_SHARE_BLOCK_1 = 0x2,    // share memory block 1 is  8KiB following block 0 (0x400A2000)
-    SYSCTRL_SHARE_BLOCK_2 = 0x4,    // share memory block 2 is 16KiB following block 1
-    SYSCTRL_SHARE_BLOCK_3 = 0x8,    // share memory block 3 is 16KiB following block 2
-    SYSCTRL_SHARE_BLOCK_4 = 0x10,   // share memory block 4 is 16KiB following block 3
+    SYSCTRL_MEM_BLOCK_0 = 0x20,   // block 0 is  8KiB starting from 0x20000000
+    SYSCTRL_MEM_BLOCK_1 = 0x40,   // block 1 is  8KiB following block 0
+    SYSCTRL_MEM_BLOCK_2 = 0x80,   // block 2 is 16KiB following block 1
+    SYSCTRL_MEM_BLOCK_3 = 0x100,  // block 3 is 16KiB following block 2
+    SYSCTRL_MEM_BLOCK_4 = 0x200,  // block 4 is 16KiB following block 3
+    SYSCTRL_SHARE_BLOCK_0 = 0x1,  // share memory block 0 is  8KiB starting from 0x400A0000
+    SYSCTRL_SHARE_BLOCK_1 = 0x2,  // share memory block 1 is  8KiB following block 0 (0x400A2000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x4,  // share memory block 2 is 16KiB following block 1
+    SYSCTRL_SHARE_BLOCK_3 = 0x8,  // share memory block 3 is 16KiB following block 2
+    SYSCTRL_SHARE_BLOCK_4 = 0x10, // share memory block 4 is 16KiB following block 3
 } SYSCTRL_MemBlock;
 
 // these 3 blocks (16 + 8) KiB are reversed in _mini_bundles
@@ -122,14 +122,14 @@ typedef enum
  *
  * @return              clock in Hz
  */
-#define SYSCTRL_GetHClk()       48000000
+#define SYSCTRL_GetHClk() 48000000
 
-#define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
-#define SYSCTRL_WAKEUP_SOURCE_EXT_INT       2       // waken up by EXT_INT
+#define SYSCTRL_WAKEUP_SOURCE_AUTO    1 // waken up automatically by internal timer
+#define SYSCTRL_WAKEUP_SOURCE_EXT_INT 2 // waken up by EXT_INT
 
 typedef struct
 {
-    uint32_t source;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
+    uint32_t source; // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
 
 /**
@@ -144,57 +144,57 @@ void SYSCTRL_PAEnable(void);
 
 typedef enum
 {
-    SYSCTRL_ITEM_APB_GPIO0     ,
-    SYSCTRL_ITEM_APB_GPIO1     ,
-    SYSCTRL_ITEM_APB_TMR0      ,
-    SYSCTRL_ITEM_APB_TMR1      ,
-    SYSCTRL_ITEM_APB_TMR2      ,
-    SYSCTRL_ITEM_APB_WDT       ,
-    SYSCTRL_ITEM_APB_PWM       ,
-    SYSCTRL_ITEM_APB_PDM       ,
-    SYSCTRL_ITEM_APB_QDEC      ,
-    SYSCTRL_ITEM_APB_KeyScan   ,
-    SYSCTRL_ITEM_APB_IR        ,
-    SYSCTRL_ITEM_APB_DMA       ,
-    SYSCTRL_ITEM_AHB_SPI0      ,
-    SYSCTRL_ITEM_APB_SPI1      ,
-    SYSCTRL_ITEM_APB_ADC       ,
-    SYSCTRL_ITEM_APB_I2S       ,
-    SYSCTRL_ITEM_APB_UART0     ,
-    SYSCTRL_ITEM_APB_UART1     ,
-    SYSCTRL_ITEM_APB_I2C0      ,
-    SYSCTRL_ITEM_APB_I2C1      ,
-    SYSCTRL_ITEM_APB_SysCtrl   ,
-    SYSCTRL_ITEM_APB_PinCtrl   ,
-    SYSCTRL_ITEM_APB_EFUSE     ,
-    SYSCTRL_ITEM_APB_USB       ,
-    SYSCTRL_ITEM_APB_LPC       ,
+    SYSCTRL_ITEM_APB_GPIO0,
+    SYSCTRL_ITEM_APB_GPIO1,
+    SYSCTRL_ITEM_APB_TMR0,
+    SYSCTRL_ITEM_APB_TMR1,
+    SYSCTRL_ITEM_APB_TMR2,
+    SYSCTRL_ITEM_APB_WDT,
+    SYSCTRL_ITEM_APB_PWM,
+    SYSCTRL_ITEM_APB_PDM,
+    SYSCTRL_ITEM_APB_QDEC,
+    SYSCTRL_ITEM_APB_KeyScan,
+    SYSCTRL_ITEM_APB_IR,
+    SYSCTRL_ITEM_APB_DMA,
+    SYSCTRL_ITEM_AHB_SPI0,
+    SYSCTRL_ITEM_APB_SPI1,
+    SYSCTRL_ITEM_APB_ADC,
+    SYSCTRL_ITEM_APB_I2S,
+    SYSCTRL_ITEM_APB_UART0,
+    SYSCTRL_ITEM_APB_UART1,
+    SYSCTRL_ITEM_APB_I2C0,
+    SYSCTRL_ITEM_APB_I2C1,
+    SYSCTRL_ITEM_APB_SysCtrl,
+    SYSCTRL_ITEM_APB_PinCtrl,
+    SYSCTRL_ITEM_APB_EFUSE,
+    SYSCTRL_ITEM_APB_USB,
+    SYSCTRL_ITEM_APB_LPC,
     SYSCTRL_ITEM_NUMBER,
 } SYSCTRL_Item;
 
 // compatible definitions with ING918xx
-#define  SYSCTRL_ClkGate_APB_GPIO0              SYSCTRL_ITEM_APB_GPIO0
-#define  SYSCTRL_ClkGate_APB_GPIO1              SYSCTRL_ITEM_APB_GPIO1
-#define  SYSCTRL_ClkGate_APB_TMR0               SYSCTRL_ITEM_APB_TMR0
-#define  SYSCTRL_ClkGate_APB_TMR1               SYSCTRL_ITEM_APB_TMR1
-#define  SYSCTRL_ClkGate_APB_TMR2               SYSCTRL_ITEM_APB_TMR2
-#define  SYSCTRL_ClkGate_APB_WDT                SYSCTRL_ITEM_APB_WDT
-#define  SYSCTRL_ClkGate_APB_PWM                SYSCTRL_ITEM_APB_PWM
-#define  SYSCTRL_ClkGate_APB_PDM                SYSCTRL_ITEM_APB_PDM
-#define  SYSCTRL_ClkGate_APB_QDEC               SYSCTRL_ITEM_APB_QDEC
-#define  SYSCTRL_ClkGate_APB_KeyScan            SYSCTRL_ITEM_APB_KeyScan
-#define  SYSCTRL_ClkGate_APB_IR                 SYSCTRL_ITEM_APB_IR
-#define  SYSCTRL_ClkGate_APB_DMA                SYSCTRL_ITEM_APB_DMA
-#define  SYSCTRL_ClkGate_AHB_SPI0               SYSCTRL_ITEM_AHB_SPI0
-#define  SYSCTRL_ClkGate_APB_SPI1               SYSCTRL_ITEM_APB_SPI1
-#define  SYSCTRL_ClkGate_APB_ADC                SYSCTRL_ITEM_APB_ADC
-#define  SYSCTRL_ClkGate_APB_I2S                SYSCTRL_ITEM_APB_I2S
-#define  SYSCTRL_ClkGate_APB_UART0              SYSCTRL_ITEM_APB_UART0
-#define  SYSCTRL_ClkGate_APB_UART1              SYSCTRL_ITEM_APB_UART1
-#define  SYSCTRL_ClkGate_APB_I2C0               SYSCTRL_ITEM_APB_I2C0
-#define  SYSCTRL_ClkGate_APB_I2C1               SYSCTRL_ITEM_APB_I2C1
-#define  SYSCTRL_ClkGate_APB_PinCtrl            SYSCTRL_ITEM_APB_PinCtrl
-#define  SYSCTRL_ClkGate_APB_EFUSE              SYSCTRL_ITEM_APB_EFUSE
+#define SYSCTRL_ClkGate_APB_GPIO0   SYSCTRL_ITEM_APB_GPIO0
+#define SYSCTRL_ClkGate_APB_GPIO1   SYSCTRL_ITEM_APB_GPIO1
+#define SYSCTRL_ClkGate_APB_TMR0    SYSCTRL_ITEM_APB_TMR0
+#define SYSCTRL_ClkGate_APB_TMR1    SYSCTRL_ITEM_APB_TMR1
+#define SYSCTRL_ClkGate_APB_TMR2    SYSCTRL_ITEM_APB_TMR2
+#define SYSCTRL_ClkGate_APB_WDT     SYSCTRL_ITEM_APB_WDT
+#define SYSCTRL_ClkGate_APB_PWM     SYSCTRL_ITEM_APB_PWM
+#define SYSCTRL_ClkGate_APB_PDM     SYSCTRL_ITEM_APB_PDM
+#define SYSCTRL_ClkGate_APB_QDEC    SYSCTRL_ITEM_APB_QDEC
+#define SYSCTRL_ClkGate_APB_KeyScan SYSCTRL_ITEM_APB_KeyScan
+#define SYSCTRL_ClkGate_APB_IR      SYSCTRL_ITEM_APB_IR
+#define SYSCTRL_ClkGate_APB_DMA     SYSCTRL_ITEM_APB_DMA
+#define SYSCTRL_ClkGate_AHB_SPI0    SYSCTRL_ITEM_AHB_SPI0
+#define SYSCTRL_ClkGate_APB_SPI1    SYSCTRL_ITEM_APB_SPI1
+#define SYSCTRL_ClkGate_APB_ADC     SYSCTRL_ITEM_APB_ADC
+#define SYSCTRL_ClkGate_APB_I2S     SYSCTRL_ITEM_APB_I2S
+#define SYSCTRL_ClkGate_APB_UART0   SYSCTRL_ITEM_APB_UART0
+#define SYSCTRL_ClkGate_APB_UART1   SYSCTRL_ITEM_APB_UART1
+#define SYSCTRL_ClkGate_APB_I2C0    SYSCTRL_ITEM_APB_I2C0
+#define SYSCTRL_ClkGate_APB_I2C1    SYSCTRL_ITEM_APB_I2C1
+#define SYSCTRL_ClkGate_APB_PinCtrl SYSCTRL_ITEM_APB_PinCtrl
+#define SYSCTRL_ClkGate_APB_EFUSE   SYSCTRL_ITEM_APB_EFUSE
 
 typedef SYSCTRL_Item SYSCTRL_ClkGateItem;
 
@@ -211,7 +211,7 @@ typedef SYSCTRL_Item SYSCTRL_ResetItem;
  */
 typedef enum
 {
-    SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0,      // 1.000V
+    SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0, // 1.000V
     SYSCTRL_LDO_OUTPUT_CORE_1V020 = 1,
     SYSCTRL_LDO_OUTPUT_CORE_1V040 = 2,
     SYSCTRL_LDO_OUTPUT_CORE_1V060 = 3,
@@ -240,7 +240,7 @@ typedef enum
  */
 typedef enum
 {
-    SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5,     // 2.100V
+    SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5, // 2.100V
     SYSCTRL_LDO_OUTPUT_FLASH_2V200 = 6,
     SYSCTRL_LDO_OUTPUT_FLASH_2V300 = 7,
     SYSCTRL_LDO_OUTPUT_FLASH_2V400 = 8,
@@ -282,16 +282,16 @@ enum
 
 typedef enum
 {
-    SYSCTRL_CLK_SLOW = 0,            // use slow clock
-    SYSCTRL_CLK_32k = 0,             // use 32kHz clock
-    SYSCTRL_CLK_HCLK = 1,            // use HCLK (same as MCU)
-    SYSCTRL_CLK_ADC_DIV = 1,         // use clock from ADC divider
+    SYSCTRL_CLK_SLOW = 0,    // use slow clock
+    SYSCTRL_CLK_32k = 0,     // use 32kHz clock
+    SYSCTRL_CLK_HCLK = 1,    // use HCLK (same as MCU)
+    SYSCTRL_CLK_ADC_DIV = 1, // use clock from ADC divider
 
-    SYSCTRL_CLK_PLL_DIV_1 = 1,       // use (PLL clock div 1)
-                                     // SYSCTRL_TMR_CLK_PLL_DIV_2: use (PLL clock div 2)
-                                     // ..
-                                     // SYSCTRL_TMR_CLK_PLL_DIV_15: use (PLL clock div 15)
-                                     // Feel free to cast [1..15] to SYSCTRL_ClkMode
+    SYSCTRL_CLK_PLL_DIV_1 = 1, // use (PLL clock div 1)
+                               // SYSCTRL_TMR_CLK_PLL_DIV_2: use (PLL clock div 2)
+                               // ..
+                               // SYSCTRL_TMR_CLK_PLL_DIV_15: use (PLL clock div 15)
+                               // Feel free to cast [1..15] to SYSCTRL_ClkMode
     SYSCTRL_CLK_PLL_DIV_2 = 2,
     SYSCTRL_CLK_PLL_DIV_3 = 3,
     SYSCTRL_CLK_PLL_DIV_4 = 4,
@@ -307,10 +307,10 @@ typedef enum
     SYSCTRL_CLK_PLL_DIV_14 = 14,
     SYSCTRL_CLK_PLL_DIV_15 = 15,
 
-    SYSCTRL_CLK_SLOW_DIV_1 = 1,      // use RF OSC clock div 1
-                                     // SYSCTRL_CLK_SLOW_DIV_2: use (RF OSC clock div 2)
-                                     // ..
-                                     // Feel free to cast [1..15] to SYSCTRL_ClkMode
+    SYSCTRL_CLK_SLOW_DIV_1 = 1, // use RF OSC clock div 1
+                                // SYSCTRL_CLK_SLOW_DIV_2: use (RF OSC clock div 2)
+                                // ..
+                                // Feel free to cast [1..15] to SYSCTRL_ClkMode
     SYSCTRL_CLK_SLOW_DIV_2 = 2,
     SYSCTRL_CLK_SLOW_DIV_3 = 3,
     SYSCTRL_CLK_SLOW_DIV_4 = 4,
@@ -593,10 +593,8 @@ int SYSCTRL_GetCLK32k(void);
  *                              after about 3 seconds. Developer are free to update
  *                              its configuration later.
  */
-void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
-        SYSCTRL_ClkMode hclk,
-        SYSCTRL_ClkMode flash_clk,
-        uint8_t enable_watchdog);
+void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop, SYSCTRL_ClkMode hclk,
+                                           SYSCTRL_ClkMode flash_clk, uint8_t enable_watchdog);
 
 /**
  * @brief Disable automatic configuration of core clocks after wakeup
@@ -610,8 +608,8 @@ void SYSCTRL_DisableConfigClocksAfterWakeup(void);
 
 typedef enum
 {
-    SYSCTRL_CPU_32k_CLK_32k = 0,    // use the clock configured by `SYSCTRL_SelectCLK32k`
-    SYSCTRL_CPU_32k_INTERNAL = 1,   // use the internal 32k clock source (32k OSC or 32k RC)
+    SYSCTRL_CPU_32k_CLK_32k = 0,  // use the clock configured by `SYSCTRL_SelectCLK32k`
+    SYSCTRL_CPU_32k_INTERNAL = 1, // use the internal 32k clock source (32k OSC or 32k RC)
 } SYSCTRL_CPU32kMode;
 
 /**
@@ -633,8 +631,8 @@ int SYSCTRL_GetCPU32k(void);
 
 typedef enum
 {
-    SYSCTRL_SLOW_RC_CLK = 0,        // RC clock (which is tunable)
-    SYSCTRL_SLOW_CLK_24M_RF = 1,    // 24MHz RF OSC clock (default)
+    SYSCTRL_SLOW_RC_CLK = 0,     // RC clock (which is tunable)
+    SYSCTRL_SLOW_CLK_24M_RF = 1, // 24MHz RF OSC clock (default)
 } SYSCTRL_SlowClkMode;
 
 /**
@@ -716,27 +714,27 @@ typedef enum
 {
     SYSCTRL_DMA_UART0_RX = 0,
     SYSCTRL_DMA_UART1_RX = 1,
-    SYSCTRL_DMA_SPI0_TX  = 2,
-    SYSCTRL_DMA_SPI1_TX  = 3,
-    SYSCTRL_DMA_I2C0     = 4,
-    SYSCTRL_DMA_QDEC0    = 5,
-    SYSCTRL_DMA_PWM1     = 6,
-    SYSCTRL_DMA_I2S_RX   = 7,
-    SYSCTRL_DMA_PDM      = 8,
-    SYSCTRL_DMA_ADC      = 9,
+    SYSCTRL_DMA_SPI0_TX = 2,
+    SYSCTRL_DMA_SPI1_TX = 3,
+    SYSCTRL_DMA_I2C0 = 4,
+    SYSCTRL_DMA_QDEC0 = 5,
+    SYSCTRL_DMA_PWM1 = 6,
+    SYSCTRL_DMA_I2S_RX = 7,
+    SYSCTRL_DMA_PDM = 8,
+    SYSCTRL_DMA_ADC = 9,
 
     SYSCTRL_DMA_UART0_TX = 0x10,
     SYSCTRL_DMA_UART1_TX = 0x11,
-    SYSCTRL_DMA_SPI0_RX  = 0x12,
-    SYSCTRL_DMA_SPI1_RX  = 0x13,
-    SYSCTRL_DMA_I2C1     = 0x14,
-    SYSCTRL_DMA_QDEC1    = 0x15,
-    SYSCTRL_DMA_KeyScan  = 0x16,
-    SYSCTRL_DMA_I2S_TX   = 0x17,
-    SYSCTRL_DMA_PWM0     = 0x18,
-    SYSCTRL_DMA_PWM2     = 0x19,
-    SYSCTRL_DMA_QDEC2    = 0x1A,
-    SYSCTRL_DMA_LAST     = SYSCTRL_DMA_QDEC2,
+    SYSCTRL_DMA_SPI0_RX = 0x12,
+    SYSCTRL_DMA_SPI1_RX = 0x13,
+    SYSCTRL_DMA_I2C1 = 0x14,
+    SYSCTRL_DMA_QDEC1 = 0x15,
+    SYSCTRL_DMA_KeyScan = 0x16,
+    SYSCTRL_DMA_I2S_TX = 0x17,
+    SYSCTRL_DMA_PWM0 = 0x18,
+    SYSCTRL_DMA_PWM2 = 0x19,
+    SYSCTRL_DMA_QDEC2 = 0x1A,
+    SYSCTRL_DMA_LAST = SYSCTRL_DMA_QDEC2,
 } SYSCTRL_DMA;
 
 /**
@@ -774,7 +772,7 @@ void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level);
  */
 typedef enum
 {
-    SYSCTRL_LDO_RF_OUTPUT_1V200 = 0,    // 1.200V
+    SYSCTRL_LDO_RF_OUTPUT_1V200 = 0, // 1.200V
     SYSCTRL_LDO_RF_OUTPUT_1V250 = 1,
     SYSCTRL_LDO_RF_OUTPUT_1V300 = 2,
     SYSCTRL_LDO_RF_OUTPUT_1V350 = 3,
@@ -824,7 +822,7 @@ void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level);
  */
 typedef enum
 {
-    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0,  // 1.184V
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0, // 1.184V
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V185 = 1,
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V186 = 2,
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V187 = 3,
@@ -962,14 +960,14 @@ void SYSCTRL_ClearPDRInt(void);
  */
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
-#define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
-#define SYSCTRL_WAKEUP_SOURCE_COMPARATOR    2       // waken up by comparator
-#define SYSCTRL_WAKEUP_SOURCE_RTC_ALARM     4       // waken up by RTC alarm
+#define SYSCTRL_WAKEUP_SOURCE_AUTO       1 // waken up automatically by internal timer
+#define SYSCTRL_WAKEUP_SOURCE_COMPARATOR 2 // waken up by comparator
+#define SYSCTRL_WAKEUP_SOURCE_RTC_ALARM  4 // waken up by RTC alarm
 
 typedef struct
 {
-    uint64_t gpio;      // if any GPIO (bit n for GPIO #n) has triggered wake up
-    uint32_t other;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
+    uint64_t gpio;  // if any GPIO (bit n for GPIO #n) has triggered wake up
+    uint32_t other; // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
 
 /**
@@ -1026,17 +1024,17 @@ typedef enum
     SYSCTRL_MEM_REMAPPABLE_BLOCK_1 = 0x04,
 
     // below definitions are kept for compatibility
-    SYSCTRL_MEM_BLOCK_0 = 0x10,     // block 0 is 16KiB starting from 0x20000000
-                                    // This block is always ON, and can't be turned off.
-    SYSCTRL_MEM_BLOCK_1 = 0x08,     // block 1 is 16KiB following block 0
+    SYSCTRL_MEM_BLOCK_0 = 0x10, // block 0 is 16KiB starting from 0x20000000
+                                // This block is always ON, and can't be turned off.
+    SYSCTRL_MEM_BLOCK_1 = 0x08, // block 1 is 16KiB following block 0
 
-    SYSCTRL_SHARE_BLOCK_0 = 0x01,   // share memory block 0 is  8KiB starting from 0x40120000
-    SYSCTRL_SHARE_BLOCK_1 = 0x02,   // share memory block 1 is 16KiB following block 2 (0x40124000)
-    SYSCTRL_SHARE_BLOCK_2 = 0x04,   // share memory block 2 is  8KiB following block 0 (0x40122000)
+    SYSCTRL_SHARE_BLOCK_0 = 0x01, // share memory block 0 is  8KiB starting from 0x40120000
+    SYSCTRL_SHARE_BLOCK_1 = 0x02, // share memory block 1 is 16KiB following block 2 (0x40124000)
+    SYSCTRL_SHARE_BLOCK_2 = 0x04, // share memory block 2 is  8KiB following block 0 (0x40122000)
 } SYSCTRL_MemBlock;
 
 // this blocks (16 + 8) KiB are reversed in _mini_bundles
-#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0)
+#define SYSCTRL_RESERVED_MEM_BLOCKS      (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0)
 
 typedef enum
 {
@@ -1093,56 +1091,56 @@ void SYSCTRL_ICacheFlush(void);
 
 typedef enum
 {
-    SYSCTRL_ITEM_APB_GPIO0     ,
-    SYSCTRL_ITEM_APB_GPIO1     ,
-    SYSCTRL_ITEM_APB_TMR0      ,
-    SYSCTRL_ITEM_APB_TMR1      ,
-    SYSCTRL_ITEM_APB_WDT       ,
-    SYSCTRL_ITEM_APB_PWM       ,
-    SYSCTRL_ITEM_APB_QDEC      ,
-    SYSCTRL_ITEM_APB_KeyScan   ,
-    SYSCTRL_ITEM_APB_DMA       ,
-    SYSCTRL_ITEM_AHB_SPI0      ,
-    SYSCTRL_ITEM_APB_SPI1      ,
-    SYSCTRL_ITEM_APB_ADC       ,
-    SYSCTRL_ITEM_APB_I2S       ,
-    SYSCTRL_ITEM_APB_UART0     ,
-    SYSCTRL_ITEM_APB_UART1     ,
-    SYSCTRL_ITEM_APB_I2C0      ,
-    SYSCTRL_ITEM_APB_SysCtrl   ,
-    SYSCTRL_ITEM_APB_PinCtrl   ,
-    SYSCTRL_ITEM_APB_USB       ,
-    SYSCTRL_ITEM_APB_ASDM       ,
-    SYSCTRL_ITEM_APB_RTIMER0    ,
-    SYSCTRL_ITEM_APB_RTIMER1    ,
-    SYSCTRL_ITEM_APB_PTE        ,
-    SYSCTRL_ITEM_APB_GPIOTE     ,
+    SYSCTRL_ITEM_APB_GPIO0,
+    SYSCTRL_ITEM_APB_GPIO1,
+    SYSCTRL_ITEM_APB_TMR0,
+    SYSCTRL_ITEM_APB_TMR1,
+    SYSCTRL_ITEM_APB_WDT,
+    SYSCTRL_ITEM_APB_PWM,
+    SYSCTRL_ITEM_APB_QDEC,
+    SYSCTRL_ITEM_APB_KeyScan,
+    SYSCTRL_ITEM_APB_DMA,
+    SYSCTRL_ITEM_AHB_SPI0,
+    SYSCTRL_ITEM_APB_SPI1,
+    SYSCTRL_ITEM_APB_ADC,
+    SYSCTRL_ITEM_APB_I2S,
+    SYSCTRL_ITEM_APB_UART0,
+    SYSCTRL_ITEM_APB_UART1,
+    SYSCTRL_ITEM_APB_I2C0,
+    SYSCTRL_ITEM_APB_SysCtrl,
+    SYSCTRL_ITEM_APB_PinCtrl,
+    SYSCTRL_ITEM_APB_USB,
+    SYSCTRL_ITEM_APB_ASDM,
+    SYSCTRL_ITEM_APB_RTIMER0,
+    SYSCTRL_ITEM_APB_RTIMER1,
+    SYSCTRL_ITEM_APB_PTE,
+    SYSCTRL_ITEM_APB_GPIOTE,
     SYSCTRL_ITEM_NUMBER,
 } SYSCTRL_Item;
 
 // compatible definitions with ING918xx
-#define  SYSCTRL_ClkGate_APB_GPIO0              SYSCTRL_ITEM_APB_GPIO0
-#define  SYSCTRL_ClkGate_APB_GPIO1              SYSCTRL_ITEM_APB_GPIO1
-#define  SYSCTRL_ClkGate_APB_TMR0               SYSCTRL_ITEM_APB_TMR0
-#define  SYSCTRL_ClkGate_APB_TMR1               SYSCTRL_ITEM_APB_TMR1
-#define  SYSCTRL_ClkGate_APB_WDT                SYSCTRL_ITEM_APB_WDT
-#define  SYSCTRL_ClkGate_APB_PWM                SYSCTRL_ITEM_APB_PWM
-#define  SYSCTRL_ClkGate_APB_QDEC               SYSCTRL_ITEM_APB_QDEC
-#define  SYSCTRL_ClkGate_APB_KeyScan            SYSCTRL_ITEM_APB_KeyScan
-#define  SYSCTRL_ClkGate_APB_DMA                SYSCTRL_ITEM_APB_DMA
-#define  SYSCTRL_ClkGate_AHB_SPI0               SYSCTRL_ITEM_AHB_SPI0
-#define  SYSCTRL_ClkGate_APB_SPI1               SYSCTRL_ITEM_APB_SPI1
-#define  SYSCTRL_ClkGate_APB_ADC                SYSCTRL_ITEM_APB_ADC
-#define  SYSCTRL_ClkGate_APB_I2S                SYSCTRL_ITEM_APB_I2S
-#define  SYSCTRL_ClkGate_APB_UART0              SYSCTRL_ITEM_APB_UART0
-#define  SYSCTRL_ClkGate_APB_UART1              SYSCTRL_ITEM_APB_UART1
-#define  SYSCTRL_ClkGate_APB_I2C0               SYSCTRL_ITEM_APB_I2C0
-#define  SYSCTRL_ClkGate_APB_PinCtrl            SYSCTRL_ITEM_APB_PinCtrl
-#define  SYSCTRL_ClkGate_APB_ASDM               SYSCTRL_ITEM_APB_ASDM
-#define  SYSCTRL_ClkGate_APB_RTIMER0            SYSCTRL_ITEM_APB_RTIMER0
-#define  SYSCTRL_ClkGate_APB_RTIMER1            SYSCTRL_ITEM_APB_RTIMER1
-#define  SYSCTRL_ClkGate_APB_PTE                SYSCTRL_ITEM_APB_PTE
-#define  SYSCTRL_ClkGate_APB_GPIOTE             SYSCTRL_ITEM_APB_GPIOTE
+#define SYSCTRL_ClkGate_APB_GPIO0        SYSCTRL_ITEM_APB_GPIO0
+#define SYSCTRL_ClkGate_APB_GPIO1        SYSCTRL_ITEM_APB_GPIO1
+#define SYSCTRL_ClkGate_APB_TMR0         SYSCTRL_ITEM_APB_TMR0
+#define SYSCTRL_ClkGate_APB_TMR1         SYSCTRL_ITEM_APB_TMR1
+#define SYSCTRL_ClkGate_APB_WDT          SYSCTRL_ITEM_APB_WDT
+#define SYSCTRL_ClkGate_APB_PWM          SYSCTRL_ITEM_APB_PWM
+#define SYSCTRL_ClkGate_APB_QDEC         SYSCTRL_ITEM_APB_QDEC
+#define SYSCTRL_ClkGate_APB_KeyScan      SYSCTRL_ITEM_APB_KeyScan
+#define SYSCTRL_ClkGate_APB_DMA          SYSCTRL_ITEM_APB_DMA
+#define SYSCTRL_ClkGate_AHB_SPI0         SYSCTRL_ITEM_AHB_SPI0
+#define SYSCTRL_ClkGate_APB_SPI1         SYSCTRL_ITEM_APB_SPI1
+#define SYSCTRL_ClkGate_APB_ADC          SYSCTRL_ITEM_APB_ADC
+#define SYSCTRL_ClkGate_APB_I2S          SYSCTRL_ITEM_APB_I2S
+#define SYSCTRL_ClkGate_APB_UART0        SYSCTRL_ITEM_APB_UART0
+#define SYSCTRL_ClkGate_APB_UART1        SYSCTRL_ITEM_APB_UART1
+#define SYSCTRL_ClkGate_APB_I2C0         SYSCTRL_ITEM_APB_I2C0
+#define SYSCTRL_ClkGate_APB_PinCtrl      SYSCTRL_ITEM_APB_PinCtrl
+#define SYSCTRL_ClkGate_APB_ASDM         SYSCTRL_ITEM_APB_ASDM
+#define SYSCTRL_ClkGate_APB_RTIMER0      SYSCTRL_ITEM_APB_RTIMER0
+#define SYSCTRL_ClkGate_APB_RTIMER1      SYSCTRL_ITEM_APB_RTIMER1
+#define SYSCTRL_ClkGate_APB_PTE          SYSCTRL_ITEM_APB_PTE
+#define SYSCTRL_ClkGate_APB_GPIOTE       SYSCTRL_ITEM_APB_GPIOTE
 
 typedef SYSCTRL_Item SYSCTRL_ClkGateItem;
 
@@ -1216,17 +1214,17 @@ typedef enum
 
 typedef enum
 {
-    SYSCTRL_CLK_SLOW = 0,            // use slow clock
-    SYSCTRL_CLK_32k = 0,             // use 32kHz clock
-    SYSCTRL_CLK_FAST_PER = 1,        // use fast peripheral clock
-    SYSCTRL_CLK_HCLK = 1,            // use HCLK (same as MCU)
-    SYSCTRL_CLK_ADC_DIV = 1,         // use clock from ADC divider
+    SYSCTRL_CLK_SLOW = 0,     // use slow clock
+    SYSCTRL_CLK_32k = 0,      // use 32kHz clock
+    SYSCTRL_CLK_FAST_PER = 1, // use fast peripheral clock
+    SYSCTRL_CLK_HCLK = 1,     // use HCLK (same as MCU)
+    SYSCTRL_CLK_ADC_DIV = 1,  // use clock from ADC divider
 
-    SYSCTRL_CLK_PLL_DIV_1 = 1,       // use (PLL clock div 1)
-                                     // SYSCTRL_TMR_CLK_PLL_DIV_2: use (PLL clock div 2)
-                                     // ..
-                                     // SYSCTRL_TMR_CLK_PLL_DIV_15: use (PLL clock div 15)
-                                     // Feel free to cast [1..15] to SYSCTRL_ClkMode
+    SYSCTRL_CLK_PLL_DIV_1 = 1, // use (PLL clock div 1)
+                               // SYSCTRL_TMR_CLK_PLL_DIV_2: use (PLL clock div 2)
+                               // ..
+                               // SYSCTRL_TMR_CLK_PLL_DIV_15: use (PLL clock div 15)
+                               // Feel free to cast [1..15] to SYSCTRL_ClkMode
     SYSCTRL_CLK_PLL_DIV_2 = 2,
     SYSCTRL_CLK_PLL_DIV_3 = 3,
     SYSCTRL_CLK_PLL_DIV_4 = 4,
@@ -1258,10 +1256,10 @@ typedef enum
     SYSCTRL_CLK_FAST_PER_DIV14 = 33,
     SYSCTRL_CLK_FAST_PER_DIV15 = 34,
 
-    SYSCTRL_CLK_SLOW_DIV_1 = 1,      // use RF OSC clock div 1
-                                     // SYSCTRL_CLK_SLOW_DIV_2: use (RF OSC clock div 2)
-                                     // ..
-                                     // Feel free to cast [1..15] to SYSCTRL_ClkMode
+    SYSCTRL_CLK_SLOW_DIV_1 = 1, // use RF OSC clock div 1
+                                // SYSCTRL_CLK_SLOW_DIV_2: use (RF OSC clock div 2)
+                                // ..
+                                // Feel free to cast [1..15] to SYSCTRL_ClkMode
     SYSCTRL_CLK_SLOW_DIV_2 = 2,
     SYSCTRL_CLK_SLOW_DIV_3 = 3,
     SYSCTRL_CLK_SLOW_DIV_4 = 4,
@@ -1303,8 +1301,8 @@ typedef enum
 
 typedef enum
 {
-    SYSCTRL_CPU_32k_CLK_EXT = 0,    // External 32K clock
-    SYSCTRL_CPU_32k_INTERNAL = 1,   // use the internal 32k clock source 32k RC
+    SYSCTRL_CPU_32k_CLK_EXT = 0,  // External 32K clock
+    SYSCTRL_CPU_32k_INTERNAL = 1, // use the internal 32k clock source 32k RC
 } SYSCTRL_CPU32kMode;
 
 /**
@@ -1364,11 +1362,11 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
  *
  * Note: For SPI0: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_1`, div should be in [1..15];
  *       For SPI1: mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_FAST_PER`, div is not used.
- * 
+ *
  * SOURCE_SLOW_CLK cannot set div if there are limitations using old interface.
  * if use old interface, mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_[1..15]`.
  */
-#define SYSCTRL_SelectSpiClk(port, mode) SYSCTRL_SelectSpiClkDiv(port, mode,1)    
+#define SYSCTRL_SelectSpiClk(port, mode) SYSCTRL_SelectSpiClkDiv(port, mode, 1)
 void SYSCTRL_SelectSpiClkDiv(spi_port_t port, SYSCTRL_ClkMode mode, uint8_t div);
 
 /**
@@ -1386,9 +1384,15 @@ void SYSCTRL_SelectUartClk(uart_port_t port, SYSCTRL_ClkMode mode);
  * SOURCE_SLOW_CLK cannot set div if there are limitations using old interface.
  * if use old interface, mode should be `SYSCTRL_CLK_SLOW`, or `SYSCTRL_CLK_PLL_DIV_[1..15]`.
  */
-#define SYSCTRL_SelectI2sClk(mode) \
-do { if (mode != SYSCTRL_CLK_SLOW) SYSCTRL_SelectI2sClkDiv(SOURCE_PLL_CLK, (uint8_t)mode); \
-    else SYSCTRL_SelectI2sClkDiv(SOURCE_SLOW_CLK, 1); } while (0)
+#define SYSCTRL_SelectI2sClk(mode)                                                                                     \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (mode != SYSCTRL_CLK_SLOW)                                                                                  \
+            SYSCTRL_SelectI2sClkDiv(SOURCE_PLL_CLK, (uint8_t)mode);                                                    \
+        else                                                                                                           \
+            SYSCTRL_SelectI2sClkDiv(SOURCE_SLOW_CLK, 1);                                                               \
+    }                                                                                                                  \
+    while (0)
 void SYSCTRL_SelectI2sClkDiv(pre_clk_source_t mode, uint8_t div);
 
 /**
@@ -1536,20 +1540,20 @@ void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
 uint32_t SYSCTRL_GetCLK32k(void);
 
 // default PLL settings for automatic config after wakeup in boot loader
-#define PLL_BOOT_DEF_DIV_PRE        5
-#define PLL_BOOT_DEF_LOOP           70
-#define PLL_BOOT_DEF_DIV_OUTPUT     1
+#define PLL_BOOT_DEF_DIV_PRE    5
+#define PLL_BOOT_DEF_LOOP       70
+#define PLL_BOOT_DEF_DIV_OUTPUT 1
 
 // default hardware PLL settings when automatic config after wakeup in boot loader
 // is disabled
-#define PLL_HW_DEF_DIV_PRE          5
-#define PLL_HW_DEF_LOOP             80
-#define PLL_HW_DEF_DIV_OUTPUT       1
+#define PLL_HW_DEF_DIV_PRE      5
+#define PLL_HW_DEF_LOOP         80
+#define PLL_HW_DEF_DIV_OUTPUT   1
 
 typedef enum
 {
-    SYSCTRL_SLOW_RC_CLK = 0,        // RC clock (which is tunable)
-    SYSCTRL_SLOW_CLK_24M_RF = 1,    // 24MHz RF OSC clock (default)
+    SYSCTRL_SLOW_RC_CLK = 0,     // RC clock (which is tunable)
+    SYSCTRL_SLOW_CLK_24M_RF = 1, // 24MHz RF OSC clock (default)
 } SYSCTRL_SlowClkMode;
 
 /**
@@ -1682,7 +1686,7 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
  */
 typedef enum
 {
-    SYSCTRL_LDO_RF_OUTPUT_1V200 = 0,    // 1.200V
+    SYSCTRL_LDO_RF_OUTPUT_1V200 = 0, // 1.200V
     SYSCTRL_LDO_RF_OUTPUT_1V250 = 1,
     SYSCTRL_LDO_RF_OUTPUT_1V300 = 2,
     SYSCTRL_LDO_RF_OUTPUT_1V350 = 3,
@@ -1725,7 +1729,7 @@ typedef enum
  */
 typedef enum
 {
-    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0,  // 1.184V
+    SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0, // 1.184V
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V185 = 1,
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V186 = 2,
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V187 = 3,
@@ -1770,13 +1774,13 @@ typedef enum
  */
 typedef enum
 {
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0x3f, // 1.2V
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 0x35,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 0x2a,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V500 = 0x20,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V600 = 0x15,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V700 = 0xb,
-    SYSCTRL_BUCK_DCDC_OUTPUT_1V800 = 0,// 1.8V
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0x34, // 1.2V
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 0x22,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 0x17,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V500 = 0xf,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V600 = 0x9,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V700 = 0x4,
+    SYSCTRL_BUCK_DCDC_OUTPUT_1V800 = 0x0, // 1.8V
 } SYSCTRL_BuckDCDCOutput;
 
 /**
@@ -1789,6 +1793,10 @@ typedef enum
  * The DCDC output range is 1.2 V to 1.8 V, adjustable in approximately 95 mV steps.
  * The enumeration (SYSCTRL_BuckDCDCOutput) lists typical values in 100 mV increments.
  * A trim value of zero corresponds to the maximum output voltage (1.8 V).
+ *
+ * @note
+ * Using this interface to adjust the DCDC power supply will affect the default dcdc
+ * voltage value configured by the "int Vcore_calib(void)" interface. about 1.42V.
  */
 void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
 
@@ -1797,7 +1805,9 @@ void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
  *
  * Default: Enabled.
  *
- * @param[in] enable        enable(1)/disable(0)
+ * .3
+ *
+ * @param[in] enable        enable(1)/disable(0)wsl
  */
 void SYSCTRL_EnableBuckDCDC(uint8_t enable);
 
@@ -1904,12 +1914,12 @@ void SYSCTRL_ClearPDRInt(void);
  */
 void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
-#define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
+#define SYSCTRL_WAKEUP_SOURCE_AUTO 1 // waken up automatically by internal timer
 
 typedef struct
 {
-    uint64_t gpio;      // if any GPIO (bit n for GPIO #n) has triggered wake up
-    uint32_t other;     // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
+    uint64_t gpio;  // if any GPIO (bit n for GPIO #n) has triggered wake up
+    uint32_t other; // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
 
 /**
@@ -1976,7 +1986,8 @@ typedef enum
 } SYSCTRL_MemBlock;
 
 // this blocks (16 + 8) KiB are reversed in _mini_bundles
-#define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0 | SYSCTRL_CACHE_BLOCK)
+#define SYSCTRL_RESERVED_MEM_BLOCKS                                                                                    \
+    (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0 | SYSCTRL_CACHE_BLOCK)
 
 typedef enum
 {
@@ -2062,9 +2073,14 @@ void SYSCTRL_EnableAsdmVrefOutput(uint8_t enable);
 
 /**
  * @brief Set ADC reference voltage selection
- * @param val [in]
+ * @param val [in] VREF selection value, range 0x0-0xF
+ *
+ * Adjusts ASDM module internal VREF voltage output from 0.75V to 1.5V in 50mV steps.
+ * MICBIAS voltage is generated based on this VREF, output range 2.67V-1.29V,
+ * adjustment approximately 0.9V per step.
+ *
+ * Note: Adjusting MICBIAS output will also adjust ASDM internal VREF standard voltage.
  */
-//TODO
 void SYSCTRL_SetAdcVrefSel(uint8_t val);
 
 /**
@@ -2157,7 +2173,7 @@ void SYSCTRL_ResetAllBlocks(void);
  */
 void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item);
 
-#if(INGCHIPS_FAMILY != INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_20)
 /**
  * @brief Set LDO Core output level
  *
@@ -2292,6 +2308,6 @@ void SYSCTRL_Reset(void);
 
 #ifdef __cplusplus
 } /* allow C++ to use these headers */
-#endif	/* __cplusplus */
+#endif /* __cplusplus */
 
 #endif

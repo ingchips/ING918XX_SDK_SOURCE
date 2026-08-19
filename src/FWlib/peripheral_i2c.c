@@ -88,6 +88,25 @@ void I2C_DEBUG0_TOG(I2C_TypeDef *I2C_BASE, uint32_t data)
 {
 	I2C_BASE->I2C_DEBUG0.TOG = data;
 }
+
+uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOptions option)
+{
+    I2C_BASE->I2C_TIMING0.CLR = 0xffffffff;
+    I2C_BASE->I2C_TIMING1.CLR = 0xffffffff;
+    switch (option)
+    {
+    case I2C_CLOCKFREQUENCY_FASTMODE:
+        I2C_BASE->I2C_TIMING0.SET = (30 << 16) | 12;
+        I2C_BASE->I2C_TIMING1.SET = (32 << 16) | 12;
+        break;
+    default: // I2C_CLOCKFREQUENCY_STANDARD
+        I2C_BASE->I2C_TIMING0.SET = (0x78u << 16) | 0x30;
+        I2C_BASE->I2C_TIMING1.SET = (0x80u << 16) | 0x30;
+        break;
+    }
+    return 0;
+}
+
 #endif
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)

@@ -1,0 +1,69 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+# FWlib primarily uses four-space indentation and Allman braces.
+UseTab: Never
+IndentWidth: 4
+ContinuationIndentWidth: 4
+TabWidth: 4
+ColumnLimit: 120
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: false
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeWhile: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+IndentCaseLabels: false
+IndentCaseBlocks: false
+IndentPPDirectives: None
+PPIndentWidth: 4
+
+# Keep declarations consistent with the dominant `Type *pointer` style.
+DerivePointerAlignment: false
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpaceInEmptyParentheses: false
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Right
+AlignOperands: Align
+AlignTrailingComments: true
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+
+# Embedded headers may rely on deliberate include ordering and comment layout.
+SortIncludes: false
+IncludeBlocks: Preserve
+ReflowComments: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 2
+InsertNewlineAtEOF: true
+...

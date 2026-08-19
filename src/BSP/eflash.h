@@ -496,9 +496,10 @@ typedef struct
     uint16_t vdc33[16];
     uint8_t vcore_index;
     uint16_t vcore[16];
-}factory_calib_pmu_t;
+} factory_calib_pmu_t;
 
-typedef struct {
+typedef struct
+{
     uint8_t version;
     uint16_t channel_mask;
     uint16_t int_vbat33_ain_ch0_8[9][2];
@@ -508,7 +509,8 @@ typedef struct {
     uint16_t vbat25_flt_int_ch9_11[3];
 } factory_calib_adc_t;
 
-typedef struct {
+typedef struct
+{
     uint8_t version;
     uint16_t verf;
     uint16_t mic_bias_int;
@@ -525,9 +527,19 @@ typedef struct {
 
 typedef struct
 {
+    uint8_t version;
+    uint16_t rest_voltage;
+    uint16_t power_voltage;
+    uint8_t bor_value;
+    uint8_t lvd_value;
+} factory_calib_bor_t;
+
+typedef struct
+{
     factory_calib_pmu_t calib_pmu;
     factory_calib_adc_t calib_adc;
     factory_calib_asdm_t calib_asdm;
+    factory_calib_bor_t calib_bor;
 } factory_calib_data_t;
 
 #define FACTORY_DATA_MAGIC_0    0x494E4743u
@@ -612,6 +624,11 @@ void flash_build_factory_clc_data(const factory_calib_data_t *src, factory_clc_d
 /**
  * @brief Set Vcore value from FT data;
  *
+ * @note
+ * If there is no ft data, the interface will set the default voltage value.
+ * Vaon: 1.05V
+ * Vcore: 1.18V
+ * VDCDC: 1.33V
  */
 int Vcore_calib(void);
 
@@ -628,10 +645,10 @@ void flash_read_uid(uint32_t uid[4]);
  * * @note The OTP memory region is limited to 256 bytes total capacity.
  * * Restrictions:
  * - Programming: Only supports data write operations. Erase operations are NOT supported.
- * - Lock Mechanism: The flash_otp_enable function permanently locks the entire 
+ * - Lock Mechanism: The flash_otp_enable function permanently locks the entire
  * OTP region. Once called, the memory becomes read-only and cannot be modified.
  */
- 
+
 extern const unsigned char flash_api_bin[320];
 /**
  * @brief Program data into the OTP region
@@ -670,4 +687,3 @@ typedef void (*Func_FlashOTP)(void);
 #endif
 
 #endif
-
