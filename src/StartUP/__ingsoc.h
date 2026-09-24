@@ -10,6 +10,7 @@ extern "C" {
 #define INGCHIPS_FAMILY_918             0
 #define INGCHIPS_FAMILY_916             1
 #define INGCHIPS_FAMILY_20              2
+#define INGCHIPS_FAMILY_26              3
 
 #define PLATFORM_BUNDLE_VARIANT_TYPICAL                 0
 #define PLATFORM_BUNDLE_VARIANT_NOOS_TYPICAL            1

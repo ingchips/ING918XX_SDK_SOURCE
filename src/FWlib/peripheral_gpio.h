@@ -9,7 +9,7 @@
 
 typedef enum
 {
-    GIO_GPIO_0  ,
+    GIO_GPIO_0 = 0,
     GIO_GPIO_1  ,
     GIO_GPIO_2  ,
     GIO_GPIO_3  ,
@@ -41,7 +41,9 @@ typedef enum
     GIO_GPIO_29 ,
     GIO_GPIO_30 ,
     GIO_GPIO_31 ,
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+    /* ING916/ING920/ING926 provide GPIO32 through GPIO41. */
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     GIO_GPIO_32 ,
     GIO_GPIO_33 ,
     GIO_GPIO_34 ,
@@ -53,6 +55,25 @@ typedef enum
     GIO_GPIO_40 ,
     GIO_GPIO_41 ,
 #endif
+
+    /* ING926 extends the GPIO range to GPIO55. */
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+    GIO_GPIO_42 ,
+    GIO_GPIO_43 ,
+    GIO_GPIO_44 ,
+    GIO_GPIO_45 ,
+    GIO_GPIO_46 ,
+    GIO_GPIO_47 ,
+    GIO_GPIO_48 ,
+    GIO_GPIO_49 ,
+    GIO_GPIO_50 ,
+    GIO_GPIO_51 ,
+    GIO_GPIO_52 ,
+    GIO_GPIO_53 ,
+    GIO_GPIO_54 ,
+    GIO_GPIO_55 ,
+#endif
+
     GIO_GPIO_NUMBER,
 } GIO_Index_t;
 
@@ -199,7 +220,7 @@ static __INLINE void GIO_ClearBits(const uint32_t index_mask){ *GPIO_DOC = index
  */
 static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = index_mask;}
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 typedef enum
 {
