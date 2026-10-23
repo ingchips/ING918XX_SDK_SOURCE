@@ -74,7 +74,11 @@ typedef enum
 
 #include "__ingsoc.h"
 
+<<<<<<< HEAD
 #define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_26
+=======
+#define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_926
+>>>>>>> b46a4b42166909e67af27239af6877fcefe3c0e4
 
 /* ================================================================================ */
 /* ================       Device Specific Peripheral Section       ================ */
@@ -470,7 +474,7 @@ typedef struct
     __IO uint32_t      key_data;          //0x001C
     __IO uint32_t      key_trig;          //0x0020
     __IO uint32_t      key_err_cfg;       //0x0024
-    __IO uint32_t      key_debouncd_cfg0; //0x0028 
+    __IO uint32_t      key_debouncd_cfg0; //0x0028
     __IO uint32_t      key_debouncd_cfg1; //0x002C
 } KEYSCAN_TypeDef;
 
