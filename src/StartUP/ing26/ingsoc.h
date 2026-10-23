@@ -796,7 +796,7 @@ typedef struct
 // Test if debugger is attached
 #define IS_DEBUGGER_ATTACHED() (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)
 
-//#ifdef USE_STDPERIPH_DRIVER
+#ifdef USE_STDPERIPH_DRIVER
     #include "peripheral_pinctrl.h"
     #include "peripheral_adc.h"
     #include "peripheral_dma.h"
@@ -813,7 +813,7 @@ typedef struct
     #include "peripheral_etimer.h"
     #include "peripheral_uart.h"
     #include "peripheral_usb.h"
-//#endif
+#endif
 
 #define OSC_CLK_FREQ  24000000UL
 
