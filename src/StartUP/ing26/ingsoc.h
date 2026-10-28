@@ -74,11 +74,7 @@ typedef enum
 
 #include "__ingsoc.h"
 
-<<<<<<< HEAD
 #define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_26
-=======
-#define INGCHIPS_FAMILY                 INGCHIPS_FAMILY_926
->>>>>>> b46a4b42166909e67af27239af6877fcefe3c0e4
 
 /* ================================================================================ */
 /* ================       Device Specific Peripheral Section       ================ */

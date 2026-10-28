@@ -256,7 +256,7 @@ void SYSCTRL_SetClkGateMulti(uint32_t items)
 {
     SYSCTRL_Item i;
     for (i = (SYSCTRL_Item)0; i < SYSCTRL_ITEM_NUMBER; i++)
-        if (items & (1 << i))
+        if (items & (1u << i))
             SYSCTRL_SetClkGate(i);
 }
 
@@ -264,7 +264,7 @@ void SYSCTRL_ClearClkGateMulti(uint32_t items)
 {
     SYSCTRL_Item i;
     for (i = (SYSCTRL_Item)0; i < SYSCTRL_ITEM_NUMBER; i++)
-        if (items & (1 << i))
+        if (items & (1u << i))
             SYSCTRL_ClearClkGate(i);
 }
 
@@ -1347,7 +1347,7 @@ void SYSCTRL_SetClkGateMulti(uint32_t items)
 {
     SYSCTRL_Item i;
     for (i = (SYSCTRL_Item)0; i < SYSCTRL_ITEM_NUMBER; i++)
-        if (items & (1 << i))
+        if (items & (1u << i))
             SYSCTRL_SetClkGate(i);
 }
 
@@ -1465,7 +1465,7 @@ void SYSCTRL_ClearClkGateMulti(uint32_t items)
 {
     SYSCTRL_Item i;
     for (i = (SYSCTRL_Item)0; i < SYSCTRL_ITEM_NUMBER; i++)
-        if (items & (1 << i))
+        if (items & (1u << i))
             SYSCTRL_ClearClkGate(i);
 }
 
@@ -2330,6 +2330,801 @@ SYSCTRL_ResetSource SYSCTRL_GetResetSource(void)
     val = *(volatile uint32_t*)(APB_SYSCTRL_BASE + 0x218);
 
     return (SYSCTRL_ResetSource)((val>>1)&0x3f);
+}
+
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+
+static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
+{
+    uint32_t field = bit_width == 32 ? UINT32_MAX : (1u << bit_width) - 1u;
+    uint32_t mask = field << bit_offset;
+    *reg = (*reg & ~mask) | ((v & field) << bit_offset);
+}
+
+static void set_reg_bit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset)
+{
+    uint32_t mask = 1u << bit_offset;
+    *reg = (*reg & ~mask) | (v ? mask : 0u);
+}
+
+static int get_safe_divider(uint32_t reg, int bit_offset, int bit_width)
+{
+    uint32_t value = (reg >> bit_offset) & ((1u << bit_width) - 1u);
+    return value ? (int)value : 1;
+}
+
+static void ing26_apb_gate(unsigned int bit, uint8_t enable)
+{
+    set_reg_bit(APB1_SYSCTRL->CguCfg + 4, 1, bit);
+    set_reg_bit(APB1_SYSCTRL->CguCfg + 3, enable, bit);
+}
+
+static void ing26_function_gate(unsigned int bit, uint8_t enable)
+{
+    set_reg_bit(APB1_SYSCTRL->CguCfg + 6, 1, bit);
+    set_reg_bit(APB1_SYSCTRL->CguCfg + 5, enable, bit);
+}
+
+static void ing26_ahb_gate(unsigned int bit, uint8_t enable)
+{
+    set_reg_bit(APB1_SYSCTRL->CguCfg + 2, 1, bit + 15);
+    set_reg_bit(APB1_SYSCTRL->CguCfg + 2, enable, bit);
+}
+
+static void SYSCTRL_ClkGateCtrl(SYSCTRL_ClkGateItem item, uint8_t v)
+{
+    switch (item)
+    {
+    case SYSCTRL_ITEM_APB1_GPIO0:
+        ing26_apb_gate(21, v);
+        ing26_function_gate(18, (APB1_SYSCTRL->CguCfg[3] & ((1u << 21) | (1u << 22))) != 0);
+        break;
+    case SYSCTRL_ITEM_APB1_GPIO1:
+        ing26_apb_gate(22, v);
+        ing26_function_gate(18, (APB1_SYSCTRL->CguCfg[3] & ((1u << 21) | (1u << 22))) != 0);
+        break;
+    case SYSCTRL_ITEM_APB1_TMR0      :
+        ing26_apb_gate(2, v);
+        ing26_function_gate(0, v);
+        break;
+    case SYSCTRL_ITEM_APB1_TMR1      :
+        ing26_apb_gate(3, v);
+        ing26_function_gate(1, v);
+        break;
+    case SYSCTRL_ITEM_APB1_WDT       :
+        ing26_apb_gate(1, v);
+        ing26_function_gate(17, v);
+        break;
+    case SYSCTRL_ITEM_APB2_PWM       :
+        ing26_apb_gate(5, v);
+        ing26_function_gate(10, v);
+        break;
+    case SYSCTRL_ITEM_APB2_QDEC      :
+        ing26_apb_gate(9, v);
+        set_reg_bit(&APB1_SYSCTRL->QdecCfg, 1, 13);
+        set_reg_bit(&APB1_SYSCTRL->QdecCfg, v, 12);
+        break;
+    case SYSCTRL_ITEM_APB2_KeyScan   :
+        ing26_apb_gate(10, v);
+        ing26_function_gate(19, v);
+        ing26_function_gate(20, v);
+        break;
+    case SYSCTRL_ITEM_APB1_DMA0       :
+        ing26_apb_gate(12, v);
+        ing26_ahb_gate(0, v);
+        break;
+    case SYSCTRL_ITEM_APB1_SPI1      :
+        ing26_apb_gate(14, v);
+        ing26_function_gate(7, v);
+        break;
+    case SYSCTRL_ITEM_APB1_ADC       :
+        ing26_apb_gate(15, v);
+        ing26_function_gate(12, v);
+        break;
+    case SYSCTRL_ITEM_APB2_I2S       :
+        ing26_apb_gate(16, v);
+        ing26_function_gate(8, v);
+        break;
+    case SYSCTRL_ITEM_APB1_UART0     :
+        ing26_apb_gate(17, v);
+        ing26_function_gate(4, v);
+        break;
+    case SYSCTRL_ITEM_APB1_UART1     :
+        ing26_apb_gate(18, v);
+        ing26_function_gate(5, v);
+        break;
+    case SYSCTRL_ITEM_APB1_I2C0      :
+        ing26_apb_gate(19, v);
+        break;
+    case SYSCTRL_ITEM_APB1_SysCtrl   :
+        ing26_apb_gate(0, v);
+        break;
+    case SYSCTRL_ITEM_APB1_PinCtrl   :
+        ing26_apb_gate(6, v);
+        break;
+    case SYSCTRL_ITEM_AHB_USB:
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x54), v, 0);
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x54), v, 7);
+        break;
+    case SYSCTRL_ITEM_APB2_ASDM       :
+        ing26_apb_gate(28, v);
+        ing26_function_gate(21, v);
+        break;
+    case SYSCTRL_ITEM_APB1_RTIMER2    :
+        ing26_apb_gate(4, v);
+        ing26_function_gate(2, v);
+        break;
+    case SYSCTRL_ITEM_APB1_RTIMER3    :
+        ing26_apb_gate(4, v);
+        ing26_function_gate(2, v);
+        break;
+    case SYSCTRL_ITEM_APB1_SPI2    :
+        ing26_ahb_gate(13, v);
+        ing26_apb_gate(29, v);
+        break;
+    case SYSCTRL_ITEM_APB1_PTE    :
+        ing26_apb_gate(26, v);
+        break;
+    case SYSCTRL_ITEM_APB2_SPI0    :
+        ing26_ahb_gate(12, v);
+        ing26_apb_gate(13, v);
+        break;
+    case SYSCTRL_ITEM_APB2_DMA1    :
+        ing26_ahb_gate(14, v);
+        ing26_apb_gate(30, v);
+        break;
+    case SYSCTRL_ITEM_APB2_GPIOTE :
+        ing26_apb_gate(27, v);
+        break;
+    case SYSCTRL_ITEM_APB2_SDIO  :
+        ing26_function_gate(9, v);
+        ing26_ahb_gate(9, v);
+        ing26_apb_gate(11, v);
+        break;
+    case SYSCTRL_ITEM_APB1_HUART0  :
+        ing26_apb_gate(17, v);
+        break;
+    case SYSCTRL_ITEM_APB1_HUART1 :
+        ing26_apb_gate(23, v);
+        break;
+    case SYSCTRL_ITEM_APB2_HUART2   :
+        ing26_apb_gate(25, v);
+        break;
+    case SYSCTRL_ITEM_AHB_LPUART :
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 18);
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 7);
+        break;
+    case SYSCTRL_ITEM_AHB_LPQDEC :
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 23);
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 9);
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 17);
+        break;
+    case SYSCTRL_ITEM_AHB_LPTIMER :
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 11);
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 22);
+        break;
+    default:
+        break;
+    }
+}
+
+void SYSCTRL_SetClkGate(SYSCTRL_ClkGateItem item)
+{
+    SYSCTRL_ClkGateCtrl(item, 0);
+}
+
+void SYSCTRL_ClearClkGate(SYSCTRL_ClkGateItem item)
+{
+    SYSCTRL_ClkGateCtrl(item, 1);
+}
+
+void SYSCTRL_SetClkGateMulti(uint64_t items)
+{
+    unsigned int i;
+    for (i = 0; i < SYSCTRL_ITEM_NUMBER; ++i)
+        if (items & (UINT64_C(1) << i))
+            SYSCTRL_SetClkGate((SYSCTRL_Item)i);
+}
+
+static uint32_t ing26_dma_items;
+
+int SYSCTRL_SelectUsedDmaItems(uint32_t items)
+{
+    uint32_t regs[3] = {0, 0, 0};
+    unsigned int group, item, slot;
+    if (items & ((1u << 15) | (1u << RESERVED) | (3u << 30))) return -1;
+    for (group = 0; group < 2; ++group)
+    {
+        slot = group * 8u;
+        for (item = group ? SYSCTRL_DMA_UART0_TX : 0;
+             item < (unsigned int)(group ? SYSCTRL_DMA_LAST : SYSCTRL_DMA_UART0_TX); ++item)
+        {
+            unsigned int reg, shift;
+            if (!(items & (1u << item))) continue;
+            if (slot == (group + 1u) * 8u) return group ? -2 : -1;
+            reg = slot < 6 ? 0 : slot < 12 ? 1 : 2;
+            shift = (slot < 6 ? slot : slot < 12 ? slot - 6 : slot - 12) * 5u;
+            regs[reg] |= (item - (group ? SYSCTRL_DMA_UART0_TX : 0)) << shift;
+            ++slot;
+        }
+    }
+    io_write(APB1_SYSCTRL_BASE + 0x30, regs[0]);
+    io_write(APB1_SYSCTRL_BASE + 0x34, regs[1]);
+    io_write(APB1_SYSCTRL_BASE + 0x38, regs[2]);
+    ing26_dma_items = items;
+    return 0;
+}
+
+int SYSCTRL_GetDmaId(SYSCTRL_DMA item)
+{
+    unsigned int slot, start;
+    if ((unsigned int)item >= SYSCTRL_DMA_LAST || !(ing26_dma_items & (1u << item))) return -1;
+    start = item >= SYSCTRL_DMA_UART0_TX ? 8 : 0;
+    for (slot = start; slot < start + 8; ++slot)
+    {
+        unsigned int reg = slot < 6 ? 0 : slot < 12 ? 1 : 2;
+        unsigned int shift = (slot < 6 ? slot : slot < 12 ? slot - 6 : slot - 12) * 5;
+        if (((io_read(APB1_SYSCTRL_BASE + 0x30 + reg * 4) >> shift) & 31u)
+            == (uint32_t)(item - (start ? SYSCTRL_DMA_UART0_TX : 0))) return slot;
+    }
+    return -1;
+}
+
+void SYSCTRL_ClearClkGateMulti(uint64_t items)
+{
+    unsigned int i;
+    for (i = 0; i < SYSCTRL_ITEM_NUMBER; ++i)
+        if (items & (UINT64_C(1) << i))
+            SYSCTRL_ClearClkGate((SYSCTRL_Item)i);
+}
+
+static void SYSCTRL_ResetBlockCtrl(SYSCTRL_ResetItem item, uint8_t v)
+{
+    switch (item)
+    {
+    case SYSCTRL_ClkGate_APB1_GPIO0:
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x84), v, 25);
+        break;
+    case SYSCTRL_ClkGate_APB1_GPIO1:
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x84), v, 26);
+        break;
+    case SYSCTRL_ClkGate_APB1_TMR0      :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 12);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 2);
+        break;
+    case SYSCTRL_ClkGate_APB1_TMR1      :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 13);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 3);
+        break;
+    case SYSCTRL_ClkGate_APB1_WDT       :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 11);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 18);
+        break;
+    case SYSCTRL_ClkGate_APB2_PWM       :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 15);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 12);
+        break;
+    case SYSCTRL_ClkGate_APB2_QDEC      :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 19);
+        set_reg_bit(&APB1_SYSCTRL->QdecCfg, v, 14);
+        break;
+    case SYSCTRL_ClkGate_APB2_KEYSCAN   :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 26);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 20);
+        break;
+    case SYSCTRL_ClkGate_APB1_DMA0       :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 22);
+        break;
+    case SYSCTRL_ClkGate_APB2_SPI0      :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 23);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 8);
+        break;
+    case SYSCTRL_ClkGate_APB1_SPI1      :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 24);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 9);
+        break;
+    case SYSCTRL_ClkGate_APB1_ADC       :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 25);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 14);
+        break;
+    case SYSCTRL_ClkGate_APB2_I2S       :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 26);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 10);
+        break;
+    case SYSCTRL_ClkGate_APB1_UART0     :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 27);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 6);
+        break;
+    case SYSCTRL_ClkGate_APB1_UART1     :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 28);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 7);
+        break;
+    case SYSCTRL_ClkGate_APB1_I2C0      :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 29);
+        break;
+    case SYSCTRL_ClkGate_APB1_SYSCTRL   :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 10);
+        break;
+    case SYSCTRL_ClkGate_APB1_PINCTRL   :
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x84), v, 24);
+        break;
+    case SYSCTRL_ClkGate_APB2_ASDM  :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 21);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 27);
+        break;
+    case SYSCTRL_ClkGate_APB1_RTIMER2   :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 14);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 4);
+        break;
+    case SYSCTRL_ClkGate_APB1_RTIMER3   :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 14);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 4);
+        break;
+    case SYSCTRL_ClkGate_APB1_SPI2    :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 13);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 15);
+        break;
+    case SYSCTRL_ClkGate_APB1_PTE    :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 28);
+        break;
+    case SYSCTRL_ClkGate_APB2_DMA1    :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 17);
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 20);
+        break;
+    case SYSCTRL_ClkGate_APB2_GPIOTE    :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 29);
+        break;
+    case SYSCTRL_ClkGate_APB1_HUART0    :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 18);
+        break;
+    case SYSCTRL_ClkGate_APB1_HUART1    :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 30);
+        break;
+    case SYSCTRL_ClkGate_APB2_SDIO  :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 1, v, 1);
+        break;
+    case SYSCTRL_ClkGate_APB2_HUART2    :
+        set_reg_bit(APB1_SYSCTRL->RstuCfg + 0, v, 8);
+        break;
+    case SYSCTRL_ClkGate_AHB_USB:
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x54), v, 1);
+        set_reg_bit((volatile uint32_t *)(AON2_CTRL_BASE + 0x54), v, 6);
+        break;
+    case SYSCTRL_ClkGate_AHB_LPQDEC     :
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 9);
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 17);
+        break;
+    case SYSCTRL_ClkGate_AHB_LPUART     :
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 7);
+        break;
+    case SYSCTRL_ClkGate_AHB_LPTIMER     :
+        set_reg_bit((__IO uint32_t *)(AON2_CTRL_BASE + 0x2c), v, 11);
+        break;
+    default:
+        break;
+    }
+}
+
+void SYSCTRL_ResetBlock(SYSCTRL_ResetItem item)
+{
+    SYSCTRL_ResetBlockCtrl(item, 0);
+}
+
+void SYSCTRL_ReleaseBlock(SYSCTRL_ResetItem item)
+{
+    SYSCTRL_ResetBlockCtrl(item, 1);
+}
+
+void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(APB1_SYSCTRL_BASE + 0x70), enable & 0x1, channel_index);
+}
+
+void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div)
+{
+    set_reg_bit(&APB1_SYSCTRL->QdecCfg, mode, 15);
+    set_reg_bits(&APB1_SYSCTRL->QdecCfg, div, 10, 1);
+    set_reg_bit(&APB1_SYSCTRL->QdecCfg, 1, 11);
+}
+
+uint32_t SYSCTRL_GetSlowClk(void)
+{
+    return (io_read(AON1_CTRL_BASE + 0x10) & (1u << 8)) ? OSC_CLK_FREQ : SYSCTRL_RC_FAST_HZ;
+}
+
+int SYSCTRL_ConfigPLLClk(uint32_t div_pre, uint32_t loop, uint32_t div_output)
+{
+    uint32_t freq, vco, value;
+    if (!div_pre || div_pre > 63u || !loop || loop > 255u || !div_output || div_output > 63u)
+        return 1;
+    if (SYSCTRL_GetSlowClk() / div_pre < 2000000u)
+        return 1;
+    freq = (uint32_t)((uint64_t)SYSCTRL_GetSlowClk() * loop / div_pre / 1000000u);
+    if (freq >= 460 && freq <= 600) vco = 7;
+    else if (freq >= 380 && freq <= 520) vco = 6;
+    else if (freq >= 300 && freq <= 440) vco = 5;
+    else if (freq >= 220 && freq <= 360) vco = 4;
+    else if (freq >= 160 && freq <= 280) vco = 3;
+    else if (freq >= 100 && freq <= 200) vco = 2;
+    else if (freq >= 60 && freq <= 120) vco = 1;
+    else return 2;
+    value = io_read(AON1_CTRL_BASE + 0x28);
+    value = (value & ~0x00fffffeu) | (div_pre << 1) | (loop << 7)
+          | (div_output << 15) | (vco << 21);
+    io_write(AON1_CTRL_BASE + 0x28, value);
+    return 0;
+}
+
+int SYSCTRL_EnablePLLChecked(uint8_t enable, uint32_t max_polls)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x28), enable, 0);
+    if (!enable) return 0;
+    while (max_polls--)
+        if (APB1_SYSCTRL->PllCtrl & (1u << 30)) return 0;
+    return -1;
+}
+
+void SYSCTRL_EnablePLL(uint8_t enable)
+{
+    (void)SYSCTRL_EnablePLLChecked(enable, 1000000u);
+}
+
+uint32_t SYSCTRL_GetPLLClk(void)
+{
+    uint32_t pll = io_read(AON1_CTRL_BASE + 0x28);
+    uint32_t pre = (pll >> 1) & 63u, out = (pll >> 15) & 63u;
+    if (!(pll & 1u) || !pre || !out) return 0;
+    return (uint32_t)((uint64_t)SYSCTRL_GetSlowClk() * ((pll >> 7) & 255u) / pre / out);
+}
+
+void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode)
+{
+    #define AON1_PMU3       ((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c))
+
+    if (enable)
+    {
+        // TODO:
+    }
+    else
+    {
+        set_reg_bit(AON1_PMU3, 0, 19);
+    }
+}
+
+#define ING26_CLK_CFG ((volatile uint32_t *)(AON1_CTRL_BASE + 0x4c))
+#define ING26_CLK_PULSES ((1u << 12) | (1u << 13) | (1u << 22))
+
+static uint32_t ing26_pll_div_clk(void)
+{
+    return SYSCTRL_GetPLLClk() / get_safe_divider(*ING26_CLK_CFG, 17, 5);
+}
+
+static uint32_t ing26_per_clk(void)
+{
+    return (io_read(APB1_SYSCTRL_BASE + 0x21c) & (1u << 23))
+         ? ing26_pll_div_clk() : SYSCTRL_GetPLLClk();
+}
+
+uint32_t SYSCTRL_GetFastPreCLK(void)
+{
+    uint32_t source = (io_read(APB1_SYSCTRL_BASE + 0x21c) & (1u << 21))
+                    ? ing26_pll_div_clk() : SYSCTRL_GetPLLClk();
+    return source / get_safe_divider(APB1_SYSCTRL->CguCfg[1], 7, 4);
+}
+
+static int ing26_select_main_clock(SYSCTRL_ClkMode mode, uint8_t offset, uint8_t width,
+                                   uint8_t source_bit, uint8_t update_bit, uint32_t max_polls)
+{
+    uint32_t old_div = get_safe_divider(*ING26_CLK_CFG, offset, width);
+    uint32_t div = mode ? (uint32_t)mode : 1u;
+    uint32_t mask = ((1u << width) - 1u) << offset;
+    uint32_t value;
+    uint8_t valid_shift = source_bit == 14 ? 24 : 26;
+    uint8_t settled = 0;
+    if ((unsigned int)mode > 15u) return -2;
+    if (mode && SYSCTRL_EnablePLLChecked(1, max_polls)) return -1;
+    if (div >= old_div)
+    {
+        value = *ING26_CLK_CFG & ~(ING26_CLK_PULSES | mask);
+        *ING26_CLK_CFG = value | (div << offset) | (1u << update_bit);
+    }
+    value = *ING26_CLK_CFG & ~(ING26_CLK_PULSES | (1u << source_bit));
+    *ING26_CLK_CFG = value | (mode ? (1u << source_bit) : 0u);
+    while (max_polls--)
+    {
+        if (((io_read(APB1_SYSCTRL_BASE + 0x1c8) >> valid_shift) & 3u) == (mode ? 2u : 1u))
+        {
+            settled = 1;
+            break;
+        }
+    }
+    if (!settled) return -1;
+    if (div < old_div)
+    {
+        value = *ING26_CLK_CFG & ~(ING26_CLK_PULSES | mask);
+        *ING26_CLK_CFG = value | (div << offset) | (1u << update_bit);
+    }
+    return 0;
+}
+
+int SYSCTRL_SelectHClkChecked(SYSCTRL_ClkMode mode, uint32_t max_polls)
+{
+    int result = ing26_select_main_clock(mode, 0, 8, 14, 12, max_polls);
+    if (!result) set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), !!mode, 13);
+    return result;
+}
+
+void SYSCTRL_SelectHClk(SYSCTRL_ClkMode mode)
+{
+    (void)SYSCTRL_SelectHClkChecked(mode, 1000000u);
+}
+
+int SYSCTRL_SelectFlashClkChecked(SYSCTRL_ClkMode mode, uint32_t max_polls)
+{
+    int result = ing26_select_main_clock(mode, 8, 4, 15, 13, max_polls);
+    if (!result) set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x1c), !!mode, 14);
+    return result;
+}
+
+void SYSCTRL_SelectFlashClk(SYSCTRL_ClkMode mode)
+{
+    (void)SYSCTRL_SelectFlashClkChecked(mode, 1000000u);
+}
+
+uint32_t SYSCTRL_GetHClk(void)
+{
+    uint32_t config = *ING26_CLK_CFG;
+    uint32_t source = (config & (1u << 14))
+                    ? ((config & (1u << 16)) ? ing26_pll_div_clk() : SYSCTRL_GetPLLClk())
+                    : SYSCTRL_GetSlowClk();
+    return source / get_safe_divider(config, 0, 8);
+}
+
+uint32_t SYSCTRL_GetFlashClk(void)
+{
+    uint32_t config = *ING26_CLK_CFG;
+    uint32_t source = (config & (1u << 15)) ? ing26_per_clk() : SYSCTRL_GetSlowClk();
+    return source / get_safe_divider(config, 8, 4);
+}
+
+void SYSCTRL_SetPClkDiv(uint8_t div)
+{
+    uint32_t value;
+    if (!div || div > 31u) return;
+    value = APB1_SYSCTRL->CguCfg[1] & ~((1u << 5) | (1u << 11) | (7u << 29) | 31u);
+    APB1_SYSCTRL->CguCfg[1] = value | div | (1u << 5);
+}
+
+uint8_t SYSCTRL_GetPClkDiv(void)
+{
+    return (uint8_t)get_safe_divider(APB1_SYSCTRL->CguCfg[1], 0, 5);
+}
+
+uint32_t SYSCTRL_GetPClk(void)
+{
+    return SYSCTRL_GetHClk() / SYSCTRL_GetPClkDiv();
+}
+
+uint32_t SYSCTRL_GetPClk2(void)
+{
+    return SYSCTRL_GetHClk() / get_safe_divider(APB1_SYSCTRL->CguCfg[0], 5, 5);
+}
+
+void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode)
+{
+    if ((unsigned int)mode <= 1u)
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), (uint8_t)mode, 8);
+}
+
+int SYSCTRL_GetCLK32k(void) { return 32768; }
+int SYSCTRL_GetCPU32k(void) { return SYSCTRL_GetCLK32k(); }
+
+void SYSCTRL_SetAdcClkDiv(uint8_t denom)
+{
+    uint32_t value;
+    if (denom == 0 || denom > 63u)
+        return;
+    value = APB1_SYSCTRL->CguCfg8;
+    /* Do not replay update pulses for unrelated dividers in this register. */
+    value &= ~((1u << 12) | (1u << 13) | (1u << 16) | (1u << 25) | (1u << 31) | 0x3fu);
+    APB1_SYSCTRL->CguCfg8 = value | denom | (1u << 13);
+}
+
+uint32_t SYSCTRL_GetAdcClkDiv(void)
+{
+    uint32_t denom = APB1_SYSCTRL->CguCfg8 & 0x3fu;
+    return denom ? SYSCTRL_GetSlowClk() / denom : 0;
+}
+
+uint32_t SYSCTRL_GetClk(SYSCTRL_Item item)
+{
+    uint32_t cfg1 = APB1_SYSCTRL->CguCfg[1], cfg8 = APB1_SYSCTRL->CguCfg8;
+    uint32_t slow = SYSCTRL_GetSlowClk();
+    uint32_t source;
+    switch (item)
+    {
+    case SYSCTRL_ITEM_APB1_ADC: return SYSCTRL_GetAdcClkDiv();
+    case SYSCTRL_ITEM_APB1_TMR0:
+    case SYSCTRL_ITEM_APB1_TMR1:
+        if (cfg1 & (1u << (item == SYSCTRL_ITEM_APB1_TMR0 ? 15 : 17)))
+            return SYSCTRL_GetCLK32k();
+        source = (cfg1 & (1u << 16)) ? ing26_per_clk() : slow;
+        return source / get_safe_divider(cfg8, 17, 8);
+    case SYSCTRL_ITEM_APB1_RTIMER2:
+    case SYSCTRL_ITEM_APB1_RTIMER3:
+        source = (cfg1 >> 12) & 3u;
+        if (source >= 2) return SYSCTRL_GetCLK32k();
+        return (source ? SYSCTRL_GetFastPreCLK() : slow)
+             / get_safe_divider(APB1_SYSCTRL->CguCfg[0], 15, 5);
+    case SYSCTRL_ITEM_APB2_PWM:
+        if (!(cfg1 & (1u << 23))) return SYSCTRL_GetCLK32k();
+        return ((cfg8 & (1u << 15)) ? ing26_per_clk() : slow)
+             / get_safe_divider(cfg8, 26, 5);
+    case SYSCTRL_ITEM_APB2_KeyScan:
+        if (cfg1 & (1u << 14)) return SYSCTRL_GetCLK32k();
+        return slow / get_safe_divider(APB1_SYSCTRL->CguCfg[0], 25, 5);
+    case SYSCTRL_ITEM_APB2_SPI0:
+        return ((cfg1 & (1u << 21)) ? ing26_per_clk() : slow)
+             / get_safe_divider(APB1_SYSCTRL->CguCfg[0], 20, 5);
+    case SYSCTRL_ITEM_APB1_SPI2:
+        return ((cfg1 & (1u << 18)) ? ing26_per_clk() : slow)
+             / get_safe_divider(APB1_SYSCTRL->CguCfg[0], 0, 5);
+    case SYSCTRL_ITEM_APB1_SPI1:
+        return (cfg1 & (1u << 22)) ? SYSCTRL_GetFastPreCLK() : slow;
+    case SYSCTRL_ITEM_APB1_UART0:
+    case SYSCTRL_ITEM_APB1_UART1:
+        return (cfg1 & (1u << (item == SYSCTRL_ITEM_APB1_UART0 ? 19 : 20)))
+             ? SYSCTRL_GetFastPreCLK() : slow;
+    case SYSCTRL_ITEM_APB2_QDEC:
+        return ((APB1_SYSCTRL->QdecCfg & (1u << 15)) ? SYSCTRL_GetFastPreCLK() : slow)
+             / get_safe_divider(APB1_SYSCTRL->QdecCfg, 1, 10);
+    case SYSCTRL_ITEM_APB2_I2S:
+        return (cfg1 & (1u << 6))
+             ? ing26_per_clk() / get_safe_divider(cfg8, 6, 6) : slow;
+    case SYSCTRL_ITEM_APB2_ASDM:
+        source = (io_read(APB1_SYSCTRL_BASE + 0x21c) & (1u << 20))
+               ? ing26_pll_div_clk() : SYSCTRL_GetPLLClk();
+        return source / get_safe_divider(io_read(APB1_SYSCTRL_BASE + 0x21c), 5, 6);
+    case SYSCTRL_ITEM_APB1_WDT:
+    case SYSCTRL_ITEM_APB1_GPIO0:
+    case SYSCTRL_ITEM_APB1_GPIO1:
+        return SYSCTRL_GetCLK32k();
+    case SYSCTRL_ITEM_AHB_LPUART:
+    case SYSCTRL_ITEM_AHB_LPTIMER:
+    case SYSCTRL_ITEM_AHB_LPQDEC:
+        source = io_read(AON2_CTRL_BASE + 0x2c);
+        source = (source >> (item == SYSCTRL_ITEM_AHB_LPUART ? 0 : item == SYSCTRL_ITEM_AHB_LPTIMER ? 2 : 24)) & 3u;
+        return source == 0 ? (uint32_t)SYSCTRL_GetCLK32k() : source == 1 ? slow : SYSCTRL_GetHClk() / get_safe_divider(APB1_SYSCTRL->CguCfg[0], 10, 5);
+    case SYSCTRL_ITEM_AHB_USB:
+        if (io_read(AON2_CTRL_BASE + 0x54) & (1u << 10)) return SYSCTRL_GetCLK32k();
+        source = io_read(AON2_CTRL_BASE + 0x2c);
+        switch (source >> 30)
+        {
+        case 0: source = slow; break;
+        case 1: source = SYSCTRL_RC_FAST_HZ; break;
+        case 2: source = SYSCTRL_GetPLLClk(); break;
+        default: source = ing26_pll_div_clk(); break;
+        }
+        return source / get_safe_divider(io_read(AON2_CTRL_BASE + 0x2c), 26, 4);
+    case SYSCTRL_ITEM_APB1_HUART0:
+    case SYSCTRL_ITEM_APB1_HUART1:
+    case SYSCTRL_ITEM_APB2_HUART2:
+        return SYSCTRL_GetPClk2();
+    default:
+        return (unsigned int)item < SYSCTRL_ITEM_NUMBER ? SYSCTRL_GetPClk() : 0;
+    }
+}
+
+void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
+{
+    uint32_t masked = block_map & 0x3f;
+    set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x04), masked, 6, 12);
+}
+
+int SYSCTRL_Init(void)
+{
+    // TODO:
+    return 0;
+}
+
+void SYSCTRL_SelectI2sClk(SYSCTRL_ClkMode mode)
+{
+    uint32_t value;
+    if ((unsigned int)mode > 15u) return;
+    if (mode)
+    {
+        value = APB1_SYSCTRL->CguCfg8 & ~((1u << 12) | (1u << 13) | (1u << 16)
+              | (1u << 25) | (1u << 31) | (63u << 6));
+        APB1_SYSCTRL->CguCfg8 = value | ((uint32_t)mode << 6);
+    }
+    value = APB1_SYSCTRL->CguCfg[1] & ~((1u << 5) | (1u << 11) | (7u << 29) | (1u << 6));
+    APB1_SYSCTRL->CguCfg[1] = value | (mode ? (1u << 6) : 0u) | (1u << 11);
+}
+
+void SYSCTRL_SelectLpTimerClk(SYSCTRL_LpClkMode mode)
+{
+    if ((unsigned int)mode <= SYSCTRL_PCLK)
+        set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x2c), mode, 2, 2);
+}
+
+void SYSCTRL_SelectLpUartClk(SYSCTRL_LpClkMode mode)
+{
+    if ((unsigned int)mode <= SYSCTRL_PCLK)
+        set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x2c), mode, 2, 0);
+}
+
+void SYSCTRL_SelectLpQdecClk(SYSCTRL_LpClkMode mode)
+{
+    if ((unsigned int)mode <= SYSCTRL_PCLK)
+        set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x2c), mode, 2, 24);
+}
+
+void SYSCTRL_UpdateAsdmClk(uint32_t div)
+{
+    uint32_t value;
+    if (!div || div > 63u) return;
+    value = io_read(APB1_SYSCTRL_BASE + 0x21c) & ~((63u << 5) | (1u << 11) | (1u << 28));
+    io_write(APB1_SYSCTRL_BASE + 0x21c, value | (div << 5) | (1u << 11));
+}
+
+void SYSCTRL_SelectUSBClk(SYSCTRL_ClkMode mode)
+{
+    uint32_t value;
+    if ((unsigned int)mode > 15u) return;
+    value = io_read(AON2_CTRL_BASE + 0x2c) & ~((3u << 30) | (15u << 26) | (1u << 4));
+    if (mode) value |= ((uint32_t)mode << 26) | (2u << 30);
+    else value |= 1u << 26;
+    io_write(AON2_CTRL_BASE + 0x2c, value);
+    io_write(AON2_CTRL_BASE + 0x2c, value | (1u << 4));
+}
+
+void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel)
+{
+    if(enable)
+    {
+        /* PHY[6:4] maps to AON1[23:21]; retain this family's drive code 4. */
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE), 1ul | (1 << pull_sel) | (4 << 4), 9, 17);
+    }
+    else
+    {
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE), 0, 9, 17);
+    }
+}
+void SYSCTRL_ResetAllBlocks(void)
+{
+    unsigned int i;
+    for (i = 0; i < SYSCTRL_ITEM_NUMBER; ++i)
+        if (i != SYSCTRL_ITEM_APB1_SysCtrl)
+            SYSCTRL_ResetBlock((SYSCTRL_ResetItem)i);
+    SYSCTRL_ResetBlock(SYSCTRL_ITEM_APB1_SysCtrl);
+}
+
+void SYSCTRL_SelectPWMClk(SYSCTRL_ClkMode mode)
+{
+    uint32_t value;
+    if ((unsigned int)mode > 15u) return;
+    value = APB1_SYSCTRL->CguCfg8 & ~((1u << 12) | (1u << 13) | (1u << 16)
+          | (1u << 25) | (1u << 31) | (31u << 26) | (1u << 15));
+    if (mode) value |= (uint32_t)mode << 26;
+    APB1_SYSCTRL->CguCfg8 = value | (1u << 31);
+    set_reg_bit(APB1_SYSCTRL->CguCfg + 1, !!mode, 23);
+}
+
+void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode)
+{
+    uint32_t value;
+    if ((unsigned int)mode > 15u) return;
+    value = APB1_SYSCTRL->CguCfg[0] & ~((3u << 30) | (31u << 25));
+    APB1_SYSCTRL->CguCfg[0] = value | ((mode ? (uint32_t)mode : 1u) << 25);
+    value = APB1_SYSCTRL->CguCfg[1] & ~((1u << 5) | (1u << 11) | (7u << 29) | (1u << 14));
+    APB1_SYSCTRL->CguCfg[1] = value | (mode ? 0u : (1u << 14)) | (1u << 31);
+}
+
+void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode)
+{
+    /* ING926 SAR ADC always uses its dedicated divider; no legacy ADC mux. */
+    if (item == SYSCTRL_ITEM_APB1_ADC && mode == SYSCTRL_CLK_SLOW)
+        SYSCTRL_SetAdcClkDiv(1);
 }
 
 #endif
