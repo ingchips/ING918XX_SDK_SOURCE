@@ -613,4 +613,241 @@ void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level)
     GIO_MaskedWrite((volatile uint32_t *)(AON1_CTRL_BASE + 0x10), 10, enable);
 }
 
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+
+/* Keep ING926 separate so changes do not affect ING918/ING916/ING920. */
+#define START_OF_GPIO1          GIO_GPIO_28
+#define MASK_GPIO0_BITS         ((1u << 28) - 1u)
+
+#define DEF_GIO_AND_PIN(io_index)       GIO_TypeDef *pDef = io_index >= START_OF_GPIO1 ? APB1_GPIO1 : APB1_GPIO0; int index = io_index >= START_OF_GPIO1 ? io_index - START_OF_GPIO1 : io_index;
+
+void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
+{
+    DEF_GIO_AND_PIN(io_index);
+    if (dir != GIO_DIR_NONE)
+    {
+        GIO_MaskedWrite(&pDef->ChDir, index, dir == GIO_DIR_INPUT ? 0 : 1);
+        /* BOTH keeps the input path enabled while driving the output. */
+        GIO_MaskedWrite(&pDef->IOIE, index, dir == GIO_DIR_OUTPUT ? 0 : 1);
+    }
+    else
+    {
+        GIO_MaskedWrite(&pDef->ChDir, index, 0);
+        GIO_MaskedWrite(&pDef->IOIE, index, 0);
+    }
+}
+
+static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t type)
+{
+    switch (type)
+    {
+    case GIO_INT_EDGE:
+        switch (enable)
+        {
+        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+            return 5;
+        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+            return 6;
+        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+            return 7;
+        default:
+            return 0;
+        }
+
+    case GIO_INT_LOGIC:
+        switch (enable)
+        {
+        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+            return 3;
+        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+            return 2;
+        default:
+            return 0;
+        }
+    default:
+        return 0;
+    }
+}
+
+
+void GIO_ConfigIntSource(const GIO_Index_t io_index, const uint8_t enable, const GIO_IntTriggerType_t type)
+{
+    DEF_GIO_AND_PIN(io_index);
+    uint8_t mode = map_int_mode(enable, type);
+    if (0 == mode)
+    {
+        GIO_MaskedWrite(&pDef->IntEn, index, 0);
+        return;
+    }
+    int reg_index = index / 8;
+    int offset = (index & 0x7) * 4;
+    pDef->IntMod[reg_index] &= ~(0x7 << offset);
+    pDef->IntMod[reg_index] |= mode << offset;
+    GIO_MaskedWrite(&pDef->IntEn, index, 1);
+}
+
+uint8_t GIO_GetIntStatus(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    return (pDef->IntStatus >> index) & 1;
+}
+
+void GIO_ClearIntStatus(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    /* Write one to clear only the requested interrupt. */
+    pDef->IntStatus = 1u << index;
+}
+
+void GIO_DebounceCtrl(uint8_t group_mask, uint8_t clk_pre_scale, GIO_DbClk_t clk)
+{
+    uint32_t value = ((uint32_t)clk) << 31 | clk_pre_scale;
+    if (group_mask & 1) APB1_GPIO0->DeBounceCtrl = value;
+    if (group_mask & 2) APB1_GPIO1->DeBounceCtrl = value;
+}
+
+void GIO_DebounceEn(const GIO_Index_t io_index, uint8_t enable)
+{
+    DEF_GIO_AND_PIN(io_index);
+    GIO_MaskedWrite(&pDef->DeBounceEn, index, enable);
+}
+
+
+void GIO_WriteAll(const uint64_t value)
+{
+    APB1_GPIO0->DataOut = value & MASK_GPIO0_BITS;
+    APB1_GPIO1->DataOut = (value >> GIO_GPIO_28) & MASK_GPIO0_BITS;
+}
+
+uint64_t GIO_ReadAll(void)
+{
+    return (((uint64_t)(APB1_GPIO1->DataIn & MASK_GPIO0_BITS)) << GIO_GPIO_28) | (APB1_GPIO0->DataIn & MASK_GPIO0_BITS);
+}
+
+uint64_t GIO_GetAllIntStatus(void)
+{
+    return (((uint64_t)(APB1_GPIO1->IntStatus & MASK_GPIO0_BITS)) << GIO_GPIO_28) | (APB1_GPIO0->IntStatus & MASK_GPIO0_BITS);
+}
+
+void GIO_ClearAllIntStatus(void)
+{
+    APB1_GPIO0->IntStatus = MASK_GPIO0_BITS;
+    APB1_GPIO1->IntStatus = MASK_GPIO0_BITS;
+}
+
+GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    GIO_Direction_t r = pDef->ChDir & (1u << index) ? GIO_DIR_OUTPUT : GIO_DIR_INPUT;
+    if ((GIO_DIR_INPUT == r) && ((pDef->IOIE & (1u << index)) == 0))
+        r = GIO_DIR_NONE;
+    return r;
+}
+
+void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit)
+{
+    DEF_GIO_AND_PIN(io_index);
+    /* Set/clear registers take a write mask. */
+    if (bit)
+        pDef->DoutSet = 1u << index;
+    else
+        pDef->DoutClear = 1u << index;
+}
+
+uint8_t GIO_ReadValue(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    return (pDef->DataIn >> index) & 1;
+}
+
+uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index)
+{
+    DEF_GIO_AND_PIN(io_index);
+    return (pDef->DataOut >> index) & 1;
+}
+
+void GIO_SetBits(const uint64_t index_mask)
+{
+    APB1_GPIO0->DoutSet = index_mask & MASK_GPIO0_BITS;
+    APB1_GPIO1->DoutSet = (index_mask >> 28) & MASK_GPIO0_BITS;
+}
+
+void GIO_ClearBits(const uint64_t index_mask)
+{
+    APB1_GPIO0->DoutClear = index_mask & MASK_GPIO0_BITS;
+    APB1_GPIO1->DoutClear = (index_mask >> 28) & MASK_GPIO0_BITS;
+}
+
+void GIO_ToggleBits(const uint64_t index_mask)
+{
+    APB1_GPIO0->DataOut ^= index_mask & MASK_GPIO0_BITS;
+    APB1_GPIO1->DataOut ^= (index_mask >> 28) & MASK_GPIO0_BITS;
+}
+
+#define nop(n) do { int i = n; while (i--) __NOP(); } while (0)
+
+#define ING26_AON1_IO_LATCH_REG         (AON1_CTRL_BASE + 0x10)
+#define ING26_AON2_SLEEP_CTRL_REG       (AON2_CTRL_BASE + 0x84)
+#define ING26_AON1_LATCH_STATUS_REG     (APB1_SYSCTRL_BASE + 0x250)
+
+#define ING26_AON1_IO_LATCH_BIT         7
+#define ING26_AON1_LATCH_STATUS_BIT     9
+#define ING26_REG_IO_LATCH_ACT_BIT      12
+#define ING26_REG_IO_DS_ACT_BIT         13
+#define ING26_IO_LATCH_BIT              14
+#define ING26_IO_DS_BIT                 15
+#define ING26_IO_CTRL_DR_BIT            20
+#define ING26_IO_LATCH_DS_N_BIT         23
+
+static void ing26_io_ctrl_override(void)
+{
+    GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_REG_IO_DS_ACT_BIT, 1);
+    GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_REG_IO_LATCH_ACT_BIT, 1);
+    GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_CTRL_DR_BIT, 0);
+    GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_CTRL_DR_BIT, 1);
+}
+
+void GIO_EnableRetentionGroupA(uint8_t enable)
+{
+    enable = !!enable;
+    GIO_MaskedWrite((volatile uint32_t *)ING26_AON1_IO_LATCH_REG, ING26_AON1_IO_LATCH_BIT, enable);
+    while (((io_read(ING26_AON1_LATCH_STATUS_REG) >> ING26_AON1_LATCH_STATUS_BIT) & 1u) != enable);
+}
+
+void GIO_EnableRetentionGroupB(uint8_t enable)
+{
+    if (enable)
+    {
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_DS_BIT, 1);
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_LATCH_BIT, 1);
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_LATCH_DS_N_BIT, 1);
+    }
+    else
+    {
+        ing26_io_ctrl_override();
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_REG_IO_DS_ACT_BIT, 0);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_REG_IO_LATCH_ACT_BIT, 0);
+        nop(10);
+    }
+}
+
+void GIO_EnableHighZGroupB(uint8_t enable)
+{
+    if (enable)
+    {
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_DS_BIT, 1);
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_LATCH_BIT, 1);
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_LATCH_DS_N_BIT, 0);
+    }
+    else
+    {
+        ing26_io_ctrl_override();
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_REG_IO_LATCH_ACT_BIT, 0);
+        nop(10);
+        GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_REG_IO_DS_ACT_BIT, 0);
+        nop(10);
+    }
+}
+
 #endif
