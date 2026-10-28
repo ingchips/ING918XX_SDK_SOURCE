@@ -755,14 +755,21 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
     ADC_SetLoopDelay(loopDelay);
     ADC_EnableCtrlSignal();
 }
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_20) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26))
 #include <stdlib.h>
 #include <string.h>
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 #include "eflash.h"
+#define ADC_DEVICE_BASE APB_SARADC_BASE
+#define ADC_DEVICE      APB_SADC
+#else
+#define ADC_DEVICE_BASE APB1_SADC_BASE
+#define ADC_DEVICE      APB1_SADC
+#endif
 #define ADC_LEFT_SHIFT(v, s)            ((v) << (s))
 #define ADC_RIGHT_SHIFT(v, s)           ((v) >> (s))
 #define ADC_MK_MASK(b)                  ((ADC_LEFT_SHIFT(1ULL, b)) - (1))
-#define ADC_REG_VAL(reg)                ((*((volatile uint32_t *)((APB_SARADC_BASE) + (reg)))))
+#define ADC_REG_VAL(reg)                ((*((volatile uint32_t *)((ADC_DEVICE_BASE) + (reg)))))
 #define REG_CLR(reg, b, s)              ((ADC_REG_VAL(reg)) & (~(ADC_LEFT_SHIFT(ADC_MK_MASK(b), s))))
 #define REG_OR(v, s)                    ((ADC_REG_VAL(reg)) | (ADC_LEFT_SHIFT(v, s)))
 #define ADC_REG_CLR(reg, b, s)          ((ADC_REG_VAL(reg)) = (REG_CLR(reg, b, s)))
@@ -873,7 +880,7 @@ uint8_t ADC_GetBusyStatus(void)
 void ADC_SetLoopDelay(uint32_t delay)
 {
     ADC_RegWrBits(SADC_CFG_1, delay, 0, 32);
-    ADC_RegClr(SADC_CFG_0, 22, 2);
+    ADC_RegClr(SADC_CFG_0, 22, 1);
 }
 
 uint8_t ADC_GetIntStatus(void)
@@ -883,7 +890,7 @@ uint8_t ADC_GetIntStatus(void)
 
 uint32_t ADC_PopFifoData(void)
 {
-    return ADC_RegRd(SADC_DATA, 0, 18);
+    return ADC_RegRd(SADC_DATA, 0, 16);
 }
 
 SADC_channelId ADC_GetDataChannel(const uint32_t data)
@@ -916,15 +923,15 @@ void ADC_HardwareCalibration(void)
     ADC_RegWrBits(SADC_CFG_2, 1, 3, 12);
     ADC_RegWr(SADC_CFG_0, 1, 1);
     ADC_RegWr(SADC_CFG_2, 1, 2);
-    while (APB_SADC->sadc_int & 0x1);
+    while (ADC_DEVICE->sadc_int & 0x1);
     ADC_RegClr(SADC_CFG_2, 3, 12);
     ADC_RegClr(SADC_CFG_2, 0, 1);
     while (ADC_GetBusyStatus());
     ADC_RegClr(SADC_CFG_0, 1, 1);
     ADC_RegClr(SADC_CFG_0, 9, 1);
     ADC_RegClr(SADC_CFG_2, 2, 1);
-    APB_SADC->sadc_int_mask = 0;
-    APB_SADC->sadc_status |= 1 << 22;
+    ADC_DEVICE->sadc_int_mask = 0;
+    ADC_DEVICE->sadc_status |= 1 << 22;
 }
 
 void ADC_GetHardwareCalibData(uint8_t Data[7])
@@ -933,11 +940,11 @@ void ADC_GetHardwareCalibData(uint8_t Data[7])
     ADC_HardwareCalibration();
     for (i = 0; i < 7; i++)
     {
-        APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
-        APB_SADC->sadc_cfg3 |= ((i + 1) << 16);
-        Data[i] = (APB_SADC->sadc_cfg3 >> 8) & 0xff;
+        ADC_DEVICE->sadc_cfg3 &= ~(0x7 << 16);
+        ADC_DEVICE->sadc_cfg3 |= ((i + 1) << 16);
+        Data[i] = (ADC_DEVICE->sadc_cfg3 >> 8) & 0xff;
     }
-    APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
+    ADC_DEVICE->sadc_cfg3 &= ~(0x7 << 16);
 }
 
 void ADC_SetHardwareCalibData(uint8_t Data[7])
@@ -949,19 +956,19 @@ void ADC_SetHardwareCalibData(uint8_t Data[7])
     ADC_RegWr(SADC_CFG_0, 1, 28);
     for (i = 0; i < 7; i++)
     {
-        APB_SADC->sadc_cfg3 &= ~(0xff);
-        APB_SADC->sadc_cfg3 |= Data[i] & 0xff;
-        APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
-        APB_SADC->sadc_cfg3 |= ((i + 1) << 16);
-        APB_SADC->sadc_cfg3 |= 1 << 19;
+        ADC_DEVICE->sadc_cfg3 &= ~(0xff);
+        ADC_DEVICE->sadc_cfg3 |= Data[i] & 0xff;
+        ADC_DEVICE->sadc_cfg3 &= ~(0x7 << 16);
+        ADC_DEVICE->sadc_cfg3 |= ((i + 1) << 16);
+        ADC_DEVICE->sadc_cfg3 |= 1 << 19;
         do
         {
-            read_calib = (APB_SADC->sadc_cfg3 >> 8) & 0xff;
+            read_calib = (ADC_DEVICE->sadc_cfg3 >> 8) & 0xff;
         }
         while (read_calib != Data[i]);
     }
-    APB_SADC->sadc_cfg3 &= ~(0x7 << 16);
-    APB_SADC->sadc_cfg3 &= ~(0xff);
+    ADC_DEVICE->sadc_cfg3 &= ~(0x7 << 16);
+    ADC_DEVICE->sadc_cfg3 &= ~(0xff);
     ADC_RegClr(SADC_CFG_0, 1, 1);
 }
 
@@ -981,7 +988,7 @@ void ADC_Reset(void)
     while (ADC_GetBusyStatus());
     ADC_RegClr(SADC_CFG_0, 1, 1);
     ADC_RegClr(SADC_CFG_2, 2, 1);
-    APB_SADC->sadc_int_mask = 0;
+    ADC_DEVICE->sadc_int_mask = 0;
 }
 
 void ADC_Start(uint8_t start)
@@ -1003,7 +1010,7 @@ void ADC_Start(uint8_t start)
 
 void ADC_SetVref(SADC_Vref vref)
 {
-    APB_SADC->sadc_cfg[0] &= ~(0x20000088);
+    ADC_DEVICE->sadc_cfg[0] &= ~(0x20000088);
     switch (vref)
     {
     case VREF_IN_MODE:
@@ -1046,9 +1053,10 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode, SADC_channelId ch, uint8_t enNum, ui
     }
     ADC_SetLoopDelay(loopDelay);
 }
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 static SADC_Vref ADC_GetCurrentVref(void)
 {
-    const uint32_t cfg0 = APB_SADC->sadc_cfg[0];
+    const uint32_t cfg0 = ADC_DEVICE->sadc_cfg[0];
 
     if (cfg0 & (1u << 3))
         return VREF_IN_MODE;
@@ -1172,5 +1180,7 @@ float ADC_GetVBatVoltage(uint16_t raw)
 {
     return ADC_GetCalibratedValue(ADC_CH_9, raw);
 }
+
+#endif /* INGCHIPS_FAMILY_20 factory voltage calibration */
 
 #endif

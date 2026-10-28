@@ -501,7 +501,7 @@ void ADC_ConvCfg(SADC_adcCtrlMode ctrlMode,
                  uint8_t dmaEnNum,
                  SADC_adcIputMode inputMode,
                  uint32_t loopDelay);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_20) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26))
 
 typedef enum {
     CONVERSION_MODE,
@@ -658,7 +658,7 @@ SADC_channelId ADC_GetDataChannel(const uint32_t data);
 
 /**
  * @brief To get ADC data of the data read by ADC_PopFifoData
- * @note The data obtained by this api has been calibrated by ft-data.
+ * @note Returns a raw 12-bit code; no factory voltage calibration is applied.
  *
  * @param[in] data           data read by ADC_PopFifoData
  * @return                   ADC data
@@ -669,7 +669,7 @@ uint16_t ADC_GetData(const uint32_t data);
  * @brief Read ADC data in specified channel
  *
  * @param[in] channel_id       channel ID
- * @return                     calibrated ADC data when channel matches else 0
+ * @return                     raw ADC data when channel matches else 0
  */
 uint16_t ADC_ReadChannelData(const uint8_t channel_id);
 
@@ -750,6 +750,7 @@ void ADC_GetHardwareCalibData(uint8_t Data[7]);
  */
 void ADC_SetHardwareCalibData(uint8_t Data[7]);
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 /**
  * @brief Convert raw ADC code to calibrated physical value
  *
@@ -788,6 +789,8 @@ float ADC_GetCalibValueVRefVBat(SADC_channelId ch, uint16_t raw, float vbat);
  * @return                      VBAT voltage in V
  */
 float ADC_GetVBatVoltage(uint16_t raw);
+
+#endif /* INGCHIPS_FAMILY_20 factory voltage calibration */
 
 
 #endif

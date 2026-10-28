@@ -334,7 +334,8 @@ typedef struct{
     __IO uint32_t sadc_cfg[3];            // 0x0
     __IO uint32_t sadc_data;              // 0x0c
     __IO uint32_t sadc_status;            // 0x10
-    __IO uint32_t Reserved[7];            // 0x14
+    __IO uint32_t sadc_cfg3;              // 0x14
+    __IO uint32_t Reserved[6];            // 0x18
     __IO uint32_t sadc_int_mask;          // 0x30
     __IO uint32_t sadc_int;               // 0x34
 } SADC_TypeDef;
