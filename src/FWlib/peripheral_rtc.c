@@ -331,18 +331,26 @@ uint8_t RTC_GetStatus(void)
     return *AON1_REG_RTC & 0x8ul;
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+#define RTC_COUNTER_LOW APB1_SYSCTRL_BASE + 0x254
+#define RTC_COUNTER_HIGH APB1_SYSCTRL_BASE + 0x258
+#else
+#define RTC_COUNTER_LOW AON2_CTRL_BASE + 0x48
+#define RTC_COUNTER_HIGH AON2_CTRL_BASE + 0x4C
+#endif
 
 uint32_t RTC_CurrentHigh(void)
 {
-    volatile uint32_t * reg = (volatile uint32_t *)(AON2_CTRL_BASE + 0x4C);
+    volatile uint32_t * reg = (volatile uint32_t *)(RTC_COUNTER_HIGH);
     uint32_t r = RTC_ReadStable(reg);
     return r & 0x7fful;
 }
 
 uint32_t RTC_Current(void)
 {
-    volatile uint32_t * reg = (volatile uint32_t *)(AON2_CTRL_BASE + 0x48);
+    volatile uint32_t * reg = (volatile uint32_t *)(RTC_COUNTER_LOW);
     return RTC_ReadStable(reg);
 }
 
@@ -386,7 +394,12 @@ void RTC_ClearInterrupt(void)
 
 uint8_t RTC_GetStatus(void)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+    /* Status moved to SYSCTRL; retain the public 0/0x8 flag convention. */
+    return (io_read(APB1_SYSCTRL_BASE + 0x27c) >> 1) & 0x8ul;
+#else
     return *AON1_REG_RTC & 0x8ul;
+#endif
 }
 
 #endif

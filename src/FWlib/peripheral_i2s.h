@@ -8,11 +8,11 @@
 extern "C" {    /* allow C++ to use these headers */
 #endif  /* __cplusplus */
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define I2S_FIFO_DEPTH      16
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 #define I2S_FIFO_DEPTH      4
 #endif
 
@@ -190,6 +190,12 @@ int I2S_GetRxFIFOCount(I2S_TypeDef *base);
  * @param[in] enable                    Enable or disable(default)
  */
 void I2S_DataFromPDM(uint8_t enable);
+#endif
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+void I2S_EnableDataLsb(I2S_TypeDef *base, uint8_t tx_enable, uint8_t rx_enable);
+/** TDM encoded fields [1:0], [6:4], [8]; instance base follows the register list. */
+int I2S_ConfigTdm(I2S_TypeDef *base, uint32_t tx_control, uint32_t rx_control, uint8_t tx_lines, uint8_t rx_lines);
 #endif
 
 #endif

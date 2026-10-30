@@ -17,7 +17,8 @@ extern "C" {	/* allow C++ to use these headers */
  * in ING916 is also provided, which can be enabled by compiling switch `SOFTWARE_RTC_DHMS`.
  *
  * For ING916, when `SOFTWARE_RTC_DHMS` is defined, the hardware based one is not used
- * any more. For ING20, only `SOFTWARE_RTC_DHMS` is supported.
+ * any more. For ING20/ING26, day/hour/minute/second APIs require `SOFTWARE_RTC_DHMS`.
+ * Free-running counters and target interrupts are hardware based on all families.
  *
  * Differences comparing to hardware implementation:
  *
@@ -42,7 +43,7 @@ uint32_t RTC_Current(void);
 
 /**
  ****************************************************************************************
- * @brief Get current RTC value (higher part 11bit)
+ * @brief Get current RTC value (ING918: 16 high bits; others: 11 high bits)
  *
  * @return              Higher part of current value
  ****************************************************************************************
@@ -51,7 +52,7 @@ uint32_t RTC_CurrentHigh(void);
 
 /**
  ****************************************************************************************
- * @brief Get current full RTC value (full 43bit)
+ * @brief Get current full RTC value (ING918: 48 bits; others: 43 bits)
  *
  * @return              Current value
  ****************************************************************************************
@@ -476,7 +477,7 @@ void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data);
 
 #endif
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 typedef enum
 {
@@ -505,7 +506,9 @@ typedef enum
  * @return                      Days passed (5 bits, 0..31)
  ****************************************************************************************
  */
+#ifdef SOFTWARE_RTC_DHMS
 uint16_t RTC_GetTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
+#endif
 
 /**
  ****************************************************************************************
@@ -517,7 +520,9 @@ uint16_t RTC_GetTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
  * @param[in] second            Second (0..59)
  ****************************************************************************************
  */
+#ifdef SOFTWARE_RTC_DHMS
 void RTC_ModifyTime(uint16_t day, uint8_t hour, uint8_t minute, uint8_t second);
+#endif
 
 /**
  ****************************************************************************************
@@ -530,7 +535,9 @@ void RTC_ModifyTime(uint16_t day, uint8_t hour, uint8_t minute, uint8_t second);
  * @return                      if RTC modification is done (non-0) or not (0)
  ****************************************************************************************
  */
+#ifdef SOFTWARE_RTC_DHMS
 int RTC_IsModificationDone(void);
+#endif
 
 /**
  ****************************************************************************************
@@ -541,7 +548,9 @@ int RTC_IsModificationDone(void);
  * @param[in] second            Second (0..59)
  ****************************************************************************************
  */
+#ifdef SOFTWARE_RTC_DHMS
 void RTC_ConfigAlarm(uint8_t hour, uint8_t minute, uint8_t second);
+#endif
 
 /**
  ****************************************************************************************
@@ -552,7 +561,9 @@ void RTC_ConfigAlarm(uint8_t hour, uint8_t minute, uint8_t second);
  * @param[in] mask              combination of `rtc_irq_t`
  ****************************************************************************************
  */
+#ifdef SOFTWARE_RTC_DHMS
 void RTC_EnableIRQ(uint32_t mask);
+#endif
 
 /**
  ****************************************************************************************
@@ -561,7 +572,9 @@ void RTC_EnableIRQ(uint32_t mask);
  * @return                      combination of `rtc_irq_t`
  ****************************************************************************************
  */
+#ifdef SOFTWARE_RTC_DHMS
 uint32_t RTC_GetIntState(void);
+#endif
 
 /**
  ****************************************************************************************
@@ -570,7 +583,9 @@ uint32_t RTC_GetIntState(void);
  * @param[in] state             combination of `rtc_irq_t`
  ****************************************************************************************
  */
+#ifdef SOFTWARE_RTC_DHMS
 void RTC_ClearIntState(uint32_t state);
+#endif
 
 /**
  ****************************************************************************************
@@ -622,9 +637,11 @@ uint8_t RTC_GetStatus(void);
  * @param[in] enable            Enable(1)/Disable(0)
  ****************************************************************************************
  */
-#define RTC_Enable(a)   RTC_EnableFreeRun()
+#define RTC_Enable(a)   RTC_EnableFreeRun(a)
 
+#ifdef SOFTWARE_RTC_DHMS
 void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data);
+#endif
 
 #endif
 

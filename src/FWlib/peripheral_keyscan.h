@@ -14,7 +14,7 @@
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 typedef enum
 {
@@ -38,7 +38,7 @@ typedef enum
     KEY_IN_COL_17  ,
     KEY_IN_COL_18  ,
     KEY_IN_COL_19  ,
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     KEY_IN_COL_20  ,
     KEY_IN_COL_21  ,
 #endif
@@ -72,7 +72,7 @@ typedef enum
     KEY_OUT_ROW_NUMBER,
 } KEYSCAN_OutRowIndex_t;
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 /*
  * Keyscan Scan result enumeration.
  *
@@ -146,7 +146,7 @@ typedef struct {
     uint16_t release_time;
     uint16_t scan_interval;
     uint8_t debounce_counter;
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     uint8_t table_mode_en;
     uint8_t lpkey_mode_en;
 #endif
@@ -239,7 +239,7 @@ void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set, KEYSCAN
  *                              1: find key pressed, *row and *col are key positions in keyboard array
  */
 uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 /**
  * @brief Transfer keyscan FIFO raw data to keyboard array row and col

@@ -1,5 +1,9 @@
 #include "peripheral_pwm.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+#define APB_PWM APB2_PWM
+#endif
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
 static void PWM_SetRegBit(uint32_t addr_offset, const uint8_t channel_index, const uint8_t v, const uint8_t bit_width)
@@ -74,7 +78,7 @@ void PWM_SetHighThreshold(const uint8_t channel_index, const uint8_t multi_duty_
     *reg = threshold;
 }
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 static void PWM_SetRegBit(const uint8_t channel_index, uint32_t addr_offset, const uint8_t offset, const uint8_t v, const uint8_t bit_width)
 {
@@ -202,7 +206,7 @@ uint32_t PWM_GetFifoStatus(const uint8_t channel_index)
 {
     return(APB_PWM->Channels[channel_index].Ctrl1);
 }
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 void PWM_SetInitVale(const uint8_t channel,uint8_t vale_a,uint8_t vale_b)
 {
@@ -312,3 +316,12 @@ void PWM_SetupSingle(const uint8_t channel_index, const uint32_t pulse_width)
     PWM_SetMask(channel_index, 0, 0);
     PWM_Enable(channel_index, 1);
 }
+
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+void PWM_EnableMulti(uint32_t channel_mask, const uint8_t enable)
+{
+    uint8_t channel;
+    for (channel = 0; channel < PWM_CHANNEL_NUMBER; ++channel)
+        if (channel_mask & (1u << channel)) PWM_Enable(channel, enable);
+}
+#endif

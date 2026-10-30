@@ -1,18 +1,25 @@
 #include "peripheral_i2s.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 void I2S_Config(I2S_TypeDef *base, i2s_role_t role, i2s_mode_t mode,
                 uint8_t mono,
                 uint8_t lrclk_polar, uint8_t txbclk_polar, uint8_t rxbclk_polar,
                 uint8_t data_width)
 {
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+    if (data_width < 16 || data_width > 32) return;
+#endif
     uint32_t mask = 0x7 << 2;
     base->ModeConfig &= ~mask;
     base->ModeConfig |=  (mode << 2) | ((uint32_t)mono << 4);
     mask = 0x1f0f;
     base->Config &= ~mask;
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+    data_width -= 1;
+#else
     data_width = data_width <= 16 ? 0 : data_width - 1;
+#endif
     base->Config |=   (role << 0)
                         | (lrclk_polar << 1)
                         | (txbclk_polar << 2)
@@ -94,4 +101,24 @@ void I2S_DataFromPDM(uint8_t enable)
 }
 #endif
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+void I2S_EnableDataLsb(I2S_TypeDef *base, uint8_t tx_enable, uint8_t rx_enable)
+{
+    uint32_t val = 0;
+    base->Config &= ~(0x3 << 16);
+    val = (tx_enable<<16 | rx_enable<<17);
+    base->Config |= val;
+}
+
+int I2S_ConfigTdm(I2S_TypeDef *base, uint32_t tx_control, uint32_t rx_control, uint8_t tx_lines, uint8_t rx_lines)
+{
+    volatile uint32_t *tdm;
+    if (!base || ((tx_control | rx_control) & ~0x173u)) return -1;
+    tdm = (volatile uint32_t *)((uintptr_t)base + 0x20u);
+    tdm[0] = tx_control;
+    tdm[1] = rx_control;
+    tdm[2] = ((uint32_t)tx_lines << 16) | rx_lines;
+    return 0;
+}
+#endif
 #endif

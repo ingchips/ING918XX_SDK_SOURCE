@@ -14,6 +14,10 @@ typedef enum
     UART_PORT_1
 } uart_port_t;
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+typedef enum { LPUART_PORT_0, LPUART_PORT_1, LPUART_PORT_2 } lpuart_port_t;
+#endif
+
 typedef enum
 {
     I2C_PORT_0,
@@ -26,6 +30,9 @@ typedef enum
 {
     SPI_PORT_0,
     SPI_PORT_1
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+    , SPI_PORT_2
+#endif
 } spi_port_t;
 
 typedef enum
@@ -1008,6 +1015,494 @@ void PINCTRL_EnableAnalog(const uint8_t io_index);
  */
 int PINCTRL_SelClockOutput(const uint8_t io_index);
 
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+
+int PINCTRL_SelLpUartIn(lpuart_port_t port, uint8_t io_pin_rxd, uint8_t io_pin_cts);
+
+int PINCTRL_KeyScanPullSel(const uint8_t io_pin, uint8_t enable);
+
+#define IO_PIN_NUMBER                   56
+
+// placeholder value when don't want to select a pin for some IO source
+#define IO_NOT_A_PIN                    0x7f
+
+typedef enum
+{
+    NA = 0,
+    LPUART_TX_GPIO6 = 0x1,
+    LPUART_TX_GPIO22 = 0x2,
+    LPUART_TX_GPIO23 = 0x3,
+}LP_PERIPHERAL_PIN_TX_SOURCE_t;
+typedef enum
+{
+    LPUART_RX_TIE = 0,
+    LPUART_RX_GPIO2 = 0x1,
+    LPUART_RX_GPIO5 = 0x2,
+    LPUART_RX_GPIO8 = 0x3,
+    LPUART_RX_GPIO11 = 0x4,
+    LPUART_RX_GPIO14 = 0x5,
+    LPUART_RX_GPIO17 = 0x6,
+    LPUART_RX_GPIO20 = 0x7,
+}LP_PERIPHERAL_PIN_RX_SOURCE_t;
+void AON_SelLpPin(LP_PERIPHERAL_PIN_TX_SOURCE_t tx_pin, LP_PERIPHERAL_PIN_RX_SOURCE_t rx_pin);
+
+
+typedef enum
+{
+    // below sources are for output
+    IO_SOURCE_GPIO                                     = 0,
+    IO_SOURCE_DEBUG_BUS                                = 1,
+    IO_SOURCE_SW_DATA_OUT                              = 2,
+    IO_SOURCE_SDIO_CLK                                 = 3,
+    IO_SOURCE_SDIO_DATA0                               = 4,
+    IO_SOURCE_SDIO_DATA1                               = 5,
+    IO_SOURCE_SDIO_DATA2                               = 6,
+    IO_SOURCE_SDIO_DATA3                               = 7,
+    IO_SOURCE_SDIO_CMD                                 = 8,
+    IO_SOURCE_SPI0_CLK_OUT                             = 9,
+    IO_SOURCE_SPI0_CSN_OUT                             = 10,
+    IO_SOURCE_SPI0_HOLD_OUT                            = 11,
+    IO_SOURCE_SPI0_WP_OUT                              = 12,
+    IO_SOURCE_SPI0_MISO_OUT                            = 13,
+    IO_SOURCE_SPI0_MOSI_OUT                            = 14,
+    IO_SOURCE_SPI0_DQS_OUT                             = 15,
+    IO_SOURCE_SPI2_CLK_OUT                             = 16,
+    IO_SOURCE_SPI2_CSN_OUT                             = 17,
+    IO_SOURCE_SPI2_HOLD_OUT                            = 18,
+    IO_SOURCE_SPI2_WP_OUT                              = 19,
+    IO_SOURCE_SPI2_MISO_OUT                            = 20,
+    IO_SOURCE_SPI2_MOSI_OUT                            = 21,
+    IO_SOURCE_SPI2_DQS_OUT                             = 22,
+    IO_SOURCE_SPI1_CLK_OUT                             = 23,
+    IO_SOURCE_SPI1_CSN_OUT                             = 24,
+    IO_SOURCE_SPI1_MISO_OUT                            = 25,
+    IO_SOURCE_SPI1_MOSI_OUT                            = 26,
+    IO_SOURCE_SPI1_HOLD_OUT                            = 27,
+    IO_SOURCE_SPI1_WP_OUT                              = 28,
+    IO_SOURCE_UART0_TXD                                = 29,
+    IO_SOURCE_UART0_RTS                                = 30,
+    IO_SOURCE_UART1_TXD                                = 31,
+    IO_SOURCE_UART1_RTS                                = 32,
+    IO_SOURCE_I2C0_SCL_OUT                             = 33,
+    IO_SOURCE_I2C0_SDA_OUT                             = 34,
+    IO_SOURCE_I2S_BCLK_OUT                             = 35,
+    IO_SOURCE_I2S_LRCLK_OUT                            = 36,
+    IO_SOURCE_I2S_DATA_OUT                             = 37,
+    IO_SOURCE_PWM0_A                                   = 38,
+    IO_SOURCE_PWM0_B                                   = 39,
+    IO_SOURCE_PWM1_A                                   = 40,
+    IO_SOURCE_PWM1_B                                   = 41,
+    IO_SOURCE_PWM2_A                                   = 42,
+    IO_SOURCE_PWM2_B                                   = 43,
+    IO_SOURCE_PWM3_A                                   = 44,
+    IO_SOURCE_PWM3_B                                   = 45,
+    IO_SOURCE_PWM4_A                                   = 46,
+    IO_SOURCE_PWM4_B                                   = 47,
+    IO_SOURCE_PWM5_A                                   = 48,
+    IO_SOURCE_PWM5_B                                   = 49,
+    IO_SOURCE_PWM6_A                                   = 50,
+    IO_SOURCE_PWM6_B                                   = 51,
+    IO_SOURCE_ANT_SW0                                  = 52,
+    IO_SOURCE_ANT_SW1                                  = 53,
+    IO_SOURCE_ANT_SW2                                  = 54,
+    IO_SOURCE_ANT_SW3                                  = 55,
+    IO_SOURCE_ANT_SW4                                  = 56,
+    IO_SOURCE_ANT_SW5                                  = 57,
+    IO_SOURCE_ANT_SW6                                  = 58,
+    IO_SOURCE_ANT_SW7                                  = 59,
+    IO_SOURCE_PA_TXEN                                  = 60,
+    IO_SOURCE_PA_RXEN                                  = 61,
+    IO_SOURCE_KEYSCN_ROW_0                             = 62,
+    IO_SOURCE_KEYSCN_ROW_1                             = 63,
+    IO_SOURCE_KEYSCN_ROW_2                             = 64,
+    IO_SOURCE_KEYSCN_ROW_3                             = 65,
+    IO_SOURCE_KEYSCN_ROW_4                             = 66,
+    IO_SOURCE_KEYSCN_ROW_5                             = 67,
+    IO_SOURCE_KEYSCN_ROW_6                             = 68,
+    IO_SOURCE_KEYSCN_ROW_7                             = 69,
+    IO_SOURCE_KEYSCN_COL_0                             = 70,
+    IO_SOURCE_KEYSCN_COL_1                             = 71,
+    IO_SOURCE_KEYSCN_COL_2                             = 72,
+    IO_SOURCE_KEYSCN_COL_3                             = 73,
+    IO_SOURCE_KEYSCN_COL_4                             = 74,
+    IO_SOURCE_KEYSCN_COL_5                             = 75,
+    IO_SOURCE_KEYSCN_COL_6                             = 76,
+    IO_SOURCE_KEYSCN_COL_7                             = 77,
+    IO_SOURCE_KEYSCN_COL_8                             = 78,
+    IO_SOURCE_KEYSCN_COL_9                             = 79,
+    IO_SOURCE_KEYSCN_COL_10                            = 80,
+    IO_SOURCE_KEYSCN_COL_11                            = 81,
+    IO_SOURCE_KEYSCN_COL_12                            = 82,
+    IO_SOURCE_KEYSCN_COL_13                            = 83,
+    IO_SOURCE_KEYSCN_COL_14                            = 84,
+    IO_SOURCE_KEYSCN_COL_15                            = 85,
+    IO_SOURCE_KEYSCN_COL_16                            = 86,
+    IO_SOURCE_KEYSCN_COL_17                            = 87,
+    IO_SOURCE_KEYSCN_COL_18                            = 88,
+    IO_SOURCE_KEYSCN_COL_19                            = 89,
+    IO_SOURCE_KEYSCN_COL_20                            = 90,
+    IO_SOURCE_KEYSCN_COL_21                            = 91,
+    IO_SOURCE_QDEC_TIMER_EXT_OUT0_A                    = 92,
+    IO_SOURCE_QDEC_TIMER_EXT_OUT1_A                    = 93,
+    IO_SOURCE_QDEC_TIMER_EXT_OUT2_A                    = 94,
+    IO_SOURCE_QDEC_TIMER_EXT_OUT0_B                    = 95,
+    IO_SOURCE_QDEC_TIMER_EXT_OUT1_B                    = 96,
+    IO_SOURCE_QDEC_TIMER_EXT_OUT2_B                    = 97,
+    IO_SOURCE_UART0_SIR                                = 98,
+    IO_SOURCE_UART1_SIR                                = 99,
+    IO_SOURCE_ASDM_DMIC_MCLK                           = 100,
+    IO_SOURCE_LPUART_RTS                               = 101,
+    IO_SOURCE_LPUART0_TXD                              = 102,
+    IO_SOURCE_LPUART0_RTS                              = 103,
+    IO_SOURCE_LPUART1_TXD                              = 104,
+    IO_SOURCE_LPUART1_RTS                              = 105,
+    IO_SOURCE_LPUART2_TXD                              = 106,
+    IO_SOURCE_LPUART2_RTS                              = 107,
+    IO_SOURCE_SW_DIO                                   = 108,
+    IO_SOURCE_SW_CLK                                   = 109,
+
+    IO_SOURCE_SDIO_DATA0_IN                            = 110,
+    IO_SOURCE_SDIO_DATA1_IN                            = 111,
+    IO_SOURCE_SDIO_DATA2_IN                            = 112,
+    IO_SOURCE_SDIO_DATA3_IN                            = 113,
+    IO_SOURCE_SDIO_CMD_IN                              = 114,
+    IO_SOURCE_SPI0_CLK_IN                              = 115,
+    IO_SOURCE_SPI0_CSN_IN                              = 116,
+    IO_SOURCE_SPI0_HOLD_IN                             = 117,
+    IO_SOURCE_SPI0_WP_IN                               = 118,
+    IO_SOURCE_SPI0_MISO_IN                             = 119,
+    IO_SOURCE_SPI0_MOSI_IN                             = 120,
+    IO_SOURCE_SPI0_DQS_IN                              = 121,
+    IO_SOURCE_SPI2_CLK_IN                              = 122,
+    IO_SOURCE_SPI2_CSN_IN                              = 123,
+    IO_SOURCE_SPI2_HOLD_IN                             = 124,
+    IO_SOURCE_SPI2_WP_IN                               = 125,
+    IO_SOURCE_SPI2_MISO_IN                             = 126,
+    IO_SOURCE_SPI2_MOSI_IN                             = 127,
+    IO_SOURCE_SPI2_DQS_IN                              = 128,
+    IO_SOURCE_SPI1_CLK_IN                              = 129,
+    IO_SOURCE_SPI1_CSN_IN                              = 130,
+    IO_SOURCE_SPI1_MISO_IN                             = 131,
+    IO_SOURCE_SPI1_MOSI_IN                             = 132,
+    IO_SOURCE_SPI1_HOLD_IN                             = 133,
+    IO_SOURCE_SPI1_WP_IN                               = 134,
+    IO_SOURCE_UART0_RXD_IN                             = 135,
+    IO_SOURCE_UART0_CTS_IN                             = 136,
+    IO_SOURCE_UART1_RXD_IN                             = 137,
+    IO_SOURCE_UART1_CTS_IN                             = 138,
+    IO_SOURCE_LPUART0_RXD                              = 139,
+    IO_SOURCE_LPUART0_CTS                              = 140,
+    IO_SOURCE_LPUART1_RXD                              = 141,
+    IO_SOURCE_LPUART1_CTS                              = 142,
+    IO_SOURCE_LPUART2_RXD                              = 143,
+    IO_SOURCE_LPUART2_CTS                              = 144,
+    IO_SOURCE_I2C0_SCL_IN                              = 145,
+    IO_SOURCE_I2C0_SDA_IN                              = 146,
+    IO_SOURCE_I2S_BCLK_IN                              = 147,
+    IO_SOURCE_I2S_LRCLK_IN                             = 148,
+    IO_SOURCE_I2S_DATA_IN                              = 149,
+    IO_SOURCE_KEYSCAN_COL_IN_0                         = 150,
+    IO_SOURCE_KEYSCAN_COL_IN_1                         = 151,
+    IO_SOURCE_KEYSCAN_COL_IN_2                         = 152,
+    IO_SOURCE_KEYSCAN_COL_IN_3                         = 153,
+    IO_SOURCE_KEYSCAN_COL_IN_4                         = 154,
+    IO_SOURCE_KEYSCAN_COL_IN_5                         = 155,
+    IO_SOURCE_KEYSCAN_COL_IN_6                         = 156,
+    IO_SOURCE_KEYSCAN_COL_IN_7                         = 157,
+    IO_SOURCE_KEYSCAN_COL_IN_8                         = 158,
+    IO_SOURCE_KEYSCAN_COL_IN_9                         = 159,
+    IO_SOURCE_KEYSCAN_COL_IN_10                        = 160,
+    IO_SOURCE_KEYSCAN_COL_IN_11                        = 161,
+    IO_SOURCE_KEYSCAN_COL_IN_12                        = 162,
+    IO_SOURCE_KEYSCAN_COL_IN_13                        = 163,
+    IO_SOURCE_KEYSCAN_COL_IN_14                        = 164,
+    IO_SOURCE_KEYSCAN_COL_IN_15                        = 165,
+    IO_SOURCE_KEYSCAN_COL_IN_16                        = 166,
+    IO_SOURCE_KEYSCAN_COL_IN_17                        = 167,
+    IO_SOURCE_KEYSCAN_COL_IN_18                        = 168,
+    IO_SOURCE_KEYSCAN_COL_IN_19                        = 169,
+    IO_SOURCE_KEYSCAN_COL_IN_20                        = 170,
+    IO_SOURCE_KEYSCAN_COL_IN_21                        = 171,
+    IO_SOURCE_KEYSCAN_ROW_IN_0                         = 172,
+    IO_SOURCE_KEYSCAN_ROW_IN_1                         = 173,
+    IO_SOURCE_KEYSCAN_ROW_IN_2                         = 174,
+    IO_SOURCE_KEYSCAN_ROW_IN_3                         = 175,
+    IO_SOURCE_KEYSCAN_ROW_IN_4                         = 176,
+    IO_SOURCE_KEYSCAN_ROW_IN_5                         = 177,
+    IO_SOURCE_KEYSCAN_ROW_IN_6                         = 178,
+    IO_SOURCE_KEYSCAN_ROW_IN_7                         = 179,
+    IO_SOURCE_QDEC_PHASEA_IN                           = 180,
+    IO_SOURCE_QDEC_PHASEB_IN                           = 181,
+    IO_SOURCE_QDEC_INDEX_IN                            = 182,
+    IO_SOURCE_QDEC_EXT_IN_CLK                          = 183,
+    IO_SOURCE_QDEC_EXT_IN_A1                           = 184,
+    IO_SOURCE_QDEC_EXT_IN_A2                           = 185,
+    IO_SOURCE_QDEC_EXT_IN_B3                           = 186,
+    IO_SOURCE_PCAP0_IN                                 = 187,
+    IO_SOURCE_PCAP1_IN                                 = 188,
+    IO_SOURCE_PCAP2_IN                                 = 189,
+    IO_SOURCE_PCAP3_IN                                 = 190,
+    IO_SOURCE_PCAP4_IN                                 = 191,
+    IO_SOURCE_PCAP5_IN                                 = 192,
+    IO_SOURCE_UART0_SIR_IN                             = 193,
+    IO_SOURCE_UART1_SIR_IN                             = 194,
+    IO_SOURCE_ASDM_DMIC_DATA_IN                        = 195,
+    IO_SOURCE_LPUART_CTS_IN                            = 196,
+    IO_SOURCE_NUMBER
+} io_source_t;
+
+// compatible definitions with ING918xx
+#define IO_SOURCE_GENERAL           IO_SOURCE_GPIO
+#define IO_SOURCE_SPI0_CLK          IO_SOURCE_SPI0_CLK_OUT
+#define IO_SOURCE_SPI0_DO           IO_SOURCE_SPI0_MOSI_OUT
+#define IO_SOURCE_SPI0_SSN          IO_SOURCE_SPI0_CSN_OUT
+#define IO_SOURCE_I2C0_SCL_O        IO_SOURCE_I2C0_SCL_OUT
+#define IO_SOURCE_I2C0_SDO          IO_SOURCE_I2C0_SDA_OUT
+#define IO_SOURCE_SPI1_CLK          IO_SOURCE_SPI1_CLK_OUT
+#define IO_SOURCE_SPI1_DO           IO_SOURCE_SPI1_MOSI_OUT
+#define IO_SOURCE_SPI1_SSN          IO_SOURCE_SPI1_CSN_OUT
+
+#define IO_SOURCE_MASK      0x3F
+
+typedef enum
+{
+    PINCTRL_DRIVE_2mA,
+    PINCTRL_DRIVE_4mA,
+    PINCTRL_DRIVE_8mA,
+    PINCTRL_DRIVE_12mA,
+} pinctrl_drive_strength_t;
+
+/**
+ * @brief Select SWD input IOs
+ *
+ * Note: If an input is not used or invalid, set it to `IO_NOT_A_PIN`.
+ *
+ * This function fails when IO pin do not support such configurations.
+ *
+ * @param[in] io_pin_dio        DIO
+ * @param[in] io_pin_clk        CLK
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelSwIn(uint8_t io_pin_dio, uint8_t io_pin_clk);
+
+/**
+ * @brief Select SPI input IOs
+ *
+ * This function is obsoleted. Use `PINCTRL_SelSpiPins` instead.
+ *
+ * @param[in] io_pin_clk        CLK
+ * @param[in] io_pin_csn        CS_n
+ * @param[in] io_pin_hold       HOLD
+ * @param[in] io_pin_wp         WP
+ * @param[in] io_pin_miso       MISO
+ * @param[in] io_pin_mosi       MOSI
+ * @return                      0 if successful else non-0
+ */
+#define PINCTRL_SelSpiIn        PINCTRL_SelSpiPins
+
+/**
+ * @brief Configure all pins for SPI
+ *
+ * Note: If an IO is not used or invalid, set it to `IO_NOT_A_PIN`.
+ *
+ * This function configures **all** In, Out, or Bi-direction pins for SPI
+ * properly no matter if it is SPI master or slave.
+ *
+ * This is the recommended way to configure SPI IOs .
+ *
+ * @param[in] io_pin_clk        CLK
+ * @param[in] io_pin_csn        CS_n
+ * @param[in] io_pin_hold       HOLD
+ * @param[in] io_pin_wp         WP
+ * @param[in] io_pin_miso       MISO
+ * @param[in] io_pin_mosi       MOSI
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelSpiPins(spi_port_t port,
+                      uint8_t io_pin_clk,
+                      uint8_t io_pin_csn,
+                      uint8_t io_pin_hold,
+                      uint8_t io_pin_wp,
+                      uint8_t io_pin_miso,
+                      uint8_t io_pin_mosi);
+
+/**
+ * @brief Select I2S input IOs
+ *
+ * @param[in] io_pin_bclk       BCLK
+ * @param[in] io_pin_lrclk      LRCLK
+ * @param[in] io_pin_data       DATA
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelI2sIn(uint8_t io_pin_bclk,
+                      uint8_t io_pin_lrclk,
+                      uint8_t io_pin_data);
+
+/**
+ * @brief Select UART input IOs
+ *
+ * Note: If an input is not used or invalid, set it to `IO_NOT_A_PIN`.
+ *
+ * @param[in] io_pin_rxd        RXD (Rx Data)
+ * @param[in] io_pin_cts        CTS (Clear to Send)
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelUartIn(uart_port_t port,
+                      uint8_t io_pin_rxd,
+                      uint8_t io_pin_cts);
+
+
+int PINCTRL_SelAsdm(uint8_t io_pin_sck, uint8_t io_pin_data);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for UART CTS
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelUartRxdIn(const uart_port_t port, const uint8_t io_pin_index);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for UART CTS
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelUartCtsIn(const uart_port_t port, const uint8_t io_pin_index);
+
+/**
+ * @brief Select I2C input IOs
+ *
+ * Note: Both SCL and SDA are configured properly.
+ * Developer don't need to call `PINCTRL_SetPadMux(io_pin_sda, IO_SOURCE_I2C0_SDA_OUT)`
+ * or `PINCTRL_Pull(...)`.
+ *
+ * @param[in] io_pin_scl        SCL
+ * @param[in] io_pin_sda        SDA
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelI2cIn(i2c_port_t port,
+                      uint8_t io_pin_scl,
+                      uint8_t io_pin_sda);
+
+/**
+ * @brief ING918xx Compatible API: Select input io_pin for I2C SCL
+ *
+ * Warning: this function will fail if `io_pin_index` can't support this IO function.
+ */
+void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index);
+
+/**
+ * @brief Select PDM input IOs
+ *
+ * @param[in] io_pin_dmic       DMIC
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelPdmIn(uint8_t io_pin_dmic);
+
+/**
+ * @brief Select KeyScan column input IOs
+ *
+ * @param[in] index             column index (0..19)
+ * @param[in] io_pin            IO pin index
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelKeyScanColIn(int index, uint8_t io_pin);
+
+/**
+ * @brief Select KeyScan row input IOs
+ *
+ * @param[in] index             row index (0..7)
+ * @param[in] io_pin            IO pin index
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelKeyScanRowIn(int index, uint8_t io_pin);
+
+/**
+ * @brief Select PCAP input IOs
+ *
+ * @param[in] index             column index (0..5)
+ * @param[in] io_pin            IO pin index
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelPCAPIn(int index, uint8_t io_pin);
+
+/**
+ * @brief Select QDEC input IOs
+ *
+ * @param[in] phase_a           Phase A
+ * @param[in] phase_b           Phase B
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelQDECIn(uint8_t phase_a,
+                      uint8_t phase_b);
+
+/**
+ * @brief Select QDEC Pcap input IOs
+ *
+ * @param[in] index             column index (0..5)
+ * @param[in] io_pin            IO pin index
+ * @return                      0 if successful else non-0
+ */
+int PINCTRL_SelQDECPcapIn(int index, uint8_t io_pin);
+
+/**
+ * @brief Set pull mode of a IO source
+ *
+ *
+ * @param io_pin            IO source
+ * @param mode              The mode to be configured
+ * @return                  0 if successful else non-0
+ */
+int PINCTRL_Pull(const uint8_t io_pin, const pinctrl_pull_mode_t mode);
+
+/**
+ * @brief Select antenna control PINs
+ *
+ * Note: ANT_SEL[0..count - 1] is setup according to `io_pins`, i.e.
+ *
+ * ANT_SEL[0] -> io_pins[0]
+ * ...
+ * ANT_SEL[count - 1] -> io_pins[count - 1]
+ *
+ * If ANT_SEL[n] output does not need to be configured, set io_pins[n] to `IO_NOT_A_PIN`.
+ *
+ * @param count             PIN count in io_pins
+ * @param io_pins           PIN array
+ * @return                  0 if successful else non-0
+ */
+int PINCTRL_EnableAntSelPins(int count, const uint8_t *io_pins);
+
+/**
+ * @brief Set USB function of dp and dm
+ *
+ * @param dp_io_pin_index      fixed, should be GPIO_16.
+ * @param dm_io_pin_index      fixed, should be GPIO_17.
+ * @return                     0 if successful else non-0
+ */
+int PINCTRL_SelUSB(const uint8_t dp_io_pin_index, const uint8_t dm_io_pin_index);
+
+/**
+ * @brief Enable analog function of a certain IO (used for USB/ADC)
+ *
+ */
+void PINCTRL_EnableAnalog(const uint8_t io_index);
+
+/**
+ * @brief Select clock output pin
+ *
+ * Clock output (see `SYSCTRL_EnableClockOutput`) is routed to IO pin `io_index`.
+ *
+ * Check source code (the `settings` array) to see which pins are supported.
+ *
+ * CAUTION: This is part of internal SoC debugging function, which will conflict
+ * with other debugging functions.
+ *
+ * @param io_index              IO pin for clock output
+ *                              When set to IO_NOT_A_PIN, output is disabled.
+ * @return                      0 if successful else non-0
+ *                              This function fails when the specified `io_index`
+ *                              is not supported.
+ */
+int PINCTRL_SelClockOutput(const uint8_t io_index);
 #endif
 
 /**

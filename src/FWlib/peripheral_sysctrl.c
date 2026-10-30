@@ -2777,19 +2777,6 @@ uint32_t SYSCTRL_GetPLLClk(void)
     return (uint32_t)((uint64_t)SYSCTRL_GetSlowClk() * ((pll >> 7) & 255u) / pre / out);
 }
 
-void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode)
-{
-    #define AON1_PMU3       ((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c))
-
-    if (enable)
-    {
-        // TODO:
-    }
-    else
-    {
-        set_reg_bit(AON1_PMU3, 0, 19);
-    }
-}
 
 #define ING26_CLK_CFG ((volatile uint32_t *)(AON1_CTRL_BASE + 0x4c))
 #define ING26_CLK_PULSES ((1u << 12) | (1u << 13) | (1u << 22))
@@ -2910,6 +2897,78 @@ uint32_t SYSCTRL_GetPClk2(void)
     return SYSCTRL_GetHClk() / get_safe_divider(APB1_SYSCTRL->CguCfg[0], 5, 5);
 }
 
+void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode)
+{
+    if (enable && mode != SYSCTRL_SLOW_RC_16M) return;
+    if (enable)
+        set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), 1, 13);
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c), enable != 0, 19);
+}
+
+void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode)
+{
+    uint32_t value;
+    if (mode != SYSCTRL_CPU_32k_CLK_EXT && mode != SYSCTRL_CPU_32k_INTERNAL) return;
+    /* Do not replay the boot-clear or test-mode W1P bits. */
+    value = io_read(AON1_CTRL_BASE) & ~((1u << 28) | (1u << 31));
+    if (mode == SYSCTRL_CPU_32k_CLK_EXT)
+    {
+        /* External crystal must already be stable (see API precondition). */
+        io_write(AON1_CTRL_BASE, value | (1u << 7));
+        io_write(AON1_CTRL_BASE, value | (1u << 7) | (1u << 5));
+    }
+    else
+    {
+        /* Keep the external source enabled until the mux has switched. */
+        value |= 1u;
+        io_write(AON1_CTRL_BASE, value);
+        io_write(AON1_CTRL_BASE, value & ~(1u << 5));
+    }
+}
+
+void SYSCTRL_EnableWakeupSourceDetection(void)
+{
+    uint32_t value = io_read(AON2_CTRL_BASE + 0x54);
+    /* clr_wakeup is W1P; preserve USB configuration in the same register. */
+    io_write(AON2_CTRL_BASE + 0x54, value | (1u << 11));
+}
+
+uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source)
+{
+    uint32_t high, aon;
+    if (!source) return 0;
+    source->gpio = io_read(APB1_SYSCTRL_BASE + 0x26c);
+    source->other = 0;
+    high = io_read(APB1_SYSCTRL_BASE + 0x270);
+    source->gpio |= (uint64_t)(high & 0x0fu) << 32;
+    source->gpio |= (uint64_t)((high >> 4) & 0x3fu) << 50;
+    if (high & (1u << 10))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO | SYSCTRL_WAKEUP_SOURCE_LLE;
+    if (high & (1u << 11))
+        source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO | SYSCTRL_WAKEUP_SOURCE_TBCU;
+
+    if (!source->gpio && !source->other)
+    {
+        /* Deep-sleep AON2 causes use a separate, sparsely mapped GPIO field. */
+        aon = io_read(APB1_SYSCTRL_BASE + 0x274);
+        if (aon & 1u) source->other |= SYSCTRL_WAKEUP_SOURCE_AUTO;
+        if (aon & 2u)
+        {
+            aon = (aon >> 2) & 0xffu;
+            source->gpio = aon & 1u;
+            source->gpio |= (uint64_t)((aon >> 1) & 3u) << 5;
+            source->gpio |= (uint64_t)((aon >> 3) & 7u) << 21;
+            source->gpio |= (uint64_t)((aon >> 6) & 3u) << 32;
+        }
+    }
+    return source->gpio != 0 || source->other != 0;
+}
+
+void SYSCTRL_EnableBuckDCDC(uint8_t enable)
+{
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x18), enable != 0, 1);
+}
+
 void SYSCTRL_SelectSlowClk(SYSCTRL_SlowClkMode mode)
 {
     if ((unsigned int)mode <= 1u)
@@ -3023,7 +3082,7 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map)
 
 int SYSCTRL_Init(void)
 {
-    // TODO:
+    /* ING926 clock/power configuration is explicit; no legacy ROM sequence. */
     return 0;
 }
 
@@ -3127,6 +3186,97 @@ void SYSCTRL_SelectTypeAClk(SYSCTRL_Item item, SYSCTRL_ClkMode mode)
         SYSCTRL_SetAdcClkDiv(1);
 }
 
+
+void SYSCTRL_TuneSlowRC(uint32_t tune)
+{
+    if (tune <= 0xfffu) set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x3c), tune, 12, 4);
+}
+void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom)
+{
+    uint32_t value = io_read(APB1_SYSCTRL_BASE + 0x1e0) & ~((1u << 10) | (1u << 23));
+    if (enable) {
+        if (!denom || denom > 1023u) return;
+        value = (value & ~0x3ffu) | denom | (1u << 10) | (1u << 11) | (1u << 12);
+    } else value &= ~(1u << 11);
+    io_write(APB1_SYSCTRL_BASE + 0x1e0, value);
+}
+static void ing26_ana_update(uint32_t mask, uint32_t value)
+{
+    uint32_t current = APB1_SYSCTRL->AnaCtrl & ~(3u << 10);
+    APB1_SYSCTRL->AnaCtrl = (current & ~mask) | (value & mask);
+}
+void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level)
+{
+    if ((unsigned int)level > 7u) return;
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x30), level, 3, 15);
+}
+
+void SYSCTRL_WaitForLDO(void)
+{
+    /* PMU_STATUS: bk_por12_core and por12_core. */
+    while ((io_read(APB1_SYSCTRL_BASE + 0x234) & (3u << 2)) != (3u << 2)) {}
+}
+
+void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep)
+{
+    uint32_t enable = (enable_active != 0);
+    uint32_t config, bypass;
+    if (enable != (uint32_t)(enable_sleep != 0)) return;
+    if (enable && (unsigned int)threshold > SYSCTRL_BOR_PVD_LEVEL_7) return;
+
+    /* Disable both detectors and reset paths before changing the threshold. */
+    config = io_read(AON1_CTRL_BASE + 0x38) & ~((3u << 12) | (1u << 29));
+    io_write(AON1_CTRL_BASE + 0x38, config);
+    bypass = io_read(AON1_CTRL_BASE + 0x1c) & ~(1u << 1);
+    bypass |= 3u << 4;
+    io_write(AON1_CTRL_BASE + 0x1c, bypass);
+    ing26_ana_update(3u << 3, 0);
+    if (!enable) return;
+
+    if (threshold >= SYSCTRL_BOR_PVD_LEVEL_0)
+    {
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x30),
+                     threshold - SYSCTRL_BOR_PVD_LEVEL_0, 3, 18);
+        io_write(AON1_CTRL_BASE + 0x38, config | (1u << 12));
+        bypass &= ~(1u << 5);
+    }
+    else
+    {
+        /* bk_bor3312_tr [27:24] is reserved in the ING26 register table. */
+        set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x30), threshold, 3, 21);
+        io_write(AON1_CTRL_BASE + 0x38, config | (1u << 13));
+        bypass &= ~(1u << 4);
+    }
+    io_write(AON1_CTRL_BASE + 0x1c, bypass);
+}
+
+void SYSCTRL_EnablePVDInt(uint8_t enable, uint8_t polarity, uint8_t level)
+{
+    uint32_t bypass;
+    if (level > 7u) return;
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), enable != 0, 12);
+    if (!enable) { ing26_ana_update(1u << 4, 0); return; }
+    set_reg_bits((volatile uint32_t *)(AON1_CTRL_BASE + 0x30), level, 3, 18);
+    bypass = io_read(AON1_CTRL_BASE + 0x1c) & ~2u;
+    io_write(AON1_CTRL_BASE + 0x1c, bypass | (1u << 5));
+    ing26_ana_update((1u << 2) | (1u << 4), ((uint32_t)(polarity != 0) << 2) | (1u << 4));
+}
+void SYSCTRL_ClearPVDInt(void) { ing26_ana_update(1u << 11, 1u << 11); }
+void SYSCTRL_EnablePDRInt(uint8_t enable)
+{
+    uint32_t bypass;
+    set_reg_bit((volatile uint32_t *)(AON1_CTRL_BASE + 0x38), enable != 0, 13);
+    bypass = io_read(AON1_CTRL_BASE + 0x1c) & ~2u;
+    if (enable) io_write(AON1_CTRL_BASE + 0x1c, bypass | (1u << 4));
+    ing26_ana_update(1u << 3, enable ? 1u << 3 : 0);
+}
+void SYSCTRL_ClearPDRInt(void) { ing26_ana_update(1u << 10, 1u << 10); }
+void SYSCTRL_Reset(void)
+{
+    SYSCTRL_ClearClkGate(SYSCTRL_ITEM_APB1_WDT);
+    TMR_WatchDogEnable3(WDT_INTTIME_INTERVAL_2MS, WDT_RSTTIME_INTERVAL_4MS, 0);
+    for (;;) {}
+}
 #endif
 
 void SYSCTRL_DelayCycles(uint32_t freq, uint32_t cycles)

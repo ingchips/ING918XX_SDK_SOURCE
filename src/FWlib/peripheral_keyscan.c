@@ -4,9 +4,13 @@
 
 #include "peripheral_keyscan.h"
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+#define APB_KEYSCAN APB2_KEYSCAN
+#endif
+
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
-#elif ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_916) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20))
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 static void KEYSCAN_reg_write_bits(volatile uint32_t *reg, uint8_t offset, uint8_t bits_width, const uint32_t data)
 {
@@ -50,7 +54,7 @@ uint8_t KEYSCAN_GetScannerEn(void)
     ret = KEYSCAN_reg_read_bits(&APB_KEYSCAN->key_scanner_ctrl0, offset, bits_width);
     return ret;
 }
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 void  KEYSCAN_SetTableModeEn(uint8_t enable)
 {
     uint8_t offset = 1;
@@ -95,7 +99,7 @@ void KEYSCAN_SetDebounceEn(uint32_t debounce_en_bits)
     uint8_t bits_width = 20;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_scanner_ctrl0, offset, bits_width, debounce_en_bits);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     uint8_t offset = 0;
     uint8_t bits_width = 30;
 
@@ -111,7 +115,7 @@ void KEYSCAN_SetDebounceCounter(uint32_t cnt)
     uint8_t bits_width = 8;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_scanner_ctrl0, offset, bits_width, cnt);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     uint8_t offset = 0;
     uint8_t bits_width = 8;
 
@@ -138,7 +142,7 @@ void KEYSCAN_DbClkSel(uint8_t sel)
     uint32_t data = (sel == 0) ? 0: 1;
 
     KEYSCAN_reg_write_bits(&APB_KEYSCAN->key_scanner_ctrl0, offset, bits_width, data);
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     uint8_t offset = 8;
     uint8_t bits_width = 1;
     uint32_t data = (sel == 0) ? 0: 1;
@@ -168,7 +172,7 @@ void KEYSCAN_SetOutRowMask(uint32_t row_mask)
     uint8_t offset = 0;
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     uint8_t bits_width = 20;
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     uint8_t bits_width = 8;
 #endif
 
@@ -180,7 +184,7 @@ void KEYSCAN_SetInColMask(uint32_t col_mask)
     uint8_t offset = 0;
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     uint8_t bits_width = 20;
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     uint8_t bits_width = 22;
 #endif
 
@@ -340,7 +344,7 @@ uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, ui
 
         return 1;
     }
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 uint8_t KEYSCAN_GetScanMode(KEYSCAN_ScanMode_t* scan_mode, uint32_t key_data)
 {
@@ -478,7 +482,7 @@ int KEYSCAN_InitializeScanParameter(const KEYSCAN_SetStateStruct* keyscan_set)
         if (r) return r;
         PINCTRL_Pull(keyscan_set->col[i].gpio, PINCTRL_PULL_DOWN);
     }
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     row = 0;
     if(keyscan_set->row_num) {
         for (i = 0; i < keyscan_set->row_num; i++) {
@@ -518,7 +522,7 @@ int KEYSCAN_InitializeScanParameter(const KEYSCAN_SetStateStruct* keyscan_set)
     KEYSCAN_SetReleaseTime(keyscan_set->release_time);
     KEYSCAN_SetScanInterval(keyscan_set->scan_interval);
     KEYSCAN_SetDebounceCounter(keyscan_set->debounce_counter);
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     KEYSCAN_SetTableModeEn(keyscan_set->table_mode_en);
     KEYSCAN_SetLpkeyModeEn(keyscan_set->lpkey_mode_en);
 #endif

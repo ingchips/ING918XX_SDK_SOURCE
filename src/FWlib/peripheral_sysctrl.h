@@ -2215,32 +2215,21 @@ typedef SYSCTRL_Item SYSCTRL_ClkGateItem;
 typedef SYSCTRL_Item SYSCTRL_ResetItem;
 
 /**
- * @brief LDO Core Output
- *
- * @see `SYSCTRL_SetLDOOutput`
- *
- * Range: [1.000, 1.300]V
- *
- * Default: 1.200V. Step: 20mV
+ * @brief ING26 LDO12 output selection (PMU_CFG0.ldo12_tr).
+ * Nominal levels in the register table assume VBG12 = 1.2V.
+ * Do not use bk_ldo12_trim here: the table identifies it as the AON reference.
+ * Reduce the clock before lowering core voltage; respect board voltage limits.
  */
 typedef enum
 {
-    SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0, // 1.000V
-    SYSCTRL_LDO_OUTPUT_CORE_1V020 = 1,
-    SYSCTRL_LDO_OUTPUT_CORE_1V040 = 2,
-    SYSCTRL_LDO_OUTPUT_CORE_1V060 = 3,
-    SYSCTRL_LDO_OUTPUT_CORE_1V080 = 4,
-    SYSCTRL_LDO_OUTPUT_CORE_1V100 = 5,
-    SYSCTRL_LDO_OUTPUT_CORE_1V120 = 6,
-    SYSCTRL_LDO_OUTPUT_CORE_1V140 = 7,
-    SYSCTRL_LDO_OUTPUT_CORE_1V160 = 8,
-    SYSCTRL_LDO_OUTPUT_CORE_1V180 = 9,
-    SYSCTRL_LDO_OUTPUT_CORE_1V200 = 10,
-    SYSCTRL_LDO_OUTPUT_CORE_1V220 = 11,
-    SYSCTRL_LDO_OUTPUT_CORE_1V240 = 12,
-    SYSCTRL_LDO_OUTPUT_CORE_1V260 = 13,
-    SYSCTRL_LDO_OUTPUT_CORE_1V280 = 14,
-    SYSCTRL_LDO_OUTPUT_CORE_1V300 = 15
+    SYSCTRL_LDO_OUTPUT_CORE_1V203 = 0,
+    SYSCTRL_LDO_OUTPUT_CORE_1V171 = 1,
+    SYSCTRL_LDO_OUTPUT_CORE_1V134 = 2,
+    SYSCTRL_LDO_OUTPUT_CORE_1V096 = 3,
+    SYSCTRL_LDO_OUTPUT_CORE_1V058 = 4,
+    SYSCTRL_LDO_OUTPUT_CORE_1V020 = 5,
+    SYSCTRL_LDO_OUTPUT_CORE_0V982 = 6,
+    SYSCTRL_LDO_OUTPUT_CORE_0V944 = 7,
 } SYSCTRL_LDOOutputCore;
 
 /**
@@ -2268,30 +2257,28 @@ typedef enum
 } SYSCTRL_LDOOutputFlash;
 
 /**
- * @brief BOR Threshold on VBAT
- *
- * @see `SYSCTRL_ConfigBOR`
- *
- * Range: [1.5, 3]V
+ * @brief ING26 BOR detector and raw threshold code.
+ * PDR: PMU_CFG0.bk_bod_trim; PVD: PMU_CFG0.ldo_lvd_sel.
+ * The available table specifies 3-bit codes, not the old 1.5V..3.0V mapping.
  */
 enum
 {
-    SYSCTRL_BOR_1V5 = 0,
-    SYSCTRL_BOR_1V6 = 1,
-    SYSCTRL_BOR_1V7 = 2,
-    SYSCTRL_BOR_1V8 = 3,
-    SYSCTRL_BOR_1V9 = 4,
-    SYSCTRL_BOR_2V0 = 5,
-    SYSCTRL_BOR_2V1 = 6,
-    SYSCTRL_BOR_2V2 = 7,
-    SYSCTRL_BOR_2V3 = 8,
-    SYSCTRL_BOR_2V4 = 9,
-    SYSCTRL_BOR_2V5 = 10,
-    SYSCTRL_BOR_2V6 = 11,
-    SYSCTRL_BOR_2V7 = 12,
-    SYSCTRL_BOR_2V8 = 13,
-    SYSCTRL_BOR_2V9 = 14,
-    SYSCTRL_BOR_3V0 = 15
+    SYSCTRL_BOR_PDR_LEVEL_0 = 0,
+    SYSCTRL_BOR_PDR_LEVEL_1 = 1,
+    SYSCTRL_BOR_PDR_LEVEL_2 = 2,
+    SYSCTRL_BOR_PDR_LEVEL_3 = 3,
+    SYSCTRL_BOR_PDR_LEVEL_4 = 4,
+    SYSCTRL_BOR_PDR_LEVEL_5 = 5,
+    SYSCTRL_BOR_PDR_LEVEL_6 = 6,
+    SYSCTRL_BOR_PDR_LEVEL_7 = 7,
+    SYSCTRL_BOR_PVD_LEVEL_0 = 8,
+    SYSCTRL_BOR_PVD_LEVEL_1 = 9,
+    SYSCTRL_BOR_PVD_LEVEL_2 = 10,
+    SYSCTRL_BOR_PVD_LEVEL_3 = 11,
+    SYSCTRL_BOR_PVD_LEVEL_4 = 12,
+    SYSCTRL_BOR_PVD_LEVEL_5 = 13,
+    SYSCTRL_BOR_PVD_LEVEL_6 = 14,
+    SYSCTRL_BOR_PVD_LEVEL_7 = 15,
 };
 
 typedef enum
@@ -2380,7 +2367,6 @@ void SYSCTRL_SelectKeyScanClk(SYSCTRL_ClkMode mode);
  * \param mode          clock mode
  *
  */
-void SYSCTRL_SelectPDMClk(SYSCTRL_ClkMode mode);
 
 /**
  * \brief Select I2S clock mode
@@ -2538,7 +2524,6 @@ void SYSCTRL_SelectQDECClk(SYSCTRL_ClkMode mode, uint16_t div);
  *
  * \param mode                  clock mode
  */
-void SYSCTRL_SelectCLK32k(SYSCTRL_ClkMode mode);
 
 /**
  * \brief Get the frequency of 32k which can be used by IR/WDT/GPIO/KeyScan
@@ -2585,10 +2570,6 @@ int SYSCTRL_GetCLK32k(void);
  *                              after about 3 seconds. Developer are free to update
  *                              its configuration later.
  */
-void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
-                                           SYSCTRL_ClkMode hclk,
-                                           SYSCTRL_ClkMode flash_clk,
-                                           uint8_t enable_watchdog);
 
 /**
  * \brief Disable automatic configuration of core clocks after wakeup
@@ -2598,12 +2579,12 @@ void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
  * - hclk:          SYSCTRL_CLK_SLOW
  * - flash_clk:     SYSCTRL_CLK_SLOW
  */
-void SYSCTRL_DisableConfigClocksAfterWakeup(void);
 
 typedef enum
 {
-    SYSCTRL_CPU_32k_CLK_32k = 0, // use the clock configured by `SYSCTRL_SelectCLK32k`
-    SYSCTRL_CPU_32k_INTERNAL = 1, // use the internal 32k clock source (32k OSC or 32k RC)
+    SYSCTRL_CPU_32k_CLK_EXT = 0,  // External 32k crystal
+    SYSCTRL_CPU_32k_CLK_32k = SYSCTRL_CPU_32k_CLK_EXT, // Compatibility alias
+    SYSCTRL_CPU_32k_INTERNAL = 1, // Internal 32k RC
 } SYSCTRL_CPU32kMode;
 
 /**
@@ -2614,6 +2595,9 @@ typedef enum
  * \param mode          clock mode
  *
  */
+/* The requested clock source must already be stable before this call.
+ * Selection affects all AON 32k consumers, not only the CPU.
+ * The external crystal is not disabled when switching back to internal RC. */
 void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
 
 /**
@@ -2670,6 +2654,10 @@ typedef enum
  * \param mode          Clock frequency mode
  *                      Ignored if (enable == 0)
  *
+ * ING26 supports SYSCTRL_SLOW_RC_16M here; other enable modes are ignored.
+ * Existing trim settings are retained; this function does not auto-calibrate.
+ * Wait for the RC source to settle before selecting it. Switch all consumers
+ * away from RC before disabling it.
  */
 void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode);
 
@@ -2683,7 +2671,6 @@ void SYSCTRL_EnableSlowRC(uint8_t enable, SYSCTRL_SlowRCClkMode mode);
  * \return              the internal configuration after tunning
  *
  */
-uint32_t SYSCTRL_AutoTuneSlowRC(void);
 
 /**
  * \brief Set the internal configuration the RC clock for slow clock
@@ -2763,7 +2750,6 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
  *
  * @param[in] level         output level
  */
-void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level);
 
 /**
  * @brief LDO for RF output level
@@ -2813,7 +2799,6 @@ typedef enum
  *
  * @param[in] level         output level
  */
-void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level);
 
 /**
  * @brief ADC V1.2 reference (VREF12_ADC) level
@@ -2863,7 +2848,6 @@ typedef enum
  *
  * @param[in] level         output level
  */
-void SYSCTRL_SetAdcVrefOutput(SYSCTRL_AdcVrefOutput level);
 
 /**
  * @brief BUCK DC-DC output level
@@ -2899,7 +2883,6 @@ typedef enum
  *
  * @param[in] level         output level
  */
-void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
 
 /**
  * @brief Enable BUCK DC-DC
@@ -2907,6 +2890,8 @@ void SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BuckDCDCOutput level);
  * Default: Enabled.
  *
  * @param[in] enable        enable(1)/disable(0)
+ * On ING26 this sets the active-mode enable bit only; configure the
+ * external power circuit and bypass/switch sequencing separately.
  */
 void SYSCTRL_EnableBuckDCDC(uint8_t enable);
 
@@ -2965,6 +2950,8 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 #define SYSCTRL_WAKEUP_SOURCE_AUTO          1       // waken up automatically by internal timer
 #define SYSCTRL_WAKEUP_SOURCE_COMPARATOR    2       // waken up by comparator
 #define SYSCTRL_WAKEUP_SOURCE_RTC_ALARM     4       // waken up by RTC alarm
+#define SYSCTRL_WAKEUP_SOURCE_LLE           8       // latched LLE timer
+#define SYSCTRL_WAKEUP_SOURCE_TBCU          16      // latched TBCU timer
 
 typedef struct
 {
@@ -2981,6 +2968,9 @@ typedef struct
  * each time before entering DEEP/DEEPER sleep modes if apps need to know the
  * wake up sources.
  *
+ * ING26: clears the previous hardware wakeup latch via clr_wakeup.
+ * Call before sleep, and read the recorded sources before calling again.
+ * This does not enable individual wakeup sources.
  */
 void SYSCTRL_EnableWakeupSourceDetection(void);
 
@@ -3052,12 +3042,11 @@ typedef enum
  *
  * @param[in] i_cache           usage of I-Cache (default: AS_CACHE)
  */
-void SYSCTRL_ICacheControl(SYSCTRL_CacheMemCtrl i_cache);
-/* ING926 clock item bitmaps require 64 bits (LPQDEC is item 32). */
+/* ING26 clock item bitmaps require 64 bits (LPQDEC is item 32). */
 #define SYSCTRL_ITEM_MASK(item) (UINT64_C(1) << (item))
 #ifndef SYSCTRL_RC_FAST_HZ
 /* Nominal RC frequency. Override with the board's calibrated frequency. */
-#define SYSCTRL_RC_FAST_HZ 24000000u
+#define SYSCTRL_RC_FAST_HZ 16000000u
 #endif
 /* Checked clock switches: 0 success, -1 timeout, -2 invalid mode.
  * max_polls is a register-poll count, not a time in milliseconds.
@@ -3134,6 +3123,9 @@ void SYSCTRL_SetLDOOutput(SYSCTRL_LDOOutputCore level);
 /**
  * @brief Wait for LDO state ready
  */
+/* ING26 waits for both core POR status signals to be high. This is a power
+ * validity check, not a completion indication for voltage trimming. Allow
+ * board-required settling time after changing voltage. */
 void SYSCTRL_WaitForLDO(void);
 
 /**
@@ -3208,6 +3200,10 @@ void SYSCTRL_SelectMemoryBlocks(uint32_t block_map);
  * @param[in] enable_sleep      Enable(1)/Disable(0) for sleep mode
  *                              default: DISABLED
  */
+/* ING26 uses SYSCTRL_BOR_PDR_LEVEL_n or SYSCTRL_BOR_PVD_LEVEL_n (n=0..7).
+ * enable_active and enable_sleep must agree; mismatches/invalid codes leave
+ * configuration unchanged. Both flags zero disables both detectors.
+ * This API takes ownership of the PVD/PDR detector and IRQ configuration. */
 void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
 
 /**
@@ -3216,6 +3212,10 @@ void SYSCTRL_ConfigBOR(int threshold, int enable_active, int enable_sleep);
  * @param[out] source           source of the last wake-up
  * @return                      1 if any wake up source is found else 0
  */
+/* ING26 reports documented latched GPIO/LLE/TBCU sources, with the AON2
+ * counter/GPIO cause as a fallback. Live LP/USB/RTC status is not a historical
+ * latch and is deliberately not reported as the last wakeup cause.
+ * Timer causes also set SYSCTRL_WAKEUP_SOURCE_AUTO for compatibility. */
 uint8_t SYSCTRL_GetLastWakeupSource(SYSCTRL_WakeupSource_t *source);
 
 /**

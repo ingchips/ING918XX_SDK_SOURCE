@@ -172,12 +172,12 @@ uint8_t apSSP_TxFifoEmpty(SSP_TypeDef * SSP_Ptr);
 #endif
 
 
-#if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_20) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 /* same depth for both RX FIFO and TX FIFO */
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 #define SPI_FIFO_DEPTH (8)//8 words
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 #define SPI_FIFO_DEPTH (4)//4 words
 #endif
 
@@ -267,7 +267,7 @@ typedef enum
 #define bsSPI_TRANSCTRL_RDTRANCNT         0
 #define bsSPI_TRANSCTRL_DUMMYCNT          9
 #define bsSPI_TRANSCTRL_WRTRANCNT         12
-#if (INGCHIPS_FAMILY_20 == INGCHIPS_FAMILY)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 #define bsSPI_TRANSCTRL_WRENLARGECNT      8
 #define bwSPI_TRANSCTRL_WRENLARGECNT      16
 #endif
@@ -288,7 +288,7 @@ typedef enum
 #define bwSPI_TRANSCTRL_ADDRFMT           1
 #define bwSPI_TRANSCTRL_ADDREN            1
 #define bwSPI_TRANSCTRL_CMDEN             1
-#if (INGCHIPS_FAMILY_20 == INGCHIPS_FAMILY)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 #define bsSPI_TRANSCTRL_WRENLARGEEN       6
 #endif
 
@@ -361,7 +361,7 @@ typedef enum
     SPI_MOSI_BI_DIR_MODE = 1
 }SPI_MOSI_Dir_Set_e;
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 /*  SPI_ERITE_ENLARGED_CNT_DISABLE: disable enlarged cnt, write data count use WrTranCnt.
     SPI_ERITE_ENLARGED_CNT_ENABLE: enable enlarged cnt, write data count not use. */
 typedef enum
@@ -834,7 +834,7 @@ void apSSP_SetTransferControlAddrFmt(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_AddrFm
  */
 void apSSP_SetMemAccessCmd(SSP_TypeDef *SPI_BASE, apSSP_sDeviceMemRdCmd cmd);
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 /**
  * @brief SPI long data write feature enabled (greater than 512 counts)

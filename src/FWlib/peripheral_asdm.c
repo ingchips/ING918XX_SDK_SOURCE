@@ -1,6 +1,6 @@
 #include "peripheral_asdm.h"
 
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 static void ASDM_SetRegBits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
 {
     uint32_t mask = (1 << bit_width) - 1;
@@ -65,7 +65,7 @@ void ASDM_SelDownSample(ASDM_TypeDef *base, uint8_t enable)
 
 int ASDM_SetSampleRate(ASDM_TypeDef *base, ASDM_SampleRate sample, ASDM_AgcMode mode)
 {
-    float div;
+    float div, clock_mhz;
     uint32_t rounded, i;
     uint16_t hpf_arr[18] = {
         4017, 4079,
@@ -80,8 +80,26 @@ int ASDM_SetSampleRate(ASDM_TypeDef *base, ASDM_SampleRate sample, ASDM_AgcMode 
     };
 
     uint32_t pll_clk = SYSCTRL_GetPLLClk();
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+    /* CGU_CFG9 selects PLL or the programmable PLL divider for ASDM. */
+    if (io_read(APB1_SYSCTRL_BASE + 0x21c) & (1u << 20))
+    {
+        uint32_t pll_div = (io_read(AON1_CTRL_BASE + 0x4c) >> 17) & 31u;
+        if (!pll_div)
+            return -1;
+        pll_clk /= pll_div;
+    }
+    if (!pll_clk || (unsigned int)mode > ASDM_AgcCustom)
+        return -1;
+    /* Custom AGC has no preset HPF column; use voice, then allow an override. */
+    if (mode == ASDM_AgcCustom)
+        mode = ASDM_AgcVoice;
+    clock_mhz = (float)pll_clk / 1000000.0f;
+#else
     if (pll_clk > 390000000)
         return -1;
+    clock_mhz = (float)(pll_clk / 1000000ul);
+#endif
     if (!(mode & 0x3))
         mode = ASDM_AgcVoice;
     switch (sample)
@@ -92,18 +110,22 @@ int ASDM_SetSampleRate(ASDM_TypeDef *base, ASDM_SampleRate sample, ASDM_AgcMode 
         case ASDM_SR_24k:
         case ASDM_SR_32k:
         case ASDM_SR_48k:
-            div = ((float)(pll_clk/1000000ul)) / 12.288f;
+            div = clock_mhz / 12.288f;
             rounded = (int)(div + 0.5f);
             break;
         case ASDM_SR_44k:
         case ASDM_SR_22k:
         case ASDM_SR_11k:
-            div = ((float)(pll_clk/1000000ul)) / 11.2896f;
+            div = clock_mhz / 11.2896f;
             rounded = (int)(div + 0.5f);
             break;
         default:
             return -1;
     }
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+    if (!rounded || rounded > 63u)
+        return -1;
+#endif
     for (i=0; i<9; i++)
     {
         if ((1<<i) & sample)

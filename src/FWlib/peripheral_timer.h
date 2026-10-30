@@ -451,7 +451,7 @@ void TMR_WatchDogClearInt(void);
  */
 void TMR_WatchDogDisable(void);
 
-#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 typedef enum
 {
     WDT_INTTIME_INTERVAL_2MS          = 0,    //0.001953125s
@@ -703,7 +703,7 @@ void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interva
  * @brief Enable watchdog.
  *
  * This macro tries to provide similar interface as the one in ING918xx.
- * It selects the smallest supported interval that is not smaller than `timeout`.
+ * On ING20 it selects the smallest supported interval not smaller than `timeout`.
  *
  * Please use `TMR_WatchDogEnable3` instead for ING916xx.
  *
@@ -725,9 +725,15 @@ void TMR_WatchDogEnable3(wdt_inttime_interval_t int_timeout, wdt_rsttime_interva
  * @param[in] timeout              see `TMR_WatchDogEnable` in ING918xx
  ****************************************************************************************
  */
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
+#define TMR_WatchDogEnable(timeout) do { uint64_t TMR_CLK_FREQ = OSC_CLK_FREQ;uint32_t cnt = (uint64_t)(timeout) / OSC_CLK_FREQ;uint8_t mode = 7;\
+                                            for (uint8_t i = 1; i < 10; i++,mode++) { if (cnt < (1UL << (i * 2))) {break;}} \
+                                            TMR_WatchDogEnable3(mode, WDT_RSTTIME_INTERVAL_500MS, 1); } while (0)
+#else
 #define TMR_WatchDogEnable(timeout) do {uint64_t TMR_CLK_FREQ = OSC_CLK_FREQ; uint64_t __wdt_timeout = (uint64_t)(timeout); uint64_t __wdt_threshold = OSC_CLK_FREQ; uint8_t mode = 7; \
                                             while ((mode < 15) && (__wdt_timeout > __wdt_threshold)) { __wdt_threshold <<= 2; mode++; } \
-                                            TMR_WatchDogEnable3(mode, WDT_RSTTIME_INTERVAL_500MS, 1); } while (0)   \
+                                            TMR_WatchDogEnable3(mode, WDT_RSTTIME_INTERVAL_500MS, 1); } while (0)
+#endif
 
 /**
  ****************************************************************************************
@@ -751,6 +757,7 @@ void TMR_WatchDogClearInt(void);
 void TMR_WatchDogDisable(void);
 
 
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 /**
  ****************************************************************************************
  * @brief Get counter of a timer
@@ -854,6 +861,8 @@ void RTMR_IntClr(RTMR_TypeDef *pTMR);
  ****************************************************************************************
  */
 uint8_t RTMR_IntHappened(RTMR_TypeDef *pTMR);
+
+#endif
 
 #endif
 

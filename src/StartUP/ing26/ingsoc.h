@@ -279,7 +279,7 @@ typedef struct{
     __IO uint32_t IntStatus;            // 0x30
     __IO uint32_t En;                   // 0x34
     __IO uint32_t Reserved3[2];
-    DMA_ChannelReg Channels[8];         // 0x40
+    DMA_ChannelReg Channels[4];         // 0x40
 } DMA_TypeDef;
 
 // System Control
@@ -485,7 +485,8 @@ typedef struct
     __IO uint32_t      reg_ch_en;              //0x100
     __IO uint32_t      reg_ch_en_set;          //0x104
     __IO uint32_t      reg_ch_en_clr;          //0x108
-    __IO uint32_t      reg_chg_map[4];         //0x10C
+    __IO uint32_t      ReservedMap[61];        //0x10c..0x1fc
+    __IO uint32_t      reg_chg_map[4];         //0x200
 }PTEC_TypeDef;
 
 typedef struct
@@ -583,19 +584,19 @@ typedef struct
 typedef struct
 {
     __IO uint32_t      reg_task[4];         //0x4a0
-    __IO uint32_t      reg_sub_task[4];         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event0;         //0x164
+    __IO uint32_t      reg_sub_task[4];         //0x4b0
 }PTE_I2S_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t      reg_task0;         //0x3f0
-    __IO uint32_t      reg_sub_task0;         //0x160
-    __IO uint32_t      reg_task1;         //0x0f0
-    __IO uint32_t      reg_sub_task1;         //0x160
-    __IO uint32_t      reg_event;           //0x160
-    __IO uint32_t      reg_pub_event0;         //0x164
+    __IO uint32_t      reg_task0;         //0x4c0
+    __IO uint32_t      reg_sub_task0;         //0x4c4
+    __IO uint32_t      reg_task1;         //0x4c8
+    __IO uint32_t      reg_sub_task1;         //0x4cc
+    __IO uint32_t      Reserved[8];
+    __IO uint32_t      reg_event;           //0x4f0
+    __IO uint32_t      reg_pub_event0;         //0x4f4
+    __IO uint32_t      ReservedEnd[2];
 }PTE_ASDM_TypeDef;
 
 typedef struct
@@ -614,11 +615,12 @@ typedef struct
     PTE_Timer_TypeDef 	PTE_TIMER1;
     PTE_I2S_TypeDef 	PTE_I2S;
     PTE_ASDM_TypeDef 	PTE_ASDM;
+    PTE_SPI_TypeDef     PTE_SPI2;
 }PTE_BUS_TypeDef;
 
 typedef struct
 {
-    __IO uint32_t reg_gpiote_config[8];
+    __IO uint32_t reg_gpiote_config[4];
 }GPIOTE_TypeDef;
 
 typedef struct
@@ -732,13 +734,21 @@ typedef struct
 #define APB2_KEYSCAN_BASE   (APB2_BASE + 0x00000)
 #define APB2_HUART2_BASE    (APB2_BASE + 0x01000)
 #define APB2_QSPI0_BASE     (APB2_BASE + 0x02000)
-#define APB2_SDIO_BASE      (APB2_BASE + 0x03000)
+#define APB2_SDIO_BASE      ((uint32_t)0x40230000UL) /* register-list mmch base */
 #define APB2_I2S_BASE       (APB2_BASE + 0x04000)
 #define APB2_PWM_BASE       (APB2_BASE + 0x05000)
 #define APB2_QDEC_BASE      (APB2_BASE + 0x06000)
 #define APB2_DADC_BASE      (APB2_BASE + 0x07000)
 #define APB2_DMA_BASE       (APB2_BASE + 0x08000)
 #define APB2_GPIOTE_BASE    (APB2_BASE + 0x09000)
+/* Register-list mapping: CAN1/TDM both use 0x4002C000; hardware alias is unconfirmed. */
+#define APB2_CAN0_BASE      (APB2_BASE + 0x0b000)
+#define APB2_CAN1_BASE      (APB2_BASE + 0x0c000)
+#define APB2_I2S_TDM_BASE   (APB2_BASE + 0x0c000)
+#define APB2_CAN0           ((CAN_TypeDef *)APB2_CAN0_BASE)
+#define APB2_CAN1           ((CAN_TypeDef *)APB2_CAN1_BASE)
+#define APB2_I2S_TDM        ((I2S_TypeDef *)APB2_I2S_TDM_BASE)
+
 
 #define AON_APB_BASE        ((uint32_t)0x40100000UL)
 #define AON2_CTRL_BASE      (AON_APB_BASE + 0x0000)
@@ -768,7 +778,7 @@ typedef struct
 #define APB1_PTE_BUS        ((PTE_BUS_TypeDef *)APB1_PTE_BUS_BASE)
 #define APB1_I2C0           ((I2C_TypeDef *)APB1_I2C0_BASE)
 #define APB1_HUART0         ((HUART_TypeDef *)APB1_HUART0_BASE)
-#define APB1_HUART1         ((HUART_TypeDef *)APB1_HUART0_BASE)
+#define APB1_HUART1         ((HUART_TypeDef *)APB1_HUART1_BASE)
 
 #define APB2_KEYSCAN        ((KEYSCAN_TypeDef *)APB2_KEYSCAN_BASE)
 #define APB2_I2S            ((I2S_TypeDef *)APB2_I2S_BASE)
@@ -778,7 +788,7 @@ typedef struct
 #define APB2_DMA1           ((DMA_TypeDef *)APB2_DMA_BASE)
 #define APB2_GPIOTE         ((GPIOTE_TypeDef *)APB2_GPIOTE_BASE)
 #define APB2_SSP0           ((SSP_TypeDef *)APB2_QSPI0_BASE)
-#define APB2_HUART2         ((HUART_TypeDef *)APB1_HUART0_BASE)
+#define APB2_HUART2         ((HUART_TypeDef *)APB2_HUART2_BASE)
 #define APB2_SDIO           ((SDIO_TypeDef *)APB2_SDIO_BASE)
 
 #define AHB_LPUART          ((HUART_TypeDef *)AONAPB_LPUART_BASE)
@@ -800,6 +810,7 @@ typedef struct
 #ifdef USE_STDPERIPH_DRIVER
     #include "peripheral_pinctrl.h"
     #include "peripheral_adc.h"
+    #include "peripheral_asdm.h"
     #include "peripheral_dma.h"
     #include "peripheral_gpio.h"
     #include "peripheral_i2c.h"
@@ -813,7 +824,13 @@ typedef struct
     #include "peripheral_timer.h"
     #include "peripheral_etimer.h"
     #include "peripheral_uart.h"
+    #include "peripheral_lpuart.h"
     #include "peripheral_usb.h"
+    #include "peripheral_gpiote.h"
+    #include "peripheral_trng.h"
+    #include "peripheral_sdio.h"
+    #include "peripheral_can.h"
+    #include "peripheral_isu.h"
 #endif
 
 #define OSC_CLK_FREQ  24000000UL

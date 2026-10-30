@@ -357,8 +357,10 @@ void GIO_EnableHighZGroupB(uint8_t enable);
  * @param[in] pull              Pull of the GPIO
  * @return                      0 if successful else non-0
  */
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_26)
 int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
         uint8_t mode, pinctrl_pull_mode_t pull);
+#endif
 
 /**
  * @brief Enable a group of GPIOs as wakeup source from DEEPER SLEEP mode
@@ -371,7 +373,9 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
  * @param[in] enable            Enable(1)/disable(0)
  * @param[in] level             wake up by high level(1)/low level(0)
  */
+#if (INGCHIPS_FAMILY != INGCHIPS_FAMILY_26)
 void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level);
+#endif
 
 /**
  * @brief Set some or all of GPIO to 1

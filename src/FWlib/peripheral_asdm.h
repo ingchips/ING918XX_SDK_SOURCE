@@ -2,7 +2,11 @@
 #define PERPHERAL_ASDM_H_
 
 #include "ingsoc.h"
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 /**
  * @brief Fifo int mask
@@ -139,8 +143,10 @@ typedef struct
  *                  @note Requires external sampling clock source of either:
  *                        - 12.288 MHz
  *                        - 11.2896 MHz
- *                  @recommend Set PLL output to 384 MHz to ensure accurate sample rates.
- *                  @warning Deviation may cause sampling rate inaccuracy.
+ *                  Select a source clock that yields the required ASDM clock after integer division.
+ *                  @warning Integer division may introduce sampling rate error.
+ *                  On ING26, custom AGC initially uses the voice HPF coefficient;
+ *                  call ASDM_SetHpfCoef after configuration to override it.
  *
  * Agc_mode:        Configures the AGC mode of the ASDM.
  *                  Enumeration value is defined in `ASDM_AgcMode`.
@@ -175,7 +181,7 @@ typedef struct
     ASDM_SampleRate Sample_rate;
     ASDM_AgcMode Agc_mode;
     ASDM_AgcConfigTypeDef *Agc_config;
-    ASDM_AnalogModeTypeDef Analog_mode; 
+    ASDM_AnalogModeTypeDef Analog_mode;
     uint8_t Fifo_Enable;
     uint8_t Fifo_DmaTrigNum;
     uint8_t FifoIntMask;
@@ -445,5 +451,9 @@ void ASDM_SetDMATrig(ASDM_TypeDef *base, uint8_t trig);
 
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
