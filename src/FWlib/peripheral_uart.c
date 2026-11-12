@@ -20,17 +20,14 @@ int apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t Ba
 
     pBase->IntBaudDivisor   = BaudIntDiv;
 
-    if (( BaudIntDiv > 65535 ) || ( BaudIntDiv == 0 )){
+    if ((BaudIntDiv > 65535) || (BaudIntDiv == 0)) {
         return -1;
     }
 
     /* Calculate fractional baud rate register value */
-    if ( BaudIntDiv == 65535 )
-    {
+    if ( BaudIntDiv == 65535 ) {
         pBase->FractBaudDivisor = 0;
-    }
-    else
-    {
+    } else {
         BaudRateDiv -= BaudIntDiv;
         pBase->FractBaudDivisor = BaudFracDiv;
     }
@@ -56,13 +53,10 @@ int apUART_BaudRateSet(UART_TypeDef* pBase, uint32_t ClockFrequency, uint32_t Ba
 uint32_t apUART_BaudRateGet (UART_TypeDef* pBase, uint32_t ClockFrequency)
 {
     float BaudRateDiv;
-    if (pBase->FractBaudDivisor != 0)
-    {
+    if (pBase->FractBaudDivisor != 0) {
         BaudRateDiv = (float) (((pBase->FractBaudDivisor - 0.5)/64) + pBase->IntBaudDivisor);
         return (uint32_t) (ClockFrequency / BaudRateDiv);
-    }
-    else
-    {
+    } else {
         return (uint32_t) ((ClockFrequency >> 4) / pBase->IntBaudDivisor);
     }
 }
@@ -214,8 +208,7 @@ void uart_reset(UART_TypeDef* pBase)
 
     uart_disable(pBase);
 
-    while (apUART_Check_RXFIFO_EMPTY(pBase) != 1)
-    {
+    while (apUART_Check_RXFIFO_EMPTY(pBase) != 1) {
         volatile uint32_t trash = pBase->DataRead;
         (void)trash;
     }
@@ -250,7 +243,7 @@ int apUART_Initialize(UART_TypeDef* pBase, UART_sStateStruct* UARTx, uint32_t In
     // clear Line Control Register, UARTLCR_H
     pBase->LineCon_H = 0;
     // set BaudDivisor
-    if(0 != apUART_BaudRateSet(pBase, UARTx->ClockFrequency, UARTx->BaudRate)){
+    if (0 != apUART_BaudRateSet(pBase, UARTx->ClockFrequency, UARTx->BaudRate)) {
         return -1;
     }
     // set Line Control Register, UARTLCR_H

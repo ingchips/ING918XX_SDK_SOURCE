@@ -12,8 +12,7 @@
 
 
 
-typedef struct lpUART_xStateStruct
-{
+typedef struct lpUART_xStateStruct {
 	// Line Control Register, LineCon_H
   uint32_t        word_length;   // WLEN
   uint32_t        parity;        // PEN, EPS, SPS

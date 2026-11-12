@@ -7,8 +7,7 @@
 
 #include "ingsoc.h"
 
-typedef enum
-{
+typedef enum {
     GIO_GPIO_0 = 0,
     GIO_GPIO_1  ,
     GIO_GPIO_2  ,
@@ -77,22 +76,19 @@ typedef enum
     GIO_GPIO_NUMBER,
 } GIO_Index_t;
 
-typedef enum
-{
+typedef enum {
     GIO_DIR_INPUT,
     GIO_DIR_OUTPUT,
     GIO_DIR_BOTH,
     GIO_DIR_NONE    // set to tri-state
 } GIO_Direction_t;
 
-typedef enum
-{
+typedef enum {
     GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE = 1,
     GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE = 2
 } GIO_IntTriggerEnable_t;
 
-typedef enum
-{
+typedef enum {
     GIO_INT_EDGE,
     GIO_INT_LOGIC
 } GIO_IntTriggerType_t;
@@ -222,8 +218,7 @@ static __INLINE void GIO_ToggleBits(const uint32_t index_mask){ *GPIO_DOT = inde
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
-typedef enum
-{
+typedef enum {
     GIO_DB_CLK_32K,
     GIO_DB_CLK_PCLK,
 } GIO_DbClk_t;

@@ -11,10 +11,8 @@ static void ASDM_SetRegBits(volatile uint32_t *reg, uint32_t v, uint8_t bit_widt
 
 static void ASDM_SetRegBit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset)
 {
-    if (v)
-        *reg |= 1 << bit_offset;
-    else
-        *reg &= ~(1 << bit_offset);
+    if (v) *reg |= 1 << bit_offset;
+    else *reg &= ~(1 << bit_offset);
 }
 
 int ASDM_Config(ASDM_TypeDef *base, ASDM_ConfigTypeDef* pParam)
@@ -22,13 +20,11 @@ int ASDM_Config(ASDM_TypeDef *base, ASDM_ConfigTypeDef* pParam)
     int ret;
     base->asdm_ctrl = 0xc | (pParam->Asdm_Mode << 6);
     ret = ASDM_SetSampleRate(base, pParam->Sample_rate, pParam->Agc_mode);
-    if (ret)
-        return ret;
+    if (ret) return ret;
     base->asdm_mute_ctrl = 0xc;
     base->asdm_vol_ctrl = pParam->volume;
     ret = ASDM_SetAgcMode(base, pParam->Agc_mode, pParam->Agc_config);
-    if (ret)
-        return ret;
+    if (ret) return ret;
     base->asdm_ana_ctrl0 = 0x1fff;
     base->asdm_pga_en_ibias = 0x1;
     base->pga_l_ctrl = 0x303 | (pParam->Analog_mode<<6);
@@ -82,28 +78,21 @@ int ASDM_SetSampleRate(ASDM_TypeDef *base, ASDM_SampleRate sample, ASDM_AgcMode 
     uint32_t pll_clk = SYSCTRL_GetPLLClk();
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     /* CGU_CFG9 selects PLL or the programmable PLL divider for ASDM. */
-    if (io_read(APB1_SYSCTRL_BASE + 0x21c) & (1u << 20))
-    {
+    if (io_read(APB1_SYSCTRL_BASE + 0x21c) & (1u << 20)) {
         uint32_t pll_div = (io_read(AON1_CTRL_BASE + 0x4c) >> 17) & 31u;
-        if (!pll_div)
-            return -1;
+        if (!pll_div) return -1;
         pll_clk /= pll_div;
     }
-    if (!pll_clk || (unsigned int)mode > ASDM_AgcCustom)
-        return -1;
+    if (!pll_clk || (unsigned int)mode > ASDM_AgcCustom) return -1;
     /* Custom AGC has no preset HPF column; use voice, then allow an override. */
-    if (mode == ASDM_AgcCustom)
-        mode = ASDM_AgcVoice;
+    if (mode == ASDM_AgcCustom) mode = ASDM_AgcVoice;
     clock_mhz = (float)pll_clk / 1000000.0f;
 #else
-    if (pll_clk > 390000000)
-        return -1;
+    if (pll_clk > 390000000) return -1;
     clock_mhz = (float)(pll_clk / 1000000ul);
 #endif
-    if (!(mode & 0x3))
-        mode = ASDM_AgcVoice;
-    switch (sample)
-    {
+    if (!(mode & 0x3)) mode = ASDM_AgcVoice;
+    switch (sample) {
         case ASDM_SR_8k:
         case ASDM_SR_12k:
         case ASDM_SR_16k:
@@ -123,13 +112,10 @@ int ASDM_SetSampleRate(ASDM_TypeDef *base, ASDM_SampleRate sample, ASDM_AgcMode 
             return -1;
     }
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
-    if (!rounded || rounded > 63u)
-        return -1;
+    if (!rounded || rounded > 63u) return -1;
 #endif
-    for (i=0; i<9; i++)
-    {
-        if ((1<<i) & sample)
-        {
+    for (i=0; i<9; i++) {
+        if ((1<<i) & sample) {
             ASDM_SetRegBits(&base->asdm_hpf_coef, hpf_arr[i*2+(mode-1)], 12, 0);
             break;
         }
@@ -149,36 +135,29 @@ void ASDM_SetHpfCoef(ASDM_TypeDef *base, uint32_t coef)
 int ASDM_SetAgcMode(ASDM_TypeDef *base, ASDM_AgcMode mode, ASDM_AgcConfigTypeDef *config)
 {
     uint32_t max_level, frame_time, noise_th, noise_hold, noise_en, agc_gate;
-    if (mode == ASDM_AgcCustom)
-    {
-        if (config == 0)
-            return -1;
+    if (mode == ASDM_AgcCustom) {
+        if (config == 0) return -1;
         max_level = config->Agc_MaxLevel;
         frame_time = config->Agc_NoiseFramTime;
         noise_th = config->Agc_NoiseThreshold;
         noise_hold = config->Agc_NoiseHold;
         noise_en = config->Agc_NoiseEn;
         agc_gate = config->Agc_PgaGate;
-    }
-    else if (mode)
-    {
+    } else if (mode) {
         max_level = 0x20;
         frame_time = 1;
         noise_th = 0xf;
         noise_hold = 0x7;
         agc_gate = 0xc;
         noise_en = 1;
-        if (config)
-        {
+        if (config) {
             config->Agc_MaxLevel = max_level;
             config->Agc_NoiseFramTime = frame_time;
             config->Agc_NoiseThreshold = noise_th;
             config->Agc_NoiseHold = noise_hold;
             config->Agc_NoiseEn = noise_en;
         }
-    }
-    else
-    {
+    } else {
         base->asdm_agc_ctrl0 = 0;
         return 0;
     }

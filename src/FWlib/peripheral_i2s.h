@@ -16,22 +16,19 @@ extern "C" {    /* allow C++ to use these headers */
 #define I2S_FIFO_DEPTH      4
 #endif
 
-typedef enum
-{
+typedef enum {
     I2S_ROLE_MASTER,
     I2S_ROLE_SLAVE,
 } i2s_role_t;
 
-typedef enum
-{
+typedef enum {
     I2S_MODE_STANDARD,       // standard I2S
     I2S_MODE_LEFT_ALIGNED,
     I2S_MODE_PCM_0_DELAY,
     I2S_MODE_PCM_1_DELAY,
 } i2s_mode_t;
 
-typedef enum
-{
+typedef enum {
     I2S_IRQ_TX = 1,
     I2S_IRQ_RX = 2
 } i2s_irq_t;

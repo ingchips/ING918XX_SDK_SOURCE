@@ -333,7 +333,6 @@ void KEYSCAN_InitKeyScanToIdx(const KEYSCAN_SetStateStruct* keyscan_set, KEYSCAN
 
 uint8_t KEYSCAN_KeyDataToRowColIdx(const KEYSCAN_Ctx *ctx, uint32_t key_data, uint8_t *row, uint8_t *col)
 {
-
     if (key_data == 0x00000400) {
         return 0;
     }
@@ -350,8 +349,8 @@ uint8_t KEYSCAN_GetScanMode(KEYSCAN_ScanMode_t* scan_mode, uint32_t key_data)
 {
     uint8_t key_val = 0;
     key_val = (key_data>>8) & 0xf;
-    if(APB_KEYSCAN->key_scanner_ctrl0 & 0x2){
-            switch (key_val) {
+    if (APB_KEYSCAN->key_scanner_ctrl0 & 0x2) {
+        switch (key_val) {
             case 0x7:
                 *scan_mode = SCAN_HIGH_PRESS;
                 break;
@@ -377,18 +376,18 @@ uint8_t KEYSCAN_GetScanMode(KEYSCAN_ScanMode_t* scan_mode, uint32_t key_data)
     } else {
         switch (key_val) {
             case 0x3:
-            *scan_mode = SCAN_HIGH_PRESS;
+                *scan_mode = SCAN_HIGH_PRESS;
                 break;
             case 0x2:
-            *scan_mode = SCAN_LOW_PRESS;
+                *scan_mode = SCAN_LOW_PRESS;
                 break;
             case 0x0:
-            *scan_mode = SCAN_NUMBER;
+                *scan_mode = SCAN_NUMBER;
                 break;
             case 0x4:
             default:
-            *scan_mode = SCAN_NONE;
-            return 0;
+                *scan_mode = SCAN_NONE;
+                return 0;
         }
     }
     return 1;
@@ -396,11 +395,9 @@ uint8_t KEYSCAN_GetScanMode(KEYSCAN_ScanMode_t* scan_mode, uint32_t key_data)
 
 uint8_t KEYSCAN_HighLowDataToIdex(const KEYSCAN_Ctx *ctx, KEYSCAN_GET_Idx *Idx, uint32_t key_data)
 {
-    if ((ctx == 0) || (Idx == 0))
-        return 1;
+    if ((ctx == 0) || (Idx == 0)) return 1;
 
-    if (KEYSCAN_GetScanMode(&Idx->scan_mode, key_data) == 0)
-        return 1;
+    if (KEYSCAN_GetScanMode(&Idx->scan_mode, key_data) == 0) return 1;
     if (Idx->scan_mode != SCAN_NUMBER) {
         key_data &= 0x1ful;
         if (key_data > (KEY_IN_COL_NUMBER - 1)) {
@@ -425,29 +422,22 @@ uint8_t KEYSCAN_HighLowDataToIdex(const KEYSCAN_Ctx *ctx, KEYSCAN_GET_Idx *Idx, 
 void KEYSCAN_GetColRow(KEYSCAN_GET_Idx *Idx, uint32_t key_data)
 {
     KEYSCAN_GetScanMode(&Idx->scan_mode, key_data);
-    if (Idx->scan_mode != SCAN_NUMBER)
-    {
+    if (Idx->scan_mode != SCAN_NUMBER) {
         key_data &= 0x1f;
-        if (key_data > (KEY_IN_COL_NUMBER - 1))
-        {
+        if (key_data > (KEY_IN_COL_NUMBER - 1)) {
             Idx->out_pin = key_data - KEY_IN_COL_NUMBER;
             Idx->in_pin = 0xff;
-        }
-        else
-        {
+        } else {
             Idx->in_pin = key_data;
             Idx->out_pin = 0xff;
         }
         return;
     }
 
-    if (APB_KEYSCAN->key_scanner_ctrl0 & 0x4)
-    {
+    if (APB_KEYSCAN->key_scanner_ctrl0 & 0x4) {
         Idx->out_pin = (key_data>>4)&0xf;
         Idx->in_pin = key_data&0xf;
-    }
-    else
-    {
+    } else {
         Idx->out_pin = (key_data>>5)&0xf;
         Idx->in_pin = key_data&0x7;
     }
@@ -484,7 +474,7 @@ int KEYSCAN_InitializeScanParameter(const KEYSCAN_SetStateStruct* keyscan_set)
     }
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
     row = 0;
-    if(keyscan_set->row_num) {
+    if (keyscan_set->row_num) {
         for (i = 0; i < keyscan_set->row_num; i++) {
             uint32_t io_source = (uint32_t)IO_SOURCE_KEYSCN_ROW_0 + keyscan_set->row[i].out_row;
             row = row | (0x1 << keyscan_set->row[i].out_row);
@@ -497,7 +487,7 @@ int KEYSCAN_InitializeScanParameter(const KEYSCAN_SetStateStruct* keyscan_set)
     }
 
     col = 0;
-    if(keyscan_set->col_num) {
+    if (keyscan_set->col_num) {
         for (i = 0; i < keyscan_set->col_num; i++) {
             uint32_t io_source = (uint32_t)IO_SOURCE_KEYSCN_COL_0 + keyscan_set->col[i].in_col;
             col = col | (0x1 << keyscan_set->col[i].in_col);

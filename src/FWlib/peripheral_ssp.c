@@ -205,8 +205,7 @@ void apSSP_DeviceReceiveClear(SSP_TypeDef * SSP_Ptr)
     volatile uint16_t DummyData;
 
     /* Repeat while there's data in the SSP Receive FIFO */
-    while( (SSP_Ptr->StatusRegister >> bsSSP_STATUS_RXNOTEMPTY) &  bwSSP_STATUS_RXNOTEMPTY )
-    {
+    while ((SSP_Ptr->StatusRegister >> bsSSP_STATUS_RXNOTEMPTY) & bwSSP_STATUS_RXNOTEMPTY) {
         /* Read data, throw it away */
         DummyData = (uint16_t) SSP_Ptr->DataRegister;
     }
@@ -272,7 +271,7 @@ uint32_t apSSP_GetIntRawStatus(SSP_TypeDef * SSP_Ptr)
 void apSSP_Initialize (SSP_TypeDef *SPI_BASE)
 {
     SPI_BASE->Ctrl |= (1 << bsSPI_CTRL_SPIRST);
-    while((SPI_BASE->Ctrl >> bsSPI_CTRL_SPIRST) & bwSPI_CTRL_SPIRST);
+    while ((SPI_BASE->Ctrl >> bsSPI_CTRL_SPIRST) & bwSPI_CTRL_SPIRST);
     apSSP_ResetTxFifo(SPI_BASE);
     apSSP_ResetRxFifo(SPI_BASE);
 }
@@ -315,28 +314,22 @@ void apSSP_SetTransMode(SSP_TypeDef *SPI_BASE, SPI_TransCtrl_TransMode_e mode)
 
 void apSSP_SetAddrEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
 {
-    if (enable)
-        SPI_BASE->TransCtrl |= (1 << bsSPI_TRANSCTRL_ADDREN);
-    else
-        SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_ADDREN));
+    if (enable) SPI_BASE->TransCtrl |= (1 << bsSPI_TRANSCTRL_ADDREN);
+    else SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_ADDREN));
 }
 
 void apSSP_SetCmdEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
 {
-    if (enable)
-        SPI_BASE->TransCtrl |= (1 << bsSPI_TRANSCTRL_CMDEN);
-    else
-        SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_CMDEN));
+    if (enable) SPI_BASE->TransCtrl |= (1 << bsSPI_TRANSCTRL_CMDEN);
+    else SPI_BASE->TransCtrl &= (~(1 << bsSPI_TRANSCTRL_CMDEN));
 }
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
 void apSSP_WrtEnlargeEn(SSP_TypeDef *SPI_BASE, uint8_t enable)
 {
-    if (enable)
-        SPI_BASE->IntrEn |= (1 << bsSPI_TRANSCTRL_WRENLARGEEN);
-    else
-        SPI_BASE->IntrEn &= (~(1 << bsSPI_TRANSCTRL_WRENLARGEEN));
+    if (enable) SPI_BASE->IntrEn |= (1 << bsSPI_TRANSCTRL_WRENLARGEEN);
+    else SPI_BASE->IntrEn &= (~(1 << bsSPI_TRANSCTRL_WRENLARGEEN));
 }
 
 void apSSP_WrtEnlargeCnt(SSP_TypeDef *SPI_BASE, uint16_t cnt)
@@ -477,7 +470,7 @@ void apSSP_ResetTxFifo(SSP_TypeDef *SPI_BASE)
 {
     SPI_BASE->Ctrl |= (1UL << bsSPI_CTRL_TXFIFORST);
     //It is automatically cleared to 0 after the reset operation completes.
-    while((SPI_BASE->Ctrl >> bsSPI_CTRL_TXFIFORST) & BW2M(bwSPI_CTRL_TXFIFORST));
+    while ((SPI_BASE->Ctrl >> bsSPI_CTRL_TXFIFORST) & BW2M(bwSPI_CTRL_TXFIFORST));
 }
 
 /*====================================================================*/
@@ -485,7 +478,7 @@ void apSSP_ResetRxFifo(SSP_TypeDef *SPI_BASE)
 {
     SPI_BASE->Ctrl |= (1UL << bsSPI_CTRL_RXFIFORST);
     //It is automatically cleared to 0 after the reset operation completes.
-    while((SPI_BASE->Ctrl >> bsSPI_CTRL_RXFIFORST) & BW2M(bwSPI_CTRL_RXFIFORST));
+    while ((SPI_BASE->Ctrl >> bsSPI_CTRL_RXFIFORST) & BW2M(bwSPI_CTRL_RXFIFORST));
 }
 
 uint32_t apSSP_GetSpiStatus(SSP_TypeDef *SPI_BASE)

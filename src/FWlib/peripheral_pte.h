@@ -10,16 +10,14 @@ extern "C" {    /* allow C++ to use these headers */
 
 #if INGCHIPS_FAMILY == INGCHIPS_FAMILY_916
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_PTE_CHANNEL_0     = 0,
     SYSCTRL_PTE_CHANNEL_1     = 1,
     SYSCTRL_PTE_CHANNEL_2     = 2,
     SYSCTRL_PTE_CHANNEL_3     = 3,
 } SYSCTRL_PTE_CHANNEL_ID;
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_PTE_I2C0_INT       = 0,
     SYSCTRL_PTE_I2C1_INT       = 1,
     SYSCTRL_PTE_SARADC_INT     = 2,
@@ -48,8 +46,7 @@ typedef enum
     SYSCTRL_PTE_SRC_INT_MAX    = 24,
 } SYSCTRL_PTE_SRC_INT;
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_PTE_I2C0_EN        = 0,
     SYSCTRL_PTE_I2C1_EN        = 1,
     SYSCTRL_PTE_SARADC_EN      = 2,
@@ -125,8 +122,7 @@ int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch,
 /*
  * PTE EVENT enum
  */
-typedef enum
-{
+typedef enum {
     PTE_TASK_QDEC_CH0_START = 0,
     PTE_TASK_QDEC_CH0_STOP,
     PTE_TASK_QDEC_CH1_START,
@@ -230,8 +226,7 @@ typedef enum
 /*
  * PTE EVENT enum
  */
-typedef enum
-{
+typedef enum {
     PTE_EVENT_QDEC_CH0_STOP_CPL = 0,
     PTE_EVENT_QDEC_CH1_STOP_CPL,
     PTE_EVENT_QDEC_CH2_STOP_CPL,
@@ -293,8 +288,7 @@ typedef enum
  *
  * Deafault: PTE_QDEC_MODULE
  */
-typedef enum
-{
+typedef enum {
     PTE_QDEC_MODULE = 0,
     PTE_DMA_MODULE,
     PTE_GPIOTE_MODULE,
@@ -322,8 +316,7 @@ typedef enum
  *
  * Deafault: channel 0
  */
-typedef enum
-{
+typedef enum {
     PTE_CHANNEL_0 = 0,
     PTE_CHANNEL_1,
     PTE_CHANNEL_2,
@@ -347,8 +340,7 @@ typedef enum
  *
  * Range: 0 ~ 7
  */
-typedef enum
-{
+typedef enum {
     GPIOTE_CHANNEL_0 = 0,
     GPIOTE_CHANNEL_1,
     GPIOTE_CHANNEL_2,
@@ -366,8 +358,7 @@ typedef enum
  *
  * Default: GPIOTE_CHANNEL_DISABLE
  */
-typedef enum
-{
+typedef enum {
     GPIOTE_CHANNEL_DISABLE = 0,
     GPIOTE_CHANNEL_EVENT = 1,
     GPIOTE_CHANNEL_TASK = 3,
@@ -380,8 +371,7 @@ typedef enum
  *
  * Default: ChannelGroup0
  */
-typedef enum
-{
+typedef enum {
     PTEC_CHANNEL_GROUP_0 = 0,
     PTEC_CHANNEL_GROUP_1,
     PTEC_CHANNEL_GROUP_2,

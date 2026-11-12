@@ -21,10 +21,8 @@ void PWM_Enable(const uint8_t channel_index, const uint8_t enable)
 void PWM_EnableMulti(uint32_t channel_mask, const uint8_t enable)
 {
     volatile uint32_t *reg = (volatile uint32_t *)(PWM_REG_BASE + 0x0C);
-    if (enable)
-        *reg |= channel_mask;
-    else
-        *reg &= ~channel_mask;
+    if (enable) *reg |= channel_mask;
+    else *reg &= ~channel_mask;
 }
 
 // Note: when mask = 1, output is masked as 0.
@@ -192,12 +190,9 @@ void PCAP_ClearFifo(uint8_t channel_index)
 
 void PWM_FifoIntEnable(const uint8_t channel_index, uint8_t enable, uint32_t mask)
 {
-    if(enable)
-    {
+    if (enable) {
         APB_PWM->Channels[channel_index].Ctrl0 |= mask;
-    }
-    else
-    {
+    } else {
         APB_PWM->Channels[channel_index].Ctrl0 &= ~(mask);
     }
 }
@@ -215,12 +210,9 @@ void PWM_SetInitVale(const uint8_t channel,uint8_t vale_a,uint8_t vale_b)
 
 void PWM_StepEnabled(const uint8_t channel,uint8_t enable)
 {
-    if(enable)
-    {
+    if (enable) {
         APB_PWM->STEPChannels[channel].step0 |= 0x1U;
-    }
-    else
-    {
+    } else {
         APB_PWM->STEPChannels[channel].step0 &= ~(0x1U);
     }
 }
@@ -228,12 +220,9 @@ void PWM_StepEnabled(const uint8_t channel,uint8_t enable)
 void PWM_StepLoopEnabled(const uint8_t channel,uint8_t enable)
 {
     uint32_t  mask = (0x1 << 1);
-    if(enable)
-    {
+    if (enable) {
         APB_PWM->STEPChannels[channel].step0 |= mask;
-    }
-    else
-    {
+    } else {
         APB_PWM->STEPChannels[channel].step0 &= ~(mask);
     }
 }
@@ -254,13 +243,10 @@ void IR_CycleCarrierSetup(uint8_t channel, uint8_t carry_channel, uint32_t frequ
 {
     uint32_t pera = PWM_CLOCK_FREQ / frequency;
     uint32_t high = pera > 1000 ? pera / 100 * (100 - duty) : pera * (100 - duty) / 100;
-    if(carry_channel)
-    {
+    if (carry_channel) {
         APB_PWM->STEPChannels[channel].step1 = pera;
         APB_PWM->Channels[channel].DZoneTh = high;
-    }
-    else
-    {
+    } else {
         APB_PWM->Channels[channel].PeraTh = pera;
         APB_PWM->Channels[channel].HighTh = high;
     }

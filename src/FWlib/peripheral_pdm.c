@@ -14,10 +14,8 @@ void PDM_Config(PDM_TypeDef *base, uint8_t left_en, uint8_t right_en,
 
 void PDM_Start(PDM_TypeDef *base, uint8_t enable)
 {
-    if (enable)
-        base->Cfg |= 1 << 29;
-    else
-        base->Cfg &= ~(1 << 29);
+    if (enable) base->Cfg |= 1 << 29;
+    else base->Cfg &= ~(1 << 29);
 }
 
 void PDM_DmaEnable(PDM_TypeDef *base, uint8_t trig_cfg, uint8_t enable)

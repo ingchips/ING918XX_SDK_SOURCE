@@ -2,10 +2,8 @@
 
 static void GIO_MaskedWrite(volatile uint32_t *reg, const uint8_t index, const uint8_t v)
 {
-    if (v)
-        *reg |= (1 << index);
-    else
-        *reg &= ~(1 << index);
+    if (v) *reg |= (1 << index);
+    else *reg &= ~(1 << index);
 }
 
 static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, uint8_t bit_offset)
@@ -24,13 +22,10 @@ static void set_reg_bits(volatile uint32_t *reg, uint32_t v, uint8_t bit_width, 
 
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 {
-    if (dir != GIO_DIR_NONE)
-    {
+    if (dir != GIO_DIR_NONE) {
         GIO_MaskedWrite(GPIO_OEB, io_index, dir == GIO_DIR_INPUT ? 0 : 1);
         GIO_MaskedWrite(GPIO_PIN_IE0, io_index, dir == GIO_DIR_OUTPUT ? 1 : 0);
-    }
-    else
-    {
+    } else {
         GIO_MaskedWrite(GPIO_OEB, io_index, 0);
         GIO_MaskedWrite(GPIO_PIN_IE0, io_index, 1);
     }
@@ -83,13 +78,10 @@ void GIO_ClearIntStatus(const GIO_Index_t io_index)
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 {
     DEF_GIO_AND_PIN(io_index);
-    if (dir != GIO_DIR_NONE)
-    {
+    if (dir != GIO_DIR_NONE) {
         GIO_MaskedWrite(&pDef->ChDir, index, dir == GIO_DIR_INPUT ? 0 : 1);
         GIO_MaskedWrite(&pDef->IOIE, index, dir == GIO_DIR_INPUT ? 1 : 0);
-    }
-    else
-    {
+    } else {
         GIO_MaskedWrite(&pDef->ChDir, index, 0);
         GIO_MaskedWrite(&pDef->IOIE, index, 0);
     }
@@ -99,18 +91,15 @@ GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index)
 {
     DEF_GIO_AND_PIN(io_index);
     GIO_Direction_t r = pDef->ChDir & (1 << index) ? GIO_DIR_OUTPUT : GIO_DIR_INPUT;
-    if ((GIO_DIR_INPUT == r) && ((pDef->IOIE & (1 << index)) == 0))
-        r = GIO_DIR_NONE;
+    if ((GIO_DIR_INPUT == r) && ((pDef->IOIE & (1 << index)) == 0)) r = GIO_DIR_NONE;
     return r;
 }
 
 void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit)
 {
     DEF_GIO_AND_PIN(io_index);
-    if (bit)
-        pDef->DoutSet |= 1 << index;
-    else
-        pDef->DoutClear |= 1 << index;
+    if (bit) pDef->DoutSet |= 1 << index;
+    else pDef->DoutClear |= 1 << index;
 }
 
 uint8_t GIO_ReadValue(const GIO_Index_t io_index)
@@ -127,29 +116,26 @@ uint8_t GIO_ReadOutputValue(const GIO_Index_t io_index)
 
 static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t type)
 {
-    switch (type)
-    {
-    case GIO_INT_EDGE:
-        switch (enable)
-        {
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
-            return 5;
-        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 6;
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 7;
-        }
-        break;
+    switch (type) {
+        case GIO_INT_EDGE:
+            switch (enable) {
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+                    return 5;
+                case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 6;
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 7;
+            }
+            break;
 
-    case GIO_INT_LOGIC:
-        switch (enable)
-        {
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
-            return 3;
-        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 2;
-        }
-        break;
+        case GIO_INT_LOGIC:
+            switch (enable) {
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+                    return 3;
+                case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 2;
+            }
+            break;
     }
 
     return 0;
@@ -159,8 +145,7 @@ void GIO_ConfigIntSource(const GIO_Index_t io_index, const uint8_t enable, const
 {
     DEF_GIO_AND_PIN(io_index);
     uint8_t mode = map_int_mode(enable, type);
-    if (0 == mode)
-    {
+    if (0 == mode) {
         GIO_MaskedWrite(&pDef->IntEn, index, 0);
         return;
     }
@@ -233,15 +218,12 @@ void GIO_EnableRetentionGroupA(uint8_t enable)
 
 void GIO_EnableRetentionGroupB(uint8_t enable)
 {
-    if (enable)
-    {
+    if (enable) {
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 1);
         nop(10);
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 1);
         nop(10);
-    }
-    else
-    {
+    } else {
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 0);
         nop(10);
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 0);
@@ -251,15 +233,12 @@ void GIO_EnableRetentionGroupB(uint8_t enable)
 
 void GIO_EnableHighZGroupB(uint8_t enable)
 {
-    if (enable)
-    {
+    if (enable) {
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 1);
         nop(10);
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 1);
         nop(10);
-    }
-    else
-    {
+    } else {
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 0);
         nop(10);
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 0);
@@ -276,44 +255,32 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
     {
         uint32_t v = mode >= 1 ? mode - 1 : 0;
 
-        if (io_index <= 15)
-            set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x130), v, 2, io_index * 2);
+        if (io_index <= 15) set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x130), v, 2, io_index * 2);
         else if (io_index <= 31)
             set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x134), v, 2, (io_index - 16) * 2);
-        else
-            set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x138), v, 2, (io_index - 32) * 2);
+        else set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x138), v, 2, (io_index - 32) * 2);
 
-        if (io_index <= 31)
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x128), io_index, enable);
-        else
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x12c), io_index - 32, enable);
+        if (io_index <= 31) GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x128), io_index, enable);
+        else GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x12c), io_index - 32, enable);
 
-        if (io_index <= 31)
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x120), io_index, mode ? 0 : 1);
-        else
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x124), io_index - 32, mode ? 0 : 1);
+        if (io_index <= 31) GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x120), io_index, mode ? 0 : 1);
+        else GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x124), io_index - 32, mode ? 0 : 1);
     }
-    else
-        return -1;
+    else return -1;
 
     if (((1 <= io_index) && (io_index <= 4))
      || ((7 <= io_index) && (io_index <= 17))
      || ((24 <= io_index) && (io_index <= 25))
      || ((29 <= io_index) && (io_index <= 35)))
     {
-        if (io_index <= 31)
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x60), io_index, enable);
-        else
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x64), io_index - 32, enable);
+        if (io_index <= 31) GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x60), io_index, enable);
+        else GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x64), io_index - 32, enable);
 
         uint8_t en = pull != PINCTRL_PULL_DISABLE ? 1 : 0;
-        if (io_index <= 31)
-        {
+        if (io_index <= 31) {
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x68), io_index, en);
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x70), io_index, pull == PINCTRL_PULL_UP ? 1 : 0);
-        }
-        else
-        {
+        } else {
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x6c), io_index - 32, en);
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x74), io_index - 32, pull == PINCTRL_PULL_UP ? 1 : 0);
         }
@@ -354,13 +321,10 @@ void GIO_ToggleBits(const uint64_t index_mask)
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 {
     DEF_GIO_AND_PIN(io_index);
-    if (dir != GIO_DIR_NONE)
-    {
+    if (dir != GIO_DIR_NONE) {
         GIO_MaskedWrite(&pDef->ChDir, index, dir == GIO_DIR_INPUT ? 0 : 1);
         GIO_MaskedWrite(&pDef->IOIE, index, dir == GIO_DIR_INPUT ? 1 : 0);
-    }
-    else
-    {
+    } else {
         GIO_MaskedWrite(&pDef->ChDir, index, 0);
         GIO_MaskedWrite(&pDef->IOIE, index, 0);
     }
@@ -368,33 +332,30 @@ void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 
 static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t type)
 {
-    switch (type)
-    {
-    case GIO_INT_EDGE:
-        switch (enable)
-        {
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
-            return 5;
-        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 6;
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 7;
-        default:
-            return 0;
-        }
+    switch (type) {
+        case GIO_INT_EDGE:
+            switch (enable) {
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+                    return 5;
+                case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 6;
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 7;
+                default:
+                    return 0;
+            }
 
-    case GIO_INT_LOGIC:
-        switch (enable)
-        {
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
-            return 3;
-        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 2;
+        case GIO_INT_LOGIC:
+            switch (enable) {
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+                    return 3;
+                case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 2;
+                default:
+                    return 0;
+            }
         default:
             return 0;
-        }
-    default:
-        return 0;
     }
 }
 
@@ -403,8 +364,7 @@ void GIO_ConfigIntSource(const GIO_Index_t io_index, const uint8_t enable, const
 {
     DEF_GIO_AND_PIN(io_index);
     uint8_t mode = map_int_mode(enable, type);
-    if (0 == mode)
-    {
+    if (0 == mode) {
         GIO_MaskedWrite(&pDef->IntEn, index, 0);
         return;
     }
@@ -467,18 +427,15 @@ GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index)
 {
     DEF_GIO_AND_PIN(io_index);
     GIO_Direction_t r = pDef->ChDir & (1 << index) ? GIO_DIR_OUTPUT : GIO_DIR_INPUT;
-    if ((GIO_DIR_INPUT == r) && ((pDef->IOIE & (1 << index)) == 0))
-        r = GIO_DIR_NONE;
+    if ((GIO_DIR_INPUT == r) && ((pDef->IOIE & (1 << index)) == 0)) r = GIO_DIR_NONE;
     return r;
 }
 
 void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit)
 {
     DEF_GIO_AND_PIN(io_index);
-    if (bit)
-        pDef->DoutSet |= 1 << index;
-    else
-        pDef->DoutClear |= 1 << index;
+    if (bit) pDef->DoutSet |= 1 << index;
+    else pDef->DoutClear |= 1 << index;
 }
 
 uint8_t GIO_ReadValue(const GIO_Index_t io_index)
@@ -526,15 +483,12 @@ void GIO_EnableRetentionGroupA(uint8_t enable)
 
 void GIO_EnableRetentionGroupB(uint8_t enable)
 {
-    if (enable)
-    {
+    if (enable) {
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 1);
         nop(10);
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 1);
         nop(10);
-    }
-    else
-    {
+    } else {
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 0);
         nop(10);
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 0);
@@ -544,15 +498,12 @@ void GIO_EnableRetentionGroupB(uint8_t enable)
 
 void GIO_EnableHighZGroupB(uint8_t enable)
 {
-    if (enable)
-    {
+    if (enable) {
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 1);
         nop(10);
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 1);
         nop(10);
-    }
-    else
-    {
+    } else {
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 14, 0);
         nop(10);
         GIO_MaskedWrite((volatile uint32_t *)AON2_SLEEP_CTRL, 15, 0);
@@ -564,42 +515,32 @@ int GIO_EnableDeepSleepWakeupSource(GIO_Index_t io_index, uint8_t enable,
         uint8_t mode, pinctrl_pull_mode_t pull)
 {
     uint32_t v = mode >= 1 ? mode - 1 : 0;
-    if (io_index < 36)
-    {
-        if (io_index <32)
-        {
+    if (io_index < 36) {
+        if (io_index <32) {
             set_reg_bits(io_index > GIO_GPIO_15 ? ((volatile uint32_t *)(AON2_CTRL_BASE + 0x6c)) : ((volatile uint32_t *)(AON2_CTRL_BASE + 0x68)), v, 2, io_index > GIO_GPIO_15 ? (io_index - 16) * 2 : (io_index * 2));
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x60), io_index, enable);
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x58), io_index, mode ? 0 : 1);
-        }
-        else
-        {
+        } else {
             set_reg_bits((volatile uint32_t *)(AON2_CTRL_BASE + 0x70), v, 2, (io_index - 32) * 2);
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x64), io_index - 32, enable);
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x5c), io_index - 32, mode ? 0 : 1);
         }
     }
-    else
-        return -1;
+    else return -1;
 
     if (((1 <= io_index) && (io_index <= 4))
         || ((7 <= io_index) && (io_index <= 20))
         || ((24 <= io_index) && (io_index <= 31))
         || ((34 <= io_index) && (io_index <= 35)))
     {
-        if (io_index <= 31)
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x30), io_index, enable);
-        else
-            GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x34), io_index - 32, enable);
+        if (io_index <= 31) GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x30), io_index, enable);
+        else GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x34), io_index - 32, enable);
 
         uint8_t en = pull != PINCTRL_PULL_DISABLE ? 1 : 0;
-        if (io_index <= 31)
-        {
+        if (io_index <= 31) {
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x38), io_index, en);
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x40), io_index, pull == PINCTRL_PULL_UP ? 1 : 0);
-        }
-        else
-        {
+        } else {
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x3c), io_index - 32, en);
             GIO_MaskedWrite((volatile uint32_t *)(AON2_CTRL_BASE + 0x44), io_index - 32, pull == PINCTRL_PULL_UP ? 1 : 0);
         }
@@ -624,14 +565,11 @@ void GIO_EnableDeeperSleepWakeupSourceGroupA(uint8_t enable, uint8_t level)
 void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 {
     DEF_GIO_AND_PIN(io_index);
-    if (dir != GIO_DIR_NONE)
-    {
+    if (dir != GIO_DIR_NONE) {
         GIO_MaskedWrite(&pDef->ChDir, index, dir == GIO_DIR_INPUT ? 0 : 1);
         /* BOTH keeps the input path enabled while driving the output. */
         GIO_MaskedWrite(&pDef->IOIE, index, dir == GIO_DIR_OUTPUT ? 0 : 1);
-    }
-    else
-    {
+    } else {
         GIO_MaskedWrite(&pDef->ChDir, index, 0);
         GIO_MaskedWrite(&pDef->IOIE, index, 0);
     }
@@ -639,33 +577,30 @@ void GIO_SetDirection(const GIO_Index_t io_index, const GIO_Direction_t dir)
 
 static uint8_t map_int_mode(const uint8_t enable, const GIO_IntTriggerType_t type)
 {
-    switch (type)
-    {
-    case GIO_INT_EDGE:
-        switch (enable)
-        {
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
-            return 5;
-        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 6;
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 7;
-        default:
-            return 0;
-        }
+    switch (type) {
+        case GIO_INT_EDGE:
+            switch (enable) {
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+                    return 5;
+                case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 6;
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE | GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 7;
+                default:
+                    return 0;
+            }
 
-    case GIO_INT_LOGIC:
-        switch (enable)
-        {
-        case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
-            return 3;
-        case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
-            return 2;
+        case GIO_INT_LOGIC:
+            switch (enable) {
+                case GIO_INT_EN_LOGIC_LOW_OR_FALLING_EDGE:
+                    return 3;
+                case GIO_INT_EN_LOGIC_HIGH_OR_RISING_EDGE:
+                    return 2;
+                default:
+                    return 0;
+            }
         default:
             return 0;
-        }
-    default:
-        return 0;
     }
 }
 
@@ -674,8 +609,7 @@ void GIO_ConfigIntSource(const GIO_Index_t io_index, const uint8_t enable, const
 {
     DEF_GIO_AND_PIN(io_index);
     uint8_t mode = map_int_mode(enable, type);
-    if (0 == mode)
-    {
+    if (0 == mode) {
         GIO_MaskedWrite(&pDef->IntEn, index, 0);
         return;
     }
@@ -739,8 +673,7 @@ GIO_Direction_t GIO_GetDirection(const GIO_Index_t io_index)
 {
     DEF_GIO_AND_PIN(io_index);
     GIO_Direction_t r = pDef->ChDir & (1u << index) ? GIO_DIR_OUTPUT : GIO_DIR_INPUT;
-    if ((GIO_DIR_INPUT == r) && ((pDef->IOIE & (1u << index)) == 0))
-        r = GIO_DIR_NONE;
+    if ((GIO_DIR_INPUT == r) && ((pDef->IOIE & (1u << index)) == 0)) r = GIO_DIR_NONE;
     return r;
 }
 
@@ -748,10 +681,8 @@ void GIO_WriteValue(const GIO_Index_t io_index, const uint8_t bit)
 {
     DEF_GIO_AND_PIN(io_index);
     /* Set/clear registers take a write mask. */
-    if (bit)
-        pDef->DoutSet = 1u << index;
-    else
-        pDef->DoutClear = 1u << index;
+    if (bit) pDef->DoutSet = 1u << index;
+    else pDef->DoutClear = 1u << index;
 }
 
 uint8_t GIO_ReadValue(const GIO_Index_t io_index)
@@ -816,14 +747,11 @@ void GIO_EnableRetentionGroupA(uint8_t enable)
 
 void GIO_EnableRetentionGroupB(uint8_t enable)
 {
-    if (enable)
-    {
+    if (enable) {
         GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_DS_BIT, 1);
         GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_LATCH_BIT, 1);
         GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_LATCH_DS_N_BIT, 1);
-    }
-    else
-    {
+    } else {
         ing26_io_ctrl_override();
         GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_REG_IO_DS_ACT_BIT, 0);
         nop(10);
@@ -834,14 +762,11 @@ void GIO_EnableRetentionGroupB(uint8_t enable)
 
 void GIO_EnableHighZGroupB(uint8_t enable)
 {
-    if (enable)
-    {
+    if (enable) {
         GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_DS_BIT, 1);
         GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_LATCH_BIT, 1);
         GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_IO_LATCH_DS_N_BIT, 0);
-    }
-    else
-    {
+    } else {
         ing26_io_ctrl_override();
         GIO_MaskedWrite((volatile uint32_t *)ING26_AON2_SLEEP_CTRL_REG, ING26_REG_IO_LATCH_ACT_BIT, 0);
         nop(10);

@@ -153,8 +153,7 @@ void TMR0_LOCK(void);
 void TMR0_UNLOCK(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-typedef enum
-{
+typedef enum {
     WDT_INTTIME_INTERVAL_2MS          = 0,    //0.001953125s
     WDT_INTTIME_INTERVAL_8MS          = 1,    //0.0078125s
     WDT_INTTIME_INTERVAL_31MS         = 2,    //0.03125s
@@ -173,8 +172,7 @@ typedef enum
     WDT_INTTIME_INTERVAL_18H_12M_16S  = 15    //65536s
 }wdt_inttime_interval_t;
 
-typedef enum
-{
+typedef enum {
     WDT_RSTTIME_INTERVAL_4MS          = 0,    //3.90625ms
     WDT_RSTTIME_INTERVAL_8MS          = 1,    //7.8125ms
     WDT_RSTTIME_INTERVAL_15MS         = 2,    //15.625ms
@@ -186,8 +184,7 @@ typedef enum
 }wdt_rsttime_interval_t;
 
 
-typedef enum
-{
+typedef enum {
     TMR_32BIT_TIMER_EN     = 1,
     
     TMR_16BIT_X2_TIM0_EN   = 1,
@@ -452,8 +449,7 @@ void TMR_WatchDogClearInt(void);
 void TMR_WatchDogDisable(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
-typedef enum
-{
+typedef enum {
     WDT_INTTIME_INTERVAL_2MS          = 0,    //0.001953125s
     WDT_INTTIME_INTERVAL_8MS          = 1,    //0.0078125s
     WDT_INTTIME_INTERVAL_31MS         = 2,    //0.03125s
@@ -472,8 +468,7 @@ typedef enum
     WDT_INTTIME_INTERVAL_18H_12M_16S  = 15    //65536s
 }wdt_inttime_interval_t;
 
-typedef enum
-{
+typedef enum {
     WDT_RSTTIME_INTERVAL_4MS          = 0,    //3.90625ms
     WDT_RSTTIME_INTERVAL_8MS          = 1,    //7.8125ms
     WDT_RSTTIME_INTERVAL_15MS         = 2,    //15.625ms
@@ -484,8 +479,7 @@ typedef enum
     WDT_RSTTIME_INTERVAL_500MS        = 7
 }wdt_rsttime_interval_t;
 
-typedef enum
-{
+typedef enum {
     TMR_32BIT_TIMER_EN     = 1,
     
     TMR_16BIT_X2_TIM0_EN   = 1,

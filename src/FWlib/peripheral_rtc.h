@@ -102,8 +102,7 @@ void RTC_ClearInt(void);
 
 #ifdef SOFTWARE_RTC_DHMS
 
-typedef enum
-{
+typedef enum {
     RTC_IRQ_ALARM = 0x04,
     RTC_IRQ_DAY = 0x08,
     RTC_IRQ_HOUR = 0x10,
@@ -204,8 +203,7 @@ void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
-typedef enum
-{
+typedef enum {
     RTC_IRQ_ALARM = 0x04,
     RTC_IRQ_DAY = 0x08,
     RTC_IRQ_HOUR = 0x10,
@@ -214,8 +212,7 @@ typedef enum
     RTC_IRQ_HALF_SECOND = 0x80,
 } rtc_irq_t;
 
-typedef enum
-{
+typedef enum {
     RTC_TRIM_SPEED_UP = 0x00,
     RTC_TRIM_SLOW_DOWN = 0x01,
 }rtc_trim_direction_t;
@@ -479,8 +476,7 @@ void RTC_SoftSetISR(uint32_t (*irq_cb)(void *user_data), void *user_data);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
-typedef enum
-{
+typedef enum {
     RTC_IRQ_ALARM = 0x04,
     RTC_IRQ_DAY = 0x08,
     RTC_IRQ_HOUR = 0x10,
@@ -489,8 +485,7 @@ typedef enum
     RTC_IRQ_HALF_SECOND = 0x80,
 } rtc_irq_t;
 
-typedef enum
-{
+typedef enum {
     RTC_TRIM_SPEED_UP = 0x00,
     RTC_TRIM_SLOW_DOWN = 0x01,
 }rtc_trim_direction_t;

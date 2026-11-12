@@ -16,8 +16,7 @@
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
-typedef enum
-{
+typedef enum {
     KEY_IN_COL_0  ,
     KEY_IN_COL_1  ,
     KEY_IN_COL_2  ,
@@ -45,8 +44,7 @@ typedef enum
     KEY_IN_COL_NUMBER,
 } KEYSCAN_InColIndex_t;
 
-typedef enum
-{
+typedef enum {
     KEY_OUT_ROW_0  ,
     KEY_OUT_ROW_1  ,
     KEY_OUT_ROW_2  ,
@@ -83,7 +81,7 @@ typedef enum
  * SCAN_NUMBER: The number of scan results.
  * SCAN_NONE: Input data is error or end loop.
  */
-typedef  enum {
+typedef enum {
     SCAN_HIGH_PRESS,
     SCAN_LOW_PRESS,
     SCAN_HIGH_RELEASE,
@@ -106,8 +104,7 @@ typedef enum {
  *
  * NOTE: In LPKEY mode, Both output and input pins are row pins.
  */
-typedef struct
-{
+typedef struct {
     KEYSCAN_ScanMode_t scan_mode;
     uint8_t out_pin;
     uint8_t in_pin;
@@ -124,8 +121,7 @@ typedef struct {
     GIO_Index_t gpio;
 } KEYSCAN_OutRowList;
 
-typedef struct
-{
+typedef struct {
     uint8_t row_to_idx[KEY_OUT_ROW_NUMBER];
     uint8_t col_to_idx[KEY_IN_COL_NUMBER];
 } KEYSCAN_Ctx;

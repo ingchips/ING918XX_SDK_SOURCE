@@ -93,16 +93,15 @@ uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOpt
 {
     I2C_BASE->I2C_TIMING0.CLR = 0xffffffff;
     I2C_BASE->I2C_TIMING1.CLR = 0xffffffff;
-    switch (option)
-    {
-    case I2C_CLOCKFREQUENCY_FASTMODE:
-        I2C_BASE->I2C_TIMING0.SET = (30 << 16) | 12;
-        I2C_BASE->I2C_TIMING1.SET = (32 << 16) | 12;
-        break;
-    default: // I2C_CLOCKFREQUENCY_STANDARD
-        I2C_BASE->I2C_TIMING0.SET = (0x78u << 16) | 0x30;
-        I2C_BASE->I2C_TIMING1.SET = (0x80u << 16) | 0x30;
-        break;
+    switch (option) {
+        case I2C_CLOCKFREQUENCY_FASTMODE:
+            I2C_BASE->I2C_TIMING0.SET = (30 << 16) | 12;
+            I2C_BASE->I2C_TIMING1.SET = (32 << 16) | 12;
+            break;
+        default: // I2C_CLOCKFREQUENCY_STANDARD
+            I2C_BASE->I2C_TIMING0.SET = (0x78u << 16) | 0x30;
+            I2C_BASE->I2C_TIMING1.SET = (0x80u << 16) | 0x30;
+            break;
     }
     return 0;
 }
@@ -125,10 +124,8 @@ void I2C_Config(I2C_TypeDef *I2C_BASE, I2C_Role role, I2C_AddressingMode addr_mo
 
 void I2C_Enable(I2C_TypeDef *I2C_BASE, uint8_t enable)
 {
-    if (enable)
-        I2C_BASE->Setup |= 1;
-    else
-        I2C_BASE->Setup &= ~1ul;
+    if (enable) I2C_BASE->Setup |= 1;
+    else I2C_BASE->Setup &= ~1ul;
 }
 
 void I2C_IntEnable(I2C_TypeDef *I2C_BASE, uint32_t mask)
@@ -250,14 +247,13 @@ static uint8_t I2C_GetSetupDataTime(uint32_t pclk_hz, uint8_t Tpm,
     uint8_t T_SUDATA = 0;
     float setup_time = 0;
     float  tpclk = (float)(1000000000.0 / pclk_hz);
-    while (setup_time < su_data_time_max)
-    {
+    while (setup_time < su_data_time_max) {
         setup_time = (2 * tpclk) + (2 + T_sp + T_SUDATA)
                  * tpclk * (Tpm + 1);
         T_SUDATA++;
-        if(T_SUDATA > 31) return 0xff;
+        if (T_SUDATA > 31) return 0xff;
     }
-    if(T_SUDATA == 0)   return 0;
+    if (T_SUDATA == 0) return 0;
 
     return T_SUDATA - 1;
 }
@@ -268,15 +264,14 @@ static uint8_t I2C_GetDataHoldTime(uint32_t pclk_hz,uint8_t T_SCLHi, uint8_t Tpm
     float  tpclk = (float)(1000000000.0 / pclk_hz);
     float data_hold_time = 0;
     uint8_t T_HDDATA = 0;
-    while (data_hold_time > min_hold_time)
-    {
-        if(T_HDDATA > 31 || T_HDDATA >= T_SCLHi) return 0xff;
+    while (data_hold_time > min_hold_time) {
+        if (T_HDDATA > 31 || T_HDDATA >= T_SCLHi) return 0xff;
         data_hold_time = (2 * tpclk) + (2 + T_sp + T_HDDATA)
                  * tpclk *(Tpm + 1);
         T_HDDATA +=1 ;
 
     }
-    if(T_HDDATA == 0) return 0;
+    if (T_HDDATA == 0) return 0;
     return T_HDDATA - 1;
 }
 
@@ -289,49 +284,49 @@ uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOpt
     uint32_t sclk_hz = 100000;
     float max_su_data_time = 250;
     float min_hold_time = 300;
-    switch (option)
-    {
-      case I2C_CLOCKFREQUENY_STANDARD:
-      {
-           scl_ratio = 0;
-           max_su_data_time = 250.0;
-           min_hold_time = 300.0;
-           sclk_hz = 100000;
-      }break;
-      case I2C_CLOCKFREQUENY_FASTMODE:
-      {
-          scl_ratio = 1;
-          max_su_data_time = 100.0;
-          min_hold_time = 300.0;
-          sclk_hz = 400000;
-
-      }break;
-      case I2C_CLOCKFREQUENY_FASTMODE_PLUS:
-      {
-            scl_ratio = 1;
-            max_su_data_time = 50.0;
-            min_hold_time = 150.0;
-            sclk_hz = 1000000;
-
-      }break;
-      default:{
-           scl_ratio = 0;
-           max_su_data_time = 250.0;
-           min_hold_time = 300.0;
-           sclk_hz = 100000;
-      }
-        break;
+    switch (option) {
+        case I2C_CLOCKFREQUENY_STANDARD:
+            {
+                scl_ratio = 0;
+                max_su_data_time = 250.0;
+                min_hold_time = 300.0;
+                sclk_hz = 100000;
+            }
+            break;
+        case I2C_CLOCKFREQUENY_FASTMODE:
+            {
+                scl_ratio = 1;
+                max_su_data_time = 100.0;
+                min_hold_time = 300.0;
+                sclk_hz = 400000;
+            }
+            break;
+        case I2C_CLOCKFREQUENY_FASTMODE_PLUS:
+            {
+                scl_ratio = 1;
+                max_su_data_time = 50.0;
+                min_hold_time = 150.0;
+                sclk_hz = 1000000;
+            }
+            break;
+        default:
+            {
+                scl_ratio = 0;
+                max_su_data_time = 250.0;
+                min_hold_time = 300.0;
+                sclk_hz = 100000;
+            }
+            break;
     }
-    if(I2C_SCL_ParamExhaustiveSearch(pclk_hz,sclk_hz,scl_ratio,&TPM,&T_SCLHi,&T_SP))
-    {
+    if (I2C_SCL_ParamExhaustiveSearch(pclk_hz, sclk_hz, scl_ratio, &TPM, &T_SCLHi, &T_SP)) {
         return 1;
     }
     T_SUDATA = I2C_GetSetupDataTime(pclk_hz, TPM, T_SP, max_su_data_time);
-    if(0xff == T_SUDATA){
+    if (0xff == T_SUDATA) {
         return 2;
     }
     T_HDDATA = I2C_GetDataHoldTime(pclk_hz,T_SCLHi, TPM, T_SP, min_hold_time);
-    if(0xff == T_HDDATA){
+    if (0xff == T_HDDATA) {
         return 3;
     }
     I2C_BASE->TPM = TPM;
@@ -343,7 +338,7 @@ uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOpt
 void I2C_ConfigClkFrequency(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOptions option)
 {   uint32_t ret;
     ret = I2C_ConfigClkFrequencyCalc(I2C_BASE, option);
-    if(ret != 0){
+    if (ret != 0) {
         I2C_BASE->TPM = 3;
         I2C_ConfigSCLTiming(I2C_BASE,157,0x0,0x5,0x1,0x5);
         return;
@@ -364,10 +359,8 @@ I2C_TransactionDir I2C_GetTransactionDir(I2C_TypeDef *I2C_BASE)
 void I2C_DmaEnable(I2C_TypeDef *I2C_BASE, uint8_t enable)
 {
     uint32_t bit = (uint32_t)1 << 3;
-    if (enable)
-        I2C_BASE->Setup |= bit;
-    else
-        I2C_BASE->Setup &= ~bit;
+    if (enable) I2C_BASE->Setup |= bit;
+    else I2C_BASE->Setup &= ~bit;
 }
 
 #endif

@@ -8,8 +8,7 @@
 extern "C" {    /* allow C++ to use these headers */
 #endif    /* __cplusplus */
 
-typedef enum
-{
+typedef enum {
     UART_PORT_0,
     UART_PORT_1
 } uart_port_t;
@@ -18,16 +17,14 @@ typedef enum
 typedef enum { LPUART_PORT_0, LPUART_PORT_1, LPUART_PORT_2 } lpuart_port_t;
 #endif
 
-typedef enum
-{
+typedef enum {
     I2C_PORT_0,
 #if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
     I2C_PORT_1
 #endif
 } i2c_port_t;
 
-typedef enum
-{
+typedef enum {
     SPI_PORT_0,
     SPI_PORT_1
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
@@ -35,8 +32,7 @@ typedef enum
 #endif
 } spi_port_t;
 
-typedef enum
-{
+typedef enum {
     TMR_PORT_0,
     TMR_PORT_1,
 #if ((INGCHIPS_FAMILY == INGCHIPS_FAMILY_918) || (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916))
@@ -44,8 +40,7 @@ typedef enum
 #endif
 } timer_port_t;
 
-typedef enum
-{
+typedef enum {
     PINCTRL_PULL_DISABLE,
     PINCTRL_PULL_UP,
     PINCTRL_PULL_DOWN
@@ -58,8 +53,7 @@ typedef enum
 // placeholder value when don't want to select a pin for some IO source
 #define IO_NOT_A_PIN                    0xf
 
-typedef enum
-{
+typedef enum {
     IO_SOURCE_GENERAL,      // GPIO or PWM selected by io_sel_pwm
     IO_SOURCE_SPI0_CLK,
     IO_SOURCE_SPI0_DO,
@@ -93,14 +87,12 @@ typedef enum
 
 #define IO_SOURCE_MASK      0xF
 
-typedef enum
-{
+typedef enum {
     PINCTRL_SLEW_RATE_FAST,
     PINCTRL_SLEW_RATE_SLOW
 } pinctrl_slew_rate_t;
 
-typedef enum
-{
+typedef enum {
     PINCTRL_DRIVE_2mA,
     PINCTRL_DRIVE_4mA,
     PINCTRL_DRIVE_8mA,
@@ -120,8 +112,7 @@ void PINCTRL_SelSpiClkIn(const spi_port_t port, const uint8_t io_pin_index);
 // Select input io_pin for I2C SCL
 void PINCTRL_SelI2cSclIn(const i2c_port_t port, const uint8_t io_pin_index);
 
-typedef enum
-{
+typedef enum {
     IO_MODE_GPIO,
     IO_MODE_PWM,
     IO_MODE_ANT_SEL
@@ -186,8 +177,7 @@ void PINCTRL_SetSlewRate(uint8_t io_pin_index, const pinctrl_slew_rate_t rate);
 // placeholder value when don't want to select a pin for some IO source
 #define IO_NOT_A_PIN                    0x7f
 
-typedef enum
-{
+typedef enum {
     // below sources are for output
     IO_SOURCE_GPIO                      = 0,
     IO_SOURCE_DEBUG_BUS                 = 1,
@@ -358,8 +348,7 @@ typedef enum
 
 #define IO_SOURCE_MASK      0x3F
 
-typedef enum
-{
+typedef enum {
     PINCTRL_DRIVE_2mA,
     PINCTRL_DRIVE_4mA,
     PINCTRL_DRIVE_8mA,
@@ -592,8 +581,7 @@ int PINCTRL_SelClockOutput(const uint8_t io_index);
 // placeholder value when don't want to select a pin for some IO source
 #define IO_NOT_A_PIN                    0x7f
 
-typedef enum
-{
+typedef enum {
     // below sources are for output
     IO_SOURCE_GPIO                                     = 0,
     IO_SOURCE_DEBUG_BUS                                = 1,
@@ -776,8 +764,7 @@ typedef enum
 
 #define IO_SOURCE_MASK      0x3F
 
-typedef enum
-{
+typedef enum {
     PINCTRL_DRIVE_2mA,
     PINCTRL_DRIVE_4mA,
     PINCTRL_DRIVE_8mA,
@@ -1026,15 +1013,13 @@ int PINCTRL_KeyScanPullSel(const uint8_t io_pin, uint8_t enable);
 // placeholder value when don't want to select a pin for some IO source
 #define IO_NOT_A_PIN                    0x7f
 
-typedef enum
-{
+typedef enum {
     NA = 0,
     LPUART_TX_GPIO6 = 0x1,
     LPUART_TX_GPIO22 = 0x2,
     LPUART_TX_GPIO23 = 0x3,
 }LP_PERIPHERAL_PIN_TX_SOURCE_t;
-typedef enum
-{
+typedef enum {
     LPUART_RX_TIE = 0,
     LPUART_RX_GPIO2 = 0x1,
     LPUART_RX_GPIO5 = 0x2,
@@ -1047,8 +1032,7 @@ typedef enum
 void AON_SelLpPin(LP_PERIPHERAL_PIN_TX_SOURCE_t tx_pin, LP_PERIPHERAL_PIN_RX_SOURCE_t rx_pin);
 
 
-typedef enum
-{
+typedef enum {
     // below sources are for output
     IO_SOURCE_GPIO                                     = 0,
     IO_SOURCE_DEBUG_BUS                                = 1,
@@ -1264,8 +1248,7 @@ typedef enum
 
 #define IO_SOURCE_MASK      0x3F
 
-typedef enum
-{
+typedef enum {
     PINCTRL_DRIVE_2mA,
     PINCTRL_DRIVE_4mA,
     PINCTRL_DRIVE_8mA,

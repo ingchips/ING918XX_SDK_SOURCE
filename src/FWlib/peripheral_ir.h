@@ -42,15 +42,13 @@ extern "C" {	/* allow C++ to use these headers */
 #define bwIR_IR_CTRL_TXRX_MODE                      1
 #define bwIR_IR_CTRL_IR_BIT_CYCLE                   7
 
-typedef enum
-{
+typedef enum {
   IR_IR_MODE_IR_NEC,
   IR_IR_MODE_IR_9012,
   IR_IR_MODE_IR_RC5
 } IR_IrMode_e;
 
-typedef enum
-{
+typedef enum {
   IR_TXRX_MODE_RX_MODE,
   IR_TXRX_MODE_TX_MODE
 } IR_TxRxMode_e;
