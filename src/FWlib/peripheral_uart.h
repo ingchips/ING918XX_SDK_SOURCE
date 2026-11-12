@@ -244,8 +244,7 @@
 #define bsUART_TRANS_INT_LEVEL        0
 #define bsUART_RECV_INT_LEVEL         8   // 3
 
-typedef enum UART_xWLEN
-{
+typedef enum UART_xWLEN {
     UART_WLEN_8_BITS = 3,
     UART_WLEN_7_BITS = 2,
     UART_WLEN_6_BITS = 1,
@@ -254,8 +253,7 @@ typedef enum UART_xWLEN
 
 
 // SPS EPS PEN
-typedef enum UART_xPARITY
-{
+typedef enum UART_xPARITY {
     UART_PARITY_NOT_CHECK   = 0,
     UART_PARITY_EVEN_PARITY = 3,
     UART_PARITY_ODD_PARITY  = 1,
@@ -264,8 +262,7 @@ typedef enum UART_xPARITY
 } UART_ePARITY;
 
 //p63
-typedef enum UART_xFIFO_WATERLEVEL
-{
+typedef enum UART_xFIFO_WATERLEVEL {
 	  UART_FIFO_ONE_EIGHTH    = 0,
 	  UART_FIFO_ONE_FOURTH    = 1,
 	  UART_FIFO_ONE_SECOND    = 2,
@@ -276,8 +273,7 @@ typedef enum UART_xFIFO_WATERLEVEL
 /*
  * UART status
  */
-typedef struct UART_xStateStruct
-{
+typedef struct UART_xStateStruct {
 	// Line Control Register, UARTLCR_H
   UART_eWLEN      word_length;   // WLEN
   UART_ePARITY    parity;        // PEN, EPS, SPS

@@ -45,8 +45,7 @@ extern "C" {	/* allow C++ to use these headers */
 #define EFUSE_REG_WORD_NUM (4)
 #define EFUSE_UNLOCK_FLAG (0xef5e)
 
-typedef enum
-{
+typedef enum {
   EFUSE_PROGRAMWORDCNT_0,//0 ~ 31bit
   EFUSE_PROGRAMWORDCNT_1,//32 ~ 63bit
   EFUSE_PROGRAMWORDCNT_2,//64 - 95bit

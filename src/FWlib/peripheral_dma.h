@@ -12,15 +12,13 @@ extern "C" {	/* allow C++ to use these headers */
 
 #define DMA_CHANNEL_NUMBER          8
 
-typedef enum
-{
+typedef enum {
     DMA_ADDRESS_INC   = 0,
     DMA_ADDRESS_DEC   = 1,
     DMA_ADDRESS_FIXED = 2,
 } DMA_AddressControl;
 
-typedef enum
-{
+typedef enum {
     DMA_DESC_OPTION_BIT_ENABLE = 0,
     DMA_DESC_OPTION_BIT_DISABLE_TERMINAL_COUNT_INT = 1,
     DMA_DESC_OPTION_BIT_DISABLE_ERROR_INT = 2,
@@ -29,8 +27,7 @@ typedef enum
     DMA_DESC_OPTION_BIT_HIGH_PRIORITY = 29,
 } DMA_DescriptorOptionBit;
 
-typedef enum
-{
+typedef enum {
     DMA_BURST_SIZE_1   = 0,
     DMA_BURST_SIZE_2   = 1,
     DMA_BURST_SIZE_4   = 2,
@@ -169,8 +166,7 @@ void DMA_AbortChannel(int channel_id);
  */
 int DMA_MemCopy(int channel_id, void *dst, void *src, uint32_t size);
 
-typedef enum
-{
+typedef enum {
     DMA_IRQ_ERROR = 1,
     DMA_IRQ_ABORT = 2,
     DMA_IRQ_TC = 4,
@@ -213,15 +209,13 @@ DMA_Descriptor *DMA_GetChannelDescriptor(int channel_id);
 
 #define DMA_CHANNEL_NUMBER          8
 
-typedef enum
-{
+typedef enum {
     DMA_ADDRESS_INC   = 0,
     DMA_ADDRESS_DEC   = 1,
     DMA_ADDRESS_FIXED = 2,
 } DMA_AddressControl;
 
-typedef enum
-{
+typedef enum {
     DMA_DESC_OPTION_BIT_ENABLE = 0,
     DMA_DESC_OPTION_BIT_DISABLE_TERMINAL_COUNT_INT = 1,
     DMA_DESC_OPTION_BIT_DISABLE_ERROR_INT = 2,
@@ -230,8 +224,7 @@ typedef enum
     DMA_DESC_OPTION_BIT_HIGH_PRIORITY = 29,
 } DMA_DescriptorOptionBit;
 
-typedef enum
-{
+typedef enum {
     DMA_BURST_SIZE_1   = 0,
     DMA_BURST_SIZE_2   = 1,
     DMA_BURST_SIZE_4   = 2,
@@ -370,8 +363,7 @@ void DMA_AbortChannel(int channel_id);
  */
 int DMA_MemCopy(int channel_id, void *dst, void *src, uint32_t size);
 
-typedef enum
-{
+typedef enum {
     DMA_IRQ_ERROR = 1,
     DMA_IRQ_ABORT = 2,
     DMA_IRQ_TC = 4,
@@ -413,15 +405,13 @@ DMA_Descriptor *DMA_GetChannelDescriptor(int channel_id);
 
 #define DMA_CHANNEL_NUMBER          4
 
-typedef enum
-{
+typedef enum {
     DMA_ADDRESS_INC   = 0,
     DMA_ADDRESS_DEC   = 1,
     DMA_ADDRESS_FIXED = 2,
 } DMA_AddressControl;
 
-typedef enum
-{
+typedef enum {
     DMA_DESC_OPTION_BIT_ENABLE = 0,
     DMA_DESC_OPTION_BIT_DISABLE_TERMINAL_COUNT_INT = 1,
     DMA_DESC_OPTION_BIT_DISABLE_ERROR_INT = 2,
@@ -565,8 +555,7 @@ void DMA_AbortChannelEx(DMA_TypeDef *dma_reg, int channel_id);
 #define DMA_MemCopy(channel_id, dst, src, size)   DMA_MemCopyEx(APB1_DMA0, channel_id, dst, src, size)
 int DMA_MemCopyEx(DMA_TypeDef *dma_reg, int channel_id, void *dst, void *src, int size);
 
-typedef enum
-{
+typedef enum {
     DMA_IRQ_ERROR = 1,
     DMA_IRQ_ABORT = 2,
     DMA_IRQ_TC = 4,

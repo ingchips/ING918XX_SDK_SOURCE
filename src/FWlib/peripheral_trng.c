@@ -11,11 +11,13 @@ int TRNG_Config(TRNG_TypeDef *base, uint8_t rate, uint8_t post_process, uint32_t
 }
 void TRNG_Enable(TRNG_TypeDef *base, uint8_t enable)
 {
-    if (enable) base->Config |= 1u; else base->Config &= ~1u;
+    if (enable) base->Config |= 1u;
+    else base->Config &= ~1u;
 }
 void TRNG_IntEnable(TRNG_TypeDef *base, uint8_t enable)
 {
-    if (enable) base->Config &= ~8u; else base->Config |= 8u;
+    if (enable) base->Config &= ~8u;
+    else base->Config |= 8u;
 }
 void TRNG_ClearInt(TRNG_TypeDef *base)
 {

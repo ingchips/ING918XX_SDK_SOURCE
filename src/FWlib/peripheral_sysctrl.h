@@ -14,8 +14,7 @@ extern "C" { /* allow C++ to use these headers */
 
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_918)
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_ClkGate_APB_I2C0 = 4,
     SYSCTRL_ClkGate_APB_SPI1 = 5,
     SYSCTRL_ClkGate_APB_TMR0 = 6,
@@ -35,8 +34,7 @@ typedef enum
 #define SYSCTRL_ClkGate_APB_GPIO1 SYSCTRL_ClkGate_APB_GPIO
 #define SYSCTRL_ClkGate_APB_WDT   SYSCTRL_ClkGate_APB_TMR0
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_Reset_AHB_LLE = 1,
     SYSCTRL_Reset_AHB_IOC = 2,
     SYSCTRL_Reset_APB_I2C0 = 3,
@@ -60,8 +58,7 @@ typedef enum
     SYSCTRL_Reset_APB_TRNG = 21
 } SYSCTRL_ResetItem;
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_LDO_OUPUT_1V60 = 0x13, // Recommended for Vbat = 1.8V
     SYSCTRL_LDO_OUPUT_1V80 = 0x16, // Recommended for Vbat = 2.5V
     SYSCTRL_LDO_OUPUT_2V50 = 0x1f, // Recommended for Vbat = 3.3V
@@ -100,8 +97,7 @@ void SYSCTRL_WriteBlockRst(uint32_t data);
  */
 uint32_t SYSCTRL_ReadBlockRst(void);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_MEM_BLOCK_0 = 0x20,   // block 0 is  8KiB starting from 0x20000000
     SYSCTRL_MEM_BLOCK_1 = 0x40,   // block 1 is  8KiB following block 0
     SYSCTRL_MEM_BLOCK_2 = 0x80,   // block 2 is 16KiB following block 1
@@ -129,8 +125,7 @@ typedef enum
 #define SYSCTRL_WAKEUP_SOURCE_AUTO    1 // waken up automatically by internal timer
 #define SYSCTRL_WAKEUP_SOURCE_EXT_INT 2 // waken up by EXT_INT
 
-typedef struct
-{
+typedef struct {
     uint32_t source; // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
 
@@ -144,8 +139,7 @@ void SYSCTRL_PAEnable(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_ITEM_APB_GPIO0,
     SYSCTRL_ITEM_APB_GPIO1,
     SYSCTRL_ITEM_APB_TMR0,
@@ -211,8 +205,7 @@ typedef SYSCTRL_Item SYSCTRL_ResetItem;
  *
  * Default: 1.200V. Step: 20mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_LDO_OUTPUT_CORE_1V000 = 0, // 1.000V
     SYSCTRL_LDO_OUTPUT_CORE_1V020 = 1,
     SYSCTRL_LDO_OUTPUT_CORE_1V040 = 2,
@@ -240,8 +233,7 @@ typedef enum
  *
  * Default: 2.100V. Step: 100mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5, // 2.100V
     SYSCTRL_LDO_OUTPUT_FLASH_2V200 = 6,
     SYSCTRL_LDO_OUTPUT_FLASH_2V300 = 7,
@@ -282,8 +274,7 @@ enum
     SYSCTRL_BOR_3V0 = 15
 };
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_CLK_SLOW = 0,    // use slow clock
     SYSCTRL_CLK_32k = 0,     // use 32kHz clock
     SYSCTRL_CLK_HCLK = 1,    // use HCLK (same as MCU)
@@ -608,8 +599,7 @@ void SYSCTRL_EnableConfigClocksAfterWakeup(uint8_t enable_pll, uint8_t pll_loop,
  */
 void SYSCTRL_DisableConfigClocksAfterWakeup(void);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_CPU_32k_CLK_32k = 0,  // use the clock configured by `SYSCTRL_SelectCLK32k`
     SYSCTRL_CPU_32k_INTERNAL = 1, // use the internal 32k clock source (32k OSC or 32k RC)
 } SYSCTRL_CPU32kMode;
@@ -631,8 +621,7 @@ void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
  */
 int SYSCTRL_GetCPU32k(void);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_SLOW_RC_CLK = 0,     // RC clock (which is tunable)
     SYSCTRL_SLOW_CLK_24M_RF = 1, // 24MHz RF OSC clock (default)
 } SYSCTRL_SlowClkMode;
@@ -662,8 +651,7 @@ uint32_t SYSCTRL_GetSlowClk(void);
  */
 void SYSCTRL_EnablePLL(uint8_t enable);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_SLOW_RC_8M = 0,
     SYSCTRL_SLOW_RC_16M = 1,
     SYSCTRL_SLOW_RC_24M = 3,
@@ -712,8 +700,7 @@ void SYSCTRL_TuneSlowRC(uint32_t value);
  */
 void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_DMA_UART0_RX = 0,
     SYSCTRL_DMA_UART1_RX = 1,
     SYSCTRL_DMA_SPI0_TX = 2,
@@ -772,8 +759,7 @@ void SYSCTRL_SetLDOOutputFlash(SYSCTRL_LDOOutputFlash level);
  *
  * Default: 1.500V. Step: 50mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_LDO_RF_OUTPUT_1V200 = 0, // 1.200V
     SYSCTRL_LDO_RF_OUTPUT_1V250 = 1,
     SYSCTRL_LDO_RF_OUTPUT_1V300 = 2,
@@ -822,8 +808,7 @@ void SYSCTRL_SetLDOOutputRF(SYSCTRL_LDOOutputRF level);
  *
  * Default: 1.200V. Step: 1mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0, // 1.184V
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V185 = 1,
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V186 = 2,
@@ -874,8 +859,7 @@ void SYSCTRL_SetAdcVrefOutput(SYSCTRL_AdcVrefOutput level);
  *
  * Default: 1.800V. Step: 100mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0, // 1.2V
     SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 1,
     SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 2,
@@ -966,8 +950,7 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 #define SYSCTRL_WAKEUP_SOURCE_COMPARATOR 2 // waken up by comparator
 #define SYSCTRL_WAKEUP_SOURCE_RTC_ALARM  4 // waken up by RTC alarm
 
-typedef struct
-{
+typedef struct {
     uint64_t gpio;  // if any GPIO (bit n for GPIO #n) has triggered wake up
     uint32_t other; // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
@@ -992,8 +975,7 @@ void SYSCTRL_EnableWakeupSourceDetection(void);
  */
 void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable);
 
-typedef enum
-{
+typedef enum {
     // SYS RAM block #0, 16KiB starting from 0x20000000 (0x20000000~0x20003fff)
     // This block is always ON, and can't be turned off.
     SYSCTRL_SYS_MEM_BLOCK_0 = 0x10,
@@ -1038,8 +1020,7 @@ typedef enum
 // this blocks (16 + 8) KiB are reversed in _mini_bundles
 #define SYSCTRL_RESERVED_MEM_BLOCKS      (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0)
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_MEM_BLOCK_AS_CACHE = 0,
     SYSCTRL_MEM_BLOCK_AS_SYS_MEM = 1,
 } SYSCTRL_CacheMemCtrl;
@@ -1091,8 +1072,7 @@ void SYSCTRL_ICacheFlush(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_ITEM_APB_GPIO0,
     SYSCTRL_ITEM_APB_GPIO1,
     SYSCTRL_ITEM_APB_TMR0,
@@ -1206,16 +1186,14 @@ enum
     SYSCTRL_PVD_END = SYSCTRL_PVD_3V19,
 };
 
-typedef enum
-{
+typedef enum {
     SOURCE_SLOW_CLK,
     SOURCE_32K_CLK,
     SOURCE_PLL_CLK,
     SOURCE_FAST_PER_CLK,
 } pre_clk_source_t;
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_CLK_SLOW = 0,     // use slow clock
     SYSCTRL_CLK_32k = 0,      // use 32kHz clock
     SYSCTRL_CLK_FAST_PER = 1, // use fast peripheral clock
@@ -1290,8 +1268,7 @@ typedef enum
  * SYSCTRL_RESET_WDT: Watchdog timeout.
  * SYSCTRL_RESET_POR: Power on reset or feature is note open.
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_RESET_PDR = 0x4,
     SYSCTRL_RESET_PVD = 0x8,
     SYSCTRL_RESET_GLOBAL_SOFT = 0x10,
@@ -1301,8 +1278,7 @@ typedef enum
     SYSCTRL_RESET_POR = 0x3f,
 } SYSCTRL_ResetSource;
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_CPU_32k_CLK_EXT = 0,  // External 32K clock
     SYSCTRL_CPU_32k_INTERNAL = 1, // use the internal 32k clock source 32k RC
 } SYSCTRL_CPU32kMode;
@@ -1552,8 +1528,7 @@ uint32_t SYSCTRL_GetCLK32k(void);
 #define PLL_HW_DEF_LOOP         80
 #define PLL_HW_DEF_DIV_OUTPUT   1
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_SLOW_RC_CLK = 0,     // RC clock (which is tunable)
     SYSCTRL_SLOW_CLK_24M_RF = 1, // 24MHz RF OSC clock (default)
 } SYSCTRL_SlowClkMode;
@@ -1583,8 +1558,7 @@ uint32_t SYSCTRL_GetSlowClk(void);
  */
 void SYSCTRL_EnablePLL(uint8_t enable);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_SLOW_RC_8M = 1,
     SYSCTRL_SLOW_RC_16M = 2,
     SYSCTRL_SLOW_RC_24M = 3,
@@ -1632,8 +1606,7 @@ void SYSCTRL_TuneSlowRC(uint32_t tune);
 void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom);
 
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_DMA_UART0_RX = 0,
     SYSCTRL_DMA_UART1_RX,
     SYSCTRL_DMA_SPI0_TX,
@@ -1686,8 +1659,7 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
  *
  * Default: 1.500V. Step: 50mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_LDO_RF_OUTPUT_1V200 = 0, // 1.200V
     SYSCTRL_LDO_RF_OUTPUT_1V250 = 1,
     SYSCTRL_LDO_RF_OUTPUT_1V300 = 2,
@@ -1729,8 +1701,7 @@ typedef enum
  *
  * Default: 1.200V. Step: 1mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0, // 1.184V
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V185 = 1,
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V186 = 2,
@@ -1774,8 +1745,7 @@ typedef enum
  *
  * Default: 1.800V. Step: 100mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0x34, // 1.2V
     SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 0x22,
     SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 0x17,
@@ -1918,8 +1888,7 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 
 #define SYSCTRL_WAKEUP_SOURCE_AUTO 1 // waken up automatically by internal timer
 
-typedef struct
-{
+typedef struct {
     uint64_t gpio;  // if any GPIO (bit n for GPIO #n) has triggered wake up
     uint32_t other; // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
@@ -1944,8 +1913,7 @@ void SYSCTRL_EnableWakeupSourceDetection(void);
  */
 void SYSCTRL_EnablePcapMode(uint8_t channel_index, uint8_t enable);
 
-typedef enum
-{
+typedef enum {
     // remapppable memory block 1, 16KiB
     // this block is mapped to `SYSCTRL_SHARE_MEM_BLOCK_2`
     SYSCTRL_MEM_REMAPPABLE_BLOCK_0 = 0x04,
@@ -1991,8 +1959,7 @@ typedef enum
 #define SYSCTRL_RESERVED_MEM_BLOCKS                                                                                    \
     (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0 | SYSCTRL_CACHE_BLOCK)
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_MEM_BLOCK_AS_CACHE = 0,
     SYSCTRL_MEM_BLOCK_AS_SYS_MEM = 1,
 } SYSCTRL_CacheMemCtrl;
@@ -2134,8 +2101,7 @@ SYSCTRL_ResetSource SYSCTRL_GetResetSource(void);
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_ITEM_APB1_GPIO0,
     SYSCTRL_ITEM_APB1_GPIO1,
     SYSCTRL_ITEM_APB1_TMR0,
@@ -2220,8 +2186,7 @@ typedef SYSCTRL_Item SYSCTRL_ResetItem;
  * Do not use bk_ldo12_trim here: the table identifies it as the AON reference.
  * Reduce the clock before lowering core voltage; respect board voltage limits.
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_LDO_OUTPUT_CORE_1V203 = 0,
     SYSCTRL_LDO_OUTPUT_CORE_1V171 = 1,
     SYSCTRL_LDO_OUTPUT_CORE_1V134 = 2,
@@ -2241,8 +2206,7 @@ typedef enum
  *
  * Default: 2.100V. Step: 100mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_LDO_OUTPUT_FLASH_2V100 = 5, // 2.100V
     SYSCTRL_LDO_OUTPUT_FLASH_2V200 = 6,
     SYSCTRL_LDO_OUTPUT_FLASH_2V300 = 7,
@@ -2281,15 +2245,13 @@ enum
     SYSCTRL_BOR_PVD_LEVEL_7 = 15,
 };
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_32K = 0, // 32kHz
     SYSCTRL_RC_FAST,
     SYSCTRL_PCLK,
 } SYSCTRL_LpClkMode;
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_CLK_SLOW = 0, // use slow clock
     SYSCTRL_CLK_32k = 0, // use 32kHz clock
     SYSCTRL_CLK_HCLK = 1, // use HCLK (same as MCU)
@@ -2580,8 +2542,7 @@ int SYSCTRL_GetCLK32k(void);
  * - flash_clk:     SYSCTRL_CLK_SLOW
  */
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_CPU_32k_CLK_EXT = 0,  // External 32k crystal
     SYSCTRL_CPU_32k_CLK_32k = SYSCTRL_CPU_32k_CLK_EXT, // Compatibility alias
     SYSCTRL_CPU_32k_INTERNAL = 1, // Internal 32k RC
@@ -2607,8 +2568,7 @@ void SYSCTRL_SelectCPU32k(SYSCTRL_CPU32kMode mode);
  */
 int SYSCTRL_GetCPU32k(void);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_SLOW_RC_CLK = 0, // RC clock (which is tunable)
     SYSCTRL_SLOW_CLK_24M_RF = 1, // 24MHz RF OSC clock (default)
 } SYSCTRL_SlowClkMode;
@@ -2638,8 +2598,7 @@ uint32_t SYSCTRL_GetSlowClk(void);
  */
 void SYSCTRL_EnablePLL(uint8_t enable);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_SLOW_RC_8M = 1,
     SYSCTRL_SLOW_RC_16M = 2,
     SYSCTRL_SLOW_RC_24M = 3,
@@ -2691,8 +2650,7 @@ void SYSCTRL_TuneSlowRC(uint32_t value);
  */
 void SYSCTRL_EnableClockOutput(uint8_t enable, uint16_t denom);
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_DMA_UART0_RX = 0,
     SYSCTRL_DMA_UART1_RX,
     SYSCTRL_DMA_SPI0_TX,
@@ -2758,8 +2716,7 @@ int SYSCTRL_GetDmaId(SYSCTRL_DMA item);
  *
  * Default: 1.500V. Step: 50mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_LDO_RF_OUTPUT_1V200 = 0, // 1.200V
     SYSCTRL_LDO_RF_OUTPUT_1V250 = 1,
     SYSCTRL_LDO_RF_OUTPUT_1V300 = 2,
@@ -2807,8 +2764,7 @@ typedef enum
  *
  * Default: 1.200V. Step: 1mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V184 = 0, // 1.184V
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V185 = 1,
     SYSCTRL_ADC_VREF_1V2_OUTPUT_1V186 = 2,
@@ -2858,8 +2814,7 @@ typedef enum
  *
  * Default: 1.800V. Step: 100mV
  */
-typedef enum
-{
+typedef enum {
     SYSCTRL_BUCK_DCDC_OUTPUT_1V200 = 0, // 1.2V
     SYSCTRL_BUCK_DCDC_OUTPUT_1V300 = 1,
     SYSCTRL_BUCK_DCDC_OUTPUT_1V400 = 2,
@@ -2953,8 +2908,7 @@ void SYSCTRL_USBPhyConfig(uint8_t enable, uint8_t pull_sel);
 #define SYSCTRL_WAKEUP_SOURCE_LLE           8       // latched LLE timer
 #define SYSCTRL_WAKEUP_SOURCE_TBCU          16      // latched TBCU timer
 
-typedef struct
-{
+typedef struct {
     uint64_t gpio; // if any GPIO (bit n for GPIO #n) has triggered wake up
     uint32_t other; // bit combination of `SYSCTRL_WAKEUP_SOURCE_...`
 } SYSCTRL_WakeupSource_t;
@@ -2982,8 +2936,7 @@ void SYSCTRL_EnableWakeupSourceDetection(void);
  */
 void SYSCTRL_EnablePcapMode(const uint8_t channel_index, uint8_t enable);
 
-typedef enum
-{
+typedef enum {
     // remapppable memory block 1, 16KiB
     // for `mini` and `noos_mini` bundles, this block is mapped to `SYSCTRL_SYS_MEM_BLOCK_2`
     // for other variants,                 this block is mapped to `SYSCTRL_SHARE_MEM_BLOCK_2`
@@ -3027,8 +2980,7 @@ typedef enum
 // this blocks (16 + 8) KiB are reversed in _mini_bundles
 #define SYSCTRL_RESERVED_MEM_BLOCKS (SYSCTRL_SYS_MEM_BLOCK_0 | SYSCTRL_SYS_MEM_BLOCK_1 | SYSCTRL_SHARE_MEM_BLOCK_0)
 
-typedef enum
-{
+typedef enum {
     SYSCTRL_MEM_BLOCK_AS_CACHE = 0,
     SYSCTRL_MEM_BLOCK_AS_SYS_MEM = 1,
 } SYSCTRL_CacheMemCtrl;

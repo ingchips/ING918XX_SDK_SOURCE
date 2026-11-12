@@ -26,10 +26,8 @@ uint32_t ETMR_GetReadReady(ETMR_TypeDef* pTMR)
 
 void ETMR_SetReload(ETMR_TypeDef* pTMR, uint8_t enable)
 {
-    if (enable)
-        ETMR_Update(pTMR, 1u << bsETMR_CTL_RELOAD, 1u << bsETMR_CTL_RELOAD);
-    else
-        ETMR_Update(pTMR, 1u << bsETMR_CTL_RELOAD, 0);
+    if (enable) ETMR_Update(pTMR, 1u << bsETMR_CTL_RELOAD, 1u << bsETMR_CTL_RELOAD);
+    else ETMR_Update(pTMR, 1u << bsETMR_CTL_RELOAD, 0);
 }
 
 //-----------
@@ -42,10 +40,8 @@ void ETMR_SetValue(ETMR_TypeDef* pTMR, uint32_t value)
 
 void ETMR_Cmd(ETMR_TypeDef* pTMR, uint8_t enable)
 {
-    if (enable)
-        ETMR_Update(pTMR, 1u << bsETMR_CTL_TMR_EN, 1u << bsETMR_CTL_TMR_EN);
-    else
-        ETMR_Update(pTMR, 1u << bsETMR_CTL_TMR_EN, 0);
+    if (enable) ETMR_Update(pTMR, 1u << bsETMR_CTL_TMR_EN, 1u << bsETMR_CTL_TMR_EN);
+    else ETMR_Update(pTMR, 1u << bsETMR_CTL_TMR_EN, 0);
 }
 
 void ETMR_SetMode(ETMR_TypeDef* pTMR, uint8_t mode)
@@ -56,10 +52,8 @@ void ETMR_SetMode(ETMR_TypeDef* pTMR, uint8_t mode)
 
 void ETMR_IntCmd(ETMR_TypeDef* pTMR, uint8_t IntIT, uint8_t enable)
 {
-    if (enable)
-        ETMR_Update(pTMR, IntIT & 0x30u, IntIT & 0x30u);
-    else
-        ETMR_Update(pTMR, IntIT & 0x30u, 0);
+    if (enable) ETMR_Update(pTMR, IntIT & 0x30u, IntIT & 0x30u);
+    else ETMR_Update(pTMR, IntIT & 0x30u, 0);
 }
 
 void ETMR_IntClr(ETMR_TypeDef* pTMR, uint8_t IntIT)
@@ -74,18 +68,14 @@ uint8_t ETMR_GetStatus(ETMR_TypeDef* pTMR, uint8_t IntIT)
 
 void ETMR_HaltCmd(ETMR_TypeDef* pTMR, uint8_t enable)
 {
-    if (enable)
-        ETMR_Update(pTMR, 1u << bsETMR_CTL_HALT_EN, 1u << bsETMR_CTL_HALT_EN);
-    else
-        ETMR_Update(pTMR, 1u << bsETMR_CTL_HALT_EN, 0);
+    if (enable) ETMR_Update(pTMR, 1u << bsETMR_CTL_HALT_EN, 1u << bsETMR_CTL_HALT_EN);
+    else ETMR_Update(pTMR, 1u << bsETMR_CTL_HALT_EN, 0);
 }
 
 void ETMR_LockCmd(ETMR_TypeDef* pTMR, uint8_t enable)
 {
-    if (enable)
-        ETMR_Update(pTMR, 1u << bsETMR_CTL_LOCK, 1u << bsETMR_CTL_LOCK);
-    else
-        ETMR_Update(pTMR, 1u << bsETMR_CTL_LOCK, 0);
+    if (enable) ETMR_Update(pTMR, 1u << bsETMR_CTL_LOCK, 1u << bsETMR_CTL_LOCK);
+    else ETMR_Update(pTMR, 1u << bsETMR_CTL_LOCK, 0);
 }
 
 uint8_t ETMR_GetHit(ETMR_TypeDef* pTMR)

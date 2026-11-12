@@ -64,16 +64,14 @@
 #define USBINTMASK_SUSP (0x1 << 11)
 #define USBINTMASK_RESUME (0x1U << 31)
 
-typedef enum
-{
+typedef enum {
   USB_ERROR_NONE = (1 << 1),
   USB_ERROR_INVALID_INPUT = (1 << 2),
   USB_ERROR_INACTIVE_EP = (1 << 3),
   USB_ERROR_REQUEST_NOT_SUPPORT = (1 << 4)
 } USB_ERROR_TYPE_E ;
 
-typedef enum
-{
+typedef enum {
   USB_DEBUG_OPTIONS_NONE                                 = 0<<0,
   USB_DEBUG_OPTIONS_TRANSFER_SIZE                        = 1<<0,
   USB_DEBUG_OPTIONS_IRQ_STATUS                           = 1<<1,
@@ -82,8 +80,7 @@ typedef enum
   USB_DEBUG_OPTIONS_GET_DUMP_REGS                        = 1<<4
 } USB_DEBUG_OPTIONS_E ;
 
-typedef enum
-{
+typedef enum {
   USB_CONTROL_TRANSFER_STAGE_NONE                        = 0<<0,
   USB_CONTROL_TRANSFER_SETUP_STAGE                       = 1<<0,
   USB_CONTROL_TRANSFER_DATA_STAGE_OUT                    = 1<<1,
@@ -97,23 +94,20 @@ typedef enum
   USB_CONTROL_TRANSFER_SETUP_STAGE_PROCESS               = 1<<9
 } USB_CONTROL_TRANSFER_STAGE_E ;
 
-typedef enum
-{
+typedef enum {
   USB_REQUEST_DESTINATION_DEVICE    = 0,
   USB_REQUEST_DESTINATION_INTERFACE = 1,
   USB_REQUEST_DESTINATION_EP        = 2
 } USB_REQUEST_DESTINATION_E ;
 
-typedef enum
-{
+typedef enum {
   USB_REQUEST_TYPE_STANDARD          = 0,
   USB_REQUEST_TYPE_CLASS             = 1,
   USB_REQUEST_TYPE_VENDOR            = 2,
   USB_REQUEST_TYPE_RESERVED          = 3
 } USB_REQUEST_TYPE_E ;
 
-typedef enum
-{
+typedef enum {
   USB_REQUEST_DEVICE_GET_STATUS = 0x00,
   USB_REQUEST_DEVICE_CLEAR_FEATURE = 0x01,
   USB_REQUEST_DEVICE_SET_FEATURE = 0x03,
@@ -130,8 +124,7 @@ typedef enum
 #define USB_FEATURE_ENDPOINT_STALL             0
 #define USB_FEATURE_REMOTE_WAKEUP              1
 
-typedef enum
-{
+typedef enum {
   USB_REQUEST_DEVICE_DESCRIPTOR_DEVICE = 0x01,
   USB_REQUEST_DEVICE_DESCRIPTOR_CONFIGURATION = 0x02,
   USB_REQUEST_DEVICE_DESCRIPTOR_STRING = 0x03,
@@ -142,15 +135,13 @@ typedef enum
   USB_REQUEST_DEVICE_DESCRIPTOR_INTERFACE_POWER = 0x08
 } USB_REQUEST_DEVICE_DESCRIPTOR_TYPES_E ;
 
-typedef struct
-{
+typedef struct {
     uint8_t  Recipient      :5;
     uint8_t  Type           :2;
     uint8_t  Direction:1;
 } USB_SETUP_REQUEST_DESC_T;
 
-typedef struct
-{
+typedef struct {
     USB_SETUP_REQUEST_DESC_T    bmRequestType;
     uint8_t                         bRequest;
     uint16_t                        wValue;
@@ -162,8 +153,7 @@ typedef struct
 // =============================================================================
 /// Device descriptor structure
 // =============================================================================
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t  size;
     uint8_t  type;
     uint16_t bcdUsb;
@@ -183,8 +173,7 @@ typedef struct __attribute__((packed))
 // =============================================================================
 /// Config descriptor structure
 // =============================================================================
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t  size;
     uint8_t  type;
     uint16_t totalLength;
@@ -198,8 +187,7 @@ typedef struct __attribute__((packed))
 // =============================================================================
 /// Interface descriptor structure
 // =============================================================================
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t  size;
     uint8_t  type;
     uint8_t  interfaceIndex;
@@ -214,8 +202,7 @@ typedef struct __attribute__((packed))
 // =============================================================================
 /// Ep descriptor structure
 // =============================================================================
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t  size;
     uint8_t  type;
     uint8_t  ep;
@@ -236,8 +223,7 @@ typedef enum {
 // =============================================================================
 /// Type of callback
 // =============================================================================
-typedef enum
-{
+typedef enum {
     /// Event send when a receive transfert is finish
     USB_CALLBACK_TYPE_RECEIVE_END,
     /// Event send when a transmit transfert is finish
@@ -264,16 +250,14 @@ typedef USB_CALLBACK_RETURN_T
 // ============================================================================
 /// EndPoint type
 // =============================================================================
-typedef enum
-{
+typedef enum {
     USB_EP_TYPE_CONTROL                     = 0x00000000,
     USB_EP_TYPE_ISO                         = 0x00000001,
     USB_EP_TYPE_BULK                        = 0x00000002,
     USB_EP_TYPE_INTERRUPT                   = 0x00000003
 } USB_EP_TYPE_T;
 
-typedef enum
-{
+typedef enum {
   USB_DEVICE_NONE,
   /* A USB device may be attached or detached from the USB */
   USB_DEVICE_ATTACHED,
@@ -292,8 +276,7 @@ typedef enum
   USB_DEVICE_TEST_RESET_DONE
 }USB_DEVICE_STATE_E;
 
-typedef enum
-{
+typedef enum {
   EP0_DISCONNECT,
   EP0_IDLE,
   EP0_IN_DATA_PHASE,
@@ -303,8 +286,7 @@ typedef enum
   EP0_STALL,
 }USB_EP0_STATE_E ;
 
-typedef enum
-{
+typedef enum {
   USB_EVENT_EP0_SETUP,
   USB_EVENT_EP_DATA_TRANSFER,
   USB_EVENT_DEVICE_RESET,
@@ -313,23 +295,20 @@ typedef enum
   USB_EVENT_DEVICE_RESUME
 }USB_EVNET_TYPE_E ;
 
-typedef struct
-{
+typedef struct {
   uint8_t  ep;
   USB_CALLBACK_EP_TYPE_T type;
   uint32_t size;
 }USB_EVNET_DATA_TYPE_T ;
 
-typedef struct
-{
+typedef struct {
   USB_EVNET_TYPE_E id;
   USB_EVNET_DATA_TYPE_T data;
 }USB_EVNET_HANDLER_T ;
 
 typedef uint32_t (*USB_USER_EVENT_HANDLER)(USB_EVNET_HANDLER_T *);
 
-typedef struct
-{
+typedef struct {
   uint32_t intmask;//use "USBINTMASK_xx" to open extra interrupt
   /** Thresholding enable flags and length varaiables, only valid for isochronous transfer **/
   uint16_t rx_thr_en;
@@ -346,15 +325,13 @@ typedef struct
 /// Structure containt the transfert parameter
 // =============================================================================
 
-typedef enum
-{
+typedef enum {
   USB_TRANSFERT_FLAG_NONE,
   USB_TRANSFERT_FLAG_FLEXIBLE_RECV_LEN,
   USB_TRANSFERT_FLAG_SEND_ZERO_PKT,
 } USB_TRANSFERT_FLAGS_E;
 
-typedef struct
-{
+typedef struct {
     int32_t  sizeRemaining;
     int32_t  sizeTransfered;
     int32_t  sizeTotalLen;
@@ -362,23 +339,22 @@ typedef struct
 } USB_TRANSFERT_T;
 
 typedef struct {
-  /** EP number used for register address lookup */
-  uint8_t num;
-  /** EP direction 0 = OUT */
-  uint32_t is_in:1;
-  /** EP active. */
-  uint32_t active:1;
-  uint32_t type:2;
-  /** Max Packet bytes */
-  uint32_t maxpacket:11;
+    /** EP number used for register address lookup */
+    uint8_t num;
+    /** EP direction 0 = OUT */
+    uint32_t is_in : 1;
+    /** EP active. */
+    uint32_t active : 1;
+    uint32_t type : 2;
+    /** Max Packet bytes */
+    uint32_t maxpacket : 11;
 
-  /** stall clear flag */
-  uint32_t stall_clear_flag:1;
-  uint32_t unused:16;
+    /** stall clear flag */
+    uint32_t stall_clear_flag : 1;
+    uint32_t unused : 16;
 } USB_VAR_EP_T;
 
-typedef struct
-{
+typedef struct {
   USB_DEVICE_STATE_E               DeviceState;
   USB_EP0_STATE_E                  Ep0State;
 

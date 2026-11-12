@@ -58,8 +58,7 @@ typedef enum {
  * - ASDM_AgcMusic:    Optimized for music playback (adjusts AGC params + HPF)
  * - ASDM_AgcCustom:   Manual mode (user must provide AGC params + HPF settings)
  */
-typedef enum
-{
+typedef enum {
     ASDM_AgcOff = 0,
     ASDM_AgcVoice,
     ASDM_AgcMusic,
@@ -73,8 +72,7 @@ typedef enum
  * - ASDM_AMIC: Analog microphone input mode (uses analog ADC path)
  * - ASDM_PDM:  Digital microphone input mode (uses PDM data and clock interface)
  */
-typedef enum
-{
+typedef enum {
     ASDM_AMIC = 0,
     ASDM_PDM,
 } ASDM_Mode;
@@ -86,8 +84,7 @@ typedef enum
  * - ASDM_DIFF_MODE:   Differential input mode (uses positive and negative differential signals)
  * - ASDM_SINGLE_MODE: Single-ended input mode (uses single signal line relative to ground)
  */
-typedef enum
-{
+typedef enum {
     ASDM_DIFF_MODE = 0,
     ASDM_SINGLE_MODE,
 } ASDM_AnalogModeTypeDef;
@@ -117,8 +114,7 @@ typedef enum
  *                  unit is ms, range is 1 ~ 4096 ms
  * Agc_PgaGate: width [0:5] Configures the PGA gate of the AGC.
  */
-typedef struct
-{
+typedef struct {
     uint8_t Agc_MaxLevel;
     uint8_t Agc_NoiseThreshold;
     uint8_t Agc_NoiseEn;
@@ -174,8 +170,7 @@ typedef struct
  * FifoIntMask:     Configures the FIFO interrupt mask bitfield.
  *                  Enumeration value is defined in `ASDM_FifoMask`.
  */
-typedef struct
-{
+typedef struct {
     uint32_t volume;
     ASDM_Mode Asdm_Mode;
     ASDM_SampleRate Sample_rate;

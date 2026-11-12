@@ -23,8 +23,7 @@ extern "C" {
 
 /** \brief  Structure type to access the ADC
  */
-typedef struct
-{
+typedef struct {
     volatile uint32_t ctrl0;
     volatile uint32_t ctrl1;
     volatile uint32_t ctrl2;
@@ -34,8 +33,7 @@ typedef struct
 
 /** \brief  Structure type to access the ADC power control
  */
-typedef struct
-{
+typedef struct {
     volatile uint32_t pon;
     volatile uint32_t act;
 }  ADC_Pwr_Ctrl_Type;
@@ -135,39 +133,33 @@ typedef enum {
     SADC_INT        = 0x34,
 } SADC_adcReg;
 
-typedef struct
-{
+typedef struct {
     float k;
     float b;
 } ADC_LinearCalib_t;
 
-typedef struct
-{
+typedef struct {
     float k;
     float b;
 } ADC_VBatCalib_t;
 
-typedef struct
-{
+typedef struct {
     ADC_LinearCalib_t ch0_8_int_ref[9];
     ADC_LinearCalib_t ch0_8_vbat_ref[9];
     ADC_VBatCalib_t ch9_vbat;
 } ADC_CalibrationData_t;
 
-typedef struct
-{
+typedef struct {
     float vref_P;
     float vref_N;
     float (*cb)(const uint16_t);
 } SADC_adcCal_t;
 
-typedef struct
-{
+typedef struct {
     uint32_t k;
     uint32_t Coseq;
 } SADC_ftChPara_t;
-typedef struct
-{
+typedef struct {
     uint32_t Vp;
     uint16_t V12Data;
     uint16_t (*f)(const SADC_ftChPara_t *, const uint32_t);
@@ -508,8 +500,7 @@ typedef enum {
     CALIBRATION_MODE,
 } SADC_adcMode;
 
-typedef enum
-{
+typedef enum {
     VREF_IN_MODE,
     VREF_LDO33_MODE,
     VREF_OUT_MODE,

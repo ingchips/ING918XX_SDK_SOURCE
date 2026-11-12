@@ -320,8 +320,7 @@ uint8_t QDEC_GetDMAChAB(QDEC_CHX Channel);
 
 #elif   (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 
-typedef enum
-{
+typedef enum {
     QDEC_CH_CTRL = 0x00,
     QDEC_CH_MODE = 0x04,
     QDEC_CH_WRITE_A = 0x14,
@@ -334,8 +333,7 @@ typedef enum
     QDEC_STATUS_SEL = 0xd4,
 } QDEC_qdecReg;
 
-typedef enum
-{
+typedef enum {
     QDEC_DIV_4 = 0x0,
     QDEC_DIV_16 = 0x1,
     QDEC_DIV_64 = 0x2,
@@ -346,23 +344,20 @@ typedef enum
     QDEC_DIV_65536 = 0x7,
 } QDEC_indexCfg;
 
-typedef enum
-{
+typedef enum {
     QDEC_TIMER = 0,
     QDEC_PWM,
     QDEC_PCM,
     QDEC_QDEC,
 } QDEC_ModuCfg;
 
-typedef enum
-{
+typedef enum {
     QDEC_CH0 = 0,
     QDEC_CH1,
     QDEC_CH2,
 } QDEC_CHX;
 
-typedef enum
-{
+typedef enum {
     QDEC_EX_NO_TRIG = 0,
     QDEC_EX_RISING_EDGE,
     QDEC_EX_FALLING_EDGE,
@@ -370,8 +365,7 @@ typedef enum
 } QDEC_ExTrigger;
 
 
-typedef enum
-{
+typedef enum {
     QDEC_INT_COVFS_CMB_STATE = 1 << 0,
     QDEC_INT_LOVFS_CMB_STATE = 1 << 1,
     QDEC_INT_CPAS_CMB_STATE = 1 << 2,
@@ -385,28 +379,24 @@ typedef enum
 } QDEC_IntState;
 
 
-typedef enum
-{
+typedef enum {
     QDEC_TMR_RELOAD = 0,
     QDEC_TMR_STOP,
 } QDEC_TMR_UP_MODE;
 
-typedef enum
-{
+typedef enum {
     QDEC_TMR_RELOAD_UP_FULL = 0,
     QDEC_TMR_RELOAD_UP_VALE,
 } QDEC_TMR_RELOAD_MODE;
 
-typedef enum
-{
+typedef enum {
     QDEC_CHX_ACPA = 0,
     QDEC_CHX_ACPC,
     QDEC_CHX_BCPB,
     QDEC_CHX_BCPC,
 } QDEC_OUTX_Config;
 
-typedef enum
-{
+typedef enum {
     LPQDEC_INT_WKUP_QDEC = 1 << 0,
     LPQDEC_INT_DIR_CHANGE = 1 << 1,
     LPQDEC_INT_MISS_EDGE_OVERFLOW = 1 << 2,
@@ -414,8 +404,7 @@ typedef enum
     LPQDEC_INT_ERROR = 1 << 4,
 }LPQDEC_IntMask;
 
-typedef enum
-{
+typedef enum {
     LPQDEC_INT_RAW_WKUP_QDEC = 1 << 0,
     LPQDEC_INT_RAW_DIR_CHANGE = 1 << 1,
     LPQDEC_INT_RAW_MISS_EDGE_OVERFLOW = 1 << 2,
@@ -429,8 +418,7 @@ typedef enum
     LPQDEC_INT_ERROR_PCLK = 1 << 10,
 }LPQDEC_IntStatus;
 
-typedef enum
-{
+typedef enum {
     LPQDEC_FLAG_WEAKUP = 1<<10,
     LPQDEC_FLAG_DIR_CHANGE = 1<<11,
     LPQDEC_FLAG_MISS_EDGE_OVERFLOW = 1<<12,
@@ -438,8 +426,7 @@ typedef enum
     LPQDEC_FLAG_ERROR = 1<<26,
 }LPQDEC_IntRaw;
 
-typedef enum
-{
+typedef enum {
     LPQDEC_EDGE_PHA = 0,
     LPQDEC_EDGE_BOTH,
 }LPQDEC_ExTrigger;

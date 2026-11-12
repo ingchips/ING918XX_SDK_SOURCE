@@ -45,29 +45,27 @@ static void QDEC_SetRegBit(volatile uint32_t *reg, uint8_t v, uint8_t bit_offset
 
 void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)
 {
-    switch (ModeCfg)
-
-    {
-    case QDEC_TIMER:
-        QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15);
-        QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);
-        QDEC_SetExternalTrigger(Channel,1);
-        break;
-    case QDEC_PWM:
-        QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15);
-        QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);
-        QDEC_SetExternalTrigger(Channel,1);
-        break;
-    case QDEC_PCM:
-        QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 0, 15);
-        QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);
-        break;
-    case QDEC_QDEC:
-        QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 0, 15);
-        QDEC_SetRegBit(&APB_QDEC->bmr, 1, 8);
-        break;
-    default:
-        break;
+    switch (ModeCfg) {
+        case QDEC_TIMER:
+            QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15);
+            QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);
+            QDEC_SetExternalTrigger(Channel, 1);
+            break;
+        case QDEC_PWM:
+            QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15);
+            QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);
+            QDEC_SetExternalTrigger(Channel, 1);
+            break;
+        case QDEC_PCM:
+            QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 0, 15);
+            QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);
+            break;
+        case QDEC_QDEC:
+            QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 0, 15);
+            QDEC_SetRegBit(&APB_QDEC->bmr, 1, 8);
+            break;
+        default:
+            break;
     }
 }
 
@@ -97,8 +95,7 @@ void QDEC_ExternalEventEdgeSet(QDEC_CHX Channel, QDEC_ExTrigger edge)
 void QDEC_SetOutxEdge(QDEC_CHX Channel,QDEC_OUTX_Config OutxChannal, QDEC_ExTrigger edge)
 {
     uint8_t offset;
-    switch (OutxChannal)
-    {
+    switch (OutxChannal) {
         case QDEC_CHX_ACPA:
             offset = 16;
         break;
@@ -145,10 +142,8 @@ void QDEC_SetCHxTmrCntC(QDEC_CHX Channel, uint16_t val)
 
 void QDEC_SetChxIntEn(QDEC_CHX Channel, uint8_t enable, uint16_t items)
 {
-    if(enable)
-        APB_QDEC->channels[Channel].channel_int_en = items;
-    else
-        APB_QDEC->channels[Channel].channel_int_dis = items;
+    if (enable) APB_QDEC->channels[Channel].channel_int_en = items;
+    else APB_QDEC->channels[Channel].channel_int_dis = items;
 }
 
 uint8_t QDEC_GetQdecModeEn(void)
@@ -172,10 +167,8 @@ uint32_t QDEC_GetChxReadRab(QDEC_CHX Channel)
 }
 void QDEC_EnableChannel(QDEC_CHX Channel, uint8_t enable)
 {
-    if(enable)
-        QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_ctrl, 5, 3, 0);
-    else
-        QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_ctrl, 3, 2, 1);
+    if (enable) QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_ctrl, 5, 3, 0);
+    else QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_ctrl, 3, 2, 1);
 }
 
 void QDEC_EnableDMAChAB(QDEC_CHX Channel, uint8_t enable_a,uint8_t enable_b)
@@ -245,10 +238,8 @@ void QDEC_Reset(void)
 
 void QDEC_ChannelEnable(uint8_t enable)
 {
-    if (enable)
-        QDEC_RegWrBits(QDEC_CH_CTRL, 5, 0, 3);
-    else
-        QDEC_RegClr(QDEC_CH_CTRL, 0, 3);
+    if (enable) QDEC_RegWrBits(QDEC_CH_CTRL, 5, 0, 3);
+    else QDEC_RegClr(QDEC_CH_CTRL, 0, 3);
 }
 
 void QDEC_IntClear(void)
@@ -263,8 +254,7 @@ __IO uint32_t nop_vale = NOP_NUME;
 
 void Qdec_Nop(__IO uint32_t vale)
 {
-    while(vale--)
-    {
+    while (vale--) {
         __NOP();
     }
 }
@@ -323,25 +313,23 @@ void QDEC_SetEtrg(QDEC_CHX Channel, uint8_t val)
 
 void QDEC_ChModeCfg(QDEC_CHX Channel, QDEC_ModCfg ModeCfg)
 {
-    switch (ModeCfg)
-
-    {
-    case QDEC_TIMER:
-    case QDEC_PWM:
-        QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15);//Wave
-        QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);//QdecEn
-        QDEC_SetEtrg(Channel,1);//must use,becaues b cant get
-        break;
-    case QDEC_PCM:
-        QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 0, 15);//Wave
-        QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);//QdecEn
-        break;
-    case QDEC_QDEC:
-        QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 0, 15);//Wave
-        QDEC_SetRegBit(&APB_QDEC->bmr, 1, 8);//QdecEn
-        break;
-    default:
-        break;
+    switch (ModeCfg) {
+        case QDEC_TIMER:
+        case QDEC_PWM:
+            QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 1, 15); //Wave
+            QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);                             //QdecEn
+            QDEC_SetEtrg(Channel, 1);                                         //must use,becaues b cant get
+            break;
+        case QDEC_PCM:
+            QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 0, 15); //Wave
+            QDEC_SetRegBit(&APB_QDEC->bmr, 0, 8);                             //QdecEn
+            break;
+        case QDEC_QDEC:
+            QDEC_SetRegBit(&APB_QDEC->channels[Channel].channel_mode, 0, 15); //Wave
+            QDEC_SetRegBit(&APB_QDEC->bmr, 1, 8);                             //QdecEn
+            break;
+        default:
+            break;
     }
 }
 
@@ -371,8 +359,7 @@ void QDEC_ExternalEventEdgeSet(QDEC_CHX Channel, QDEC_ExTrigger edge)
 void QDEC_SetOutxEdge(QDEC_CHX Channel,QDEC_OUTX_Config OutxChannal, QDEC_ExTrigger edge)
 {
     uint8_t offset;
-    switch (OutxChannal)
-    {
+    switch (OutxChannal) {
         case QDEC_CHX_ACPA:
             offset = 16;
         break;
@@ -436,11 +423,8 @@ void QDEC_SetExternalTriggerEn(QDEC_CHX Channel, uint8_t enable)
 
 void QDEC_SetChxIntEn(QDEC_CHX Channel, uint8_t enable, uint16_t items)
 {
-
-    if(enable)
-        APB_QDEC->channels[Channel].channel_int_en = items;
-    else
-        APB_QDEC->channels[Channel].channel_int_dis = items;
+    if (enable) APB_QDEC->channels[Channel].channel_int_en = items;
+    else APB_QDEC->channels[Channel].channel_int_dis = items;
 }
 
 uint8_t QDEC_GetQdecModeEn(void)
@@ -464,10 +448,8 @@ uint32_t QDEC_GetChxReadRab(QDEC_CHX Channel)
 }
 void QDEC_EnableChannel(QDEC_CHX Channel, uint8_t enable)
 {
-    if(enable)
-        QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_ctrl, 5, 3, 0);
-    else
-        QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_ctrl, 3, 2, 1);
+    if (enable) QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_ctrl, 5, 3, 0);
+    else QDEC_SetRegBits(&APB_QDEC->channels[Channel].channel_ctrl, 3, 2, 1);
 }
 
 void QDEC_EnableDMAChAB(QDEC_CHX Channel, uint8_t enable_a,uint8_t enable_b)
@@ -527,10 +509,8 @@ void QDEC_Reset(void)
 
 void QDEC_ChannelEnable(uint8_t enable)
 {
-    if (enable)
-        QDEC_SetRegBits(&APB_QDEC->channels[0].channel_ctrl, 5, 3, 0);
-    else
-        QDEC_ClrRegBits(&APB_QDEC->channels[0].channel_ctrl, 3, 0);
+    if (enable) QDEC_SetRegBits(&APB_QDEC->channels[0].channel_ctrl, 5, 3, 0);
+    else QDEC_ClrRegBits(&APB_QDEC->channels[0].channel_ctrl, 3, 0);
 }
 
 void QDEC_IntClear(void)
@@ -545,8 +525,7 @@ __IO uint32_t nop_vale = NOP_NUME;
 
 void Qdec_Nop(uint32_t vale)
 {
-    while (vale--)
-    {
+    while (vale--) {
         __NOP();
     }
 }
@@ -601,29 +580,27 @@ static void QDEC_SetRegBit(volatile uint32_t* reg, uint8_t v, uint8_t bit_offset
 
 void QDEC_ChModeCfg(QDEC_TypeDef* reg, QDEC_CHX Channel, QDEC_ModuCfg ModeCfg)
 {
-    switch (ModeCfg)
-
-    {
-    case QDEC_TIMER:
-        //        *(uint32_t*)0x040009004UL |= (1<<15);
-        QDEC_SetRegBit(&reg->channels[Channel].channel_mode, 1, 15); //Wave
-        QDEC_SetRegBit(&reg->bmr, 0, 8); //Qdec        break;
-        QDEC_SetEtrg(reg, Channel, 1); //must use,becaues b cant get
-    case QDEC_PWM:
-        QDEC_SetRegBit(&reg->channels[Channel].channel_mode, 1, 15); //Wave
-        QDEC_SetRegBit(&reg->bmr, 0, 8); //QdecEn
-        QDEC_SetEtrg(reg, Channel, 1); //must use,becaues b cant get
-        break;
-    case QDEC_PCM:
-        QDEC_SetRegBit(&reg->channels[Channel].channel_mode, 0, 15); //Wave
-        QDEC_SetRegBit(&reg->bmr, 0, 8); //QdecEn
-        break;
-    case QDEC_QDEC:
-        QDEC_SetRegBit(&reg->channels[Channel].channel_mode, 0, 15); //Wave
-        QDEC_SetRegBit(&reg->bmr, 1, 8); //QdecEn
-        break;
-    default:
-        break;
+    switch (ModeCfg) {
+        case QDEC_TIMER:
+            //        *(uint32_t*)0x040009004UL |= (1<<15);
+            QDEC_SetRegBit(&reg->channels[Channel].channel_mode, 1, 15); //Wave
+            QDEC_SetRegBit(&reg->bmr, 0, 8);                             //Qdec        break;
+            QDEC_SetEtrg(reg, Channel, 1);                               //must use,becaues b cant get
+        case QDEC_PWM:
+            QDEC_SetRegBit(&reg->channels[Channel].channel_mode, 1, 15); //Wave
+            QDEC_SetRegBit(&reg->bmr, 0, 8);                             //QdecEn
+            QDEC_SetEtrg(reg, Channel, 1);                               //must use,becaues b cant get
+            break;
+        case QDEC_PCM:
+            QDEC_SetRegBit(&reg->channels[Channel].channel_mode, 0, 15); //Wave
+            QDEC_SetRegBit(&reg->bmr, 0, 8);                             //QdecEn
+            break;
+        case QDEC_QDEC:
+            QDEC_SetRegBit(&reg->channels[Channel].channel_mode, 0, 15); //Wave
+            QDEC_SetRegBit(&reg->bmr, 1, 8);                             //QdecEn
+            break;
+        default:
+            break;
     }
 }
 
@@ -652,22 +629,21 @@ void QDEC_ExternalEventEdgeSet(QDEC_TypeDef* reg, QDEC_CHX Channel, QDEC_ExTrigg
 void QDEC_SetOutxEdge(QDEC_TypeDef* reg, QDEC_CHX Channel, QDEC_OUTX_Config OutxChannal, QDEC_ExTrigger edge)
 {
     uint8_t offset;
-    switch (OutxChannal)
-    {
-    case QDEC_CHX_ACPA:
-        offset = 16;
-        break;
-    case QDEC_CHX_ACPC:
-        offset = 18;
-        break;
-    case QDEC_CHX_BCPB:
-        offset = 24;
-        break;
-    case QDEC_CHX_BCPC:
-        offset = 26;
-        break;
-    default:
-        return;
+    switch (OutxChannal) {
+        case QDEC_CHX_ACPA:
+            offset = 16;
+            break;
+        case QDEC_CHX_ACPC:
+            offset = 18;
+            break;
+        case QDEC_CHX_BCPB:
+            offset = 24;
+            break;
+        case QDEC_CHX_BCPC:
+            offset = 26;
+            break;
+        default:
+            return;
     }
     QDEC_SetRegBits(&reg->channels[Channel].channel_mode, (uint8_t)edge, 2, offset);
 }
@@ -702,10 +678,8 @@ void QDEC_SetCHxTmrCntC(QDEC_TypeDef* reg, QDEC_CHX Channel, uint16_t val)
 
 void QDEC_SetChxIntEn(QDEC_TypeDef* reg, QDEC_CHX Channel, uint8_t enable, uint16_t items)
 {
-    if (enable)
-        reg->channels[Channel].channel_int_en = items;
-    else
-        reg->channels[Channel].channel_int_dis = items;
+    if (enable) reg->channels[Channel].channel_int_en = items;
+    else reg->channels[Channel].channel_int_dis = items;
 }
 
 uint8_t QDEC_GetQdecModeEn(QDEC_TypeDef* reg)
@@ -730,10 +704,8 @@ uint32_t QDEC_GetChxReadRab(QDEC_TypeDef* reg, QDEC_CHX Channel)
 
 void QDEC_EnableChannel(QDEC_TypeDef* reg, QDEC_CHX Channel, uint8_t enable)
 {
-    if (enable)
-        QDEC_SetRegBits(&reg->channels[Channel].channel_ctrl, 5, 3, 0);
-    else
-        QDEC_SetRegBits(&reg->channels[Channel].channel_ctrl, 3, 2, 1);
+    if (enable) QDEC_SetRegBits(&reg->channels[Channel].channel_ctrl, 5, 3, 0);
+    else QDEC_SetRegBits(&reg->channels[Channel].channel_ctrl, 3, 2, 1);
 }
 
 void QDEC_EnableDMAChAB(QDEC_TypeDef* reg, QDEC_CHX Channel, uint8_t enable_a, uint8_t enable_b)
@@ -793,10 +765,8 @@ void QDEC_Reset(QDEC_TypeDef* reg)
 
 void QDEC_ChannelEnable(QDEC_TypeDef* reg, uint8_t enable)
 {
-    if (enable)
-        QDEC_SetRegBits(&reg->channels[0].channel_ctrl, 5, 3, 0);
-    else
-        QDEC_ClrRegBits(&reg->channels[0].channel_ctrl, 3, 0);
+    if (enable) QDEC_SetRegBits(&reg->channels[0].channel_ctrl, 5, 3, 0);
+    else QDEC_ClrRegBits(&reg->channels[0].channel_ctrl, 3, 0);
 }
 
 void QDEC_IntClear(QDEC_TypeDef* reg)
@@ -811,21 +781,16 @@ void LPQDEC_QdecConfig(LPQDEC_TypeDef* reg, uint8_t fliter, uint8_t miss)
 
 void LPQDEC_EnableDma(LPQDEC_TypeDef* reg, uint8_t enable)
 {
-    if (enable)
-        reg->Config |= 1 << 9;
-    else
-        reg->Config &= ~(1 << 9);
+    if (enable) reg->Config |= 1 << 9;
+    else reg->Config &= ~(1 << 9);
 }
 
 void LPQDEC_EnableFiler(LPQDEC_TypeDef* reg, uint8_t enable, uint8_t filer)
 {
-    if (enable)
-    {
+    if (enable) {
         reg->Config &= ~(0xf<<3);
         reg->Config |= (filer << 4) | (1 << 3);
-    }
-    else
-    {
+    } else {
         reg->Config &= ~(0xf<<3);
     }
 }
@@ -838,18 +803,14 @@ void LPQDEC_SetMiss(LPQDEC_TypeDef* reg, uint8_t miss)
 
 void LPQDEC_EnableInt(LPQDEC_TypeDef* reg, LPQDEC_IntRaw IntEn, uint8_t enable)
 {
-    if (enable)
-        reg->Config |= IntEn;
-    else
-        reg->Config &= ~IntEn;
+    if (enable) reg->Config |= IntEn;
+    else reg->Config &= ~IntEn;
 }
 
 void LPQDEC_EnableQdec(LPQDEC_TypeDef* reg, uint8_t enable)
 {
-    if (enable)
-        reg->Config |= 1 << 14;
-    else
-        reg->Config &= ~(1 << 14);
+    if (enable) reg->Config |= 1 << 14;
+    else reg->Config &= ~(1 << 14);
 }
 
 void LPQDEC_ClrQdec(LPQDEC_TypeDef* reg)
@@ -859,10 +820,8 @@ void LPQDEC_ClrQdec(LPQDEC_TypeDef* reg)
 
 void LPQDEC_SetCountMode(LPQDEC_TypeDef* reg, LPQDEC_ExTrigger mode)
 {
-    if (mode)
-        reg->Config |= 1 << 16;
-    else
-        reg->Config &= ~(1 << 16);
+    if (mode) reg->Config |= 1 << 16;
+    else reg->Config &= ~(1 << 16);
 }
 
 void LPQDEC_IndexDiv(LPQDEC_TypeDef* reg, uint8_t div)

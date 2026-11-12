@@ -27,8 +27,7 @@ void PTE_SetChannelIntMask(SYSCTRL_PTE_CHANNEL_ID ch, uint32_t options)
     uint32_t *m;
     uint32_t Cm;
 
-    if (options)
-        APB_PTE->Channels[ch].IntMask = 1;
+    if (options) APB_PTE->Channels[ch].IntMask = 1;
     else {
         m = (uint32_t *)&(APB_PTE->Channels[ch]);
         Cm = PTE_MAKE_CHANNEL_INT_MASK_OPTION(!options);
@@ -94,8 +93,7 @@ int PTE_ConnectPeripheral(SYSCTRL_PTE_CHANNEL_ID ch,
 #define PTE_LAST_CHANNEL PTE_CHANNEL_15
 #define PTE_INDEX(value) value
 #endif
-typedef struct
-{
+typedef struct {
     uint16_t task_offset;
     uint16_t sub_task_offset;
     uint16_t event_offset;
@@ -142,26 +140,18 @@ uint8_t PTE_ConfigTask(PTE_Module module, PTE_Task Task, PTE_Channel SetTaskChan
 #endif
         return 1;
 
-    if (PTE_ASDM_MODULE == module)
-    {
-        if (PTE_TASK_ASDM_RX_START == Task)
-            reg = &APB_PTE_BUS->PTE_ASDM.reg_sub_task0;
+    if (PTE_ASDM_MODULE == module) {
+        if (PTE_TASK_ASDM_RX_START == Task) reg = &APB_PTE_BUS->PTE_ASDM.reg_sub_task0;
         else if (PTE_TASK_ASDM_RX_STOP == Task)
             reg = &APB_PTE_BUS->PTE_ASDM.reg_sub_task1;
-        else
-            return 1;
-    }
-    else
-    {
+        else return 1;
+    } else {
         if (PTE_INDEX(Task) < reg_Table[module].task_size)
             reg = (volatile uint32_t *)(APB_PTE_BUS_BASE + reg_Table[(uint8_t)module].sub_task_offset + (uint8_t)Task * 4);
-        else
-            return 1;
+        else return 1;
     }
-    if (enable)
-        *reg = SetTaskChannel | (1ul<<31);
-    else
-        *reg = SetTaskChannel;
+    if (enable) *reg = SetTaskChannel | (1ul<<31);
+    else *reg = SetTaskChannel;
 
     return 0;
 }
@@ -177,24 +167,16 @@ uint8_t PTE_ConfigEvent(PTE_Module module, PTE_Event Event, PTE_Channel SetEvent
 #endif
         return 1;
 
-    if (PTE_ASDM_MODULE == module)
-    {
-        if (PTE_EVENT_ASDM_RX_DATA == Event)
-            reg = &APB_PTE_BUS->PTE_ASDM.reg_pub_event0;
-        else
-            return 1;
-    }
-    else
-    {
+    if (PTE_ASDM_MODULE == module) {
+        if (PTE_EVENT_ASDM_RX_DATA == Event) reg = &APB_PTE_BUS->PTE_ASDM.reg_pub_event0;
+        else return 1;
+    } else {
         if (PTE_INDEX(Event) < reg_Table[module].event_size)
             reg = (volatile uint32_t *)(APB_PTE_BUS_BASE + reg_Table[(uint8_t)module].event_offset + ((uint8_t)Event + 1) * 4);
-        else
-            return 1;
+        else return 1;
     }
-    if (enable)
-        *reg = SetEventChannel | (1ul<<31);
-    else
-        *reg = SetEventChannel;
+    if (enable) *reg = SetEventChannel | (1ul<<31);
+    else *reg = SetEventChannel;
 
     return 0;
 }
@@ -202,23 +184,17 @@ uint8_t PTE_ConfigEvent(PTE_Module module, PTE_Event Event, PTE_Channel SetEvent
 uint8_t PTE_TriggerTask(PTE_Module module, PTE_Task Task)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
-    if ((unsigned int)module >= sizeof(reg_Table)/sizeof(reg_Table[0])) return 1;
+    if ((unsigned int)module >= sizeof(reg_Table) / sizeof(reg_Table[0])) return 1;
 #endif
-    if (module == PTE_ASDM_MODULE)
-    {
-        if (PTE_TASK_ASDM_RX_START == Task)
-            APB_PTE_BUS->PTE_ASDM.reg_task0 = 1;
+    if (module == PTE_ASDM_MODULE) {
+        if (PTE_TASK_ASDM_RX_START == Task) APB_PTE_BUS->PTE_ASDM.reg_task0 = 1;
         else if (PTE_TASK_ASDM_RX_STOP == Task)
             APB_PTE_BUS->PTE_ASDM.reg_task1 = 1;
-        else
-            return 1;
-    }
-    else
-    {
+        else return 1;
+    } else {
         if (PTE_INDEX(Task) < reg_Table[module].task_size)
             *(volatile uint32_t *)(APB_PTE_BUS_BASE + reg_Table[(uint8_t)module].task_offset + (uint8_t)Task * 4) = 1;
-        else
-            return 1;
+        else return 1;
     }
     return 0;
 }

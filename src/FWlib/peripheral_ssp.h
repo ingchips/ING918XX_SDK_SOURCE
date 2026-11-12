@@ -14,8 +14,7 @@ extern "C" {	/* allow C++ to use these headers */
  * Description:
  * This specifies the frame format options
  */
-typedef enum apSSP_xFrameFormat
-{
+typedef enum apSSP_xFrameFormat {
     apSSP_FRAMEFORMAT_MOTOROLASPI       = 0x0,       /* Motorola SPI frame format */
     apSSP_FRAMEFORMAT_TISYNCHRONOUS     = 0x1,       /* TI synchronous serial frame format */
     apSSP_FRAMEFORMAT_NATIONALMICROWIRE = 0x2        /* National Microwire frame format */
@@ -25,8 +24,7 @@ typedef enum apSSP_xFrameFormat
  * Description:
  * This specifies the data size select options
  */
-typedef enum apSSP_xDataSize
-{
+typedef enum apSSP_xDataSize {
     apSSP_DATASIZE_4BITS  = 0x3,     /*  4 bit data */
     apSSP_DATASIZE_5BITS  = 0x4,     /*  5 bit data */
     apSSP_DATASIZE_6BITS  = 0x5,     /*  6 bit data */
@@ -47,8 +45,7 @@ typedef enum apSSP_xDataSize
  * This specifies the SCLK phase options. It is only applicable to
  * Motorola SPI frame format.
  */
-typedef enum apSSP_xSCLKPhase
-{
+typedef enum apSSP_xSCLKPhase {
     apSSP_SCLKPHASE_TRAILINGEDGE = 0,   /* Data changes on trailing edge of the clock (valid on leading edge) */
     apSSP_SCLKPHASE_LEADINGEDGE  = 1    /* Data changes on leading edge of the clock (valid on trailing edge) */
 } apSSP_eSCLKPhase;
@@ -58,8 +55,7 @@ typedef enum apSSP_xSCLKPhase
  * This specifies the SCLK polarity options. It is only applicable to
  * Motorola SPI frame format.
  */
-typedef enum apSSP_xSCLKPolarity
-{
+typedef enum apSSP_xSCLKPolarity {
     apSSP_SCLKPOLARITY_IDLELOW   = 0,   /* Clock low when idle and pulsed high */
     apSSP_SCLKPOLARITY_IDLEHIGH  = 1    /* Clock high when idle and pulsed low */
 } apSSP_eSCLKPolarity;
@@ -68,8 +64,7 @@ typedef enum apSSP_xSCLKPolarity
  * Description:
  * This specifies the master/slave mode options
  */
-typedef enum apSSP_xMasterSlaveMode
-{
+typedef enum apSSP_xMasterSlaveMode {
     apSSP_MASTER = 0,   /* Device is Master */
     apSSP_SLAVE  = 1    /* Device is Slave  */
 } apSSP_eMasterSlaveMode;
@@ -78,8 +73,7 @@ typedef enum apSSP_xMasterSlaveMode
  * Description:
  * This specifies the slave output mode options
  */
-typedef enum apSSP_xSlaveOutput
-{
+typedef enum apSSP_xSlaveOutput {
     apSSP_SLAVEOUTPUTENABLED  = 0,  /* SSP may drive output in slave mode */
     apSSP_SLAVEOUTPUTDISABLED = 1   /* SSP must not drive output in slave mode */
 } apSSP_eSlaveOutput;
@@ -88,8 +82,7 @@ typedef enum apSSP_xSlaveOutput
  * Description:
  * This specifies the loop back mode options
  */
-typedef enum apSSP_xLoopBackMode
-{
+typedef enum apSSP_xLoopBackMode {
     apSSP_LOOPBACKOFF = 0,      /* Loop back off, normal serial port operation */
     apSSP_LOOPBACKON  = 1       /* Loop back on, Output of transmit
                                  * serial shifter connected to input of
@@ -101,8 +94,7 @@ typedef enum apSSP_xLoopBackMode
  * Description:
  * This specifies the DMA mode options.
  */
-typedef enum apSSP_xDMAMode
-{
+typedef enum apSSP_xDMAMode {
     apSSP_DMA_TX_ON = 1,
     apSSP_DMA_TX_OFF,
     apSSP_DMA_RX_ON,
@@ -114,8 +106,7 @@ typedef enum apSSP_xDMAMode
  * Description:
  * The data structure to hold parameters to control SSP device.
  */
-typedef struct apSSP_xDeviceControlBlock
-{
+typedef struct apSSP_xDeviceControlBlock {
     uint8_t ClockPrescale;           /* Clock rate prescale divisor */
     uint8_t ClockRate;               /* Clock rate divisor */
     apSSP_eSCLKPhase eSCLKPhase;
@@ -203,48 +194,41 @@ uint8_t apSSP_TxFifoEmpty(SSP_TypeDef * SSP_Ptr);
 #define bwSPI_TRANSFMT_DATALEN              5
 #define bwSPI_TRANSFMT_ADDRLEN              2
 
-typedef enum
-{
+typedef enum {
   SPI_CPHA_ODD_SCLK_EDGES = 0,
   SPI_CPHA_EVEN_SCLK_EDGES = 1
 }SPI_TransFmt_CPHA_e;
 
-typedef enum
-{
+typedef enum {
   SPI_CPOL_SCLK_LOW_IN_IDLE_STATES = 0,
   SPI_CPOL_SCLK_HIGH_IN_IDLE_STATES = 1
 }SPI_TransFmt_CPOL_e;
 
 /* SPI Master/Slave mode selection 0x0: Master mode 0x1: Slave mode */
-typedef enum
-{
+typedef enum {
   SPI_SLVMODE_MASTER_MODE = 0,
   SPI_SLVMODE_SLAVE_MODE = 1
 }SPI_TransFmt_SlvMode_e;
 
 /* Transfer data with the least significant bit first */
-typedef enum
-{
+typedef enum {
   SPI_LSB_MOST_SIGNIFICANT_BIT_FIRST = 0,
   SPI_LSB_LEAST_SIGNIFICANT_BIT_FIRST = 1
 }SPI_TransFmt_LSB_e;
 
-typedef enum
-{
+typedef enum {
   SPI_MOSIBIDIR_UNI_DIRECTIONAL = 0,
   SPI_MOSIBIDIR_BI_DIRECTIONAL = 1
 }SPI_TransFmt_MOSIBiDir_e;
 
-typedef enum
-{
+typedef enum {
   SPI_DATAMERGE_DISABLE = 0,
   SPI_DATAMERGE_ENABLE = 1
 }SPI_TransFmt_DataMerge_e;
 
 #define SPI_REG_TRANSFMT_DATALEN_X(x) ((x && 0x1F) - 1)
 
-typedef enum
-{
+typedef enum {
   SPI_ADDRLEN_1_BYTE = 0,
   SPI_ADDRLEN_2_BYTES = 1,
   SPI_ADDRLEN_3_BYTES = 2,
@@ -253,8 +237,7 @@ typedef enum
 
 /* The length of each data unit in bits
   The actual bit number of a data unit is (DataLen + 1) */
-typedef enum
-{
+typedef enum {
   SPI_DATALEN_8_BITS = 0x7,
   SPI_DATALEN_16_BITS = 0xf,
   SPI_DATALEN_32_BITS = 0x1f
@@ -299,16 +282,14 @@ typedef enum
 typedef uint16_t SPI_TransCtrl_TransCnt;
 
 /* SPI data phase format */
-typedef enum
-{
+typedef enum {
   SPI_DUALQUAD_REGULAR_MODE = 0,
   SPI_DUALQUAD_DUAL_IO_MODE = 1,
   SPI_DUALQUAD_QUAD_IO_MODE = 2
 }SPI_TransCtrl_DualQuad_e;
 
 /* Transfer mode */
-typedef enum
-{
+typedef enum {
   SPI_TRANSMODE_WRITE_READ_SAME_TIME = 0,
   SPI_TRANSMODE_WRITE_ONLY = 1,
   SPI_TRANSMODE_READ_ONLY = 2,
@@ -323,31 +304,27 @@ typedef enum
 
 /* SPI address phase enable (Master mode only) 0x0: Disable the address phase
 0x1: Enable the address phase */
-typedef enum
-{
+typedef enum {
   SPI_ADDREN_DISABLE = 0,
   SPI_ADDREN_ENABLE = 1
 }SPI_TransCtrl_AddrEn_e;
 
 /* SPI command phase enable (Master mode only) 0x0: Disable the command phase
 0x1: Enable the command phase */
-typedef enum
-{
+typedef enum {
   SPI_CMDEN_DISABLE = 0,
   SPI_CMDEN_ENABLE = 1
 }SPI_TransCtrl_CmdEn_e;
 
 /* Data-only mode (slave mode only) 0x0: Disable the data-only mode 0x1: Enable the data-only mode */
-typedef enum
-{
+typedef enum {
   SPI_SLVDATAONLY_DISABLE = 0,
   SPI_SLVDATAONLY_ENABLE = 1
 }SPI_TransCtrl_SlvDataOnly_e;
 
 /* SPI_ADDRFMT_SINGLE_MODE: regular mode, addr is transfered only on MOSI with SPI_TransFmt_AddrLen_e cycle
    SPI_ADDRFMT_QUAD_MODE: addr is transfered as quad mode */
-typedef enum
-{
+typedef enum {
   SPI_ADDRFMT_SINGLE_MODE = 0,
   SPI_ADDRFMT_QUAD_MODE = 1
 }SPI_TransCtrl_AddrFmt_e;
@@ -355,8 +332,7 @@ typedef enum
 /* SPI_MOSI_UNI_DIR_MODE: This mode sets the MOSI pin of the SPI as the normal mode.
    SPI_MOSI_BI_DIR_MODE: This mode sets the MOSI pin of SPI as a bidirectional mode.
    This bi-directional signal replaces the two uni-directional data signals, MOSI and MISO. */
-typedef enum
-{
+typedef enum {
     SPI_MOSI_UNI_DIR_MODE = 0,
     SPI_MOSI_BI_DIR_MODE = 1
 }SPI_MOSI_Dir_Set_e;
@@ -364,8 +340,7 @@ typedef enum
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20 || INGCHIPS_FAMILY == INGCHIPS_FAMILY_26)
 /*  SPI_ERITE_ENLARGED_CNT_DISABLE: disable enlarged cnt, write data count use WrTranCnt.
     SPI_ERITE_ENLARGED_CNT_ENABLE: enable enlarged cnt, write data count not use. */
-typedef enum
-{
+typedef enum {
     SPI_ERITE_ENLARGED_CNT_DISABLE = 0,
     SPI_ERITE_ENLARGED_CNT_ENABLE = 1
 }SPI_Write_Enlarged_e;
@@ -545,8 +520,7 @@ typedef uint8_t  SPI_InterfaceTimingSclkDiv;// spi interface clock / (2 * (eSclk
 #define bsSPI_MEMORY_ACCESS_CONTROL_RD_CMD           0
 #define bwSPI_MEMORY_ACCESS_CONTROL_RD_CMD           4
 
-typedef enum
-{
+typedef enum {
   SPI_MEMRD_CMD_03 = 0 ,//read command 0x03 + 3bytes address(regular mode) + data (regular mode)
   SPI_MEMRD_CMD_0B = 1 ,//read command 0x0B + 3bytes address(regular mode) + 1byte dummy + data (regular mode)
   SPI_MEMRD_CMD_3B = 2 ,//read command 0x3B + 3bytes address(regular mode) + 1byte dummy + data (dual mode)
@@ -565,8 +539,7 @@ typedef enum
  * Description:
  * The data structure to hold parameters to control SSP device.
  */
-typedef struct apSSP_xDeviceControlBlock
-{
+typedef struct apSSP_xDeviceControlBlock {
   SPI_InterfaceTimingSclkDiv   eSclkDiv; /* Clock rate divisor */
   SPI_TransFmt_CPHA_e          eSCLKPhase;/* odd or even edge, used to for spi mode */
   SPI_TransFmt_CPOL_e          eSCLKPolarity;/* idle low or idle high, used to for spi mode */

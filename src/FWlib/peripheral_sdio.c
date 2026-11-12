@@ -30,7 +30,9 @@ int SDIO_SendCommand(SDIO_TypeDef *base, uint8_t command, uint32_t argument,
                      uint8_t check_crc, uint8_t check_index, uint8_t wait_busy)
 {
     uint32_t response_bits;
-    if (!base || command > 63 || (unsigned int)response > SDIO_LONG_RESPONSE || (unsigned int)direction > SDIO_WRITE_DATA) return -1;
+    if (!base || command > 63 || (unsigned int)response > SDIO_LONG_RESPONSE ||
+        (unsigned int)direction > SDIO_WRITE_DATA)
+        return -1;
     response_bits = response == SDIO_NO_RESPONSE ? 0u : response == SDIO_SHORT_RESPONSE ? 1u : 2u;
     base->mmc_cmd_event = 0x1fu;
     if (direction != SDIO_NO_DATA) base->mmc_data_event = 0xfu;
@@ -52,11 +54,16 @@ void SDIO_IntEnable(SDIO_TypeDef *base, uint32_t command_mask, uint32_t data_mas
 uint32_t SDIO_GetResponse(SDIO_TypeDef *base, uint8_t word)
 {
     switch (word) {
-    case 0: return base->mmc_resp[0];
-    case 1: return base->mmc_resp[1];
-    case 2: return base->mmc_resp[2];
-    case 3: return base->mmc_resp[3];
-    default: return 0;
+        case 0:
+            return base->mmc_resp[0];
+        case 1:
+            return base->mmc_resp[1];
+        case 2:
+            return base->mmc_resp[2];
+        case 3:
+            return base->mmc_resp[3];
+        default:
+            return 0;
     }
 }
 

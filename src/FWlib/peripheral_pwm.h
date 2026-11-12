@@ -33,8 +33,7 @@ extern "C" {    /* allow C++ to use these headers */
 
 #endif
 
-typedef enum
-{
+typedef enum {
     PWM_WORK_MODE_UP_WITHOUT_DIED_ZONE          = 0x0,
     PWM_WORK_MODE_UP_WITH_DIED_ZONE             = 0x1,
     PWM_WORK_MODE_UPDOWN_WITHOUT_DIED_ZONE      = 0x2,
@@ -50,8 +49,7 @@ typedef enum
 #endif
 } PWM_WorkMode_t;
 
-typedef enum
-{
+typedef enum {
     PWM_FIFO_CLEAR           = (1 << 15),
     PWM_FIFO_EMPTY_EN        = (1 << 16),
     PWM_FIFO_FULL_EN         = (1 << 17),
@@ -59,8 +57,7 @@ typedef enum
     PWM_FIFO_TRIGGER_EN      = (1 << 19)
 } PWM_FIFO_MASK_t;
 
-typedef struct
-{
+typedef struct {
     uint32_t fifo_empty     :1;
     uint32_t fifo_full      :1;
     uint32_t fifo_halffull  :1;

@@ -53,10 +53,8 @@ void RTC_ClearInt(void)
 
 void RTC_Enable(uint8_t enable)
 {
-    if (enable)
-        APB_RTC->Ctrl |= 1;
-    else
-        APB_RTC->Ctrl &= 0xfffffffe;
+    if (enable) APB_RTC->Ctrl |= 1;
+    else APB_RTC->Ctrl &= 0xfffffffe;
 }
 
 uint16_t RTC_GetTime(uint8_t *hour, uint8_t *minute, uint8_t *second)
@@ -109,13 +107,10 @@ void RTC_ClearIntState(uint32_t state)
 void RTC_EnableDeepSleepWakeupSource(uint8_t enable)
 {
     uint32_t t = io_read(AON2_CTRL_BASE + 0x12c);
-    if (enable)
-    {
+    if (enable) {
         t |= 1 << 6;
         APB_RTC->Ctrl |= 1 << 1;
-    }
-    else
-    {
+    } else {
         t &= ~(1u << 6);
         APB_RTC->Ctrl &= ~((uint32_t)0x1 << 1);
     }
@@ -209,13 +204,10 @@ static int multiply_and_remainder(int value, int mult, uint32_t divider, int *qu
 static uint8_t convert_to_rtc_trim(int trim)
 {
     uint8_t r;
-    if (trim >= 0)
-    {
+    if (trim >= 0) {
         r = trim <= 0x1f ? (uint8_t)trim : 0x1f;
         r |= RTC_TRIM_SLOW_DOWN << bsRTC_TRIM_DIR;
-    }
-    else
-    {
+    } else {
         trim *= -1;
         r = trim <= 0x1f ? (uint8_t)trim : 0x1f;
         r |= RTC_TRIM_SPEED_UP << bsRTC_TRIM_DIR;
@@ -238,24 +230,19 @@ int RTC_Trim(uint32_t cali_value)
     #define IDEAL_FREQ  32768
 
     // try to improve: SEC_CFG is half second
-    if ((freq_hz <= IDEAL_FREQ) && (freq_hz & 1))
-    {
+    if ((freq_hz <= IDEAL_FREQ) && (freq_hz & 1)) {
         freq_hz--;
         remainder += cali_value;
     }
 
-    if (freq_hz <= IDEAL_FREQ)
-    {
+    if (freq_hz <= IDEAL_FREQ) {
         uint16_t v = (freq_hz / 2) - 1;
         APB_RTC->SEC_CFG = v;
         sec_trim = 0;
-    }
-    else if (freq_hz <= IDEAL_FREQ + 0x1f)
-    {
+    } else if (freq_hz <= IDEAL_FREQ + 0x1f) {
         sec_trim = (freq_hz - IDEAL_FREQ) | (RTC_TRIM_SLOW_DOWN << bsRTC_TRIM_DIR);
     }
-    else
-        return 1;
+    else return 1;
 
     remainder = multiply_and_remainder(remainder, 60, cali_value, &min_trim);
     remainder = multiply_and_remainder(remainder, 60, cali_value, &hour_trim);
@@ -293,10 +280,8 @@ uint32_t RTC_Current(void)
 void RTC_EnableFreeRun(uint8_t enable)
 {
     #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE
-    if (enable)
-        *AON1_REG0 |= 1u << 6;
-    else
-        *AON1_REG0 &= ~(1u << 6);
+    if (enable) *AON1_REG0 |= 1u << 6;
+    else *AON1_REG0 &= ~(1u << 6);
 }
 
 void RTC_ClearFreeRun(void)
@@ -315,10 +300,8 @@ void RTC_SetInterruptTarget(uint32_t target)
 #define AON1_REG_RTC (volatile uint32_t *)(AON1_CTRL_BASE + 0x1c)
 void RTC_EnableInterrupt(uint8_t enable)
 {
-    if (enable)
-        *AON1_REG_RTC |= 0x5ul;
-    else
-        *AON1_REG_RTC &= ~0x5ul;
+    if (enable) *AON1_REG_RTC |= 0x5ul;
+    else *AON1_REG_RTC &= ~0x5ul;
 }
 
 void RTC_ClearInterrupt(void)
@@ -358,10 +341,8 @@ void RTC_EnableFreeRun(uint8_t enable)
 {
     #define AON1_REG0   (volatile uint32_t *)AON1_CTRL_BASE
 
-    if (enable)
-        *AON1_REG0 |= 1ul << 6;
-    else
-        *AON1_REG0 &= ~(1ul << 6);
+    if (enable) *AON1_REG0 |= 1ul << 6;
+    else *AON1_REG0 &= ~(1ul << 6);
 }
 
 void RTC_ClearFreeRun(void)
@@ -381,10 +362,8 @@ void RTC_SetInterruptTarget(uint32_t target)
 #define AON1_REG_RTC (volatile uint32_t *)(AON1_CTRL_BASE + 0x1c)
 void RTC_EnableInterrupt(uint8_t enable)
 {
-    if (enable)
-        *AON1_REG_RTC |= 0x5ul;
-    else
-        *AON1_REG_RTC &= ~0x5ul;
+    if (enable) *AON1_REG_RTC |= 0x5ul;
+    else *AON1_REG_RTC &= ~0x5ul;
 }
 
 void RTC_ClearInterrupt(void)
@@ -442,8 +421,7 @@ static void invoke_isr(uint16_t flag)
 static void config_next_timer(uint16_t flag, uint32_t delay, void (*cb)(void),
                               uint32_t *last_timer)
 {
-    if (software_rtc.irq_mask & flag)
-    {
+    if (software_rtc.irq_mask & flag) {
         *last_timer += delay;
         platform_set_abs_timer(cb, *last_timer);
     }
@@ -530,55 +508,50 @@ void RTC_EnableIRQ(uint32_t mask)
 {
     software_rtc.irq_mask = (uint16_t)mask;
     int64_t t = get_full_625_counter() + software_rtc.hms_offset;
-    if (software_rtc.irq_mask & RTC_IRQ_DAY)
-    {
+    if (software_rtc.irq_mask & RTC_IRQ_DAY) {
         int64_t start = t / US625_PER_DAY * US625_PER_DAY;
         start += US625_PER_DAY;
         software_rtc.last_timer_day = start - software_rtc.hms_offset + 1;
         platform_set_abs_timer(timer_cb_day, software_rtc.last_timer_day);
-    }
-    else
+    } else {
         platform_delete_timer(timer_cb_day);
+    }
 
-    if (software_rtc.irq_mask & RTC_IRQ_HOUR)
-    {
+    if (software_rtc.irq_mask & RTC_IRQ_HOUR) {
         int64_t start = t / US625_PER_HOUR * US625_PER_HOUR;
         start += US625_PER_HOUR;
         software_rtc.last_timer_hour = start - software_rtc.hms_offset + 1;
         platform_set_abs_timer(timer_cb_hour, software_rtc.last_timer_hour);
-    }
-    else
+    } else {
         platform_delete_timer(timer_cb_hour);
+    }
 
-    if (software_rtc.irq_mask & RTC_IRQ_MINUTE)
-    {
+    if (software_rtc.irq_mask & RTC_IRQ_MINUTE) {
         int64_t start = t / US625_PER_MINUTE * US625_PER_MINUTE;
         start += US625_PER_MINUTE;
         software_rtc.last_timer_minute = start - software_rtc.hms_offset + 1;
         platform_set_abs_timer(timer_cb_minute, software_rtc.last_timer_minute);
-    }
-    else
+    } else {
         platform_delete_timer(timer_cb_minute);
+    }
 
-    if (software_rtc.irq_mask & RTC_IRQ_SECOND)
-    {
+    if (software_rtc.irq_mask & RTC_IRQ_SECOND) {
         int64_t start = t / US625_PER_SECOND * US625_PER_SECOND;
         start += US625_PER_SECOND;
         software_rtc.last_timer_second = start - software_rtc.hms_offset + 1;
         platform_set_abs_timer(timer_cb_second, software_rtc.last_timer_second);
-    }
-    else
+    } else {
         platform_delete_timer(timer_cb_second);
+    }
 
-    if (software_rtc.irq_mask & RTC_IRQ_HALF_SECOND)
-    {
+    if (software_rtc.irq_mask & RTC_IRQ_HALF_SECOND) {
         int64_t start = t / US625_PER_HALF_SECOND * US625_PER_HALF_SECOND;
         start += US625_PER_HALF_SECOND;
         software_rtc.last_timer_half_sec = start - software_rtc.hms_offset + 1;
         platform_set_abs_timer(timer_cb_half_sec, software_rtc.last_timer_half_sec);
-    }
-    else
+    } else {
         platform_delete_timer(timer_cb_half_sec);
+    }
 }
 
 uint32_t RTC_GetIntState(void)
@@ -614,8 +587,7 @@ uint64_t RTC_CurrentFull(void)
     r.parts.low = RTC_Current();
     r.parts.high = RTC_CurrentHigh();
     t = RTC_Current();
-    if (t < r.parts.low)
-    {
+    if (t < r.parts.low) {
         r.parts.high = RTC_CurrentHigh();
         r.parts.low = t;
     }

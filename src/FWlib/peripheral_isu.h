@@ -15,7 +15,21 @@ typedef enum {
     ISU_ACA_STATUS=0x312c, ISU_SRAM_WADDR=0x3130, ISU_SRAM_WDATA=0x3134,
     ISU_SRAM_RADDR=0x3138, ISU_SRAM_RDATA=0x313c
 } ISU_Register;
+
+/**
+ * @brief Read an exposed ISU register.
+ * @param[in] reg Register selector from @ref ISU_Register.
+ * @param[out] value Receives the 32-bit register value.
+ * @return 0 on success; -1 if the register selector or output pointer is invalid.
+ */
 int ISU_ReadRegister(ISU_Register reg, uint32_t *value);
+
+/**
+ * @brief Write an exposed ISU register.
+ * @param[in] reg Register selector from @ref ISU_Register.
+ * @param[in] value 32-bit value to write.
+ * @return 0 on success; -1 if the register selector is invalid.
+ */
 int ISU_WriteRegister(ISU_Register reg, uint32_t value);
 #endif /* INGCHIPS_FAMILY_26 */
 

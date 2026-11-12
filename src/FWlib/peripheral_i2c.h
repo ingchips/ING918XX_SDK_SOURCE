@@ -432,8 +432,7 @@ void I2C_DEBUG0_TOG(I2C_TypeDef *I2C_BASE, uint32_t data);
 
 uint8_t GET_I2C_DEBUG0_DMAREQ(I2C_TypeDef *I2C_BASE);
 
-typedef enum
-{
+typedef enum {
     I2C_CLOCKFREQUENCY_STANDARD,//100kbit/s
     I2C_CLOCKFREQUENCY_FASTMODE,//400kbit/s
 } I2C_ClockFrequencyOptions;
@@ -462,14 +461,12 @@ uint32_t I2C_ConfigClkFrequencyCalc(I2C_TypeDef *I2C_BASE, I2C_ClockFrequencyOpt
 #define I2C_FIFO_DEPTH      4
 #endif
 
-typedef enum
-{
+typedef enum {
   I2C_ADDRESSING_MODE_07BIT,
   I2C_ADDRESSING_MODE_10BIT,
 } I2C_AddressingMode;
 
-typedef enum
-{
+typedef enum {
     I2C_INT_FIFO_EMPTY ,
     I2C_INT_FIFO_FULL  ,
     I2C_INT_FIFO_HALF  ,
@@ -482,8 +479,7 @@ typedef enum
     I2C_INT_CMPL       ,
 } I2C_IntBit;
 
-typedef enum
-{
+typedef enum {
     I2C_STATUS_FIFO_EMPTY = 0,
     I2C_STATUS_FIFO_FULL = 1,
     I2C_STATUS_FIFO_HALF = 2,
@@ -496,8 +492,7 @@ typedef enum
     I2C_STATUS_LINE_SDA   , // current status of the SDA line on the bus
 } I2C_StatusBit;
 
-typedef enum
-{
+typedef enum {
     I2C_COMMAND_NO_ACTION,
     I2C_COMMAND_ISSUE_DATA_TRANSACTION, // master only
     I2C_COMMAND_RESPOND_ACK,
@@ -506,20 +501,17 @@ typedef enum
     I2C_COMMAND_RESET,
 } I2C_Command;
 
-typedef enum
-{
+typedef enum {
     I2C_ROLE_SLAVE,
     I2C_ROLE_MASTER,
 } I2C_Role;
 
-typedef enum
-{
+typedef enum {
     I2C_TRANSACTION_MASTER2SLAVE,
     I2C_TRANSACTION_SLAVE2MASTER,
 } I2C_TransactionDir;
 
-typedef enum
-{
+typedef enum {
     I2C_CLOCKFREQUENCY_NULL,
     I2C_CLOCKFREQUENCY_STANDARD,//100kbit/s
     I2C_CLOCKFREQUENCY_FASTMODE,//400kbit/s

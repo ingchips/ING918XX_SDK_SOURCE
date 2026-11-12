@@ -16,8 +16,7 @@
 
 #elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_VINP0_GPIO4 = 0,
     COMPARATOR_VINP1_GPIO18   ,
     COMPARATOR_VINP2_GPIO20   ,
@@ -29,8 +28,7 @@ typedef enum
     COMPARATOR_VINP_NUMBER    ,
 } COMPARATOR_Vinp_t;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_VINN0_GPIO3 = 0,
     COMPARATOR_VINN1_GPIO19   ,
     COMPARATOR_VINN2_GPIO32   ,
@@ -40,20 +38,17 @@ typedef enum
     COMPARATOR_VINN_NUMBER    ,
 } COMPARATOR_Vinn_t;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_DISABLE = 0,
     COMPARATOR_ENABLE     ,
 } COMPARATOR_Enable_t;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_NO_HYSTERRESIS = 0,
     COMPARATOR_30mV_HYSTERRESIS  ,
 } COMPARATOR_HysteresisValtage_t;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_1_16 = 0,
     COMPARATOR_2_16    ,
     COMPARATOR_3_16    ,
@@ -72,16 +67,14 @@ typedef enum
     COMPARATOR_16_16   ,
 } COMPARATOR_VinnDivision_t;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_ULTRA_LOW_POWER = 0,
     COMPARATOR_LOW_POWER          ,
     COMPARATOR_MIDDLE_POWER       ,
     COMPARATOR_HIGH_POWER         ,
 } COMPARATOR_WorkMode_t;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_OUT1_P_GREATE_N = 0,
     COMPARATOR_OUT1_N_GREATE_P    ,
 } COMPARATOR_OutputPolarity_t;
@@ -96,22 +89,19 @@ typedef struct {
     COMPARATOR_OutputPolarity_t output_polarity;
 } COMPARATOR_SetStateStruct;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_HIGH_LEVEL_WAKEUP = 0,
     COMPARATOR_LOW_LEVEL_WAKEUP     ,
 } COMPARATOR_LEVEL_WAKEUP_t;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_LEVEL_WAKEUP_MODE            = 0,
     COMPARATOR_POSEDGE_WAKEUP_MODE             ,
     COMPARATOR_NEGEDGE_WAKEUP_MODE             ,
     COMPARATOR_POSEDGE_AND_NEGEDGE_WAKEUP_MODE ,
 } COMPARATOR_WAKEUP_MODE_t;
 
-typedef enum
-{
+typedef enum {
     COMPARATOR_DISABLE_INT_MODE          = 0,
     COMPARATOR_NEGEDGE_INT_MODE             ,
     COMPARATOR_POSEDGE_INT_MODE             ,
