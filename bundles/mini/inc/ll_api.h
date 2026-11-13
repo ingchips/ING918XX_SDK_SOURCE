@@ -1511,9 +1511,7 @@ typedef int  (*f_start_generate_dhkey)(int key_type, const uint8_t *remote_pub_k
  * @param[in]  pub_key          public key
  ****************************************************************************************
  */
-// void ll_p256_key_pair_generated(int status, const uint8_t *pub_key);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_p256_key_pair_generated(int status, const uint8_t *pub_key);
 
 /**
  ****************************************************************************************
@@ -1523,9 +1521,7 @@ typedef int  (*f_start_generate_dhkey)(int key_type, const uint8_t *remote_pub_k
  * @param[in]  dh_key           Diffie Hellman Key
  ****************************************************************************************
  */
-// void ll_dhkey_generated(int status, const uint8_t *dh_key);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_dhkey_generated(int status, const uint8_t *dh_key);
 
 /**
  ****************************************************************************************
@@ -1535,10 +1531,8 @@ typedef int  (*f_start_generate_dhkey)(int key_type, const uint8_t *remote_pub_k
  * @param[in]  start_generate_dhkey                     trigger for DHKey generation
  ****************************************************************************************
  */
-// void ll_install_ecc_engine(f_start_generate_p256_key_pair start_generate_p256_key_pair,
-//                           f_start_generate_dhkey start_generate_dhkey);
-// WARNING: ^^^ this API is not available in this release
-
+void ll_install_ecc_engine(f_start_generate_p256_key_pair start_generate_p256_key_pair,
+                          f_start_generate_dhkey start_generate_dhkey);
 
 /**
  ****************************************************************************************
