@@ -76,16 +76,19 @@ void audio_input_stop(void)
 #define TRIGGER_NUMBER  1
 #define CHANNEL_ID  0
 #define PP_LEN  80
-DMA_PingPong_t PingPong;
+static DMA_PingPong_t PingPong;
+#if !DMA_PINGPONG_USE_MALLOC
+static uint32_t dma_buffers[2][PP_LEN];
+#endif
 
 static uint32_t DMA_cb_isr(void *user_data)
 {
     uint32_t cnt = 0;
-    uint32_t state = DMA_GetChannelIntState(CHANNEL_ID);
-    DMA_ClearChannelIntState(CHANNEL_ID, state);
-
-    uint32_t *rr = DMA_PingPongIntProc(&PingPong, CHANNEL_ID);
-    uint32_t transSize = DMA_PingPongGetTransSize(&PingPong);
+    void *completed_buffer;
+    if (DMA_PingPongIntProc(&PingPong, &completed_buffer) != 1)
+        return 0;
+    const uint32_t *rr = (const uint32_t *)completed_buffer;
+    uint32_t transSize = DMA_PingPongGetBufferBytes(&PingPong) / sizeof(uint32_t);
     while (transSize--) {
         audio_rx_sample((pcm_sample_t)(rr[cnt] & 0xff));
         audio_rx_sample((pcm_sample_t)(rr[cnt] >> 16));
@@ -130,20 +133,28 @@ void audio_input_setup(void)
     ret = ASDM_Config(APB_ASDM, &AsdmConfig);
     if (ret)
         return;
-    DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_SDADC_RX, PP_LEN, TRIGGER_NUMBER);
+    if (DMA_PingPongSetup(&PingPong, SYSCTRL_DMA_SDADC_RX, PP_LEN * sizeof(uint32_t),
+                         DMA_BURST_SIZE_1) != 0)
+        return;
+#if !DMA_PINGPONG_USE_MALLOC
+    if (DMA_PingPongSetBuffers(&PingPong, dma_buffers[0], dma_buffers[1],
+                              sizeof(dma_buffers[0])) != 0)
+        return;
+#endif
     platform_set_irq_callback(PLATFORM_CB_IRQ_DMA, DMA_cb_isr, 0);
 }
 
 void audio_input_start(void)
 {
-    DMA_PingPongEnable(&PingPong, CHANNEL_ID);
+    if (DMA_PingPongEnable(&PingPong, CHANNEL_ID) != 0)
+        return;
     ASDM_Enable(APB_ASDM,1);
 }
 
 void audio_input_stop(void)
 {
-    DMA_PingPongDisable(&PingPong, CHANNEL_ID);
-    ASDM_Enable(APB_ASDM,0);
+    ASDM_Enable(APB_ASDM, 0);
+    (void)DMA_PingPongDisable(&PingPong);
 }
 
 #else

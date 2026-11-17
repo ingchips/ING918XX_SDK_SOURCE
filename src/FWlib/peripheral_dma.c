@@ -298,6 +298,7 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
                  | ((uint32_t)dst_addr_ctrl << bsDMA_DST_ADDR_CTRL)
                  | ((uint32_t)dest_width << bsDMA_DST_WIDTH)
                  | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
+    /* API size is bytes; hardware TranSize counts source-width accesses. */
     pDesc->TranSize = size / (1 << width);
     pDesc->DstAddr = (uint32_t)dst;
     pDesc->SrcAddr = (uint32_t)peri_addr;
@@ -330,6 +331,7 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
                  | ((uint32_t)DMA_ADDRESS_FIXED << bsDMA_DST_ADDR_CTRL)
                  | ((uint32_t)width << bsDMA_DST_WIDTH)
                  | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
+    /* API size is bytes; hardware TranSize counts source-width accesses. */
     pDesc->TranSize = size / (1 << src_width);
     pDesc->DstAddr = (uint32_t)peri_addr;
     pDesc->SrcAddr = (uint32_t)src;
@@ -367,6 +369,7 @@ int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
                  | ((uint32_t)DMA_ADDRESS_FIXED << bsDMA_SRC_ADDR_CTRL)
                  | ((uint32_t)src_width << bsDMA_SRC_WIDTH)
                  | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
+    /* API size is bytes; hardware TranSize counts source-width accesses. */
     pDesc->TranSize = size / (1 << src_width);
     pDesc->DstAddr = (uint32_t)dst_addr;
     pDesc->SrcAddr = (uint32_t)src_addr;
@@ -735,6 +738,7 @@ int DMA_PreparePeripheral2Mem(DMA_Descriptor *pDesc,
                   | ((uint32_t)dst_addr_ctrl << bsDMA_DST_ADDR_CTRL)
                   | ((uint32_t)dest_width << bsDMA_DST_WIDTH)
                   | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
+    /* API size is bytes; hardware TranSize counts source-width accesses. */
     pDesc->TranSize = size / (1 << width);
     pDesc->DstAddr = (uint32_t)dst;
     pDesc->SrcAddr = (uint32_t)peri_addr;
@@ -767,6 +771,7 @@ int DMA_PrepareMem2Peripheral(DMA_Descriptor *pDesc,
                   | ((uint32_t)DMA_ADDRESS_FIXED << bsDMA_DST_ADDR_CTRL)
                   | ((uint32_t)width << bsDMA_DST_WIDTH)
                   | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
+    /* API size is bytes; hardware TranSize counts source-width accesses. */
     pDesc->TranSize = size / (1 << src_width);
     pDesc->DstAddr = (uint32_t)peri_addr;
     pDesc->SrcAddr = (uint32_t)src;
@@ -804,6 +809,7 @@ int DMA_PreparePeripheral2Peripheral(DMA_Descriptor *pDesc,
                   | ((uint32_t)DMA_ADDRESS_FIXED << bsDMA_SRC_ADDR_CTRL)
                   | ((uint32_t)src_width << bsDMA_SRC_WIDTH)
                   | ((uint32_t)src_burst_size << bsDMA_SRC_BURSIZE);
+    /* API size is bytes; hardware TranSize counts source-width accesses. */
     pDesc->TranSize = size / (1 << src_width);
     pDesc->DstAddr = (uint32_t)dst_addr;
     pDesc->SrcAddr = (uint32_t)src_addr;
