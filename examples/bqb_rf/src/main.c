@@ -88,6 +88,18 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 0;
 }
 
+static void normal_rf_power_cfg(void)
+{
+#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
+    SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BUCK_DCDC_OUTPUT_1V500);
+    SYSCTRL_SetLDOOutputRF(SYSCTRL_LDO_RF_OUTPUT_1V300);
+#elif (INGCHIPS_FAMILY == INGCHIPS_FAMILY_20)
+    // Boost mode switches the internal supply to BUCK DCDC. Restore the
+    // default LDO path when leaving boost mode.
+    SYSCTRL_EnableDCDCMode(0);
+#endif
+}
+
 trace_rtt_t trace_ctx = {0};
 
 extern void rx_hci_byte(void *user_data, uint8_t c);
@@ -105,12 +117,11 @@ int app_main()
         rf_enable_powerboost();
         break;
     case POWER_MODE_NORMAL:
-#if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
-        SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BUCK_DCDC_OUTPUT_1V500);
-        SYSCTRL_SetLDOOutputRF(SYSCTRL_LDO_RF_OUTPUT_1V300);
-#endif
+        normal_rf_power_cfg();
         break;
     default:
+        // Treat an unset or invalid persistent value as the safe normal mode.
+        normal_rf_power_cfg();
         break;
     }
 
