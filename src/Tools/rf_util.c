@@ -52,6 +52,10 @@ static const uint32_t rf_data[] = {
 #include "rf_powerboost_916.dat"
 };
 
+
+// If set value is 0, use LDO mode.
+#define USE_DCDC_MODE 1
+
 static const int16_t power_mapping[] = {
     -6140, -2336, -1781, -1436, -1181, -1003, -836, -744, -640, -536, -454, -376, -301, -233, -175, -119,
     -64,   -15,   30,    74,    119,   153,   185,  220,  254,  285,  311,  338,  366,  393,  416,  438,
@@ -63,9 +67,13 @@ void rf_enable_powerboost(void)
     platform_set_rf_init_data(rf_data);
     platform_set_rf_power_mapping(power_mapping);
 
+#if USE_DCDC_MODE
     SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BUCK_DCDC_OUTPUT_1V800);
     SYSCTRL_EnableBuckDCDC(1);
     SYSCTRL_EnableDCDCMode(1);
+#else
+    SYSCTRL_EnableDCDCMode(0);
+#endif
 }
 
 #endif

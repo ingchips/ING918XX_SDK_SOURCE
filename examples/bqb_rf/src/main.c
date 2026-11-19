@@ -88,7 +88,7 @@ uint32_t query_deep_sleep_allowed(void *dummy, void *user_data)
     return 0;
 }
 
-static void configure_normal_rf_power(void)
+static void normal_rf_power_cfg(void)
 {
 #if (INGCHIPS_FAMILY == INGCHIPS_FAMILY_916)
     SYSCTRL_SetBuckDCDCOutput(SYSCTRL_BUCK_DCDC_OUTPUT_1V500);
@@ -117,11 +117,11 @@ int app_main()
         rf_enable_powerboost();
         break;
     case POWER_MODE_NORMAL:
-        configure_normal_rf_power();
+        normal_rf_power_cfg();
         break;
     default:
         // Treat an unset or invalid persistent value as the safe normal mode.
-        configure_normal_rf_power();
+        normal_rf_power_cfg();
         break;
     }
 
