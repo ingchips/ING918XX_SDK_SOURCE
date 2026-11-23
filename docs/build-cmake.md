@@ -220,10 +220,22 @@ ING916 是 Cortex-M4F，其 FPU 路径会触发 CMSIS 5.9 与 clang 的不兼容
 **彻底修复的路径**：把 CMSIS 从 5.9 升级到 6.x（CMSIS 6 对 clang 有专门分支）。
 这属于 SDK 基础设施升级，需要单独评估对现有 Keil/IAR/Segger 工程的影响。
 
+## 已迁移的示例
+
+| 示例 | bundle | 芯片 | 外部工具 | 说明 |
+| --- | --- | --- | --- | --- |
+| get_started | typical | 918 / 20 | — | 含 C++（libstdc++/libc++） |
+| peripheral_ibeacon | typical | 918 | — | 最简裸机 |
+| peripheral_console_realtime | noos_mini | 916 | — | 无 RTOS 串口控制台 |
+| peripheral_console_liteos | noos_typical | 916 | — | LiteOS-M，`-O3`，无 `_printf_float` |
+| central_fota | typical | 918 | zig | `fota_client.zig` → `.o`，另需 `ing<chip>_uecc.lib` |
+| smart_home_hub | typical | 918 | nim | configure 阶段生成 C 源码 |
+
+需要外部工具的示例用 `find_program` 守卫：工具缺失时打印 WARNING 并跳过，
+不影响其他示例构建。
+
 ## 尚未覆盖
 
-- `ing916` 的 ATfE 通道：受 CMSIS 5.9 限制，见上一节。
-- `central_fota`：额外依赖 `zig` 编译 `fota_client.zig`。
-- `smart_home_hub`：额外依赖 `nim` 与 `NIM_PATH`。
+- `ing916` 的 ATfE 通道：受 CMSIS 5.9 限制，见「已知限制」。
 - ATfE 编译 `.s` 时 CMake 会附加 `-MD/-MT/-MF`，clang 报 `unused-command-line-argument`，
   属无害噪音。
