@@ -7,3 +7,7 @@
 JLinkLog.txt
 JLinkSettings.ini
 .vscode
+
+# CMake 构建目录与产物
+build-*/
+*.elf

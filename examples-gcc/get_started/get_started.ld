@@ -157,7 +157,14 @@ SECTIONS
 
 	} > RAM
 
-	.bss :
+	/* .bss 与堆共用一段 NOLOAD 区域：
+	 * 启动文件在 .heap 段里用 .space 保留堆大小；这里把 *(.heap*) 并入
+	 * NOLOAD 的 .bss，使 __HeapBase/__HeapLimit 落在 RAM 内且不占镜像空间。
+	 * 注意：不要把 .heap 单独写成 .heap (COPY) 或 .heap (NOLOAD) 段——
+	 * lld 会忽略该段的 RAM 归属，导致 __HeapBase/__HeapLimit 变成段内
+	 * 偏移（0x0 / 0x2000），堆会落到非法地址。
+	 */
+	.bss (NOLOAD) :
 	{
 		. = ALIGN(4);
 		__bss_start__ = .;
@@ -165,20 +172,15 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(4);
 		__bss_end__ = .;
-	} > RAM
-	
-	.heap (COPY):
-	{
 		__end__ = .;
 		PROVIDE(end = .);
 		*(.heap*)
-		__HeapLimit = .;
 	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (COPY):
+	.stack_dummy (NOLOAD):
 	{
 		*(.stack*)
 	} > RAM

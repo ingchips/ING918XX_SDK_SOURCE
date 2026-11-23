@@ -1,0 +1,64 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "gcc-ing918",
+      "displayName": "GCC / ING918 / gnu11",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-gcc",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-none-eabi.cmake",
+      "cacheVariables": {
+        "CHIP": "ing918",
+        "ING_C_STANDARD": "gnu11",
+        "ING_EXAMPLES": "get_started"
+      }
+    },
+    {
+      "name": "atfe-ing918",
+      "displayName": "ATfE(LLVM) / ING918 / gnu11",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-atfe",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-atfe.cmake",
+      "cacheVariables": {
+        "CHIP": "ing918",
+        "ING_C_STANDARD": "gnu11",
+        "ING_EXAMPLES": "get_started"
+      }
+    },
+    {
+      "name": "gcc-ing918-c17",
+      "displayName": "GCC / ING918 / gnu17",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-gcc-c17",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-none-eabi.cmake",
+      "cacheVariables": {
+        "CHIP": "ing918",
+        "ING_C_STANDARD": "gnu17",
+        "ING_EXAMPLES": "get_started"
+      }
+    },
+    {
+      "name": "atfe-ing918-c17",
+      "displayName": "ATfE(LLVM) / ING918 / gnu17",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-atfe-c17",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-atfe.cmake",
+      "cacheVariables": {
+        "CHIP": "ing918",
+        "ING_C_STANDARD": "gnu17",
+        "ING_EXAMPLES": "get_started"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "gcc-ing918", "configurePreset": "gcc-ing918" },
+    { "name": "atfe-ing918", "configurePreset": "atfe-ing918" },
+    { "name": "gcc-ing918-c17", "configurePreset": "gcc-ing918-c17" },
+    { "name": "atfe-ing918-c17", "configurePreset": "atfe-ing918-c17" }
+  ]
+}
