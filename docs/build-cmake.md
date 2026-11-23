@@ -245,6 +245,34 @@ __builtin_arm_set_fpscr(fpscr);   /* clang 原生支持 */
 函数体内有 `(void)addr; (void)prog;` 两条 C 语句，clang 不允许。
 已加 `!defined(__clang__)` 条件，GCC 行为不变。
 
+## Keil 工程的编译校验（CI 内部）
+
+`examples/` 下的工程是 Keil 工程，CI 里额外用
+`.github/scripts/keil2cmake.py` 把它们转成 CMake 再编译一遍，确保
+"改了代码导致 Keil 工程在 GCC 下编不过"能立刻暴露。
+
+```bash
+python .github/scripts/keil2cmake.py     --project examples/peripheral_ibeacon/peripheral_ibeacon.uvprojx     --chip ing918 --out build/keil-import
+```
+
+脚本做的事：
+
+1. 读 `.uvprojx` 的 Target、`Device`、`<Files>` 源文件列表、`IncludePath`、`Define`
+2. 过滤掉启动汇编与 `symdefs.*`（这些由 SDK 提供）
+3. 从 `examples-gcc/<proj>/` 找配套的 `src/gstartup_<chip>00.s` 与 `<proj>_<chip>.ld`
+   （缺失时先用 `tools/ingw_switch_chip.py` 生成）
+4. 生成 `<out>/<proj>/CMakeLists.txt`，路径统一写成 `${ING_SDK_ROOT}/...`
+
+约束：
+
+- **只在 CI 里用**，产物写到 `build/keil-import/`（已 gitignore），不回写仓库
+- 不改动 `examples/` 下任何 Keil 工程文件
+- 与 `C:\ming\source\KeilFormat` 无关：那个项目服务于 `compile_commands.json`
+  和 UV4 构建，用途不同
+
+工作流 `.github/workflows/keil-import.yml` 目前覆盖
+`peripheral_ibeacon / ing918`，新增工程只需在矩阵里加一行。
+
 ## 尚未覆盖
 
 - ATfE 编译 `.s` 时 CMake 会附加 `-MD/-MT/-MF`，clang 报 `unused-command-line-argument`，
