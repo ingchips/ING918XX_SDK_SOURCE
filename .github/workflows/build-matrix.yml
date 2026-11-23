@@ -1,0 +1,132 @@
+name: build-matrix
+
+# 编译验证矩阵：GCC 与 ATfE(LLVM) 双工具链 × 多 C 标准 × 多芯片。
+# 目标是在合并前发现"改代码导致某个工具链或标准编不过"的问题。
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+  pull_request:
+
+env:
+  ARM_GCC_VERSION: 13.3.rel1
+  ATFE_VERSION: 23.1.0
+  CMSIS_VERSION: 5.9.0
+
+jobs:
+  build:
+    name: ${{ matrix.toolchain }} / ${{ matrix.chip }} / ${{ matrix.std }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11 }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu17 }
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu11 }
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu17 }
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build xz-utils
+          cmake --version
+          ninja --version
+
+      # ---------- 工具链：Arm GNU ----------
+      - name: Cache Arm GNU Toolchain
+        if: matrix.toolchain == 'gcc'
+        id: cache-gcc
+        uses: actions/cache@v5
+        with:
+          path: /opt/arm-gcc
+          key: arm-gcc-${{ env.ARM_GCC_VERSION }}
+
+      - name: Install Arm GNU Toolchain
+        if: matrix.toolchain == 'gcc' && steps.cache-gcc.outputs.cache-hit != 'true'
+        run: |
+          sudo mkdir -p /opt/arm-gcc
+          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_GCC_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_GCC_VERSION }}-x86_64-arm-none-eabi.tar.xz -O /tmp/arm-gcc.tar.xz
+          sudo tar -xJf /tmp/arm-gcc.tar.xz -C /opt/arm-gcc --strip-components=1
+          /opt/arm-gcc/bin/arm-none-eabi-gcc --version
+
+      # ---------- 工具链：ATfE (LLVM) ----------
+      - name: Cache ATfE
+        if: matrix.toolchain == 'atfe'
+        id: cache-atfe
+        uses: actions/cache@v5
+        with:
+          path: /opt/atfe
+          key: atfe-${{ env.ATFE_VERSION }}
+
+      - name: Install ATfE + newlib-nano overlay
+        if: matrix.toolchain == 'atfe' && steps.cache-atfe.outputs.cache-hit != 'true'
+        run: |
+          base=https://github.com/arm/arm-toolchain/releases/download/release-${{ env.ATFE_VERSION }}-ATfE
+          wget -q $base/ATfE-${{ env.ATFE_VERSION }}-Linux-x86_64.tar.xz -O /tmp/atfe.tar.xz
+          wget -q $base/ATfE-newlib-nano-overlay-${{ env.ATFE_VERSION }}.tar.xz -O /tmp/atfe-nano.tar.xz
+          sudo mkdir -p /opt/atfe
+          sudo tar -xJf /tmp/atfe.tar.xz -C /opt/atfe --strip-components=1
+          # overlay 需叠加到主包之上，提供 bin/newlib-nano.cfg 与 lib/clang-runtimes/newlib-nano
+          sudo tar -xJf /tmp/atfe-nano.tar.xz -C /opt/atfe
+          test -f /opt/atfe/bin/newlib-nano.cfg
+          /opt/atfe/bin/clang --version
+
+      # ---------- CMSIS ----------
+      - name: Cache CMSIS
+        id: cache-cmsis
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/cmsis
+          key: cmsis-${{ env.CMSIS_VERSION }}
+
+      - name: Download CMSIS
+        if: steps.cache-cmsis.outputs.cache-hit != 'true'
+        run: |
+          wget -q https://github.com/ARM-software/CMSIS_5/archive/refs/tags/${{ env.CMSIS_VERSION }}.zip -O /tmp/cmsis.zip
+          mkdir -p ${{ github.workspace }}/cmsis
+          unzip -q /tmp/cmsis.zip -d ${{ github.workspace }}/cmsis
+
+      # ---------- 配置与构建 ----------
+      - name: Configure
+        env:
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
+        run: |
+          cmake -B build \
+            --toolchain=cmake/toolchain-${{ matrix.toolchain_file }}.cmake \
+            -G Ninja \
+            -DCHIP=${{ matrix.chip }} \
+            -DING_C_STANDARD=${{ matrix.std }} \
+            -DING_EXAMPLES=get_started \
+            -DARM_GCC_ROOT=/opt/arm-gcc \
+            -DATFE_ROOT=/opt/atfe
+
+      - name: Build
+        shell: bash
+        run: |
+          set -o pipefail
+          cmake --build build --verbose 2>&1 | tee build.log
+
+      - name: Report size
+        run: |
+          echo "### ${{ matrix.toolchain }} / ${{ matrix.chip }} / ${{ matrix.std }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          find build -name '*.elf' -exec size {} \; 2>/dev/null || true
+          find build -name '*.elf' -exec /opt/atfe/bin/llvm-size {} \; 2>/dev/null || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload artifacts
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.toolchain }}-${{ matrix.chip }}-${{ matrix.std }}
+          path: |
+            build/**/*.elf
+            build/**/*.bin
+            build/**/*.map
+            build.log
+          if-no-files-found: warn
