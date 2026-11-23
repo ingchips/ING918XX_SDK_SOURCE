@@ -11,3 +11,4 @@ JLinkSettings.ini
 # CMake 构建目录与产物
 build-*/
 *.elf
+build/
