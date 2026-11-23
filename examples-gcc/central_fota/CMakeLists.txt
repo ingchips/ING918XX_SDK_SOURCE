@@ -84,6 +84,12 @@ ing_add_example(central_fota
         -Os
 )
 
+# uECC 是预编译库（每个家族一份），原 makefile.conf 用
+#   -L src/Tools -l:ing918_uecc.lib
+# 提供 uECC_* 与 calc_sha_256；fota_client.zig 对这些符号是 extern。
+target_link_libraries(central_fota PRIVATE
+    "${ING_SDK_ROOT}/src/Tools/${CHIP}_uecc.lib")
+
 # 把 zig 产物挂到目标上（外部 .o 直接参与链接）
 target_sources(central_fota PRIVATE "${_zig_out}")
 set_source_files_properties("${_zig_out}" PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
