@@ -24,10 +24,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11, example: get_started }
-          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu17, example: get_started }
-          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu11, example: get_started }
-          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu17, example: get_started }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11, example: get_started;peripheral_ibeacon }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu17, example: get_started;peripheral_ibeacon }
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu11, example: get_started;peripheral_ibeacon }
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu17, example: get_started;peripheral_ibeacon }
           - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing20,  std: gnu11, example: get_started }
           - { toolchain: atfe, toolchain_file: atfe,          chip: ing20,  std: gnu11, example: get_started }
           # ING916 目前只有 GCC 通道：ATfE 下受 CMSIS 5.9 的 vfpcc 内联汇编限制，
