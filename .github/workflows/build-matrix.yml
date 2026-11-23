@@ -1,6 +1,7 @@
 name: build-matrix
 
 # 编译验证矩阵：GCC 与 ATfE(LLVM) 双工具链 × 多 C 标准 × 多芯片。
+# ing916 待迁移支持 916 的示例后再加入（get_started 不支持 916）。
 # 目标是在合并前发现"改代码导致某个工具链或标准编不过"的问题。
 
 on:
@@ -26,6 +27,8 @@ jobs:
           - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu17 }
           - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu11 }
           - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu17 }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing20,  std: gnu11 }
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing20,  std: gnu11 }
 
     steps:
       - uses: actions/checkout@v6

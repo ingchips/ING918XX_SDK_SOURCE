@@ -22,11 +22,17 @@ set(ING_CHIP_ing916_CPU    cortex-m4)
 set(ING_CHIP_ing916_FPU    fpv4-sp-d16)
 set(ING_CHIP_ing916_BUNDLE ING9168xx)
 
+# ING20（ING208xx）：Cortex-M3，与 ING918 同核但 ROM/RAM 布局不同。
+# 注意系列名是 ING208xx；bundles/*/ING20xx 是残缺的旧目录，不可用。
+set(ING_CHIP_ing20_CPU    cortex-m3)
+set(ING_CHIP_ing20_FPU    "")
+set(ING_CHIP_ing20_BUNDLE ING208xx)
+
 # 目标芯片家族，可用 -DCHIP= 覆盖
 if(NOT DEFINED CHIP)
-    set(CHIP ing918 CACHE STRING "目标芯片家族：ing918 / ing916")
+    set(CHIP ing918 CACHE STRING "目标芯片家族：ing918 / ing916 / ing20")
 endif()
-set(CHIP "${CHIP}" CACHE STRING "目标芯片家族：ing918 / ing916" FORCE)
+set(CHIP "${CHIP}" CACHE STRING "目标芯片家族：ing918 / ing916 / ing20" FORCE)
 
 if(NOT DEFINED ING_CHIP_${CHIP}_CPU)
     message(FATAL_ERROR "未知芯片家族 CHIP=${CHIP}，请在 cmake/ing_example.cmake 中登记")
@@ -102,7 +108,7 @@ function(ing_add_example name)
     set(_common "-mthumb" "-mcpu=${ING_CPU}" "-O0"
                 "-ffunction-sections" "-fdata-sections" "-fno-builtin")
     if(ING_FPU)
-        list(APPEND _common "-mfpu=${ING_FPU}" "-mfloat-abi=hard")
+        list(APPEND _common "-mfpu=${ING_FPU}" "-mfloat-abi=softfp")
     endif()
 
     # 只把 C/C++ 专有选项给 C/C++ 编译；汇编（.s）只需要 -mthumb -mcpu，
@@ -133,7 +139,7 @@ function(ing_add_example name)
     # ---- 链接 ----
     set(_link_common "-mthumb" "-mcpu=${ING_CPU}" "-Wl,--gc-sections")
     if(ING_FPU)
-        list(APPEND _link_common "-mfpu=${ING_FPU}" "-mfloat-abi=hard")
+        list(APPEND _link_common "-mfpu=${ING_FPU}" "-mfloat-abi=softfp")
     endif()
 
     set(_symdefs "${ING_SDK_ROOT}/bundles/typical/${ING_BUNDLE}/symdefs.g")

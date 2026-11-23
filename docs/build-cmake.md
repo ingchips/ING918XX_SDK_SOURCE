@@ -133,10 +133,70 @@ ATfE 版体积更小，原因是 `libc++` 的 `std::function` 内联更彻底，
 `-u _printf_float` 强制拉入浮点 printf。两者功能等价：关键 SDK 符号、
 静态构造（`_GLOBAL__sub_I_container.cpp`）、堆栈符号均已核对。
 
+## 多芯片支持
+
+### 切芯片脚本 `tools/ingw_switch_chip.py`
+
+复刻 ingWizard 的切芯片逻辑（`data/common.cs`、`gcc.cs`、`gcc.fix` 与
+`checkprojform.pas` 的 `ConfigProjRam`），面向**编译验证**只改决定能否编过的内容：
+
+| 内容 | 默认 | 说明 |
+| --- | --- | --- |
+| `get_started_<family>.ld` | ✅ | 按 bundle meta + series.json 重算 FLASH/RAM，各 family 并存 |
+| `src/gstartup_<family>00.s` | ✅ | 缺失时按模板生成（ing916 自动用 armv7e-m + .fpu） |
+| `makefile.conf` / `Makefile` / `<proj>.ld` | ❌ | 需 `--with-makefile`，避免破坏其他芯片的基线 |
+| `flash_download.ini` | ❌ | 需 `--with-flash-ini`；烧录配置，CI 不需要 |
+| `.ingw` 的 series/family | ❌ | 需 `--with-ingw`，避免与未同步的 Makefile 冲突 |
+
+```bash
+python tools/ingw_switch_chip.py --project examples-gcc/get_started --series ING9168xx --dry-run
+python tools/ingw_switch_chip.py --project examples-gcc/get_started --series ING9168xx
+```
+
+### 内存计算（与 ingWizard 一致）
+
+```
+app_rom_addr = meta.app.base
+app_rom_size = series.flash_base + series.flash_size - app_rom_addr
+app_ram_addr = align8(meta.ram.base + meta.ram.size)
+app_ram_size = meta.ram.base + sys_ram - app_ram_addr
+sys_ram      = series.sys_ram[bundle] or series.def_sys_ram or series.ram_size // 2
+```
+
+验证结果与 SDK 既有资产完全吻合：
+
+| 芯片 | 计算值 | 既有资产对照 |
+| --- | --- | --- |
+| ING9187xx | FLASH 0x28000/376832，RAM 0x20007520/35552 | `get_started.ld` 一致 |
+| ING9168xx | FLASH 0x202B000/348160，RAM 0x200054D8/11048 | `bqb_rf.sct` 的 RAM 一致 |
+| ING208xx | FLASH 0x202D000/339968，RAM 0x20005338/19656 | 区域末尾 0x2000A000 与 40 KB sys_ram 一致 |
+
+### 芯片支持现状（get_started）
+
+| 芯片 | 内核 | 启动文件 | 链接脚本 | 构建 |
+| --- | --- | --- | --- | --- |
+| ING9187xx | Cortex-M3 | `gstartup_ing91800.s` | `get_started.ld` | GCC ✅ / ATfE ✅ |
+| ING208xx | Cortex-M3 | `gstartup_ing2000.s`（生成） | `get_started_ing20.ld`（生成） | GCC ✅ / ATfE ✅ |
+| ING9168xx | Cortex-M4F | `gstartup_ing91600.s`（生成） | `get_started_ing916.ld`（生成） | 资产可用，**demo 不支持** |
+
+> ING916 的启动文件与链接脚本已用最小探针验证：`__HeapBase=0x200054D8`、
+> `__StackTop=0x20008000`、`app_main` 落在 `0x202B008`，均正确。
+> 但 `examples/get_started/src/main.c` 里有 `#error "916 chip does not support this demo"`，
+> 因此 get_started 无法作为 916 的编译验证载体，需换用支持 916 的示例
+> （`peripheral_console_realtime`、`pawr`、`hid_mouse`、`voice_remote_ctrl` 等）。
+
+### 实测尺寸
+
+| 芯片 | 工具链 | text | data | bss（含堆） |
+| --- | --- | --- | --- | --- |
+| ING918 | GCC 15.2 | 37084 | 568 | 11992 |
+| ING918 | ATfE 23.1.0 | 31860 | 208 | 13144 |
+| ING20 | GCC 15.2 | 35996 | 464 | 11992 |
+| ING20 | ATfE 23.1.0 | 27120 | 92 | 13144 |
+
 ## 尚未覆盖
 
-- `ing916` / `ing20`：芯片参数已登记，但缺少 GCC 启动文件与链接脚本
-  （`src/StartUp/ing916`、`ing20` 下只有头文件），需先补齐才能构建。
+- `ing916` 的 demo 载体：见上，需另选示例并迁移到 CMake。
 - `central_fota`：额外依赖 `zig` 编译 `fota_client.zig`。
 - `smart_home_hub`：额外依赖 `nim` 与 `NIM_PATH`。
 - ATfE 编译 `.s` 时 CMake 会附加 `-MD/-MT/-MF`，clang 报 `unused-command-line-argument`，

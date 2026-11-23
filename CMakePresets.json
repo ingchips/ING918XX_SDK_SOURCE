@@ -53,12 +53,56 @@
         "ING_C_STANDARD": "gnu17",
         "ING_EXAMPLES": "get_started"
       }
+    },
+    {
+      "name": "gcc-ing20",
+      "displayName": "GCC / ING20 / gnu11",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-gcc-ing20",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-none-eabi.cmake",
+      "cacheVariables": {
+        "CHIP": "ing20",
+        "ING_C_STANDARD": "gnu11",
+        "ING_EXAMPLES": "get_started"
+      }
+    },
+    {
+      "name": "atfe-ing20",
+      "displayName": "ATfE(LLVM) / ING20 / gnu11",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-atfe-ing20",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-atfe.cmake",
+      "cacheVariables": {
+        "CHIP": "ing20",
+        "ING_C_STANDARD": "gnu11",
+        "ING_EXAMPLES": "get_started"
+      }
     }
   ],
   "buildPresets": [
-    { "name": "gcc-ing918", "configurePreset": "gcc-ing918" },
-    { "name": "atfe-ing918", "configurePreset": "atfe-ing918" },
-    { "name": "gcc-ing918-c17", "configurePreset": "gcc-ing918-c17" },
-    { "name": "atfe-ing918-c17", "configurePreset": "atfe-ing918-c17" }
+    {
+      "name": "gcc-ing918",
+      "configurePreset": "gcc-ing918"
+    },
+    {
+      "name": "atfe-ing918",
+      "configurePreset": "atfe-ing918"
+    },
+    {
+      "name": "gcc-ing918-c17",
+      "configurePreset": "gcc-ing918-c17"
+    },
+    {
+      "name": "atfe-ing918-c17",
+      "configurePreset": "atfe-ing918-c17"
+    },
+    {
+      "name": "gcc-ing20",
+      "configurePreset": "gcc-ing20"
+    },
+    {
+      "name": "atfe-ing20",
+      "configurePreset": "atfe-ing20"
+    }
   ]
 }
