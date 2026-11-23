@@ -79,10 +79,13 @@ endif()
 #     DEFINES   <宏...>           # 可选
 #     INCLUDES  <额外 include>    # 可选
 #     BUNDLE    <bundle 目录名>   # 可选，覆盖 ING_BUNDLE_DIR
+#     OPTIMIZE  <-O 选项>         # 可选，默认 -O0
+#     NO_PRINTF_FLOAT             # 可选，GCC 下不加 -u _printf_float
 # )
 # ---------------------------------------------------------------------------
 function(ing_add_example name)
-    cmake_parse_arguments(ARG "" "STARTUP;LDSCRIPT;BUNDLE" "SOURCES;DEFINES;INCLUDES" ${ARGN})
+    cmake_parse_arguments(ARG "NO_PRINTF_FLOAT" "STARTUP;LDSCRIPT;BUNDLE;OPTIMIZE"
+                          "SOURCES;DEFINES;INCLUDES" ${ARGN})
 
     if(NOT ARG_SOURCES)
         message(FATAL_ERROR "ing_add_example(${name}) 缺少 SOURCES")
@@ -120,7 +123,13 @@ function(ing_add_example name)
         target_compile_definitions(${name} PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:${_def}>)
     endforeach()
 
-    set(_common "-mthumb" "-mcpu=${ING_CPU}" "-O0"
+    # 优化级别默认 -O0；部分示例的 Makefile 用 -O3（如 LiteOS），可用 OPTIMIZE 对齐
+    set(_optimize "${ARG_OPTIMIZE}")
+    if(NOT _optimize)
+        set(_optimize "-O0")
+    endif()
+
+    set(_common "-mthumb" "-mcpu=${ING_CPU}" "${_optimize}"
                 "-ffunction-sections" "-fdata-sections" "-fno-builtin")
     if(ING_FPU)
         list(APPEND _common "-mfpu=${ING_FPU}" "-mfloat-abi=softfp")
@@ -134,6 +143,12 @@ function(ing_add_example name)
     target_compile_options(${name} PRIVATE
         $<$<COMPILE_LANGUAGE:ASM>:-mthumb>
         $<$<COMPILE_LANGUAGE:ASM>:-mcpu=${ING_CPU}>)
+    if(ING_FPU)
+        # 带 FPU 的芯片，其 .S（如 LiteOS 的 los_dispatch.S）需要同样的浮点选项
+        target_compile_options(${name} PRIVATE
+            $<$<COMPILE_LANGUAGE:ASM>:-mfpu=${ING_FPU}>
+            $<$<COMPILE_LANGUAGE:ASM>:-mfloat-abi=softfp>)
+    endif()
 
     if(ING_TOOLCHAIN_FAMILY STREQUAL "gcc")
         target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-deprecated>)
@@ -178,12 +193,17 @@ function(ing_add_example name)
             # 等价 GCC 的 --specs=nosys.specs：提供 syscall 桩
             "-lnosys")
     else()
-        target_link_options(${name} PRIVATE ${_link_common}
+        set(_gcc_link
             "--specs=nano.specs" "--specs=nosys.specs"
             "-T${ARG_LDSCRIPT}"
             "-Wl,--just-symbols=${_symdefs}"
-            "-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${name}.map"
-            "-u" "_printf_float")
+            "-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${name}.map")
+        # 原 Makefile 里写的是 LFLAGS+=-u _printf_float；部分示例把它注释掉了，
+        # 用 NO_PRINTF_FLOAT 保持与之一致（能省下约 8 KB 的 _dtoa_r/_vfprintf_r）。
+        if(NOT ARG_NO_PRINTF_FLOAT)
+            list(APPEND _gcc_link "-u" "_printf_float")
+        endif()
+        target_link_options(${name} PRIVATE ${_link_common} ${_gcc_link})
         # GCC 下显式链接 libstdc++；ATfE 的 clang 驱动会自动带入 libc++
         target_link_libraries(${name} PRIVATE stdc++)
     endif()

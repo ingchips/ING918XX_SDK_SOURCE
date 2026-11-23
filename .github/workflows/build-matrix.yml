@@ -32,7 +32,7 @@ jobs:
           - { toolchain: atfe, toolchain_file: atfe,          chip: ing20,  std: gnu11, example: get_started }
           # ING916 目前只有 GCC 通道：ATfE 下受 CMSIS 5.9 的 vfpcc 内联汇编限制，
           # 详见 docs/build-cmake.md 的「已知限制」。
-          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing916, std: gnu11, example: peripheral_console_realtime }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing916, std: gnu11, example: peripheral_console_realtime;peripheral_console_liteos }
 
     steps:
       - uses: actions/checkout@v6
