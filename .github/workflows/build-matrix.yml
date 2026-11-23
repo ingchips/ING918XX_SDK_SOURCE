@@ -129,7 +129,7 @@ jobs:
           path: |
             ~/nim
             ~/.nimble
-          key: nim-${{ env.NIM_VERSION }}
+          key: nim-${{ env.NIM_VERSION }}-v2
 
       - name: Install Nim
         if: steps.cache-nim.outputs.cache-hit != 'true'
@@ -162,7 +162,7 @@ jobs:
             -G Ninja \
             -DCHIP=${{ matrix.chip }} \
             -DING_C_STANDARD=${{ matrix.std }} \
-            -DING_EXAMPLES=${{ matrix.example }} \
+            -DING_EXAMPLES="${{ matrix.example }}" \
             -DARM_GCC_ROOT=/opt/arm-gcc \
             -DATFE_ROOT=/opt/atfe
 

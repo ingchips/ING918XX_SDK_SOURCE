@@ -49,7 +49,7 @@ add_custom_command(
             -I "${ING_SDK_ROOT}/bundles/${ING_BUNDLE_DIR}/inc/os"
             -I "${ING_CMSIS}/Include"
             --cache-dir "${CMAKE_CURRENT_BINARY_DIR}/zig-cache"
-            -femit-bin="${_zig_out}"
+            -femit-bin=${_zig_out}
             "${CMAKE_CURRENT_SOURCE_DIR}/src/fota_client.zig"
     DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/src/fota_client.zig"

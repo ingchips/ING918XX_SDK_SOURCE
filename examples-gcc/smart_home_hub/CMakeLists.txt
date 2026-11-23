@@ -13,6 +13,10 @@ if(NOT ING_NIM)
     return()
 endif()
 
+# nim 生成的 C 源码 include "nimbase.h"，它位于 <nim 安装>/lib 下
+get_filename_component(_nim_bin_dir "${ING_NIM}" DIRECTORY)
+get_filename_component(_nim_lib "${_nim_bin_dir}/../lib" ABSOLUTE)
+
 set(_nimcache "${CMAKE_CURRENT_BINARY_DIR}/nimcache")
 set(_nimflags --compileOnly --noMain --noLinking "--nimcache:${_nimcache}")
 
@@ -62,4 +66,6 @@ ing_add_example(smart_home_hub
     INCLUDES
         # nim 生成的 C 代码按 nimmodules 里的声明引用 SDK 头
         ${CMAKE_CURRENT_SOURCE_DIR}/nimmodules
+        # nimbase.h 等 Nim 运行时头
+        ${_nim_lib}
 )
