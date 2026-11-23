@@ -15,6 +15,7 @@ env:
   ATFE_VERSION: 23.1.0
   CMSIS_VERSION: 5.9.0
   NIM_VERSION: 2.2.4
+  ZIG_VERSION: 0.8.1
 
 jobs:
   build:
@@ -33,6 +34,9 @@ jobs:
           # ING916 目前只有 GCC 通道：ATfE 下受 CMSIS 5.9 的 vfpcc 内联汇编限制，
           # 详见 docs/build-cmake.md 的「已知限制」。
           - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing916, std: gnu11, example: peripheral_console_realtime;peripheral_console_liteos }
+          # 需要外部代码生成工具：zig 编 fota_client.zig，nim 生成业务 C 源码
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11, example: central_fota }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11, example: smart_home_hub }
 
     steps:
       - uses: actions/checkout@v6
@@ -101,6 +105,23 @@ jobs:
       # ---------- bundle 符号表 ----------
       # bundles/.gitignore 忽略了 symdefs.*，它们必须由 tools/gen_files 生成，
       # 否则链接时找不到 bundles/<bundle>/<series>/symdefs.g。
+      - name: Cache Zig
+        if: contains(matrix.example, 'central_fota')
+        id: cache-zig
+        uses: actions/cache@v5
+        with:
+          path: /usr/local/zig
+          key: zig-${{ env.ZIG_VERSION }}
+
+      - name: Install Zig
+        if: contains(matrix.example, 'central_fota') && steps.cache-zig.outputs.cache-hit != 'true'
+        run: |
+          wget -q https://ziglang.org/download/${{ env.ZIG_VERSION }}/zig-linux-x86_64-${{ env.ZIG_VERSION }}.tar.xz -O /tmp/zig.tar.xz
+          sudo tar -xJf /tmp/zig.tar.xz -C /usr/local/
+          sudo mv /usr/local/zig-linux-x86_64-${{ env.ZIG_VERSION }} /usr/local/zig
+          sudo ln -sf /usr/local/zig/zig /usr/local/bin/zig
+          zig version
+
       - name: Cache Nim
         id: cache-nim
         uses: actions/cache@v5
@@ -134,6 +155,7 @@ jobs:
       - name: Configure
         env:
           CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
+          NIM_PATH: /home/runner/nim/nim_x64/bin
         run: |
           cmake -B build \
             --toolchain=cmake/toolchain-${{ matrix.toolchain_file }}.cmake \
