@@ -89,7 +89,9 @@ function(ing_add_example name)
     target_include_directories(${name} PRIVATE
         "${ING_SDK_ROOT}/src/BSP"
         "${ING_SDK_ROOT}/src/FWlib"
-        "${ING_SDK_ROOT}/src/StartUp/${CHIP}"
+        # 目录名在 git 里是 StartUP（大写 UP）。Windows 不区分大小写，
+        # 但 Linux CI 区分，写成 StartUp 会导致找不到 ingsoc.h。
+        "${ING_SDK_ROOT}/src/StartUP/${CHIP}"
         "${ING_SDK_ROOT}/src/Tools"
         "${ING_SDK_ROOT}/src"
         "${ING_SDK_ROOT}/bundles/typical/inc"
