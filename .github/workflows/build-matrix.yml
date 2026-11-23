@@ -13,7 +13,7 @@ on:
 env:
   ARM_GCC_VERSION: 13.3.rel1
   ATFE_VERSION: 23.1.0
-  CMSIS_VERSION: 5.9.0
+  CMSIS_VERSION: 6.1.0
   NIM_VERSION: 2.2.4
   ZIG_VERSION: 0.8.1
 
@@ -31,9 +31,10 @@ jobs:
           - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu17, example: get_started;peripheral_ibeacon }
           - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing20,  std: gnu11, example: get_started }
           - { toolchain: atfe, toolchain_file: atfe,          chip: ing20,  std: gnu11, example: get_started }
-          # ING916 目前只有 GCC 通道：ATfE 下受 CMSIS 5.9 的 vfpcc 内联汇编限制，
-          # 详见 docs/build-cmake.md 的「已知限制」。
           - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing916, std: gnu11, example: peripheral_console_realtime;peripheral_console_liteos }
+          # CMSIS 6 用 __builtin_arm_set_fpscr 取代了 GCC 专有的 vfpcc clobber，
+          # ING916 的 FPU 路径因此可以在 clang 下编译
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing916, std: gnu11, example: peripheral_console_realtime }
           # 需要外部代码生成工具：zig 编 fota_client.zig，nim 生成业务 C 源码
           - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11, example: central_fota }
           - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11, example: smart_home_hub }
@@ -98,7 +99,7 @@ jobs:
       - name: Download CMSIS
         if: steps.cache-cmsis.outputs.cache-hit != 'true'
         run: |
-          wget -q https://github.com/ARM-software/CMSIS_5/archive/refs/tags/${{ env.CMSIS_VERSION }}.zip -O /tmp/cmsis.zip
+          wget -q https://github.com/ARM-software/CMSIS_6/archive/refs/tags/v${{ env.CMSIS_VERSION }}.zip -O /tmp/cmsis.zip
           mkdir -p ${{ github.workspace }}/cmsis
           unzip -q /tmp/cmsis.zip -d ${{ github.workspace }}/cmsis
 
@@ -154,7 +155,7 @@ jobs:
       # ---------- 配置与构建 ----------
       - name: Configure
         env:
-          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_6-${{ env.CMSIS_VERSION }}/CMSIS/Core
           NIM_PATH: /home/runner/nim/nim_x64/bin
         run: |
           cmake -B build \

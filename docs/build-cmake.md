@@ -194,48 +194,58 @@ sys_ram      = series.sys_ram[bundle] or series.def_sys_ram or series.ram_size /
 | ING20 | GCC 15.2 | 35996 | 464 | 11992 |
 | ING20 | ATfE 23.1.0 | 27120 | 92 | 13144 |
 
-## 已知限制：ING916 在 ATfE(LLVM) 下
+## CMSIS 版本：5.9 与 6.1 的差异
 
-ING916 是 Cortex-M4F，其 FPU 路径会触发 CMSIS 5.9 与 clang 的不兼容：
+ING916 是 Cortex-M4F，其 FPU 路径在 CMSIS 5.9 下会撞上 clang 的硬限制：
 
-1. **`vfpcc` 内联汇编 clobber**
-   `cmsis_gcc.h` 的 `__set_FPSCR()` 里写的是
+```c
+/* CMSIS 5.9 cmsis_gcc.h */
+__ASM volatile ("VMSR fpscr, %0" : : "r" (fpscr) : "vfpcc");
+```
 
-   ```c
-   __ASM volatile ("VMSR fpscr, %0" : : "r" (fpscr) : "vfpcc");
-   ```
+`vfpcc` 是 GCC 的伪寄存器，clang 报 `unknown register name 'vfpcc' in asm`，
+且是 error。该函数只在 `__FPU_PRESENT && __FPU_USED` 时编译，所以无 FPU 的
+ING918/ING20 不会触发，只有 ING916 会。
 
-   `vfpcc` 是 GCC 的伪寄存器，clang 报
-   `unknown register name 'vfpcc' in asm`，且为 error 而非警告。
-   该函数只在 `__FPU_PRESENT == 1 && __FPU_USED == 1` 时编译，所以无 FPU 的
-   ING918/ING20 不会触发，只有 ING916 会。
+**CMSIS 6.1.0 已移除这个写法**：
 
-2. **naked 函数里的非汇编语句**
-   `src/BSP/eflash.c` 的 `security_page_read()` 用 `__attribute__((naked))`，
-   函数体内有 `(void)addr; (void)prog;` 两条 C 语句。clang 不允许。
-   已在仓库内修复：给这两行加了 `!defined(__clang__)` 条件。
+```c
+/* CMSIS 6.1 cmsis_gcc.h */
+__builtin_arm_set_fpscr(fpscr);   /* clang 原生支持 */
+```
 
-**当前策略**：ING916 只走 GCC 通道（CI 矩阵里已标注），ATfE 覆盖 ING918 与 ING20。
+### 实测结论
 
-**彻底修复的路径**：把 CMSIS 从 5.9 升级到 6.x（CMSIS 6 对 clang 有专门分支）。
-这属于 SDK 基础设施升级，需要单独评估对现有 Keil/IAR/Segger 工程的影响。
+用 CMSIS 6.1.0 重建全部组合，产物与 CMSIS 5.9 **逐字节一致**：
 
-## 已迁移的示例
+| 组合 | CMSIS 5.9 | CMSIS 6.1 |
+| --- | --- | --- |
+| gcc / ing918 / get_started | 37084/568/11992 | 相同 |
+| atfe / ing918 / get_started | 31860/208/13144 | 相同 |
+| gcc / ing20 / get_started | 35996/464/11992 | 相同 |
+| atfe / ing20 / get_started | 27120/92/13144 | 相同 |
+| gcc / ing916 / peripheral_console_realtime | 29344/560/5424 | 相同 |
+| atfe / ing916 / peripheral_console_realtime | **编译失败** | 17756/184/5424 |
 
-| 示例 | bundle | 芯片 | 外部工具 | 说明 |
-| --- | --- | --- | --- | --- |
-| get_started | typical | 918 / 20 | — | 含 C++（libstdc++/libc++） |
-| peripheral_ibeacon | typical | 918 | — | 最简裸机 |
-| peripheral_console_realtime | noos_mini | 916 | — | 无 RTOS 串口控制台 |
-| peripheral_console_liteos | noos_typical | 916 | — | LiteOS-M，`-O3`，无 `_printf_float` |
-| central_fota | typical | 918 | zig | `fota_client.zig` → `.o`，另需 `ing<chip>_uecc.lib` |
-| smart_home_hub | typical | 918 | nim | configure 阶段生成 C 源码 |
+因此 CI 的 `build-matrix` 已切换到 CMSIS 6.1.0，ING916 也纳入了 ATfE 通道。
 
-需要外部工具的示例用 `find_program` 守卫：工具缺失时打印 WARNING 并跳过，
-不影响其他示例构建。
+### 对现有工程的影响
+
+- **仓库内 Keil/IAR/Segger 工程不受影响**：它们引用 ingWizard 安装目录下的
+  CMSIS（5.9），本次只改了 CI 下载的版本。
+- 本地 CMake 构建默认仍读 `CMSIS_BASE` 环境变量；要用 6.1 需自行指向
+  `CMSIS_6-6.1.0/CMSIS/Core`，或用 `-DING_CMSIS=<路径>`。
+- 若要统一升级到 CMSIS 6，需单独评估：目录结构仍是 `CMSIS/Core/Include`，
+  但部分旧头（如 `core_cmInstr.h`）在 6.x 已并入 `cmsis_gcc.h`，Keil 工程的
+  include 列表可能需要同步调整。
+
+### 另一处 clang 兼容修复
+
+`src/BSP/eflash.c` 的 `security_page_read()` 是 `__attribute__((naked))`，
+函数体内有 `(void)addr; (void)prog;` 两条 C 语句，clang 不允许。
+已加 `!defined(__clang__)` 条件，GCC 行为不变。
 
 ## 尚未覆盖
 
-- `ing916` 的 ATfE 通道：受 CMSIS 5.9 限制，见「已知限制」。
 - ATfE 编译 `.s` 时 CMake 会附加 `-MD/-MT/-MF`，clang 报 `unused-command-line-argument`，
   属无害噪音。
