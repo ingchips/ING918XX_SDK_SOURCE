@@ -18,6 +18,9 @@ if(NOT DEFINED ARM_GCC_ROOT)
     endif()
 endif()
 
+# try_compile 子工程不继承命令行 -D 变量，显式声明以便沿用 ARM_GCC_ROOT
+set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES ARM_GCC_ROOT)
+
 find_program(ING_C_COMPILER   NAMES arm-none-eabi-gcc     HINTS "${ARM_GCC_ROOT}/bin" REQUIRED)
 find_program(ING_CXX_COMPILER NAMES arm-none-eabi-g++     HINTS "${ARM_GCC_ROOT}/bin" REQUIRED)
 find_program(ING_ASM_COMPILER NAMES arm-none-eabi-gcc     HINTS "${ARM_GCC_ROOT}/bin" REQUIRED)

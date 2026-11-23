@@ -21,6 +21,10 @@ if(NOT DEFINED ATFE_ROOT)
     endif()
 endif()
 
+# try_compile 会在子工程里重新执行本文件，但子工程不继承命令行 -D 变量。
+# 不显式声明的话，ATFE_ROOT 会退回下面的默认值，配置阶段直接失败。
+set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES ATFE_ROOT)
+
 if(NOT EXISTS "${ATFE_ROOT}/bin/newlib-nano.cfg")
     message(FATAL_ERROR
         "未找到 ${ATFE_ROOT}/bin/newlib-nano.cfg。"
