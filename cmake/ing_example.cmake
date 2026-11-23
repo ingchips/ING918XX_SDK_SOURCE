@@ -11,22 +11,23 @@ include_guard(GLOBAL)
 # ---------------------------------------------------------------------------
 # 芯片家族参数表
 #
-# 新增芯片家族时在这里补三行：CPU、FPU、BUNDLE。
-# BUNDLE 对应 bundles/typical/ 下的目录名，决定 ROM 符号表。
+# 新增芯片家族时在这里补三项：CPU、FPU、SERIES。
+# SERIES 是 bundles/<bundle>/<SERIES>/ 的目录名，决定 ROM 符号表。
 # ---------------------------------------------------------------------------
 set(ING_CHIP_ing918_CPU    cortex-m3)
 set(ING_CHIP_ing918_FPU    "")
-set(ING_CHIP_ing918_BUNDLE ING9187xx)
+set(ING_CHIP_ing918_SERIES ING9187xx)
 
+# ING916 = Cortex-M4F。ingWizard 用 softfp，不是 hard。
 set(ING_CHIP_ing916_CPU    cortex-m4)
 set(ING_CHIP_ing916_FPU    fpv4-sp-d16)
-set(ING_CHIP_ing916_BUNDLE ING9168xx)
+set(ING_CHIP_ing916_SERIES ING9168xx)
 
 # ING20（ING208xx）：Cortex-M3，与 ING918 同核但 ROM/RAM 布局不同。
 # 注意系列名是 ING208xx；bundles/*/ING20xx 是残缺的旧目录，不可用。
 set(ING_CHIP_ing20_CPU    cortex-m3)
 set(ING_CHIP_ing20_FPU    "")
-set(ING_CHIP_ing20_BUNDLE ING208xx)
+set(ING_CHIP_ing20_SERIES ING208xx)
 
 # 目标芯片家族，可用 -DCHIP= 覆盖
 if(NOT DEFINED CHIP)
@@ -39,7 +40,13 @@ if(NOT DEFINED ING_CHIP_${CHIP}_CPU)
 endif()
 set(ING_CPU    "${ING_CHIP_${CHIP}_CPU}")
 set(ING_FPU    "${ING_CHIP_${CHIP}_FPU}")
-set(ING_BUNDLE "${ING_CHIP_${CHIP}_BUNDLE}")
+set(ING_SERIES "${ING_CHIP_${CHIP}_SERIES}")
+
+# bundle 目录名（typical / noos_mini / mini / exp ...），可用 -DING_BUNDLE_DIR= 覆盖。
+# 单个示例也可以在自己的 CMakeLists 里用 BUNDLE 参数覆盖。
+if(NOT DEFINED ING_BUNDLE_DIR)
+    set(ING_BUNDLE_DIR typical CACHE STRING "bundle 目录名：typical / noos_mini / mini ...")
+endif()
 
 # C 语言标准，可用 -DING_C_STANDARD=gnu17 覆盖
 # 取值 gnu99 / gnu11 / gnu17；扩展由 C_EXTENSIONS 打开，
@@ -71,13 +78,19 @@ endif()
 #     LDSCRIPT  <链接脚本>        # .ld，可选
 #     DEFINES   <宏...>           # 可选
 #     INCLUDES  <额外 include>    # 可选
+#     BUNDLE    <bundle 目录名>   # 可选，覆盖 ING_BUNDLE_DIR
 # )
 # ---------------------------------------------------------------------------
 function(ing_add_example name)
-    cmake_parse_arguments(ARG "" "STARTUP;LDSCRIPT" "SOURCES;DEFINES;INCLUDES" ${ARGN})
+    cmake_parse_arguments(ARG "" "STARTUP;LDSCRIPT;BUNDLE" "SOURCES;DEFINES;INCLUDES" ${ARGN})
 
     if(NOT ARG_SOURCES)
         message(FATAL_ERROR "ing_add_example(${name}) 缺少 SOURCES")
+    endif()
+
+    set(_bundle_dir "${ARG_BUNDLE}")
+    if(NOT _bundle_dir)
+        set(_bundle_dir "${ING_BUNDLE_DIR}")
     endif()
 
     add_executable(${name} ${ARG_SOURCES})
@@ -94,8 +107,8 @@ function(ing_add_example name)
         "${ING_SDK_ROOT}/src/StartUP/${CHIP}"
         "${ING_SDK_ROOT}/src/Tools"
         "${ING_SDK_ROOT}/src"
-        "${ING_SDK_ROOT}/bundles/typical/inc"
-        "${ING_SDK_ROOT}/bundles/typical/inc/os"
+        "${ING_SDK_ROOT}/bundles/${_bundle_dir}/inc"
+        "${ING_SDK_ROOT}/bundles/${_bundle_dir}/inc/os"
         "${ING_CMSIS}/Include"
         ${ARG_INCLUDES}
     )
@@ -124,6 +137,11 @@ function(ing_add_example name)
 
     if(ING_TOOLCHAIN_FAMILY STREQUAL "gcc")
         target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:-Wno-deprecated>)
+        # GCC 14+ 把 -Wincompatible-pointer-types 升级为错误。SDK 里存在
+        # uint32_t 与 size_t 混用的回调赋值（如 noos_impl.c 的 .malloc = malloc），
+        # 在 GCC 15 上直接编译失败，这里降级为警告以保持可构建。
+        target_compile_options(${name} PRIVATE
+            $<$<COMPILE_LANGUAGE:C>:-Wno-error=incompatible-pointer-types>)
     endif()
 
     # C++：CMSIS 5.9 的 cmsis_gcc.h 使用 register 关键字，
@@ -144,7 +162,7 @@ function(ing_add_example name)
         list(APPEND _link_common "-mfpu=${ING_FPU}" "-mfloat-abi=softfp")
     endif()
 
-    set(_symdefs "${ING_SDK_ROOT}/bundles/typical/${ING_BUNDLE}/symdefs.g")
+    set(_symdefs "${ING_SDK_ROOT}/bundles/${_bundle_dir}/${ING_SERIES}/symdefs.g")
 
     if(ING_TOOLCHAIN_IS_LLVM)
         # lld 不支持 --just-symbols 读取 GNU 链接脚本格式的 symdefs.g

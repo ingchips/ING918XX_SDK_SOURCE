@@ -194,9 +194,35 @@ sys_ram      = series.sys_ram[bundle] or series.def_sys_ram or series.ram_size /
 | ING20 | GCC 15.2 | 35996 | 464 | 11992 |
 | ING20 | ATfE 23.1.0 | 27120 | 92 | 13144 |
 
+## 已知限制：ING916 在 ATfE(LLVM) 下
+
+ING916 是 Cortex-M4F，其 FPU 路径会触发 CMSIS 5.9 与 clang 的不兼容：
+
+1. **`vfpcc` 内联汇编 clobber**
+   `cmsis_gcc.h` 的 `__set_FPSCR()` 里写的是
+
+   ```c
+   __ASM volatile ("VMSR fpscr, %0" : : "r" (fpscr) : "vfpcc");
+   ```
+
+   `vfpcc` 是 GCC 的伪寄存器，clang 报
+   `unknown register name 'vfpcc' in asm`，且为 error 而非警告。
+   该函数只在 `__FPU_PRESENT == 1 && __FPU_USED == 1` 时编译，所以无 FPU 的
+   ING918/ING20 不会触发，只有 ING916 会。
+
+2. **naked 函数里的非汇编语句**
+   `src/BSP/eflash.c` 的 `security_page_read()` 用 `__attribute__((naked))`，
+   函数体内有 `(void)addr; (void)prog;` 两条 C 语句。clang 不允许。
+   已在仓库内修复：给这两行加了 `!defined(__clang__)` 条件。
+
+**当前策略**：ING916 只走 GCC 通道（CI 矩阵里已标注），ATfE 覆盖 ING918 与 ING20。
+
+**彻底修复的路径**：把 CMSIS 从 5.9 升级到 6.x（CMSIS 6 对 clang 有专门分支）。
+这属于 SDK 基础设施升级，需要单独评估对现有 Keil/IAR/Segger 工程的影响。
+
 ## 尚未覆盖
 
-- `ing916` 的 demo 载体：见上，需另选示例并迁移到 CMake。
+- `ing916` 的 ATfE 通道：受 CMSIS 5.9 限制，见上一节。
 - `central_fota`：额外依赖 `zig` 编译 `fota_client.zig`。
 - `smart_home_hub`：额外依赖 `nim` 与 `NIM_PATH`。
 - ATfE 编译 `.s` 时 CMake 会附加 `-MD/-MT/-MF`，clang 报 `unused-command-line-argument`，

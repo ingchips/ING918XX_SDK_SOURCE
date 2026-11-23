@@ -18,18 +18,21 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.toolchain }} / ${{ matrix.chip }} / ${{ matrix.std }}
+    name: ${{ matrix.toolchain }} / ${{ matrix.chip }} / ${{ matrix.std }} / ${{ matrix.example }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11 }
-          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu17 }
-          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu11 }
-          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu17 }
-          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing20,  std: gnu11 }
-          - { toolchain: atfe, toolchain_file: atfe,          chip: ing20,  std: gnu11 }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu11, example: get_started }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing918, std: gnu17, example: get_started }
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu11, example: get_started }
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing918, std: gnu17, example: get_started }
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing20,  std: gnu11, example: get_started }
+          - { toolchain: atfe, toolchain_file: atfe,          chip: ing20,  std: gnu11, example: get_started }
+          # ING916 目前只有 GCC 通道：ATfE 下受 CMSIS 5.9 的 vfpcc 内联汇编限制，
+          # 详见 docs/build-cmake.md 的「已知限制」。
+          - { toolchain: gcc,  toolchain_file: arm-none-eabi, chip: ing916, std: gnu11, example: peripheral_console_realtime }
 
     steps:
       - uses: actions/checkout@v6
@@ -125,6 +128,7 @@ jobs:
           nim -d:release c gen_files.nim
           ./gen_files "${{ github.workspace }}/bundles"
           test -f "${{ github.workspace }}/bundles/typical/ING9187xx/symdefs.g"
+          test -f "${{ github.workspace }}/bundles/noos_mini/ING9168xx/symdefs.g"
 
       # ---------- 配置与构建 ----------
       - name: Configure
@@ -136,7 +140,7 @@ jobs:
             -G Ninja \
             -DCHIP=${{ matrix.chip }} \
             -DING_C_STANDARD=${{ matrix.std }} \
-            -DING_EXAMPLES=get_started \
+            -DING_EXAMPLES=${{ matrix.example }} \
             -DARM_GCC_ROOT=/opt/arm-gcc \
             -DATFE_ROOT=/opt/atfe
 
@@ -148,7 +152,7 @@ jobs:
 
       - name: Report size
         run: |
-          echo "### ${{ matrix.toolchain }} / ${{ matrix.chip }} / ${{ matrix.std }}" >> $GITHUB_STEP_SUMMARY
+          echo "### ${{ matrix.toolchain }} / ${{ matrix.chip }} / ${{ matrix.std }} / ${{ matrix.example }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           find build -name '*.elf' -exec size {} \; 2>/dev/null || true
           find build -name '*.elf' -exec /opt/atfe/bin/llvm-size {} \; 2>/dev/null || true

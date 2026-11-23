@@ -387,7 +387,9 @@ asm static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 #else
 __attribute__((naked)) static uint32_t security_page_read(uint32_t addr, uint32_t prog)
 {
-#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
+    /* clang 不允许 naked 函数里出现非汇编语句，故 __clang__ 下跳过
+     * 这两个仅用于消除 unused 警告的 C 语句。 */
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION) && !defined(__clang__)
     (void)addr;
     (void)prog;
 #endif
