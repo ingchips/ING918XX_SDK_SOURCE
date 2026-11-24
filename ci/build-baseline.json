@@ -1,0 +1,978 @@
+{
+ "generated_at": "2026-11-24",
+ "note": "由 tools/gen_all_cmake.py --probe 生成；ok=必须通过，needs-fix/skip=已知不通过",
+ "combinations": [
+  {
+   "project": "anti_lost_mas",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "anti_lost_mas",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "anti_lost_mas",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "anti_lost_sla",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "anti_lost_sla",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "anti_lost_sla",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ble_rpc",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ble_rpc",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ble_rpc",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "bqb_rf",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "bqb_rf",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "bqb_rf",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "central_cte",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "central_cte",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "central_cte",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "central_fota",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "central_fota",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "central_fota",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "central_mass_conn",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "central_mass_conn",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "central_mass_conn",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "central_throughput",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "central_throughput",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "central_throughput",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "cherry_usb",
+   "chip": "ing918",
+   "status": "excluded",
+   "reason": "CherryUSB 不支持 Keil4 的 C99 约束；USB 仅 916/20 有"
+  },
+  {
+   "project": "cherry_usb",
+   "chip": "ing916",
+   "status": "excluded",
+   "reason": "CherryUSB 不支持 Keil4 的 C99 约束；USB 仅 916/20 有"
+  },
+  {
+   "project": "cherry_usb",
+   "chip": "ing20",
+   "status": "excluded",
+   "reason": "CherryUSB 不支持 Keil4 的 C99 约束；USB 仅 916/20 有"
+  },
+  {
+   "project": "coremark",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "coremark",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "coremark",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "data_logger",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "data_logger",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "data_logger",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "direct_conn",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "direct_conn",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "direct_conn",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ead",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ead",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ead",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "eatt",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "eatt",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "eatt",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ext_ackable_packet",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ext_ackable_packet",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ext_ackable_packet",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ext_raw_packet",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "ext_raw_packet",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ext_raw_packet",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ext_raw_packet_noos",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ext_raw_packet_noos",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ext_raw_packet_noos",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "gatt_relay",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DBOARD_USE_RGB_LED -DDEBUG -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platfor"
+  },
+  {
+   "project": "gatt_relay",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DBOARD_USE_RGB_LED -DDEBUG -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platfor"
+  },
+  {
+   "project": "gatt_relay",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DBOARD_USE_RGB_LED -DDEBUG -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platfor"
+  },
+  {
+   "project": "get_started",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "get_started",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DI2C_PORT=I2C_PORT_0 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming/ING918XX_SDK_"
+  },
+  {
+   "project": "get_started",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "hid_keyboard",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "hid_keyboard",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "hid_keyboard",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "hid_mouse",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "hid_mouse",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "hid_mouse",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ibeacon_scanner",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ibeacon_scanner",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "ibeacon_scanner",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "io_over_ble_mas",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "io_over_ble_mas",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "io_over_ble_mas",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "io_over_ble_sla",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "io_over_ble_sla",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "io_over_ble_sla",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "l2cap_psm",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "l2cap_psm",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "l2cap_psm",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "littleVGL",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming/ING918XX_SDK_SOURCE/src/BSP -IC:/mi"
+  },
+  {
+   "project": "littleVGL",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming/ING918XX_SDK_SOURCE/src/BSP -IC:/mi"
+  },
+  {
+   "project": "littleVGL",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming/ING918XX_SDK_SOURCE/src/BSP -IC:/mi"
+  },
+  {
+   "project": "llsync_light",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "llsync_light",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "llsync_light",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "mesh-light",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "C:/gcc/gcc_arm/arm-none-eabi-toolchain-15.2/bin/../lib/gcc/arm-none-eabi/15.2.1/../../../../arm-none-eabi/bin/ld.exe: C:/ming/ING918XX_SDK_SOURCE/src/SigMesh/Si"
+  },
+  {
+   "project": "mesh-light",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "C:/gcc/gcc_arm/arm-none-eabi-toolchain-15.2/bin/../lib/gcc/arm-none-eabi/15.2.1/../../../../arm-none-eabi/bin/ld.exe: C:/ming/ING918XX_SDK_SOURCE/src/SigMesh/Si"
+  },
+  {
+   "project": "mesh-light",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "C:/gcc/gcc_arm/arm-none-eabi-toolchain-15.2/bin/../lib/gcc/arm-none-eabi/15.2.1/../../../../arm-none-eabi/bin/ld.exe: C:/ming/ING918XX_SDK_SOURCE/src/SigMesh/Si"
+  },
+  {
+   "project": "pairing_with_oob",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "pairing_with_oob",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "pairing_with_oob",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "pawr",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DROLE=1 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming/ING918XX_SDK_SOURCE/src/BS"
+  },
+  {
+   "project": "pawr",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "pawr",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "periodic_advertiser",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "periodic_advertiser",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "periodic_advertiser",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "periodic_scanner",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "periodic_scanner",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "periodic_scanner",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_ancs",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_ancs",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_ancs",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_band",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_band",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_band",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DSIMULATION -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming/ING918XX_SDK_SOURCE/sr"
+  },
+  {
+   "project": "peripheral_battery",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "peripheral_battery",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_battery",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console_freertos",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console_freertos",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "peripheral_console_freertos",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console_realtime",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console_realtime",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console_realtime",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_console_rt-thread",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "peripheral_console_rt-thread",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "peripheral_console_rt-thread",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "peripheral_etag",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_etag",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "peripheral_etag",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_ibeacon",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_ibeacon",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_ibeacon",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_irc",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_irc",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_irc",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_led",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "collect2.exe: error: ld returned 1 exit status"
+  },
+  {
+   "project": "peripheral_led",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_led",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_mass_conn",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_mass_conn",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_mass_conn",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_pedometer",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_pedometer",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_pedometer",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DBOARD_USE_ACCEL -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming/ING918XX_SDK_SOUR"
+  },
+  {
+   "project": "peripheral_piano",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_piano",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_piano",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_throughput",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_throughput",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "peripheral_throughput",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "platform_companion",
+   "chip": "ing918",
+   "status": "special",
+   "reason": "ROM 配套固件，链接布局与 APP 不同（见 platform_companion_*.ld）"
+  },
+  {
+   "project": "platform_companion",
+   "chip": "ing916",
+   "status": "special",
+   "reason": "ROM 配套固件，链接布局与 APP 不同（见 platform_companion_*.ld）"
+  },
+  {
+   "project": "platform_companion",
+   "chip": "ing20",
+   "status": "special",
+   "reason": "ROM 配套固件，链接布局与 APP 不同（见 platform_companion_*.ld）"
+  },
+  {
+   "project": "reset_handler",
+   "chip": "ing918",
+   "status": "skip",
+   "reason": "没有解析到 C/C++ 源文件"
+  },
+  {
+   "project": "reset_handler",
+   "chip": "ing916",
+   "status": "skip",
+   "reason": "没有解析到 C/C++ 源文件"
+  },
+  {
+   "project": "reset_handler",
+   "chip": "ing20",
+   "status": "skip",
+   "reason": "没有解析到 C/C++ 源文件"
+  },
+  {
+   "project": "secondary_fota",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "secondary_fota",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "secondary_fota",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "smart_meter",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "smart_meter",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "smart_meter",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "thermo_ota",
+   "chip": "ing918",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "thermo_ota",
+   "chip": "ing916",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "thermo_ota",
+   "chip": "ing20",
+   "status": "ok",
+   "reason": ""
+  },
+  {
+   "project": "uart_console",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DTRACE_BUFF_SIZE=1024 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platform_pri"
+  },
+  {
+   "project": "uart_console",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DTRACE_BUFF_SIZE=1024 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platform_pri"
+  },
+  {
+   "project": "uart_console",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DTRACE_BUFF_SIZE=1024 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platform_pri"
+  },
+  {
+   "project": "voice_remote_ctrl",
+   "chip": "ing918",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DAUDIO_CODEC_ALG=1 -DAUDIO_INPUT=0 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming"
+  },
+  {
+   "project": "voice_remote_ctrl",
+   "chip": "ing916",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DAUDIO_CODEC_ALG=1 -DAUDIO_INPUT=0 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming"
+  },
+  {
+   "project": "voice_remote_ctrl",
+   "chip": "ing20",
+   "status": "needs-fix",
+   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DAUDIO_CODEC_ALG=1 -DAUDIO_INPUT=0 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -IC:/ming"
+  }
+ ]
+}

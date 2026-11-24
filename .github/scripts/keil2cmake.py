@@ -32,77 +32,9 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 # Keil 工程里这些文件由 SDK 的 GNU 版本替代，或本来就不参与编译
-SKIP_SUFFIXES = {".s", ".sct", ".ini", ".lst", ".o", ".d", ".crf", ".axf", ".hex", ".bin"}
-SKIP_NAMES = {"symdefs.m", "symdefs.s", "symdefs.i", "symdefs.g"}
-
-
-def text_of(node, path: str, default: str = "") -> str:
-    found = node.find(path)
-    return (found.text or "").strip() if found is not None and found.text else default
-
-
-def parse_uvprojx(path: Path, target_name: str | None) -> dict:
-    root = ET.parse(path).getroot()
-
-    targets = root.findall(".//Target")
-    if not targets:
-        raise SystemExit(f"{path.name}: 没有找到 <Target>")
-
-    target = None
-    if target_name:
-        for t in targets:
-            if text_of(t, "TargetName") == target_name:
-                target = t
-                break
-        if target is None:
-            names = [text_of(t, "TargetName") for t in targets]
-            raise SystemExit(f"{path.name}: 没有名为 {target_name} 的 Target，可选：{names}")
-    else:
-        target = targets[0]
-
-    name = text_of(target, "TargetName") or path.stem
-    device = text_of(target, ".//Device")
-
-    # include / define 在 Cads 的 VariousControls 下
-    includes_raw = text_of(target, ".//Cads/VariousControls/IncludePath")
-    defines_raw = text_of(target, ".//Cads/VariousControls/Define")
-
-    # 汇编侧的 include 也一并带上，避免 .S 找不到头文件
-    asm_includes_raw = text_of(target, ".//Aads/VariousControls/IncludePath")
-
-    includes: list[Path] = []
-    for raw in (includes_raw + ";" + asm_includes_raw).split(";"):
-        raw = raw.strip()
-        if not raw:
-            continue
-        cand = (path.parent / raw.replace("\\", "/")).resolve()
-        includes.append(cand)
-    # Define 用逗号分隔（Keil 习惯），也兼容空格
-    defines = [x.strip() for x in defines_raw.replace(",", ";").split(";") if x.strip()]
-
-    sources: list[Path] = []
-    for f in target.findall(".//Files/File"):
-        fname = text_of(f, "FileName")
-        fpath = text_of(f, "FilePath")
-        if not fname or not fpath:
-            continue
-        if fname.lower() in SKIP_NAMES:
-            continue
-        suffix = Path(fname).suffix.lower()
-        if suffix in SKIP_SUFFIXES:
-            continue
-        p = (path.parent / fpath.replace("\\", "/")).resolve()
-        if p.is_file():
-            sources.append(p)
-
-    return {
-        "name": name,
-        "device": device,
-        "sources": sources,
-        "includes": includes,
-        "defines": defines,
-        "targets": [text_of(t, "TargetName") for t in targets],
-    }
+# Keil 工程解析统一维护在 tools/keil_uvprojx.py，避免多处实现漂移
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+from keil_uvprojx import parse_uvprojx  # noqa: E402
 
 
 def to_rel(p: Path, base: Path) -> str:
@@ -190,7 +122,10 @@ def main() -> int:
     if not project.is_file():
         raise SystemExit(f"工程文件不存在：{project}")
 
-    info = parse_uvprojx(project, args.target)
+    try:
+        info = parse_uvprojx(project, args.target)
+    except ValueError as exc:
+        raise SystemExit(str(exc))
     if not info["sources"]:
         raise SystemExit(f"{project.name}: 没有解析到任何 C/C++ 源文件")
 

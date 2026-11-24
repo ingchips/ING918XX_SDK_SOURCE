@@ -48,16 +48,26 @@ if(NOT DEFINED ING_BUNDLE_DIR)
     set(ING_BUNDLE_DIR typical CACHE STRING "bundle 目录名：typical / noos_mini / mini ...")
 endif()
 
-# C 语言标准，可用 -DING_C_STANDARD=gnu17 覆盖
-# 取值 gnu99 / gnu11 / gnu17；扩展由 C_EXTENSIONS 打开，
-# CMake 的 C_STANDARD 属性只接受版本号，故这里拆出数字。
+# C 语言标准，可用 -DING_C_STANDARD= 覆盖。
+#
+# 默认 gnu90：Keil4（ARMCC 5.03）的语言级别是 C89/C90，但它通过
+# __inline 等扩展关键字支持 CMSIS，所以严格的 -std=c90 反而编不过
+# （CMSIS 的 __STATIC_INLINE 展开成 C99 的 inline）。gnu90 在语义上
+# 对齐 C90，同时保留必要的关键字扩展，是与 Keil4 最接近的基线。
+#
+# 取值：c89/c90/c99/c11/c17（严格）或 gnu89/gnu90/gnu99/gnu11/gnu17。
 if(NOT DEFINED ING_C_STANDARD)
-    set(ING_C_STANDARD gnu11 CACHE STRING "C 标准：gnu99 / gnu11 / gnu17")
+    set(ING_C_STANDARD gnu90 CACHE STRING "C 标准：gnu90 对齐 Keil4，gnu99/gnu11 更宽松")
 endif()
-if(NOT ING_C_STANDARD MATCHES "^(gnu|c)(99|11|17|23)$")
-    message(FATAL_ERROR "不支持的 ING_C_STANDARD=${ING_C_STANDARD}，可选 gnu99 / gnu11 / gnu17")
+if(NOT ING_C_STANDARD MATCHES "^(gnu|c)(89|90|99|11|17|23)$")
+    message(FATAL_ERROR "不支持的 ING_C_STANDARD=${ING_C_STANDARD}，可选 c89/c90/c99/c11/gnu*")
 endif()
 string(REGEX REPLACE "^(gnu|c)" "" ING_C_STD_NUM "${ING_C_STANDARD}")
+if(ING_C_STANDARD MATCHES "^gnu")
+    set(ING_C_EXTENSIONS ON)
+else()
+    set(ING_C_EXTENSIONS OFF)
+endif()
 
 # SDK 根目录：本文件位于 <sdk>/cmake/ 下
 get_filename_component(ING_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
@@ -164,7 +174,7 @@ function(ing_add_example name)
     set_target_properties(${name} PROPERTIES
         C_STANDARD           ${ING_C_STD_NUM}
         C_STANDARD_REQUIRED  ON
-        C_EXTENSIONS         ON
+        C_EXTENSIONS         ${ING_C_EXTENSIONS}
         CXX_STANDARD         14
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS       ON
@@ -204,8 +214,8 @@ function(ing_add_example name)
             list(APPEND _gcc_link "-u" "_printf_float")
         endif()
         target_link_options(${name} PRIVATE ${_link_common} ${_gcc_link})
-        # GCC 下显式链接 libstdc++；ATfE 的 clang 驱动会自动带入 libc++
-        target_link_libraries(${name} PRIVATE stdc++)
+        # GCC 下显式链接 libstdc++ 与 libm；ATfE 的 clang 驱动会自动带入
+        target_link_libraries(${name} PRIVATE stdc++ m)
     endif()
 
     # ---- 产物：elf + bin ----

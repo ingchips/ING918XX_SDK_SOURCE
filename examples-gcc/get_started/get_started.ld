@@ -190,6 +190,8 @@ SECTIONS
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
+	/* FreeRTOS 的 GCC 移植层用 __initial_sp 作为初始栈指针 */
+	PROVIDE(__initial_sp = __StackTop);
 	
 	/* Check if data + heap + stack exceeds RAM limit */
 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")

@@ -1,0 +1,139 @@
+name: build-all
+
+# 全量工程编译验证：把 examples/ 下每个 Keil 工程按 ing918/ing916/ing20
+# 生成 CMake 工程并编译，覆盖"切芯片也能编过"。
+#
+# 与 build-matrix 的分工：
+#   build-matrix  验证手写 CMake 的 6 个示例（含 ATfE）
+#   build-all     验证 examples/ 下全部 Keil 工程的源码可编译性（GCC）
+#   keil-import   单工程 Keil→CMake 的冒烟检查
+#
+# 已知不支持的组合记录在 ci/build-baseline.json：baseline 里是 ok 的组合
+# 一旦编译失败即判红；skip/needs-fix 的组合失败不判红，成功则提示可更新。
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+  pull_request:
+
+env:
+  ARM_GCC_VERSION: 13.3.rel1
+  CMSIS_VERSION: 6.1.0
+  NIM_VERSION: 2.2.4
+  GROUPS: 12
+
+jobs:
+  build:
+    name: group-${{ matrix.group }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build xz-utils unzip
+          cmake --version
+
+      - name: Cache Arm GNU Toolchain
+        id: cache-gcc
+        uses: actions/cache@v5
+        with:
+          path: /opt/arm-gcc
+          key: arm-gcc-${{ env.ARM_GCC_VERSION }}
+
+      - name: Install Arm GNU Toolchain
+        if: steps.cache-gcc.outputs.cache-hit != 'true'
+        run: |
+          sudo mkdir -p /opt/arm-gcc
+          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_GCC_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_GCC_VERSION }}-x86_64-arm-none-eabi.tar.xz -O /tmp/arm-gcc.tar.xz
+          sudo tar -xJf /tmp/arm-gcc.tar.xz -C /opt/arm-gcc --strip-components=1
+          /opt/arm-gcc/bin/arm-none-eabi-gcc --version
+
+      - name: Cache CMSIS
+        id: cache-cmsis
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/cmsis
+          key: cmsis-${{ env.CMSIS_VERSION }}
+
+      - name: Download CMSIS
+        if: steps.cache-cmsis.outputs.cache-hit != 'true'
+        run: |
+          wget -q https://github.com/ARM-software/CMSIS_6/archive/refs/tags/v${{ env.CMSIS_VERSION }}.zip -O /tmp/cmsis.zip
+          mkdir -p ${{ github.workspace }}/cmsis
+          unzip -q /tmp/cmsis.zip -d ${{ github.workspace }}/cmsis
+
+      - name: Cache Nim
+        id: cache-nim
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/nim
+            ~/.nimble
+          key: nim-${{ env.NIM_VERSION }}-v2
+
+      - name: Install Nim
+        if: steps.cache-nim.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/nim
+          wget -q https://nim-lang.org/download/nim-${{ env.NIM_VERSION }}-linux_x64.tar.xz -O /tmp/nim.tar.xz
+          tar -xJf /tmp/nim.tar.xz -C ~/nim
+          mv ~/nim/nim-${{ env.NIM_VERSION }} ~/nim/nim_x64
+          export PATH=~/nim/nim_x64/bin:$PATH
+          nimble refresh -y
+          nimble install -y malebolgia
+
+      - name: Generate bundle symbols
+        run: |
+          export PATH=~/nim/nim_x64/bin:$PATH
+          cd tools
+          nim -d:release c gen_files.nim
+          ./gen_files "${{ github.workspace }}/bundles"
+
+      - name: Generate and probe this group
+        env:
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_6-${{ env.CMSIS_VERSION }}/CMSIS/Core
+        run: |
+          python tools/gen_all_cmake.py \
+            --out build/gen \
+            --probe \
+            --group ${{ matrix.group }} --groups ${{ env.GROUPS }} \
+            --cmsis "$CMSIS_BASE" \
+            --gcc-root /opt/arm-gcc \
+            --c-standard gnu90
+
+      - name: Upload group result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: group-${{ matrix.group }}
+          path: build/gen/manifest.json
+          if-no-files-found: warn
+
+  report:
+    name: compare with baseline
+    needs: build
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download all group results
+        uses: actions/download-artifact@v5
+        with:
+          pattern: group-*
+          path: groups
+
+      - name: Merge and compare with baseline
+        run: |
+          python .github/scripts/compare_baseline.py \
+            --groups groups \
+            --baseline ci/build-baseline.json \
+            --summary "$GITHUB_STEP_SUMMARY"
