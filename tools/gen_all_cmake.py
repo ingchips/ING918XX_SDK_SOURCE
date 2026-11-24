@@ -125,6 +125,29 @@ def extra_libs(sdk: Path, proj_dir: Path, info: dict, name: str, chip: str) -> l
     return libs
 
 
+def read_startup_sizes(proj_dir: Path, chip: str) -> tuple[int | None, int | None]:
+    """从工程自带的 startup_*.s 里读 Heap_Size / Stack_Size。
+
+    Keil 的启动文件用 ARMCC 语法（`Heap_Size EQU 0x0`），很多工程堆是 0。
+    我们的模板默认 8 KB 堆，对这些工程会撑爆 RAM，所以必须用真实值。
+    """
+    import re
+    src = proj_dir / "src"
+    if not src.is_dir():
+        return (None, None)
+    for f in sorted(src.glob("startup_*.s")) + sorted(src.glob("gstartup_*.s")):
+        try:
+            text = f.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        heap = re.search(r"Heap_Size\s+EQU\s+(0x[0-9A-Fa-f]+|\d+)", text)
+        stack = re.search(r"Stack_Size\s+EQU\s+(0x[0-9A-Fa-f]+|\d+)", text)
+        if heap or stack:
+            return (int(heap.group(1), 0) if heap else None,
+                    int(stack.group(1), 0) if stack else None)
+    return (None, None)
+
+
 def read_bundle(proj_dir: Path) -> str | None:
     ingw = next(iter(sorted(proj_dir.glob("*.ingw"))), None)
     if ingw is None:
@@ -252,8 +275,10 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
     out_dir = out_root / name / chip
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    heap_size, stack_size = read_startup_sizes(proj_dir, chip)
     startup = out_dir / f"gstartup_{mem['family']}00.s"
-    startup.write_bytes(startup_text(mem["family"]).replace("\n", "\r\n").encode("utf-8"))
+    startup.write_bytes(startup_text(mem["family"], heap_size, stack_size)
+                        .replace("\n", "\r\n").encode("utf-8"))
 
     ldscript = out_dir / f"{name}.ld"
     ldscript.write_text(render_ld(mem, ld_template), encoding="utf-8")
@@ -267,6 +292,10 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
         "bundle": bundle,
         "sources": len(info["sources"]),
         "libs": [l.name for l in libs],
+        "heap": heap_size,
+        "stack": stack_size,
+        "heap": heap_size,
+        "stack": stack_size,
         "dir": str(out_dir.relative_to(out_root).as_posix()),
         "rom": f"0x{mem['rom_addr']:X}/{mem['rom_size']}",
         "ram": f"0x{mem['ram_addr']:X}/{mem['ram_size']}",

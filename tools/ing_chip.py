@@ -199,12 +199,22 @@ def compute_memory(sdk_root: Path, series: str, bundle: str) -> dict:
     }
 
 
-def startup_text(family: str) -> str:
-    """渲染某个芯片家族的 GNU 启动文件内容（LF 行尾）。"""
+def startup_text(family: str, heap_size: int | None = None,
+                 stack_size: int | None = None) -> str:
+    """渲染某个芯片家族的 GNU 启动文件内容（LF 行尾）。
+
+    heap_size/stack_size 为 None 时用家族默认值；调用方可以从原 Keil 工程的
+    startup_*.s 里解析出真实值传进来（很多工程 Heap_Size 是 0）。
+    """
     arch = "armv7e-m" if family == "ing916" else "armv7-m"
     fpu = "    .fpu    fpv4-sp-d16\n" if family == "ing916" else ""
-    return STARTUP_TEMPLATE.format(arch=arch, fpu=fpu, family=family,
-                                   heap_size=HEAP_SIZE[family])
+    heap = HEAP_SIZE[family] if heap_size is None else heap_size
+    stack = 128 if stack_size is None else stack_size
+    text = STARTUP_TEMPLATE.format(arch=arch, fpu=fpu, family=family, heap_size=heap)
+    if stack != 128:
+        text = text.replace("    .equ    Stack_Size, 128",
+                            "    .equ    Stack_Size, %d" % stack)
+    return text
 
 
 def series_of_family(family: str) -> str:

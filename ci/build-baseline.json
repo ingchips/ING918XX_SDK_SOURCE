@@ -401,8 +401,8 @@
   {
    "project": "io_over_ble_mas",
    "chip": "ing918",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "io_over_ble_mas",
@@ -413,14 +413,14 @@
   {
    "project": "io_over_ble_mas",
    "chip": "ing20",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "io_over_ble_sla",
    "chip": "ing918",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "io_over_ble_sla",
@@ -431,8 +431,8 @@
   {
    "project": "io_over_ble_sla",
    "chip": "ing20",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "l2cap_psm",
@@ -659,8 +659,8 @@
   {
    "project": "peripheral_console_freertos",
    "chip": "ing916",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "peripheral_console_freertos",
@@ -713,8 +713,8 @@
   {
    "project": "peripheral_etag",
    "chip": "ing916",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "peripheral_etag",
