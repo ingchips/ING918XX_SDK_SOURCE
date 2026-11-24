@@ -99,10 +99,12 @@ PROJECT_LIBS = {
 SOURCE_LIBS = {
     "ecc_driver.c": "src/Tools/{chip}_uecc.lib",
     "fota_client.zig": "src/Tools/{chip}_uecc.lib",
+    # sec_fota_utils.c 用到 uECC_* 与 calc_sha_256，需要预编译的 uECC 库
+    "sec_fota_utils.c": "src/Tools/{chip}_uecc.lib",
 }
 
 
-def extra_libs(sdk: Path, info: dict, name: str, chip: str) -> list[Path]:
+def extra_libs(sdk: Path, proj_dir: Path, info: dict, name: str, chip: str) -> list[Path]:
     libs: list[Path] = []
     for rel in PROJECT_LIBS.get(name, []):
         cand = sdk / rel
@@ -114,6 +116,12 @@ def extra_libs(sdk: Path, info: dict, name: str, chip: str) -> list[Path]:
             cand = sdk / rel.format(chip=chip)
             if cand.is_file() and cand not in libs:
                 libs.append(cand)
+
+    # 部分工程直接引用按芯片预编译的对象文件（如 central_fota 的
+    # src/ing918_fota_client.o，是 zig 产物的 ARMCC 版本）。
+    for cand in sorted((proj_dir / "src").glob(f"*{chip}*.o")):
+        if cand.is_file() and cand not in libs:
+            libs.append(cand)
     return libs
 
 
@@ -143,6 +151,14 @@ def render_cmakelists(name: str, info: dict, sdk: Path, chip: str, bundle: str,
 
     lib_block = "\n".join(f"        {to_sdk_path(l, sdk)}" for l in (libs or []))
     lib_section = ")" + "\n"
+
+    # 工程用 -Diprintf=platform_printf 把 printf 重定向到 ROM 函数时，
+    # newlib 的 stdio.h 会把 int iprintf() 一起重命名，与 SDK 的
+    # void platform_printf() 返回类型冲突。定义 __STRICT_ANSI__ 让 newlib
+    # 收起这些 POSIX/MISC 声明即可（ARMCC 的 stdio.h 本就没有 iprintf）。
+    if any(d.startswith("iprintf=") for d in info["defines"]):
+        lib_section += "target_compile_definitions(" + name + " PRIVATE __STRICT_ANSI__)" + "\n"
+
     if lib_block:
         lib_section += ("target_link_libraries(" + name + " PRIVATE " + "\n"
                          + lib_block + ")" + "\n")
@@ -231,7 +247,7 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
         return entry
 
     info["sources"] = rewrite_sources(info["sources"])
-    libs = extra_libs(sdk, info, name, chip)
+    libs = extra_libs(sdk, proj_dir, info, name, chip)
 
     out_dir = out_root / name / chip
     out_dir.mkdir(parents=True, exist_ok=True)

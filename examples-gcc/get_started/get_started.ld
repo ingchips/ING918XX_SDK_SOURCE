@@ -192,6 +192,9 @@ SECTIONS
 	PROVIDE(__stack = __StackTop);
 	/* FreeRTOS 的 GCC 移植层用 __initial_sp 作为初始栈指针 */
 	PROVIDE(__initial_sp = __StackTop);
+	/* ARMCC 的 printf 内建符号；SigMesh.lib 等预编译库会引用它。
+	 * PROVIDE 只在未定义时生效，不影响自带实现的工程。 */
+	PROVIDE(__2printf = printf);
 	
 	/* Check if data + heap + stack exceeds RAM limit */
 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")

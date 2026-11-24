@@ -95,20 +95,20 @@
   {
    "project": "central_fota",
    "chip": "ing918",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "central_fota",
    "chip": "ing916",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "central_fota",
    "chip": "ing20",
-   "status": "needs-fix",
-   "reason": "collect2.exe: error: ld returned 1 exit status"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "central_mass_conn",
@@ -311,20 +311,20 @@
   {
    "project": "gatt_relay",
    "chip": "ing918",
-   "status": "needs-fix",
-   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DBOARD_USE_RGB_LED -DDEBUG -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platfor"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "gatt_relay",
    "chip": "ing916",
-   "status": "needs-fix",
-   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DBOARD_USE_RGB_LED -DDEBUG -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platfor"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "gatt_relay",
    "chip": "ing20",
-   "status": "needs-fix",
-   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DBOARD_USE_RGB_LED -DDEBUG -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platfor"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "get_started",
@@ -941,20 +941,20 @@
   {
    "project": "uart_console",
    "chip": "ing918",
-   "status": "needs-fix",
-   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DTRACE_BUFF_SIZE=1024 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platform_pri"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "uart_console",
    "chip": "ing916",
-   "status": "needs-fix",
-   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DTRACE_BUFF_SIZE=1024 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platform_pri"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "uart_console",
    "chip": "ing20",
-   "status": "needs-fix",
-   "reason": "C:\\gcc\\gcc_arm\\arm-none-eabi-toolchain-15.2\\bin\\arm-none-eabi-gcc.exe -DTRACE_BUFF_SIZE=1024 -DUSE_STDPERIPH_DRIVER -D__STARTUP_CLEAR_BSS -Diprintf=platform_pri"
+   "status": "ok",
+   "reason": ""
   },
   {
    "project": "voice_remote_ctrl",
