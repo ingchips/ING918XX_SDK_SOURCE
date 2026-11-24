@@ -339,16 +339,39 @@ Keil4（ARMCC 5.03）的工程是 `uC99=0`，即纯 C89/C90。验证用的标准
 `.github/scripts/compare_baseline.py` 合并 12 个分片的结果并对比 baseline，
 只对「回归」和「未记录的新失败」判红。
 
-### 已知 needs-fix 的分类
+### 当前基线（2026-11-24）
 
-| 类别 | 工程 | 原因 |
+162 个「工程 × 芯片」组合中 **128 个通过**，25 个 needs-fix，其余为 excluded/special/skip。
+
+生成器已经处理掉的通用问题：
+
+| 问题 | 处理方式 |
+| --- | --- |
+| Keil 的 `.s` 是 ARMCC 语法 | 现场生成 GNU 启动文件 |
+| 链接信息在 `.sct` 里 | 按 bundle meta + series.json 生成 `.ld` |
+| `portable/RVDS` 是 ARMCC 移植层 | 自动替换为 `portable/GCC`（目标存在时） |
+| `context_rvds.S` | 替换为 `context_gcc.S`（目标存在时） |
+| FreeRTOS 需要 `__initial_sp` | 链接脚本 `PROVIDE(__initial_sp = __StackTop)` |
+| SigMesh.lib 引用 `__2printf` | 链接脚本 `PROVIDE(__2printf = printf)` |
+| `-Diprintf=platform_printf` 与 newlib 声明冲突 | 对这类工程加 `-D__STRICT_ANSI__` |
+| 按芯片预编译的 `.o`（如 `ing918_fota_client.o`） | glob `src/*<chip>*.o` 作为外部对象链接 |
+| 缺 uECC / SigMesh / power_ctrl 库 | 按源文件特征与工程名链接 |
+| 工程自己的堆栈大小（很多 Heap_Size 是 0） | 从工程 `startup_*.s` 解析后写进生成的启动文件 |
+
+### 剩余 25 个 needs-fix 的真实原因
+
+| 原因 | 数量 | 工程 |
 | --- | --- | --- |
-| 需要 zig | central_fota | `fota_client.zig` 未编译，uECC 符号缺失 |
-| 无 GCC 汇编 | peripheral_console_rt-thread | 仓库只有 `context_rvds.S` |
-| `platform_printf` 冲突 | gatt_relay, uart_console | `-Diprintf=platform_printf` 把 newlib 的 `int iprintf()` 重命名成 `int platform_printf()`，与 SDK 的 `void platform_printf()` 冲突 |
-| 第三方库要求 C99 | voice_remote_ctrl(libsbc), littleVGL | 库内使用 `for` 循环内声明 |
-| ARMCC 内建 | mesh-light | 引用 `__2printf` |
-| CTE/IQ 符号缺失 | central_cte, ext_raw_packet, periodic_* | bundle 未提供对应 ROM 符号 |
+| SigMesh.lib 依赖 ARMCC printf 引擎内部符号（`_printf_percent` 等） | 3 | mesh-light |
+| 仓库只有 `context_rvds.S`，没有 GCC 汇编 | 3 | peripheral_console_rt-thread |
+| 第三方库使用 C99 的 `for` 循环内声明 | 6 | voice_remote_ctrl(libsbc), littleVGL |
+| bundle 未提供 CTE/IQ ROM 符号 | 5 | central_cte, ext_raw_packet, periodic_advertiser, periodic_scanner, peripheral_led |
+| 该芯片确实没有对应外设/API | 4 | pawr, peripheral_band, peripheral_battery, peripheral_pedometer |
+| demo 自身 `#error` 拒绝该芯片 | 3 | get_started/916 等 |
+| ING916 只有 11 KB RAM，工程放不下 | 1 | io_over_ble_mas/ing916 |
+
+这些都是"该组合本来就不成立"，不是构建框架的问题。需要时可逐条转成可修项
+（例如给 mesh-light 重新用 GCC 编译 SigMesh，或补一份 `context_gcc.S`）。
 
 ## 尚未覆盖
 
