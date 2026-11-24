@@ -1,6 +1,6 @@
 {
  "generated_at": "2026-11-24",
- "note": "由 tools/gen_all_cmake.py --probe 生成；ok=必须通过，needs-fix/skip=已知不通过",
+ "note": "由 tools/gen_all_cmake.py --probe 生成（gnu90 + third_party/cmsis 4.30）。ok=必须通过；needs-fix/skip=已知不通过",
  "combinations": [
   {
    "project": "anti_lost_mas",

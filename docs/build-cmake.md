@@ -273,6 +273,83 @@ python .github/scripts/keil2cmake.py     --project examples/peripheral_ibeacon/p
 工作流 `.github/workflows/keil-import.yml` 目前覆盖
 `peripheral_ibeacon / ing918`，新增工程只需在矩阵里加一行。
 
+## 全量工程的编译验证（build-all）
+
+`build-matrix` 只覆盖手写 CMake 的 6 个示例。`examples/` 下还有 55 个 Keil
+工程，`build-all` 把它们全部按三个芯片生成 CMake 并编译，用来回答
+"切芯片还能不能编过"。
+
+### 生成器 `tools/gen_all_cmake.py`
+
+```bash
+# 生成全部（54 个工程 × 3 芯片）
+python tools/gen_all_cmake.py --out build/gen
+
+# 生成后立刻编译；--group/--groups 用于 CI 分片
+python tools/gen_all_cmake.py --out build/gen --probe --group 0 --groups 12
+```
+
+对每个「工程 × 芯片」：
+
+1. 解析 `.uvprojx` 得到源文件、include、宏（`tools/keil_uvprojx.py`）
+2. 读 `.ingw` 的 bundle，用 `tools/ing_chip.py` 算 FLASH/RAM
+3. 现场生成 `gstartup_<family>00.s` 与 `<proj>.ld`（Keil 的 `.s` 是 ARMCC
+   语法、链接信息在 `.sct` 里，都不能直接给 GCC 用）
+4. 改写 ARMCC 专用源文件：`portable/RVDS` → `portable/GCC`、
+   `context_rvds.S` → `context_gcc.S`（目标文件存在时才替换）
+5. 按需链接预编译库：`ing<chip>_uecc.lib`、`SigMesh.lib`、`power_ctrl.lib`
+6. 写 `CMakeLists.txt`，路径统一 `${ING_SDK_ROOT}/...`
+
+产物全部在 `build/gen/`（已 gitignore），不修改任何 Keil 工程。
+
+### 语言标准：gnu90
+
+Keil4（ARMCC 5.03）的工程是 `uC99=0`，即纯 C89/C90。验证用的标准因此定为
+`gnu90`：
+
+| 标准 | 结果 | 原因 |
+| --- | --- | --- |
+| `-std=c90` | **无法编译** | CMSIS 的 `__STATIC_INLINE` 展开成 `inline`，C90 没有这个关键字 |
+| `-std=gnu90` | 可用 | C90 语义 + GNU 提供 `inline`，与 ARMCC 的 `__inline` 扩展等价 |
+| `-std=c99/gnu99` | 可用但更宽松 | 会放过"用了 C99 语法但 Keil4 编不过"的代码 |
+
+`ing_example.cmake` 的默认值已改为 `gnu90`。
+
+### CMSIS 版本分工
+
+| 工作流 | CMSIS | 原因 |
+| --- | --- | --- |
+| `build-matrix`（ATfE） | 6.1.0（下载） | CMSIS 6 用 `__builtin_arm_set_fpscr` 取代 `vfpcc`，ING916 才能在 clang 下编译 |
+| `build-all` / `keil-import` | 4.30（仓库内 `third_party/cmsis`） | 这是 ingWizard 配给 Keil4 的版本；CMSIS 5.6+ 的 `cmsis_gcc.h` 用了 `for` 循环内声明，与 gnu90 冲突 |
+
+`third_party/cmsis/Include` 就是 ingWizard 安装目录里那份，锁定版本避免漂移。
+
+### baseline 机制
+
+`ci/build-baseline.json` 记录每个「工程 × 芯片」的预期状态：
+
+| status | 含义 | CI 行为 |
+| --- | --- | --- |
+| `ok` | 必须编过 | 失败即判红（回归） |
+| `needs-fix` | 已知编不过，可修 | 失败不判红；修好后提示更新 baseline |
+| `skip` | 该芯片/bundle 本就不支持 | 同上 |
+| `excluded` | 明确排除（cherry_usb） | 不参与 |
+| `special` | 特殊工程（platform_companion） | 不参与 |
+
+`.github/scripts/compare_baseline.py` 合并 12 个分片的结果并对比 baseline，
+只对「回归」和「未记录的新失败」判红。
+
+### 已知 needs-fix 的分类
+
+| 类别 | 工程 | 原因 |
+| --- | --- | --- |
+| 需要 zig | central_fota | `fota_client.zig` 未编译，uECC 符号缺失 |
+| 无 GCC 汇编 | peripheral_console_rt-thread | 仓库只有 `context_rvds.S` |
+| `platform_printf` 冲突 | gatt_relay, uart_console | `-Diprintf=platform_printf` 把 newlib 的 `int iprintf()` 重命名成 `int platform_printf()`，与 SDK 的 `void platform_printf()` 冲突 |
+| 第三方库要求 C99 | voice_remote_ctrl(libsbc), littleVGL | 库内使用 `for` 循环内声明 |
+| ARMCC 内建 | mesh-light | 引用 `__2printf` |
+| CTE/IQ 符号缺失 | central_cte, ext_raw_packet, periodic_* | bundle 未提供对应 ROM 符号 |
+
 ## 尚未覆盖
 
 - ATfE 编译 `.s` 时 CMake 会附加 `-MD/-MT/-MF`，clang 报 `unused-command-line-argument`，
