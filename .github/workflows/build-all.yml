@@ -19,7 +19,7 @@ on:
 
 env:
   ARM_GCC_VERSION: 13.3.rel1
-  CMSIS_VERSION: 6.1.0
+  CMSIS_VERSION: 5.9.0
   NIM_VERSION: 2.2.4
   GROUPS: 12
 
@@ -66,7 +66,7 @@ jobs:
       - name: Download CMSIS
         if: steps.cache-cmsis.outputs.cache-hit != 'true'
         run: |
-          wget -q https://github.com/ARM-software/CMSIS_6/archive/refs/tags/v${{ env.CMSIS_VERSION }}.zip -O /tmp/cmsis.zip
+          wget -q https://github.com/ARM-software/CMSIS_5/archive/refs/tags/${{ env.CMSIS_VERSION }}.zip -O /tmp/cmsis.zip
           mkdir -p ${{ github.workspace }}/cmsis
           unzip -q /tmp/cmsis.zip -d ${{ github.workspace }}/cmsis
 
@@ -99,7 +99,7 @@ jobs:
 
       - name: Generate and probe this group
         env:
-          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_6-${{ env.CMSIS_VERSION }}/CMSIS/Core
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_5-${{ env.CMSIS_VERSION }}/CMSIS/Core
         run: |
           python tools/gen_all_cmake.py \
             --out build/gen \
