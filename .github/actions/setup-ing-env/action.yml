@@ -53,7 +53,7 @@ runs:
       id: cache-cmsis6
       uses: actions/cache@v5
       with:
-        path: ${{ github.workspace }}/cmsis6
+        path: ${{ github.workspace }}/cmsis
         key: cmsis-6.1.0
 
     - name: Download CMSIS 6
@@ -61,8 +61,8 @@ runs:
       shell: bash
       run: |
         wget -q https://github.com/ARM-software/CMSIS_6/archive/refs/tags/v6.1.0.zip -O /tmp/cmsis6.zip
-        mkdir -p "${{ github.workspace }}/cmsis6"
-        unzip -q /tmp/cmsis6.zip -d "${{ github.workspace }}/cmsis6"
+        mkdir -p "${{ github.workspace }}/cmsis"
+        unzip -q /tmp/cmsis6.zip -d "${{ github.workspace }}/cmsis"
 
     - name: Cache Nim
       if: inputs.nim == 'true'

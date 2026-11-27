@@ -352,7 +352,8 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
 
 def probe_one(sdk: Path, entry: dict, out_root: Path, toolchain: str,
               cmsis: str | None, gcc_root: str | None,
-              c_standard: str | None = None) -> dict:
+              c_standard: str | None = None,
+              atfe_root: str | None = None) -> dict:
     """对已生成的组合跑一次 configure + build，记录结果。"""
     build_dir = out_root / entry["dir"] / f"build-{toolchain}"
     tc_file = f"{sdk.as_posix()}/cmake/toolchain-{toolchain}.cmake"
@@ -366,6 +367,8 @@ def probe_one(sdk: Path, entry: dict, out_root: Path, toolchain: str,
            f"-DCHIP={entry['chip']}"]
     if gcc_root:
         cfg.append(f"-DARM_GCC_ROOT={gcc_root}")
+    if atfe_root:
+        cfg.append(f"-DATFE_ROOT={atfe_root}")
     effective_cstd = entry.get("c_standard") or c_standard
     if effective_cstd:
         cfg.append(f"-DING_C_STANDARD={effective_cstd}")
@@ -406,6 +409,7 @@ def main() -> int:
                     choices=["arm-none-eabi", "atfe"], help="探测用工具链")
     ap.add_argument("--cmsis", default=None, help="CMSIS Core 目录（探测用）")
     ap.add_argument("--gcc-root", default=None, help="GNU 工具链根目录（探测用）")
+    ap.add_argument("--atfe-root", default=None, help="ATfE 安装根目录（探测用）")
     ap.add_argument("--c-standard", default="gnu90",
                     help="探测用的 C 标准，默认 gnu90（对齐 Keil4）")
     ap.add_argument("--force-c-standard", default=None,
@@ -494,7 +498,7 @@ def main() -> int:
         print(f"开始探测 {len(todo)} 个组合（{args.toolchain}）...")
         for i, entry in enumerate(todo, 1):
             probe_one(sdk, entry, out_root, args.toolchain, args.cmsis,
-                      args.gcc_root, args.c_standard)
+                      args.gcc_root, args.c_standard, args.atfe_root)
             mark = "OK  " if entry["status"] == "ok" else "FAIL"
             print(f"  [{i:3d}/{len(todo)}] {mark} {entry['project']:<32} {entry['chip']}"
                   + (f"  {entry['reason']}" if entry["status"] != "ok" else ""))

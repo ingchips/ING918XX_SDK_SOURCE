@@ -151,7 +151,7 @@ jobs:
 
       - name: Generate and probe this group
         env:
-          CMSIS_BASE: ${{ github.workspace }}/cmsis6/CMSIS_6-6.1.0/CMSIS/Core
+          CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_6-6.1.0/CMSIS/Core
         run: |
           python tools/gen_all_cmake.py \
             --out build/gen \
@@ -160,6 +160,7 @@ jobs:
             --config .github/project-matrix.yaml \
             --group ${{ matrix.group }} --groups ${{ env.GROUPS_ATFE }} \
             --cmsis "$CMSIS_BASE" \
+            --atfe-root /opt/atfe \
             --force-c-standard c99
 
       - uses: actions/upload-artifact@v7
