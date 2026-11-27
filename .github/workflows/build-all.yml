@@ -8,8 +8,9 @@ name: build-all
 #   build-all     验证 examples/ 下全部 Keil 工程的源码可编译性（GCC）
 #   keil-import   单工程 Keil→CMake 的冒烟检查
 #
-# 已知不支持的组合记录在 ci/build-baseline.json：baseline 里是 ok 的组合
-# 一旦编译失败即判红；skip/needs-fix 的组合失败不判红，成功则提示可更新。
+# 测哪些组合由 .github/project-matrix.yaml 决定（验收清单）：
+# 清单里声明的组合必须全部编过，任何一个失败即判红；
+# 明确不支持或不测的工程在清单里写 skip: true 并注明原因。
 
 on:
   workflow_dispatch:
@@ -37,7 +38,7 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build xz-utils unzip
+          sudo apt-get install -y ninja-build xz-utils unzip python3-yaml
           cmake --version
 
       - name: Cache Arm GNU Toolchain
@@ -90,6 +91,7 @@ jobs:
           python tools/gen_all_cmake.py \
             --out build/gen \
             --probe \
+            --config .github/project-matrix.yaml
             --group ${{ matrix.group }} --groups ${{ env.GROUPS }} \
             --cmsis "$CMSIS_BASE" \
             --gcc-root /opt/arm-gcc \
@@ -104,7 +106,7 @@ jobs:
           if-no-files-found: warn
 
   report:
-    name: compare with baseline
+    name: verify against the project matrix
     needs: build
     if: always()
     runs-on: ubuntu-24.04
@@ -117,9 +119,8 @@ jobs:
           pattern: group-*
           path: groups
 
-      - name: Merge and compare with baseline
+      - name: Summarize probe results
         run: |
-          python .github/scripts/compare_baseline.py \
+          python .github/scripts/summarize_probe.py \
             --groups groups \
-            --baseline ci/build-baseline.json \
             --summary "$GITHUB_STEP_SUMMARY"

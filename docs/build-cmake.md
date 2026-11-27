@@ -324,24 +324,44 @@ Keil4（ARMCC 5.03）的工程是 `uC99=0`，即纯 C89/C90。验证用的标准
 
 `third_party/cmsis/Include` 就是 ingWizard 安装目录里那份，锁定版本避免漂移。
 
-### baseline 机制
+### 配置清单 `.github/project-matrix.yaml`
 
-`ci/build-baseline.json` 记录每个「工程 × 芯片」的预期状态：
+测哪些组合由这份清单决定，它是**验收契约**：清单里声明成立的组合必须全部
+编过，任何一个失败 CI 就红；不测的工程写 `skip: true` 并注明原因。
 
-| status | 含义 | CI 行为 |
-| --- | --- | --- |
-| `ok` | 必须编过 | 失败即判红（回归） |
-| `needs-fix` | 已知编不过，可修 | 失败不判红；修好后提示更新 baseline |
-| `skip` | 该芯片/bundle 本就不支持 | 同上 |
-| `excluded` | 明确排除（cherry_usb） | 不参与 |
-| `special` | 特殊工程（platform_companion） | 不参与 |
+```yaml
+defaults:
+  chips: [ing918, ing916, ing20]
+  c_standard: gnu90
 
-`.github/scripts/compare_baseline.py` 合并 12 个分片的结果并对比 baseline，
-只对「回归」和「未记录的新失败」判红。
+projects:
+  # 需要 C99 的工程（第三方库用了 C99 语法）
+  voice_remote_ctrl:
+    c_standard: c99
+    note: libsbc 使用 C99 循环内声明
 
-### 当前基线（2026-11-24）
+  # 只测部分芯片（该芯片缺 ROM 符号 / 缺外设 / 资源不足）
+  get_started:
+    chips: [ing918, ing20]
+    note: demo 自身 #error 拒绝 916
 
-162 个「工程 × 芯片」组合中 **128 个通过**，25 个 needs-fix，其余为 excluded/special/skip。
+  # 不测（历史遗留或结构性不兼容）
+  mesh-light:
+    skip: true
+    note: SigMesh.lib 依赖 ARMCC printf 引擎内部符号
+```
+
+要点：
+
+- **新增工程不用登记**，默认按 `defaults` 测（3 芯片 + gnu90）
+- 只有"不该按默认测"的工程才需要加一条
+- 把某工程从 `skip` 改成测、或把 `chips` 从部分扩到全部，就是"这项该修了"的信号
+- `c_standard` 会写进生成的 `CMakeLists.txt`（`set(ING_C_STANDARD ...)`），
+  单独构建该工程时也生效
+
+### 当前验收结果（2026-11-27）
+
+**清单内 134 个组合全部通过**，5 个工程按清单 skip。
 
 生成器已经处理掉的通用问题：
 
@@ -350,7 +370,6 @@ Keil4（ARMCC 5.03）的工程是 `uC99=0`，即纯 C89/C90。验证用的标准
 | Keil 的 `.s` 是 ARMCC 语法 | 现场生成 GNU 启动文件 |
 | 链接信息在 `.sct` 里 | 按 bundle meta + series.json 生成 `.ld` |
 | `portable/RVDS` 是 ARMCC 移植层 | 自动替换为 `portable/GCC`（目标存在时） |
-| `context_rvds.S` | 替换为 `context_gcc.S`（目标存在时） |
 | FreeRTOS 需要 `__initial_sp` | 链接脚本 `PROVIDE(__initial_sp = __StackTop)` |
 | SigMesh.lib 引用 `__2printf` | 链接脚本 `PROVIDE(__2printf = printf)` |
 | `-Diprintf=platform_printf` 与 newlib 声明冲突 | 对这类工程加 `-D__STRICT_ANSI__` |
@@ -358,22 +377,25 @@ Keil4（ARMCC 5.03）的工程是 `uC99=0`，即纯 C89/C90。验证用的标准
 | 缺 uECC / SigMesh / power_ctrl 库 | 按源文件特征与工程名链接 |
 | 工程自己的堆栈大小（很多 Heap_Size 是 0） | 从工程 `startup_*.s` 解析后写进生成的启动文件 |
 
-### 剩余 25 个 needs-fix 的真实原因
+### 清单里 skip 的工程
 
-| 原因 | 数量 | 工程 |
+| 工程 | 原因 |
+| --- | --- |
+| `cherry_usb` | CherryUSB 要求高于 Keil4 的 C99 约束；USB 仅 916/20 有 |
+| `mesh-light` | SigMesh.lib 依赖 ARMCC printf 引擎内部符号（`_printf_percent` 等） |
+| `peripheral_console_rt-thread` | 仓库只有 `context_rvds.S`，没有 GCC 汇编版本（历史遗留） |
+| `platform_companion` | ROM 配套固件，链接布局与 APP 不同 |
+| `reset_handler` | 纯汇编工程，没有 C/C++ 源文件 |
+
+### 清单里只测部分芯片的工程
+
+| 工程 | 测 | 原因 |
 | --- | --- | --- |
-| SigMesh.lib 依赖 ARMCC printf 引擎内部符号（`_printf_percent` 等） | 3 | mesh-light |
-| 仓库只有 `context_rvds.S`，没有 GCC 汇编 | 3 | peripheral_console_rt-thread |
-| 第三方库使用 C99 的 `for` 循环内声明 | 6 | voice_remote_ctrl(libsbc), littleVGL |
-| bundle 未提供 CTE/IQ ROM 符号 | 5 | central_cte, ext_raw_packet, periodic_advertiser, periodic_scanner, peripheral_led |
-| 该芯片确实没有对应外设/API | 4 | pawr, peripheral_band, peripheral_battery, peripheral_pedometer |
-| demo 自身 `#error` 拒绝该芯片 | 3 | get_started/916 等 |
-| ING916 只有 11 KB RAM，工程放不下 | 1 | io_over_ble_mas/ing916 |
+| `get_started` | 918/20 | demo 自身 `#error` 拒绝 916 |
+| `central_cte` | 20 | 918/916 的 bundle 未提供 CTE ROM 符号 |
+| `ext_raw_packet` / `periodic_advertiser` / `periodic_scanner` / `peripheral_led` | 916/20 | 918 的 bundle 未提供 CTE/IQ ROM 符号 |
+| `pawr` | 916/20 | 918 无 `SYSCTRL_ITEM_APB_PinCtrl` |
+| `peripheral_battery` | 916/20 | 918 的 ROM 无 `adc_prepare_calibration` |
+| `peripheral_band` / `peripheral_pedometer` | 918/916 | ing20 的 board 不支持 |
+| `io_over_ble_mas` / `io_over_ble_sla` | 918/20 | ING916 只有 11 KB RAM，工程放不下 |
 
-这些都是"该组合本来就不成立"，不是构建框架的问题。需要时可逐条转成可修项
-（例如给 mesh-light 重新用 GCC 编译 SigMesh，或补一份 `context_gcc.S`）。
-
-## 尚未覆盖
-
-- ATfE 编译 `.s` 时 CMake 会附加 `-MD/-MT/-MF`，clang 报 `unused-command-line-argument`，
-  属无害噪音。

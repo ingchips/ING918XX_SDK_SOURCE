@@ -125,6 +125,35 @@ def extra_libs(sdk: Path, proj_dir: Path, info: dict, name: str, chip: str) -> l
     return libs
 
 
+DEFAULT_CONFIG = ".github/project-matrix.yaml"
+
+
+def load_matrix_config(path: Path) -> dict:
+    """读 .github/project-matrix.yaml。
+
+    返回 {"defaults": {...}, "projects": {name: {...}}}。
+    文件不存在时返回"全部工程 × 全芯片 × gnu90"的默认配置。
+    """
+    fallback = {
+        "defaults": {"chips": list(ALL_CHIPS), "c_standard": "gnu90"},
+        "projects": {},
+        "path": None,
+    }
+    if not path.is_file():
+        return fallback
+
+    import yaml
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    defaults = dict(data.get("defaults") or {})
+    defaults.setdefault("chips", list(ALL_CHIPS))
+    defaults.setdefault("c_standard", "gnu90")
+    return {
+        "defaults": defaults,
+        "projects": data.get("projects") or {},
+        "path": str(path),
+    }
+
+
 def read_startup_sizes(proj_dir: Path, chip: str) -> tuple[int | None, int | None]:
     """从工程自带的 startup_*.s 里读 Heap_Size / Stack_Size。
 
@@ -160,7 +189,8 @@ def read_bundle(proj_dir: Path) -> str | None:
 
 def render_cmakelists(name: str, info: dict, sdk: Path, chip: str, bundle: str,
                       startup: Path, ldscript: Path,
-                      libs: list[Path] | None = None) -> str:
+                      libs: list[Path] | None = None,
+                      c_standard: str = "gnu90") -> str:
     sources = "\n".join(f"        {to_sdk_path(s, sdk)}" for s in info["sources"])
     includes = "\n".join(f"        {to_sdk_path(i, sdk)}" for i in info["includes"])
 
@@ -191,6 +221,9 @@ def render_cmakelists(name: str, info: dict, sdk: Path, chip: str, bundle: str,
 # 用途：CI 编译验证。产物目录 build/ 已在 .gitignore 中。
 cmake_minimum_required(VERSION 3.20)
 project({name} LANGUAGES C CXX ASM)
+
+# 该工程的 C 标准来自 .github/project-matrix.yaml
+set(ING_C_STANDARD {c_standard} CACHE STRING "C 标准")
 
 include("{sdk.as_posix()}/cmake/ing_example.cmake")
 
@@ -229,7 +262,8 @@ def render_ld(mem: dict, source_ld: Path | None = None) -> str:
 
 
 def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
-                 out_root: Path, ld_template: Path) -> dict:
+                 out_root: Path, ld_template: Path,
+                 c_standard: str = "gnu90") -> dict:
     name = proj_dir.name
     series = FAMILY_SERIES[chip]
     entry = {"project": name, "chip": chip, "series": series, "status": "skip", "reason": ""}
@@ -284,11 +318,13 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
     ldscript.write_text(render_ld(mem, ld_template), encoding="utf-8")
 
     (out_dir / "CMakeLists.txt").write_text(
-        render_cmakelists(name, info, sdk, chip, bundle, startup, ldscript, libs),
+        render_cmakelists(name, info, sdk, chip, bundle, startup, ldscript, libs,
+                          c_standard),
         encoding="utf-8")
 
     entry.update({
         "status": "generated",
+        "c_standard": c_standard,
         "bundle": bundle,
         "sources": len(info["sources"]),
         "libs": [l.name for l in libs],
@@ -319,8 +355,9 @@ def probe_one(sdk: Path, entry: dict, out_root: Path, toolchain: str,
            f"-DCHIP={entry['chip']}"]
     if gcc_root:
         cfg.append(f"-DARM_GCC_ROOT={gcc_root}")
-    if c_standard:
-        cfg.append(f"-DING_C_STANDARD={c_standard}")
+    effective_cstd = entry.get("c_standard") or c_standard
+    if effective_cstd:
+        cfg.append(f"-DING_C_STANDARD={effective_cstd}")
 
     try:
         r = subprocess.run(cfg, cwd=str(out_root / entry["dir"]),
@@ -351,6 +388,8 @@ def main() -> int:
     ap.add_argument("--chips", default=",".join(ALL_CHIPS),
                     help="目标芯片，逗号分隔，默认 ing918,ing916,ing20")
     ap.add_argument("--filter", default="*", help="工程名通配符，默认全部")
+    ap.add_argument("--config", default=DEFAULT_CONFIG,
+                    help="工程测试矩阵配置，默认 .github/project-matrix.yaml")
     ap.add_argument("--probe", action="store_true", help="生成后立即逐个编译")
     ap.add_argument("--toolchain", default="arm-none-eabi",
                     choices=["arm-none-eabi", "atfe"], help="探测用工具链")
@@ -367,10 +406,17 @@ def main() -> int:
     out_root.mkdir(parents=True, exist_ok=True)
 
     ld_template = sdk / "examples-gcc" / "get_started" / "get_started.ld"
-    chips = [c.strip() for c in args.chips.split(",") if c.strip()]
-    for c in chips:
+    cli_chips = [c.strip() for c in args.chips.split(",") if c.strip()]
+    for c in cli_chips:
         if c not in FAMILY_SERIES:
             raise SystemExit(f"未知芯片：{c}，可选 {sorted(FAMILY_SERIES)}")
+
+    cfg_path = Path(args.config)
+    if not cfg_path.is_absolute():
+        cfg_path = sdk / cfg_path
+    cfg = load_matrix_config(cfg_path)
+    defaults = cfg["defaults"]
+    projects_cfg = cfg["projects"]
 
     projects = []
     for proj_dir in sorted(p for p in (sdk / "examples").iterdir() if p.is_dir()):
@@ -383,15 +429,38 @@ def main() -> int:
 
     print(f"SDK      : {sdk}")
     print(f"输出     : {out_root}")
-    print(f"芯片     : {', '.join(chips)}")
+    print(f"配置     : {cfg['path'] or '(未找到，使用默认: 全工程 × 全芯片 × gnu90)'}")
+    print(f"默认     : chips={defaults['chips']} c_standard={defaults['c_standard']}")
     print(f"工程     : {len(projects)} 个")
     print("-" * 70)
 
+    existing = {p.name for p in (sdk / "examples").iterdir() if p.is_dir()}
+    for name in sorted(set(projects_cfg) - existing):
+        print(f"提示：配置中的 {name} 在 examples/ 下不存在")
+
     combos = []
     for proj_dir, uvprojx in projects:
-        for chip in chips:
-            entry = generate_one(sdk, proj_dir, uvprojx, chip, out_root, ld_template)
-            combos.append(entry)
+        pc = projects_cfg.get(proj_dir.name) or {}
+        if pc.get("skip"):
+            combos.append({
+                "project": proj_dir.name,
+                "chip": "-",
+                "status": "excluded",
+                "reason": pc.get("note") or "配置中标记为 skip",
+            })
+            continue
+
+        chips_for = [c for c in (pc.get("chips") or defaults["chips"]) if c in cli_chips]
+        cstd = pc.get("c_standard") or defaults["c_standard"]
+        if not chips_for:
+            combos.append({
+                "project": proj_dir.name, "chip": "-", "status": "excluded",
+                "reason": "配置的芯片与 --chips 无交集",
+            })
+            continue
+        for chip in chips_for:
+            combos.append(generate_one(sdk, proj_dir, uvprojx, chip, out_root,
+                                       ld_template, cstd))
 
     if args.probe:
         todo = [e for e in combos if e["status"] == "generated"]
@@ -411,7 +480,8 @@ def main() -> int:
     manifest = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "sdk": sdk.as_posix(),
-        "chips": chips,
+        "chips": defaults["chips"],
+        "config": cfg["path"],
         "toolchain": args.toolchain if args.probe else None,
         "group": args.group,
         "groups": args.groups,

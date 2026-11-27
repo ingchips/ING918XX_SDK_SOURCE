@@ -1,0 +1,109 @@
+# 全量工程的编译验证矩阵
+#
+# 这份文件是**验收清单**：CI 只测这里声明成立的「工程 × 芯片」组合，
+# 且这些组合必须全部编过；不在清单里的组合不测。
+#
+# 为什么要清单而不是"全量 × 3 芯片自动探测"：
+#   * 有些组合本来就不成立（demo 用 #error 拒绝某芯片、芯片没有该外设、
+#     bundle 不提供某组 ROM 符号），自动探测只能把它们记成"失败"，
+#     噪声掩盖真实回归；
+#   * 有些工程需要不同于默认的 C 标准（第三方库用了 C99 语法）。
+#
+# 维护约定：
+#   * 新增工程默认按 defaults 测（3 芯片 + gnu90），无需登记；
+#   * 只有当某工程"不该按默认测"时才在这里加一条；
+#   * 把某工程从 skip 改成测、或从部分芯片扩到全部芯片，
+#     就是"这项该修了"的信号。
+
+version: 1
+
+defaults:
+  chips: [ing918, ing916, ing20]
+  # Keil4 是 uC99=0 的 C90 编译器，gnu90 是与它最接近的 GCC 基线
+  c_standard: gnu90
+
+projects:
+  # ---------------------------------------------------------------------------
+  # 需要 C99 的工程：第三方库用了 for 循环内声明等 C99 语法
+  # ---------------------------------------------------------------------------
+  voice_remote_ctrl:
+    c_standard: c99
+    note: libsbc 使用 C99 循环内声明
+
+  littleVGL:
+    c_standard: c99
+    note: littleVGL 使用 C99 循环内声明
+
+  # ---------------------------------------------------------------------------
+  # 只测部分芯片：该芯片缺 ROM 符号 / 缺外设 / 资源不足
+  # ---------------------------------------------------------------------------
+  get_started:
+    chips: [ing918, ing20]
+    note: demo 自身 #error 拒绝 916
+
+  central_cte:
+    chips: [ing20]
+    note: 918/916 的 bundle 未提供 CTE ROM 符号（ll_scanner_enable_iq_sampling 等）
+
+  ext_raw_packet:
+    chips: [ing916, ing20]
+    note: 918 的 bundle 未提供 ll_raw_packet_set_tx_cte
+
+  periodic_advertiser:
+    chips: [ing916, ing20]
+    note: 918 的 bundle 未提供 gap_set_connectionless_cte_tx_*
+
+  periodic_scanner:
+    chips: [ing916, ing20]
+    note: 918 的 bundle 未提供 gap_set_connectionless_iq_sampling_enable
+
+  peripheral_led:
+    chips: [ing916, ing20]
+    note: 918 的 bundle 未提供 gap_set_connection_cte_tx_param
+
+  pawr:
+    chips: [ing916, ing20]
+    note: 918 无 SYSCTRL_ITEM_APB_PinCtrl
+
+  peripheral_battery:
+    chips: [ing916, ing20]
+    note: 918 的 ROM 无 adc_prepare_calibration / adc_calibrate
+
+  peripheral_band:
+    chips: [ing918, ing916]
+    note: ing20 的 board 不支持（SOFTWARE_RTC_DHMS 校验失败）
+
+  peripheral_pedometer:
+    chips: [ing918, ing916]
+    note: ing20 的 board 没有接 iic 的引脚
+
+  io_over_ble_mas:
+    chips: [ing918, ing20]
+    note: ING916 只有 11 KB RAM，工程放不下（溢出 648 字节）
+
+  io_over_ble_sla:
+    chips: [ing918, ing20]
+    note: ING916 RAM 不足
+
+  # ---------------------------------------------------------------------------
+  # 不测：历史遗留或结构性不兼容，暂不纳入验收
+  # ---------------------------------------------------------------------------
+  cherry_usb:
+    skip: true
+    note: CherryUSB 要求高于 Keil4 的 C99 约束；USB 仅 916/20 有
+
+  mesh-light:
+    skip: true
+    note: SigMesh.lib 依赖 ARMCC printf 引擎内部符号（_printf_percent 等），GCC 无法链接
+
+  peripheral_console_rt-thread:
+    skip: true
+    note: 仓库只有 context_rvds.S，没有 GCC 汇编版本（历史遗留）
+
+  platform_companion:
+    skip: true
+    note: ROM 配套固件，链接布局与 APP 不同（0x2000 起始 + 双 RAM 区）
+
+  reset_handler:
+    skip: true
+    note: 纯汇编工程，没有 C/C++ 源文件可编译
