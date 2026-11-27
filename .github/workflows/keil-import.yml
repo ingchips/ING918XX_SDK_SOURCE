@@ -89,13 +89,13 @@ jobs:
             --out build/keil-import
 
       - name: Configure and build
-        working-directory: build/keil-import/${{ matrix.project }}
+        working-directory: build/keil-import/${{ matrix.project }}/${{ matrix.chip }}
         env:
           CMSIS_BASE: ${{ github.workspace }}/third_party/cmsis
         run: |
           set -o pipefail
           cmake -B build \
-            --toolchain=../../../cmake/toolchain-arm-none-eabi.cmake \
+            --toolchain=../../../../cmake/toolchain-arm-none-eabi.cmake \
             -G Ninja \
             -DCHIP=${{ matrix.chip }} \
             -DARM_GCC_ROOT=/opt/arm-gcc 2>&1 | tee configure.log
@@ -107,7 +107,7 @@ jobs:
         with:
           name: keil-import-${{ matrix.chip }}-${{ matrix.project }}
           path: |
-            build/keil-import/${{ matrix.project }}/build/**/*.elf
-            build/keil-import/${{ matrix.project }}/CMakeLists.txt
-            build/keil-import/${{ matrix.project }}/build.log
+            build/keil-import/${{ matrix.project }}/${{ matrix.chip }}/build/**/*.elf
+            build/keil-import/${{ matrix.project }}/${{ matrix.chip }}/CMakeLists.txt
+            build/keil-import/${{ matrix.project }}/${{ matrix.chip }}/build.log
           if-no-files-found: warn
