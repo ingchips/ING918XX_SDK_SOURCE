@@ -40,7 +40,11 @@ if(NOT DEFINED ING_CHIP_${CHIP}_CPU)
 endif()
 set(ING_CPU    "${ING_CHIP_${CHIP}_CPU}")
 set(ING_FPU    "${ING_CHIP_${CHIP}_FPU}")
-set(ING_SERIES "${ING_CHIP_${CHIP}_SERIES}")
+# ING918 有 ING9187xx / ING9188xx 两个 ROM 版本，符号表与内存布局都不同。
+# 具体用哪个由工程决定（生成的 CMakeLists 会显式 set），这里只提供默认值。
+if(NOT DEFINED ING_SERIES)
+    set(ING_SERIES "${ING_CHIP_${CHIP}_SERIES}")
+endif()
 
 # bundle 目录名（typical / noos_mini / mini / exp ...），可用 -DING_BUNDLE_DIR= 覆盖。
 # 单个示例也可以在自己的 CMakeLists 里用 BUNDLE 参数覆盖。
@@ -104,6 +108,19 @@ function(ing_add_example name)
     set(_bundle_dir "${ARG_BUNDLE}")
     if(NOT _bundle_dir)
         set(_bundle_dir "${ING_BUNDLE_DIR}")
+    endif()
+
+    # 校验：工程 .ingw 里声明的 series 必须与实际链接的一致。
+    # ING9187xx 与 ING9188xx 是两颗不同的 ROM（符号地址、app.base 都不同），
+    # 用错会链接成功但固件跑不起来。
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.ingw")
+        file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${name}.ingw" _ingw_json)
+        string(JSON _ingw_series ERROR_VARIABLE _json_err GET "${_ingw_json}" series)
+        if(NOT _json_err AND _ingw_series AND NOT _ingw_series STREQUAL ING_SERIES)
+            message(WARNING
+                "${name}: .ingw 声明 series=${_ingw_series}，但链接使用 ${ING_SERIES}。"
+                "ROM 符号表与内存布局不匹配，请在 CMakeLists 里 set(ING_SERIES ${_ingw_series})")
+        endif()
     endif()
 
     add_executable(${name} ${ARG_SOURCES})

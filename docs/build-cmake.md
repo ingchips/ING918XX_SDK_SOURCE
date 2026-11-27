@@ -361,7 +361,7 @@ projects:
 
 ### 当前验收结果（2026-11-27）
 
-**清单内 135 个组合全部通过**，5 个工程按清单 skip。
+**清单内 140 个组合全部通过**，5 个工程按清单 skip。
 
 生成器已经处理掉的通用问题：
 
@@ -387,30 +387,38 @@ projects:
 | `platform_companion` | ROM 配套固件，链接布局与 APP 不同 |
 | `reset_handler` | 纯汇编工程，没有 C/C++ 源文件 |
 
-### 清单里只测部分芯片的工程（11 个）
+### 清单里只测部分芯片的工程（7 个）
 
-每条都是实测确认过的，不是猜测：
+每条都是实测确认过的：
 
 | 工程 | 测 | 排除 | 实测原因 |
 | --- | --- | --- | --- |
-| `get_started` | 918/20 | 916 | `examples/get_started/src/main.c:19` 直接 `#error "916 chip does not support this demo"` |
-| `central_cte` | 20 | 918 | 918 的 symdefs 无 `ll_scanner_enable_iq_sampling`（CTE 测向是 916/20 的 ROM 功能） |
-| `central_cte` | 20 | 916 | RAM 溢出 344 字节（ING916 只有 11 KB） |
-| `ext_raw_packet` | 916/20 | 918 | 918 的 symdefs 无 `ll_raw_packet_set_tx_cte` |
-| `periodic_advertiser` | 916/20 | 918 | 918 的 symdefs 无 `gap_set_connectionless_cte_tx_param` |
-| `periodic_scanner` | 916/20 | 918 | 918 的 symdefs 无 `gap_set_connectionless_iq_sampling_enable` |
-| `peripheral_led` | 916/20 | 918 | 918 的 symdefs 无 `gap_set_connection_cte_tx_param` |
-| `pawr` | 916/20 | 918 | `setup_soc.cgen` 用了 `SYSCTRL_ITEM_APB_PinCtrl`/`_UART0`/`_WDT`，918 的 SYSCTRL 头没有这些枚举 |
-| `peripheral_band` | 918/916 | 20 | `main.c:109` `#error SOFTWARE_RTC_DHMS must be defined`，且 `PLATFORM_CB_IRQ_RTC` 在 20 上不存在（20 无 RTC） |
+| `get_started` | 918/20 | 916 | `main.c:19` 直接 `#error "916 chip does not support this demo"` |
+| `central_cte` | 918/20 | 916 | RAM 溢出 344 字节（ING916 只有 11 KB） |
+| `pawr` | 916/20 | 918 | `setup_soc.cgen` 用 `SYSCTRL_ITEM_APB_PinCtrl`/`_UART0`/`_WDT`，918 的 SYSCTRL 头没有这些枚举 |
+| `peripheral_band` | 918/916 | 20 | `main.c:109` `#error SOFTWARE_RTC_DHMS must be defined`；`PLATFORM_CB_IRQ_RTC` 在 20 上不存在（20 无 RTC） |
 | `peripheral_pedometer` | 918/916 | 20 | `board.c:493` `#error The board has no pins to connect to the iic device`（ING2086_DK 未定义 iic 引脚） |
 | `io_over_ble_mas` | 918/20 | 916 | RAM 溢出 648 字节 |
 | `io_over_ble_sla` | 918/20 | 916 | RAM 溢出 504 字节 |
 
-> 注：`central_cte` 的两条原因不同——918 是缺 ROM 符号，916 是 RAM 不够。
+### 踩过的坑：ING918 有两个 ROM 系列
 
-**已修复并恢复三芯片的**：`peripheral_battery` 之前在 918 上因
-`adc_prepare_calibration` / `adc_calibrate` 未定义而失败。实测发现这两个符号
-由工程自带的预编译对象 `src/Tools/adc_cali.o` 提供，而生成器当时只链接
-文件名含芯片名的 `.o`。现在改为读取 `.uvprojx` 里声明的所有 `.o`/`.lib`
-（文件名含 `ing918/ing916/ing20` 的按芯片过滤），该项已恢复为三芯片验证。
+`ING9187xx` 和 `ING9188xx` 是两颗**不同**的 ROM：符号表地址不同
+（`att_dispatch_client_can_send_now` 一个在 `0x5865`，另一个在 `0x5989`）、
+`meta.json` 的 `app.base` 也不同（163840 vs 172032）。
+
+早期生成器按"芯片家族 → 默认系列"硬编码推导，把 10 个 `.ingw` 里写着
+`ING9188xx` 的工程全部按 `ING9187xx` 链接。后果是**编译通过、CI 全绿，
+但固件里的 ROM 调用地址是错的**，烧进去必然跑不起来。
+
+同一处错误还导致 5 个 CTE 工程被误判为"918 缺 ROM 符号"——它们缺的符号
+在 `ING9188xx` 里其实都有。
+
+现在的规则：
+
+- `tools/gen_all_cmake.py` 从工程 `.ingw` 读 `series`，只有它属于目标芯片
+  家族时才沿用；跨家族（918 工程测 916）才退回该家族的默认系列
+- 生成的 `CMakeLists.txt` 显式 `set(ING_SERIES ...)`
+- `ing_example.cmake` 允许该变量被覆盖，并在 `ing_add_example()` 里校验
+  `.ingw` 声明的 series 与实际链接的是否一致，不一致就 `message(WARNING)`
 

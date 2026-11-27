@@ -42,24 +42,8 @@ projects:
     note: demo 自身 #error 拒绝 916
 
   central_cte:
-    chips: [ing20]
-    note: 918 的 ROM 无 ll_scanner_enable_iq_sampling；916 是 RAM 溢出 344 字节（仅 11 KB）
-
-  ext_raw_packet:
-    chips: [ing916, ing20]
-    note: 918 的 bundle 未提供 ll_raw_packet_set_tx_cte
-
-  periodic_advertiser:
-    chips: [ing916, ing20]
-    note: 918 的 bundle 未提供 gap_set_connectionless_cte_tx_*
-
-  periodic_scanner:
-    chips: [ing916, ing20]
-    note: 918 的 bundle 未提供 gap_set_connectionless_iq_sampling_enable
-
-  peripheral_led:
-    chips: [ing916, ing20]
-    note: 918 的 bundle 未提供 gap_set_connection_cte_tx_param
+    chips: [ing918, ing20]
+    note: ING916 RAM 溢出 344 字节（仅 11 KB）
 
   pawr:
     chips: [ing916, ing20]

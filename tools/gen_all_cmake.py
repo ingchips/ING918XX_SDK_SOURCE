@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from ing_chip import (  # noqa: E402
     FAMILY_SERIES,
+    SERIES,
     bundle_available,
     compute_memory,
     startup_text,
@@ -41,18 +42,6 @@ from ing_chip import (  # noqa: E402
 from keil_uvprojx import parse_uvprojx  # noqa: E402
 
 ALL_CHIPS = ["ing918", "ing916", "ing20"]
-
-# 需要特殊处理的工程：没有 .ingw、链接布局不走 bundle 约定
-SPECIAL_PROJECTS = {
-    "platform_companion": "ROM 配套固件，链接布局与 APP 不同（见 platform_companion_*.ld）",
-}
-
-# 明确排除：不参与跨芯片编译验证
-EXCLUDED_PROJECTS = {
-    # CherryUSB 的源码要求高于 C99 的 C 标准，Keil4 工程本身不支持；
-    # 且 USB 只有 916/20 有，918 无此硬件。
-    "cherry_usb": "CherryUSB 不支持 Keil4 的 C99 约束；USB 仅 916/20 有",
-}
 
 
 def to_sdk_path(p: Path, sdk: Path) -> str:
@@ -186,20 +175,40 @@ def read_startup_sizes(proj_dir: Path, chip: str) -> tuple[int | None, int | Non
     return (None, None)
 
 
-def read_bundle(proj_dir: Path) -> str | None:
+def read_ingw(proj_dir: Path) -> tuple[str | None, str | None]:
+    """读 .ingw 的 (bundle, series)。"""
     ingw = next(iter(sorted(proj_dir.glob("*.ingw"))), None)
     if ingw is None:
-        return None
+        return (None, None)
     try:
-        return json.loads(ingw.read_text(encoding="utf-8")).get("bundle") or None
+        data = json.loads(ingw.read_text(encoding="utf-8"))
+        return (data.get("bundle") or None, data.get("series") or None)
     except (json.JSONDecodeError, OSError):
-        return None
+        return (None, None)
+
+
+def read_bundle(proj_dir: Path) -> str | None:
+    return read_ingw(proj_dir)[0]
+
+
+def resolve_series(ingw_series: str | None, chip: str) -> str:
+    """确定链接用的 series。
+
+    工程在 .ingw 里指定了自己的 series（ING9187xx / ING9188xx 是两颗不同的
+    ROM，符号表与内存布局都不同）。只有当它属于目标芯片家族时才沿用；
+    跨家族（例如 918 工程测 916）时退回该家族的默认 series。
+    """
+    default = FAMILY_SERIES[chip]
+    if ingw_series and ingw_series in SERIES and SERIES[ingw_series]["family"] == chip:
+        return ingw_series
+    return default
 
 
 def render_cmakelists(name: str, info: dict, sdk: Path, chip: str, bundle: str,
                       startup: Path, ldscript: Path,
                       libs: list[Path] | None = None,
-                      c_standard: str = "gnu90") -> str:
+                      c_standard: str = "gnu90",
+                      series: str = "") -> str:
     sources = "\n".join(f"        {to_sdk_path(s, sdk)}" for s in info["sources"])
     includes = "\n".join(f"        {to_sdk_path(i, sdk)}" for i in info["includes"])
 
@@ -233,6 +242,8 @@ project({name} LANGUAGES C CXX ASM)
 
 # 该工程的 C 标准来自 .github/project-matrix.yaml
 set(ING_C_STANDARD {c_standard} CACHE STRING "C 标准")
+# 链接用的 series 取自工程 .ingw（ING9187xx 与 ING9188xx 是两颗不同的 ROM）
+set(ING_SERIES {series} CACHE STRING "芯片系列")
 
 include("{sdk.as_posix()}/cmake/ing_example.cmake")
 
@@ -274,20 +285,11 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
                  out_root: Path, ld_template: Path,
                  c_standard: str = "gnu90") -> dict:
     name = proj_dir.name
-    series = FAMILY_SERIES[chip]
+    ingw_bundle, ingw_series = read_ingw(proj_dir)
+    series = resolve_series(ingw_series, chip)
     entry = {"project": name, "chip": chip, "series": series, "status": "skip", "reason": ""}
 
-    if name in EXCLUDED_PROJECTS:
-        entry["status"] = "excluded"
-        entry["reason"] = EXCLUDED_PROJECTS[name]
-        return entry
-
-    if name in SPECIAL_PROJECTS:
-        entry["reason"] = SPECIAL_PROJECTS[name]
-        entry["status"] = "special"
-        return entry
-
-    bundle = read_bundle(proj_dir)
+    bundle = ingw_bundle
     if not bundle:
         entry["reason"] = "没有 .ingw 或其中没有 bundle 字段"
         return entry
@@ -328,7 +330,7 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
 
     (out_dir / "CMakeLists.txt").write_text(
         render_cmakelists(name, info, sdk, chip, bundle, startup, ldscript, libs,
-                          c_standard),
+                          c_standard, series),
         encoding="utf-8")
 
     entry.update({
