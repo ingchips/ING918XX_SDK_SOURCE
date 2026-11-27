@@ -152,6 +152,31 @@ def load_matrix_config(path: Path) -> dict:
     }
 
 
+def find_override(sdk: Path, proj_name: str, chip: str, family: str,
+                  kind: str) -> Path | None:
+    """工程自带的手工资产优先于自动生成。
+
+    kind='startup' -> examples-gcc/<proj>/src/gstartup_<family>00.s
+    kind='ld'      -> examples-gcc/<proj>/<proj>_<chip>.ld 或 <proj>.ld
+
+    少数工程不能套通用模板：
+      * reset_handler 的 Reset_Handler 是真实复位逻辑（配时钟、开看门狗、
+        跳固定地址），不跳 app_main
+      * platform_companion 的入口是 main()，且链接脚本是双 RAM 区
+    """
+    base = sdk / "examples-gcc" / proj_name
+    if kind == "startup":
+        for cand in (base / "src" / f"gstartup_{family}00.s",
+                     base / "src" / f"gstartup_{chip}00.s"):
+            if cand.is_file():
+                return cand
+        return None
+    for cand in (base / f"{proj_name}_{chip}.ld", base / f"{proj_name}.ld"):
+        if cand.is_file():
+            return cand
+    return None
+
+
 def read_startup_sizes(proj_dir: Path, chip: str) -> tuple[int | None, int | None]:
     """从工程自带的 startup_*.s 里读 Heap_Size / Stack_Size。
 
@@ -283,13 +308,15 @@ def render_ld(mem: dict, source_ld: Path | None = None) -> str:
 
 def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
                  out_root: Path, ld_template: Path,
-                 c_standard: str = "gnu90") -> dict:
+                 c_standard: str = "gnu90",
+                 series_override: str | None = None,
+                 bundle_override: str | None = None) -> dict:
     name = proj_dir.name
     ingw_bundle, ingw_series = read_ingw(proj_dir)
-    series = resolve_series(ingw_series, chip)
+    series = series_override or resolve_series(ingw_series, chip)
     entry = {"project": name, "chip": chip, "series": series, "status": "skip", "reason": ""}
 
-    bundle = ingw_bundle
+    bundle = bundle_override or ingw_bundle
     if not bundle:
         entry["reason"] = "没有 .ingw 或其中没有 bundle 字段"
         return entry
@@ -304,10 +331,6 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
         entry["reason"] = f"解析失败：{exc}"
         return entry
 
-    if not info["sources"]:
-        entry["reason"] = "没有解析到 C/C++ 源文件"
-        return entry
-
     try:
         mem = compute_memory(sdk, series, bundle)
     except (FileNotFoundError, ValueError) as exc:
@@ -317,16 +340,29 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
     info["sources"] = rewrite_sources(info["sources"])
     libs = extra_libs(sdk, proj_dir, info, name, chip)
 
+    # 工程自带 GNU 启动文件时优先用它（reset_handler 的复位逻辑是自实现的）
+    startup_override = find_override(sdk, name, chip, mem["family"], "startup")
+    if not info["sources"] and not startup_override:
+        entry["reason"] = "没有解析到 C/C++ 源文件，也没有专用启动文件"
+        return entry
+
     out_dir = out_root / name / chip
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    heap_size, stack_size = read_startup_sizes(proj_dir, chip)
     startup = out_dir / f"gstartup_{mem['family']}00.s"
-    startup.write_bytes(startup_text(mem["family"], heap_size, stack_size)
-                        .replace("\n", "\r\n").encode("utf-8"))
+    if startup_override:
+        startup.write_bytes(startup_override.read_bytes())
+    else:
+        heap_size, stack_size = read_startup_sizes(proj_dir, chip)
+        startup.write_bytes(startup_text(mem["family"], heap_size, stack_size)
+                            .replace("\n", "\r\n").encode("utf-8"))
 
     ldscript = out_dir / f"{name}.ld"
-    ldscript.write_text(render_ld(mem, ld_template), encoding="utf-8")
+    ld_override = find_override(sdk, name, chip, mem["family"], "ld")
+    if ld_override:
+        ldscript.write_bytes(ld_override.read_bytes())
+    else:
+        ldscript.write_text(render_ld(mem, ld_template), encoding="utf-8")
 
     (out_dir / "CMakeLists.txt").write_text(
         render_cmakelists(name, info, sdk, chip, bundle, startup, ldscript, libs,
@@ -339,10 +375,8 @@ def generate_one(sdk: Path, proj_dir: Path, uvprojx: Path, chip: str,
         "bundle": bundle,
         "sources": len(info["sources"]),
         "libs": [l.name for l in libs],
-        "heap": heap_size,
-        "stack": stack_size,
-        "heap": heap_size,
-        "stack": stack_size,
+        "startup": "override" if startup_override else "generated",
+        "ld": "override" if ld_override else "generated",
         "dir": str(out_dir.relative_to(out_root).as_posix()),
         "rom": f"0x{mem['rom_addr']:X}/{mem['rom_size']}",
         "ram": f"0x{mem['ram_addr']:X}/{mem['ram_size']}",
@@ -478,6 +512,8 @@ def main() -> int:
 
         chips_for = [c for c in (pc.get("chips") or defaults["chips"]) if c in cli_chips]
         cstd = args.force_c_standard or pc.get("c_standard") or defaults["c_standard"]
+        series_override = pc.get("series")
+        bundle_override = pc.get("bundle")
         if not chips_for:
             combos.append({
                 "project": proj_dir.name, "chip": "-", "status": "excluded",
@@ -485,8 +521,11 @@ def main() -> int:
             })
             continue
         for chip in chips_for:
-            combos.append(generate_one(sdk, proj_dir, uvprojx, chip, out_root,
-                                       ld_template, cstd))
+            entry = generate_one(sdk, proj_dir, uvprojx, chip, out_root,
+                                 ld_template, cstd,
+                                 series_override=series_override,
+                                 bundle_override=bundle_override)
+            combos.append(entry)
 
     if args.probe:
         todo = [e for e in combos if e["status"] == "generated"]

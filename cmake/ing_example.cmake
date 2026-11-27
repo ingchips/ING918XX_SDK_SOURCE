@@ -101,8 +101,9 @@ function(ing_add_example name)
     cmake_parse_arguments(ARG "NO_PRINTF_FLOAT" "STARTUP;LDSCRIPT;BUNDLE;OPTIMIZE"
                           "SOURCES;DEFINES;INCLUDES" ${ARGN})
 
-    if(NOT ARG_SOURCES)
-        message(FATAL_ERROR "ing_add_example(${name}) 缺少 SOURCES")
+    # 纯汇编工程（如 reset_handler）没有 C/C++ 源，只有启动文件
+    if(NOT ARG_SOURCES AND NOT ARG_STARTUP)
+        message(FATAL_ERROR "ing_add_example(${name}) 缺少 SOURCES 和 STARTUP")
     endif()
 
     set(_bundle_dir "${ARG_BUNDLE}")
@@ -136,10 +137,7 @@ function(ing_add_example name)
         endif()
     endif()
 
-    add_executable(${name} ${ARG_SOURCES})
-    if(ARG_STARTUP)
-        target_sources(${name} PRIVATE ${ARG_STARTUP})
-    endif()
+    add_executable(${name} ${ARG_SOURCES} ${ARG_STARTUP})
 
     # ---- include 路径 ----
     target_include_directories(${name} PRIVATE

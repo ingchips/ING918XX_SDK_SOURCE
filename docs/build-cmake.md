@@ -11,6 +11,21 @@
 
 ## 依赖
 
+### CMake 版本
+
+**最低 3.20**。用到的特性：
+
+| 特性 | 最低版本 | 用在哪 |
+| --- | --- | --- |
+| `string(JSON ... GET)` | 3.19 | `ing_add_example()` 读工程 `.ingw` 的 `series` 做一致性校验 |
+| `target_link_options` | 3.13 | 链接参数 |
+| `cmake_parse_arguments` 的 `PARSE_ARGV` 风格 | 3.7 | `ing_add_example()` 的参数解析 |
+
+低于 3.19 时 `string(JSON)` 不存在，series 校验会静默失效（`_json_err` 非空），
+等于关掉了那道防线。
+
+
+
 ### 1. Arm GNU Toolchain
 
 任意 `arm-none-eabi-gcc` 12 以上版本。通过 `-DARM_GCC_ROOT=<路径>` 或环境变量 `ARM_GCC_ROOT` 指定根目录，默认值见工具链文件。
@@ -333,7 +348,7 @@ Keil4（ARMCC 5.03）的工程是 `uC99=0`，即纯 C89/C90。验证用的标准
 | `gcc` | Arm GNU 13.3 | 4.30（仓库内 `third_party/cmsis`） | 清单里的 `c_standard`（默认 gnu90） | 与 Keil4 同代环境 |
 | `atfe` | ATfE 23.1.0 + newlib-nano overlay | 6.1（下载） | 强制 `c99` | CMSIS 6 的 `cmsis_gcc.h` 用了 C99 循环内声明；而 CMSIS 6 又是 ING916 FPU 在 clang 下能编译的前提 |
 
-两边的数字：gcc 140 组合、atfe 134 组合（差 6 个是 `atfe_skip` 的工程）。
+两边的数字：gcc 141 组合、atfe 135 组合（差 6 个是 `atfe_skip` 的工程）。
 
 某个工程如果只在 ATfE 下无解，在清单里写：
 
@@ -395,7 +410,7 @@ projects:
 
 ### 当前验收结果（2026-11-27）
 
-**清单内 140 个组合全部通过**，5 个工程按清单 skip。
+**gcc 141 个组合、atfe 135 个组合全部通过**，4 个工程按清单 skip。
 
 生成器已经处理掉的通用问题：
 
@@ -411,15 +426,36 @@ projects:
 | 缺 uECC / SigMesh / power_ctrl 库 | 按源文件特征与工程名链接 |
 | 工程自己的堆栈大小（很多 Heap_Size 是 0） | 从工程 `startup_*.s` 解析后写进生成的启动文件 |
 
-### 清单里 skip 的工程
+### 清单里 skip 的工程（4 个）
 
 | 工程 | 原因 |
 | --- | --- |
 | `cherry_usb` | CherryUSB 要求高于 Keil4 的 C99 约束；USB 仅 916/20 有 |
 | `mesh-light` | SigMesh.lib 依赖 ARMCC printf 引擎内部符号（`_printf_percent` 等） |
 | `peripheral_console_rt-thread` | 仓库只有 `context_rvds.S`，没有 GCC 汇编版本（历史遗留） |
-| `platform_companion` | ROM 配套固件，链接布局与 APP 不同 |
-| `reset_handler` | 纯汇编工程，没有 C/C++ 源文件 |
+| `platform_companion` | 预编译的 `src/ing920_platform_lib.o` 是 **EABI 版本 0 的旧 ABI**（`e_flags=0x34`，缺 `EF_ARM_EABI_VER5`），GNU ld 报 `bad value`。专用 ld 与启动文件已备好（见下），拿到源码版库即可启用 |
+
+### 工程自带 GNU 资产（override）
+
+少数工程的启动逻辑或链接布局与通用模板不兼容，生成器会优先使用
+`examples-gcc/<工程>/` 下的手工资产：
+
+| 位置 | 用途 |
+| --- | --- |
+| `src/gstartup_<family>00.s` | 专用启动文件 |
+| `<proj>_<chip>.ld` 或 `<proj>.ld` | 专用链接脚本 |
+
+当前用到这个机制的两个工程：
+
+- **`reset_handler`**：`Reset_Handler` 本身就是被测对象——打开定时器时钟、
+  把定时器配成看门狗、跳固定地址（`0xFEED4000`，由工具改写），既不跳
+  `app_main` 也不搬运 `.data`。已提供 GNU 版
+  `examples-gcc/reset_handler/src/gstartup_ing91800.s` 保留原逻辑，
+  并让 `ing_add_example()` 接受"只有 STARTUP 没有 SOURCES"的纯汇编工程。
+- **`platform_companion`**：FLASH 从 `0x02002000` 起、RAM 分两块
+  （`0x20000000/0x200` + `0x200055C8/0x150`）、入口是 `main()` 而非
+  `app_main()`。专用 ld 与启动文件已放在
+  `examples-gcc/platform_companion/`，卡在旧 ABI 的预编译库上。
 
 ### 清单里只测部分芯片的工程（7 个）
 

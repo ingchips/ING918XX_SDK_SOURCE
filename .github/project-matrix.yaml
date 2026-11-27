@@ -66,6 +66,21 @@ projects:
     note: ING916 RAM 不足（溢出 504 字节）
 
   # ---------------------------------------------------------------------------
+  # 需要专用资产（启动逻辑/链接布局与通用模板不同）
+  # ---------------------------------------------------------------------------
+  reset_handler:
+    chips: [ing918]
+    note: 纯汇编，Reset_Handler 是真实复位逻辑（配时钟+开看门狗+跳固定地址），
+      用 examples-gcc/reset_handler/src/gstartup_ing91800.s 保留原逻辑
+
+  platform_companion:
+    skip: true
+    note: 预编译的 src/ing920_platform_lib.o 是 EABI 版本 0 的旧 ABI 对象
+      （e_flags=0x34，缺 EF_ARM_EABI_VER5），GNU ld 直接报 "bad value"，
+      GCC 无法链接。专用 ld 与启动文件已放在 examples-gcc/platform_companion/
+      （双 RAM 区、入口 main），拿到源码版 platform_lib 后把这条 skip 去掉即可
+
+  # ---------------------------------------------------------------------------
   # 仅 ATfE 通道不测：GCC 下正常，但 LLVM 下无解（不改源码）
   # ---------------------------------------------------------------------------
   gatt_relay:
@@ -93,10 +108,3 @@ projects:
     skip: true
     note: 仓库只有 context_rvds.S，没有 GCC 汇编版本（历史遗留）
 
-  platform_companion:
-    skip: true
-    note: ROM 配套固件，链接布局与 APP 不同（0x2000 起始 + 双 RAM 区）
-
-  reset_handler:
-    skip: true
-    note: 纯汇编工程，没有 C/C++ 源文件可编译
