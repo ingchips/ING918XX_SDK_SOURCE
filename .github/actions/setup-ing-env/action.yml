@@ -28,8 +28,12 @@ runs:
     - name: Install build tools
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build xz-utils unzip python3-yaml rsync
+        # runner 自带部分源（如 packages.microsoft.com）偶发 403，
+        # 更新失败不应让整个 job 挂掉：只要求最终工具与 PyYAML 可用。
+        sudo apt-get update -o Acquire::Retries=3 || true
+        sudo apt-get install -y --no-install-recommends           ninja-build xz-utils unzip python3-yaml rsync || true
+        ninja --version
+        python3 -c "import yaml; print('pyyaml', yaml.__version__)"
 
     - name: Cache Arm GNU Toolchain
       if: inputs.gcc == 'true'
