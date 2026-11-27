@@ -324,6 +324,40 @@ Keil4（ARMCC 5.03）的工程是 `uC99=0`，即纯 C89/C90。验证用的标准
 
 `third_party/cmsis/Include` 就是 ingWizard 安装目录里那份，锁定版本避免漂移。
 
+### 两条通道：gcc 与 atfe
+
+`build-all` 用同一份清单跑两条工具链，各自的前置条件不同：
+
+| 通道 | 工具链 | CMSIS | C 标准 | 说明 |
+| --- | --- | --- | --- | --- |
+| `gcc` | Arm GNU 13.3 | 4.30（仓库内 `third_party/cmsis`） | 清单里的 `c_standard`（默认 gnu90） | 与 Keil4 同代环境 |
+| `atfe` | ATfE 23.1.0 + newlib-nano overlay | 6.1（下载） | 强制 `c99` | CMSIS 6 的 `cmsis_gcc.h` 用了 C99 循环内声明；而 CMSIS 6 又是 ING916 FPU 在 clang 下能编译的前提 |
+
+两边的数字：gcc 140 组合、atfe 134 组合（差 6 个是 `atfe_skip` 的工程）。
+
+某个工程如果只在 ATfE 下无解，在清单里写：
+
+```yaml
+  uart_console:
+    atfe_skip: true
+    note: -Diprintf=platform_printf 与 newlib 声明冲突（GCC 下正常）
+```
+
+它仍会在 gcc 通道被验证。
+
+### CI 结构
+
+```
+prepare      ── 装 Nim、跑 tools/gen_files、把 bundles/**/symdefs.* 传成 artifact
+              （78 MB 的 bundles 只分发 1.9 MB 的符号表，避免每个分片各编译一遍 Nim）
+build-gcc    ── 12 分片，CMSIS 4.30 + gnu90
+build-atfe   ── 6 分片，CMSIS 6.1 + c99
+report       ── 按工具链分别汇总，任一组合失败即红
+```
+
+工具链安装抽成 composite action `.github/actions/setup-ing-env`，
+三个工作流共用，避免同一套 apt/cache 步骤各写一遍。
+
 ### 配置清单 `.github/project-matrix.yaml`
 
 测哪些组合由这份清单决定，它是**验收契约**：清单里声明成立的组合必须全部

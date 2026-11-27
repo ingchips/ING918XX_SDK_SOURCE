@@ -1,22 +1,20 @@
 name: keil-import
 
-# 把 examples/ 下的 Keil 工程转成 CMake 并编译，验证"Keil 工程里的源码
-# 在 GCC 下能否编过"。
+# 把单个 Keil 工程转成 CMake 并编译，验证转换脚本本身可用。
 #
 # 这是 CI 内部校验，不是给开发者用的转换工具：
-#   * 转换脚本在 .github/scripts/keil2cmake.py，只有这个 workflow 调用
+#   * 转换脚本在 .github/scripts/keil2cmake.py（gen_all_cmake 的单工程入口）
 #   * 产物只写到 build/keil-import/，不落回仓库
 #   * 不改动 examples/ 下任何 Keil 工程文件
+#
+# 全量工程的编译验证在 build-all；这里只挑一个代表性工程做冒烟，
+# 确认"单工程入口"这条路径没坏（它与批量入口共用 generate_one）。
 
 on:
   workflow_dispatch:
   push:
     branches: ["**"]
   pull_request:
-
-env:
-  ARM_GCC_VERSION: 13.3.rel1
-  NIM_VERSION: 2.2.4
 
 jobs:
   keil-import:
@@ -27,52 +25,17 @@ jobs:
       matrix:
         include:
           - { chip: ing918, project: peripheral_ibeacon }
+          # ING9188xx 与 ING9187xx 是两颗不同的 ROM，这条覆盖 series 解析
+          - { chip: ing918, project: periodic_advertiser }
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build xz-utils unzip
-          cmake --version
-          ninja --version
-
-      - name: Cache Arm GNU Toolchain
-        id: cache-gcc
-        uses: actions/cache@v5
+      - uses: ./.github/actions/setup-ing-env
         with:
-          path: /opt/arm-gcc
-          key: arm-gcc-${{ env.ARM_GCC_VERSION }}
-
-      - name: Install Arm GNU Toolchain
-        if: steps.cache-gcc.outputs.cache-hit != 'true'
-        run: |
-          sudo mkdir -p /opt/arm-gcc
-          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_GCC_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_GCC_VERSION }}-x86_64-arm-none-eabi.tar.xz -O /tmp/arm-gcc.tar.xz
-          sudo tar -xJf /tmp/arm-gcc.tar.xz -C /opt/arm-gcc --strip-components=1
-          /opt/arm-gcc/bin/arm-none-eabi-gcc --version
-
-
-      - name: Cache Nim
-        id: cache-nim
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/nim
-            ~/.nimble
-          key: nim-${{ env.NIM_VERSION }}-v2
-
-      - name: Install Nim
-        if: steps.cache-nim.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ~/nim
-          wget -q https://nim-lang.org/download/nim-${{ env.NIM_VERSION }}-linux_x64.tar.xz -O /tmp/nim.tar.xz
-          tar -xJf /tmp/nim.tar.xz -C ~/nim
-          mv ~/nim/nim-${{ env.NIM_VERSION }} ~/nim/nim_x64
-          export PATH=~/nim/nim_x64/bin:$PATH
-          nimble refresh -y
-          nimble install -y malebolgia
+          gcc: 'true'
+          cmsis: cmsis4
+          nim: 'true'
 
       - name: Generate bundle symbols
         run: |

@@ -1,0 +1,87 @@
+name: setup-ing-env
+description: |
+  安装 ING 工程编译验证所需的工具链。三个工作流共用，避免同一套
+  安装步骤各写一遍、改一处漏两处。
+
+  CMSIS 有两个来源：
+    cmsis4 —— 仓库内 third_party/cmsis（4.30，ingWizard 配给 Keil4 的版本）
+    cmsis6 —— 下载 CMSIS_6（ATfE 通道用，它的 __builtin_arm_set_fpscr
+              才能让 ING916 的 FPU 代码在 clang 下编过）
+
+inputs:
+  gcc:
+    description: '是否安装 Arm GNU Toolchain'
+    required: false
+    default: 'true'
+  cmsis:
+    description: 'cmsis4 | cmsis6 | none'
+    required: false
+    default: 'cmsis4'
+  nim:
+    description: '是否安装 Nim（tools/gen_files 需要）'
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Install build tools
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build xz-utils unzip python3-yaml rsync
+
+    - name: Cache Arm GNU Toolchain
+      if: inputs.gcc == 'true'
+      id: cache-gcc
+      uses: actions/cache@v5
+      with:
+        path: /opt/arm-gcc
+        key: arm-gcc-13.3.rel1
+
+    - name: Install Arm GNU Toolchain
+      if: inputs.gcc == 'true' && steps.cache-gcc.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        sudo mkdir -p /opt/arm-gcc
+        wget -q https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz -O /tmp/arm-gcc.tar.xz
+        sudo tar -xJf /tmp/arm-gcc.tar.xz -C /opt/arm-gcc --strip-components=1
+        /opt/arm-gcc/bin/arm-none-eabi-gcc --version
+
+    - name: Cache CMSIS 6
+      if: inputs.cmsis == 'cmsis6'
+      id: cache-cmsis6
+      uses: actions/cache@v5
+      with:
+        path: ${{ github.workspace }}/cmsis6
+        key: cmsis-6.1.0
+
+    - name: Download CMSIS 6
+      if: inputs.cmsis == 'cmsis6' && steps.cache-cmsis6.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        wget -q https://github.com/ARM-software/CMSIS_6/archive/refs/tags/v6.1.0.zip -O /tmp/cmsis6.zip
+        mkdir -p "${{ github.workspace }}/cmsis6"
+        unzip -q /tmp/cmsis6.zip -d "${{ github.workspace }}/cmsis6"
+
+    - name: Cache Nim
+      if: inputs.nim == 'true'
+      id: cache-nim
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/nim
+          ~/.nimble
+        key: nim-2.2.4-v2
+
+    - name: Install Nim
+      if: inputs.nim == 'true' && steps.cache-nim.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/nim
+        wget -q https://nim-lang.org/download/nim-2.2.4-linux_x64.tar.xz -O /tmp/nim.tar.xz
+        tar -xJf /tmp/nim.tar.xz -C ~/nim
+        mv ~/nim/nim-2.2.4 ~/nim/nim_x64
+        export PATH=~/nim/nim_x64/bin:$PATH
+        nimble refresh -y
+        nimble install -y malebolgia

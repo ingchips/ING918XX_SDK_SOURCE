@@ -232,6 +232,8 @@ function(ing_add_example name)
             "-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${name}.map"
             # 等价 GCC 的 --specs=nosys.specs：提供 syscall 桩
             "-lnosys")
+        # libm：pow/fabs 等（GCC 分支也链接 m，ATfE 分支之前漏了）
+        target_link_libraries(${name} PRIVATE m)
     else()
         set(_gcc_link
             "--specs=nano.specs" "--specs=nosys.specs"

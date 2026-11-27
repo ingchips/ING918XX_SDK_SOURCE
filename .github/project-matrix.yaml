@@ -66,6 +66,19 @@ projects:
     note: ING916 RAM 不足（溢出 504 字节）
 
   # ---------------------------------------------------------------------------
+  # 仅 ATfE 通道不测：GCC 下正常，但 LLVM 下无解（不改源码）
+  # ---------------------------------------------------------------------------
+  gatt_relay:
+    atfe_skip: true
+    note: 定义 -Diprintf=platform_printf 后，newlib 的 int iprintf() 被重命名成
+      int platform_printf()，与 SDK 的 void platform_printf() 返回类型冲突；
+      C99 下 __MISC_VISIBLE 恒为 1，__STRICT_ANSI__ 无法关掉该声明
+
+  uart_console:
+    atfe_skip: true
+    note: 同上（-Diprintf=platform_printf 与 newlib 声明冲突）
+
+  # ---------------------------------------------------------------------------
   # 不测：历史遗留或结构性不兼容，暂不纳入验收
   # ---------------------------------------------------------------------------
   cherry_usb:

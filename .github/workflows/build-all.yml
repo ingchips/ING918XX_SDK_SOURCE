@@ -1,16 +1,20 @@
 name: build-all
 
-# 全量工程编译验证：把 examples/ 下每个 Keil 工程按 ing918/ing916/ing20
-# 生成 CMake 工程并编译，覆盖"切芯片也能编过"。
+# 全量工程编译验证：把 examples/ 下每个 Keil 工程按清单生成 CMake 工程并编译。
 #
-# 与 build-matrix 的分工：
-#   build-matrix  验证手写 CMake 的 6 个示例（含 ATfE）
-#   build-all     验证 examples/ 下全部 Keil 工程的源码可编译性（GCC）
-#   keil-import   单工程 Keil→CMake 的冒烟检查
+# 两条通道，共用同一份清单 `.github/project-matrix.yaml`：
+#   gcc   —— Arm GNU Toolchain + CMSIS 4.30（仓库内，与 Keil4 同代）
+#            C 标准取清单里的 c_standard（默认 gnu90，对齐 Keil4 的 uC99=0）
+#   atfe  —— Arm Toolchain for Embedded 23.1.0 + CMSIS 6.1（下载）
+#            C 标准强制 c99：CMSIS 6 的 cmsis_gcc.h 用了 C99 的循环内声明，
+#            而 CMSIS 6 又是 ING916 FPU 代码能在 clang 下编译的前提
 #
-# 测哪些组合由 .github/project-matrix.yaml 决定（验收清单）：
-# 清单里声明的组合必须全部编过，任何一个失败即判红；
-# 明确不支持或不测的工程在清单里写 skip: true 并注明原因。
+# 清单里声明的组合必须在两条通道上都编过；`skip: true` 的工程整体不测，
+# `atfe_skip: true` 的工程只在 ATfE 通道跳过。
+#
+# bundles/ 里的 symdefs.* 不在版本库里（由 tools/gen_files 生成），
+# 这里用 prepare job 生成一次、以 artifact 分发给各分片，避免每个分片
+# 各自编译一遍 Nim。
 
 on:
   workflow_dispatch:
@@ -19,63 +23,21 @@ on:
   pull_request:
 
 env:
-  ARM_GCC_VERSION: 13.3.rel1
-  NIM_VERSION: 2.2.4
-  GROUPS: 12
+  GROUPS_GCC: 12
+  GROUPS_ATFE: 6
 
 jobs:
-  build:
-    name: group-${{ matrix.group }}
+  prepare:
+    name: prepare bundles
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        group: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build xz-utils unzip python3-yaml
-          cmake --version
-
-      - name: Cache Arm GNU Toolchain
-        id: cache-gcc
-        uses: actions/cache@v5
+      - uses: ./.github/actions/setup-ing-env
         with:
-          path: /opt/arm-gcc
-          key: arm-gcc-${{ env.ARM_GCC_VERSION }}
-
-      - name: Install Arm GNU Toolchain
-        if: steps.cache-gcc.outputs.cache-hit != 'true'
-        run: |
-          sudo mkdir -p /opt/arm-gcc
-          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_GCC_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_GCC_VERSION }}-x86_64-arm-none-eabi.tar.xz -O /tmp/arm-gcc.tar.xz
-          sudo tar -xJf /tmp/arm-gcc.tar.xz -C /opt/arm-gcc --strip-components=1
-          /opt/arm-gcc/bin/arm-none-eabi-gcc --version
-
-
-      - name: Cache Nim
-        id: cache-nim
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/nim
-            ~/.nimble
-          key: nim-${{ env.NIM_VERSION }}-v2
-
-      - name: Install Nim
-        if: steps.cache-nim.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ~/nim
-          wget -q https://nim-lang.org/download/nim-${{ env.NIM_VERSION }}-linux_x64.tar.xz -O /tmp/nim.tar.xz
-          tar -xJf /tmp/nim.tar.xz -C ~/nim
-          mv ~/nim/nim-${{ env.NIM_VERSION }} ~/nim/nim_x64
-          export PATH=~/nim/nim_x64/bin:$PATH
-          nimble refresh -y
-          nimble install -y malebolgia
+          gcc: 'false'
+          cmsis: none
+          nim: 'true'
 
       - name: Generate bundle symbols
         run: |
@@ -83,6 +45,45 @@ jobs:
           cd tools
           nim -d:release c gen_files.nim
           ./gen_files "${{ github.workspace }}/bundles"
+          test -f "${{ github.workspace }}/bundles/typical/ING9187xx/symdefs.g"
+
+      # 只分发 symdefs.*（1.9 MB），整个 bundles 有 78 MB
+      - name: Stage symdefs
+        run: |
+          mkdir -p bundles-symdefs
+          rsync -a --include='*/' --include='symdefs.*' --exclude='*' \
+                bundles/ bundles-symdefs/
+          find bundles-symdefs -name 'symdefs.*' | wc -l
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bundles-symdefs
+          path: bundles-symdefs/
+          retention-days: 1
+
+  build-gcc:
+    name: gcc / group-${{ matrix.group }}
+    needs: prepare
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-ing-env
+        with:
+          gcc: 'true'
+          cmsis: cmsis4
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: bundles-symdefs
+          path: bundles-symdefs
+
+      - name: Restore symdefs
+        run: rsync -a bundles-symdefs/ bundles/
 
       - name: Generate and probe this group
         env:
@@ -92,31 +93,93 @@ jobs:
             --out build/gen \
             --probe \
             --config .github/project-matrix.yaml \
-            --group ${{ matrix.group }} --groups ${{ env.GROUPS }} \
+            --group ${{ matrix.group }} --groups ${{ env.GROUPS_GCC }} \
             --cmsis "$CMSIS_BASE" \
             --gcc-root /opt/arm-gcc \
             --c-standard gnu90
 
-      - name: Upload group result
+      - uses: actions/upload-artifact@v7
         if: always()
-        uses: actions/upload-artifact@v7
         with:
-          name: group-${{ matrix.group }}
+          name: gcc-group-${{ matrix.group }}
+          path: build/gen/manifest.json
+          if-no-files-found: warn
+
+  build-atfe:
+    name: atfe / group-${{ matrix.group }}
+    needs: prepare
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-ing-env
+        with:
+          gcc: 'false'
+          cmsis: cmsis6
+          nim: 'false'
+
+      - name: Cache ATfE
+        id: cache-atfe
+        uses: actions/cache@v5
+        with:
+          path: /opt/atfe
+          key: atfe-23.1.0
+
+      - name: Install ATfE
+        if: steps.cache-atfe.outputs.cache-hit != 'true'
+        run: |
+          base=https://github.com/arm/arm-toolchain/releases/download/release-23.1.0-ATfE
+          sudo mkdir -p /opt/atfe
+          wget -q $base/ATfE-23.1.0-Linux-x86_64.tar.xz -O /tmp/atfe.tar.xz
+          wget -q $base/ATfE-newlib-nano-overlay-23.1.0.tar.xz -O /tmp/atfe-nano.tar.xz
+          sudo tar -xJf /tmp/atfe.tar.xz -C /opt/atfe --strip-components=1
+          sudo tar -xJf /tmp/atfe-nano.tar.xz -C /opt/atfe
+          test -f /opt/atfe/bin/newlib-nano.cfg
+          /opt/atfe/bin/clang --version | head -1
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: bundles-symdefs
+          path: bundles-symdefs
+
+      - name: Restore symdefs
+        run: rsync -a bundles-symdefs/ bundles/
+
+      - name: Generate and probe this group
+        env:
+          CMSIS_BASE: ${{ github.workspace }}/cmsis6/CMSIS_6-6.1.0/CMSIS/Core
+        run: |
+          python tools/gen_all_cmake.py \
+            --out build/gen \
+            --probe \
+            --toolchain atfe \
+            --config .github/project-matrix.yaml \
+            --group ${{ matrix.group }} --groups ${{ env.GROUPS_ATFE }} \
+            --cmsis "$CMSIS_BASE" \
+            --force-c-standard c99
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: atfe-group-${{ matrix.group }}
           path: build/gen/manifest.json
           if-no-files-found: warn
 
   report:
     name: verify against the project matrix
-    needs: build
+    needs: [build-gcc, build-atfe]
     if: always()
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
 
-      - name: Download all group results
-        uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v5
         with:
-          pattern: group-*
+          pattern: '*-group-*'
           path: groups
 
       - name: Summarize probe results

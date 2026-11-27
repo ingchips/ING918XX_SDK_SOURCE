@@ -408,6 +408,9 @@ def main() -> int:
     ap.add_argument("--gcc-root", default=None, help="GNU 工具链根目录（探测用）")
     ap.add_argument("--c-standard", default="gnu90",
                     help="探测用的 C 标准，默认 gnu90（对齐 Keil4）")
+    ap.add_argument("--force-c-standard", default=None,
+                    help="强制覆盖所有工程的 C 标准（ATfE 通道用 c99，"
+                         "因为 CMSIS 6 的 cmsis_gcc.h 用了 C99 的循环内声明）")
     ap.add_argument("--group", type=int, default=None, help="只探测第 N 片（0 起）")
     ap.add_argument("--groups", type=int, default=1, help="总片数，默认 1（不分片）")
     args = ap.parse_args()
@@ -461,8 +464,16 @@ def main() -> int:
             })
             continue
 
+        # 某些工程只在某一工具链下无解（如 ATfE 的 platform_printf 冲突）
+        if args.toolchain == "atfe" and pc.get("atfe_skip"):
+            combos.append({
+                "project": proj_dir.name, "chip": "-", "status": "excluded",
+                "reason": "ATfE 通道跳过：" + (pc.get("note") or "").replace("\n", " "),
+            })
+            continue
+
         chips_for = [c for c in (pc.get("chips") or defaults["chips"]) if c in cli_chips]
-        cstd = pc.get("c_standard") or defaults["c_standard"]
+        cstd = args.force_c_standard or pc.get("c_standard") or defaults["c_standard"]
         if not chips_for:
             combos.append({
                 "project": proj_dir.name, "chip": "-", "status": "excluded",
@@ -493,6 +504,7 @@ def main() -> int:
         "sdk": sdk.as_posix(),
         "chips": defaults["chips"],
         "config": cfg["path"],
+        "force_c_standard": args.force_c_standard,
         "toolchain": args.toolchain if args.probe else None,
         "group": args.group,
         "groups": args.groups,

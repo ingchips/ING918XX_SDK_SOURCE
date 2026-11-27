@@ -42,31 +42,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build xz-utils
-          cmake --version
-          ninja --version
-
-      # ---------- 工具链：Arm GNU ----------
-      - name: Cache Arm GNU Toolchain
-        if: matrix.toolchain == 'gcc'
-        id: cache-gcc
-        uses: actions/cache@v5
+      - uses: ./.github/actions/setup-ing-env
         with:
-          path: /opt/arm-gcc
-          key: arm-gcc-${{ env.ARM_GCC_VERSION }}
+          gcc: ${{ matrix.toolchain == 'gcc' && 'true' || 'false' }}
+          cmsis: cmsis6
+          nim: 'true'
 
-      - name: Install Arm GNU Toolchain
-        if: matrix.toolchain == 'gcc' && steps.cache-gcc.outputs.cache-hit != 'true'
-        run: |
-          sudo mkdir -p /opt/arm-gcc
-          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/${{ env.ARM_GCC_VERSION }}/binrel/arm-gnu-toolchain-${{ env.ARM_GCC_VERSION }}-x86_64-arm-none-eabi.tar.xz -O /tmp/arm-gcc.tar.xz
-          sudo tar -xJf /tmp/arm-gcc.tar.xz -C /opt/arm-gcc --strip-components=1
-          /opt/arm-gcc/bin/arm-none-eabi-gcc --version
-
-      # ---------- 工具链：ATfE (LLVM) ----------
       - name: Cache ATfE
         if: matrix.toolchain == 'atfe'
         id: cache-atfe
@@ -83,65 +64,10 @@ jobs:
           wget -q $base/ATfE-newlib-nano-overlay-${{ env.ATFE_VERSION }}.tar.xz -O /tmp/atfe-nano.tar.xz
           sudo mkdir -p /opt/atfe
           sudo tar -xJf /tmp/atfe.tar.xz -C /opt/atfe --strip-components=1
-          # overlay 需叠加到主包之上，提供 bin/newlib-nano.cfg 与 lib/clang-runtimes/newlib-nano
+          # overlay 叠加到主包之上，提供 bin/newlib-nano.cfg 与 lib/clang-runtimes/newlib-nano
           sudo tar -xJf /tmp/atfe-nano.tar.xz -C /opt/atfe
           test -f /opt/atfe/bin/newlib-nano.cfg
           /opt/atfe/bin/clang --version
-
-      # ---------- CMSIS ----------
-      - name: Cache CMSIS
-        id: cache-cmsis
-        uses: actions/cache@v5
-        with:
-          path: ${{ github.workspace }}/cmsis
-          key: cmsis-${{ env.CMSIS_VERSION }}
-
-      - name: Download CMSIS
-        if: steps.cache-cmsis.outputs.cache-hit != 'true'
-        run: |
-          wget -q https://github.com/ARM-software/CMSIS_6/archive/refs/tags/v${{ env.CMSIS_VERSION }}.zip -O /tmp/cmsis.zip
-          mkdir -p ${{ github.workspace }}/cmsis
-          unzip -q /tmp/cmsis.zip -d ${{ github.workspace }}/cmsis
-
-      # ---------- bundle 符号表 ----------
-      # bundles/.gitignore 忽略了 symdefs.*，它们必须由 tools/gen_files 生成，
-      # 否则链接时找不到 bundles/<bundle>/<series>/symdefs.g。
-      - name: Cache Zig
-        if: contains(matrix.example, 'central_fota')
-        id: cache-zig
-        uses: actions/cache@v5
-        with:
-          path: /usr/local/zig
-          key: zig-${{ env.ZIG_VERSION }}
-
-      - name: Install Zig
-        if: contains(matrix.example, 'central_fota') && steps.cache-zig.outputs.cache-hit != 'true'
-        run: |
-          wget -q https://ziglang.org/download/${{ env.ZIG_VERSION }}/zig-linux-x86_64-${{ env.ZIG_VERSION }}.tar.xz -O /tmp/zig.tar.xz
-          sudo tar -xJf /tmp/zig.tar.xz -C /usr/local/
-          sudo mv /usr/local/zig-linux-x86_64-${{ env.ZIG_VERSION }} /usr/local/zig
-          sudo ln -sf /usr/local/zig/zig /usr/local/bin/zig
-          zig version
-
-      - name: Cache Nim
-        id: cache-nim
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/nim
-            ~/.nimble
-          key: nim-${{ env.NIM_VERSION }}-v2
-
-      - name: Install Nim
-        if: steps.cache-nim.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ~/nim
-          wget -q https://nim-lang.org/download/nim-${{ env.NIM_VERSION }}-linux_x64.tar.xz -O /tmp/nim.tar.xz
-          tar -xJf /tmp/nim.tar.xz -C ~/nim
-          mv ~/nim/nim-${{ env.NIM_VERSION }} ~/nim/nim_x64
-          export PATH=~/nim/nim_x64/bin:$PATH
-          nimble refresh -y
-          nimble install -y malebolgia
 
       - name: Generate bundle symbols
         run: |
@@ -150,9 +76,8 @@ jobs:
           nim -d:release c gen_files.nim
           ./gen_files "${{ github.workspace }}/bundles"
           test -f "${{ github.workspace }}/bundles/typical/ING9187xx/symdefs.g"
-          test -f "${{ github.workspace }}/bundles/noos_mini/ING9168xx/symdefs.g"
 
-      # ---------- 配置与构建 ----------
+
       - name: Configure
         env:
           CMSIS_BASE: ${{ github.workspace }}/cmsis/CMSIS_6-${{ env.CMSIS_VERSION }}/CMSIS/Core
