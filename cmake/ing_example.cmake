@@ -117,9 +117,10 @@ function(ing_add_example name)
         file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${name}.ingw" _ingw_json)
         string(JSON _ingw_series ERROR_VARIABLE _json_err GET "${_ingw_json}" series)
         if(NOT _json_err AND _ingw_series AND NOT _ingw_series STREQUAL ING_SERIES)
-            message(WARNING
+            message(FATAL_ERROR
                 "${name}: .ingw 声明 series=${_ingw_series}，但链接使用 ${ING_SERIES}。"
-                "ROM 符号表与内存布局不匹配，请在 CMakeLists 里 set(ING_SERIES ${_ingw_series})")
+                "两者的 ROM 符号地址与内存布局不同，产物会跑不起来。"
+                "请在 CMakeLists 里 set(ING_SERIES ${_ingw_series})")
         endif()
     endif()
 
