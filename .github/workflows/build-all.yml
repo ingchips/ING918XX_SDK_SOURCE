@@ -91,7 +91,7 @@ jobs:
           python tools/gen_all_cmake.py \
             --out build/gen \
             --probe \
-            --config .github/project-matrix.yaml
+            --config .github/project-matrix.yaml \
             --group ${{ matrix.group }} --groups ${{ env.GROUPS }} \
             --cmsis "$CMSIS_BASE" \
             --gcc-root /opt/arm-gcc \
