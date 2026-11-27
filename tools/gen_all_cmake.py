@@ -117,8 +117,17 @@ def extra_libs(sdk: Path, proj_dir: Path, info: dict, name: str, chip: str) -> l
             if cand.is_file() and cand not in libs:
                 libs.append(cand)
 
-    # 部分工程直接引用按芯片预编译的对象文件（如 central_fota 的
-    # src/ing918_fota_client.o，是 zig 产物的 ARMCC 版本）。
+    # 工程在 .uvprojx 里直接引用的预编译对象/库（adc_cali.o、ing<chip>_fota_client.o、
+    # ing<chip>_uecc.lib 等）。文件名带芯片名的只在对应芯片下使用。
+    import re as _re
+    for obj in info.get("objects", []):
+        m = _re.search(r"(ing918|ing916|ing20)", obj.name)
+        if m and m.group(1) != chip:
+            continue
+        if obj.is_file() and obj not in libs:
+            libs.append(obj)
+
+    # 兜底：src/ 下按芯片命名的 .o（部分工程未在 uvprojx 里显式列出）
     for cand in sorted((proj_dir / "src").glob(f"*{chip}*.o")):
         if cand.is_file() and cand not in libs:
             libs.append(cand)

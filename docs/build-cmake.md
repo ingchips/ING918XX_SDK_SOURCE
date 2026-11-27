@@ -361,7 +361,7 @@ projects:
 
 ### 当前验收结果（2026-11-27）
 
-**清单内 134 个组合全部通过**，5 个工程按清单 skip。
+**清单内 135 个组合全部通过**，5 个工程按清单 skip。
 
 生成器已经处理掉的通用问题：
 
@@ -387,15 +387,30 @@ projects:
 | `platform_companion` | ROM 配套固件，链接布局与 APP 不同 |
 | `reset_handler` | 纯汇编工程，没有 C/C++ 源文件 |
 
-### 清单里只测部分芯片的工程
+### 清单里只测部分芯片的工程（11 个）
 
-| 工程 | 测 | 原因 |
-| --- | --- | --- |
-| `get_started` | 918/20 | demo 自身 `#error` 拒绝 916 |
-| `central_cte` | 20 | 918/916 的 bundle 未提供 CTE ROM 符号 |
-| `ext_raw_packet` / `periodic_advertiser` / `periodic_scanner` / `peripheral_led` | 916/20 | 918 的 bundle 未提供 CTE/IQ ROM 符号 |
-| `pawr` | 916/20 | 918 无 `SYSCTRL_ITEM_APB_PinCtrl` |
-| `peripheral_battery` | 916/20 | 918 的 ROM 无 `adc_prepare_calibration` |
-| `peripheral_band` / `peripheral_pedometer` | 918/916 | ing20 的 board 不支持 |
-| `io_over_ble_mas` / `io_over_ble_sla` | 918/20 | ING916 只有 11 KB RAM，工程放不下 |
+每条都是实测确认过的，不是猜测：
+
+| 工程 | 测 | 排除 | 实测原因 |
+| --- | --- | --- | --- |
+| `get_started` | 918/20 | 916 | `examples/get_started/src/main.c:19` 直接 `#error "916 chip does not support this demo"` |
+| `central_cte` | 20 | 918 | 918 的 symdefs 无 `ll_scanner_enable_iq_sampling`（CTE 测向是 916/20 的 ROM 功能） |
+| `central_cte` | 20 | 916 | RAM 溢出 344 字节（ING916 只有 11 KB） |
+| `ext_raw_packet` | 916/20 | 918 | 918 的 symdefs 无 `ll_raw_packet_set_tx_cte` |
+| `periodic_advertiser` | 916/20 | 918 | 918 的 symdefs 无 `gap_set_connectionless_cte_tx_param` |
+| `periodic_scanner` | 916/20 | 918 | 918 的 symdefs 无 `gap_set_connectionless_iq_sampling_enable` |
+| `peripheral_led` | 916/20 | 918 | 918 的 symdefs 无 `gap_set_connection_cte_tx_param` |
+| `pawr` | 916/20 | 918 | `setup_soc.cgen` 用了 `SYSCTRL_ITEM_APB_PinCtrl`/`_UART0`/`_WDT`，918 的 SYSCTRL 头没有这些枚举 |
+| `peripheral_band` | 918/916 | 20 | `main.c:109` `#error SOFTWARE_RTC_DHMS must be defined`，且 `PLATFORM_CB_IRQ_RTC` 在 20 上不存在（20 无 RTC） |
+| `peripheral_pedometer` | 918/916 | 20 | `board.c:493` `#error The board has no pins to connect to the iic device`（ING2086_DK 未定义 iic 引脚） |
+| `io_over_ble_mas` | 918/20 | 916 | RAM 溢出 648 字节 |
+| `io_over_ble_sla` | 918/20 | 916 | RAM 溢出 504 字节 |
+
+> 注：`central_cte` 的两条原因不同——918 是缺 ROM 符号，916 是 RAM 不够。
+
+**已修复并恢复三芯片的**：`peripheral_battery` 之前在 918 上因
+`adc_prepare_calibration` / `adc_calibrate` 未定义而失败。实测发现这两个符号
+由工程自带的预编译对象 `src/Tools/adc_cali.o` 提供，而生成器当时只链接
+文件名含芯片名的 `.o`。现在改为读取 `.uvprojx` 里声明的所有 `.o`/`.lib`
+（文件名含 `ing918/ing916/ing20` 的按芯片过滤），该项已恢复为三芯片验证。
 

@@ -66,6 +66,7 @@ def parse_uvprojx(path: Path, target_name: str | None = None) -> dict:
     defines = [x.strip() for x in defines_raw.replace(",", ";").split(";") if x.strip()]
 
     sources: list[Path] = []
+    objects: list[Path] = []
     for f in target.findall(".//Files/File"):
         fname = text_of(f, "FileName")
         fpath = text_of(f, "FilePath")
@@ -73,9 +74,15 @@ def parse_uvprojx(path: Path, target_name: str | None = None) -> dict:
             continue
         if fname.lower() in SKIP_NAMES:
             continue
-        if Path(fname).suffix.lower() in SKIP_SUFFIXES:
-            continue
         p = (path.parent / fpath.replace("\\", "/")).resolve()
+        suffix = Path(fname).suffix.lower()
+        if suffix in (".o", ".lib"):
+            # 预编译对象/库：跳过 output/ 下的编译产物，只收真正的输入
+            if p.is_file() and "output" not in p.parts:
+                objects.append(p)
+            continue
+        if suffix in SKIP_SUFFIXES:
+            continue
         if p.is_file():
             sources.append(p)
 
@@ -85,5 +92,6 @@ def parse_uvprojx(path: Path, target_name: str | None = None) -> dict:
         "sources": sources,
         "includes": includes,
         "defines": defines,
+        "objects": objects,
         "targets": [text_of(t, "TargetName") for t in targets],
     }
