@@ -116,7 +116,19 @@ function(ing_add_example name)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.ingw")
         file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${name}.ingw" _ingw_json)
         string(JSON _ingw_series ERROR_VARIABLE _json_err GET "${_ingw_json}" series)
-        if(NOT _json_err AND _ingw_series AND NOT _ingw_series STREQUAL ING_SERIES)
+        # 只在同一芯片家族内比较：跨芯片构建（918 工程用 -DCHIP=ing20）时
+        # series 本来就该不同，不算错误。
+        set(_ingw_family "")
+        if(_ingw_series MATCHES "^ING918")
+            set(_ingw_family "ing918")
+        elseif(_ingw_series MATCHES "^ING916")
+            set(_ingw_family "ing916")
+        elseif(_ingw_series MATCHES "^ING20")
+            set(_ingw_family "ing20")
+        endif()
+
+        if(NOT _json_err AND _ingw_family STREQUAL CHIP
+           AND NOT _ingw_series STREQUAL ING_SERIES)
             message(FATAL_ERROR
                 "${name}: .ingw 声明 series=${_ingw_series}，但链接使用 ${ING_SERIES}。"
                 "两者的 ROM 符号地址与内存布局不同，产物会跑不起来。"
